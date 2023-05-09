@@ -29,3 +29,5 @@ export 'src/shape/index.dart';
 export 'src/style/index.dart';
 
 export 'src/utils/index.dart';
+
+export 'package:xutil/xutil.dart';
