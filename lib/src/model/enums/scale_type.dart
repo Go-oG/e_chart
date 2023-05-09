@@ -1,0 +1,4 @@
+enum ScaleType{
+  doubleTap,
+  scale
+}

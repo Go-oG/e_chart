@@ -1,0 +1,4 @@
+enum DragType{
+  longPress,
+  drag
+}

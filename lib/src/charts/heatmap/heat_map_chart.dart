@@ -1,0 +1,75 @@
+import 'package:flutter/material.dart';
+
+import '../../coord/calendar/calendar_child.dart';
+import '../../coord/calendar/calendar_layout.dart';
+import '../../coord/grid/grid_child.dart';
+import '../../coord/grid/grid_layout.dart';
+import '../../core/view.dart';
+import '../../model/dynamic_data.dart';
+import '../../model/enums/coordinate.dart';
+import '../../style/area_style.dart';
+import 'heat_map_series.dart';
+
+/// 热力图
+class HeatMapView extends View implements GridChild, CalendarChild {
+  final HeatMapSeries series;
+
+  HeatMapView(this.series);
+
+  @override
+  int get xAxisIndex => series.xAxisIndex;
+
+  @override
+  int get yAxisIndex => series.yAxisIndex;
+
+  @override
+  int get xDataSetCount => series.data.length;
+
+  @override
+  int get yDataSetCount => series.data.length;
+
+  @override
+  List<DynamicData> get xDataSet {
+    List<DynamicData> dl = [];
+    for (var element in series.data) {
+      dl.add(element.x);
+    }
+    return dl;
+  }
+
+  @override
+  List<DynamicData> get yDataSet {
+    List<DynamicData> dl = [];
+    for (var element in series.data) {
+      dl.add(element.y);
+    }
+    return dl;
+  }
+
+  @override
+  int get calendarIndex => series.xAxisIndex;
+
+  @override
+  void onDraw(Canvas canvas) {
+    GridLayout? gridLayout;
+    CalendarLayout? calendarLayout;
+    if (series.coordSystem == CoordSystem.grid) {
+      gridLayout = context.findGridCoord();
+    } else {
+      calendarLayout = context.findCalendarCoord(calendarIndex);
+    }
+    for (var data in series.data) {
+      AreaStyle? style = series.styleFun.call(data, null);
+      if (style == null) {
+        continue;
+      }
+
+      if (gridLayout != null) {
+        Offset offset = gridLayout.dataToPoint2(xAxisIndex, data.x, yAxisIndex, data.y);
+      } else if (calendarLayout != null) {
+        Rect rect = calendarLayout.dataToPoint(data.x.data, false);
+        style.drawRect(canvas, paint, rect);
+      }
+    }
+  }
+}

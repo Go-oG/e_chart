@@ -1,0 +1,4 @@
+enum OverFlow {
+  cut,
+  newLine;
+}
