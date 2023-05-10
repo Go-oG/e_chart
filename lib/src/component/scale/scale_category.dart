@@ -1,6 +1,6 @@
 
-import 'package:xchart/src/component/scale/scale_base.dart';
 import '../../model/dynamic_data.dart';
+import 'scale_base.dart';
 
 class CategoryScale extends BaseScale<String, num> {
   CategoryScale(super.domain, super.range, super.inverse);

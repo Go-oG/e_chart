@@ -1,6 +1,6 @@
 import 'dart:math' as m;
 import 'package:flutter/material.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 import '../../model/constans.dart';
 import '../../model/enums/align2.dart';
 import '../../model/tree_data.dart';
@@ -101,7 +101,7 @@ class SunburstLayout {
   }
 
   List<num> computeRadius(SunburstSeries series, num width, num height) {
-    double minSize = min([width, height])! * 0.5;
+    double minSize = min([width, height]) * 0.5;
     double minRadius = series.innerRadius.convert(minSize);
     double maxRadius = series.outerRadius.convert(minSize);
     return [minRadius, maxRadius, maxRadius - minRadius];

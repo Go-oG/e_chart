@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:xchart/src/ext/offset_ext.dart';
+import 'package:e_chart/src/ext/offset_ext.dart';
 
 import '../../model/text_position.dart';
 import '../../style/label.dart';

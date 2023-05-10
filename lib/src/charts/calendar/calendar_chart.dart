@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../core/view.dart';
 import 'calendar_series.dart';

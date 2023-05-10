@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/ext/text_style_ext.dart';
-
+import '../ext/text_style_ext.dart';
 import '../component/guideline/guide_line.dart';
 import '../model/enums/over_flow.dart';
 import '../model/text_position.dart';

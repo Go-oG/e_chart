@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:xchart/src/component/tooltip/tool_tip.dart';
 
+import '../../component/tooltip/tool_tip.dart';
 import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/line_style.dart';

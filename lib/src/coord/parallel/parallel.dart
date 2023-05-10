@@ -1,12 +1,11 @@
 import 'dart:ui';
 
-import 'package:xchart/src/coord/parallel/parallel_layout.dart';
-
 import '../../model/enums/direction.dart';
 import '../../model/string_number.dart';
 import '../coord_layout.dart';
 import '../rect_coord.dart';
 import 'parallel_axis.dart';
+import 'parallel_layout.dart';
 
 class Parallel extends RectCoordinate {
   final Direction direction;

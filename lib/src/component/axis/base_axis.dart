@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../functions.dart';
 import '../../model/dynamic_data.dart';

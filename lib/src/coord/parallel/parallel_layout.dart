@@ -1,11 +1,8 @@
 import 'dart:math';
 
+import 'package:e_chart/src/ext/offset_ext.dart';
+import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/coord/parallel/parallel.dart';
-import 'package:xchart/src/coord/parallel/parallel_axis.dart';
-import 'package:xchart/src/coord/parallel/parallel_child.dart';
-import 'package:xchart/src/ext/offset_ext.dart';
-import 'package:xchart/src/ext/paint_ext.dart';
 
 import '../../component/axis/base_axis.dart';
 import '../../component/axis/impl/base_axis_impl.dart';
@@ -14,6 +11,9 @@ import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
 import '../rect_coord_layout.dart';
 import 'parallel_axis_node.dart';
+import 'parallel.dart';
+import 'parallel_axis.dart';
+import 'parallel_child.dart';
 
 ///平行坐标系
 class ParallelLayout extends RectCoordLayout<Parallel> {

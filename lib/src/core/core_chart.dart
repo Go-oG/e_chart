@@ -155,9 +155,9 @@ class MultiRender extends ChangeNotifier implements CustomPainter, ViewParent {
       List<View> vl = [...context.renderList];
 
       //测量toolTip相关的
-      if (context.toolTipNode != null) {
+      //if (context.toolTipNode != null) {
         vl.add(context.toolTipNode);
-      }
+     // }
 
       for (var element in vl) {
         element.measure(size.width, size.height);

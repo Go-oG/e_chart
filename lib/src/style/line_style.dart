@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/component/shader/shader.dart' as sd;
-import 'package:xchart/src/ext/paint_ext.dart';
-import 'package:xchart/src/ext/path_ext.dart';
+import '../component/shader/shader.dart' as sd;
+import '../ext/paint_ext.dart';
+import '../ext/path_ext.dart';
 
 import '../model/enums/align2.dart';
 import '../shape/arc.dart';

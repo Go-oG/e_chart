@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';

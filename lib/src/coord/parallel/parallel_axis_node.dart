@@ -1,11 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:xchart/src/coord/parallel/parallel_axis.dart';
-
 import '../../component/axis/impl/line_axis_impl.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
+import 'parallel_axis.dart';
 
 class ParallelAxisImpl extends LineAxisImpl<ParallelAxis> {
   final Direction direction;

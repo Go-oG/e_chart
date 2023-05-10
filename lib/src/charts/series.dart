@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:xchart/src/model/enums/coordinate.dart';
 
 import '../animation/animator_props.dart';
 import '../component/tooltip/tool_tip.dart';
 import '../ext/int_ext.dart';
 import '../functions.dart';
+import '../model/enums/coordinate.dart';
 import '../model/string_number.dart';
 
 /// 图表的抽象表示

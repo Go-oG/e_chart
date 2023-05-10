@@ -1,4 +1,4 @@
-import 'package:xchart/src/ext/paint_ext.dart';
+import 'package:e_chart/src/ext/paint_ext.dart';
 
 import 'symbol.dart';
 import 'package:flutter/material.dart';

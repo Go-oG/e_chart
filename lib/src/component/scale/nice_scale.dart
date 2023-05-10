@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
 enum NiceType { n1, n2 }
 

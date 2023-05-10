@@ -1,14 +1,11 @@
 import 'dart:math' as m;
 import 'dart:ui';
 
-import 'package:xchart/src/component/axis/axis_line.dart';
-import 'package:xchart/src/component/axis/impl/line_axis_impl.dart';
-import 'package:xchart/src/ext/offset_ext.dart';
-import 'package:xchart/src/model/enums/direction.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/src/ext/offset_ext.dart';
 
-import '../../component/scale/scale_base.dart';
-import '../../model/dynamic_data.dart';
+import '../../component/index.dart';
+import '../../model/index.dart';
 import 'axis_grid.dart';
 import 'grid_child.dart';
 

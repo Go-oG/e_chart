@@ -1,17 +1,6 @@
-import 'dart:math';
-
+import 'dart:math' as m;
 import 'package:flutter/material.dart';
-import 'package:xchart/src/coord/circle_coord_layout.dart';
-
-import '../../component/axis/impl/arc_axis_impl.dart';
-import '../../component/axis/impl/line_axis_impl.dart';
-
-import '../../ext/offset_ext.dart';
-import '../../gesture/chart_gesture.dart';
-import '../../model/dynamic_data.dart';
-import 'axis_radius_node.dart';
-import 'polar.dart';
-import 'polar_child.dart';
+import '../../../e_chart.dart';
 
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
@@ -76,7 +65,7 @@ class PolarLayout extends CircleCoordLayout<Polar> {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    double size = min(parentWidth, parentHeight);
+    double size = m.min(parentWidth, parentHeight);
     size = props.radius.convert(size) * 2;
     return Size(size, size);
   }

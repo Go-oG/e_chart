@@ -1,6 +1,5 @@
 
-import 'package:xchart/src/model/dynamic_data.dart';
-
+import '../../model/dynamic_data.dart';
 import 'scale_base.dart';
 
 class LinearScale extends BaseScale<num, num> {

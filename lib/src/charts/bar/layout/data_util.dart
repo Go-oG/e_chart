@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
-import 'package:xchart/src/model/enums/chart_type.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
+import '../../../model/index.dart';
 import '../bar_series.dart';
 import 'group_node.dart';
 import 'single _node.dart';
@@ -49,7 +49,7 @@ List<GroupNode> filterNode(List<GroupNode> list, ChartType type) {
 
 ///返回list中type不在给定类型中的数据
 List<GroupNode> filterNodeNot(List<GroupNode> list, Iterable<ChartType> notInclude) {
-  Set<ChartType> sets = Set.from(notInclude);
+//  Set<ChartType> sets = Set.from(notInclude);
   List<GroupNode> nodeList = [];
   // for (var ele in list) {
   //   if (!sets.contains(ele.data.type)) {
@@ -95,7 +95,7 @@ GlobalValue collectGlobalValue(List<GroupData> list) {
   /// group
   for (var ele in list) {
     List<num> minAndMax = extremes<SingleData>(ele.data, (p0) => p0.up);
-    num aveValue = aveBuy<SingleData>(ele.data, (p0) => p0.up);
+    num aveValue = aveBy<SingleData>(ele.data, (p0) => p0.up);
     num median = mediumBy<SingleData>(ele.data, (p0) => p0.up);
     globalValue.groupValueMap[ele.id] = ValueInfo(minAndMax[0], minAndMax[1], aveValue, median);
   }
@@ -133,7 +133,7 @@ GlobalValue collectGlobalValue(List<GroupData> list) {
   }
   stackMap.forEach((key, value) {
     List<num> minAndMax = extremes<num>(value, (p0) => p0);
-    num aveValue = aveBuy<num>(value, (p0) => p0);
+    num aveValue = aveBy<num>(value, (p0) => p0);
     num median = mediumBy<num>(value, (p0) => p0);
     globalValue.stackValueMap[key] = ValueInfo(minAndMax[0], minAndMax[1], aveValue, median);
   });

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:xchart/src/charts/point/point_series.dart';
-import 'package:xchart/src/core/view.dart';
 
 import '../../coord/polar/polar_child.dart';
 import '../../coord/polar/polar_layout.dart';
 import '../../model/dynamic_data.dart';
+import '../../../src/core/index.dart';
+import '../index.dart';
 
 class PointView extends View with PolarChild {
+
   final PointSeries series;
 
   PointView(this.series);

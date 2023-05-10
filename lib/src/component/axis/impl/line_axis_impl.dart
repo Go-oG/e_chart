@@ -1,6 +1,7 @@
 
+import 'package:e_chart/src/ext/offset_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/ext/offset_ext.dart';
+
 import '../../../model/dynamic_data.dart';
 import '../../../model/enums/align2.dart';
 import '../../../model/text_position.dart';

@@ -1,8 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
-import 'package:xchart/src/model/enums/chart_type.dart';
 
+
+import '../../../model/enums/chart_type.dart';
 import 'single _node.dart';
 import 'value_info.dart';
 

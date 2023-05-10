@@ -1,4 +1,4 @@
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
 import '../model/enums/select_mode.dart';
 

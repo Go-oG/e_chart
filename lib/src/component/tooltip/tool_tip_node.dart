@@ -1,10 +1,6 @@
 import 'dart:ui';
+import '../../../e_chart.dart';
 
-import 'package:xchart/src/component/tooltip/tool_tip.dart';
-import 'package:xchart/src/component/tooltip/tool_tip_listener.dart';
-import 'package:xchart/src/gesture/chart_gesture.dart';
-
-import '../../core/view.dart';
 
 ///整个图表只有一个
 class ToolTipNode extends View {

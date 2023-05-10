@@ -1,7 +1,7 @@
+import 'package:e_chart/src/ext/offset_ext.dart';
+import 'package:e_chart/src/ext/tree_node_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/ext/offset_ext.dart';
-import 'package:xchart/src/ext/tree_node_ext.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../animation/animator_props.dart';
 import '../../animation/chart_tween.dart';

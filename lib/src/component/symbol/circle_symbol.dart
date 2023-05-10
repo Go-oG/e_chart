@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/ext/paint_ext.dart';
+import 'package:e_chart/src/ext/paint_ext.dart';
 import '../../model/string_number.dart';
 import 'symbol.dart';
 

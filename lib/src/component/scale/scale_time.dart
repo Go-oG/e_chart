@@ -1,9 +1,10 @@
-import 'package:xchart/src/component/scale/scale_base.dart';
-import 'package:xutil/xutil.dart';
+
+import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../model/dynamic_data.dart';
 import '../axis/base_axis.dart';
 import 'scale_linear.dart';
+import 'scale_base.dart';
 
 class TimeScale extends BaseScale<DateTime, num> {
   final TimeSplitType splitType;

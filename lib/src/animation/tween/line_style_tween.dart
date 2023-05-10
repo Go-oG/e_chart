@@ -1,7 +1,6 @@
-import 'package:xchart/src/component/shader/shader.dart' as sd;
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui show lerpDouble;
-
+import '../../../src/component/shader/shader.dart' as sd;
 import '../../style/line_style.dart';
 import '../chart_tween.dart';
 import 'box_shadow_tween.dart';

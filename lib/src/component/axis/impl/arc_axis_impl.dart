@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:xchart/src/coord/polar/axis_angle.dart';
-import 'package:xchart/src/model/dynamic_data.dart';
 
+import '../../../coord/index.dart';
 import '../../../ext/offset_ext.dart';
+import '../../../model/dynamic_data.dart';
 import '../../../model/enums/align2.dart';
 import '../../../model/text_position.dart';
 import '../../../style/line_style.dart';

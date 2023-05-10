@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:xchart/src/style/area_style.dart';
 
 import '../../../action/user_action.dart';
+import '../../../style/area_style.dart';
 import '../bar_series.dart';
 
 /// 不可再分的最小绘制单元，

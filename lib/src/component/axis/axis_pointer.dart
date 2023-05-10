@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:xchart/src/style/label.dart';
 
-import '../../style/line_style.dart';
+import '../../style/index.dart';
 
 enum AxisPointerType {
   //直线指示器

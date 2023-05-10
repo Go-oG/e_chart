@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
+import 'package:vector_math/vector_math.dart';
 
 import '../model/constans.dart';
 
@@ -123,6 +124,7 @@ extension OffsetExt on Offset {
   }
 
   /// 判断点是否在一个扇形上
+  /// 向量夹角公式
   bool inSector(
     num innerRadius,
     num outerRadius,
@@ -138,29 +140,24 @@ extension OffsetExt on Offset {
       return true;
     }
 
-    double angle = offsetAngle(center); //0-360
-    num sa = startAngle;
-    num ea = startAngle + sweepAngle;
+    Offset oA = circlePoint(d1, startAngle, center);
+    Vector2 vectorA = Vector2(oA.dx - center.dx, oA.dy - center.dy);
+    Offset oB = circlePoint(d1, startAngle + sweepAngle, center);
+    Vector2 vectorB = Vector2(oB.dx - center.dx, oB.dy - center.dy);
+    Vector2 vectorP = Vector2(dx - center.dx, dy - center.dy);
 
-    num angleTmp = sa;
-    if (ea < sa) {
-      angleTmp = ea;
+    if (vectorP.x == 0 && vectorP.y == 0) {
+      return true;
     }
 
-    angleTmp %= 360;
-    if (angleTmp < 0) {
-      angleTmp += 360;
+    ///精度(4位小数)
+    var ab = (vectorA.angleToSigned(vectorB)*1000).toInt();
+    var ap = (vectorA.angleToSigned(vectorP)*1000).toInt();
+    bool result = ap <= ab;
+    if (ap < 0 && ab < 0) {
+      result = ap >= ab;
     }
-
-    sweepAngle = sweepAngle.abs();
-    sweepAngle %= 360;
-
-    sa = angleTmp;
-    ea = angleTmp + sweepAngle;
-    if (ea <= 360) {
-      return angle > sa && (angle - sa) <= (ea - sa);
-    }
-    return (angle >= sa && angle <= 360) || (angle >= 0 && angle <= (ea - 360));
+    return result;
   }
 
   /// 给定一个点的坐标和圆心坐标求，求点的偏移角度

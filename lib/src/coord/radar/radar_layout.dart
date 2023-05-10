@@ -1,7 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/coord/radar/radar_axis.dart';
-import 'package:xchart/src/coord/radar/radar_child.dart';
 import '../../component/axis/axis_line.dart';
 import '../../component/axis/impl/line_axis_impl.dart';
 import '../../ext/offset_ext.dart';
@@ -16,6 +14,8 @@ import '../../utils/align_util.dart';
 import '../circle_coord_layout.dart';
 import 'radar.dart';
 import 'radar_axis_node.dart';
+import 'radar_axis.dart';
+import 'radar_child.dart';
 
 ///雷达图坐标系
 class RadarLayout extends CircleCoordLayout<Radar> {

@@ -1,5 +1,6 @@
 import '../chart_tween.dart';
-import 'package:xchart/src/component/shader/shader.dart';
+import '../../../src/component/shader/shader.dart';
+
 class ChartShaderTween extends ChartTween<Shader> {
   ChartShaderTween(super.begin, super.end);
 

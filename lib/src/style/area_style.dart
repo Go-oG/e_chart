@@ -1,8 +1,9 @@
 import 'dart:ui';
+import 'package:e_chart/src/ext/paint_ext.dart';
+import 'package:e_chart/src/ext/path_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:xchart/src/component/shader/shader.dart' as sd;
-import 'package:xchart/src/ext/paint_ext.dart';
-import 'package:xchart/src/ext/path_ext.dart';
+import '../component/shader/shader.dart' as sd;
+
 import '../shape/line.dart';
 import 'line_style.dart';
 

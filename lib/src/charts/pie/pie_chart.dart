@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:xchart/src/ext/offset_ext.dart';
+import 'package:e_chart/src/ext/offset_ext.dart';
 
 import '../../action/hover_action.dart';
 import '../../animation/animator_props.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xutil/xutil.dart';
+import 'package:chart_xutil/chart_xutil.dart';
 
 ///动态数据(只接受字符串 数字 时间类型的数据)
 class DynamicData {
