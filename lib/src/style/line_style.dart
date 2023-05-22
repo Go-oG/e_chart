@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
@@ -16,7 +15,7 @@ class LineStyle {
   final StrokeCap cap;
   final StrokeJoin join;
   final List<double> dash;
-  final BoxShadow? shadow;
+  final List<BoxShadow> shadow;
   final sd.Shader? shader;
   final bool smooth;
 
@@ -30,42 +29,26 @@ class LineStyle {
     this.cap = StrokeCap.butt,
     this.join = StrokeJoin.miter,
     this.dash = const [],
-    this.shadow,
+    this.shadow=const [],
     this.shader,
     this.smooth = false,
     this.align = Align2.center,
   });
 
-  void fillPaint(Paint paint, {Rect? rect, double? maxStrokeWidth, double? colorOP}) {
+  void fillPaint(Paint paint, {Rect? rect}) {
     paint.reset();
-    paint.color = colorOP == null ? color : color.withOpacity(colorOP);
+    paint.color = color;
     paint.strokeCap = cap;
     paint.strokeJoin = join;
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = width;
-    if (maxStrokeWidth != null && maxStrokeWidth > 0) {
-      if (width > maxStrokeWidth) {
-        paint.strokeWidth = maxStrokeWidth;
-      }
-    }
-
     if (shader != null && rect != null) {
-      paint.shader = shader!.toShader(rect, colorOP);
-    }
-    if (shadow != null) {
-      paint.color = shadow!.color;
-      paint.maskFilter = MaskFilter.blur(shadow!.blurStyle, shadow!.blurSigma);
+      paint.shader = shader!.toShader(rect, null);
     }
   }
 
-  void drawPolygon(
-    Canvas canvas,
-    Paint paint,
-    List<Offset> points, {
-    bool close = false,
-    bool refillPaint = true,
-    double? maxWidth,
-  }) {
+  ///绘制多边形(或者线段)
+  void drawPolygon(Canvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
     if (points.isEmpty) {
       return;
     }
@@ -73,47 +56,9 @@ class LineStyle {
       canvas.drawPoints(PointMode.points, points, paint);
       return;
     }
-
-    Line line = Line(points,smoothRatio:smooth ? 0.4 : null,dashList: dash );
-    Path path = line.path(close);
-
-    if (refillPaint) {
-      Rect? rect;
-      if (shader != null) {
-        if (close) {
-          rect = path.getBounds();
-        } else {
-          double left = double.infinity;
-          double top = double.infinity;
-          double right = double.negativeInfinity;
-          double bottom = double.negativeInfinity;
-          for (var element in points) {
-            left = min(element.dx, left);
-            right = max(element.dx, right);
-            top = min(element.dy, top);
-            bottom = max(element.dy, bottom);
-          }
-        }
-      }
-      fillPaint(paint, rect: rect, maxStrokeWidth: maxWidth);
-    }
-
-    if (shadow != null) {
-      path.drawShadows(canvas, Paint(), path, [shadow!]);
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  void drawPath(Canvas canvas, Paint paint, Path path, {bool drawDash = false, double? maxWidth, double? colorOP}) {
-    if (shadow != null) {
-      path.drawShadows(canvas, paint, path, [shadow!]);
-    }
-    fillPaint(paint, maxStrokeWidth: maxWidth, colorOP: colorOP);
-    if (drawDash && dash.isNotEmpty) {
-      canvas.drawPath(dashPath(path, dash), paint);
-    } else {
-      canvas.drawPath(path, paint);
-    }
+    Line line = Line(points, smoothRatio: smooth ? 0.4 : null, dashList: dash);
+    Path path = line.toPath(close);
+    drawPath(canvas, paint, path);
   }
 
   ///绘制一个圆弧部分(也可以绘制圆)
@@ -134,11 +79,20 @@ class LineStyle {
     }
     Arc arc = Arc(outRadius: r, startAngle: startAngle, sweepAngle: sweepAngle, center: center);
     Path path = arc.arcOpen();
-    if (shadow != null) {
-      path.drawShadows(canvas, paint, path, [shadow!]);
+    drawPath(canvas, paint, path, drawDash: true);
+  }
+
+  void drawPath(Canvas canvas, Paint paint, Path path, {bool drawDash = false}) {
+    if (shadow.isNotEmpty) {
+      path.drawShadows(canvas, path, shadow);
     }
-    fillPaint(paint, rect: path.getBounds());
-    if (dash.isNotEmpty) {
+
+    Rect? rect;
+    if (shader != null) {
+      rect = path.getBounds();
+    }
+    fillPaint(paint, rect: rect);
+    if (drawDash && dash.isNotEmpty) {
       canvas.drawPath(dashPath(path, dash), paint);
     } else {
       canvas.drawPath(path, paint);

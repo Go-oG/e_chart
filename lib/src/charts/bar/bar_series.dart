@@ -5,20 +5,20 @@ import 'package:uuid/uuid.dart';
 import '../../component/mark/mark_line.dart';
 import '../../component/mark/mark_point.dart';
 import '../../functions.dart';
-import '../../model/enums/align.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/chart_type.dart';
 import '../../model/enums/coordinate.dart';
 import '../../model/enums/direction.dart';
+import '../../model/enums/position.dart';
 import '../../model/enums/stack_strategy.dart';
 import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
-import '../../style/symbol_style.dart';
+import '../../style/symbol/symbol.dart';
 import '../series.dart';
 
 class BarSeries extends RectSeries {
-  List<GroupData> data;
+  List<BarGroupData> data;
   Direction direction; // 布局方向
   SNumber corner; // 圆角只有在 bar时才有效
   SNumber groupGap; // Group组的间隔
@@ -32,33 +32,33 @@ class BarSeries extends RectSeries {
   LinkageStyle linkageStyle;
 
   /// 主样式 对于绘制Line 使用其border 属性
-  StyleFun2<SingleData, GroupData, AreaStyle> styleFun;
+  StyleFun2<BarSingleData, BarGroupData, AreaStyle> styleFun;
 
   /// 只会在绘制直线组时调用该方法，返回true 表示是阶梯折线图
-  StyleFun<GroupData, bool>? stepLineFun;
+  StyleFun<BarGroupData, bool>? stepLineFun;
 
   ///绘制对齐
-  StyleFun<GroupData, Align2>? alignFun;
+  StyleFun<BarGroupData, Align2>? alignFun;
 
   /// 符号样式
-  StyleFun<SingleData, SymbolStyle>? symbolStyleFun;
+  StyleFun<BarSingleData, ChartSymbol>? symbolFun;
 
   /// 背景样式(只在某些形状下有效)
-  StyleFun<SingleData, AreaStyle>? backgroundStyleFun;
+  StyleFun<BarSingleData, AreaStyle>? backgroundStyleFun;
 
   /// 标签转换
-  ConvertFun<SingleData, String>? labelFun;
+  ConvertFun<BarSingleData, String>? labelFun;
 
   /// 标签样式
-  StyleFun<SingleData, LabelStyle>? labelStyleFun;
+  StyleFun<BarSingleData, LabelStyle>? labelStyleFun;
 
   /// 标签对齐
-  StyleFun<SingleData, ChartAlign>? labelAlignFun;
+  StyleFun<BarSingleData, Position2>? labelAlignFun;
 
   /// 标记点、线相关的
-  StyleFun<GroupData, MarkPoint>? markPointFun;
+  StyleFun<BarGroupData, MarkPoint>? markPointFun;
 
-  StyleFun<GroupData, MarkLine>? markLineFun;
+  StyleFun<BarGroupData, MarkLine>? markLineFun;
 
   BarSeries(
     this.data, {
@@ -75,7 +75,7 @@ class BarSeries extends RectSeries {
     required this.styleFun,
     this.stepLineFun,
     this.alignFun,
-    this.symbolStyleFun,
+    this.symbolFun,
     this.labelFun,
     this.labelStyleFun,
     this.labelAlignFun,
@@ -105,9 +105,9 @@ class BarSeries extends RectSeries {
 }
 
 ///组数据
-class GroupData {
+class BarGroupData {
   final ChartType type;
-  final List<SingleData> data;
+  final List<BarSingleData> data;
   late final String id;
 
   ///控制柱状图的大小（具体的含义取决于布局的方向）
@@ -120,7 +120,7 @@ class GroupData {
   String? _stackId;
   StackStrategy strategy;
 
-  GroupData(
+  BarGroupData(
     this.type,
     this.data, {
     String? id,
@@ -150,7 +150,7 @@ class GroupData {
 
   @override
   bool operator ==(Object other) {
-    return other is GroupData && other.id == id;
+    return other is BarGroupData && other.id == id;
   }
 
   bool get isStack {
@@ -169,7 +169,7 @@ class GroupData {
 }
 
 ///不可再分的数据点
-class SingleData {
+class BarSingleData {
   late final num up;
   late final num down;
   final dynamic x;
@@ -177,7 +177,7 @@ class SingleData {
   ///只能是数字或者字符串
   late final String id;
 
-  SingleData(this.down, this.up, {String? id, this.x}) {
+  BarSingleData(this.down, this.up, {String? id, this.x}) {
     if (id != null && id.isNotEmpty) {
       this.id = id;
     } else {
@@ -195,7 +195,7 @@ class SingleData {
     }
   }
 
-  SingleData.only(num data, {String? id, this.x}) {
+  BarSingleData.only(num data, {String? id, this.x}) {
     if (data > 0) {
       up = data;
       down = 0;
@@ -231,7 +231,7 @@ class SingleData {
 
   @override
   bool operator ==(Object other) {
-    return other is SingleData && other.id == id;
+    return other is BarSingleData && other.id == id;
   }
 
   num get diff => up - down;

@@ -115,8 +115,8 @@ class PolarLayout extends CircleCoordLayout<Polar> {
   void onDraw(Canvas canvas) {
     canvas.save();
     canvas.translate(width / 2, height / 2);
-    _angleAxis.draw(canvas, paint);
-    _radiusAxis.draw(canvas, paint);
+    _angleAxis.draw(canvas, mPaint);
+    _radiusAxis.draw(canvas, mPaint);
     canvas.restore();
   }
 
@@ -139,12 +139,12 @@ class PolarLayout extends CircleCoordLayout<Polar> {
     if (r > width / 2) {
       r = width / 2;
     }
-    props.angleAxis.tipLineStyle?.drawArc(canvas, paint, r, 0, 360);
-    props.radiusAxis.tipLineStyle?.drawPolygon(canvas, paint, [Offset.zero, circlePoint(width / 2, angle)]);
+    props.angleAxis.tipLineStyle?.drawArc(canvas, mPaint, r, 0, 360);
+    props.radiusAxis.tipLineStyle?.drawPolygon(canvas, mPaint, [Offset.zero, circlePoint(width / 2, angle)]);
   }
 
   @override
-  Offset dataToPoint(dynamic angleData, dynamic radiusData) {
+  Offset dataToPoint(DynamicData angleData, DynamicData radiusData) {
     num angle = _angleAxis.dataToAngle(angleData);
     num r = _radiusAxis.dataToRadius(radiusData);
     return circlePoint(r, angle);

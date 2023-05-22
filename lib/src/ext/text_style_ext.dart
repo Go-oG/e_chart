@@ -12,7 +12,7 @@ extension TextStyleExtension on TextStyle {
   }) {
     return TextPainter(
       text: TextSpan(text: text, style: this),
-      textAlign: TextAlign.center,
+      textAlign: textAlign,
       textDirection: textDirection,
       textScaleFactor: textScaleFactor,
       maxLines: maxLines,

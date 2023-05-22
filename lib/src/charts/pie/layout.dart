@@ -1,6 +1,4 @@
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../../ext/offset_ext.dart';
 import '../../model/enums/circle_align.dart';
@@ -144,15 +142,41 @@ class PieNode {
   final double minRadius;
   final double canvasWidth;
   final double canvasHeight;
+  final num padAngle;
 
   PieProps cur = PieProps();
   PieProps start = PieProps();
   PieProps end = PieProps();
 
-  PieNode(this.data, this.label, this.labelStyle, this.minRadius, this.maxRadius, this.canvasWidth, this.canvasHeight);
+  PieNode(
+    this.data,
+    this.label,
+    this.labelStyle,
+    this.minRadius,
+    this.maxRadius,
+    this.canvasWidth,
+    this.canvasHeight,
+    this.padAngle,
+  );
 
-  static PieNode fromPieData(PieData data, PieSeries series, double minRadius, double maxRadius, double canvasWidth, double canvasHeight) {
-    return PieNode(data, data.label, series.labelStyleFun?.call(data, null), minRadius, maxRadius, canvasWidth, canvasHeight);
+  static PieNode fromPieData(
+    PieData data,
+    PieSeries series,
+    double minRadius,
+    double maxRadius,
+    double canvasWidth,
+    double canvasHeight,
+  ) {
+    return PieNode(
+      data,
+      data.label,
+      series.labelStyleFun?.call(data, null),
+      minRadius,
+      maxRadius,
+      canvasWidth,
+      canvasHeight,
+      series.angleGap,
+    );
   }
 
   Path toPath() {
@@ -162,9 +186,9 @@ class PieNode {
       startAngle: cur.startAngle,
       sweepAngle: cur.sweepAngle,
       cornerRadius: cur.corner,
-      padAngle: cur.gapAngle,
+      padAngle: padAngle,
     );
-    return arc.path(true);
+    return arc.toPath(true);
   }
 
   ///计算文字的位置
@@ -188,14 +212,14 @@ class PieNode {
       num expand = labelStyle!.guideLine.length;
       double centerAngle = cur.startAngle + cur.sweepAngle / 2;
 
-      centerAngle%=360;
-      if(centerAngle<0){
-        centerAngle+=360;
+      centerAngle %= 360;
+      if (centerAngle < 0) {
+        centerAngle += 360;
       }
 
       Offset offset = circlePoint(cur.or + expand, centerAngle);
       Alignment align = toAlignment(centerAngle, false);
-      if (centerAngle >= 90&&centerAngle<=270) {
+      if (centerAngle >= 90 && centerAngle <= 270) {
         offset = offset.translate(-(expand + labelStyle!.lineMargin), 0);
         align = Alignment.centerRight;
       } else {
@@ -214,7 +238,6 @@ class PieProps {
   double or = 0; //外圆最大半径(<=0时为圆)
   double startAngle = 0; //开始角度
   double sweepAngle = 0; //扫过的角度(<=0时为圆)
-  num gapAngle=0;
   bool select = false;
 
   PieProps clone() {

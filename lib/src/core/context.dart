@@ -4,8 +4,9 @@ import '../chart.dart';
 import '../charts/series.dart';
 import '../component/axis/base_axis.dart';
 import '../component/legend/layout.dart';
-import '../component/tooltip/tool_tip_listener.dart';
-import '../component/tooltip/tool_tip_node.dart';
+import '../component/title/title_view.dart';
+import '../component/tooltip/context_menu_builder.dart';
+import '../component/tooltip/tool_tip_view.dart';
 import '../coord/calendar/calendar.dart';
 import '../coord/calendar/calendar_child.dart';
 import '../coord/calendar/calendar_layout.dart';
@@ -23,6 +24,7 @@ import '../coord/polar/polar_layout.dart';
 import '../coord/radar/radar_child.dart';
 import '../coord/radar/radar_layout.dart';
 import '../coord/single/single_layout.dart';
+import '../gesture/chart_gesture.dart';
 import '../gesture/gesture_dispatcher.dart';
 import '../model/enums/coordinate.dart';
 import '../series_factory.dart';
@@ -31,49 +33,61 @@ import 'view_group.dart';
 
 ///存放整个图表的运行相关的数据
 class Context {
-  late final ViewParent root;
+  final ViewParent root;
   final ChartConfig config;
   final TickerProvider tickerProvider;
 
-  late final GestureDispatcher gestureDispatcher;
+  late final GestureDispatcher _gestureDispatcher;
 
-  ///存放普通的视图
-  final Map<ChartSeries, View> _seriesViewMap = {};
+  GestureDispatcher get gestureDispatcher => _gestureDispatcher;
 
   ///坐标轴
   final Map<BaseAxis, View> _axisMap = {};
 
-  ///存放坐标系
-  final Map<Coordinate, CoordinateLayout> _coordinateViewMap = {};
+  ///坐标系
+  final Map<Coordinate, CoordinateLayout> _coordMap = {};
+
+  ///存放普通的视图
+  final Map<ChartSeries, View> _seriesMap = {};
 
   /// 存放渲染的布局组件
-  final List<CoordinateLayout> _renderViewList = [];
+  final List<CoordinateLayout> _renderList = [];
 
-  ///Legend
-  final LegendNode _legendNode = LegendNode();
+  List<CoordinateLayout> get renderList => _renderList;
 
-  ///ToolTip
-  final ToolTipNode _toolTipNode = ToolTipNode();
+  ///Title(全局只会存在一个)
+  TitleView? _title;
+  TitleView? get title => _title;
 
+  ///图例(全局一个实例)
+  LegendViewGroup? _legend;
+
+  LegendViewGroup? get legend => _legend;
+
+  ///整个图表只有一个
+  ToolTipView? _toolTip;
+
+  ToolTipView? get toolTip => _toolTip;
+
+  //GridLayout
   late GridInner _innerGrid;
 
-  Context(this.config, this.tickerProvider, GestureDispatcher? dispatcher, ViewParent rootViewGroup) {
-    root = rootViewGroup;
-    gestureDispatcher = dispatcher ?? GestureDispatcher();
+  Context(this.root, this.config, this.tickerProvider, [GestureDispatcher? dispatcher]) {
+    _gestureDispatcher = dispatcher ?? GestureDispatcher();
   }
 
   Context copy({
     ChartConfig? config,
     TickerProvider? tickerProvider,
     Size? canvasSize,
-    ViewParent? rootViewGroup,
+    ViewParent? root,
     GestureDispatcher? dispatcher,
   }) {
     return Context(
+      root ?? this.root,
       config ?? this.config,
       tickerProvider ?? this.tickerProvider,
-      dispatcher,
-      rootViewGroup ?? root,
+      dispatcher ?? _gestureDispatcher,
     );
   }
 
@@ -86,19 +100,19 @@ class Context {
 
   void destroy() {
     _detach();
-    _seriesViewMap.clear();
+    _seriesMap.clear();
     _axisMap.clear();
-    _coordinateViewMap.clear();
-    _renderViewList.clear();
-    _legendNode.detach();
-    _toolTipNode.detach();
+    _coordMap.clear();
+    _renderList.clear();
+    _legend?.detach();
+    _legend = null;
   }
 
   void _initChart() {
-    _seriesViewMap.clear();
-    _coordinateViewMap.clear();
+    _seriesMap.clear();
+    _coordMap.clear();
     _axisMap.clear();
-    _renderViewList.clear();
+    _renderList.clear();
 
     ///初始化Series
     for (var series in config.series) {
@@ -107,7 +121,7 @@ class Context {
         throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
       }
       view.bindSeries(series);
-      _seriesViewMap[series] = view;
+      _seriesMap[series] = view;
     }
 
     ///组合坐标系视图
@@ -119,7 +133,7 @@ class Context {
     ];
 
     for (var ele in layoutList) {
-      _coordinateViewMap[ele] = ele.toLayout();
+      _coordMap[ele] = ele.toLayout();
     }
 
     Grid grid = config.grid;
@@ -138,29 +152,29 @@ class Context {
     );
 
     GridLayout gridLayout = GridLayout(_innerGrid);
-    _coordinateViewMap[_innerGrid] = gridLayout;
+    _coordMap[_innerGrid] = gridLayout;
 
     ///将某些特定的Series和坐标系绑定
     Set<CoordinateLayout> viewList = {};
     for (var series in config.series) {
-      View view = _seriesViewMap[series]!;
-      CoordinateLayout? layout = _getLayout(view, series);
+      View view = _seriesMap[series]!;
+      CoordinateLayout? layout = _findCoordLayout(view, series);
       layout ??= SingleLayout();
       layout.addView(view);
       viewList.add(layout);
     }
-    _renderViewList.addAll(viewList);
+    _renderList.addAll(viewList);
   }
 
   void _initComponent() {
     if (config.legend != null) {
-      _legendNode.legend = config.legend!;
+      _legend = LegendViewGroup(config.legend!);
     }
   }
 
   void _initTitle() {}
 
-  CoordinateLayout? _getLayout(View view, ChartSeries series) {
+  CoordinateLayout? _findCoordLayout(View view, ChartSeries series) {
     if (series.coordSystem != null) {
       var coord = series.coordSystem!;
       if (coord == CoordSystem.grid) {
@@ -195,24 +209,24 @@ class Context {
   }
 
   void _attach() {
-    _legendNode.attach(this, root);
-    _toolTipNode.attach(this, root);
-    for (var element in _renderViewList) {
+    _legend?.attach(this, root);
+    for (var element in _renderList) {
       element.attach(this, root);
     }
   }
 
   void _detach() {
-    _legendNode.detach();
-    _toolTipNode.detach();
-    for (var element in _renderViewList) {
+    _legend?.detach();
+    _gestureDispatcher.dispose();
+    for (var element in _renderList) {
       element.unBindSeries();
       element.detach();
     }
   }
 
+  /// 坐标系查找相关函数
   GridLayout findGridCoord() {
-    return _findCoordInner(_innerGrid) as GridLayout;
+    return _coordMap[_innerGrid] as GridLayout;
   }
 
   PolarLayout findPolarCoord([int polarIndex = 0]) {
@@ -222,7 +236,7 @@ class Context {
     if (config.polarList.isEmpty) {
       throw FlutterError('暂无Polar坐标系');
     }
-    return _findCoordInner(config.polarList[polarIndex]) as PolarLayout;
+    return _coordMap[config.polarList[polarIndex]]! as PolarLayout;
   }
 
   RadarLayout findRadarCoord([int radarIndex = 0]) {
@@ -232,8 +246,7 @@ class Context {
     if (config.radarList.isEmpty) {
       throw FlutterError('暂无Radar坐标系');
     }
-
-    return _findCoordInner(config.radarList[radarIndex]) as RadarLayout;
+    return _coordMap[config.radarList[radarIndex]]! as RadarLayout;
   }
 
   ParallelLayout findParallelCoord([int parallelIndex = 0]) {
@@ -245,9 +258,7 @@ class Context {
       throw FlutterError('当前未配置Parallel 坐标系无法查找');
     }
     Parallel parallel = config.parallelList[index];
-
-    CoordinateLayout layout = _findCoordInner(parallel);
-    return layout as ParallelLayout;
+    return _coordMap[parallel]! as ParallelLayout;
   }
 
   CalendarLayout findCalendarCoord([int calendarIndex = 0]) {
@@ -259,25 +270,24 @@ class Context {
       throw FlutterError('当前未配置Calendar 坐标系无法查找');
     }
     Calendar calendar = config.calendarList[index];
-    return _findCoordInner(calendar) as CalendarLayout;
+    return _coordMap[calendar]! as CalendarLayout;
   }
 
-  ///给定坐标系返回坐标系视图
-  CoordinateLayout _findCoordInner(Coordinate coordinate) {
-    return _coordinateViewMap[coordinate]!;
+  void addGesture(ChartGesture gesture) {
+    _gestureDispatcher.addGesture(gesture);
   }
 
-  ///返回渲染的View节点
-  List<CoordinateLayout> get renderList => _renderViewList;
-
-  ///整个图标最多只有一个
-  ToolTipNode get toolTipNode => _toolTipNode;
-
-  void registerToolTip(ToolTipListener listener) {
-    _toolTipNode.add(listener);
+  void removeGesture(ChartGesture gesture) {
+    _gestureDispatcher.removeGesture(gesture);
   }
 
-  void unRegisterToolTip(ToolTipListener listener) {
-    _toolTipNode.remove(listener);
+  void setToolTip(ToolTipBuilder builder) {
+    _toolTip?.detach();
+    _toolTip = ToolTipView(builder);
+  }
+
+  void unRegisterToolTip() {
+    _toolTip?.detach();
+    _toolTip = null;
   }
 }

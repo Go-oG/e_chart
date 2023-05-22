@@ -43,7 +43,7 @@ class ParallelDataLine {
   ParallelDataLine(this.group, this.offsetList, this.style) {
     if (style != null && offsetList.length >= 2) {
       Line line=Line(offsetList,dashList: style!.dash,smoothRatio: style!.smooth ? 0.2 : null);
-      path =line.path(false);
+      path =line.toPath(false);
     }
   }
 }

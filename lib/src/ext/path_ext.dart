@@ -1,12 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'paint_ext.dart';
 import 'package:flutter/material.dart';
 
 extension PathExt on Path {
-  void drawShadows(Canvas canvas,Paint paint, Path path, List<BoxShadow> shadows) {
-    paint.reset();
+  void drawShadows(Canvas canvas, Path path, List<BoxShadow> shadows) {
     for (final BoxShadow shadow in shadows) {
       final Paint shadowPainter = shadow.toPaint();
       if (shadow.spreadRadius == 0) {

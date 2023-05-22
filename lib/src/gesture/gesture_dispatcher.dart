@@ -19,13 +19,20 @@ class GestureDispatcher {
     _gestureNodeSet.remove(gesture);
   }
 
+  void dispose() {
+    for (ChartGesture gesture in _gestureNodeSet) {
+      gesture.clear();
+    }
+    _gestureNodeSet.clear();
+  }
+
   ///=========鼠标手势==========================
   final Set<ChartGesture> _hoverNodeSet = {};
 
   void onHoverStart(PointerEnterEvent event) {
     // debugPrint('onHoverStart');
     _hoverNodeSet.clear();
-    NormalEvent motionEvent = NormalEvent(event.localPosition, null);
+    NormalEvent motionEvent = NormalEvent(event.localPosition);
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
         continue;
@@ -36,9 +43,9 @@ class GestureDispatcher {
   }
 
   void onHoverMove(PointerHoverEvent event) {
-    NormalEvent motionEvent = NormalEvent(event.localPosition,  null);
-    NormalEvent se = NormalEvent(event.localPosition,  null);
-    NormalEvent ee = NormalEvent(event.localPosition,  null);
+    NormalEvent motionEvent = NormalEvent(event.localPosition);
+    NormalEvent se = NormalEvent(event.localPosition);
+    NormalEvent ee = NormalEvent(event.localPosition);
     Set<ChartGesture> removeSet = {};
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
@@ -59,7 +66,7 @@ class GestureDispatcher {
 
   void onHoverEnd(PointerExitEvent event) {
     // debugPrint('onHoverEnd');
-    NormalEvent motionEvent = NormalEvent(event.localPosition,  null);
+    NormalEvent motionEvent = NormalEvent(event.localPosition);
     for (var ele in _hoverNodeSet) {
       ele.hoverEnd?.call(motionEvent);
     }
@@ -71,7 +78,7 @@ class GestureDispatcher {
   void onTapDown(TapDownDetails details) {
     // debugPrint('onTapDown');
     _tapNodeSet.clear();
-    NormalEvent motionEvent = NormalEvent(details.localPosition,  null);
+    NormalEvent motionEvent = NormalEvent(details.localPosition);
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
         continue;
@@ -84,7 +91,7 @@ class GestureDispatcher {
   void onTapUp(TapUpDetails details) {
     // debugPrint('onTapUp');
     Set<ChartGesture> removeSet = {};
-    NormalEvent motionEvent = NormalEvent(details.localPosition, null);
+    NormalEvent motionEvent = NormalEvent(details.localPosition);
     for (var ele in _tapNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
         removeSet.add(ele);
@@ -115,7 +122,7 @@ class GestureDispatcher {
   void onDoubleTapDown(TapDownDetails details) {
     // debugPrint('onDoubleTapDown');
     _doubleTapNodeSet.clear();
-    NormalEvent motionEvent = NormalEvent(details.localPosition, null);
+    NormalEvent motionEvent = NormalEvent(details.localPosition);
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
         continue;
@@ -127,7 +134,7 @@ class GestureDispatcher {
 
   void onDoubleTapUp(TapUpDetails details) {
     // debugPrint('onDoubleTapUp');
-    NormalEvent motionEvent = NormalEvent(details.localPosition,  null);
+    NormalEvent motionEvent = NormalEvent(details.localPosition);
     Set<ChartGesture> removeSet = {};
     for (var ele in _doubleTapNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
@@ -155,7 +162,7 @@ class GestureDispatcher {
 
   void onLongPressStart(LongPressStartDetails details) {
     _longPressNodeSet.clear();
-    NormalEvent motionEvent = NormalEvent(details.localPosition,  null);
+    NormalEvent motionEvent = NormalEvent(details.localPosition);
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(details.localPosition)) {
         continue;
@@ -190,7 +197,7 @@ class GestureDispatcher {
   }
 
   void onLongPressEnd(LongPressEndDetails details) {
-    NormalEvent event = NormalEvent(details.localPosition, null);
+    NormalEvent event = NormalEvent(details.localPosition);
     Set<ChartGesture> removeSet = {};
     for (var ele in _longPressNodeSet) {
       if (!ele.isInArea(event.globalPosition)) {
@@ -226,7 +233,7 @@ class GestureDispatcher {
   bool _isScale = false;
 
   void onScaleStart(ScaleStartDetails details) {
-    NormalEvent event = NormalEvent(details.localFocalPoint, null);
+    NormalEvent event = NormalEvent(details.localFocalPoint);
     if (details.pointerCount < 2) {
       _dragDetails = details;
 
@@ -260,8 +267,8 @@ class GestureDispatcher {
         double dx = details.focalPoint.dx - fd.focalPoint.dx;
         double dy = details.focalPoint.dy - fd.focalPoint.dy;
         double at = (atan2(dy, dx) * 180 / pi).abs();
-        NormalEvent eventH = NormalEvent(details.localFocalPoint, null);
-        NormalEvent eventV = NormalEvent(details.localFocalPoint,  null);
+        NormalEvent eventH = NormalEvent(details.localFocalPoint);
+        NormalEvent eventV = NormalEvent(details.localFocalPoint);
         _dragDirection = at < 45 ? Direction.horizontal : Direction.vertical;
         Set<ChartGesture> removeList = {};
         for (var ele in _dragNodeList) {
@@ -279,8 +286,8 @@ class GestureDispatcher {
           _dragNodeList.removeAll(removeList);
         }
       } else {
-        NormalEvent eventH = NormalEvent(details.localFocalPoint, null);
-        NormalEvent eventV = NormalEvent(details.localFocalPoint,  null);
+        NormalEvent eventH = NormalEvent(details.localFocalPoint);
+        NormalEvent eventV = NormalEvent(details.localFocalPoint,);
         Set<ChartGesture> removeList = {};
         for (var ele in _dragNodeList) {
           if (!ele.isInArea(details.focalPoint)) {
@@ -307,13 +314,8 @@ class GestureDispatcher {
 
     ///缩放
     Set<ChartGesture> removeSet = {};
-    ScaleEvent motionEvent = ScaleEvent(
-      details.scale,
-      details.horizontalScale,
-      details.verticalScale,
-      details.rotation,
-      details.localFocalPoint,
-      null);
+    ScaleEvent motionEvent =
+        ScaleEvent(details.scale, details.horizontalScale, details.verticalScale, details.rotation, details.localFocalPoint);
     for (var ele in _scaleNodeList) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
         removeSet.add(ele);

@@ -26,7 +26,7 @@ class LayoutHelper {
   }
 
   /// 解析相关的数据转换为Node
-  void parseData(List<GroupData> dataList) {
+  void parseData(List<BarGroupData> dataList) {
     nodeList = convertData(series, dataList);
     globalValue = collectGlobalValue(dataList);
   }

@@ -11,4 +11,3 @@ export 'parallel/parallel_series.dart';
 export 'pie/pie_series.dart';
 export 'point/point_series.dart';
 export 'radar/radar_series.dart';
-export 'sunburst/sunburst_series.dart';

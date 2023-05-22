@@ -31,6 +31,6 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis> {
   }
 
   num dataToRadius(DynamicData data) {
-    return scale.rangeValue(data.data);
+    return scale.rangeValue(data);
   }
 }

@@ -1,9 +1,9 @@
 import 'dart:ui';
 
-import 'shape_element.dart';
+import 'chart_shape.dart';
 
 ///棱形
-class Prism implements ShapeElement {
+class Prism implements Shape {
   final Rect rect;
 
   Prism(this.rect);
@@ -11,7 +11,7 @@ class Prism implements ShapeElement {
   Path? _path;
 
   @override
-  Path path(bool close) {
+  Path toPath(bool close) {
     if (_path != null) {
       return _path!;
     }

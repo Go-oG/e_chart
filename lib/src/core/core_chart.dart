@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import '../chart.dart';
+import '../component/tooltip/tool_tip_view.dart';
 import '../coord/circle_coord_layout.dart';
 import '../coord/rect_coord_layout.dart';
 import '../gesture/gesture_dispatcher.dart';
@@ -10,6 +11,8 @@ import '../model/enums/scale_type.dart';
 import 'context.dart';
 import 'view.dart';
 import 'view_group.dart';
+import 'base_render.dart';
+import 'default_render.dart';
 
 class Chart extends StatefulWidget {
   final ChartConfig config;
@@ -23,7 +26,7 @@ class Chart extends StatefulWidget {
 }
 
 class ChartState extends State<Chart> with TickerProviderStateMixin {
-  late MultiRender render;
+  late BaseRender render;
   bool hasInit = false;
 
   @override
@@ -43,7 +46,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   }
 
   void init() {
-    render = MultiRender(widget.config, this);
+    render = DefaultRender(widget.config, this);
   }
 
   @override
@@ -58,11 +61,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: _buildPainter(config),
-      ),
+      child: _buildPainter(config),
     );
   }
 
@@ -135,12 +134,7 @@ class MultiRender extends ChangeNotifier implements CustomPainter, ViewParent {
   bool _drawing = false;
 
   MultiRender(ChartConfig config, TickerProvider tickerProvider) {
-    context = Context(
-      config,
-      tickerProvider,
-      GestureDispatcher(),
-      this,
-    );
+    context = Context(this, config, tickerProvider);
     context.init();
   }
 
@@ -153,32 +147,29 @@ class MultiRender extends ChangeNotifier implements CustomPainter, ViewParent {
       _layoutFlag = true;
       _oldSize = size;
       List<View> vl = [...context.renderList];
-
-      //测量toolTip相关的
-      //if (context.toolTipNode != null) {
-        vl.add(context.toolTipNode);
-     // }
-
-      for (var element in vl) {
-        element.measure(size.width, size.height);
-      }
-
-      for (var element in vl) {
-        if (element is RectCoordLayout) {
-          double leftMargin = element.props.leftMargin.convert(size.width);
-          double topMargin = element.props.topMargin.convert(size.height);
-          element.layout(leftMargin, topMargin, leftMargin + element.boundRect.width, topMargin + element.boundRect.height);
-        } else if (element is CircleCoordLayout) {
-          double centerX = element.props.center[0].convert(size.width);
-          double centerY = element.props.center[1].convert(size.height);
-          double radius = element.boundRect.width / 2;
-          element.layout(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
-        } else {
-          element.layout(0, 0, element.boundRect.width, element.boundRect.height);
+      try {
+        for (var element in vl) {
+          element.measure(size.width, size.height);
         }
+        for (var element in vl) {
+          if (element is RectCoordLayout) {
+            double leftMargin = element.props.leftMargin.convert(size.width);
+            double topMargin = element.props.topMargin.convert(size.height);
+            element.layout(leftMargin, topMargin, leftMargin + element.boundRect.width, topMargin + element.boundRect.height);
+          } else if (element is CircleCoordLayout) {
+            double centerX = element.props.center[0].convert(size.width);
+            double centerY = element.props.center[1].convert(size.height);
+            double radius = element.boundRect.width / 2;
+            element.layout(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+          } else {
+            element.layout(0, 0, element.boundRect.width, element.boundRect.height);
+          }
+        }
+      } catch (e) {
+        rethrow;
+      } finally {
+        _layoutFlag = false;
       }
-
-      _layoutFlag = false;
     }
     eachRender(canvas, size);
   }
@@ -191,10 +182,29 @@ class MultiRender extends ChangeNotifier implements CustomPainter, ViewParent {
     if (_firstDraw) {
       _firstDraw = false;
     }
-    for (var element in context.renderList) {
-      element.draw(canvas);
+
+    try {
+      for (var element in context.renderList) {
+        element.draw(canvas);
+      }
+      renderToolTip(canvas);
+    } catch (e) {
+      rethrow;
+    } finally {
+      _drawing = false;
     }
     _drawing = false;
+  }
+
+  void renderToolTip(Canvas canvas) {
+    if (context.toolTip == null) {
+      return;
+    }
+    ToolTipView tipView = context.toolTip!;
+    Offset p=tipView.builder.onMenuPosition();
+    tipView.measure(_oldSize!.width, _oldSize!.height);
+    tipView.layout(p.dx, p.dy, p.dx+tipView.width, p.dy+tipView.height);
+    tipView.draw(canvas);
   }
 
   @override
@@ -260,4 +270,5 @@ class MultiRender extends ChangeNotifier implements CustomPainter, ViewParent {
     }
     return Rect.fromLTWH(0, 0, _oldSize!.width, _oldSize!.height);
   }
+
 }

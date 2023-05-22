@@ -1,38 +1,26 @@
 import 'package:flutter/material.dart';
 
 import '../charts/series.dart';
-import '../component/tooltip/tool_tip.dart';
-import '../component/tooltip/tool_tip_item.dart';
-import '../component/tooltip/tool_tip_listener.dart';
+import '../component/tooltip/context_menu.dart';
+import '../component/tooltip/context_menu_builder.dart';
 import '../functions.dart';
+import '../model/string_number.dart';
 import 'context.dart';
 import 'draw_node.dart';
 import 'view_group.dart';
 
-abstract class View extends DrawNode implements ToolTipListener {
+abstract class View extends DrawNode implements ToolTipBuilder {
   late Context context;
-  int index = 0;
+
+  LayoutParams layoutParams = LayoutParams.match();
 
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
   Rect oldBoundRect = const Rect.fromLTRB(0, 0, 0, 0); //记录旧的边界位置，实现动画相关的计算
   Rect _globalBoundRect = Rect.zero;
   ViewParent? _parent;
 
-  //缩放
-  double _scaleX = 1;
-  double _scaleY = 1;
+  Paint mPaint = Paint();
 
-  //滚动
-  double _scrollX = 0;
-  double _scrollY = 0;
-
-  // 平移
-  double _translationX = 0;
-  double _translationY = 0;
-
-  late Paint paint;
-
-  int zIndex = 0;
   bool inLayout = false;
   bool inDrawing = false;
   bool _dirty = false; // 标记视图区域是否 需要重绘
@@ -49,24 +37,18 @@ abstract class View extends DrawNode implements ToolTipListener {
   @protected
   bool forceMeasure = false;
 
-  View({Paint? paint, this.zIndex = 0}) {
-    if (paint != null) {
-      this.paint = paint;
-    } else {
-      this.paint = Paint();
-    }
-  }
+  View();
 
-  ValueCallback<int>? _viewRefreshCallback;
+  ValueCallback<Command>? _viewRefreshCallback;
 
   ChartSeries? _series;
 
-  void bindSeries(ChartSeries series) {
+  void bindSeries(covariant ChartSeries series) {
     _series = series;
     _viewRefreshCallback ??= (value) {
-      if (value == ChartSeries.actionInvalidate.value) {
+      if (value.code == Command.invalidate) {
         invalidate();
-      } else if(value==ChartSeries.actionReLayout.value) {
+      } else if (value.code == Command.reLayout) {
         requestLayout();
       }
     };
@@ -83,16 +65,12 @@ abstract class View extends DrawNode implements ToolTipListener {
   void attach(Context context, ViewParent parent) {
     this.context = context;
     _parent = parent;
-    if (_series != null && _series!.tooltip != null) {
-      context.registerToolTip(this);
-    }
     onAttach();
   }
 
   void onAttach() {}
 
   void detach() {
-    context.unRegisterToolTip(this);
     onDetach();
   }
 
@@ -112,7 +90,32 @@ abstract class View extends DrawNode implements ToolTipListener {
   }
 
   Size onMeasure(double parentWidth, double parentHeight) {
-    return Size(parentWidth, parentHeight);
+    double w = 0;
+    double h = 0;
+    LayoutParams lp = layoutParams;
+    num wn = lp.width.number;
+    if (wn == LayoutParams.matchParent) {
+      w = parentWidth;
+    } else if (wn == LayoutParams.wrapContent) {
+      w = 0;
+    } else if (wn >= 0) {
+      w = lp.width.convert(parentWidth);
+    } else {
+      w = parentWidth;
+    }
+    num hn = lp.height.number;
+    if (hn == LayoutParams.matchParent) {
+      h = parentHeight;
+    } else if (hn == LayoutParams.wrapContent) {
+      h = 0;
+    } else if (hn >= 0) {
+      h = lp.height.convert(parentHeight);
+    } else {
+      h = parentHeight;
+    }
+    w += lp.leftPadding.convert(parentWidth) + lp.rightPadding.convert(parentWidth);
+    h += lp.topPadding.convert(parentHeight) + lp.bottomPadding.convert(parentHeight);
+    return Size(w, h);
   }
 
   @override
@@ -147,7 +150,8 @@ abstract class View extends DrawNode implements ToolTipListener {
   }
 
   void onLayout(double left, double top, double right, double bottom) {}
-  void onLayoutEnd(){}
+
+  void onLayoutEnd() {}
 
   void debugDraw(Canvas canvas, Offset offset) {
     Paint mPaint = Paint();
@@ -168,15 +172,7 @@ abstract class View extends DrawNode implements ToolTipListener {
   void draw(Canvas canvas) {
     inDrawing = true;
     onDrawPre();
-    final int sx = _scrollX.toInt();
-    final int sy = _scrollY.toInt();
-    if ((sx | sy) == 0) {
-      drawBackground(canvas, 1);
-    } else {
-      canvas.translate(_scrollX, _scrollY);
-      drawBackground(canvas, 1);
-      canvas.translate(-_scrollX, -_scrollY);
-    }
+    drawBackground(canvas);
     onDraw(canvas);
     dispatchDraw(canvas);
     onDrawEnd(canvas);
@@ -187,21 +183,18 @@ abstract class View extends DrawNode implements ToolTipListener {
 
   @protected
   bool drawSelf(Canvas canvas, ViewGroup parent) {
-    double sx = 0;
-    double sy = 0;
     computeScroll();
-    sx = _scrollX;
-    sy = _scrollY;
     canvas.save();
-    canvas.translate(left - sx, top - sy);
-    canvas.scale(scaleX, scaleY);
-    canvas.clipRect(Rect.fromLTRB(sx, sy, sx + width, sy + height));
+    canvas.translate(left, top);
+    if (_series != null && _series!.clip) {
+      canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
+    }
     draw(canvas);
     canvas.restore();
     return false;
   }
 
-  void drawBackground(Canvas canvas, double animatorPercent) {}
+  void drawBackground(Canvas canvas) {}
 
   ///绘制时最先调用的方法，可以在这里面更改相关属性从而实现动画视觉效果
   void onDrawPre() {}
@@ -253,47 +246,16 @@ abstract class View extends DrawNode implements ToolTipListener {
     _dirty = false;
   }
 
-  void scrollTo(double x, double y, {bool redraw = false}) {
-    if (x == _scrollX && y == _scrollY) {
-      return;
-    }
-    double oldX = _scrollX;
-    double oldY = _scrollY;
-    _scrollX = x;
-    _scrollY = y;
-    onScrollChanged(x, y, oldX, oldY);
-    if (redraw) {
-      invalidate();
-    }
-  }
-
-  void scrollBy(int x, int y, {bool redraw = false}) {
-    scrollTo(_scrollX + x, _scrollY + y, redraw: redraw);
-  }
-
-  void onScrollChanged(double scrollX, double scrollY, double oldScrollX, double oldScrollY) {}
-
-  ///======================= 事件处理=======================
-
-  // 判断当前给定点是否能落在自身区域里
-  bool hitTest(Offset localPosition) {
-    return localPosition.dx >= 0 && localPosition.dx <= width && localPosition.dy >= 0 && localPosition.dy <= height;
-  }
-
   ///======================处理ToolTip========================
+
   @override
-  ToolTip? getToolTip() {
-    return _series?.tooltip;
+  ContextMenu? onCreatedContextMenu() {
+    return null;
   }
 
   @override
-  List<ToolTipItem> onCreatedToolTipItem(Offset globalOffset) {
-    return [];
-  }
-
-  @override
-  bool toolTipInArea(Offset globalOffset) {
-    return globalAreaBound.contains(globalOffset);
+  Offset onMenuPosition() {
+    return Offset.zero;
   }
 
   /// ====================普通属性函数=======================================
@@ -329,108 +291,78 @@ abstract class View extends DrawNode implements ToolTipListener {
     return Offset(localOffset.dx + _globalBoundRect.left, localOffset.dy + _globalBoundRect.top);
   }
 
-  set scaleX(double scaleX) {
-    if (_scaleX == scaleX) {
-      return;
-    }
-    _scaleX = scaleX;
-    invalidate();
-  }
-
-  set scaleY(double scaleY) {
-    if (_scaleY == scaleY) {
-      return;
-    }
-    _scaleY = scaleY;
-    invalidate();
-  }
-
-  void setScale(double x, double y) {
-    if (x == _scaleX && y == _scaleY) {
-      return;
-    }
-    _scaleX = x;
-    _scaleY = y;
-    invalidate();
-  }
-
-  double get scaleX {
-    return _scaleX;
-  }
-
-  double get scaleY {
-    return _scaleY;
-  }
-
-  set scrollX(double scrollX) {
-    if (_scrollX == scrollX) {
-      return;
-    }
-    _scrollX = scrollX;
-    invalidate();
-  }
-
-  set scrollY(double scrollY) {
-    if (_scrollY == scrollY) {
-      return;
-    }
-    _scrollY = scrollY;
-    invalidate();
-  }
-
-  void setScroll(double x, double y) {
-    if (x == _scrollX && y == _scrollY) {
-      return;
-    }
-    _scrollX = x;
-    _scrollY = y;
-    invalidate();
-  }
-
-  double get scrollX {
-    return _scrollX;
-  }
-
-  double get scrollY {
-    return _scrollY;
-  }
-
-  set translationX(double translationX) {
-    if (_translationX == translationX) {
-      return;
-    }
-    _translationX = translationX;
-    requestLayout();
-  }
-
-  set translationY(double translationY) {
-    if (_translationY == translationY) {
-      return;
-    }
-    _translationY = translationY;
-    requestLayout();
-  }
-
-  void setTranslation(double x, double y) {
-    if (x == _translationX && y == _translationY) {
-      return;
-    }
-    _translationX = x;
-    _translationY = y;
-    requestLayout();
-  }
-
-  double get translationX {
-    return _translationX;
-  }
-
-  double get translationY {
-    return _translationY;
-  }
-
   bool get isDirty {
     return _dirty;
   }
 
   void computeScroll() {}
+}
+
+abstract class SeriesView<T extends ChartSeries> extends View {
+  final T series;
+
+  SeriesView(this.series);
+
+  @override
+  void bindSeries(covariant T series) {
+    if (series != this.series) {
+      throw FlutterError('Not allow binding different series ');
+    }
+    super.bindSeries(series);
+  }
+}
+
+class LayoutParams {
+  static const int matchParent = -1;
+  static const int wrapContent = -2;
+
+  final SNumber width;
+  final SNumber height;
+
+  final SNumber leftMargin;
+  final SNumber topMargin;
+  final SNumber rightMargin;
+  final SNumber bottomMargin;
+
+  final SNumber leftPadding;
+  final SNumber topPadding;
+  final SNumber rightPadding;
+  final SNumber bottomPadding;
+
+  LayoutParams(
+    this.width,
+    this.height, {
+    this.leftMargin = SNumber.zero,
+    this.topMargin = SNumber.zero,
+    this.rightMargin = SNumber.zero,
+    this.bottomMargin = SNumber.zero,
+    this.leftPadding = SNumber.zero,
+    this.topPadding = SNumber.zero,
+    this.rightPadding = SNumber.zero,
+    this.bottomPadding = SNumber.zero,
+  });
+
+  LayoutParams.match()
+      : width = const SNumber.number(matchParent),
+        height = const SNumber.number(matchParent),
+        leftMargin = SNumber.zero,
+        topMargin = SNumber.zero,
+        rightMargin = SNumber.zero,
+        bottomMargin = SNumber.zero,
+        leftPadding = SNumber.zero,
+        topPadding = SNumber.zero,
+        rightPadding = SNumber.zero,
+        bottomPadding = SNumber.zero;
+
+  LayoutParams.wrap()
+      : width = const SNumber.number(wrapContent),
+        height = const SNumber.number(wrapContent),
+        leftMargin = SNumber.zero,
+        topMargin = SNumber.zero,
+        rightMargin = SNumber.zero,
+        bottomMargin = SNumber.zero,
+        leftPadding = SNumber.zero,
+        topPadding = SNumber.zero,
+        rightPadding = SNumber.zero,
+        bottomPadding = SNumber.zero;
 }

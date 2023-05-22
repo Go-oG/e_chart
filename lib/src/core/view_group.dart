@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'context.dart';
@@ -7,7 +9,7 @@ import 'view.dart';
 abstract class ViewGroup extends View implements ViewParent {
   final List<View> _children = [];
 
-  ViewGroup({super.paint, super.zIndex});
+  ViewGroup();
 
   @override
   void attach(Context context, ViewParent parent) {
@@ -41,34 +43,66 @@ abstract class ViewGroup extends View implements ViewParent {
   }
 
   @override
-  void measure(double parentWidth, double parentHeight) {
-    if (measureCompleted && (boundRect.width - parentWidth).abs() < 1 && (boundRect.height - parentHeight).abs() < 1) {
-      return;
+  Size onMeasure(double parentWidth, double parentHeight) {
+    double maxHeight = 0;
+    double maxWidth = 0;
+    num php = layoutParams.leftPadding.convert(parentWidth) + layoutParams.rightPadding.convert(parentWidth);
+    num pvp = layoutParams.topPadding.convert(parentHeight) + layoutParams.bottomPadding.convert(parentHeight);
+    double pw = parentWidth - php;
+    double ph = parentHeight - pvp;
+    for (var child in children) {
+      child.measure(pw, ph);
+      final LayoutParams lp = child.layoutParams;
+      num hp = lp.leftMargin.convert(pw) + lp.rightMargin.convert(pw);
+      num vp = lp.topMargin.convert(ph) + lp.bottomMargin.convert(ph);
+      maxWidth = max(maxWidth, child.width + hp);
+      maxHeight = max(maxHeight, child.height + vp);
     }
-    Size size = onMeasure(parentWidth, parentHeight);
-    oldBoundRect = boundRect;
-    boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
-    for (var element in children) {
-      element.measure(size.width, size.height);
+    maxWidth += php;
+    maxHeight += pvp;
+    maxWidth = min(maxWidth, parentWidth);
+    maxHeight = min(maxHeight, parentHeight);
+
+    php = layoutParams.leftPadding.convert(maxWidth) + layoutParams.rightPadding.convert(maxWidth);
+    pvp = layoutParams.topPadding.convert(maxHeight) + layoutParams.bottomPadding.convert(maxHeight);
+    pw = maxWidth - php;
+    ph = maxHeight - pvp;
+
+    for (var child in children) {
+      final LayoutParams lp = child.layoutParams;
+      num hm = lp.leftMargin.convert(maxWidth) + lp.rightMargin.convert(maxWidth);
+      num vm = lp.topMargin.convert(maxHeight) + lp.bottomMargin.convert(maxHeight);
+      double childWidth = child.width;
+      if (lp.width.number == LayoutParams.matchParent) {
+        childWidth = max(0, pw - hm);
+      }
+      double childHeight = child.height;
+      if (lp.height.number == LayoutParams.matchParent) {
+        childHeight = max(0, ph - vm);
+      }
+      child.measure(childWidth, childHeight);
     }
+
+    return Size(maxWidth, maxHeight);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    for (var element in children) {
-      element.layout(element.translationX, element.translationY, element.width, element.height);
+    double parentLeft = layoutParams.leftPadding.convert(width);
+    double parentTop = layoutParams.topPadding.convert(height);
+    for (var child in children) {
+      LayoutParams lp = child.layoutParams;
+      double childLeft = parentLeft + lp.leftMargin.convert(width);
+      double childTop = parentTop + lp.topMargin.convert(height);
+      child.layout(childLeft, childTop, childLeft + child.width, childTop + child.height);
     }
   }
 
   @override
   void dispatchDraw(Canvas canvas) {
-    List<View> childList = List.from(children);
-    childList.sort((a, b) {
-      return a.zIndex.compareTo(b.zIndex);
-    });
-    for (var element in childList) {
+    for (var child in children) {
       int count = canvas.getSaveCount();
-      drawChild(element, canvas);
+      drawChild(child, canvas);
       if (canvas.getSaveCount() != count) {
         throw FlutterError('you should call canvas.restore when after call canvas.save');
       }
@@ -129,18 +163,7 @@ abstract class ViewGroup extends View implements ViewParent {
       children.add(child);
       return;
     }
-    List<View> first = List.from(children.getRange(
-      0,
-      index,
-    ));
-    List<View> end = List.from(children.getRange(index, children.length));
-    children.clear();
-    children.addAll(first);
-    children.add(child);
-    children.addAll(end);
-    for (int i = 1; i < children.length; i++) {
-      children[i].index = i;
-    }
+    children.insert(index, child);
   }
 
   void clearChildren() {
@@ -149,17 +172,17 @@ abstract class ViewGroup extends View implements ViewParent {
 
   @override
   Rect getGlobalAreaBounds() {
-    if(parent==null){return boundRect;}
-    Rect parentRect=parent!.getGlobalAreaBounds();
-    double l=parentRect.left+boundRect.left;
-    double t=parentRect.top+boundRect.top;
+    if (parent == null) {
+      return boundRect;
+    }
+    Rect parentRect = parent!.getGlobalAreaBounds();
+    double l = parentRect.left + boundRect.left;
+    double t = parentRect.top + boundRect.top;
     return Rect.fromLTWH(l, t, boundRect.width, boundRect.height);
   }
-
 }
 
 abstract class ViewParent {
-
   void parentInvalidate();
 
   void requestLayout();
@@ -169,6 +192,4 @@ abstract class ViewParent {
   void changeChildToFront(View child);
 
   Rect getGlobalAreaBounds();
-
-
 }

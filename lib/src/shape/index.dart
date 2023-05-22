@@ -1,7 +1,8 @@
 export 'arc.dart';
+export 'area.dart';
+export 'chart_shape.dart';
 export 'circle.dart';
 export 'line.dart';
 export 'positive.dart';
 export 'prism.dart';
-export 'shape_element.dart';
 export 'star.dart';

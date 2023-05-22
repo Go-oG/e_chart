@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
 
-import '../../model/enums/align.dart';
 import '../../model/enums/align2.dart';
+import '../../style/label.dart';
 
 class ChartTitle {
-  String? id;
   bool show = false;
-  ChartAlign position = ChartAlign.topLeft;
+
+  Align2 position = Align2.start;
+  Align2 align=Align2.start;
+  Offset offset = const Offset(8, 8);
+
   String text = '';
-  TextStyle textStyle = const TextStyle();
-  VoidCallback? textClick;
   String subText = '';
-  TextStyle subTextStyle = const TextStyle();
-  VoidCallback? subTextClick;
-  num itemGap = 10;
+
+  num gap = 10;
   bool triggerEvent = false;
 
   Align2 textAlign = Align2.center;
   Align2 textVerticalAlign = Align2.center;
 
-  EdgeInsetsGeometry padding = const EdgeInsets.all(5);
-  EdgeInsetsGeometry margin = EdgeInsets.zero;
-  Decoration decoration = const BoxDecoration();
+  EdgeInsets padding = const EdgeInsets.all(5);
 
+  LabelStyle textStyle = const LabelStyle();
+  LabelStyle subTextStyle = const LabelStyle();
+
+  Decoration decoration = const BoxDecoration();
+  VoidCallback? textClick;
+  VoidCallback? subTextClick;
 }

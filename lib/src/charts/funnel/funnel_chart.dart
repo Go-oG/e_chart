@@ -15,7 +15,7 @@ class FunnelView extends View {
   final FunnelSeries series;
   final List<FunnelNode> _nodeList = [];
 
-  FunnelView(this.series, {super.paint, super.zIndex});
+  FunnelView(this.series);
 
   final RectGesture rectGesture = RectGesture();
 
@@ -102,7 +102,7 @@ class FunnelView extends View {
     canvas.translate(rect.left - left, rect.top - top);
     for (var element in _nodeList) {
       AreaStyle? style = series.areaStyleFun.call(element.data, null);
-      style?.drawPolygonArea(canvas, paint, element.pointList);
+      style?.drawPolygonArea(canvas, mPaint, element.pointList);
     }
     for (var element in _nodeList) {
       _drawText(canvas, element);
@@ -131,11 +131,11 @@ class FunnelView extends View {
     }
     List<Offset>? ol = node.computeLabelLineOffset(series);
     if (ol != null) {
-      style.guideLine.style.drawPolygon(canvas, paint, ol);
+      style.guideLine.style.drawPolygon(canvas, mPaint, ol);
     }
     style.draw(
       canvas,
-      paint,
+      mPaint,
       node.data.labelText!,
       position
     );

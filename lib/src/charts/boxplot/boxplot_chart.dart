@@ -99,6 +99,6 @@ class BoxPlotView extends View implements GridChild {
 
     path.moveTo(maxLeft.dx, maxLeft.dy);
     path.lineTo(maxRight.dx, maxRight.dy);
-    style.drawPath(canvas, paint, path,drawDash: true);
+    style.drawPath(canvas, mPaint, path,drawDash: true);
   }
 }

@@ -107,7 +107,12 @@ class PieView extends View {
   @override
   void onAttach() {
     super.onAttach();
-    context.gestureDispatcher.addGesture(_gesture);
+    context.addGesture(_gesture);
+  }
+  @override
+  void onDetach() {
+    context.removeGesture(_gesture);
+    super.onDetach();
   }
 
   @override
@@ -177,7 +182,7 @@ class PieView extends View {
         continue;
       }
       Path path = element.toPath();
-      style.drawPath(canvas, paint, path);
+      style.drawPath(canvas, mPaint, path);
     }
     for (var ele in _nodeList) {
       drawText(canvas, ele);
@@ -204,7 +209,7 @@ class PieView extends View {
       if (style == null || !style.show) {
         return;
       }
-      style.draw(canvas, paint, node.data.label!, position);
+      style.draw(canvas, mPaint, node.data.label!, position);
       return;
     }
 
@@ -217,7 +222,7 @@ class PieView extends View {
     if (style == null || !style.show) {
       return;
     }
-    style.draw(canvas, paint, node.data.label!, position);
+    style.draw(canvas, mPaint, node.data.label!, position);
     if (series.labelAlign == CircleAlign.outside) {
       Offset tmpOffset = circlePoint(node.cur.or, node.cur.startAngle + (node.cur.sweepAngle / 2));
       Offset tmpOffset2 = circlePoint( node.cur.or + style.guideLine.length, node.cur.startAngle + (node.cur.sweepAngle / 2));
@@ -225,7 +230,7 @@ class PieView extends View {
       path.moveTo(tmpOffset.dx, tmpOffset.dy);
       path.lineTo(tmpOffset2.dx, tmpOffset2.dy);
       path.lineTo(position.offset.dx, position.offset.dy);
-      style.guideLine.style.drawPath(canvas, paint, path);
+      style.guideLine.style.drawPath(canvas, mPaint, path);
     }
   }
 

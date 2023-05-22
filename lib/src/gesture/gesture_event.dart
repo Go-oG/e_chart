@@ -1,13 +1,10 @@
 import 'package:flutter/gestures.dart';
 
-class MotionEvent {
-}
+class MotionEvent {}
 
 class NormalEvent extends MotionEvent {
   final Offset globalPosition;
-  final Offset? delta;
-
-  NormalEvent(this.globalPosition, this.delta);
+  NormalEvent(this.globalPosition);
 }
 
 class LongPressMoveEvent extends MotionEvent {
@@ -34,7 +31,6 @@ class ScaleEvent extends NormalEvent {
     this.verticalScale,
     this.rotation,
     super.globalPosition,
-    super.delta,
   );
 }
 

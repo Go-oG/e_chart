@@ -1,4 +1,3 @@
-export 'enums/align.dart';
 export 'enums/align2.dart';
 export 'enums/chart_type.dart';
 export 'enums/circle_align.dart';
@@ -16,6 +15,7 @@ export 'enums/trigger_on.dart';
 
 export 'constans.dart';
 export 'dynamic_data.dart';
+export 'group_data.dart';
 export 'multi_data.dart';
 export 'range.dart';
 export 'string_number.dart';

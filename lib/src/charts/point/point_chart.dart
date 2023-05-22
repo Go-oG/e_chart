@@ -33,9 +33,9 @@ class PointView extends View with PolarChild {
   @override
   void onDraw(Canvas canvas) {
     PolarLayout layout = context.findPolarCoord();
-    paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = 2;
-    paint.color = Colors.blue;
+    mPaint.style = PaintingStyle.stroke;
+    mPaint.strokeWidth = 2;
+    mPaint.color = Colors.blue;
     Path path = Path();
     bool hasMOve = false;
     for (var ele in series.data) {
@@ -49,7 +49,7 @@ class PointView extends View with PolarChild {
     }
     canvas.save();
     canvas.translate(width / 2, height / 2);
-    canvas.drawPath(path, paint);
+    canvas.drawPath(path, mPaint);
     canvas.restore();
   }
 }

@@ -253,13 +253,13 @@ class ParallelLayout extends RectCoordLayout<Parallel> {
   @override
   void onDraw(Canvas canvas) {
     if (props.backgroundColor != null) {
-      paint.reset();
-      paint.color = props.backgroundColor!;
-      paint.style = PaintingStyle.fill;
-      canvas.drawRect(areaBounds, paint);
+      mPaint.reset();
+      mPaint.color = props.backgroundColor!;
+      mPaint.style = PaintingStyle.fill;
+      canvas.drawRect(areaBounds, mPaint);
     }
     for (var ele in _axisMap.entries) {
-      ele.value.draw(canvas, paint);
+      ele.value.draw(canvas, mPaint);
     }
   }
 

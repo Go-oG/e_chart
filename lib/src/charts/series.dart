@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../animation/animator_props.dart';
 import '../component/tooltip/tool_tip.dart';
-import '../ext/int_ext.dart';
 import '../functions.dart';
 import '../model/enums/coordinate.dart';
 import '../model/string_number.dart';
@@ -10,12 +9,9 @@ import '../model/string_number.dart';
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
 abstract class ChartSeries {
-  static const actionInvalidate = IntWrap(-1);
-  static const actionReLayout = IntWrap(-2);
-
   //用于进行刷新相关的配置
-  final ValueNotifier<IntWrap> _notifier = ValueNotifier(const IntWrap(0));
-  final Map<ValueCallback<int>, VoidCallback> _listenerMap = {};
+  final ValueNotifier<Command> _notifier = ValueNotifier(Command(Command.none));
+  final Map<ValueCallback<Command>, VoidCallback> _listenerMap = {};
 
   ///坐标系系统
   CoordSystem? coordSystem;
@@ -29,7 +25,6 @@ abstract class ChartSeries {
   int radarIndex;
   int parallelIndex;
 
-  ///坐标系
   AnimatorProps? animation; //动画
   ToolTip? tooltip;
   bool touch; //是否允许交互
@@ -43,7 +38,7 @@ abstract class ChartSeries {
     this.calendarIndex = 0,
     this.radarIndex = 0,
     this.parallelIndex = 0,
-    this.animation,
+    this.animation=const AnimatorProps(),
     this.touch = true,
     this.z = 0,
     this.clip = true,
@@ -51,38 +46,50 @@ abstract class ChartSeries {
     this.tooltip,
   });
 
-  /// 当数据发生改变后，需要调用该方法,进行重绘或者重新布局
-  void update([bool relayout = false]) {
+  void notifyDataSetChange([bool relayout = false]) {
     if (relayout) {
-      _notifier.value = actionReLayout.value.wrap();
-    } else {
-      _notifier.value = actionInvalidate.value.wrap();
+      _notifier.value = Command(Command.reLayout);
+      return;
     }
+    _notifier.value = Command(Command.updateData);
   }
 
-  void change(int notifyData) {
-    if (notifyData <= 0) {
-      throw FlutterError('wrap值必须大于0');
+  void notifyDataSetInserted([bool relayout = false]) {
+    if (relayout) {
+      _notifier.value = Command(Command.reLayout);
+      return;
     }
-    _notifier.value = notifyData.wrap();
+    _notifier.value = Command(Command.insertData);
+  }
+
+  void notifyDataSetRemoved([bool relayout = false]) {
+    if (relayout) {
+      _notifier.value = Command(Command.reLayout);
+      return;
+    }
+    _notifier.value = Command(Command.deleteData);
+  }
+
+  void change(Command command) {
+    ///为了避免外部缓存了数据
+    _notifier.value = Command(command.code);
   }
 
   /// 下面是对ValueNotifier的简单封装
-  void addListener(ValueCallback<int> callback) {
+  void addListener(ValueCallback<Command> callback) {
     if (_listenerMap[callback] != null) {
       _notifier.removeListener(() {
         _listenerMap[callback]!;
       });
     }
     voidCallback() {
-      callback.call(_notifier.value.value);
+      callback.call(_notifier.value);
     }
-
     _listenerMap[callback] = voidCallback;
     _notifier.addListener(voidCallback);
   }
 
-  void removeListener(ValueCallback<int> callback) {
+  void removeListener(ValueCallback<Command> callback) {
     VoidCallback? voidCallback = _listenerMap.remove(callback);
     if (voidCallback != null) {
       _notifier.removeListener(voidCallback);
@@ -97,7 +104,6 @@ abstract class ChartSeries {
     _listenerMap.clear();
     _notifier.dispose();
   }
-
 }
 
 abstract class RectSeries extends ChartSeries {
@@ -192,3 +198,15 @@ abstract class RectSeries extends ChartSeries {
   }
 }
 
+class Command {
+  static const int none = 0;
+  static const int invalidate = -1;
+  static const int reLayout = -2;
+  static const int insertData = -3;
+  static const int deleteData = -4;
+  static const int updateData = -5;
+
+  final int code;
+
+  Command(this.code);
+}

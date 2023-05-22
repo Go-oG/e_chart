@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'shape_element.dart';
+import 'chart_shape.dart';
 
-class Circle implements ShapeElement {
+class Circle implements Shape {
   final num r;
   final Offset center;
 
@@ -16,7 +16,7 @@ class Circle implements ShapeElement {
   Path? _path;
 
   @override
-  Path path(bool close) {
+  Path toPath(bool close) {
     if (_path != null) {
       return _path!;
     }
@@ -27,4 +27,5 @@ class Circle implements ShapeElement {
     _path = path;
     return path;
   }
+
 }

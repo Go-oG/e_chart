@@ -4,12 +4,12 @@ import '../../functions.dart';
 import '../../model/text_position.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
-import '../../style/symbol_style.dart';
+import '../../style/symbol/symbol.dart';
 import 'mark_type.dart';
 
 class MarkLine {
-  final SymbolStyle? startSymbol;
-  final SymbolStyle? endSymbol;
+  final ChartSymbol? startSymbol;
+  final ChartSymbol? endSymbol;
   final bool touch;
   final StyleFun<int, LabelStyle>? labelStyle;
   final LineStyle lineStyle;
@@ -31,16 +31,16 @@ class MarkLine {
   });
 
   void draw(Canvas canvas, Paint paint, Offset start, Offset end, {String? startText, String? endText}) {
-    lineStyle.drawPolygon(canvas, paint, [start, end], close: false);
+    lineStyle.drawPolygon(canvas, paint, [start, end], false);
     startSymbol?.draw(canvas, paint, start);
     endSymbol?.draw(canvas, paint, end);
     if (startText != null && startText.isNotEmpty) {
-      TextDrawConfig config=TextDrawConfig(start);
-      labelStyle?.call(0,null)?.draw(canvas, paint, startText, config);
+      TextDrawConfig config = TextDrawConfig(start);
+      labelStyle?.call(0, null)?.draw(canvas, paint, startText, config);
     }
     if (endText != null && endText.isNotEmpty) {
-      TextDrawConfig config=TextDrawConfig(end);
-      labelStyle?.call(1,null)?.draw(canvas, paint, endText, config);
+      TextDrawConfig config = TextDrawConfig(end);
+      labelStyle?.call(1, null)?.draw(canvas, paint, endText, config);
     }
   }
 }

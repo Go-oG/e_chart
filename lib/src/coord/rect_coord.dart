@@ -1,4 +1,4 @@
-
+import '../core/view.dart';
 import '../model/string_number.dart';
 import 'coord.dart';
 
@@ -11,7 +11,7 @@ abstract class RectCoordinate extends Coordinate {
   final SNumber? width;
   final SNumber? height;
 
- const RectCoordinate({
+  const RectCoordinate({
     this.leftMargin = const SNumber.number(0),
     this.topMargin = const SNumber.number(0),
     this.rightMargin = const SNumber.number(0),
@@ -21,4 +21,15 @@ abstract class RectCoordinate extends Coordinate {
     super.id,
     super.show,
   });
+
+  LayoutParams toLayoutParams() {
+    return LayoutParams(
+      width ?? const SNumber(LayoutParams.matchParent, false),
+      height ?? const SNumber(LayoutParams.matchParent, false),
+      leftMargin: leftMargin,
+      topMargin: topMargin,
+      rightMargin: rightMargin,
+      bottomMargin: rightMargin
+    );
+  }
 }

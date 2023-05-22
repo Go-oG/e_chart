@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../ext/offset_ext.dart';
 import '../model/constans.dart';
-import 'shape_element.dart';
+import 'chart_shape.dart';
 
-class Arc implements ShapeElement {
+class Arc implements Shape {
   final num innerRadius;
   final num outRadius;
   final num startAngle;
@@ -63,7 +63,7 @@ class Arc implements ShapeElement {
   Path? _openPath;
 
   @override
-  Path path(bool close) {
+  Path toPath(bool close) {
     if (close && _closePath != null) {
       return _closePath!;
     }

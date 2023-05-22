@@ -36,31 +36,19 @@ class LabelStyle {
 
     TextOverflow? textOverflow = overFlow == OverFlow.cut ? TextOverflow.clip : null;
     String? ellipsis = textOverflow == TextOverflow.ellipsis ? '\u2026' : null;
-    TextPainter painter = textStyle.toPainter(
-      text,
-      ellipsis: config.ellipsis ?? ellipsis,
-      maxLines: config.maxLines,
-      textAlign: config.textAlign,
-      textDirection: config.textDirection,
-      textScaleFactor: config.scaleFactor.toDouble(),
-    );
+    TextPainter painter =config.toPainter(text, textStyle);
+    if(config.ellipsis==null){
+      painter.ellipsis=ellipsis;
+    }
     painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
     if (painter.height > config.maxHeight) {
       int maxLineCount = config.maxHeight ~/ (painter.height / painter.computeLineMetrics().length);
       maxLineCount = max(1, maxLineCount);
-      painter = textStyle.toPainter(
-        text,
-        ellipsis: config.ellipsis ?? ellipsis,
-        maxLines: maxLineCount,
-        textAlign: config.textAlign,
-        textDirection: config.textDirection,
-        textScaleFactor: config.scaleFactor.toDouble(),
-      );
+      painter.maxLines=maxLineCount;
       painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
     }
-
     Offset leftTop = _computeAlignOffset(config.offset, config.align, painter.width, painter.height);
-    Offset center = leftTop.translate(painter.width / 2, painter.height / 2);
+    Offset center = leftTop.translate(painter.width * 0.5, painter.height * 0.5);
     canvas.save();
     canvas.translate(center.dx, center.dy);
     if (rotate != 0) {
@@ -72,17 +60,17 @@ class LabelStyle {
       decoration?.drawPath(canvas, paint, path);
     }
 
-    Offset textOffset = Offset(-painter.width / 2, -painter.height / 2);
+    Offset textOffset = Offset(-painter.width * 0.5, -painter.height * 0.5);
     painter.paint(canvas, textOffset);
     canvas.restore();
     return Size(painter.width, painter.height);
   }
 
-  Size measure(String text, {num maxWidth = double.infinity}) {
+  Size measure(String text, {num maxWidth = double.infinity, int? maxLine}) {
     if (text.isEmpty) {
       return Size.zero;
     }
-    TextPainter painter = textStyle.toPainter(text);
+    TextPainter painter = textStyle.toPainter(text, maxLines: maxLine);
     painter.layout(maxWidth: maxWidth.toDouble());
     return painter.size;
   }
@@ -97,4 +85,5 @@ class LabelStyle {
     y = y - (align.y + 1) * (h / 2);
     return Offset(x, y);
   }
+
 }

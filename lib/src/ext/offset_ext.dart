@@ -1,5 +1,4 @@
-import 'dart:math';
-
+import 'dart:math' as m;
 import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math.dart';
 
@@ -10,7 +9,7 @@ extension OffsetExt on Offset {
   double distance2(Offset p) {
     double a = (dx - p.dx).abs();
     double b = (dy - p.dy).abs();
-    return sqrt(a * a + b * b);
+    return m.sqrt(a * a + b * b);
   }
 
   /// 求点Q到直线的距离
@@ -21,7 +20,7 @@ extension OffsetExt on Offset {
     double A = p2.dy - p1.dy;
     double B = p1.dx - p2.dx;
     double C = p2.dx * p1.dy - p1.dx * p2.dy;
-    return ((A * dx + B * dy + C) / (sqrt(A * A + B * B))).abs();
+    return ((A * dx + B * dy + C) / (m.sqrt(A * A + B * B))).abs();
   }
 
   /// 判断点Q是否在由 p1 p2组成的线段上 允许偏移值
@@ -30,10 +29,10 @@ extension OffsetExt on Offset {
     if (deviation < 0) {
       throw FlutterError('偏差值必须大于等于0');
     }
-    if (dy > max(p1.dy, p2.dy) + deviation || dy < min(p1.dy, p2.dy) - deviation) {
+    if (dy > m.max(p1.dy, p2.dy) + deviation || dy < m.min(p1.dy, p2.dy) - deviation) {
       return false;
     }
-    if (dx > max(p1.dx, p2.dx) + deviation || dx < min(p1.dx, p2.dx) - deviation) {
+    if (dx > m.max(p1.dx, p2.dx) + deviation || dx < m.min(p1.dx, p2.dx) - deviation) {
       return false;
     }
     double distance = lineDistance(p1, p2);
@@ -59,7 +58,7 @@ extension OffsetExt on Offset {
       Offset p1 = list[0];
       double a = (dx - p1.dx).abs();
       double b = (dy - p1.dy).abs();
-      return sqrt(a * a + b * b) <= 0.01;
+      return m.sqrt(a * a + b * b) <= 0.01;
     }
     if (list.length == 2) {
       return inLine(list[0], list[1], deviation: 0.05);
@@ -78,10 +77,10 @@ extension OffsetExt on Offset {
         continue;
       }
 
-      if (dy < min(p1.dy, p2.dy)) {
+      if (dy < m.min(p1.dy, p2.dy)) {
         continue;
       }
-      if (dy >= max(p1.dy, p2.dy)) {
+      if (dy >= m.max(p1.dy, p2.dy)) {
         continue;
       }
 
@@ -99,15 +98,15 @@ extension OffsetExt on Offset {
     for (int i = 0; i < mPoints.length; i++) {
       Offset p1 = mPoints[i];
       Offset p2 = mPoints[((i + 1) % mPoints.length)];
-      if (dy < min(p1.dy, p2.dy)) {
+      if (dy < m.min(p1.dy, p2.dy)) {
         continue;
       }
-      if (dy > max(p1.dy, p2.dy)) {
+      if (dy > m.max(p1.dy, p2.dy)) {
         continue;
       }
       if (p1.dy == p2.dy) {
-        double minX = min(p1.dx, p2.dx);
-        double maxX = max(p1.dx, p2.dx);
+        double minX = m.min(p1.dx, p2.dx);
+        double maxX = m.max(p1.dx, p2.dx);
 // point在水平线段p1p2上,直接return true
         if ((dy == p1.dy) && (dx >= minX && dx <= maxX)) {
           return true;
@@ -151,22 +150,29 @@ extension OffsetExt on Offset {
     }
 
     ///精度(4位小数)
-    var ab = (vectorA.angleToSigned(vectorB)*1000).toInt();
-    var ap = (vectorA.angleToSigned(vectorP)*1000).toInt();
+    var ab = (vectorA.angleToSigned(vectorB) * 1000).toInt();
+    var ap = (vectorA.angleToSigned(vectorP) * 1000).toInt();
+
     bool result = ap <= ab;
     if (ap < 0 && ab < 0) {
       result = ap >= ab;
+    } else if (ab > 0 && ap < 0) {
+      result = false;
     }
     return result;
   }
 
+  bool inCircle(num radius, {Offset center = Offset.zero}) {
+    return distance2(center) <= radius;
+  }
+
   /// 给定一个点的坐标和圆心坐标求，求点的偏移角度
   double offsetAngle([Offset center = Offset.zero]) {
-    double d = atan2(dy - center.dy, dx - center.dx);
+    double d = m.atan2(dy - center.dy, dx - center.dx);
     if (d < 0) {
-      d += 2 * pi;
+      d += 2 * m.pi;
     }
-    return d * 180 / pi;
+    return d * 180 / m.pi;
   }
 
   ///返回绕center点旋转angle角度后的位置坐标
@@ -175,15 +181,15 @@ extension OffsetExt on Offset {
   Offset rotateOffset(num angle, {Offset center = Offset.zero}) {
     angle = angle % 360;
     num t = angle * Constants.angleUnit;
-    double x = (dx - center.dx) * cos(t) - (dy - center.dy) * sin(t) + center.dx;
-    double y = (dx - center.dx) * sin(t) + (dy - center.dy) * cos(t) + center.dy;
+    double x = (dx - center.dx) * m.cos(t) - (dy - center.dy) * m.sin(t) + center.dx;
+    double y = (dx - center.dx) * m.sin(t) + (dy - center.dy) * m.cos(t) + center.dy;
     return Offset(x, y);
   }
 }
 
 ///给定一个半径和圆心计算给定角度对应的位置坐标
 Offset circlePoint(num radius, num angle, [Offset center = Offset.zero]) {
-  double x = center.dx + radius * cos(angle * Constants.angleUnit);
-  double y = center.dy + radius * sin(angle * Constants.angleUnit);
+  double x = center.dx + radius * m.cos(angle * Constants.angleUnit);
+  double y = center.dy + radius * m.sin(angle * Constants.angleUnit);
   return Offset(x, y);
 }

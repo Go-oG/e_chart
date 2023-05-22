@@ -27,6 +27,7 @@ class GridLayout extends RectCoordLayout<GridInner> {
       var v = GridAxisImpl(ele, [], Direction.vertical);
       _yMap[ele] = v;
     }
+
   }
 
   @override

@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'shape_element.dart';
+import 'chart_shape.dart';
 
 ///正多边形
-class PositiveShape implements ShapeElement {
+class PositiveShape implements Shape {
   final Offset center;
   final num r;
   final int count;
@@ -20,7 +20,7 @@ class PositiveShape implements ShapeElement {
   Path? _path;
 
   @override
-  Path path(bool close) {
+  Path toPath(bool close) {
     if (_path != null) {
       return _path!;
     }

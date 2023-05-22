@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:e_chart/src/ext/path_ext.dart';
+import 'package:e_chart/src/shape/area.dart';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 
@@ -10,47 +11,38 @@ import 'line_style.dart';
 /// 区域样式
 class AreaStyle {
   final bool show;
+
+  ///控制是否是曲线
+  final bool smooth;
   final Color? color;
   final sd.Shader? shader;
-  final BoxShadow? shadow;
+  final List<BoxShadow> shadow;
   final LineStyle? border;
-
-  const AreaStyle({this.show = true, this.color, this.shader, this.shadow, this.border});
+  const AreaStyle({
+    this.show = true,
+    this.color,
+    this.shader,
+    this.shadow = const [],
+    this.border,
+    this.smooth = false,
+  });
 
   @override
   String toString() {
     return '[AreaStyle:Color:$color shader:${shader.runtimeType} shadow:$shadow border:$border ]';
   }
 
-  void fillPaint(Paint paint, Rect? rect, {double? colorOpacity}) {
+  void fillPaint(Paint paint, Rect? rect) {
     paint.reset();
     if (color != null) {
-      if (colorOpacity != null) {
-        paint.color = color!.withOpacity(colorOpacity);
-      } else {
-        paint.color = color!;
-      }
+      paint.color = color!;
     }
     if (shader != null && rect != null) {
-      paint.shader = shader!.toShader(rect, colorOpacity);
+      paint.shader = shader!.toShader(rect, null);
     }
   }
 
-  void drawPath(Canvas canvas, Paint paint, Path path, {double? colorOpacity, bool drawDash = false}) {
-    if (_notDraw()) {
-      return;
-    }
-    fillPaint(paint, path.getBounds(), colorOpacity: colorOpacity);
-    paint.style = PaintingStyle.fill;
-    canvas.drawPath(path, paint);
-    border?.drawPath(canvas, paint, path, drawDash: drawDash, colorOP: colorOpacity);
-
-    if (shadow != null) {
-      path.drawShadows(canvas, paint, path, [shadow!]);
-    }
-  }
-
-  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points, {double? colorOpacity}) {
+  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points) {
     if (_notDraw()) {
       return;
     }
@@ -62,61 +54,19 @@ class AreaStyle {
       canvas.drawPoints(PointMode.points, points, paint);
       return;
     }
-
-    Path path = Path();
-    path.moveTo(points[0].dx, points[0].dy);
-    for (int i = 1; i < points.length; i++) {
-      Offset offset = points[i];
-      path.lineTo(offset.dx, offset.dy);
-    }
-    if (points.length >= 3) {
-      path.close();
-    }
-    fillPaint(paint, path.getBounds(), colorOpacity: colorOpacity);
-    paint.style = PaintingStyle.fill;
-    canvas.drawPath(path, paint);
-
-    border?.drawPolygon(canvas, paint, points, close: true);
+    Line line = Line(points, smoothRatio: smooth ? 0.25 : null);
+    drawPath(canvas, paint, line.toPath(true));
   }
 
-  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, bool first) {
+  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List) {
     if (_notDraw()) {
       return;
     }
-    Path path;
-    bool smooth = border != null && border!.smooth;
-    if (first) {
-      Line line = Line(p1List, smoothRatio: smooth ? 0.2 : null);
-      path = line.path(false);
-      for (int i = p2List.length - 1; i >= 0; i--) {
-        var element = p2List[i];
-        path.lineTo(element.dx, element.dy);
-      }
-      path.close();
-    } else {
-      if (smooth) {
-        path = Line.smoothArea(p1List, p2List, ratio: 0.2);
-      } else {
-        Line line = Line(p1List);
-        path = line.path(false);
-        for (int i = p2List.length - 1; i >= 0; i--) {
-          var element = p2List[i];
-          path.lineTo(element.dx, element.dy);
-        }
-        path.close();
-      }
-    }
-
-    fillPaint(paint, path.getBounds());
-    paint.style = PaintingStyle.fill;
-    canvas.drawPath(path, paint);
-
-    List<Offset> list = [...p1List];
-    list.addAll(p2List.reversed);
-    border?.drawPolygon(canvas, paint, list, close: true);
+    Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth, ratioA: 0.25, ratioB: 0.25);
+    drawPath(canvas, paint, area.toPath(true));
   }
 
-  void drawRect(Canvas canvas, Paint paint, Rect rect, {double? colorOpacity, double? corner}) {
+  void drawRect(Canvas canvas, Paint paint, Rect rect, [double? corner]) {
     if (_notDraw()) {
       return;
     }
@@ -128,36 +78,42 @@ class AreaStyle {
       path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(corner)));
       path.close();
     }
-    drawPath(canvas, paint, path, drawDash: true, colorOpacity: colorOpacity);
+    drawPath(canvas, paint, path);
   }
 
-  void drawRRect(Canvas canvas, Paint paint, RRect rect, {double? colorOpacity}) {
+  void drawRRect(Canvas canvas, Paint paint, RRect rect) {
     if (_notDraw()) {
       return;
     }
     Path path = Path();
     path.addRRect(rect);
-    drawPath(canvas, paint, path, colorOpacity: colorOpacity, drawDash: true);
+    drawPath(canvas, paint, path);
   }
 
-  void drawPath2(Canvas canvas, Paint paint, Path p1, Path? p2) {
+  void drawCircle(Canvas canvas, Paint paint, Offset center, num radius) {
     if (_notDraw()) {
       return;
     }
-    Path path = p1;
-    if (p2 != null) {
-      path = Path.combine(PathOperation.difference, p1, p2);
+    Path path = Path();
+    path.addOval(Rect.fromCircle(center: center, radius: radius.toDouble()));
+    drawPath(canvas, paint, path);
+  }
+
+  void drawPath(Canvas canvas, Paint paint, Path path) {
+    if (_notDraw()) {
+      return;
     }
+    if (shadow.isNotEmpty) {
+      path.drawShadows(canvas, path, shadow);
+    }
+    fillPaint(paint, path.getBounds());
     paint.style = PaintingStyle.fill;
     canvas.drawPath(path, paint);
-    border?.drawPath(canvas, paint, p1, drawDash: true);
-    if (shadow != null) {
-      path.drawShadows(canvas, paint, p1, [shadow!]);
-    }
+    border?.drawPath(canvas, paint, path, drawDash: true);
   }
 
   bool _notDraw() {
-    if (color == null && shader == null && shadow == null && border == null) {
+    if (color == null && shader == null && shadow.isEmpty && border == null) {
       return true;
     }
     return !show;

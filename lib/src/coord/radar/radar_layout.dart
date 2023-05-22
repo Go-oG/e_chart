@@ -68,9 +68,9 @@ class RadarLayout extends CircleCoordLayout<Radar> {
       double r = radiusItem * (i + 1);
       Path path;
       if (props.shape == RadarShape.circle) {
-        path = Circle(r: r).path(false);
+        path = Circle(r: r).toPath(false);
       } else {
-        path = PositiveShape(r: r, count: axisCount).path(false);
+        path = PositiveShape(r: r, count: axisCount).toPath(false);
       }
       _shapePathList.add(path);
     }
@@ -112,10 +112,10 @@ class RadarLayout extends CircleCoordLayout<Radar> {
         if (i != 0) {
           tmpPath = Path.combine(PathOperation.difference, tmpPath, _shapePathList[i - 1]);
         }
-        style.drawPath(canvas, paint, tmpPath);
+        style.drawPath(canvas, mPaint, tmpPath);
       }
       LineStyle? lineStyle = props.borderStyleFun?.call(i, null);
-      lineStyle?.drawPath(canvas, paint, path);
+      lineStyle?.drawPath(canvas, mPaint, path);
     }
   }
 
@@ -124,7 +124,7 @@ class RadarLayout extends CircleCoordLayout<Radar> {
     AxisLine axisLine = props.axisLine;
     if (axisLine.show) {
       _axisMap.forEach((key, value) {
-        axisLine.style.drawPolygon(canvas, paint, [value.props.start, value.props.end]);
+        axisLine.style.drawPolygon(canvas, mPaint, [value.props.start, value.props.end]);
       });
     }
 
@@ -141,7 +141,7 @@ class RadarLayout extends CircleCoordLayout<Radar> {
       Offset offset = node.props.end;
       double angle = offset.offsetAngle();
       TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle));
-      style.draw(canvas, paint, indicator.name, config);
+      style.draw(canvas, mPaint, indicator.name, config);
       i++;
     }
   }

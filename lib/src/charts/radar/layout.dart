@@ -12,10 +12,10 @@ class RadarLayers {
     Context context = view.context;
     RadarLayout layout = context.findRadarCoord(view.series.radarIndex);
     RadarGroupNode groupNode = RadarGroupNode(group, []);
-    int i=0;
-    for (var element in group.dataList) {
-      Offset offset= layout.dataToPoint(i, element)??Offset.zero;
-      RadarNode radarNode=RadarNode(element,offset);
+    int i = 0;
+    for (var c in group.dataList) {
+      Offset offset = layout.dataToPoint(i, c.value) ?? Offset.zero;
+      RadarNode radarNode = RadarNode(c, offset);
       groupNode.nodeList.add(radarNode);
       i++;
     }
@@ -26,6 +26,7 @@ class RadarLayers {
 class RadarGroupNode {
   final RadarGroup data;
   final List<RadarNode> nodeList;
+  bool show = true;
 
   RadarGroupNode(this.data, this.nodeList);
 
@@ -53,15 +54,14 @@ class RadarGroupNode {
   }
 }
 
-
 class RadarNode {
-  final num data;
+  final RadarData data;
   final Offset offset;
   Offset cur = Offset.zero;
   Offset start = Offset.zero;
   Offset end = Offset.zero;
 
-  RadarNode(this.data,this.offset) {
+  RadarNode(this.data, this.offset) {
     cur = offset;
     start = offset;
     end = offset;

@@ -7,8 +7,8 @@ import '../bar_series.dart';
 /// 不可再分的最小绘制单元，
 class SingleNode {
   final BarSeries series;
-  final GroupData groupData;
-  final SingleData data;
+  final BarGroupData groupData;
+  final BarSingleData data;
 
   ///实现动画相关的
   late SingleProps cur;

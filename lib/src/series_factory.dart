@@ -19,8 +19,6 @@ import 'charts/point/point_series.dart';
 import 'charts/radar/radar_chart.dart';
 import 'charts/radar/radar_series.dart';
 import 'charts/series.dart';
-import 'charts/sunburst/sunburst_chart.dart';
-import 'charts/sunburst/sunburst_series.dart';
 import 'core/view.dart';
 
 class SeriesFactory {
@@ -95,9 +93,6 @@ class DefaultSeriesConvert extends SeriesConvert {
     }
     if (series is RadarSeries) {
       return RadarView(series);
-    }
-    if (series is SunburstSeries) {
-      return SunburstView(series);
     }
     return null;
   }

@@ -67,7 +67,7 @@ class BarView extends View {
     for (var element in _layout.nodeList) {
       for (var node in element.nodeList) {
         for (var node2 in node.nodeList) {
-          node2.draw(canvas, paint);
+          node2.draw(canvas, mPaint);
         }
       }
     }

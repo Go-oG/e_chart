@@ -81,7 +81,7 @@ class CandleStickView extends View implements GridChild {
       path.moveTo(openCenter.dx, openCenter.dy);
       path.lineTo(maxCenter.dx, maxCenter.dy);
     }
-    lineStyle.drawPath(canvas, paint, path, drawDash: true);
+    lineStyle.drawPath(canvas, mPaint, path);
 
     path.reset();
     path.moveTo(openLeft.dx, openLeft.dy);
@@ -89,6 +89,6 @@ class CandleStickView extends View implements GridChild {
     path.lineTo(closeRight.dx, closeRight.dy);
     path.lineTo(closeLeft.dx, closeLeft.dy);
     path.close();
-    areaStyle.drawPath(canvas, paint, path, drawDash: true);
+    areaStyle.drawPath(canvas, mPaint, path);
   }
 }

@@ -6,6 +6,7 @@ import '../../animation/tween/offset_tween.dart';
 import '../../coord/radar/radar_child.dart';
 import '../../core/view.dart';
 import '../../style/area_style.dart';
+import '../../style/symbol/symbol.dart';
 import 'layout.dart';
 import 'radar_series.dart';
 
@@ -15,7 +16,7 @@ class RadarView extends View implements RadarChild {
   final RadarLayers _layers = RadarLayers();
   final List<RadarGroupNode> _groupNodeList = [];
 
-  RadarView(this.series, {super.paint, super.zIndex = 0});
+  RadarView(this.series);
 
   @override
   void onAttach() {
@@ -62,14 +63,19 @@ class RadarView extends View implements RadarChild {
 
   void _drawData(Canvas canvas) {
     for (var group in _groupNodeList) {
-      if (!group.data.show) {
+      if (!group.show) {
         continue;
       }
       AreaStyle? style = series.areaStyleFun.call(group.data, null);
       if (style == null || !style.show) {
         continue;
       }
-      style.drawPolygonArea(canvas, paint, group.getPathOffset());
+      List<Offset> ol=group.getPathOffset();
+      style.drawPolygonArea(canvas, mPaint, ol);
+      for(int i=0;i<ol.length;i++){
+        ChartSymbol? symbol=series.symbolFun?.call(group.nodeList[i].data,i,group.data);
+        symbol?.draw(canvas, mPaint, ol[i]);
+      }
     }
   }
 
@@ -78,7 +84,7 @@ class RadarView extends View implements RadarChild {
     List<num> resultList = [];
     for (var group in series.data) {
       if(group.dataList.length>dim){
-        resultList.add(group.dataList[dim]);
+        resultList.add(group.dataList[dim].value);
       }
     }
     return resultList;

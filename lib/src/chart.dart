@@ -15,20 +15,20 @@ import 'model/enums/drag_type.dart';
 import 'model/enums/scale_type.dart';
 
 class ChartConfig {
-  final ChartTitle? title;
-  final Legend? legend;
-  final List<XAxis> xAxisList;
-  final List<YAxis> yAxisList;
-  final List<Polar> polarList;
-  final List<Radar> radarList;
-  final List<Parallel> parallelList;
-  final List<Calendar> calendarList;
-  final List<ChartSeries> series;
-  final AnimatorProps animation;
-  final Grid grid;
-  final ScaleType scaleType;
-  final DragType dragType;
-  final ToolTip? toolTip;
+  ChartTitle? title;
+  Legend? legend;
+  List<XAxis> xAxisList;
+  List<YAxis> yAxisList;
+  List<Polar> polarList;
+  List<Radar> radarList;
+  List<Parallel> parallelList;
+  List<Calendar> calendarList;
+  List<ChartSeries> series;
+  AnimatorProps animation;
+  Grid grid;
+  ScaleType scaleType;
+  DragType dragType;
+  ToolTip? toolTip;
 
   ChartConfig({
     required this.series,
@@ -36,14 +36,14 @@ class ChartConfig {
     this.legend,
     this.xAxisList = const [XAxis()],
     this.yAxisList = const [YAxis()],
-    this.polarList = const [Polar()],
+    this.polarList = const [],
     this.radarList = const [],
     this.parallelList = const [],
     this.calendarList = const [],
     this.animation = const AnimatorProps(),
     this.grid = const Grid(),
     this.scaleType = ScaleType.scale,
-    this.dragType = DragType.drag,
+    this.dragType = DragType.longPress,
     this.toolTip,
   });
 }

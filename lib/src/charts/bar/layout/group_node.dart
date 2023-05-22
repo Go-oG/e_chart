@@ -5,7 +5,5 @@ import 'stack_node.dart';
 class GroupNode {
   final int index;
   final List<StackNode> nodeList = [];
-
   GroupNode(this.index);
-
 }

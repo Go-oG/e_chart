@@ -49,11 +49,11 @@ class ParallelView extends View implements ParallelChild {
       }
       if (ele.path == null) {
         if (ele.offsetList.length == 1) {
-          ele.style?.drawPolygon(canvas, paint, ele.offsetList);
+          ele.style?.drawPolygon(canvas, mPaint, ele.offsetList);
         }
         return;
       }
-      ele.style?.drawPath(canvas, paint, ele.path!);
+      ele.style?.drawPath(canvas, mPaint, ele.path!);
     }
     canvas.restore();
   }
