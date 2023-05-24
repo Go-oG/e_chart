@@ -1,4 +1,3 @@
-import 'package:e_chart/src/core/view.dart';
 import 'package:flutter/material.dart';
 import '../chart.dart';
 import 'context.dart';
@@ -6,11 +5,12 @@ import 'view_group.dart';
 
 abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewParent {
   late final Context context;
+  bool useSaveLayer = false;
   bool _inLayout = false;
   bool _inDrawing = false;
-  Size? _oldSize;
+  Rect _boundRect = Rect.zero;
 
-  Size get size => _oldSize!;
+  Size get size => _boundRect.size;
 
   BaseRender(ChartConfig config, TickerProvider tickerProvider) {
     context = Context(this, config, tickerProvider);
@@ -36,10 +36,12 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
   @protected
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawColor(Colors.white, BlendMode.src);
-    if (_oldSize == null || size.height != _oldSize!.height || size.width != _oldSize!.width) {
+    if (_inLayout) {
+      return;
+    }
+    if (_boundRect.height != size.height || _boundRect.width != size.width) {
       _inLayout = true;
-      _oldSize = size;
+      _boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
       try {
         onMeasure(size.width, size.height);
         onLayout(size.width, size.height);
@@ -54,7 +56,15 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     }
     _inDrawing = true;
     try {
+      ///限制绘制范围在当前控件之内
+      if (useSaveLayer) {
+        canvas.saveLayer(_boundRect, Paint());
+      } else {
+        canvas.save();
+        canvas.clipRect(_boundRect);
+      }
       onDraw(canvas);
+      canvas.restore();
     } catch (e) {
       rethrow;
     } finally {
@@ -64,17 +74,8 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
   }
 
   @override
-  void changeChildToFront(View child) {}
-
-  @override
-  void clearChildFocus(View child) {}
-
-  @override
   Rect getGlobalAreaBounds() {
-    if (_oldSize == null) {
-      return Rect.zero;
-    }
-    return Rect.fromLTWH(0, 0, _oldSize!.width, _oldSize!.height);
+    return _boundRect;
   }
 
   @override
@@ -90,7 +91,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     if (_inLayout) {
       return;
     }
-    _oldSize = null;
+    _boundRect = Rect.zero;
     updateUI();
   }
 

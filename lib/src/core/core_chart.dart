@@ -2,15 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import '../chart.dart';
-import '../component/tooltip/tool_tip_view.dart';
-import '../coord/circle_coord_layout.dart';
-import '../coord/rect_coord_layout.dart';
 import '../gesture/gesture_dispatcher.dart';
 import '../model/enums/drag_type.dart';
 import '../model/enums/scale_type.dart';
-import 'context.dart';
-import 'view.dart';
-import 'view_group.dart';
 import 'base_render.dart';
 import 'default_render.dart';
 
@@ -67,7 +61,6 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   Widget _buildPainter(ChartConfig config) {
     GestureDispatcher dispatcher = render.context.gestureDispatcher;
-
     void Function(LongPressStartDetails)? lps;
     void Function(LongPressMoveUpdateDetails)? lpm;
     void Function(LongPressEndDetails)? lpe;
@@ -107,9 +100,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
       onScaleStart: ss,
       onScaleUpdate: su,
       onScaleEnd: se,
-      child: RepaintBoundary(
-        child: CustomPaint(painter: render),
-      ),
+      child: CustomPaint(painter: render,child: Container(),),
     );
     bool isPhone = Platform.isIOS || Platform.isAndroid;
 
@@ -124,151 +115,4 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
       child: ges,
     );
   }
-}
-
-/// 渲染的基类，支持多个Render 同时渲染
-class MultiRender extends ChangeNotifier implements CustomPainter, ViewParent {
-  late final Context context;
-  bool _firstDraw = true;
-  bool _layoutFlag = false;
-  bool _drawing = false;
-
-  MultiRender(ChartConfig config, TickerProvider tickerProvider) {
-    context = Context(this, config, tickerProvider);
-    context.init();
-  }
-
-  Size? _oldSize;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawColor(Colors.white, BlendMode.src);
-    if (_oldSize == null || size != _oldSize) {
-      _layoutFlag = true;
-      _oldSize = size;
-      List<View> vl = [...context.renderList];
-      try {
-        for (var element in vl) {
-          element.measure(size.width, size.height);
-        }
-        for (var element in vl) {
-          if (element is RectCoordLayout) {
-            double leftMargin = element.props.leftMargin.convert(size.width);
-            double topMargin = element.props.topMargin.convert(size.height);
-            element.layout(leftMargin, topMargin, leftMargin + element.boundRect.width, topMargin + element.boundRect.height);
-          } else if (element is CircleCoordLayout) {
-            double centerX = element.props.center[0].convert(size.width);
-            double centerY = element.props.center[1].convert(size.height);
-            double radius = element.boundRect.width / 2;
-            element.layout(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
-          } else {
-            element.layout(0, 0, element.boundRect.width, element.boundRect.height);
-          }
-        }
-      } catch (e) {
-        rethrow;
-      } finally {
-        _layoutFlag = false;
-      }
-    }
-    eachRender(canvas, size);
-  }
-
-  void eachRender(Canvas canvas, Size size) {
-    if (_drawing) {
-      return;
-    }
-    _drawing = true;
-    if (_firstDraw) {
-      _firstDraw = false;
-    }
-
-    try {
-      for (var element in context.renderList) {
-        element.draw(canvas);
-      }
-      renderToolTip(canvas);
-    } catch (e) {
-      rethrow;
-    } finally {
-      _drawing = false;
-    }
-    _drawing = false;
-  }
-
-  void renderToolTip(Canvas canvas) {
-    if (context.toolTip == null) {
-      return;
-    }
-    ToolTipView tipView = context.toolTip!;
-    Offset p=tipView.builder.onMenuPosition();
-    tipView.measure(_oldSize!.width, _oldSize!.height);
-    tipView.layout(p.dx, p.dy, p.dx+tipView.width, p.dy+tipView.height);
-    tipView.draw(canvas);
-  }
-
-  @override
-  bool? hitTest(Offset position) {
-    return true;
-  }
-
-  @override
-  SemanticsBuilderCallback? get semanticsBuilder => null;
-
-  @override
-  bool shouldRebuildSemantics(covariant CustomPainter oldDelegate) {
-    return false;
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    for (var element in context.renderList) {
-      if (element.isDirty) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void updateUI({bool animator = false}) {
-    //如果当前正在绘制则丢弃
-    if (_drawing || _layoutFlag) {
-      debugPrint('阻挡绘制 $_drawing  $_layoutFlag');
-      return;
-    }
-    notifyListeners();
-  }
-
-  @override
-  void changeChildToFront(View child) {}
-
-  @override
-  void clearChildFocus(View child) {}
-
-  @override
-  void parentInvalidate({bool animator = false}) {
-    updateUI(animator: animator);
-  }
-
-  @override
-  void requestLayout() {
-    if (_layoutFlag) {
-      return;
-    }
-    _oldSize = null;
-    updateUI();
-  }
-
-  void destroy() {
-    context.destroy();
-  }
-
-  @override
-  Rect getGlobalAreaBounds() {
-    if (_oldSize == null) {
-      return Rect.zero;
-    }
-    return Rect.fromLTWH(0, 0, _oldSize!.width, _oldSize!.height);
-  }
-
 }

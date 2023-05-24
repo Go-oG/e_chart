@@ -187,9 +187,5 @@ abstract class ViewParent {
 
   void requestLayout();
 
-  void clearChildFocus(View child);
-
-  void changeChildToFront(View child);
-
   Rect getGlobalAreaBounds();
 }
