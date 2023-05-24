@@ -101,9 +101,12 @@ abstract class ChartSeries {
   }
 
   void dispose() {
+    _listenerMap.forEach((key, value) {
+      _notifier.removeListener(value);
+    });
     _listenerMap.clear();
-    _notifier.dispose();
   }
+
 }
 
 abstract class RectSeries extends ChartSeries {

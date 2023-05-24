@@ -20,6 +20,12 @@ class GestureDispatcher {
   }
 
   void dispose() {
+    _hoverNodeSet.clear();
+    _tapNodeSet.clear();
+    _doubleTapNodeSet.clear();
+    _longPressNodeSet.clear();
+    _dragNodeList.clear();
+    _scaleNodeList.clear();
     for (ChartGesture gesture in _gestureNodeSet) {
       gesture.clear();
     }

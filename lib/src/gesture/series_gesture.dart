@@ -206,4 +206,40 @@ mixin SeriesGesture on ChartSeries {
     }
     return needBind;
   }
+
+  void clearGesture() {
+    click = null;
+    clickDown = null;
+    clickUp = null;
+    clickCancel = null;
+
+    doubleClick = null;
+    doubleClickDown = null;
+    doubleClickUp = null;
+    doubleClickCancel = null;
+
+    longPressStart = null;
+    longPressMove = null;
+    longPressEnd = null;
+    longPressCancel = null;
+
+    hoverStart = null;
+    hoverMove = null;
+    hoverEnd = null;
+
+    verticalDragStart = null;
+    verticalDragMove = null;
+    verticalDragEnd = null;
+    verticalDragCancel = null;
+
+    horizontalDragStart = null;
+    horizontalDragMove = null;
+    horizontalDragEnd = null;
+    horizontalDragCancel = null;
+
+    scaleStart = null;
+    scaleUpdate = null;
+    scaleEnd = null;
+    scaleCancel = null;
+  }
 }

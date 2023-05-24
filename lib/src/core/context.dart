@@ -112,8 +112,6 @@ class Context {
     _axisMap.clear();
     _coordMap.clear();
     _renderList.clear();
-    _legend?.detach();
-    _legend = null;
   }
 
   void _initChart() {
@@ -225,7 +223,11 @@ class Context {
 
   void _detach() {
     _legend?.detach();
+    _legend=null;
+    _toolTip?.detach();
+    _toolTip=null;
     _gestureDispatcher.dispose();
+
     for (var element in _renderList) {
       element.unBindSeries();
       element.detach();
