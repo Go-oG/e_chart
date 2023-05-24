@@ -8,7 +8,7 @@ import 'base_render.dart';
 import 'view.dart';
 
 class DefaultRender extends BaseRender {
-  DefaultRender(super.config, super.tickerProvider);
+  DefaultRender(super.config, super.tickerProvider,[super.devicePixelRatio]);
 
   @override
   void onMeasure(double parentWidth, double parentHeight) {

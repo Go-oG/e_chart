@@ -85,7 +85,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
       su = dispatcher.onScaleUpdate;
       se = dispatcher.onScaleEnd;
     }
-
+    MediaQueryData data = MediaQuery.of(context);
+    render.context.devicePixelRatio = data.devicePixelRatio;
     Widget ges = GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: dispatcher.onTapDown,
@@ -100,7 +101,10 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
       onScaleStart: ss,
       onScaleUpdate: su,
       onScaleEnd: se,
-      child: CustomPaint(painter: render,child: Container(),),
+      child: CustomPaint(
+        painter: render,
+        child: Container(),
+      ),
     );
     bool isPhone = Platform.isIOS || Platform.isAndroid;
 

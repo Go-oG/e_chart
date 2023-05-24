@@ -36,8 +36,8 @@ class Context {
   final ViewParent root;
   final ChartConfig config;
   final TickerProvider tickerProvider;
-
   late final GestureDispatcher _gestureDispatcher;
+  double devicePixelRatio ;
 
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
 
@@ -57,6 +57,7 @@ class Context {
 
   ///Title(全局只会存在一个)
   TitleView? _title;
+
   TitleView? get title => _title;
 
   ///图例(全局一个实例)
@@ -72,7 +73,13 @@ class Context {
   //GridLayout
   late GridInner _innerGrid;
 
-  Context(this.root, this.config, this.tickerProvider, [GestureDispatcher? dispatcher]) {
+  Context(
+    this.root,
+    this.config,
+    this.tickerProvider, [
+    GestureDispatcher? dispatcher,
+    this.devicePixelRatio = 1,
+  ]) {
     _gestureDispatcher = dispatcher ?? GestureDispatcher();
   }
 
@@ -88,6 +95,7 @@ class Context {
       config ?? this.config,
       tickerProvider ?? this.tickerProvider,
       dispatcher ?? _gestureDispatcher,
+      devicePixelRatio,
     );
   }
 
