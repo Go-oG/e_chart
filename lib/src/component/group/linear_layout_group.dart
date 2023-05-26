@@ -4,7 +4,7 @@ import 'dart:ui';
 import '../../core/view_group.dart';
 import '../../model/enums/direction.dart';
 
-class LinearLayout extends ViewGroup {
+class LinearLayout extends ChartViewGroup {
   Direction direction;
 
   LinearLayout({this.direction = Direction.vertical});

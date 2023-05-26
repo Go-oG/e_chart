@@ -42,13 +42,13 @@ class Context {
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
 
   ///坐标轴
-  final Map<BaseAxis, View> _axisMap = {};
+  final Map<BaseAxis,  ChartView> _axisMap = {};
 
   ///坐标系
   final Map<Coordinate, CoordinateLayout> _coordMap = {};
 
   ///存放普通的视图
-  final Map<ChartSeries, View> _seriesMap = {};
+  final Map<ChartSeries,  ChartView> _seriesMap = {};
 
   /// 存放渲染的布局组件
   final List<CoordinateLayout> _renderList = [];
@@ -122,7 +122,7 @@ class Context {
 
     ///初始化Series
     for (var series in config.series) {
-      View? view = SeriesFactory.instance.convert(series);
+      ChartView? view = SeriesFactory.instance.convert(series);
       if (view == null) {
         throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
       }
@@ -163,7 +163,7 @@ class Context {
     ///将某些特定的Series和坐标系绑定
     Set<CoordinateLayout> viewList = {};
     for (var series in config.series) {
-      View view = _seriesMap[series]!;
+      ChartView view = _seriesMap[series]!;
       CoordinateLayout? layout = _findCoordLayout(view, series);
       layout ??= SingleLayout();
       layout.addView(view);
@@ -180,7 +180,7 @@ class Context {
 
   void _initTitle() {}
 
-  CoordinateLayout? _findCoordLayout(View view, ChartSeries series) {
+  CoordinateLayout? _findCoordLayout( ChartView view, ChartSeries series) {
     if (series.coordSystem != null) {
       var coord = series.coordSystem!;
       if (coord == CoordSystem.grid) {

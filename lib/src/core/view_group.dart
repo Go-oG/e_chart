@@ -6,10 +6,10 @@ import 'context.dart';
 import 'view.dart';
 
 /// ViewGroup
-abstract class ViewGroup extends View implements ViewParent {
-  final List<View> _children = [];
+abstract class ChartViewGroup extends ChartView implements ViewParent {
+  final List<ChartView> _children = [];
 
-  ViewGroup();
+  ChartViewGroup();
 
   @override
   void attach(Context context, ViewParent parent) {
@@ -27,19 +27,13 @@ abstract class ViewGroup extends View implements ViewParent {
     }
   }
 
-  @override
-  void changeChildToFront(View child) {
+  void changeChildToFront( ChartView child) {
     int index = children.indexOf(child);
     if (index != -1) {
       children.removeAt(index);
     }
     _addViewInner(child, -1);
     requestLayout();
-  }
-
-  @override
-  void clearChildFocus(View child) {
-    invalidate();
   }
 
   @override
@@ -120,29 +114,29 @@ abstract class ViewGroup extends View implements ViewParent {
 
   /// 负责绘制单独的一个ChildView，同时负责Canvas的坐标的正确转换
   /// 如果在方法中调用了[invalidate]则返回true
-  bool drawChild(View child, Canvas canvas) {
+  bool drawChild( ChartView child, Canvas canvas) {
     return child.drawSelf(canvas, this);
   }
 
   ///========================管理子View相关方法=======================
-  void addView(View view, {int index = -1}) {
+  void addView( ChartView view, {int index = -1}) {
     _addViewInner(view, index);
     requestLayout();
   }
 
-  void removeView(View view) {
+  void removeView( ChartView view) {
     children.remove(view);
   }
 
-  View getChildAt(int index) {
+  ChartView getChildAt(int index) {
     return children[index];
   }
 
-  List<View> get children {
+  List< ChartView> get children {
     return _children;
   }
 
-  bool hasChildView(View view) {
+  bool hasChildView( ChartView view) {
     for (var element in _children) {
       if (element == view) {
         return true;
@@ -151,14 +145,14 @@ abstract class ViewGroup extends View implements ViewParent {
     return false;
   }
 
-  void _addViewInner(View child, int index) {
+  void _addViewInner( ChartView child, int index) {
     if (child.parent != null && child.parent != this) {
       throw FlutterError("The specified child already has a parent. You must call removeView() on the child's parent first.");
     }
     _addInArray(child, index);
   }
 
-  void _addInArray(View child, int index) {
+  void _addInArray( ChartView child, int index) {
     if (index >= children.length || index < 0 || children.isEmpty) {
       children.add(child);
       return;

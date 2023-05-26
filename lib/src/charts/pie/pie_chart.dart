@@ -18,7 +18,7 @@ import 'pie_series.dart';
 import 'pie_tween.dart';
 
 /// 饼图
-class PieView extends View {
+class PieView extends ChartView {
   final PieSeries series;
   final PieLayers _layers = PieLayers();
   final List<PieNode> _nodeList = [];

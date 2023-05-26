@@ -24,7 +24,7 @@ class LegendViewGroup extends FlexLayout {
   }
 }
 
-class LegendItemView extends View {
+class LegendItemView extends  ChartView {
   final LegendItem item;
 
   LegendItemView(this.item);

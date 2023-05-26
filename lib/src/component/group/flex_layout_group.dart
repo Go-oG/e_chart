@@ -6,7 +6,7 @@ import '../../core/view_group.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 
-class FlexLayout extends ViewGroup {
+class FlexLayout extends ChartViewGroup {
   Direction direction;
   VerticalDirection crossDirection;
   Align2 align;
@@ -22,13 +22,13 @@ class FlexLayout extends ViewGroup {
     for (var c in children) {
       c.measure(parentWidth, parentHeight);
     }
-    List<List<View>> vl = splitView(parentWidth, parentHeight);
+    List<List< ChartView>> vl = splitView(parentWidth, parentHeight);
     num w = 0;
     num h = 0;
     for (var list in vl) {
       num maxW = 0;
       num maxH = 0;
-      if (direction == Axis.vertical) {
+      if (direction == Direction.vertical) {
         for (var c in list) {
           maxW = max([c.width, maxW]);
           maxH += c.height;
@@ -39,7 +39,7 @@ class FlexLayout extends ViewGroup {
           maxW += c.width;
         }
       }
-      if (direction == Axis.vertical) {
+      if (direction == Direction.vertical) {
         w += maxW;
         h = max([maxH, h]);
       } else {
@@ -52,12 +52,12 @@ class FlexLayout extends ViewGroup {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    List<List<View>> vl = splitView(width, height);
+    List<List< ChartView>> vl = splitView(width, height);
     double l = 0;
-    double y = direction == Axis.vertical ? height : 0;
+    double y = direction == Direction.vertical ? height : 0;
     for (var list in vl) {
-      num maxW = maxBy<View>(list, (p0) => p0.width).width;
-      num maxH = maxBy<View>(list, (p0) => p0.height).height;
+      num maxW = maxBy< ChartView>(list, (p0) => p0.width).width;
+      num maxH = maxBy< ChartView>(list, (p0) => p0.height).height;
 
       for (var c in list) {
         if (crossDirection == VerticalDirection.down) {
@@ -80,7 +80,7 @@ class FlexLayout extends ViewGroup {
             c.layout(l, tt - c.height, l + c.width, tt);
           }
         }
-        if (direction == Axis.vertical) {
+        if (direction == Direction.vertical) {
           if (crossDirection == VerticalDirection.down) {
             y += c.height;
           } else {
@@ -91,7 +91,7 @@ class FlexLayout extends ViewGroup {
         }
       }
 
-      if (direction == Axis.vertical) {
+      if (direction == Direction.vertical) {
         l += maxW;
         y = crossDirection == VerticalDirection.up ? height : 0;
       } else {
@@ -101,13 +101,13 @@ class FlexLayout extends ViewGroup {
     }
   }
 
-  List<List<View>> splitView(double pw, double ph) {
+  List<List< ChartView>> splitView(double pw, double ph) {
     num w = 0;
     num h = 0;
-    List<List<View>> vl = [];
-    List<View> tmpList = [];
+    List<List< ChartView>> vl = [];
+    List< ChartView> tmpList = [];
     for (var c in children) {
-      if (direction == Axis.vertical) {
+      if (direction == Direction.vertical) {
         if (h < ph) {
           if ((c.height + h) >= ph) {
             vl.add(tmpList);

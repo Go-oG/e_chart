@@ -11,7 +11,7 @@ import 'funnel_series.dart';
 import 'layout.dart';
 
 /// 漏斗图
-class FunnelView extends View {
+class FunnelView extends  ChartView {
   final FunnelSeries series;
   final List<FunnelNode> _nodeList = [];
 

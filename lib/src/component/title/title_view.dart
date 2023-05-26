@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/view.dart';
 import 'title.dart';
 
-class TitleView extends View {
+class TitleView extends  ChartView {
   final ChartTitle title;
 
   TitleView(this.title);

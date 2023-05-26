@@ -6,41 +6,41 @@ import 'gesture_event.dart';
 
 ///用于给 ChartSeries 拓展事件处理
 mixin SeriesGesture on ChartSeries {
-  VoidFun2<View, NormalEvent>? click;
-  VoidFun2<View, NormalEvent>? clickDown;
-  VoidFun2<View, NormalEvent>? clickUp;
-  VoidFun1<View>? clickCancel;
+  VoidFun2<ChartView, NormalEvent>? click;
+  VoidFun2<ChartView, NormalEvent>? clickDown;
+  VoidFun2<ChartView, NormalEvent>? clickUp;
+  VoidFun1<ChartView>? clickCancel;
 
-  VoidFun2<View, NormalEvent>? doubleClick;
-  VoidFun2<View, NormalEvent>? doubleClickDown;
-  VoidFun2<View, NormalEvent>? doubleClickUp;
-  VoidFun1<View>? doubleClickCancel;
+  VoidFun2<ChartView, NormalEvent>? doubleClick;
+  VoidFun2<ChartView, NormalEvent>? doubleClickDown;
+  VoidFun2<ChartView, NormalEvent>? doubleClickUp;
+  VoidFun1<ChartView>? doubleClickCancel;
 
-  VoidFun2<View, NormalEvent>? longPressStart;
-  VoidFun2<View, LongPressMoveEvent>? longPressMove;
-  VoidFun2<View, NormalEvent>? longPressEnd;
-  VoidFun1<View>? longPressCancel;
+  VoidFun2<ChartView, NormalEvent>? longPressStart;
+  VoidFun2<ChartView, LongPressMoveEvent>? longPressMove;
+  VoidFun2<ChartView, NormalEvent>? longPressEnd;
+  VoidFun1<ChartView>? longPressCancel;
 
-  VoidFun2<View, NormalEvent>? hoverStart;
-  VoidFun2<View, NormalEvent>? hoverMove;
-  VoidFun2<View, NormalEvent>? hoverEnd;
+  VoidFun2<ChartView, NormalEvent>? hoverStart;
+  VoidFun2<ChartView, NormalEvent>? hoverMove;
+  VoidFun2<ChartView, NormalEvent>? hoverEnd;
 
-  VoidFun2<View, NormalEvent>? verticalDragStart;
-  VoidFun2<View, NormalEvent>? verticalDragMove;
-  VoidFun2<View, VelocityEvent>? verticalDragEnd;
-  VoidFun1<View>? verticalDragCancel;
+  VoidFun2<ChartView, NormalEvent>? verticalDragStart;
+  VoidFun2<ChartView, NormalEvent>? verticalDragMove;
+  VoidFun2<ChartView, VelocityEvent>? verticalDragEnd;
+  VoidFun1<ChartView>? verticalDragCancel;
 
-  VoidFun2<View, NormalEvent>? horizontalDragStart;
-  VoidFun2<View, NormalEvent>? horizontalDragMove;
-  VoidFun2<View, VelocityEvent>? horizontalDragEnd;
-  VoidFun1<View>? horizontalDragCancel;
+  VoidFun2<ChartView, NormalEvent>? horizontalDragStart;
+  VoidFun2<ChartView, NormalEvent>? horizontalDragMove;
+  VoidFun2<ChartView, VelocityEvent>? horizontalDragEnd;
+  VoidFun1<ChartView>? horizontalDragCancel;
 
-  VoidFun2<View, NormalEvent>? scaleStart;
-  VoidFun2<View, ScaleEvent>? scaleUpdate;
-  VoidFun2<View, VelocityEvent>? scaleEnd;
-  VoidFun1<View>? scaleCancel;
+  VoidFun2<ChartView, NormalEvent>? scaleStart;
+  VoidFun2<ChartView, ScaleEvent>? scaleUpdate;
+  VoidFun2<ChartView, VelocityEvent>? scaleEnd;
+  VoidFun1<ChartView>? scaleCancel;
 
-  bool bindGesture(View view, ChartGesture gesture) {
+  bool bindGesture(ChartView view, ChartGesture gesture) {
     bool needBind = false;
     if (click != null) {
       needBind = true;

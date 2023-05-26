@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   uuid: ^3.0.6
-  chart_xutil: ^1.0.0
+  chart_xutil: ^1.0.2
   vector_math: ^2.1.4
 
 dev_dependencies:

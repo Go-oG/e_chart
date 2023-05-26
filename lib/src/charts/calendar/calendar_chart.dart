@@ -9,7 +9,7 @@ import 'font_style.dart' as cf;
 import 'shape.dart';
 
 
-class CalendarView extends View {
+class CalendarView extends  ChartView {
   late final CalenderSeries _props;
   final List<DateTime> _oldSelectSet = [];
   final Set<String> _selectSet = {};

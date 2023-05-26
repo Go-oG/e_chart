@@ -49,9 +49,9 @@ class SeriesFactory {
     _convertList.add(_defaultConvert);
   }
 
-  View? convert(ChartSeries series) {
+  ChartView? convert(ChartSeries series) {
     for (var sc in _convertList) {
-      View? v = sc.convert(series);
+      ChartView? v = sc.convert(series);
       if (v != null) {
         return v;
       }
@@ -62,7 +62,7 @@ class SeriesFactory {
 
 class DefaultSeriesConvert extends SeriesConvert {
   @override
-  View? convert(ChartSeries series) {
+  ChartView? convert(ChartSeries series) {
     if (series is CandleStickSeries) {
       return CandleStickView(series);
     }
@@ -99,5 +99,5 @@ class DefaultSeriesConvert extends SeriesConvert {
 }
 
 abstract class SeriesConvert {
-  View? convert(ChartSeries series);
+  ChartView? convert(ChartSeries series);
 }

@@ -9,7 +9,7 @@ import '../../style/line_style.dart';
 import 'candlestick_series.dart';
 
 /// 单个K线图
-class CandleStickView extends View implements GridChild {
+class CandleStickView extends  ChartView implements GridChild {
   final CandleStickSeries series;
 
   CandleStickView(this.series);

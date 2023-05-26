@@ -6,7 +6,7 @@ import 'layout_helper.dart';
 import 'touch_helper.dart';
 
 ///用于处理Bar、line、point、 视图绘制相关不会包含坐标轴相关的计算和绘制
-class BarView extends View {
+class BarView extends  ChartView {
   final BarSeries series;
   final ValueNotifier<IntWrap> notifier = ValueNotifier(0.wrap());
   late LayoutHelper _layout;

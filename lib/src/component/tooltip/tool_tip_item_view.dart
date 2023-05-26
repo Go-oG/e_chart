@@ -6,7 +6,7 @@ import '../../model/text_position.dart';
 import '../../style/label.dart';
 import 'context_menu.dart';
 
-class ToolTipItemView extends View {
+class ToolTipItemView extends  ChartView {
   final MenuItem item;
   ToolTipItemView(this.item);
   Size? _subSize;

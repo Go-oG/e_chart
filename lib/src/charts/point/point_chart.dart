@@ -6,7 +6,7 @@ import '../../model/dynamic_data.dart';
 import '../../../src/core/index.dart';
 import '../index.dart';
 
-class PointView extends View with PolarChild {
+class PointView extends  ChartView with PolarChild {
 
   final PointSeries series;
 

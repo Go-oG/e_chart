@@ -11,7 +11,7 @@ import 'layout.dart';
 import 'radar_series.dart';
 
 /// 雷达图
-class RadarView extends View implements RadarChild {
+class RadarView extends  ChartView implements RadarChild {
   final RadarSeries series;
   final RadarLayers _layers = RadarLayers();
   final List<RadarGroupNode> _groupNodeList = [];

@@ -8,7 +8,7 @@ import 'layout.dart';
 import 'parallel_series.dart';
 
 //平行坐标系
-class ParallelView extends View implements ParallelChild {
+class ParallelView extends  ChartView implements ParallelChild {
   final ParallelSeries series;
   late final LayoutHelper _layout;
   List<ParallelDataLine> _result = [];

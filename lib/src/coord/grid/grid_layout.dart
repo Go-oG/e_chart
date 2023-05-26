@@ -31,7 +31,7 @@ class GridLayout extends RectCoordLayout<GridInner> {
   }
 
   @override
-  void addView(View view, {int index = -1}) {
+  void addView( ChartView view, {int index = -1}) {
     super.addView(view, index: index);
     if (view is GridChild) {
       var childView = view as GridChild;

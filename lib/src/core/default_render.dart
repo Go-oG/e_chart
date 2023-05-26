@@ -25,7 +25,7 @@ class DefaultRender extends BaseRender {
       h -= legendView.height;
     }
 
-    List<View> renderList = context.renderList;
+    List< ChartView> renderList = context.renderList;
     for (var v in renderList) {
       v.measure(parentWidth, parentHeight);
     }

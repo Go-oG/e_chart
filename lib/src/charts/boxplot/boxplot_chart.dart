@@ -8,7 +8,7 @@ import '../../style/line_style.dart';
 import 'boxplot_series.dart';
 
 /// 单个盒须图
-class BoxPlotView extends View implements GridChild {
+class BoxPlotView extends ChartView implements GridChild {
   final BoxplotSeries series;
 
   BoxPlotView(this.series);

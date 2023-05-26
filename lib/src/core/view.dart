@@ -9,7 +9,7 @@ import 'context.dart';
 import 'draw_node.dart';
 import 'view_group.dart';
 
-abstract class View extends DrawNode implements ToolTipBuilder {
+abstract class ChartView extends DrawNode implements ToolTipBuilder {
   late Context context;
 
   LayoutParams layoutParams = LayoutParams.match();
@@ -37,7 +37,7 @@ abstract class View extends DrawNode implements ToolTipBuilder {
   @protected
   bool forceMeasure = false;
 
-  View();
+  ChartView();
 
   ValueCallback<Command>? _viewRefreshCallback;
 
@@ -182,7 +182,7 @@ abstract class View extends DrawNode implements ToolTipBuilder {
   }
 
   @protected
-  bool drawSelf(Canvas canvas, ViewGroup parent) {
+  bool drawSelf(Canvas canvas, ChartViewGroup parent) {
     computeScroll();
     canvas.save();
     canvas.translate(left, top);
@@ -298,7 +298,7 @@ abstract class View extends DrawNode implements ToolTipBuilder {
   void computeScroll() {}
 }
 
-abstract class SeriesView<T extends ChartSeries> extends View {
+abstract class SeriesView<T extends ChartSeries> extends ChartView {
   final T series;
 
   SeriesView(this.series);
