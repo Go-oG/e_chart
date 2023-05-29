@@ -44,7 +44,7 @@ class PieView extends ChartView {
       return;
     }
     for (var ele in _tweenList) {
-      ele.stop(false);
+      ele.stop();
     }
     _tweenList.clear();
     List<ChartTween> tl = [];
@@ -81,7 +81,7 @@ class PieView extends ChartView {
       invalidate();
     });
     _tweenList.add(doubleTween);
-    doubleTween.start(context.tickerProvider);
+    doubleTween.start(context);
   }
 
   PieNode? findNode(Offset offset) {
@@ -167,7 +167,7 @@ class PieView extends ChartView {
       }
       invalidate();
     });
-    tween.start(context.tickerProvider);
+    tween.start(context);
   }
 
   @override

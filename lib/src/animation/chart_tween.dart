@@ -1,6 +1,5 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import 'chart_animator.dart';
 
 /// 抽象的补间动画
 abstract class ChartTween<T> extends ValueNotifier<T> {
@@ -11,7 +10,8 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   final double lowerBound;
   final double upperBound;
   final Duration delay;
-  ChartAnimator? _animator;
+
+  AnimationController? _controller;
   T _begin;
   T _end;
 
@@ -34,49 +34,30 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     _allowCross = allowCross;
   }
 
-  void start([TickerProvider? provider, bool allowRest = false]) {
-    if (provider == null && _animator == null) {
-      debugPrint("TickerProvider Is Null Not Allow Run");
-      value = end;
-      return;
-    }
-
-    if (provider == null) {
-      _animator!.forward();
-      return;
-    }
-
-    if (_animator == null) {
-      _animator = ChartAnimator(
-        provider,
-        duration: duration,
-        reverseDuration: reverseDuration,
-        behavior: behavior,
-        curve: curve,
-        lowerBound: lowerBound,
-        upperBound: upperBound,
-      );
-      _animator!.addListener(() {
-        value = _getValue(_animator?.value ?? 0);
-      });
-    } else {
-      if (allowRest) {
-        _animator!.reVsync(provider);
-      }
-    }
+  void start(Context context) {
+    stop();
+    AnimatorProps props = AnimatorProps(
+      duration: duration,
+      reverseDuration: reverseDuration,
+      behavior: behavior,
+      curve: curve,
+      lowerBound: lowerBound,
+      upperBound: upperBound,
+    );
+    _controller = context.boundedAnimation(props);
+    _controller!.addListener(() {
+      value = _getValue(_controller?.value ?? 0);
+    });
     if (_statusListener != null) {
-      _animator!.addStatusListener(_statusListener!);
+      _controller!.addStatusListener(_statusListener!);
     }
-    _animator!.forward();
+    _controller!.forward();
   }
 
-  void stop([bool reset = true]) {
-    _animator?.stop(canceled: true);
-    if (reset) {
-      value = end;
-    } else {
-      notifyListeners();
-    }
+  void stop() {
+    _controller?.stop(canceled: true);
+    _controller = null;
+    notifyListeners();
   }
 
   @override
@@ -92,16 +73,16 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
 
   T get end => _end;
 
-  bool get isAnimating => _animator != null && _animator!.isAnimating;
+  bool get isAnimating => _controller != null && _controller!.isAnimating;
 
-  bool get isCompleted => _animator != null && _animator!.isCompleted;
+  bool get isCompleted => _controller != null && _controller!.isCompleted;
 
-  bool get isDismissed => _animator != null && _animator!.isDismissed;
+  bool get isDismissed => _controller != null && _controller!.isDismissed;
 
-  AnimationStatus get status => _animator?.status ?? AnimationStatus.dismissed;
+  AnimationStatus get status => _controller?.status ?? AnimationStatus.dismissed;
 
   void changeValue(T begin, T end) {
-    _animator?.stop(canceled: false);
+    _controller?.stop(canceled: false);
     _begin = begin;
     _end = end;
     value = begin;

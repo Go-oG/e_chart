@@ -1,5 +1,7 @@
+import 'package:e_chart/src/animation/animation_manager.dart';
 import 'package:flutter/widgets.dart';
 
+import '../animation/animator_props.dart';
 import '../chart.dart';
 import '../charts/series.dart';
 import '../component/axis/base_axis.dart';
@@ -35,20 +37,23 @@ import 'view_group.dart';
 class Context {
   final ViewParent root;
   final ChartConfig config;
-  final TickerProvider tickerProvider;
-  late final GestureDispatcher _gestureDispatcher;
-  double devicePixelRatio ;
+  late final TickerProvider _provider;
+  final GestureDispatcher _gestureDispatcher = GestureDispatcher();
+  final AnimationManager _animationManager = AnimationManager();
+  double devicePixelRatio;
 
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
 
+  AnimationManager get animationManager => _animationManager;
+
   ///坐标轴
-  final Map<BaseAxis,  ChartView> _axisMap = {};
+  final Map<BaseAxis, ChartView> _axisMap = {};
 
   ///坐标系
   final Map<Coordinate, CoordinateLayout> _coordMap = {};
 
   ///存放普通的视图
-  final Map<ChartSeries,  ChartView> _seriesMap = {};
+  final Map<ChartSeries, ChartView> _seriesMap = {};
 
   /// 存放渲染的布局组件
   final List<CoordinateLayout> _renderList = [];
@@ -76,27 +81,10 @@ class Context {
   Context(
     this.root,
     this.config,
-    this.tickerProvider, [
-    GestureDispatcher? dispatcher,
+    TickerProvider provider, [
     this.devicePixelRatio = 1,
   ]) {
-    _gestureDispatcher = dispatcher ?? GestureDispatcher();
-  }
-
-  Context copy({
-    ChartConfig? config,
-    TickerProvider? tickerProvider,
-    Size? canvasSize,
-    ViewParent? root,
-    GestureDispatcher? dispatcher,
-  }) {
-    return Context(
-      root ?? this.root,
-      config ?? this.config,
-      tickerProvider ?? this.tickerProvider,
-      dispatcher ?? _gestureDispatcher,
-      devicePixelRatio,
-    );
+    _provider = provider;
   }
 
   void init() {
@@ -107,6 +95,8 @@ class Context {
   }
 
   void destroy() {
+    _gestureDispatcher.dispose();
+    _animationManager.dispose();
     _detach();
     _seriesMap.clear();
     _axisMap.clear();
@@ -180,7 +170,7 @@ class Context {
 
   void _initTitle() {}
 
-  CoordinateLayout? _findCoordLayout( ChartView view, ChartSeries series) {
+  CoordinateLayout? _findCoordLayout(ChartView view, ChartSeries series) {
     if (series.coordSystem != null) {
       var coord = series.coordSystem!;
       if (coord == CoordSystem.grid) {
@@ -223,9 +213,9 @@ class Context {
 
   void _detach() {
     _legend?.detach();
-    _legend=null;
+    _legend = null;
     _toolTip?.detach();
-    _toolTip=null;
+    _toolTip = null;
     _gestureDispatcher.dispose();
 
     for (var element in _renderList) {
@@ -283,14 +273,6 @@ class Context {
     return _coordMap[calendar]! as CalendarLayout;
   }
 
-  void addGesture(ChartGesture gesture) {
-    _gestureDispatcher.addGesture(gesture);
-  }
-
-  void removeGesture(ChartGesture gesture) {
-    _gestureDispatcher.removeGesture(gesture);
-  }
-
   void setToolTip(ToolTipBuilder builder) {
     _toolTip?.detach();
     _toolTip = ToolTipView(builder);
@@ -299,5 +281,21 @@ class Context {
   void unRegisterToolTip() {
     _toolTip?.detach();
     _toolTip = null;
+  }
+
+  void addGesture(ChartGesture gesture) {
+    _gestureDispatcher.addGesture(gesture);
+  }
+
+  void removeGesture(ChartGesture gesture) {
+    _gestureDispatcher.removeGesture(gesture);
+  }
+
+  AnimationController boundedAnimation(AnimatorProps props) {
+    return _animationManager.bounded(_provider, props);
+  }
+
+  AnimationController unboundedAnimation() {
+    return _animationManager.unbounded(_provider);
   }
 }

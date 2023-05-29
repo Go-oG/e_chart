@@ -22,7 +22,7 @@ class BarView extends  ChartView {
   @override
   void onAttach() {
     super.onAttach();
-    _layout = LayoutHelper(series, context.tickerProvider, notifier);
+    _layout = LayoutHelper(series,  notifier);
     touchHelper = TouchHelper(notifier, _layout);
     touchHelper.clear();
   }

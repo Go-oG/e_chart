@@ -1,5 +1,5 @@
 export 'animator_props.dart';
-export 'chart_animator.dart';
+export 'animation_manager.dart';
 export 'chart_tween.dart';
 export 'tween_set.dart';
 
