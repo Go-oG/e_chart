@@ -31,7 +31,7 @@ class FunnelView extends  ChartView {
         }
         invalidate();
       });
-      tween.start(context.tickerProvider);
+      tween.start(context);
     }
     rectGesture.hoverStart = _handleHover;
     rectGesture.hoverMove = _handleHover;
@@ -45,12 +45,12 @@ class FunnelView extends  ChartView {
             node.textScaleFactor = tween.value;
             invalidate();
           });
-          tween.start(context.tickerProvider);
+          tween.start(context);
           break;
         }
       }
     };
-    context.gestureDispatcher.addGesture(rectGesture);
+    context.addGesture(rectGesture);
   }
 
   void _handleHover(NormalEvent e) {
@@ -78,7 +78,7 @@ class FunnelView extends  ChartView {
           node.textScaleFactor = tween.value;
           invalidate();
         });
-        tween.start(context.tickerProvider);
+        tween.start(context);
       }
     }
   }
@@ -113,7 +113,7 @@ class FunnelView extends  ChartView {
   @override
   void onDetach() {
     rectGesture.clear();
-    context.gestureDispatcher.addGesture(rectGesture);
+    context.removeGesture(rectGesture);
     super.onDetach();
   }
 

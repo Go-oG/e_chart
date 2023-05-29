@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-
+import '../core/context.dart';
 import 'chart_tween.dart';
 
 ///用于实现播放队列
@@ -14,10 +13,10 @@ class TweenSet extends ChartTween<int> {
   /// 存放所有等待运行的动画
   final List<_TweenNode> _waitRunList = [];
 
-  Ticker? _ticker;
+  AnimationController? _controller;
 
-  TweenSet(TickerProvider provider) : super(0, 0) {
-    _ticker = provider.createTicker(_onTickSchedule);
+  TweenSet() : super(0, 0) {
+    // _ticker = provider.createTicker(_onTickSchedule);
   }
 
   _TweenNode? _currentNode;
@@ -73,10 +72,11 @@ class TweenSet extends ChartTween<int> {
   }
 
   @override
-  void start([TickerProvider? provider, bool allowRest = true]) {
+  void start(Context context) {
     if (_nodeList.isEmpty) {
       return;
     }
+    stop();
     int nowTime = DateTime.now().millisecondsSinceEpoch;
     for (var element in _nodeList) {
       int startTime = element.computeStartTime(force: true);
@@ -89,31 +89,35 @@ class TweenSet extends ChartTween<int> {
       }
     }
     for (var element in _runningList) {
-      element.start(provider);
+      element.start(context);
     }
-    _ticker?.start();
+
+    _controller = context.unboundedAnimation();
+    _controller?.addListener(() {
+      _onTickSchedule(context);
+    });
+    _controller?.forward();
   }
 
   @override
-  void stop([bool reset=true]) {
-    _ticker?.stop(canceled: false);
+  void stop([bool reset = true]) {
+    _controller?.stop(canceled: false);
     _waitRunList.clear();
-    for (var element in _runningList) {
-      element.stop();
+    for (var e in _runningList) {
+      e.stop();
     }
     _runningList.clear();
-    for (var element in _nodeList) {
-      element.stop();
+    for (var e in _nodeList) {
+      e.stop();
     }
   }
 
-  void _onTickSchedule(Duration elapsed) {
+  void _onTickSchedule(Context context) {
     if (_runningList.isEmpty && _waitRunList.isEmpty) {
-      _ticker?.stop(canceled: true);
+      stop();
       notifyListeners();
       return;
     }
-
     int nowTime = DateTime.now().millisecondsSinceEpoch;
     List<_TweenNode> removeList = [];
     List<_TweenNode> remainList = [];
@@ -124,11 +128,10 @@ class TweenSet extends ChartTween<int> {
         remainList.add(element);
       }
     }
-
     _waitRunList.clear();
     _waitRunList.addAll(remainList);
     for (var element in removeList) {
-      element.tween.start();
+      element.tween.start(context);
     }
     _runningList.addAll(removeList);
 
@@ -141,7 +144,7 @@ class TweenSet extends ChartTween<int> {
 
     if (_waitRunList.isEmpty) {
       notifyListeners();
-      _ticker?.stop(canceled: true);
+      stop();
     }
   }
 
@@ -193,9 +196,9 @@ class _TweenNode {
     return _animationStartTime;
   }
 
-  void start([TickerProvider? provider]) {
+  void start(Context context) {
     running = true;
-    tween.start(provider, false);
+    tween.start(context);
   }
 
   void stop() {

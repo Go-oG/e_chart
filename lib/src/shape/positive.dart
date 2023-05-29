@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
+import '../ext/offset_ext.dart';
 import 'chart_shape.dart';
 
 ///正多边形
@@ -24,17 +25,18 @@ class PositiveShape implements Shape {
     if (_path != null) {
       return _path!;
     }
+    if (count <= 0) {
+      return Path();
+    }
     Path path = Path();
     double singleAngle = 360 / count;
     for (int j = 0; j < count; j++) {
-      num angle = angleOffset - 90 + j * singleAngle;
-      double radians = angle * pi / 180;
-      double x = -r * cos(radians);
-      double y = r * sin(radians);
+      num angle = angleOffset + j * singleAngle;
+      Offset c = circlePoint(r, angle, center);
       if (j == 0) {
-        path.moveTo(x, y);
+        path.moveTo(c.dx, c.dy);
       } else {
-        path.lineTo(x, y);
+        path.lineTo(c.dx, c.dy);
       }
     }
     path.close();

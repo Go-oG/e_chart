@@ -1,6 +1,7 @@
 import 'dart:math';
-
 import 'package:e_chart/src/component/title/title_view.dart';
+import 'package:e_chart/src/coord/index.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import '../component/index.dart';
 import '../model/index.dart';
@@ -8,7 +9,7 @@ import 'base_render.dart';
 import 'view.dart';
 
 class DefaultRender extends BaseRender {
-  DefaultRender(super.config, super.tickerProvider,[super.devicePixelRatio]);
+  DefaultRender(super.config, super.tickerProvider, [super.devicePixelRatio]);
 
   @override
   void onMeasure(double parentWidth, double parentHeight) {
@@ -24,8 +25,7 @@ class DefaultRender extends BaseRender {
       legendView.measure(w, h);
       h -= legendView.height;
     }
-
-    List< ChartView> renderList = context.renderList;
+    List<ChartView> renderList = context.renderList;
     for (var v in renderList) {
       v.measure(parentWidth, parentHeight);
     }
@@ -35,7 +35,20 @@ class DefaultRender extends BaseRender {
   void onLayout(double width, double height) {
     Rect rect = layoutTitleAndLegend(width, height);
     for (var v in context.renderList) {
-      v.layout(rect.left, rect.top, rect.right, rect.bottom);
+      if (v is CircleCoordLayout) {
+        double dx = v.props.center[0].convert(rect.width);
+        double dy = v.props.center[1].convert(rect.height);
+        double r = v.props.radius.convert(min(rect.width, rect.height));
+        Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: r * 2, height: r * 2);
+        v.layout(r2.left, r2.top, r2.right, r2.bottom);
+      } else if (v is RectCoordLayout) {
+        var props = v.props;
+        double lm = props.leftMargin.convert(rect.width);
+        double tm = props.topMargin.convert(rect.height);
+        v.layout(rect.left + lm, rect.top + tm, rect.left + lm + v.width, rect.top + tm + v.height);
+      } else {
+        v.layout(rect.left, rect.top, rect.left + v.width, rect.top + v.height);
+      }
     }
   }
 
@@ -133,7 +146,10 @@ class DefaultRender extends BaseRender {
   @override
   void onDraw(Canvas canvas) {
     for (var v in context.renderList) {
+      canvas.save();
+      canvas.translate(v.left, v.top);
       v.draw(canvas);
+      canvas.restore();
     }
     renderToolTip(canvas);
   }

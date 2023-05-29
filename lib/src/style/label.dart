@@ -33,18 +33,25 @@ class LabelStyle {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
+    return draw2(canvas, paint, TextSpan(text: text, style: textStyle), config);
+  }
 
+  Size draw2(Canvas canvas, Paint paint, TextSpan text, TextDrawConfig config) {
+    if (!show) {
+      return Size.zero;
+    }
     TextOverflow? textOverflow = overFlow == OverFlow.cut ? TextOverflow.clip : null;
     String? ellipsis = textOverflow == TextOverflow.ellipsis ? '\u2026' : null;
-    TextPainter painter =config.toPainter(text, textStyle);
-    if(config.ellipsis==null){
-      painter.ellipsis=ellipsis;
+    TextPainter painter = config.toPainter2(text);
+
+    if (config.ellipsis == null) {
+      painter.ellipsis = ellipsis;
     }
     painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
     if (painter.height > config.maxHeight) {
       int maxLineCount = config.maxHeight ~/ (painter.height / painter.computeLineMetrics().length);
       maxLineCount = max(1, maxLineCount);
-      painter.maxLines=maxLineCount;
+      painter.maxLines = maxLineCount;
       painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
     }
     Offset leftTop = _computeAlignOffset(config.offset, config.align, painter.width, painter.height);
@@ -85,5 +92,4 @@ class LabelStyle {
     y = y - (align.y + 1) * (h / 2);
     return Offset(x, y);
   }
-
 }

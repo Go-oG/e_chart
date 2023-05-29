@@ -5,15 +5,23 @@ import 'view_group.dart';
 
 abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewParent {
   late final Context context;
+
+  ///控制是使用saveLayer 还是 clipRect
   bool useSaveLayer = false;
+
+  ///标识是否在布局
   bool _inLayout = false;
+
+  ///标识是否在绘制
   bool _inDrawing = false;
+
+  ///Canvas 画布大小
   Rect _boundRect = Rect.zero;
 
   Size get size => _boundRect.size;
 
   BaseRender(ChartConfig config, TickerProvider tickerProvider, [double devicePixelRatio = 1]) {
-    context = Context(this, config, tickerProvider, null, devicePixelRatio);
+    context = Context(this, config, tickerProvider, devicePixelRatio);
     context.init();
   }
 
@@ -105,8 +113,8 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
 
   void destroy() {
     ///changeNotifier
-    dispose();
     context.destroy();
+    dispose();
   }
 
   void onMeasure(double parentWidth, double parentHeight);

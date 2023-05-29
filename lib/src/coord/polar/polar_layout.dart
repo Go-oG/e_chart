@@ -19,7 +19,7 @@ class PolarLayout extends CircleCoordLayout<Polar> {
   @override
   void onAttach() {
     super.onAttach();
-    context.gestureDispatcher.addGesture(gesture);
+    context.addGesture(gesture);
     gesture.edgeFun = (offset) {
       return globalAreaBound.contains(offset);
     };
@@ -67,7 +67,7 @@ class PolarLayout extends CircleCoordLayout<Polar> {
   Size onMeasure(double parentWidth, double parentHeight) {
     double size = m.min(parentWidth, parentHeight);
     size = props.radius.convert(size) * 2;
-    return Size(size, size);
+    return Size.square(size);
   }
 
   @override
@@ -85,6 +85,10 @@ class PolarLayout extends CircleCoordLayout<Polar> {
     gesture.sweepAngle = 360;
     gesture.innerRadius = 0;
     gesture.outerRadius = r;
+
+    for (var c in children) {
+      c.layout(0, 0, width, height);
+    }
   }
 
   List<DynamicData> _getAngleDataSet() {
@@ -114,7 +118,7 @@ class PolarLayout extends CircleCoordLayout<Polar> {
   @override
   void onDraw(Canvas canvas) {
     canvas.save();
-    canvas.translate(width / 2, height / 2);
+    canvas.translate(props.center[0].convert(width), props.center[1].convert(height));
     _angleAxis.draw(canvas, mPaint);
     _radiusAxis.draw(canvas, mPaint);
     canvas.restore();

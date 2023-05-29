@@ -19,8 +19,14 @@ class RadarView extends  ChartView implements RadarChild {
   RadarView(this.series);
 
   @override
-  void onAttach() {
-    super.onAttach();
+  void onLayout(double left, double top, double right, double bottom) {
+    _groupNodeList.clear();
+    for (var element in series.data) {
+      _groupNodeList.add(_layers.layout(this, element));
+    }
+    _initAnimator();
+  }
+  void _initAnimator(){
     AnimatorProps? info = series.animation;
     if (info != null) {
       for (var group in _groupNodeList) {
@@ -41,15 +47,7 @@ class RadarView extends  ChartView implements RadarChild {
         }
         invalidate();
       });
-      tween.start(context.tickerProvider);
-    }
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    _groupNodeList.clear();
-    for (var element in series.data) {
-      _groupNodeList.add(_layers.layout(this, element));
+      tween.start(context);
     }
   }
 

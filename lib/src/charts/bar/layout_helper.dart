@@ -17,11 +17,9 @@ class LayoutHelper {
 
   late GlobalValue globalValue;
 
-  late TickerProvider tickerProvider;
-
   ValueNotifier<IntWrap> notifier;
 
-  LayoutHelper(this.series, this.tickerProvider, this.notifier) {
+  LayoutHelper(this.series, this.notifier) {
     parseData(series.data);
   }
 

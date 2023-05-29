@@ -26,20 +26,23 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    init();
+    init(false);
   }
 
   @override
   void didUpdateWidget(Chart oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (hasInit) {
-      init();
+      init(true);
     } else {
       hasInit = true;
     }
   }
 
-  void init() {
+  void init(bool disposeOld) {
+    if(disposeOld){
+      render.destroy();
+    }
     render = DefaultRender(widget.config, this);
   }
 

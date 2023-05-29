@@ -1,9 +1,6 @@
-import 'dart:math';
+
 import 'dart:ui';
-
-import 'package:e_chart/e_chart.dart';
-
-import '../../ext/offset_ext.dart';
+import '../../shape/positive.dart';
 import '../../style/area_style.dart';
 import 'symbol.dart';
 
@@ -22,6 +19,7 @@ class PositivePolygonSymbol extends ChartSymbol {
     Path path = shape.toPath(true);
     style.drawPath(canvas, paint, path);
   }
+
   @override
   Size get size => Size.square(r*2);
 }

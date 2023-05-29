@@ -71,7 +71,6 @@ class GestureDispatcher {
   }
 
   void onHoverEnd(PointerExitEvent event) {
-    // debugPrint('onHoverEnd');
     NormalEvent motionEvent = NormalEvent(event.localPosition);
     for (var ele in _hoverNodeSet) {
       ele.hoverEnd?.call(motionEvent);
@@ -82,7 +81,6 @@ class GestureDispatcher {
   final Set<ChartGesture> _tapNodeSet = {};
 
   void onTapDown(TapDownDetails details) {
-    // debugPrint('onTapDown');
     _tapNodeSet.clear();
     NormalEvent motionEvent = NormalEvent(details.localPosition);
     for (var ele in _gestureNodeSet) {
@@ -95,7 +93,6 @@ class GestureDispatcher {
   }
 
   void onTapUp(TapUpDetails details) {
-    // debugPrint('onTapUp');
     Set<ChartGesture> removeSet = {};
     NormalEvent motionEvent = NormalEvent(details.localPosition);
     for (var ele in _tapNodeSet) {
@@ -115,7 +112,6 @@ class GestureDispatcher {
   }
 
   void onTapCancel() {
-    // debugPrint('onTapCancel');
     for (var element in _tapNodeSet) {
       element.clickCancel?.call();
     }
@@ -126,7 +122,6 @@ class GestureDispatcher {
   final Set<ChartGesture> _doubleTapNodeSet = {};
 
   void onDoubleTapDown(TapDownDetails details) {
-    // debugPrint('onDoubleTapDown');
     _doubleTapNodeSet.clear();
     NormalEvent motionEvent = NormalEvent(details.localPosition);
     for (var ele in _gestureNodeSet) {
@@ -139,7 +134,6 @@ class GestureDispatcher {
   }
 
   void onDoubleTapUp(TapUpDetails details) {
-    // debugPrint('onDoubleTapUp');
     NormalEvent motionEvent = NormalEvent(details.localPosition);
     Set<ChartGesture> removeSet = {};
     for (var ele in _doubleTapNodeSet) {
@@ -157,7 +151,6 @@ class GestureDispatcher {
   }
 
   void onDoubleTapCancel() {
-    // debugPrint('onDoubleTapCancel');
     for (var element in _doubleTapNodeSet) {
       element.doubleClickCancel?.call();
     }
