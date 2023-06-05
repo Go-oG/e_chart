@@ -50,7 +50,7 @@ class FunnelView extends  ChartView {
         }
       }
     };
-    context.gestureDispatcher.addGesture(rectGesture);
+    context.addGesture(rectGesture);
   }
 
   void _handleHover(NormalEvent e) {
@@ -113,7 +113,7 @@ class FunnelView extends  ChartView {
   @override
   void onDetach() {
     rectGesture.clear();
-    context.gestureDispatcher.addGesture(rectGesture);
+    context.removeGesture(rectGesture);
     super.onDetach();
   }
 

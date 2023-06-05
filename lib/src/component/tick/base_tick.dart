@@ -93,7 +93,6 @@ abstract class BaseTick {
       //Tick End position
       Offset o3 = circlePoint(c, resultAngle, start);
       lineStyle.drawPolygon(canvas, paint, [o1, o3]);
-
       if (i >= ticks.length) {
         continue;
       }

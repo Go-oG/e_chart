@@ -160,11 +160,20 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
     canvas.drawCircle(offset, 3, mPaint);
   }
 
-  void debugDraw2(Canvas canvas) {
+  void debugDrawArea(Canvas canvas) {
     Paint mPaint = Paint();
     mPaint.color = Colors.red;
     mPaint.style = PaintingStyle.fill;
-    canvas.drawRect(areaBounds, mPaint);
+    canvas.drawRect(Rect.fromLTRB(0, 0, width, height), mPaint);
+  }
+
+  void debugDrawRulerLine(Canvas canvas) {
+    Paint mPaint = Paint();
+    mPaint.color = Colors.red;
+    mPaint.style = PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawLine(Offset(width / 2, 0), Offset(width / 2, height), mPaint);
+    canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
   }
 
   @mustCallSuper

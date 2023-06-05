@@ -47,14 +47,21 @@ class TextDrawConfig {
   }
 
   TextPainter toPainter(String text, TextStyle textStyle) {
-    return textStyle.toPainter(
-      text,
-      ellipsis: ellipsis,
-      maxLines: maxLines,
-      textAlign: textAlign,
-      textDirection: textDirection,
-      textScaleFactor: scaleFactor.toDouble(),
-    );
+    return textStyle.toPainter(text,
+        ellipsis: ellipsis,
+        maxLines: maxLines,
+        textAlign: textAlign,
+        textDirection: textDirection,
+        textScaleFactor: scaleFactor.toDouble());
   }
 
+  TextPainter toPainter2(TextSpan text) {
+    return TextPainter(
+        text: text,
+        textAlign: textAlign,
+        textDirection: textDirection,
+        textScaleFactor: scaleFactor.toDouble(),
+        maxLines: maxLines,
+        ellipsis: ellipsis);
+  }
 }

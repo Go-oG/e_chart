@@ -48,7 +48,9 @@ class AnimationManager {
   void remove(AnimationController c, [bool dispose = true]) {
     _map.removeWhere((key, value) => value == c);
     if (dispose) {
-      c.dispose();
+      try{
+        c.dispose();
+      }catch(_){}
     }
   }
 
@@ -58,13 +60,17 @@ class AnimationManager {
       return;
     }
     if (dispose) {
-      c.dispose();
+      try{
+        c.dispose();
+      }catch(_){}
     }
   }
 
   void dispose() {
     _map.forEach((key, value) {
-      value.dispose();
+      try{
+        value.dispose();
+      }catch(_){}
     });
     _map.clear();
   }
