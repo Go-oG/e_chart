@@ -1,4 +1,3 @@
-
 import 'package:flutter/widgets.dart';
 import 'package:uuid/uuid.dart';
 
@@ -93,15 +92,14 @@ class BarSeries extends RectSeries {
     super.bottomMargin,
     super.width,
     super.height,
-    super.touch,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
     super.clip,
     super.z,
     super.tooltip,
-  }) : super(
-          radarIndex: -1,
-          calendarIndex: -1,
-          parallelIndex: -1,
-        );
+  }) : super(radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
 }
 
 ///组数据

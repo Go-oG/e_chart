@@ -26,6 +26,7 @@ class RadarView extends  ChartView implements RadarChild {
     }
     _initAnimator();
   }
+
   void _initAnimator(){
     AnimatorProps? info = series.animation;
     if (info != null) {

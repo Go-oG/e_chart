@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../../animation/animator_props.dart';
 import '../../animation/tween/double_tween.dart';
 import '../../core/view.dart';
-import '../../gesture/chart_gesture.dart';
-import '../../gesture/gesture_event.dart';
 import '../../model/text_position.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
@@ -11,13 +9,13 @@ import 'funnel_series.dart';
 import 'layout.dart';
 
 /// 漏斗图
-class FunnelView extends  ChartView {
-  final FunnelSeries series;
+class FunnelView extends SeriesView<FunnelSeries> {
   final List<FunnelNode> _nodeList = [];
 
-  FunnelView(this.series);
+  FunnelView(super.series);
 
-  final RectGesture rectGesture = RectGesture();
+  @override
+  bool get enableDrag => false;
 
   @override
   void onAttach() {
@@ -33,29 +31,41 @@ class FunnelView extends  ChartView {
       });
       tween.start(context);
     }
-    rectGesture.hoverStart = _handleHover;
-    rectGesture.hoverMove = _handleHover;
-    rectGesture.click = _handleHover;
-    rectGesture.hoverEnd = (e) {
-      for (var node in _nodeList) {
-        if (node.textScaleFactor != 1) {
-          ChartDoubleTween tween =
-              ChartDoubleTween(node.textScaleFactor, 1, duration: const Duration(milliseconds: 150), curve: Curves.fastLinearToSlowEaseIn);
-          tween.addListener(() {
-            node.textScaleFactor = tween.value;
-            invalidate();
-          });
-          tween.start(context);
-          break;
-        }
-      }
-    };
-    context.addGesture(rectGesture);
   }
 
-  void _handleHover(NormalEvent e) {
+  @override
+  void onClick(Offset offset) {
+    _handleHover(offset);
+  }
+
+  @override
+  void onHoverStart(Offset offset) {
+    _handleHover(offset);
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    _handleHover(offset);
+  }
+
+  @override
+  void onHoverEnd() {
+    for (var node in _nodeList) {
+      if (node.textScaleFactor != 1) {
+        ChartDoubleTween tween =
+            ChartDoubleTween(node.textScaleFactor, 1, duration: const Duration(milliseconds: 150), curve: Curves.fastLinearToSlowEaseIn);
+        tween.addListener(() {
+          node.textScaleFactor = tween.value;
+          invalidate();
+        });
+        tween.start(context);
+        break;
+      }
+    }
+  }
+
+  void _handleHover(Offset local) {
     Rect rect = series.computePositionBySelf(left, top, right, bottom);
-    Offset local = toLocalOffset(e.globalPosition);
     local = local.translate(-rect.left, -rect.top);
     for (var node in _nodeList) {
       Path p = node.path;
@@ -85,11 +95,11 @@ class FunnelView extends  ChartView {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
     Rect rect = series.computePositionBySelf(left, top, right, bottom);
     _nodeList.clear();
     FunnelLayers layers = FunnelLayers(series.gap, series.direction, series.sort, series.align);
     _nodeList.addAll(layers.layout(rect.width, rect.height, series.dataList, maxValue: series.maxValue));
-    rectGesture.rect = globalAreaBound;
   }
 
   @override
@@ -110,13 +120,6 @@ class FunnelView extends  ChartView {
     canvas.restore();
   }
 
-  @override
-  void onDetach() {
-    rectGesture.clear();
-    context.removeGesture(rectGesture);
-    super.onDetach();
-  }
-
   void _drawText(Canvas canvas, FunnelNode node) {
     if (node.data.labelText == null || node.data.labelText!.isEmpty || series.labelStyleFun == null) {
       return;
@@ -133,11 +136,6 @@ class FunnelView extends  ChartView {
     if (ol != null) {
       style.guideLine.style.drawPolygon(canvas, mPaint, ol);
     }
-    style.draw(
-      canvas,
-      mPaint,
-      node.data.labelText!,
-      position
-    );
+    style.draw(canvas, mPaint, node.data.labelText!, position);
   }
 }

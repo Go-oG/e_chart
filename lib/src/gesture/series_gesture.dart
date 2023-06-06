@@ -242,4 +242,8 @@ mixin SeriesGesture on ChartSeries {
     scaleEnd = null;
     scaleCancel = null;
   }
+
+  bool enableSeriesGesture=true;
+
+
 }

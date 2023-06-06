@@ -1,3 +1,4 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../series.dart';
@@ -37,7 +38,7 @@ class CalenderSeries extends ChartSeries {
   FontStyle? selectMiddleFontStyle;
 
   /// 一般数据的文字样式 */
-  late FontStyle fontStyle;
+  FontStyle fontStyle;
 
   /// 禁止选择数据的文字样式 */
   FontStyle? forbidFontStyle;
@@ -46,32 +47,26 @@ class CalenderSeries extends ChartSeries {
   FontStyle? subFontStyle;
 
   /// 一周的第一天是否为周日 默认false */
-  late bool sunFirst;
+  bool sunFirst;
 
   /// 是否自动链接相邻点之间的日期 默认为true */
-  late bool autoLink;
+  bool autoLink;
 
   /// 当autoLink 为TRUE时，如果已选择了连续多日，
   /// 此时点击中间点是直接保留当前点击的日期的还是
   /// 以当前日期为起点或终点进行截取 默认为false
-  late bool resetWhenAutoLinkClick;
+  bool resetWhenAutoLinkClick;
 
   /// 是否绘制中间点日期的Shape */
-  late bool drawMiddleShape;
-
-  late bool drawLastMonth;
-
-  late bool drawNextMonth;
-
+  bool drawMiddleShape;
+  bool drawLastMonth;
+  bool drawNextMonth;
   /// 默认选中的数据
   List<DateTime>? defaultDate;
-
   /// 最大可以选择的(该值受到defaultDate和chooseRange的影响)天数 */
   int? maxChooseCount;
-
   /// 可以选择的时间范围，如果为空则都可以选择 */
   DateRange? chooseRange;
-
   /// 作用同chooseRange一样 但是优先级高且更加灵活 */
   bool Function(int year, int month, int date)? onChooseFilter;
 
@@ -130,8 +125,17 @@ class CalenderSeries extends ChartSeries {
     this.onChange,
     this.onClickForbidDay,
     super.animation,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
     super.clip,
-    super.touch,
     super.z,
-  }) : super();
+  }) : super(
+          xAxisIndex: -1,
+          yAxisIndex: -1,
+          calendarIndex: -1,
+          parallelIndex: -1,
+          polarAxisIndex: -1,
+        );
 }

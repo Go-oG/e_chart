@@ -21,7 +21,10 @@ class ParallelSeries extends RectSeries {
     super.parallelIndex,
     super.clip,
     super.tooltip,
-    super.touch,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
     super.z,
   }) : super(
           coordSystem: CoordSystem.parallel,

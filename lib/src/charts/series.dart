@@ -27,7 +27,12 @@ abstract class ChartSeries {
 
   AnimatorProps? animation; //动画
   ToolTip? tooltip;
-  bool touch; //是否允许交互
+
+  bool? enableClick;
+  bool? enableHover;
+  bool? enableDrag;
+  bool? enableScale;
+
   bool clip; // 是否裁剪
   int z; //z轴索引
 
@@ -38,12 +43,15 @@ abstract class ChartSeries {
     this.calendarIndex = 0,
     this.radarIndex = 0,
     this.parallelIndex = 0,
-    this.animation=const AnimatorProps(),
-    this.touch = true,
-    this.z = 0,
-    this.clip = true,
+    this.animation = const AnimatorProps(),
     this.coordSystem,
     this.tooltip,
+    this.enableClick,
+    this.enableHover,
+    this.enableDrag,
+    this.enableScale = false,
+    this.z = 0,
+    this.clip = true,
   });
 
   void notifyDataSetChange([bool relayout = false]) {
@@ -85,6 +93,7 @@ abstract class ChartSeries {
     voidCallback() {
       callback.call(_notifier.value);
     }
+
     _listenerMap[callback] = voidCallback;
     _notifier.addListener(voidCallback);
   }
@@ -106,7 +115,6 @@ abstract class ChartSeries {
     });
     _listenerMap.clear();
   }
-
 }
 
 abstract class RectSeries extends ChartSeries {
@@ -135,8 +143,11 @@ abstract class RectSeries extends ChartSeries {
     super.radarIndex,
     super.animation,
     super.tooltip,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
     super.clip,
-    super.touch,
     super.z,
   });
 

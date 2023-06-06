@@ -58,7 +58,10 @@ class PieSeries extends RectSeries {
     super.calendarIndex,
     super.tooltip,
     super.animation,
-    super.touch,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale=false,
     super.clip,
     super.z,
   }) : super(

@@ -20,7 +20,10 @@ class PointSeries extends RectSeries {
     super.coordSystem = CoordSystem.grid,
     super.tooltip,
     super.animation,
-    super.touch,
+        super.enableClick,
+        super.enableHover,
+        super.enableDrag,
+        super.enableScale,
     super.clip,
     super.z,
   }) : super(
