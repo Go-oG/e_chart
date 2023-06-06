@@ -18,6 +18,7 @@ class AnimationManager {
   ///存储已经创建的控制器
   final Map<String, AnimationController> _map = {};
 
+
   AnimationController bounded(TickerProvider provider, AnimatorProps props, [String? key]) {
     AnimationController c = AnimationController(
       vsync: provider,
@@ -64,6 +65,12 @@ class AnimationManager {
         c.dispose();
       }catch(_){}
     }
+  }
+
+  void updateTickerProvider(TickerProvider provider){
+    _map.forEach((key, value) {
+      value.resync(provider);
+    });
   }
 
   void dispose() {
