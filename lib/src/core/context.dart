@@ -33,11 +33,14 @@ import '../series_factory.dart';
 import 'view.dart';
 import 'view_group.dart';
 
-///存放整个图表的运行相关的数据
+///存放整个图表的配置以及相关的图形实例
+///和运行所必须的组件
 class Context {
   final ViewParent root;
   final ChartConfig config;
-  late final TickerProvider _provider;
+
+  ///这里不将其暴露出去是为了能更好的管理动画的生命周期
+  late TickerProvider _provider;
   final GestureDispatcher _gestureDispatcher = GestureDispatcher();
   final AnimationManager _animationManager = AnimationManager();
   double devicePixelRatio;
@@ -45,6 +48,24 @@ class Context {
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
 
   AnimationManager get animationManager => _animationManager;
+
+  Context(
+    this.root,
+    this.config,
+    TickerProvider provider, [
+    this.devicePixelRatio = 1,
+  ]) {
+    _provider = provider;
+  }
+
+  ///更新TickerProvider
+  set tickerProvider(TickerProvider p) {
+    if (p == _provider) {
+      return;
+    }
+    _provider = p;
+    _animationManager.updateTickerProvider(p);
+  }
 
   ///坐标轴
   final Map<BaseAxis, ChartView> _axisMap = {};
@@ -78,15 +99,6 @@ class Context {
   //GridLayout
   late GridInner _innerGrid;
 
-  Context(
-    this.root,
-    this.config,
-    TickerProvider provider, [
-    this.devicePixelRatio = 1,
-  ]) {
-    _provider = provider;
-  }
-
   void init() {
     _initComponent();
     _initTitle();
@@ -116,7 +128,7 @@ class Context {
       if (view == null) {
         throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
       }
-      view.bindSeries(series);
+      view.bindSeriesCommand(series);
       _seriesMap[series] = view;
     }
 

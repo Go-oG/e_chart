@@ -5,28 +5,25 @@ import 'package:flutter/material.dart';
 import '../charts/series.dart';
 import '../component/tooltip/context_menu.dart';
 import '../component/tooltip/context_menu_builder.dart';
-import '../functions.dart';
 import '../gesture/chart_gesture.dart';
 import '../gesture/series_gesture.dart';
 import '../model/enums/drag_type.dart';
 import '../model/enums/scale_type.dart';
 import '../model/string_number.dart';
+import '../utils/log_util.dart';
 import 'context.dart';
 import 'draw_node.dart';
 import 'view_group.dart';
 
 abstract class ChartView extends DrawNode implements ToolTipBuilder {
   late Context context;
-
   LayoutParams layoutParams = LayoutParams.match();
-
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
   Rect oldBoundRect = const Rect.fromLTRB(0, 0, 0, 0); //记录旧的边界位置，实现动画相关的计算
   Rect _globalBoundRect = Rect.zero;
+
   ViewParent? _parent;
-
   Paint mPaint = Paint();
-
   bool inLayout = false;
   bool inDrawing = false;
   bool _dirty = false; // 标记视图区域是否 需要重绘
@@ -44,29 +41,6 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   bool forceMeasure = false;
 
   ChartView();
-
-  ValueCallback<Command>? _viewRefreshCallback;
-
-  ChartSeries? _series;
-
-  void bindSeries(covariant ChartSeries series) {
-    _series = series;
-    _viewRefreshCallback ??= (value) {
-      if (value.code == Command.invalidate) {
-        invalidate();
-      } else if (value.code == Command.reLayout) {
-        requestLayout();
-      }
-    };
-    series.addListener(_viewRefreshCallback!);
-  }
-
-  void unBindSeries() {
-    if (_viewRefreshCallback != null) {
-      _series?.removeListener(_viewRefreshCallback!);
-    }
-    _series = null;
-  }
 
   void attach(Context context, ViewParent parent) {
     this.context = context;
@@ -273,6 +247,80 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
     return Offset.zero;
   }
 
+  ///=============处理Series和其绑定时相关的操作=============
+  ChartSeries? _series;
+
+  ///存储命令执行相关的操作
+  final Map<int, VoidCallback> _commandMap = {};
+
+  void clearCommand() {
+    _commandMap.clear();
+  }
+
+  void registerCommand(int code, VoidCallback callback, [bool allowReplace = true]) {
+    var old = _commandMap[code];
+    if (old == null || allowReplace) {
+      _commandMap[code] = callback;
+      return;
+    }
+    if (!allowReplace) {
+      throw FlutterError('not allow replace');
+    }
+  }
+
+  void removeCommand(int code) {
+    _commandMap.remove(code);
+  }
+
+  ///绑定Series 主要是将Series相关的命令传递到当前View
+  void bindSeriesCommand(covariant ChartSeries series) {
+    unBindSeries();
+    _series = series;
+    series.addListener(_handleCommand);
+    _commandMap[Command.updateData] = onUpdateDataCommand;
+    _commandMap[Command.insertData] = onAddDataCommand;
+    _commandMap[Command.deleteData] = onDeleteDataCommand;
+    _commandMap[Command.invalidate] = onInvalidateCommand;
+    _commandMap[Command.reLayout] = onRelayoutCommand;
+    _commandMap[Command.configChange] = onSeriesConfigChangeCommand;
+  }
+
+  void unBindSeries() {
+    _commandMap.clear();
+    _series?.removeListener(_handleCommand);
+    _series = null;
+  }
+
+  void _handleCommand(Command c) {
+    int code = c.code;
+    var op = _commandMap[code];
+    if (op == null) {
+      logPrint('code:$code 无法找到相关的回调');
+      return;
+    }
+    op.call();
+  }
+
+  void onInvalidateCommand() {
+    invalidate();
+  }
+
+  void onRelayoutCommand() {
+    requestLayout();
+  }
+
+  void onSeriesConfigChangeCommand() {
+    ///自身配置改变我们只更新当前的节点布局
+    forceLayout = true;
+    layout(left, top, right, bottom);
+  }
+
+  void onAddDataCommand() {}
+
+  void onDeleteDataCommand() {}
+
+  void onUpdateDataCommand() {}
+
   /// ====================普通属性函数=======================================
 
   double get width => boundRect.width;
@@ -322,11 +370,11 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   SeriesView(this.series);
 
   @override
-  void bindSeries(covariant T series) {
+  void bindSeriesCommand(covariant T series) {
     if (series != this.series) {
       throw FlutterError('Not allow binding different series ');
     }
-    super.bindSeries(series);
+    super.bindSeriesCommand(series);
   }
 
   @mustCallSuper

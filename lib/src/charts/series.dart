@@ -9,15 +9,13 @@ import '../model/string_number.dart';
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
 abstract class ChartSeries {
-  //用于进行刷新相关的配置
+  ///用于通知View数据发生改变或者需要重新布局等命令
   final ValueNotifier<Command> _notifier = ValueNotifier(Command(Command.none));
-  final Map<ValueCallback<Command>, VoidCallback> _listenerMap = {};
+  final Set<ValueCallback<Command>> _listenerSet = {};
 
   ///坐标系系统
   CoordSystem? coordSystem;
-
-  ///坐标轴取值(和coordSystem配合实现定位)
-  ///(默认的所有坐标轴开始都是为0)
+  ///坐标轴取值索引(和coordSystem配合实现定位)
   int xAxisIndex;
   int yAxisIndex;
   int polarAxisIndex;
@@ -28,6 +26,7 @@ abstract class ChartSeries {
   AnimatorProps? animation; //动画
   ToolTip? tooltip;
 
+  ///手势相关
   bool? enableClick;
   bool? enableHover;
   bool? enableDrag;
@@ -52,68 +51,59 @@ abstract class ChartSeries {
     this.enableScale = false,
     this.z = 0,
     this.clip = true,
-  });
-
-  void notifyDataSetChange([bool relayout = false]) {
-    if (relayout) {
-      _notifier.value = Command(Command.reLayout);
-      return;
-    }
-    _notifier.value = Command(Command.updateData);
+  }) {
+    _notifier.addListener(() {
+      var v = _notifier.value;
+      try {
+        for (var c in _listenerSet) {
+          c.call(v);
+        }
+      } catch (_) {}
+    });
   }
 
-  void notifyDataSetInserted([bool relayout = false]) {
-    if (relayout) {
-      _notifier.value = Command(Command.reLayout);
-      return;
-    }
-    _notifier.value = Command(Command.insertData);
+  void notifyDataSetChange() {
+    notifyChange(Command.updateData);
   }
 
-  void notifyDataSetRemoved([bool relayout = false]) {
-    if (relayout) {
-      _notifier.value = Command(Command.reLayout);
-      return;
-    }
-    _notifier.value = Command(Command.deleteData);
+  void notifyDataSetInserted() {
+    notifyChange(Command.insertData);
   }
 
-  void change(Command command) {
+  void notifyDataSetRemoved() {
+    notifyChange(Command.deleteData);
+  }
+
+  ///通知视图当前Series 配置发生了变化
+  void notifySeriesConfigChange() {
+    notifyChange(Command.configChange);
+  }
+
+  ///发送通知
+  void notifyChange(int code) {
     ///为了避免外部缓存了数据
-    _notifier.value = Command(command.code);
+    _notifier.value = Command(code);
   }
 
   /// 下面是对ValueNotifier的简单封装
   void addListener(ValueCallback<Command> callback) {
-    if (_listenerMap[callback] != null) {
-      _notifier.removeListener(() {
-        _listenerMap[callback]!;
-      });
+    if (_listenerSet.contains(callback)) {
+      return;
     }
-    voidCallback() {
-      callback.call(_notifier.value);
-    }
-
-    _listenerMap[callback] = voidCallback;
-    _notifier.addListener(voidCallback);
+    _listenerSet.add(callback);
   }
 
   void removeListener(ValueCallback<Command> callback) {
-    VoidCallback? voidCallback = _listenerMap.remove(callback);
-    if (voidCallback != null) {
-      _notifier.removeListener(voidCallback);
-    }
+    _listenerSet.remove(callback);
   }
 
   bool hasListeners() {
-    return _notifier.hasListeners;
+    return _listenerSet.isNotEmpty;
   }
 
   void dispose() {
-    _listenerMap.forEach((key, value) {
-      _notifier.removeListener(value);
-    });
-    _listenerMap.clear();
+    _notifier.dispose();
+    _listenerSet.clear();
   }
 }
 
@@ -219,6 +209,7 @@ class Command {
   static const int insertData = -3;
   static const int deleteData = -4;
   static const int updateData = -5;
+  static const int configChange = -6;
 
   final int code;
 

@@ -20,30 +20,33 @@ class Chart extends StatefulWidget {
 }
 
 class ChartState extends State<Chart> with TickerProviderStateMixin {
-  late BaseRender render;
-  bool hasInit = false;
+  BaseRender? _render;
+
+  BaseRender get render => _render!;
 
   @override
   void initState() {
     super.initState();
-    init(false);
+    init();
   }
 
   @override
   void didUpdateWidget(Chart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (hasInit) {
-      init(true);
-    } else {
-      hasInit = true;
-    }
+    init();
   }
 
-  void init(bool disposeOld) {
-    if(disposeOld){
-      render.destroy();
+  void init() {
+    if (_render == null) {
+      _render = DefaultRender(widget.config, this);
+    } else {
+      var oldConfig = _render!.context.config;
+      if (oldConfig == widget.config) {
+        _render!.context.tickerProvider = this;
+      } else {
+        _render = DefaultRender(widget.config, this);
+      }
     }
-    render = DefaultRender(widget.config, this);
   }
 
   @override
