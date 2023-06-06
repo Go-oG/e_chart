@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../charts/series.dart';
 import '../component/tooltip/context_menu.dart';
 import '../component/tooltip/context_menu_builder.dart';
 import '../functions.dart';
+import '../gesture/chart_gesture.dart';
+import '../gesture/series_gesture.dart';
+import '../model/enums/drag_type.dart';
+import '../model/enums/scale_type.dart';
 import '../model/string_number.dart';
 import 'context.dart';
 import 'draw_node.dart';
@@ -307,8 +313,11 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   void computeScroll() {}
 }
 
+///强制要求提供一个Series;
+///并简单实现了相关的手势操作
 abstract class SeriesView<T extends ChartSeries> extends ChartView {
   final T series;
+  final RectGesture _gesture = RectGesture();
 
   SeriesView(this.series);
 
@@ -319,6 +328,163 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
     }
     super.bindSeries(series);
   }
+
+  @mustCallSuper
+  @override
+  void onAttach() {
+    super.onAttach();
+    _initGesture();
+  }
+
+  @mustCallSuper
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    _gesture.rect = areaBounds;
+  }
+
+  Offset _lastHover = Offset.zero;
+
+  Offset _lastDrag = Offset.zero;
+
+  void _initGesture() {
+    _gesture.clear();
+    context.removeGesture(_gesture);
+    context.addGesture(_gesture);
+    if (series is SeriesGesture && (series as SeriesGesture).enableSeriesGesture) {
+      (series as SeriesGesture).bindGesture(this, _gesture);
+      return;
+    }
+    if (enableClick) {
+      _gesture.click = (e) {
+        onClick(toLocalOffset(e.globalPosition));
+      };
+    }
+    if (enableHover) {
+      _gesture.hoverStart = (e) {
+        _lastHover = toLocalOffset(e.globalPosition);
+        onHoverStart(_lastHover);
+      };
+      _gesture.hoverMove = (e) {
+        Offset of = toLocalOffset(e.globalPosition);
+        onHoverMove(of, _lastHover);
+        _lastHover = of;
+      };
+      _gesture.hoverEnd = (e) {
+        _lastHover = Offset.zero;
+        onHoverEnd();
+      };
+    }
+    if (enableDrag) {
+      dragStart(Offset offset) {
+        _lastDrag = offset;
+        onDragStart(offset);
+      }
+
+      dragMove(Offset offset) {
+        var dx = offset.dx - _lastDrag.dx;
+        var dy = offset.dy - _lastDrag.dy;
+        _lastDrag = offset;
+        onDragMove(offset, Offset(dx, dy));
+      }
+
+      dragCancel() {
+        _lastDrag = Offset.zero;
+        onDragEnd();
+      }
+
+      if (context.config.dragType == DragType.longPress) {
+        _gesture.longPressStart = (e) {
+          dragStart(toLocalOffset(e.globalPosition));
+        };
+        _gesture.longPressMove = (e) {
+          dragMove(e.offsetFromOrigin);
+        };
+        _gesture.longPressEnd = (e) {
+          dragCancel();
+        };
+        _gesture.longPressCancel = () {
+          dragCancel();
+        };
+      } else {
+        _gesture.horizontalDragStart = (e) {
+          dragStart(toLocalOffset(e.globalPosition));
+        };
+        _gesture.horizontalDragMove = (e) {
+          dragMove(toLocalOffset(e.globalPosition));
+        };
+        _gesture.horizontalDragEnd = (e) {
+          dragCancel();
+        };
+        _gesture.horizontalDragCancel = dragCancel;
+        _gesture.verticalDragStart = (e) {
+          dragStart(toLocalOffset(e.globalPosition));
+        };
+        _gesture.verticalDragMove = (e) {
+          dragMove(toLocalOffset(e.globalPosition));
+        };
+        _gesture.verticalDragEnd = (e) {
+          dragCancel();
+        };
+        _gesture.verticalDragCancel = dragCancel;
+      }
+    }
+    if (enableScale) {
+      if (context.config.scaleType == ScaleType.doubleTap) {
+        _gesture.doubleClickDown = (e) {
+          onScaleStart(toLocalOffset(e.globalPosition));
+        };
+        _gesture.doubleClickCancel = () {
+          onScaleEnd();
+        };
+        _gesture.doubleClick = (e) {
+          ///双击放大的递增量(0.25)
+          onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, 0.25, 0.25, true);
+        };
+      } else {
+        _gesture.scaleStart = (e) {
+          onScaleStart(toLocalOffset(e.globalPosition));
+        };
+        _gesture.scaleUpdate = (e) {
+          onScaleUpdate(toLocalOffset(e.globalPosition), e.rotation, e.scale, e.horizontalScale, e.verticalScale, false);
+        };
+        _gesture.scaleEnd = (e) {
+          onScaleEnd();
+        };
+        _gesture.scaleCancel = () {
+          onScaleEnd();
+        };
+      }
+    }
+  }
+
+  bool get enableHover => series.enableHover ?? !(Platform.isAndroid || Platform.isIOS);
+
+  bool get enableDrag => series.enableDrag ?? true;
+
+  bool get enableClick => series.enableClick ?? true;
+
+  bool get enableScale => series.enableScale ?? false;
+
+  void onClick(Offset offset) {}
+
+  void onHoverStart(Offset offset) {}
+
+  void onHoverMove(Offset offset, Offset last) {}
+
+  void onHoverEnd() {}
+
+  void onDragStart(Offset offset) {}
+
+  void onDragMove(Offset offset, Offset diff) {}
+
+  void onDragEnd() {}
+
+  void onScaleStart(Offset offset) {}
+
+  void onScaleUpdate(Offset offset, double rotation, double scale, double hScale, double vScale, bool doubleClick) {}
+
+  void onScaleEnd() {}
 }
 
 class LayoutParams {

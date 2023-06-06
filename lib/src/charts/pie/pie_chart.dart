@@ -8,7 +8,6 @@ import '../../animation/animator_props.dart';
 import '../../animation/chart_tween.dart';
 import '../../animation/tween/double_tween.dart';
 import '../../core/view.dart';
-import '../../gesture/chart_gesture.dart';
 import '../../model/enums/circle_align.dart';
 import '../../model/text_position.dart';
 import '../../style/area_style.dart';
@@ -18,23 +17,32 @@ import 'pie_series.dart';
 import 'pie_tween.dart';
 
 /// 饼图
-class PieView extends ChartView {
-  final PieSeries series;
+class PieView extends SeriesView<PieSeries> {
   final PieLayers _layers = PieLayers();
   final List<PieNode> _nodeList = [];
   final List<ChartTween> _tweenList = [];
-  final RectGesture _gesture = RectGesture();
 
-  PieView(this.series) {
-    _gesture.hoverMove = (e) {
-      _handleHover(toLocalOffset(e.globalPosition));
-    };
-    _gesture.click = (e) {
-      _handleHover(toLocalOffset(e.globalPosition));
-    };
-  }
+  PieView(super.series);
+
+  @override
+  bool get enableDrag => false;
 
   PieNode? _hoverNode;
+
+  @override
+  void onClick(Offset offset) {
+    _handleHover(offset);
+  }
+
+  @override
+  void onHoverStart(Offset offset) {
+    _handleHover(offset);
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    _handleHover(offset);
+  }
 
   void _handleHover(Offset offset) {
     offset = offset.translate(-series.center[0].convert(width), -series.center[1].convert(height));
@@ -105,20 +113,8 @@ class PieView extends ChartView {
   }
 
   @override
-  void onAttach() {
-    super.onAttach();
-    context.addGesture(_gesture);
-  }
-  @override
-  void onDetach() {
-    context.removeGesture(_gesture);
-    super.onDetach();
-  }
-
-  @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _gesture.rect = globalAreaBound;
     Offset center = _computeCenterPoint();
     double maxSize = min(center.dx, center.dy);
     double minRadius = series.innerRadius.convert(maxSize);
@@ -225,7 +221,7 @@ class PieView extends ChartView {
     style.draw(canvas, mPaint, node.data.label!, position);
     if (series.labelAlign == CircleAlign.outside) {
       Offset tmpOffset = circlePoint(node.cur.or, node.cur.startAngle + (node.cur.sweepAngle / 2));
-      Offset tmpOffset2 = circlePoint( node.cur.or + style.guideLine.length, node.cur.startAngle + (node.cur.sweepAngle / 2));
+      Offset tmpOffset2 = circlePoint(node.cur.or + style.guideLine.length, node.cur.startAngle + (node.cur.sweepAngle / 2));
       Path path = Path();
       path.moveTo(tmpOffset.dx, tmpOffset.dy);
       path.lineTo(tmpOffset2.dx, tmpOffset2.dy);

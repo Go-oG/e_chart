@@ -11,7 +11,7 @@ import '../../style/area_style.dart';
 import 'heat_map_series.dart';
 
 /// 热力图
-class HeatMapView extends  ChartView implements GridChild, CalendarChild {
+class HeatMapView extends ChartView implements GridChild, CalendarChild {
   final HeatMapSeries series;
 
   HeatMapView(this.series);

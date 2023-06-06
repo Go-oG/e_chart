@@ -1,4 +1,3 @@
-
 import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/area_style.dart';
@@ -27,9 +26,12 @@ class CandleStickSeries extends RectSeries {
     super.width,
     super.height,
     super.animation,
-    super.clip,
     super.tooltip,
-    super.touch,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
+    super.clip,
     super.z,
   }) : super(
           coordSystem: CoordSystem.grid,

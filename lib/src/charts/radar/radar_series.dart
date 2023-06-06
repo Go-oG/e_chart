@@ -32,7 +32,10 @@ class RadarSeries extends RectSeries {
     super.radarIndex = 0,
     super.tooltip,
     super.animation,
-    super.touch,
+        super.enableClick,
+        super.enableHover,
+        super.enableDrag,
+        super.enableScale,
     super.clip,
     super.z,
   }) : super(
