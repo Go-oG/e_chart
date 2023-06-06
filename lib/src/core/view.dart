@@ -313,6 +313,7 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
     ///自身配置改变我们只更新当前的节点布局
     forceLayout = true;
     layout(left, top, right, bottom);
+    invalidate();
   }
 
   void onAddDataCommand() {}
