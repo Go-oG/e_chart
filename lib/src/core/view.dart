@@ -447,7 +447,7 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
           dragStart(toLocalOffset(e.globalPosition));
         };
         _gesture.longPressMove = (e) {
-          dragMove(e.offsetFromOrigin);
+          dragMove(toLocalOffset(e.globalPosition));
         };
         _gesture.longPressEnd = (e) {
           dragCancel();
