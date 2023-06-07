@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/widgets.dart';
 
-import '../../coord/radar/radar_layout.dart';
+import '../../coord/radar/radar_coord.dart';
 import '../../core/context.dart';
 import 'radar_chart.dart';
 import 'radar_series.dart';
@@ -10,7 +10,7 @@ import 'radar_series.dart';
 class RadarLayers {
   RadarGroupNode layout(RadarView view, RadarGroup group) {
     Context context = view.context;
-    RadarLayout layout = context.findRadarCoord(view.series.radarIndex);
+    RadarCoord layout = context.findRadarCoord(view.series.radarIndex);
     RadarGroupNode groupNode = RadarGroupNode(group, []);
     int i = 0;
     for (var c in group.dataList) {

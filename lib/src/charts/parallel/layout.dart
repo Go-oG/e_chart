@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../coord/parallel/parallel_layout.dart';
+import '../../coord/parallel/parallel_coord.dart';
 import '../../shape/line.dart';
 import '../../style/line_style.dart';
 import 'parallel_chart.dart';
@@ -15,7 +15,7 @@ class LayoutHelper {
 
   List<ParallelDataLine> layout(double left, double top, double width, double height) {
     List<ParallelDataLine> resultList = [];
-    ParallelLayout layout = view.context.findParallelCoord(series.parallelIndex);
+    ParallelCoord layout = view.context.findParallelCoord(series.parallelIndex);
     for (var element in series.data) {
       List<Offset> ol = [];
       for (int i = 0; i < element.data.length; i++) {

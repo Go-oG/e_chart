@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../coord/grid/grid_child.dart';
-import '../../coord/grid/grid_layout.dart';
+import '../../coord/grid/grid_coord.dart';
 import '../../core/view.dart';
 import '../../model/dynamic_data.dart';
 import '../../style/area_style.dart';
@@ -47,27 +47,27 @@ class CandleStickView extends  ChartView implements GridChild {
 
   @override
   void onDraw(Canvas canvas) {
-    GridLayout layout = context.findGridCoord();
+    GridCoord layout = context.findGridCoord();
     for (var element in series.data) {
       _drawNode(canvas, element, layout);
     }
   }
 
-  void _drawNode(Canvas canvas, CandleStickData data, GridLayout layout) {
+  void _drawNode(Canvas canvas, CandleStickData data, GridCoord layout) {
     AreaStyle areaStyle = series.styleFun.call(data, null)!;
     LineStyle lineStyle = series.lineStyleFun.call(data, null)!;
     DynamicData dd = DynamicData(data.time);
-    Offset minCenter = layout.dataToPoint2(xAxisIndex, dd, yAxisIndex, DynamicData(data.lowest));
+    Offset minCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.lowest));
 
-    Offset openCenter = layout.dataToPoint2(xAxisIndex, dd, yAxisIndex, DynamicData(data.open));
+    Offset openCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.open));
     Offset openLeft = openCenter.translate(-10, 0);
     Offset openRight = openCenter.translate(10, 0);
 
-    Offset closeCenter = layout.dataToPoint2(xAxisIndex, dd, yAxisIndex, DynamicData(data.close));
+    Offset closeCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.close));
     Offset closeLeft = closeCenter.translate(-10, 0);
     Offset closeRight = closeCenter.translate(10, 0);
 
-    Offset maxCenter = layout.dataToPoint2(xAxisIndex, dd, yAxisIndex, DynamicData(data.highest));
+    Offset maxCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.highest));
 
     Path path = Path();
 

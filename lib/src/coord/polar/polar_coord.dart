@@ -1,17 +1,32 @@
 import 'dart:math' as m;
 import 'package:flutter/material.dart';
-import '../../../e_chart.dart';
+
+import '../../component/axis/impl/arc_axis_impl.dart';
+import '../../component/axis/impl/line_axis_impl.dart';
+import '../../ext/offset_ext.dart';
+import '../../gesture/chart_gesture.dart';
+import '../../model/dynamic_data.dart';
+import '../circle_coord.dart';
+import '../coord.dart';
+import 'axis_radius_node.dart';
+import 'polar_config.dart';
+import 'polar_child.dart';
+
+abstract class PolarCoord extends Coord{
+
+  Offset dataToPoint(DynamicData angleData, DynamicData radiusData);
+}
 
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
-class PolarLayout extends CircleCoordLayout<Polar> {
+class PolarCoordImpl extends CircleCoord<PolarConfig> implements PolarCoord {
   late final ArcAxisImpl _angleAxis;
   late final RadiusAxisImpl _radiusAxis;
   final ArcGesture gesture = ArcGesture();
 
   Offset? _clickOffset;
 
-  PolarLayout(super.props) {
+  PolarCoordImpl(super.props) {
     _angleAxis = ArcAxisImpl(props.angleAxis);
     _radiusAxis = RadiusAxisImpl(props.radiusAxis);
   }
@@ -153,4 +168,5 @@ class PolarLayout extends CircleCoordLayout<Polar> {
     num r = _radiusAxis.dataToRadius(radiusData);
     return circlePoint(r, angle);
   }
+
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../coord/polar/polar_child.dart';
-import '../../coord/polar/polar_layout.dart';
+import '../../coord/polar/polar_coord.dart';
 import '../../model/dynamic_data.dart';
 import '../../../src/core/index.dart';
 import '../index.dart';
@@ -32,7 +32,7 @@ class PointView extends  ChartView with PolarChild {
 
   @override
   void onDraw(Canvas canvas) {
-    PolarLayout layout = context.findPolarCoord();
+    PolarCoord layout = context.findPolarCoord();
     mPaint.style = PaintingStyle.stroke;
     mPaint.strokeWidth = 2;
     mPaint.color = Colors.blue;

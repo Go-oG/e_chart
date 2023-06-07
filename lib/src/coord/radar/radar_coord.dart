@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'package:e_chart/src/coord/coord.dart';
 import 'package:flutter/material.dart';
 import '../../component/axis/axis_line.dart';
 import '../../component/axis/impl/line_axis_impl.dart';
+import '../../core/view.dart';
 import '../../ext/offset_ext.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/text_position.dart';
@@ -11,18 +13,22 @@ import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
 import '../../utils/align_util.dart';
-import '../circle_coord_layout.dart';
-import 'radar.dart';
+import '../circle_coord.dart';
+import 'radar_config.dart';
 import 'radar_axis_node.dart';
 import 'radar_axis.dart';
 import 'radar_child.dart';
 
+abstract class RadarCoord extends Coord{
+  Offset? dataToPoint(int axisIndex, num data);
+}
+
 ///雷达图坐标系
-class RadarLayout extends CircleCoordLayout<Radar> {
+class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
   final Map<int, RadarAxisNode> _axisMap = {};
   final List<Path> _shapePathList = [];
 
-  RadarLayout(super.props) {
+  RadarCoordImpl(super.props) {
     for (int i = 0; i < props.indicator.length; i++) {
       var indicator = props.indicator[i];
       RadarAxis axis = RadarAxis(

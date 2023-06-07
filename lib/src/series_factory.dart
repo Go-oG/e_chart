@@ -22,19 +22,14 @@ import 'charts/series.dart';
 import 'core/view.dart';
 
 class SeriesFactory {
-  static SeriesFactory? _instance;
-
-  static SeriesFactory get instance {
-    _instance ??= SeriesFactory._();
-    return _instance!;
-  }
-
-  final DefaultSeriesConvert _defaultConvert = DefaultSeriesConvert();
-  final List<SeriesConvert> _convertList = [];
-
+  static final SeriesFactory _instance = SeriesFactory._();
+  static SeriesFactory get instance => _instance;
   SeriesFactory._() {
     _convertList.add(_defaultConvert);
   }
+  factory SeriesFactory() => _instance;
+  final DefaultSeriesConvert _defaultConvert = DefaultSeriesConvert();
+  final List<SeriesConvert> _convertList = [];
 
   void addConvert(SeriesConvert convert) {
     _convertList.insert(0, convert);

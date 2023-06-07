@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../coord/calendar/calendar_child.dart';
-import '../../coord/calendar/calendar_layout.dart';
+import '../../coord/calendar/calendar_coord.dart';
 import '../../coord/grid/grid_child.dart';
-import '../../coord/grid/grid_layout.dart';
+import '../../coord/grid/grid_coord.dart';
 import '../../core/view.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/coordinate.dart';
@@ -51,8 +51,8 @@ class HeatMapView extends ChartView implements GridChild, CalendarChild {
 
   @override
   void onDraw(Canvas canvas) {
-    GridLayout? gridLayout;
-    CalendarLayout? calendarLayout;
+    GridCoord? gridLayout;
+    CalendarCoord? calendarLayout;
     if (series.coordSystem == CoordSystem.grid) {
       gridLayout = context.findGridCoord();
     } else {
@@ -65,9 +65,9 @@ class HeatMapView extends ChartView implements GridChild, CalendarChild {
       }
 
       if (gridLayout != null) {
-        Offset offset = gridLayout.dataToPoint2(xAxisIndex, data.x, yAxisIndex, data.y);
+        Offset offset = gridLayout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.y);
       } else if (calendarLayout != null) {
-        Rect rect = calendarLayout.dataToPoint(data.x.data, false);
+        Rect rect = calendarLayout.dataToPoint(data.x.data);
         style.drawRect(canvas, mPaint, rect);
       }
     }
