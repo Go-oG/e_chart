@@ -1,13 +1,6 @@
-import 'dart:ui';
-
-import '../coord_layout.dart';
+import 'package:e_chart/e_chart.dart';
 
 ///用于包装child
-class SingleLayout extends CoordinateLayout {
-  SingleLayout();
-
-  @override
-  dataToPoint(covariant x, covariant y) {
-    return Offset.zero;
-  }
+class SingleCoordImpl extends Coord {
+  SingleCoordImpl();
 }

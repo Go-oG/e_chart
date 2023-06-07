@@ -6,19 +6,25 @@ import '../../core/view.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
-import '../rect_coord_layout.dart';
+import '../rect_coord.dart';
 import 'axis_grid_node.dart';
 import 'axis_x.dart';
 import 'axis_y.dart';
 import 'grid_child.dart';
-import 'grid_inner.dart';
+import 'grid_config.dart';
+
+abstract class GridCoord extends RectCoord<GridConfig> {
+  GridCoord(super.props);
+
+  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+}
 
 ///实现二维坐标系
-class GridLayout extends RectCoordLayout<GridInner> {
+class GridCoordImpl extends GridCoord {
   final Map<XAxis, GridAxisImpl> _xMap = {};
   final Map<YAxis, GridAxisImpl> _yMap = {};
 
-  GridLayout(super.props) {
+  GridCoordImpl(super.props) {
     for (var ele in props.xAxisList) {
       var v = GridAxisImpl(ele, [], Direction.horizontal);
       _xMap[ele] = v;
@@ -27,11 +33,10 @@ class GridLayout extends RectCoordLayout<GridInner> {
       var v = GridAxisImpl(ele, [], Direction.vertical);
       _yMap[ele] = v;
     }
-
   }
 
   @override
-  void addView( ChartView view, {int index = -1}) {
+  void addView(ChartView view, {int index = -1}) {
     super.addView(view, index: index);
     if (view is GridChild) {
       var childView = view as GridChild;
@@ -125,13 +130,11 @@ class GridLayout extends RectCoordLayout<GridInner> {
   }
 
   @override
-  Offset dataToPoint(DynamicData x,  DynamicData y) {
-    throw FlutterError('you need call dataToPoint2');
-  }
-
-  Offset dataToPoint2(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
+  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
     double dx = _xMap[props.xAxisList[xAxisIndex]]!.dataToPoint(x);
     double dy = _yMap[props.yAxisList[yAxisIndex]]!.dataToPoint(y);
     return Offset(dx, dy);
   }
+
+
 }

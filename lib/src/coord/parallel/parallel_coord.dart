@@ -9,20 +9,25 @@ import '../../component/axis/impl/base_axis_impl.dart';
 import '../../component/axis/impl/line_axis_impl.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
-import '../rect_coord_layout.dart';
+import '../rect_coord.dart';
 import 'parallel_axis_node.dart';
-import 'parallel.dart';
+import 'parallel_config.dart';
 import 'parallel_axis.dart';
 import 'parallel_child.dart';
 
-///平行坐标系
-class ParallelLayout extends RectCoordLayout<Parallel> {
-  final Map<ParallelAxis, ParallelAxisImpl> _axisMap = {};
+abstract class ParallelCoord extends RectCoord<ParallelConfig> {
+  ParallelCoord(super.props);
 
+  Offset? dataToPoint(int dimIndex, DynamicData data);
+}
+
+///平行坐标系
+class ParallelCoordImpl extends ParallelCoord {
+  final Map<ParallelAxis, ParallelAxisImpl> _axisMap = {};
   int _expandLeftIndex = -1;
   int _expandRightIndex = -1;
 
-  ParallelLayout(super.props) {
+  ParallelCoordImpl(super.props) {
     _initData();
     // _touchHelper.onClick = (e) {
     //   if (!props.expandable) {
@@ -96,12 +101,6 @@ class ParallelLayout extends RectCoordLayout<Parallel> {
         _axisMap[ele] = node;
       }
     }
-  }
-
-  @override
-  Offset? dataToPoint(int dimIndex, DynamicData data) {
-    ParallelAxisImpl? node = _axisMap[props.axisList[dimIndex]];
-    return node?.dataToPoint(data);
   }
 
   ///找到离点击点最近的轴
@@ -282,5 +281,11 @@ class ParallelLayout extends RectCoordLayout<Parallel> {
       }
     }
     return node;
+  }
+
+  @override
+  Offset? dataToPoint(int dimIndex, DynamicData data) {
+    ParallelAxisImpl? node = _axisMap[props.axisList[dimIndex]];
+    return node?.dataToPoint(data);
   }
 }

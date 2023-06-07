@@ -1,13 +1,4 @@
+import '../core/view_group.dart';
 
-import 'coord_layout.dart';
-
-///坐标系
-abstract class Coordinate {
-  final String id;
-  final bool show;
-
-  const Coordinate({this.id = '', this.show = true});
-
-
-  CoordinateLayout toLayout();
+abstract class Coord extends ChartViewGroup {
 }

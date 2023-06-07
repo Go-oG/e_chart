@@ -1,13 +1,13 @@
 import 'dart:ui';
 
+import 'package:e_chart/src/model/enums/coordinate.dart';
+
 import '../../model/enums/direction.dart';
 import '../../model/string_number.dart';
-import '../coord_layout.dart';
 import '../rect_coord.dart';
 import 'parallel_axis.dart';
-import 'parallel_layout.dart';
 
-class Parallel extends RectCoordinate {
+class ParallelConfig extends RectCoordConfig {
   final Direction direction;
   final bool expandable;
   final int expandStartIndex;
@@ -20,7 +20,7 @@ class Parallel extends RectCoordinate {
   final SNumber rightPadding;
   final SNumber bottomPadding;
 
-  Parallel({
+  ParallelConfig({
     this.direction = Direction.horizontal,
     super.leftMargin,
     super.topMargin,
@@ -42,7 +42,5 @@ class Parallel extends RectCoordinate {
   });
 
   @override
-  CoordinateLayout toLayout() {
-    return ParallelLayout(this);
-  }
+  CoordSystem get coordSystem => CoordSystem.parallel;
 }

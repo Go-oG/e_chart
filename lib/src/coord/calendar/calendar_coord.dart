@@ -3,10 +3,16 @@ import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';
-import '../rect_coord_layout.dart';
-import 'calendar.dart';
+import '../rect_coord.dart';
+import 'calendar_config.dart';
 
-class CalendarLayout extends RectCoordLayout<Calendar> {
+abstract class CalendarCoord extends RectCoord<CalendarConfig> {
+  CalendarCoord(super.props);
+
+  Rect dataToPoint(DateTime date);
+}
+
+class CalendarCoordImpl extends CalendarCoord {
   final Map<DateTime, CalendarNode> _nodeMap = {};
 
   double _cellWidth = 0;
@@ -14,7 +20,7 @@ class CalendarLayout extends RectCoordLayout<Calendar> {
   int _rowCount = 0;
   int _columnCount = 0;
 
-  CalendarLayout(super.props);
+  CalendarCoordImpl(super.props);
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
@@ -100,7 +106,7 @@ class CalendarLayout extends RectCoordLayout<Calendar> {
   }
 
   @override
-  Rect dataToPoint(DateTime date, bool b) {
+  Rect dataToPoint(DateTime date) {
     date = date.first();
     CalendarNode? node = _nodeMap[date];
     if (node == null) {
@@ -227,6 +233,7 @@ class CalendarLayout extends RectCoordLayout<Calendar> {
     }
     return Pair(startDateTime, endDateTime);
   }
+
 }
 
 class CalendarNode {

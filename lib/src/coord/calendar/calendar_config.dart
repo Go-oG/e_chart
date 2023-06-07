@@ -1,15 +1,15 @@
 
+import 'package:e_chart/src/model/enums/coordinate.dart';
+
 import '../../component/axis/split_line.dart';
 import '../../functions.dart';
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';
 import '../../style/label.dart';
-import '../coord_layout.dart';
 import '../rect_coord.dart';
-import 'calendar_layout.dart';
 
 ///日历坐标系
-class Calendar extends RectCoordinate {
+class CalendarConfig extends RectCoordConfig {
   final Pair<DateTime> range;
   final bool sunFirst;
 
@@ -23,7 +23,7 @@ class Calendar extends RectCoordinate {
   final StyleFun<int, LabelStyle>? weekStyleFun;
   final StyleFun<DateTime, LabelStyle>? dayStyleFun;
 
-  Calendar({
+  CalendarConfig({
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -40,7 +40,5 @@ class Calendar extends RectCoordinate {
   });
 
   @override
-  CoordinateLayout toLayout() {
-    return CalendarLayout(this);
-  }
+  CoordSystem get coordSystem => CoordSystem.calendar;
 }

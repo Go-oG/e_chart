@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import '../../coord/grid/grid_child.dart';
-import '../../coord/grid/grid_layout.dart';
+import '../../coord/grid/grid_coord.dart';
 import '../../core/view.dart';
 import '../../model/dynamic_data.dart';
 import '../../style/line_style.dart';
@@ -56,29 +56,29 @@ class BoxPlotView extends ChartView implements GridChild {
     if (style == null) {
       return;
     }
-    GridLayout layout = context.findGridCoord();
+    GridCoord layout = context.findGridCoord();
 
-    Offset minCenter =layout.dataToPoint2(xAxisIndex, data.x, yAxisIndex, data.min);
+    Offset minCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.min)!;
     Offset minLeft = minCenter.translate(-10, 0);
     Offset minRight = minCenter.translate(10, 0);
 
-    Offset downCenter =layout.dataToPoint2(xAxisIndex, data.x, yAxisIndex, data.downAve4);
+    Offset downCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4)!;
     Offset downLeft = minCenter.translate(-10, 0);
     Offset downRight = minCenter.translate(10, 0);
 
-    Offset middleCenter = layout.dataToPoint2(xAxisIndex, data.x, yAxisIndex, data.downAve4);
+    Offset middleCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4)!;
     Offset middleLeft = middleCenter.translate(-10, 0);
     Offset middleRight = middleCenter.translate(10, 0);
 
-    Offset upAveCenter=layout.dataToPoint2(xAxisIndex, data.x, yAxisIndex, data.upAve4);
-    Offset upAveLeft=upAveCenter.translate(-10, 0);
-    Offset upAveRight=upAveCenter.translate(10, 0);
+    Offset upAveCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.upAve4)!;
+    Offset upAveLeft = upAveCenter.translate(-10, 0);
+    Offset upAveRight = upAveCenter.translate(10, 0);
 
-    Offset maxCenter=layout.dataToPoint2(xAxisIndex, data.x, yAxisIndex, data.max);
-    Offset maxLeft=maxCenter.translate(-10, 0);
-    Offset maxRight=maxCenter.translate(10, 0);
+    Offset maxCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.max)!;
+    Offset maxLeft = maxCenter.translate(-10, 0);
+    Offset maxRight = maxCenter.translate(10, 0);
 
-    Path path=Path();
+    Path path = Path();
     path.moveTo(minLeft.dx, minLeft.dy);
     path.lineTo(minRight.dx, minRight.dy);
 
@@ -99,6 +99,6 @@ class BoxPlotView extends ChartView implements GridChild {
 
     path.moveTo(maxLeft.dx, maxLeft.dy);
     path.lineTo(maxRight.dx, maxRight.dy);
-    style.drawPath(canvas, mPaint, path,drawDash: true);
+    style.drawPath(canvas, mPaint, path, drawDash: true);
   }
 }
