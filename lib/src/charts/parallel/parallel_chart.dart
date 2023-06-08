@@ -18,8 +18,8 @@ class ParallelView extends ChartView implements ParallelChild {
   }
 
   @override
-  void onAttach() {
-    super.onAttach();
+  void onCreate() {
+    super.onCreate();
     AnimatorProps? info = series.animation;
     // if (info != null) {
     //   ChartDoubleTween tween = ChartDoubleTween.fromAnimator(info);

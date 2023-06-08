@@ -20,16 +20,16 @@ class BarView extends  ChartView {
   }
 
   @override
-  void onAttach() {
-    super.onAttach();
+  void onCreate() {
+    super.onCreate();
     _layout = LayoutHelper(series,  notifier);
     touchHelper = TouchHelper(notifier, _layout);
     touchHelper.clear();
   }
 
   @override
-  void onDetach() {
-    super.onDetach();
+  void onDestroy() {
+    super.onDestroy();
     touchHelper.clear();
   }
 

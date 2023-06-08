@@ -12,22 +12,38 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
   ChartViewGroup();
 
   @override
-  void attach(Context context, ViewParent parent) {
-    super.attach(context, parent);
-    for (var element in _children) {
-      element.attach(context, this);
+  void create(Context context, ViewParent parent) {
+    super.create(context, parent);
+    for (var c in _children) {
+      c.create(context, this);
     }
   }
 
   @override
-  void detach() {
-    super.detach();
-    for (var element in _children) {
-      element.detach();
+  void onStart() {
+    super.onStart();
+    for (var c in _children) {
+      c.onStart();
     }
   }
 
-  void changeChildToFront( ChartView child) {
+  @override
+  void onStop() {
+    for (var c in _children) {
+      c.onStop();
+    }
+    super.onStop();
+  }
+
+  @override
+  void destroy() {
+    for (var c in _children) {
+      c.destroy();
+    }
+    super.destroy();
+  }
+
+  void changeChildToFront(ChartView child) {
     int index = children.indexOf(child);
     if (index != -1) {
       children.removeAt(index);
@@ -114,17 +130,17 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
 
   /// 负责绘制单独的一个ChildView，同时负责Canvas的坐标的正确转换
   /// 如果在方法中调用了[invalidate]则返回true
-  bool drawChild( ChartView child, Canvas canvas) {
+  bool drawChild(ChartView child, Canvas canvas) {
     return child.drawSelf(canvas, this);
   }
 
   ///========================管理子View相关方法=======================
-  void addView( ChartView view, {int index = -1}) {
+  void addView(ChartView view, {int index = -1}) {
     _addViewInner(view, index);
     requestLayout();
   }
 
-  void removeView( ChartView view) {
+  void removeView(ChartView view) {
     children.remove(view);
   }
 
@@ -132,11 +148,11 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     return children[index];
   }
 
-  List< ChartView> get children {
+  List<ChartView> get children {
     return _children;
   }
 
-  bool hasChildView( ChartView view) {
+  bool hasChildView(ChartView view) {
     for (var element in _children) {
       if (element == view) {
         return true;
@@ -145,14 +161,14 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     return false;
   }
 
-  void _addViewInner( ChartView child, int index) {
+  void _addViewInner(ChartView child, int index) {
     if (child.parent != null && child.parent != this) {
       throw FlutterError("The specified child already has a parent. You must call removeView() on the child's parent first.");
     }
     _addInArray(child, index);
   }
 
-  void _addInArray( ChartView child, int index) {
+  void _addInArray(ChartView child, int index) {
     if (index >= children.length || index < 0 || children.isEmpty) {
       children.add(child);
       return;

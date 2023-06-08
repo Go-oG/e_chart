@@ -18,8 +18,8 @@ class FunnelView extends SeriesView<FunnelSeries> {
   bool get enableDrag => false;
 
   @override
-  void onAttach() {
-    super.onAttach();
+  void onCreate() {
+    super.onCreate();
     AnimatorProps? info = series.animation;
     if (info != null) {
       ChartDoubleTween tween = ChartDoubleTween.fromAnimator(info);

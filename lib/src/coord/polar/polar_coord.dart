@@ -32,8 +32,8 @@ class PolarCoordImpl extends CircleCoord<PolarConfig> implements PolarCoord {
   }
 
   @override
-  void onAttach() {
-    super.onAttach();
+  void onCreate() {
+    super.onCreate();
     context.addGesture(gesture);
     gesture.edgeFun = (offset) {
       return globalAreaBound.contains(offset);

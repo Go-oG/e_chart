@@ -25,7 +25,7 @@ class DefaultRender extends BaseRender {
       legendView.measure(w, h);
       h -= legendView.height;
     }
-    List<ChartView> renderList = context.renderList;
+    List<ChartView> renderList = context.coordList;
     for (var v in renderList) {
       v.measure(parentWidth, parentHeight);
     }
@@ -34,7 +34,7 @@ class DefaultRender extends BaseRender {
   @override
   void onLayout(double width, double height) {
     Rect rect = layoutTitleAndLegend(width, height);
-    for (var v in context.renderList) {
+    for (var v in context.coordList) {
       if (v is CircleCoord) {
         double dx = v.props.center[0].convert(rect.width);
         double dy = v.props.center[1].convert(rect.height);
@@ -145,7 +145,7 @@ class DefaultRender extends BaseRender {
 
   @override
   void onDraw(Canvas canvas) {
-    for (var v in context.renderList) {
+    for (var v in context.coordList) {
       canvas.save();
       canvas.translate(v.left, v.top);
       v.draw(canvas);
