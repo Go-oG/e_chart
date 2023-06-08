@@ -5,6 +5,7 @@ class CoordSystem {
   static const CoordSystem parallel = CoordSystem('parallel');
   static const CoordSystem radar = CoordSystem('radar');
   static const CoordSystem calendar = CoordSystem('calendar');
+  static const CoordSystem single = CoordSystem('single');
 
   final String _key;
 

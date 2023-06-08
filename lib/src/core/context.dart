@@ -49,6 +49,7 @@ class Context {
 
   Context(this.root, this.config, TickerProvider provider, [this.devicePixelRatio = 1]) {
     _provider = provider;
+    _init();
   }
 
   ///更新TickerProvider
@@ -66,13 +67,13 @@ class Context {
   ///坐标系
   final Map<CoordConfig, Coord> _coordMap = {};
 
-  ///存放普通的视图
-  final Map<ChartSeries, ChartView> _seriesMap = {};
+  ///存放普通的渲染组件
+  final Map<ChartSeries, ChartView> _seriesViewMap = {};
 
-  /// 存放渲染的布局组件
-  final List<Coord> _renderList = [];
+  ///存放坐标系组件
+  final List<Coord> _coordList = [];
 
-  List<Coord> get renderList => _renderList;
+  List<Coord> get coordList => _coordList;
 
   ///Title(全局只会存在一个)
   TitleView? _title;
@@ -89,73 +90,108 @@ class Context {
 
   ToolTipView? get toolTip => _toolTip;
 
-  void init() {
-    _initComponent();
-    _initTitle();
-    _initChart();
-    _attach();
-  }
-
-  void destroy() {
-    _gestureDispatcher.dispose();
-    _animationManager.dispose();
-    _detach();
-    _seriesMap.clear();
-    _axisMap.clear();
-    _coordMap.clear();
-    _renderList.clear();
-  }
-
-  void _initChart() {
-    _seriesMap.clear();
+  void _init() {
+    _seriesViewMap.clear();
     _coordMap.clear();
     _axisMap.clear();
-    _renderList.clear();
+    _coordList.clear();
 
-    ///转换Series到View
-    for (var series in config.series) {
-      ChartView? view = SeriesFactory.instance.convert(series);
-      if (view == null) {
-        throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
-      }
-      view.bindSeriesCommand(series);
-      _seriesMap[series] = view;
+    ///创建组件
+    _createComponent();
+
+    ///创建渲染视图
+    _createRenderView();
+  }
+
+  /// 创建Chart组件
+  /// 组件是除了渲染视图之外的全部控件
+  void _createComponent() {
+    ///图例
+    if (config.legend != null) {
+      _legend = LegendViewGroup(config.legend!);
+      _legend?.create(this, root);
+      //TODO 这里不知道是否需要回调[bindSeriesCommand]
+    }
+    ///title
+    if (config.title != null) {
+      _title = TitleView(config.title!);
+      _title?.create(this, root);
+      //TODO 这里不知道是否需要回调[bindSeriesCommand]
     }
 
+    ///Coord
     ///转换CoordConfig 到Coord
-    List<CoordConfig> layoutList = [
+    List<CoordConfig> coordConfigList = [
       config.grid,
       ...config.polarList,
       ...config.radarList,
       ...config.calendarList,
       ...config.parallelList,
     ];
-    for (var ele in layoutList) {
+    for (var ele in coordConfigList) {
       var c = CoordFactory.instance.convert(ele);
       if (c != null) {
+        c.create(this, root);
         _coordMap[ele] = c;
+        _coordList.add(c);
       }
+    }
+  }
+
+  ///创建渲染视图
+  void _createRenderView() {
+    ///转换Series到View
+    for (var series in config.series) {
+      ChartView? view = SeriesFactory.instance.convert(series);
+      if (view == null) {
+        throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
+      }
+      _seriesViewMap[series] = view;
     }
 
     ///将指定了坐标系的View和坐标系绑定
-    Set<Coord> viewList = {};
-    for (var series in config.series) {
-      ChartView view = _seriesMap[series]!;
-      Coord? layout = _findCoord(view, series);
-      layout ??= SingleCoordImpl();
+    _seriesViewMap.forEach((key, view) {
+      Coord? layout = _findCoord(view, key);
+      if (layout == null) {
+        layout = SingleCoordImpl();
+        layout.create(this, root);
+        var config = SingleCoordConfig();
+        _coordMap[config] = layout;
+        _coordList.add(layout);
+      }
+      view.create(this, layout);
+      view.bindSeriesCommand(key);
       layout.addView(view);
-      viewList.add(layout);
-    }
-    _renderList.addAll(viewList);
+    });
   }
 
-  void _initComponent() {
-    if (config.legend != null) {
-      _legend = LegendViewGroup(config.legend!);
-    }
+  ///====生命周期函数=====
+  void onStart(){}
+
+  void onStop(){}
+
+  void destroy() {
+    _gestureDispatcher.dispose();
+    _animationManager.dispose();
+    _destroyView();
+    _axisMap.clear();
+    _coordMap.clear();
+    _coordList.clear();
+    _seriesViewMap.clear();
   }
 
-  void _initTitle() {}
+  void _destroyView() {
+    for (var coord in _coordList) {
+      coord.destroy();
+    }
+    _coordList.clear();
+    _legend?.destroy();
+    _legend = null;
+    _title?.destroy();
+    _title=null;
+    _toolTip?.destroy();
+    _toolTip = null;
+  }
 
   Coord? _findCoord(ChartView view, ChartSeries series) {
     if (series.coordSystem != null) {
@@ -193,26 +229,6 @@ class Context {
       return findCalendarCoord((view as CalendarChild).calendarIndex);
     }
     return null;
-  }
-
-  void _attach() {
-    _legend?.attach(this, root);
-    for (var element in _renderList) {
-      element.attach(this, root);
-    }
-  }
-
-  void _detach() {
-    _legend?.detach();
-    _legend = null;
-    _toolTip?.detach();
-    _toolTip = null;
-    _gestureDispatcher.dispose();
-
-    for (var element in _renderList) {
-      element.unBindSeries();
-      element.detach();
-    }
   }
 
   /// 坐标系查找相关函数
@@ -265,12 +281,15 @@ class Context {
   }
 
   void setToolTip(ToolTipBuilder builder) {
-    _toolTip?.detach();
+    _toolTip?.onStop();
+    _toolTip?.destroy();
     _toolTip = ToolTipView(builder);
+    _toolTip?.create(this, root);
   }
 
   void unRegisterToolTip() {
-    _toolTip?.detach();
+    _toolTip?.onStop();
+    _toolTip?.destroy();
     _toolTip = null;
   }
 

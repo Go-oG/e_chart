@@ -39,19 +39,27 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   void init() {
     if (_render == null) {
       _render = DefaultRender(widget.config, this);
+      _render?.onStart();
     } else {
       var oldConfig = _render!.context.config;
       if (oldConfig == widget.config) {
+        _render!.onStop();
         _render!.context.tickerProvider = this;
+        _render!.onStart();
       } else {
+        ///先销毁旧的再创建
+        _render!.onStop();
+        _render!.dispose();
+
         _render = DefaultRender(widget.config, this);
+        _render?.onStart();
       }
     }
   }
 
   @override
   void dispose() {
-    render.destroy();
+    render.dispose();
     super.dispose();
   }
 

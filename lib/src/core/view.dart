@@ -16,10 +16,11 @@ import 'draw_node.dart';
 import 'view_group.dart';
 
 abstract class ChartView extends DrawNode implements ToolTipBuilder {
-  late Context context;
+  Context? _context;
   LayoutParams layoutParams = LayoutParams.match();
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
-  Rect oldBoundRect = const Rect.fromLTRB(0, 0, 0, 0); //记录旧的边界位置，实现动画相关的计算
+  //记录旧的边界位置，可用于动画相关的计算
+  Rect oldBoundRect = const Rect.fromLTRB(0, 0, 0, 0);
   Rect _globalBoundRect = Rect.zero;
 
   ViewParent? _parent;
@@ -42,19 +43,39 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
 
   ChartView();
 
-  void attach(Context context, ViewParent parent) {
-    this.context = context;
+  Context get context => _context!;
+
+  //=========生命周期回调方法开始==================
+  ///由Context负责回调
+  ///该回调只会发生在视图创建后，且只会回调一次
+  ///绝大部分子类都不应该覆写该方法
+  void create(Context context, ViewParent parent) {
+    _context = context;
     _parent = parent;
-    onAttach();
+    onCreate();
   }
 
-  void onAttach() {}
+  ///创建后的回调，在该方法后可以安全的使用Context
+  void onCreate() {}
 
-  void detach() {
-    onDetach();
+  ///视图进入已开始状态
+  void onStart(){}
+
+  ///视图进入停止状态
+  void onStop(){}
+
+  ///由Context负责回调
+  ///当该方法被调用时标志着当前View即将被销毁
+  ///你可以在这里进行资源释放等操作
+  void destroy() {
+    unBindSeries();
+    onDestroy();
+    _context=null;
   }
 
-  void onDetach() {}
+  void onDestroy() {}
+
+  //=========生命周期回调方法结束==================
 
   @override
   void measure(double parentWidth, double parentHeight) {
@@ -310,8 +331,10 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   }
 
   void onSeriesConfigChangeCommand() {
-    ///自身配置改变我们只更新当前的节点布局
+    ///自身配置改变我们只更新当前的配置和节点布局
     forceLayout = true;
+    onStop();
+    onStart();
     layout(left, top, right, bottom);
     invalidate();
   }
@@ -380,8 +403,8 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
 
   @mustCallSuper
   @override
-  void onAttach() {
-    super.onAttach();
+  void onCreate() {
+    super.onCreate();
     _initGesture();
   }
 

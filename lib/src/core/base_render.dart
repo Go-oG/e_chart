@@ -20,9 +20,12 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
 
   Size get size => _boundRect.size;
 
-  BaseRender(ChartConfig config, TickerProvider tickerProvider, [double devicePixelRatio = 1]) {
+  BaseRender(
+    ChartConfig config,
+    TickerProvider tickerProvider, [
+    double devicePixelRatio = 1,
+  ]) {
     context = Context(this, config, tickerProvider, devicePixelRatio);
-    context.init();
   }
 
   @override
@@ -33,7 +36,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    for (var c in context.renderList) {
+    for (var c in context.coordList) {
       if (c.isDirty) {
         return true;
       }
@@ -111,10 +114,18 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     notifyListeners();
   }
 
-  void destroy() {
-    ///changeNotifier
+  void onStart() {
+    context.onStart();
+  }
+
+  void onStop() {
+    context.onStop();
+  }
+
+  @override
+  void dispose() {
     context.destroy();
-    dispose();
+    super.dispose();
   }
 
   void onMeasure(double parentWidth, double parentHeight);
