@@ -105,10 +105,18 @@ class GridAxisImpl extends LineAxisImpl<GridAxis> {
 
   @override
   BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
+    double distance=0;
+    _axisSize.rect.bottomLeft.distance2(_axisSize.rect.topLeft);
     if (vertical) {
-      return axis.toScale(0, _axisSize.rect.bottomLeft.distance2(_axisSize.rect.topLeft), dataSet);
+      distance=_axisSize.rect.bottomLeft.distance2(_axisSize.rect.topLeft);
+    }else{
+      distance=_axisSize.rect.bottomLeft.distance2(_axisSize.rect.bottomRight);
     }
-    return axis.toScale(0, _axisSize.rect.bottomLeft.distance2(_axisSize.rect.bottomRight), dataSet);
+    if(distance.isNaN||distance.isInfinite){
+      distance=double.maxFinite-1;
+    }
+
+    return axis.toScale(0, distance, dataSet);
   }
 
   ///给定一个数据将其转换为对应维度的坐标
