@@ -21,16 +21,17 @@ class NiceScale {
     );
   }
 
-  static NiceScale nice(num min,
-      num max,
-      int splitNumber, {
-        num minInterval = 0,
-        num? maxInterval,
-        num? interval,
-        bool forceSplitNumber = false,
-        bool start0 = false,
-        NiceType type = NiceType.n1,
-      }) {
+  static NiceScale nice(
+    num min,
+    num max,
+    int splitNumber, {
+    num minInterval = 0,
+    num? maxInterval,
+    num? interval,
+    bool forceSplitNumber = false,
+    bool start0 = false,
+    NiceType type = NiceType.n1,
+  }) {
     if (interval != null) {
       int count = (max - min) ~/ interval;
       if ((max - min) % interval != 0) {
@@ -79,15 +80,16 @@ class NiceScale {
   }
 
   ///依据给定的数据和参数生成美观的数值范围
-  static NiceScale _niceAxis(num min,
-      num max,
-      int splitNumber, {
-        num minInterval = 0,
-        num? maxInterval,
-        num? interval,
-        bool forceSplitNumber = false,
-        bool start0 = false,
-      }) {
+  static NiceScale _niceAxis(
+    num min,
+    num max,
+    int splitNumber, {
+    num minInterval = 0,
+    num? maxInterval,
+    num? interval,
+    bool forceSplitNumber = false,
+    bool start0 = false,
+  }) {
     int oldCount = splitNumber;
     num rawInterval = (max - min) / splitNumber;
     if (rawInterval < minInterval) {
@@ -95,6 +97,9 @@ class NiceScale {
     }
     if (maxInterval != null) {
       rawInterval = math.max(maxInterval, rawInterval);
+    }
+    if (rawInterval == 0) {
+      rawInterval = 1;
     }
     splitNumber = (max - min) ~/ rawInterval;
     if ((max - min) % rawInterval != 0) {
@@ -262,13 +267,14 @@ class _NiceNumber {
   ///[onlyInside]
   ///控制第一个和最后一个标签是否包括该数据范围。
   /// 0 : 无所谓; >0 : 标签范围必须包括数据范围;<0 : 数据范围必须大于标签范围
-  static _NiceNumber nice(num minData,
-      num maxData,
-      int tickCount, {
-        int onlyInside = -1,
-        List<num> niceNumbers = const [1, 5, 2, 2.5, 4, 3],
-        List<num> weights = const [0.2, 0.25, 0.5, 0.05],
-      }) {
+  static _NiceNumber nice(
+    num minData,
+    num maxData,
+    int tickCount, {
+    int onlyInside = -1,
+    List<num> niceNumbers = const [1, 5, 2, 2.5, 4, 3],
+    List<num> weights = const [0.2, 0.25, 0.5, 0.05],
+  }) {
     if (minData >= maxData || tickCount < 1) {
       return _NiceNumber(minData, maxData, maxData - minData, 2, 0);
     }
@@ -332,5 +338,4 @@ class _NiceNumber {
     }
     return result;
   }
-
 }
