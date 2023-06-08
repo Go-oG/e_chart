@@ -50,7 +50,6 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         ///先销毁旧的再创建
         _render!.onStop();
         _render!.dispose();
-
         _render = DefaultRender(widget.config, this);
         _render?.onStart();
       }

@@ -112,6 +112,7 @@ class Context {
       _legend?.create(this, root);
       //TODO 这里不知道是否需要回调[bindSeriesCommand]
     }
+
     ///title
     if (config.title != null) {
       _title = TitleView(config.title!);
@@ -166,9 +167,23 @@ class Context {
   }
 
   ///====生命周期函数=====
-  void onStart(){}
+  void onStart() {
+    _legend?.onStart();
+    _title?.onStart();
+    _toolTip?.onStart();
+    for (var coord in coordList) {
+      coord.onStart();
+    }
+  }
 
-  void onStop(){}
+  void onStop() {
+    _legend?.onStop();
+    _title?.onStop();
+    _toolTip?.onStop();
+    for (var coord in coordList) {
+      coord.onStop();
+    }
+  }
 
   void destroy() {
     _gestureDispatcher.dispose();
@@ -188,7 +203,7 @@ class Context {
     _legend?.destroy();
     _legend = null;
     _title?.destroy();
-    _title=null;
+    _title = null;
     _toolTip?.destroy();
     _toolTip = null;
   }
