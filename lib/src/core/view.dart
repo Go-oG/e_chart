@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../charts/series.dart';
@@ -19,6 +20,7 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   Context? _context;
   LayoutParams layoutParams = LayoutParams.match();
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
+
   //记录旧的边界位置，可用于动画相关的计算
   Rect oldBoundRect = const Rect.fromLTRB(0, 0, 0, 0);
   Rect _globalBoundRect = Rect.zero;
@@ -59,10 +61,10 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   void onCreate() {}
 
   ///视图进入已开始状态
-  void onStart(){}
+  void onStart() {}
 
   ///视图进入停止状态
-  void onStop(){}
+  void onStop() {}
 
   ///由Context负责回调
   ///当该方法被调用时标志着当前View即将被销毁
@@ -70,7 +72,7 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   void destroy() {
     unBindSeries();
     onDestroy();
-    _context=null;
+    _context = null;
   }
 
   void onDestroy() {}
@@ -154,23 +156,32 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
 
   void onLayoutEnd() {}
 
-  void debugDraw(Canvas canvas, Offset offset) {
+  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true}) {
+    if (!kDebugMode) {
+      return;
+    }
     Paint mPaint = Paint();
-    mPaint.color = Colors.red;
-    mPaint.style = PaintingStyle.fill;
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
     canvas.drawCircle(offset, 3, mPaint);
   }
 
-  void debugDrawArea(Canvas canvas) {
+  void debugDrawRect(Canvas canvas, Rect rect, {Color color = Colors.deepPurple, bool fill = false}) {
+    if (!kDebugMode) {
+      return;
+    }
     Paint mPaint = Paint();
-    mPaint.color = Colors.red;
-    mPaint.style = PaintingStyle.fill;
-    canvas.drawRect(Rect.fromLTRB(0, 0, width, height), mPaint);
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    canvas.drawRect(rect, mPaint);
   }
 
-  void debugDrawRulerLine(Canvas canvas) {
+  void debugDrawRulerLine(Canvas canvas, {Color color = Colors.black}) {
+    if (!kDebugMode) {
+      return;
+    }
     Paint mPaint = Paint();
-    mPaint.color = Colors.red;
+    mPaint.color = color;
     mPaint.style = PaintingStyle.stroke;
     mPaint.strokeWidth = 1;
     canvas.drawLine(Offset(width / 2, 0), Offset(width / 2, height), mPaint);
