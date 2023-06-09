@@ -1,11 +1,8 @@
+import 'package:e_chart/src/model/group_data.dart';
 import 'dynamic_data.dart';
-import 'dynamic_text.dart';
 
-///多功能-数据描述
-class MultiData {
-  final DynamicData x;
-  final DynamicData y;
-  final DynamicText? label;
-
-  const MultiData(this.x, this.y, {this.label});
+class PointData extends ItemData{
+   DynamicData x;
+   DynamicData y;
+   PointData(this.x, this.y, {super.label,super.id,super.value});
 }

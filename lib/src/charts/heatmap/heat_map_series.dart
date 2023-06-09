@@ -1,7 +1,7 @@
 import '../../functions.dart';
 import '../../model/dynamic_data.dart';
-import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
+import '../../model/group_data.dart';
 import '../../style/area_style.dart';
 import '../series.dart';
 
@@ -34,11 +34,8 @@ class HeatMapSeries extends RectSeries {
   }) : super(polarAxisIndex: -1, parallelIndex: -1, radarIndex: -1);
 }
 
-class HeatMapData {
+class HeatMapData extends ItemData {
   DynamicData x;
   DynamicData y;
-  num value;
-  DynamicText? label;
-
-  HeatMapData(this.x, this.y, this.value, this.label);
+  HeatMapData(this.x, this.y, num value, {super.id, super.label}) : super(value: value);
 }

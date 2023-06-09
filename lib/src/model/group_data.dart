@@ -1,17 +1,55 @@
+import 'package:e_chart/src/utils/uuid_util.dart';
+
+import 'dynamic_text.dart';
+
 class GroupData {
-  final String? id;
-  final String? label;
-  final List<SubData> data;
+  late final String id;
+  DynamicText? label;
+  List<ItemData> childData;
 
   GroupData(
-    this.data, {
-    this.id,
+    this.childData, {
+    String? id,
     this.label,
-  });
+  }) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GroupData && other.id == id;
+  }
 }
 
-class SubData {
-  final String? label;
-  final num value;
-  SubData(this.value, {this.label});
+class ItemData {
+  late final String id;
+  num value;
+  DynamicText? label;
+
+  ItemData({this.value = 0, this.label, String? id}) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ItemData && other.id == id;
+  }
 }

@@ -1,20 +1,18 @@
 //雷达图
-import 'package:uuid/uuid.dart';
-
 import '../../functions.dart';
-import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
+import '../../model/group_data.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/symbol/symbol.dart';
 import '../series.dart';
 
 class RadarSeries extends RectSeries {
-  final List<RadarGroup> data;
+  final List<GroupData> data;
   final int splitNumber;
-  final StyleFun<RadarGroup, AreaStyle> areaStyleFun;
-  final StyleFun<RadarGroup, LabelStyle>? labelStyleFun;
-  final Fun3<RadarData, int, RadarGroup, ChartSymbol?>? symbolFun;
+  final StyleFun<GroupData, AreaStyle> areaStyleFun;
+  final StyleFun<GroupData, LabelStyle>? labelStyleFun;
+  final Fun3<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
   final num nameGap;
 
   RadarSeries(
@@ -49,18 +47,4 @@ class RadarSeries extends RectSeries {
         );
 }
 
-class RadarGroup {
-  late final String id;
-  final List<RadarData> dataList;
 
-  RadarGroup(this.dataList, {String? id}) {
-    this.id = id ?? (const Uuid().v4().toString().replaceAll('-', ''));
-  }
-}
-
-class RadarData {
-  final num value;
-  final DynamicText? label;
-
-  RadarData(this.value, {this.label});
-}

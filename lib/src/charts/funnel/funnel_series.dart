@@ -1,8 +1,8 @@
 import '../../functions.dart';
-import '../../model/dynamic_text.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../model/enums/sort.dart';
+import '../../model/group_data.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
@@ -25,16 +25,16 @@ enum FunnelAlign {
 }
 
 class FunnelSeries extends RectSeries {
-  List<FunnelData> dataList;
+  List<ItemData> dataList;
   double? maxValue;
   FunnelAlign labelAlign;
   Direction direction;
   Sort sort;
   double gap;
   Align2 align;
-  StyleFun<FunnelData, AreaStyle> areaStyleFun;
-  StyleFun<FunnelData, LabelStyle>? labelStyleFun;
-  StyleFun<FunnelData, LineStyle>? labelLineStyleFun;
+  StyleFun<ItemData, AreaStyle> areaStyleFun;
+  StyleFun<ItemData, LabelStyle>? labelStyleFun;
+  StyleFun<ItemData, LineStyle>? labelLineStyleFun;
 
   FunnelSeries(
     this.dataList, {
@@ -72,11 +72,3 @@ class FunnelSeries extends RectSeries {
         );
 }
 
-class FunnelData {
-  double data;
-  DynamicText? labelText;
-  FunnelData(
-    this.data, [
-    this.labelText,
-  ]);
-}

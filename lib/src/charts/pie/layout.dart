@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../ext/offset_ext.dart';
 import '../../model/dynamic_text.dart';
 import '../../model/enums/circle_align.dart';
+import '../../model/group_data.dart';
 import '../../model/text_position.dart';
 import '../../shape/arc.dart';
 import '../../style/label.dart';
@@ -12,19 +13,19 @@ import 'pie_series.dart';
 ///饼图构造者
 class PieLayers {
   List<PieNode> _nodeList = [];
-  double maxData = 0;
-  double minData = 0;
-  double allData = 0;
-  double minRadius = 0;
-  double maxRadius = 0;
+  num maxData = 0;
+  num minData = 0;
+  num allData = 0;
+  num minRadius = 0;
+  num maxRadius = 0;
 
   List<PieNode> layout(
-    List<PieData> list,
+    List<ItemData> list,
     PieSeries series,
-    double minRadius,
-    double maxRadius,
-    double canvasWidth,
-    double canvasHeight,
+    num minRadius,
+    num maxRadius,
+    num canvasWidth,
+    num canvasHeight,
   ) {
     this.minRadius = minRadius;
     this.maxRadius = maxRadius;
@@ -32,13 +33,13 @@ class PieLayers {
     for (int i = 0; i < list.length; i++) {
       var ele = list[i];
       nodeList.add(PieNode.fromPieData(ele, series, minRadius, maxRadius, canvasWidth, canvasHeight));
-      if (ele.data > maxData) {
-        maxData = ele.data;
+      if (ele.value > maxData) {
+        maxData = ele.value;
       }
-      if (ele.data < minData) {
-        minData = ele.data;
+      if (ele.value < minData) {
+        minData = ele.value;
       }
-      allData += ele.data;
+      allData += ele.value;
     }
     _nodeList = nodeList;
     layoutInner(series);
@@ -56,10 +57,10 @@ class PieLayers {
   //普通饼图
   void _layoutForNormal(PieSeries series) {
     int count = _nodeList.length;
-    double gapAllAngle = (count * series.angleGap).toDouble();
-    double remainAngle = 360 - gapAllAngle;
-    double startAngle = series.offsetAngle;
-    double outerRadius = maxRadius;
+    num gapAllAngle = count * series.angleGap;
+    num remainAngle = 360 - gapAllAngle;
+    num startAngle = series.offsetAngle;
+    num outerRadius = maxRadius;
     if (outerRadius <= minRadius) {
       outerRadius = minRadius + 1;
     }
@@ -68,8 +69,8 @@ class PieLayers {
 
     for (int i = 0; i < count; i++) {
       PieNode node = _nodeList[i];
-      PieData pieData = node.data;
-      double sweepAngle = remainAngle * pieData.data / allData;
+      var pieData = node.data;
+      double sweepAngle = remainAngle * pieData.value / allData;
       PieProps props = PieProps();
       props.ir = minRadius;
       props.or = outerRadius;
@@ -95,8 +96,8 @@ class PieLayers {
       double itemAngle = remainAngle / count;
       for (int i = 0; i < count; i++) {
         PieNode node = _nodeList[i];
-        PieData pieData = node.data;
-        double percent = pieData.data / maxData;
+        var pieData = node.data;
+        double percent = pieData.value / maxData;
         PieProps props = PieProps();
         props.ir = minRadius;
         props.or = maxRadius * percent;
@@ -121,9 +122,9 @@ class PieLayers {
         node.cur = props;
         node.start = props;
         node.end = props;
-        PieData pieData = node.data;
-        props.or = maxRadius * pieData.data / maxData;
-        double sweepAngle = remainAngle * (pieData.data / allData);
+        ItemData pieData = node.data;
+        props.or = maxRadius * pieData.value / maxData;
+        double sweepAngle = remainAngle * (pieData.value / allData);
         if (props.or <= props.ir) {
           props.or = props.ir + 1;
         }
@@ -136,13 +137,13 @@ class PieLayers {
 }
 
 class PieNode {
-  final PieData data;
+  final ItemData data;
   final DynamicText? label;
   final LabelStyle? labelStyle;
-  final double maxRadius;
-  final double minRadius;
-  final double canvasWidth;
-  final double canvasHeight;
+  final num maxRadius;
+  final num minRadius;
+  final num canvasWidth;
+  final num canvasHeight;
   final num padAngle;
 
   PieProps cur = PieProps();
@@ -161,12 +162,12 @@ class PieNode {
   );
 
   static PieNode fromPieData(
-    PieData data,
+    ItemData data,
     PieSeries series,
-    double minRadius,
-    double maxRadius,
-    double canvasWidth,
-    double canvasHeight,
+    num minRadius,
+    num maxRadius,
+    num canvasWidth,
+    num canvasHeight,
   ) {
     return PieNode(
       data,
@@ -234,11 +235,11 @@ class PieNode {
 }
 
 class PieProps {
-  double corner = 0;
-  double ir = 0; //内圆半径(<=0时为圆)
-  double or = 0; //外圆最大半径(<=0时为圆)
-  double startAngle = 0; //开始角度
-  double sweepAngle = 0; //扫过的角度(<=0时为圆)
+  num corner = 0;
+  num ir = 0; //内圆半径(<=0时为圆)
+  num or = 0; //外圆最大半径(<=0时为圆)
+  num startAngle = 0; //开始角度
+  num sweepAngle = 0; //扫过的角度(<=0时为圆)
   bool select = false;
 
   PieProps clone() {
@@ -259,5 +260,5 @@ class PieProps {
         ' endAngle:${(startAngle + sweepAngle).toStringAsFixed(1)}';
   }
 
-  double get endAngle => startAngle + sweepAngle;
+  double get endAngle => (startAngle + sweepAngle).toDouble();
 }
