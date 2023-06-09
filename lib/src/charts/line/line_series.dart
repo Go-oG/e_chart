@@ -4,7 +4,7 @@ import '../../model/multi_data.dart';
 import '../series.dart';
 
 class LineSeries extends RectSeries {
-  final List<MultiData> data;
+  final List<PointData> data;
 
   LineSeries(this.data,{
     super.leftMargin,

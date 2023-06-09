@@ -1,6 +1,6 @@
 import '../../functions.dart';
-import '../../model/dynamic_text.dart';
 import '../../model/enums/circle_align.dart';
+import '../../model/group_data.dart';
 import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
@@ -21,7 +21,7 @@ enum PieAnimatorStyle {
 
 /// 饼图系列
 class PieSeries extends RectSeries {
-  List<PieData> data;
+  List<ItemData> data;
   List<SNumber> center;
   SNumber innerRadius; //内圆半径(<=0时为圆)
   SNumber outerRadius; //外圆最大半径(<=0时为圆)
@@ -31,8 +31,8 @@ class PieSeries extends RectSeries {
   double angleGap;
   bool clockWise;
   CircleAlign labelAlign;
-  StyleFun<PieData, LabelStyle>? labelStyleFun;
-  StyleFun<PieData, AreaStyle> areaStyleFun;
+  StyleFun<ItemData, LabelStyle>? labelStyleFun;
+  StyleFun<ItemData, AreaStyle> areaStyleFun;
   PieAnimatorStyle animatorStyle;
 
   PieSeries(
@@ -74,12 +74,3 @@ class PieSeries extends RectSeries {
         );
 }
 
-class PieData {
-  final double data;
-  final DynamicText? label;
-
-  PieData(
-    this.data, [
-    this.label,
-  ]);
-}

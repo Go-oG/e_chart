@@ -5,6 +5,7 @@ import '../../animation/tween/offset_tween.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../model/enums/sort.dart';
+import '../../model/group_data.dart';
 import '../../model/text_position.dart';
 import '../../style/label.dart';
 import 'funnel_series.dart';
@@ -17,13 +18,13 @@ class FunnelLayers {
 
   FunnelLayers(this.gap, this.direction, this.sort, this.align);
 
-  List<FunnelNode> layout(double width, double height, List<FunnelData> list, {double? maxValue}) {
+  List<FunnelNode> layout(double width, double height, List<ItemData> list, {double? maxValue}) {
     if (list.isEmpty) {
       return [];
     }
     sortData(list);
 
-    double max = list.first.data;
+    num max = list.first.value;
     List<FunnelNode> nodeList = [];
     for (int i = 0; i < list.length; i++) {
       var element = list[i];
@@ -33,14 +34,14 @@ class FunnelLayers {
       } else {
         index = i + 1;
       }
-      FunnelData? preData;
+      ItemData? preData;
       if (index >= 0 && index < list.length) {
         preData = list[index];
       }
       nodeList.add(FunnelNode(preData, element));
       preData = element;
-      if (element.data > max) {
-        max = element.data;
+      if (element.value > max) {
+        max = element.value;
       }
     }
     if (maxValue != null && max < maxValue) {
@@ -58,12 +59,12 @@ class FunnelLayers {
     return nodeList;
   }
 
-  void sortData(List<FunnelData> list) {
+  void sortData(List<ItemData> list) {
     list.sort((a, b) {
       if (sort == Sort.asc) {
-        return a.data.compareTo(b.data);
+        return a.value.compareTo(b.value);
       } else {
-        return b.data.compareTo(a.data);
+        return b.value.compareTo(a.value);
       }
     });
   }
@@ -98,8 +99,8 @@ class FunnelLayers {
 }
 
 class FunnelNode {
-  final FunnelData? preData;
-  final FunnelData data;
+  final ItemData? preData;
+  final ItemData data;
 
   ///标识顶点坐标
   ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
@@ -134,10 +135,10 @@ class FunnelNode {
 
   List<Offset> get pointList => _pointList;
 
-  void _computePoint(Align2 align, Direction direction, Sort sort, double maxData, double gap) {
+  void _computePoint(Align2 align, Direction direction, Sort sort, num maxData, double gap) {
     double width = right - left;
     double height = bottom - top;
-    double percent = data.data / maxData;
+    double percent = data.value / maxData;
 
     Align2 align2 = align;
 
@@ -148,7 +149,7 @@ class FunnelNode {
       if (preData == null) {
         preH = 0;
       } else {
-        preH = height * (preData!.data / maxData);
+        preH = height * (preData!.value / maxData);
       }
       if (preH != 0) {
         h -= gap;
@@ -209,7 +210,7 @@ class FunnelNode {
     if (preData == null) {
       preW = 0;
     } else {
-      preW = width * (preData!.data / maxData);
+      preW = width * (preData!.value / maxData);
     }
     if (preW != 0) {
       w -= gap;

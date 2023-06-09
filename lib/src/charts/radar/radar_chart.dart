@@ -82,8 +82,8 @@ class RadarView extends  ChartView implements RadarChild {
   List<num> dataSet(int dim) {
     List<num> resultList = [];
     for (var group in series.data) {
-      if(group.dataList.length>dim){
-        resultList.add(group.dataList[dim].value);
+      if(group.childData.length>dim){
+        resultList.add(group.childData[dim].value);
       }
     }
     return resultList;

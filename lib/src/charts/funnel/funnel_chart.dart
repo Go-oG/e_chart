@@ -121,7 +121,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
   }
 
   void _drawText(Canvas canvas, FunnelNode node) {
-    if (node.data.labelText == null || node.data.labelText!.isEmpty || series.labelStyleFun == null) {
+    if (node.data.label == null || node.data.label!.isEmpty || series.labelStyleFun == null) {
       return;
     }
     LabelStyle? style = series.labelStyleFun?.call(node.data, null);
@@ -136,6 +136,6 @@ class FunnelView extends SeriesView<FunnelSeries> {
     if (ol != null) {
       style.guideLine.style.drawPolygon(canvas, mPaint, ol);
     }
-    style.draw(canvas, mPaint, node.data.labelText!, position);
+    style.draw(canvas, mPaint, node.data.label!, position);
   }
 }

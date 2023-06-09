@@ -3,17 +3,17 @@ import 'package:flutter/widgets.dart';
 
 import '../../coord/radar/radar_coord.dart';
 import '../../core/context.dart';
+import '../../model/group_data.dart';
 import 'radar_chart.dart';
-import 'radar_series.dart';
 
 /// 雷达图布局
 class RadarLayers {
-  RadarGroupNode layout(RadarView view, RadarGroup group) {
+  RadarGroupNode layout(RadarView view, GroupData group) {
     Context context = view.context;
     RadarCoord layout = context.findRadarCoord(view.series.radarIndex);
     RadarGroupNode groupNode = RadarGroupNode(group, []);
     int i = 0;
-    for (var c in group.dataList) {
+    for (var c in group.childData) {
       Offset offset = layout.dataToPoint(i, c.value) ?? Offset.zero;
       RadarNode radarNode = RadarNode(c, offset);
       groupNode.nodeList.add(radarNode);
@@ -24,7 +24,7 @@ class RadarLayers {
 }
 
 class RadarGroupNode {
-  final RadarGroup data;
+  final GroupData data;
   final List<RadarNode> nodeList;
   bool show = true;
 
@@ -55,7 +55,7 @@ class RadarGroupNode {
 }
 
 class RadarNode {
-  final RadarData data;
+  final ItemData data;
   final Offset offset;
   Offset cur = Offset.zero;
   Offset start = Offset.zero;
