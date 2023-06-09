@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:e_chart/src/style/symbol/pin_symbol.dart';
 
+import '../../model/dynamic_text.dart';
 import '../../model/text_position.dart';
-import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/symbol/symbol.dart';
 import 'mark_type.dart';
@@ -23,7 +23,7 @@ class MarkPoint {
     this.precision = 1,
   });
 
-  void draw(Canvas canvas, Paint paint, Offset offset, [String? text]) {
+  void draw(Canvas canvas, Paint paint, Offset offset, [DynamicText? text]) {
     symbol.draw(canvas,  paint,offset);
     if (text != null && text.isNotEmpty) {
       labelStyle?.draw(canvas, paint, text, TextDrawConfig(offset));

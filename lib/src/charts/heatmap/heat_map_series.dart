@@ -1,13 +1,14 @@
 import '../../functions.dart';
 import '../../model/dynamic_data.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/area_style.dart';
 import '../series.dart';
 
 ///热力图
 class HeatMapSeries extends RectSeries {
-  final List<HeatMapData> data;
-  final StyleFun<HeatMapData, AreaStyle> styleFun;
+  List<HeatMapData> data;
+  StyleFun<HeatMapData, AreaStyle> styleFun;
 
   HeatMapSeries(
     this.data, {
@@ -25,18 +26,19 @@ class HeatMapSeries extends RectSeries {
     super.calendarIndex = 0,
     super.clip,
     super.tooltip,
-        super.enableClick,
-        super.enableHover,
-        super.enableDrag,
-        super.enableScale,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
     super.z,
   }) : super(polarAxisIndex: -1, parallelIndex: -1, radarIndex: -1);
 }
 
 class HeatMapData {
-  final DynamicData x;
-  final DynamicData y;
-  final num value;
+  DynamicData x;
+  DynamicData y;
+  num value;
+  DynamicText? label;
 
-  HeatMapData(this.x, this.y, this.value);
+  HeatMapData(this.x, this.y, this.value, this.label);
 }

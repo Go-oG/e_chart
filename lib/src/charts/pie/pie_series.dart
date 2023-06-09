@@ -1,4 +1,5 @@
 import '../../functions.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/circle_align.dart';
 import '../../model/string_number.dart';
 import '../../style/area_style.dart';
@@ -75,7 +76,7 @@ class PieSeries extends RectSeries {
 
 class PieData {
   final double data;
-  final String? label;
+  final DynamicText? label;
 
   PieData(
     this.data, [

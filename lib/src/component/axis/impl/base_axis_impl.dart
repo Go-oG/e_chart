@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../model/dynamic_data.dart';
+import '../../../model/dynamic_text.dart';
 import '../../../model/text_position.dart';
 import '../../scale/scale_base.dart';
 import '../base_axis.dart';
@@ -30,7 +31,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> {
   void layout(L layoutProps, List<DynamicData> dataSet) {
     this.props = layoutProps;
     scale = buildScale(layoutProps, dataSet);
-    titleNode.config= layoutAxisName();
+    titleNode.config = layoutAxisName();
   }
 
   BaseScale buildScale(L props, List<DynamicData> dataSet);
@@ -47,16 +48,17 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> {
   }
 
   void drawAxisName(Canvas canvas, Paint paint) {
-    if (titleNode.label.isNotEmpty) {
-      axis.nameStyle.draw(canvas, paint, titleNode.label, titleNode.config);
+    if (titleNode.label == null || titleNode.label!.isEmpty) {
+      return;
     }
+    axis.nameStyle.draw(canvas, paint, titleNode.label!, titleNode.config);
   }
 
   void drawAxisLine(Canvas canvas, Paint paint) {}
 
   void drawAxisTick(Canvas canvas, Paint paint) {}
 
-  List<String> obtainTicks() {
+  List<DynamicText> obtainTicks() {
     return axis.buildTicks(scale);
   }
 
@@ -88,8 +90,9 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> {
 }
 
 class AxisTitleNode {
-  final String label;
-  TextDrawConfig config=TextDrawConfig(Offset.zero,align: Alignment.center);
+  final DynamicText? label;
+  TextDrawConfig config = TextDrawConfig(Offset.zero, align: Alignment.center);
+
   AxisTitleNode(this.label);
 }
 

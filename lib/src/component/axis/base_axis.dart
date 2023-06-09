@@ -4,6 +4,7 @@ import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../functions.dart';
 import '../../model/dynamic_data.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';
@@ -35,7 +36,7 @@ enum TimeSplitType {
 abstract class BaseAxis {
   final bool show;
   final AxisType type;
-  final String name;
+  final DynamicText? name;
   final Align2 nameAlign;
   final num nameGap;
   final LabelStyle nameStyle;
@@ -46,13 +47,14 @@ abstract class BaseAxis {
   //只在时间轴下使用
   final TimeSplitType timeSplitType;
   final Pair<DateTime>? timeRange;
-  final FormatterFun<DateTime>? timeFormatFun;
+  final Fun1<DateTime,DynamicText>? timeFormatFun;
 
   final bool inverse;
 
   ///数值轴相关
   final num min;
   final num? max;
+
   ///是否是脱离 0 值比例。设置成 true 后坐标刻度不会强制包含零刻度
   final bool start0;
   final int splitNumber;
@@ -62,14 +64,15 @@ abstract class BaseAxis {
   final num logBase;
 
   final NiceType niceType;
+
   ///样式、交互相关
   final bool silent;
   final AxisLine axisLine;
-  final FormatterFun<num>? formatFun;
+  final Fun1<num, DynamicText>? formatFun;
 
   const BaseAxis({
     this.show = true,
-    this.name = '',
+    this.name,
     this.type = AxisType.value,
     this.categoryList = const [],
     this.timeSplitType = TimeSplitType.day,
@@ -156,17 +159,17 @@ abstract class BaseAxis {
     throw FlutterError('现有数据无法推导出Scale');
   }
 
-  List<String> buildTicks(BaseScale scale) {
+  List<DynamicText> buildTicks(BaseScale scale) {
     if (scale is CategoryScale) {
-      return scale.domain;
+      return List.from(scale.domain.map((e) => DynamicText(e)));
     }
-    List<String> ticks = [];
+    List<DynamicText> ticks = [];
     if (scale is TimeScale) {
       for (var ele in scale.ticks) {
         if (formatFun != null) {
           ticks.add(formatFun!.call(ele.millisecondsSinceEpoch));
         } else {
-          ticks.add(defaultTimeFormat(ele));
+          ticks.add(DynamicText.fromString(defaultTimeFormat(ele)));
         }
       }
       return ticks;
@@ -179,7 +182,7 @@ abstract class BaseAxis {
         if (formatFun != null) {
           ticks.add(formatFun!.call(v));
         } else {
-          ticks.add(formatNumber(v));
+          ticks.add(DynamicText.fromString(formatNumber(v)));
         }
       }
     }
@@ -218,7 +221,7 @@ List<Size> measureAxisNameTextMaxSize(Iterable<BaseAxis> axisList, Direction dir
     if (axis.nameAlign == Align2.center) {
       continue;
     }
-    Size size = axis.nameStyle.measure(axis.name, maxWidth: maxWidth.toDouble());
+    Size size = axis.name == null ? Size.zero : axis.nameStyle.measure(axis.name!, maxWidth: maxWidth.toDouble());
     double mw;
     double mh;
     if (direction == Direction.horizontal) {

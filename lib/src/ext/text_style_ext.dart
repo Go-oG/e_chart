@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 extension TextStyleExtension on TextStyle {
+
   TextPainter toPainter(
     String text, {
     TextAlign textAlign = TextAlign.center,

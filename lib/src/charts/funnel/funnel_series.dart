@@ -1,4 +1,5 @@
 import '../../functions.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../model/enums/sort.dart';
@@ -53,10 +54,10 @@ class FunnelSeries extends RectSeries {
     super.width,
     super.height,
     super.animation,
-        super.enableClick,
-        super.enableHover,
-        super.enableDrag,
-        super.enableScale,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
     super.clip,
     super.tooltip,
     super.z,
@@ -72,10 +73,9 @@ class FunnelSeries extends RectSeries {
 }
 
 class FunnelData {
-  final double data;
-  final String? labelText;
-
-  const FunnelData(
+  double data;
+  DynamicText? labelText;
+  FunnelData(
     this.data, [
     this.labelText,
   ]);

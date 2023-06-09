@@ -2,6 +2,7 @@
 import 'package:uuid/uuid.dart';
 
 import '../../functions.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
@@ -53,13 +54,13 @@ class RadarGroup {
   final List<RadarData> dataList;
 
   RadarGroup(this.dataList, {String? id}) {
-    this.id = id ?? (Uuid().v4().toString().replaceAll('-', ''));
+    this.id = id ?? (const Uuid().v4().toString().replaceAll('-', ''));
   }
 }
 
 class RadarData {
   final num value;
-  final String? label;
+  final DynamicText? label;
 
   RadarData(this.value, {this.label});
 }

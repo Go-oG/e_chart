@@ -1,14 +1,14 @@
-
 //盒须图
 import '../../functions.dart';
 import '../../model/dynamic_data.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/line_style.dart';
 import '../series.dart';
 
 class BoxplotSeries extends RectSeries {
-  final List<BoxplotData> data;
-  final StyleFun<BoxplotData, LineStyle> lineStyleFun;
+  List<BoxplotData> data;
+  StyleFun<BoxplotData, LineStyle> lineStyleFun;
 
   BoxplotSeries({
     required this.data,
@@ -39,12 +39,13 @@ class BoxplotSeries extends RectSeries {
 }
 
 class BoxplotData {
-  final DynamicData x;
-  final DynamicData max;
-  final DynamicData upAve4;
-  final DynamicData middle;
-  final DynamicData downAve4;
-  final DynamicData min;
+  DynamicData x;
+  DynamicData max;
+  DynamicData upAve4;
+  DynamicData middle;
+  DynamicData downAve4;
+  DynamicData min;
+  DynamicText? label;
 
   BoxplotData({
     required this.x,
@@ -53,5 +54,6 @@ class BoxplotData {
     required this.middle,
     required this.downAve4,
     required this.min,
+    this.label,
   });
 }

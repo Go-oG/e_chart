@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../ext/offset_ext.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/circle_align.dart';
 import '../../model/text_position.dart';
 import '../../shape/arc.dart';
@@ -136,7 +137,7 @@ class PieLayers {
 
 class PieNode {
   final PieData data;
-  final String? label;
+  final DynamicText? label;
   final LabelStyle? labelStyle;
   final double maxRadius;
   final double minRadius;

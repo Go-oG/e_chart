@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../functions.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/text_position.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
@@ -30,7 +31,7 @@ class MarkLine {
     this.endMarkType,
   });
 
-  void draw(Canvas canvas, Paint paint, Offset start, Offset end, {String? startText, String? endText}) {
+  void draw(Canvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end], false);
     startSymbol?.draw(canvas, paint, start);
     endSymbol?.draw(canvas, paint, end);

@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../ext/text_style_ext.dart';
 import '../component/guideline/guide_line.dart';
+import '../model/dynamic_text.dart';
 import '../model/enums/over_flow.dart';
 import '../model/text_position.dart';
 import 'area_style.dart';
@@ -29,21 +31,33 @@ class LabelStyle {
     this.minAngle = 0,
   });
 
-  Size draw(Canvas canvas, Paint paint, String text, TextDrawConfig config) {
+  Size draw(Canvas canvas, Paint paint, DynamicText text, TextDrawConfig config) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
-    return draw2(canvas, paint, TextSpan(text: text, style: textStyle), config);
+    if (text.isString) {
+      return drawText(canvas, paint, text.text as String, config);
+    }
+    if (text.isTextSpan) {
+      return drawTextSpan(canvas, paint, text.text as TextSpan, config);
+    }
+    return drawParagraph(canvas, paint, text.text as Paragraph, config);
   }
 
-  Size draw2(Canvas canvas, Paint paint, TextSpan text, TextDrawConfig config) {
-    if (!show) {
+  Size drawText(Canvas canvas, Paint paint, String text, TextDrawConfig config) {
+    if (!show || text.isEmpty) {
+      return Size.zero;
+    }
+    return drawTextSpan(canvas, paint, TextSpan(text: text, style: textStyle), config);
+  }
+
+  Size drawTextSpan(Canvas canvas, Paint paint, TextSpan text, TextDrawConfig config) {
+    if (!show || (text.text?.isEmpty ?? true)) {
       return Size.zero;
     }
     TextOverflow? textOverflow = overFlow == OverFlow.cut ? TextOverflow.clip : null;
     String? ellipsis = textOverflow == TextOverflow.ellipsis ? '\u2026' : null;
     TextPainter painter = config.toPainter2(text);
-
     if (config.ellipsis == null) {
       painter.ellipsis = ellipsis;
     }
@@ -73,13 +87,53 @@ class LabelStyle {
     return Size(painter.width, painter.height);
   }
 
-  Size measure(String text, {num maxWidth = double.infinity, int? maxLine}) {
+  Size drawParagraph(Canvas canvas, Paint paint, Paragraph paragraph, TextDrawConfig config) {
+    ParagraphConstraints constraints = ParagraphConstraints(width: config.maxWidth.toDouble());
+    paragraph.layout(constraints);
+    double w = paragraph.width;
+    double h = paragraph.height;
+    Offset leftTop = _computeAlignOffset(config.offset, config.align, w, h);
+    Offset center = leftTop.translate(w * 0.5, h * 0.5);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    if (rotate != 0) {
+      canvas.rotate(rotate * pi / 180);
+    }
+    if (decoration != null) {
+      Path path = Path();
+      path.addRect(Rect.fromCenter(center: Offset.zero, width: w, height: h));
+      decoration?.drawPath(canvas, paint, path);
+    }
+    Offset textOffset = Offset(-w * 0.5, -h * 0.5);
+    canvas.drawParagraph(paragraph, textOffset);
+    canvas.restore();
+    return Size(w, h);
+  }
+
+  Size measure(DynamicText text, {num maxWidth = double.infinity, int? maxLine}) {
     if (text.isEmpty) {
       return Size.zero;
     }
-    TextPainter painter = textStyle.toPainter(text, maxLines: maxLine);
-    painter.layout(maxWidth: maxWidth.toDouble());
-    return painter.size;
+    if (text.isString) {
+      TextPainter painter = textStyle.toPainter(text.text as String, maxLines: maxLine);
+      painter.layout(maxWidth: maxWidth.toDouble());
+      return painter.size;
+    }
+    if (text.isTextSpan) {
+      TextPainter painter = TextPainter(
+          text: text.text as TextSpan,
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.ltr,
+          textScaleFactor: 1,
+          maxLines: maxLine,
+          ellipsis: ellipsis);
+      painter.layout(maxWidth: maxWidth.toDouble());
+      return painter.size;
+    }
+    Paragraph p = text.text as Paragraph;
+    ParagraphConstraints constraints = ParagraphConstraints(width: maxWidth.toDouble());
+    p.layout(constraints);
+    return Size(p.width, p.height);
   }
 
   /// 给定一个绘制点和对齐方式计算文本左上角的对齐点

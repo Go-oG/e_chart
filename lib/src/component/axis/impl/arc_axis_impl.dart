@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../coord/index.dart';
 import '../../../ext/offset_ext.dart';
 import '../../../model/dynamic_data.dart';
+import '../../../model/dynamic_text.dart';
 import '../../../model/enums/align2.dart';
 import '../../../model/text_position.dart';
 import '../../../style/line_style.dart';
@@ -26,9 +27,10 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
   @override
   TextDrawConfig layoutAxisName() {
+    DynamicText? label = titleNode.label;
     Offset start = props.center;
     Offset end = circlePoint(props.radius, props.angleOffset, props.center);
-    if (axis.nameAlign == Align2.center || titleNode.label.isEmpty) {
+    if (axis.nameAlign == Align2.center || (label == null || label.isEmpty)) {
       return TextDrawConfig(Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
     }
     if (axis.nameAlign == Align2.start) {
@@ -63,7 +65,7 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
   @override
   void drawAxisTick(Canvas canvas, Paint paint) {
-    List<String> ticks = obtainTicks();
+    List<DynamicText> ticks = obtainTicks();
     if (ticks.isEmpty) {
       return;
     }
@@ -90,10 +92,10 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
         tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData), null);
       }
       tick ??= axis.axisLine.tick;
-      List<String> tl = [];
+      List<DynamicText> tl = [];
       tl.add(ticks[i]);
       if (i < ticks.length - 2) {
-        tl.add('');
+        tl.add(DynamicText.empty);
       } else {
         tl.add(ticks[i + 1]);
       }
@@ -121,7 +123,7 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   }
 
   @override
-  List<String> obtainTicks() {
+  List<DynamicText> obtainTicks() {
     if (scale is! LinearScale) {
       return super.obtainTicks();
     }
