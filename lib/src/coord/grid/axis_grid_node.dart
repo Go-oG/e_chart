@@ -61,26 +61,26 @@ class GridAxisImpl extends LineAxisImpl<GridAxis> {
     _axisSize = AxisSize(rect, rect.topLeft, rect.topRight, length);
   }
 
-  String getMaxStr() {
-    var maxStr = '';
+  DynamicText getMaxStr() {
+    DynamicText maxStr = DynamicText.empty;
     for (var ele in children) {
       List<dynamic> dl = vertical ? ele.yDataSet : ele.xDataSet;
       for (var data in dl) {
         if (data is String) {
           if (data.length > maxStr.length) {
-            maxStr = data;
+            maxStr = DynamicText(data);
           }
           continue;
         }
         if (data is num) {
-          var s = axis.formatFun?.call(data) ?? formatNumber(data);
+          var s = axis.formatFun?.call(data) ?? DynamicText(formatNumber(data));
           if (s.length > maxStr.length) {
             maxStr = s;
           }
           continue;
         }
         if (data is DateTime) {
-          var s = axis.timeFormatFun?.call(data) ?? (data.toString());
+          var s = axis.timeFormatFun?.call(data) ?? DynamicText(data.toString());
           if (s.length > maxStr.length) {
             maxStr = s;
           }

@@ -3,6 +3,7 @@ import 'package:e_chart/src/model/enums/coordinate.dart';
 import '../../component/axis/axis_line.dart';
 import '../../component/tick/main_tick.dart';
 import '../../functions.dart';
+import '../../model/dynamic_text.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
@@ -50,7 +51,7 @@ enum RadarShape { circle, polygon }
 enum RadarAnimatorStyle { scale, rotate, scaleAndRotate }
 
 class RadarIndicator {
-  final String name;
+  final DynamicText name;
   final double? max;
   final double min;
   final num nameGap;

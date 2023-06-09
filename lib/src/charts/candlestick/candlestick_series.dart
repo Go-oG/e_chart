@@ -1,15 +1,16 @@
 import '../../functions.dart';
+import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/area_style.dart';
 import '../../style/line_style.dart';
 import '../series.dart';
 
 class CandleStickSeries extends RectSeries {
-  final List<CandleStickData> data;
-  final String name;
-  final bool hoverAnimation;
-  final StyleFun<CandleStickData, AreaStyle> styleFun;
-  final StyleFun<CandleStickData, LineStyle> lineStyleFun;
+  List<CandleStickData> data;
+  String name;
+  bool hoverAnimation;
+  StyleFun<CandleStickData, AreaStyle> styleFun;
+  StyleFun<CandleStickData, LineStyle> lineStyleFun;
 
   CandleStickSeries(
     this.data, {
@@ -43,12 +44,12 @@ class CandleStickSeries extends RectSeries {
 }
 
 class CandleStickData {
-  final DateTime time;
-
-  final double highest;
-  final double lowest;
-  final double open;
-  final double close;
+  DateTime time;
+  double highest;
+  double lowest;
+  double open;
+  double close;
+  DynamicText? label;
 
   CandleStickData({
     required this.time,
@@ -56,5 +57,6 @@ class CandleStickData {
     required this.close,
     required this.lowest,
     required this.highest,
+    this.label,
   });
 }

@@ -3,6 +3,7 @@ import 'package:e_chart/src/ext/offset_ext.dart';
 import 'package:flutter/material.dart';
 
 import '../../../model/dynamic_data.dart';
+import '../../../model/dynamic_text.dart';
 import '../../../model/enums/align2.dart';
 import '../../../model/text_position.dart';
 import '../../../style/line_style.dart';
@@ -85,7 +86,7 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
     if (axis.axisLine.tick == null) {
       return;
     }
-    List<String> ticks = obtainTicks();
+    List<DynamicText> ticks = obtainTicks();
     if (ticks.isEmpty) {
       return;
     }
@@ -129,7 +130,7 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
         tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData), null);
       }
       tick ??= axis.axisLine.tick;
-      List<String> subList = [];
+      List<DynamicText> subList = [];
       if (axis.category) {
         subList.add(ticks[firstIndex]);
       } else {

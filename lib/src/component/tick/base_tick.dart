@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:e_chart/src/ext/offset_ext.dart';
 
+import '../../model/dynamic_text.dart';
 import '../../model/text_position.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
@@ -58,7 +59,7 @@ abstract class BaseTick {
   ///绘制直线上的Tick(直线可能是斜线)
   ///如果ticks 只有一个则居中
   ///大于等于2则在首尾均匀分布
-  void drawLineTick(Canvas canvas, Paint paint, Offset start, Offset end, List<String> ticks) {
+  void drawLineTick(Canvas canvas, Paint paint, Offset start, Offset end, List<DynamicText> ticks) {
     if (ticks.isEmpty || !show) {
       return;
     }
@@ -123,7 +124,7 @@ abstract class BaseTick {
     double radius,
     num startAngle,
     num sweepAngle,
-    List<String> ticks, {
+    List<DynamicText> ticks, {
     Offset center = Offset.zero,
     bool category = false,
   }) {

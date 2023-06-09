@@ -16,6 +16,7 @@ export 'enums/trigger_on.dart';
 export 'chart_offset.dart';
 export 'constans.dart';
 export 'dynamic_data.dart';
+export 'dynamic_text.dart';
 export 'group_data.dart';
 export 'multi_data.dart';
 export 'range.dart';
