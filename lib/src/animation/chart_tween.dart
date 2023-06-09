@@ -55,7 +55,11 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   }
 
   void stop() {
-    _controller?.stop(canceled: true);
+    try{
+      _controller?.stop(canceled: true);
+    }catch(e){
+      debugPrint('$e');
+    }
     _controller = null;
     notifyListeners();
   }
