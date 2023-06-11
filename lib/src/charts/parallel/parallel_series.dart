@@ -2,7 +2,7 @@ import '../../functions.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/line_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class ParallelSeries extends RectSeries {
   List<ParallelGroup> data;

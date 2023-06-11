@@ -1,6 +1,6 @@
 import '../../model/enums/coordinate.dart';
 import '../../model/multi_data.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class PointSeries extends RectSeries {
   final List<PointData> data;

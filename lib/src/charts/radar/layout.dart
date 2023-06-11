@@ -1,25 +1,33 @@
 import 'dart:ui';
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../coord/radar/radar_coord.dart';
 import '../../core/context.dart';
+import '../../core/layout.dart';
 import '../../model/group_data.dart';
-import 'radar_chart.dart';
+import 'radar_series.dart';
 
 /// 雷达图布局
-class RadarLayers {
-  RadarGroupNode layout(RadarView view, GroupData group) {
-    Context context = view.context;
-    RadarCoord layout = context.findRadarCoord(view.series.radarIndex);
-    RadarGroupNode groupNode = RadarGroupNode(group, []);
-    int i = 0;
-    for (var c in group.childData) {
-      Offset offset = layout.dataToPoint(i, c.value) ?? Offset.zero;
-      RadarNode radarNode = RadarNode(c, offset);
-      groupNode.nodeList.add(radarNode);
-      i++;
-    }
-    return groupNode;
+class RadarLayout extends ChartLayout {
+  List<RadarGroupNode> _groupNodeList = [];
+  List<RadarGroupNode> get groupNodeList => _groupNodeList;
+
+  void doLayout(Context context,RadarSeries series, List<GroupData> group) {
+    RadarCoord layout = context.findRadarCoord(series.radarIndex);
+    List<RadarGroupNode> gl = [];
+    each(group, (data, p1) {
+      var groupNode = RadarGroupNode(data, []);
+      gl.add(groupNode);
+      int i = 0;
+      for (var c in data.childData) {
+        Offset offset = layout.dataToPoint(i, c.value) ?? Offset.zero;
+        RadarNode radarNode = RadarNode(c, offset);
+        groupNode.nodeList.add(radarNode);
+        i++;
+      }
+    });
+    _groupNodeList = gl;
   }
 }
 

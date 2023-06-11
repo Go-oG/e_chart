@@ -3,10 +3,10 @@ import 'package:e_chart/src/component/title/title_view.dart';
 import 'package:e_chart/src/coord/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import '../component/index.dart';
-import '../model/index.dart';
+import '../../component/index.dart';
+import '../../model/index.dart';
 import 'base_render.dart';
-import 'view.dart';
+import '../view.dart';
 
 class DefaultRender extends BaseRender {
   DefaultRender(super.config, super.tickerProvider, [super.devicePixelRatio]);

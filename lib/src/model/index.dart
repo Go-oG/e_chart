@@ -13,6 +13,7 @@ export 'enums/stack_strategy.dart';
 export 'enums/trigger.dart';
 export 'enums/trigger_on.dart';
 
+export 'chart_error.dart';
 export 'chart_offset.dart';
 export 'constans.dart';
 export 'dynamic_data.dart';

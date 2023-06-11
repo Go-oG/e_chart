@@ -4,7 +4,7 @@ import '../../model/group_data.dart';
 import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 enum RoseType {
   normal,
@@ -31,6 +31,7 @@ class PieSeries extends RectSeries {
   double angleGap;
   bool clockWise;
   CircleAlign labelAlign;
+  SNumber scaleExtend;
   StyleFun<ItemData, LabelStyle>? labelStyleFun;
   StyleFun<ItemData, AreaStyle> areaStyleFun;
   PieAnimatorStyle animatorStyle;
@@ -40,6 +41,7 @@ class PieSeries extends RectSeries {
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
     this.innerRadius = const SNumber.percent(15),
     this.outerRadius = const SNumber.percent(90),
+    this.scaleExtend = const SNumber.number(16),
     this.offsetAngle = 0,
     this.corner = 0,
     this.roseType = RoseType.radius,
@@ -62,7 +64,7 @@ class PieSeries extends RectSeries {
     super.enableClick,
     super.enableHover,
     super.enableDrag,
-    super.enableScale=false,
+    super.enableScale = false,
     super.clip,
     super.z,
   }) : super(
@@ -73,4 +75,3 @@ class PieSeries extends RectSeries {
           polarAxisIndex: -1,
         );
 }
-

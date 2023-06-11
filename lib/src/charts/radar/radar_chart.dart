@@ -11,26 +11,23 @@ import 'layout.dart';
 import 'radar_series.dart';
 
 /// 雷达图
-class RadarView extends  ChartView implements RadarChild {
+class RadarView extends ChartView implements RadarChild {
   final RadarSeries series;
-  final RadarLayers _layers = RadarLayers();
-  final List<RadarGroupNode> _groupNodeList = [];
+  final RadarLayout radarLayout = RadarLayout();
 
   RadarView(this.series);
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    _groupNodeList.clear();
-    for (var element in series.data) {
-      _groupNodeList.add(_layers.layout(this, element));
-    }
+    radarLayout.doLayout(context, series, series.data);
     _initAnimator();
   }
 
-  void _initAnimator(){
+  void _initAnimator() {
     AnimatorProps? info = series.animation;
+    List<RadarGroupNode> nodeList = radarLayout.groupNodeList;
     if (info != null) {
-      for (var group in _groupNodeList) {
+      for (var group in nodeList) {
         for (var node in group.nodeList) {
           node.start = Offset.zero;
           node.end = node.cur;
@@ -40,7 +37,7 @@ class RadarView extends  ChartView implements RadarChild {
       OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
       ChartDoubleTween tween = ChartDoubleTween.fromAnimator(info);
       tween.addListener(() {
-        for (var group in _groupNodeList) {
+        for (var group in nodeList) {
           for (var node in group.nodeList) {
             offsetTween.changeValue(node.start, node.end);
             node.cur = offsetTween.safeGetValue(tween.value);
@@ -61,7 +58,7 @@ class RadarView extends  ChartView implements RadarChild {
   }
 
   void _drawData(Canvas canvas) {
-    for (var group in _groupNodeList) {
+    for (var group in radarLayout.groupNodeList) {
       if (!group.show) {
         continue;
       }
@@ -69,10 +66,10 @@ class RadarView extends  ChartView implements RadarChild {
       if (style == null || !style.show) {
         continue;
       }
-      List<Offset> ol=group.getPathOffset();
+      List<Offset> ol = group.getPathOffset();
       style.drawPolygonArea(canvas, mPaint, ol);
-      for(int i=0;i<ol.length;i++){
-        ChartSymbol? symbol=series.symbolFun?.call(group.nodeList[i].data,i,group.data);
+      for (int i = 0; i < ol.length; i++) {
+        ChartSymbol? symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
         symbol?.draw(canvas, mPaint, ol[i]);
       }
     }
@@ -82,7 +79,7 @@ class RadarView extends  ChartView implements RadarChild {
   List<num> dataSet(int dim) {
     List<num> resultList = [];
     for (var group in series.data) {
-      if(group.childData.length>dim){
+      if (group.childData.length > dim) {
         resultList.add(group.childData[dim].value);
       }
     }

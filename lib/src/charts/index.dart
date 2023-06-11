@@ -1,4 +1,4 @@
-export 'series.dart';
+export '../core/series.dart';
 
 export 'bar/bar_series.dart';
 export 'boxplot/boxplot_series.dart';

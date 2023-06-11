@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import '../charts/series.dart';
+import '../functions.dart';
+import '../model/chart_error.dart';
+import 'command.dart';
+import 'series.dart';
 import '../component/tooltip/context_menu.dart';
 import '../component/tooltip/context_menu_builder.dart';
 import '../gesture/chart_gesture.dart';
@@ -13,10 +15,9 @@ import '../model/enums/scale_type.dart';
 import '../model/string_number.dart';
 import '../utils/log_util.dart';
 import 'context.dart';
-import 'draw_node.dart';
 import 'view_group.dart';
 
-abstract class ChartView extends DrawNode implements ToolTipBuilder {
+abstract class ChartView implements ToolTipBuilder {
   Context? _context;
   LayoutParams layoutParams = LayoutParams.match();
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
@@ -79,7 +80,6 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
 
   //=========生命周期回调方法结束==================
 
-  @override
   void measure(double parentWidth, double parentHeight) {
     bool force = forceMeasure || forceLayout;
     bool minDiff = (boundRect.width - parentWidth).abs() <= 0.00001 && (boundRect.height - parentHeight).abs() <= 0.00001;
@@ -121,7 +121,6 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
     return Size(w, h);
   }
 
-  @override
   void layout(double left, double top, double right, double bottom) {
     if (layoutCompleted && !forceLayout) {
       bool b1 = (left - boundRect.left).abs() < 1;
@@ -189,7 +188,6 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   }
 
   @mustCallSuper
-  @override
   void draw(Canvas canvas) {
     inDrawing = true;
     onDrawPre();
@@ -283,21 +281,19 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   ChartSeries? _series;
 
   ///存储命令执行相关的操作
-  final Map<int, VoidCallback> _commandMap = {};
+  final Map<Command, ValueCallback<Command>> _commandMap = {};
 
   void clearCommand() {
     _commandMap.clear();
   }
 
-  void registerCommand(int code, VoidCallback callback, [bool allowReplace = true]) {
-    var old = _commandMap[code];
-    if (old == null || allowReplace) {
-      _commandMap[code] = callback;
-      return;
+  void registerCommand(Command c, ValueCallback<Command> callback, [bool allowReplace = true]) {
+
+    var old = _commandMap[c];
+    if (!allowReplace && callback != old) {
+      throw ChartError('not allow replace');
     }
-    if (!allowReplace) {
-      throw FlutterError('not allow replace');
-    }
+    _commandMap[c] = callback;
   }
 
   void removeCommand(int code) {
@@ -305,10 +301,16 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   }
 
   ///绑定Series 主要是将Series相关的命令传递到当前View
+
+  VoidCallback? _defaultCommandCallback;
+
   void bindSeriesCommand(covariant ChartSeries series) {
     unBindSeries();
     _series = series;
-    series.addListener(_handleCommand);
+    _defaultCommandCallback = () {
+      onReceiveCommand(_series?.value);
+    };
+    series.addListener(_defaultCommandCallback!);
     _commandMap[Command.updateData] = onUpdateDataCommand;
     _commandMap[Command.insertData] = onAddDataCommand;
     _commandMap[Command.deleteData] = onDeleteDataCommand;
@@ -319,29 +321,38 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
 
   void unBindSeries() {
     _commandMap.clear();
-    _series?.removeListener(_handleCommand);
+    if (_defaultCommandCallback != null) {
+      _series?.removeListener(_defaultCommandCallback!);
+    }
     _series = null;
   }
 
-  void _handleCommand(Command c) {
-    int code = c.code;
-    var op = _commandMap[code];
-    if (op == null) {
-      logPrint('code:$code 无法找到相关的回调');
+  void onReceiveCommand(covariant Command? c) {
+    if (c == null) {
       return;
     }
-    op.call();
+
+    var op = _commandMap[c];
+    if (op == null) {
+      logPrint('$c 无法找到能出来该命令相关的回调');
+      return;
+    }
+    try {
+      op.call(c);
+    } catch (e) {
+      logPrint('$e');
+    }
   }
 
-  void onInvalidateCommand() {
+  void onInvalidateCommand(covariant Command c) {
     invalidate();
   }
 
-  void onRelayoutCommand() {
+  void onRelayoutCommand(covariant Command c) {
     requestLayout();
   }
 
-  void onSeriesConfigChangeCommand() {
+  void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
     forceLayout = true;
     onStop();
@@ -350,11 +361,11 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
     invalidate();
   }
 
-  void onAddDataCommand() {}
+  void onAddDataCommand(covariant Command c) {}
 
-  void onDeleteDataCommand() {}
+  void onDeleteDataCommand(covariant Command c) {}
 
-  void onUpdateDataCommand() {}
+  void onUpdateDataCommand(covariant Command c) {}
 
   /// ====================普通属性函数=======================================
 

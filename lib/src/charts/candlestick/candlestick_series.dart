@@ -3,7 +3,7 @@ import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/area_style.dart';
 import '../../style/line_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class CandleStickSeries extends RectSeries {
   List<CandleStickData> data;

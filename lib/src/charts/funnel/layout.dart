@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../animation/tween/offset_tween.dart';
+import '../../core/layout.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../model/enums/sort.dart';
@@ -10,15 +11,15 @@ import '../../model/text_position.dart';
 import '../../style/label.dart';
 import 'funnel_series.dart';
 
-class FunnelLayers {
-  final double gap;
-  final Direction direction;
-  final Sort sort;
-  final Align2 align;
+class FunnelLayout extends ChartLayout{
+  double gap;
+  Direction direction;
+  Sort sort;
+  Align2 align;
 
-  FunnelLayers(this.gap, this.direction, this.sort, this.align);
+  FunnelLayout(this.gap, this.direction, this.sort, this.align):super();
 
-  List<FunnelNode> layout(double width, double height, List<ItemData> list, {double? maxValue}) {
+  List<FunnelNode> doLayout(double width, double height, List<ItemData> list, {double? maxValue}) {
     if (list.isEmpty) {
       return [];
     }

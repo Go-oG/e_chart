@@ -98,8 +98,8 @@ class FunnelView extends SeriesView<FunnelSeries> {
     super.onLayout(left, top, right, bottom);
     Rect rect = series.computePositionBySelf(left, top, right, bottom);
     _nodeList.clear();
-    FunnelLayers layers = FunnelLayers(series.gap, series.direction, series.sort, series.align);
-    _nodeList.addAll(layers.layout(rect.width, rect.height, series.dataList, maxValue: series.maxValue));
+    FunnelLayout layers = FunnelLayout(series.gap, series.direction, series.sort, series.align);
+    _nodeList.addAll(layers.doLayout(rect.width, rect.height, series.dataList, maxValue: series.maxValue));
   }
 
   @override

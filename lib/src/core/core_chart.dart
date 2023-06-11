@@ -5,8 +5,8 @@ import '../chart.dart';
 import '../gesture/gesture_dispatcher.dart';
 import '../model/enums/drag_type.dart';
 import '../model/enums/scale_type.dart';
-import 'base_render.dart';
-import 'default_render.dart';
+import 'render/base_render.dart';
+import 'render/default_render.dart';
 
 class Chart extends StatefulWidget {
   final ChartConfig config;

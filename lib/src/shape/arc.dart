@@ -83,8 +83,11 @@ class Arc implements Shape {
     double ir = innerRadius.toDouble();
     double or = outRadius.toDouble();
     double corner = min(cornerRadius, (or - ir) / 2).toDouble();
+    corner = max(corner, 0);
+
     num swa = sweepAngle;
     num sa = startAngle;
+
     double direction = sweepAngle > 0 ? 1 : -1;
 
     ///修正相关的角度
@@ -101,10 +104,15 @@ class Arc implements Shape {
     bool largeArc = swa.abs() >= 180;
     bool hasCorner = corner > 0.001;
     bool circle = ir <= 0.001;
-
     Path path = Path();
-
     if (circle) {
+      ///圆形
+      if (swa.abs() >= 360) {
+        path.addOval(Rect.fromCenter(center: center, width: or * 2, height: or * 2));
+        path.close();
+        return path;
+      }
+      ///扇形
       path.moveTo(center.dx, center.dy);
       if (!hasCorner) {
         Offset o1 = circlePoint(or, sa, center);
@@ -118,7 +126,6 @@ class Arc implements Shape {
           Offset p2 = offsetList[1];
           path.lineTo(p1.dx, p1.dy);
           path.arcToPoint(p2, radius: Radius.circular(corner.toDouble()), largeArc: false, clockwise: true);
-
           offsetList = _computeRT(or, corner, outerEndAngle);
           p1 = offsetList[0];
           p2 = offsetList[1];

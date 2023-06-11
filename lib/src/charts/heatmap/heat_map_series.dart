@@ -3,7 +3,7 @@ import '../../model/dynamic_data.dart';
 import '../../model/enums/coordinate.dart';
 import '../../model/group_data.dart';
 import '../../style/area_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 ///热力图
 class HeatMapSeries extends RectSeries {
