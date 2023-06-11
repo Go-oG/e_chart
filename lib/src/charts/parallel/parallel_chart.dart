@@ -10,11 +10,11 @@ import 'parallel_series.dart';
 //平行坐标系
 class ParallelView extends ChartView implements ParallelChild {
   final ParallelSeries series;
-  late final LayoutHelper _layout;
+  late final ParallelLayout _layout;
   List<ParallelDataLine> _result = [];
 
   ParallelView(this.series) {
-    _layout = LayoutHelper(this);
+    _layout = ParallelLayout(this);
   }
 
   @override

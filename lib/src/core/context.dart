@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../animation/index.dart';
 import '../chart.dart';
-import '../charts/series.dart';
+import 'series.dart';
 import '../component/axis/base_axis.dart';
 import '../component/legend/layout.dart';
 import '../component/title/title_view.dart';

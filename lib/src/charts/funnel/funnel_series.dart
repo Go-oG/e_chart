@@ -6,7 +6,7 @@ import '../../model/group_data.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 enum FunnelAlign {
   left,

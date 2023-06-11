@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../animation/animator_props.dart';
 import '../component/tooltip/tool_tip.dart';
-import '../functions.dart';
 import '../model/enums/coordinate.dart';
 import '../model/string_number.dart';
+import 'chart_notifier.dart';
+import 'command.dart';
 
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
-abstract class ChartSeries {
-  ///用于通知View数据发生改变或者需要重新布局等命令
-  final ValueNotifier<Command> _notifier = ValueNotifier(Command(Command.none));
-  final Set<ValueCallback<Command>> _listenerSet = {};
-
+abstract class ChartSeries extends ChartNotifier<Command>{
   ///坐标系系统
   CoordSystem? coordSystem;
+
   ///坐标轴取值索引(和coordSystem配合实现定位)
   int xAxisIndex;
   int yAxisIndex;
@@ -51,60 +49,25 @@ abstract class ChartSeries {
     this.enableScale = false,
     this.z = 0,
     this.clip = true,
-  }) {
-    _notifier.addListener(() {
-      var v = _notifier.value;
-      try {
-        for (var c in _listenerSet) {
-          c.call(v);
-        }
-      } catch (_) {}
-    });
-  }
+  }):super(Command.none);
 
   void notifyDataSetChange() {
-    notifyChange(Command.updateData);
+    value=Command.updateData;
   }
 
   void notifyDataSetInserted() {
-    notifyChange(Command.insertData);
+    value=Command.insertData;
   }
 
   void notifyDataSetRemoved() {
-    notifyChange(Command.deleteData);
+    value=Command.deleteData;
   }
 
   ///通知视图当前Series 配置发生了变化
   void notifySeriesConfigChange() {
-    notifyChange(Command.configChange);
+    value=Command.configChange;
   }
 
-  ///发送通知
-  void notifyChange(int code) {
-    ///为了避免外部缓存了数据
-    _notifier.value = Command(code);
-  }
-
-  /// 下面是对ValueNotifier的简单封装
-  void addListener(ValueCallback<Command> callback) {
-    if (_listenerSet.contains(callback)) {
-      return;
-    }
-    _listenerSet.add(callback);
-  }
-
-  void removeListener(ValueCallback<Command> callback) {
-    _listenerSet.remove(callback);
-  }
-
-  bool hasListeners() {
-    return _listenerSet.isNotEmpty;
-  }
-
-  void dispose() {
-    _notifier.dispose();
-    _listenerSet.clear();
-  }
 }
 
 abstract class RectSeries extends ChartSeries {
@@ -202,16 +165,3 @@ abstract class RectSeries extends ChartSeries {
   }
 }
 
-class Command {
-  static const int none = 0;
-  static const int invalidate = -1;
-  static const int reLayout = -2;
-  static const int insertData = -3;
-  static const int deleteData = -4;
-  static const int updateData = -5;
-  static const int configChange = -6;
-
-  final int code;
-
-  Command(this.code);
-}

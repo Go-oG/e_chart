@@ -14,7 +14,7 @@ import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/symbol/symbol.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class BarSeries extends RectSeries {
   List<BarGroupData> data;

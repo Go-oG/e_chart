@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../coord/parallel/parallel_coord.dart';
+import '../../core/layout.dart';
 import '../../shape/line.dart';
 import '../../style/line_style.dart';
+import '../../core/series.dart';
 import 'parallel_chart.dart';
 import 'parallel_series.dart';
 
-class LayoutHelper {
+class ParallelLayout extends ChartLayout{
   late final ParallelSeries series;
   final ParallelView view;
 
-  LayoutHelper(this.view) {
+  ParallelLayout(this.view):super() {
     series = view.series;
   }
 

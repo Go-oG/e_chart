@@ -1,5 +1,3 @@
-library xchart;
-
 export 'src/chart.dart';
 
 export 'src/functions.dart';
