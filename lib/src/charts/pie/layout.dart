@@ -1,11 +1,10 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:flutter/material.dart';
 
-import '../../animation/tween/double_tween.dart';
+import '../../action/user_action.dart';
 import '../../core/context.dart';
 import '../../core/layout.dart';
 import '../../ext/offset_ext.dart';
-import '../../model/dynamic_text.dart';
 import '../../model/enums/circle_align.dart';
 import '../../model/group_data.dart';
 import '../../model/string_number.dart';
@@ -13,9 +12,7 @@ import '../../model/text_position.dart';
 import '../../shape/arc.dart';
 import '../../style/label.dart';
 import '../../utils/align_util.dart';
-import '../../utils/log_util.dart';
 import 'pie_series.dart';
-import 'pie_tween.dart';
 
 ///饼图布局
 class PieLayout extends ChartLayout {
@@ -31,24 +28,33 @@ class PieLayout extends ChartLayout {
 
   PieLayout() : super();
 
-  late Context context;
-  Offset center = Offset.zero;
-  num pieAngle = 0;
   late PieSeries series;
+  num pieAngle = 0;
+  Offset center = Offset.zero;
 
   void doLayout(Context context, PieSeries series, List<ItemData> list, num width, num height) {
-    this.context = context;
     this.series = series;
     this.width = width;
     this.height = height;
     pieAngle = adjustPieAngle(series.sweepAngle);
-    preHandlePosition();
+    center = _computeCenterPoint(series.center);
+    preHandleRadius();
     _nodeList = preHandleData(list);
-    _layoutInner(nodeList);
+    layoutNode(_nodeList);
   }
 
-  void preHandlePosition() {
-    center = _computeCenterPoint(series.center);
+  void layoutNode(List<PieNode> nodeList) {
+    if (nodeList.isEmpty) {
+      return;
+    }
+    if (series.roseType == RoseType.normal) {
+      _layoutForNormal(nodeList);
+    } else {
+      _layoutForNightingale(nodeList);
+    }
+  }
+
+  void preHandleRadius() {
     num maxSize = min([width, height]);
     minRadius = series.innerRadius.convert(maxSize);
     maxRadius = series.outerRadius.convert(maxSize);
@@ -66,7 +72,7 @@ class PieLayout extends ChartLayout {
 
     List<PieNode> nodeList = [];
     each(list, (data, i) {
-      nodeList.add(PieNode.fromPieData(data, series, minRadius, maxRadius, series.angleGap));
+      nodeList.add(PieNode(data, series.angleGap));
       maxData = max([data.value, maxData]);
       minData = min([data.value, minData]);
       allData += data.value;
@@ -75,17 +81,6 @@ class PieLayout extends ChartLayout {
       allData = 1;
     }
     return nodeList;
-  }
-
-  void _layoutInner(List<PieNode> nodeList) {
-    if (nodeList.isEmpty) {
-      return;
-    }
-    if (series.roseType == RoseType.normal) {
-      _layoutForNormal(nodeList);
-    } else {
-      _layoutForNightingale(nodeList);
-    }
   }
 
   List<PieNode> get nodeList => _nodeList;
@@ -99,7 +94,7 @@ class PieLayout extends ChartLayout {
     num gapAllAngle = (count <= 1 ? 0 : count) * series.angleGap.abs();
     num remainAngle = pieAngle - gapAllAngle;
     if (remainAngle < 0) {
-      remainAngle = 0;
+      remainAngle = 1;
     }
 
     num startAngle = series.offsetAngle;
@@ -124,7 +119,7 @@ class PieLayout extends ChartLayout {
     num gapAllAngle = (count <= 1 ? 0 : count) * series.angleGap.abs();
     num remainAngle = pieAngle - gapAllAngle;
     if (remainAngle < 0) {
-      remainAngle = 0;
+      remainAngle = 1;
     }
     double startAngle = series.offsetAngle;
     int direction = series.clockWise ? 1 : -1;
@@ -173,62 +168,6 @@ class PieLayout extends ChartLayout {
     return angle.abs();
   }
 
-  PieNode? _hoverNode;
-
-  void handleHover(Offset offset) {
-    if (nodeList.isEmpty) {
-      return;
-    }
-    PieNode? clickNode = findNode(offset);
-    if (clickNode == null) {
-      logPrint('无法找到点击节点');
-    }
-
-    bool hasSame = clickNode == _hoverNode;
-    if (hasSame) {
-      logPrint('相同节点无需处理');
-      return;
-    }
-    _hoverNode = clickNode;
-    Map<PieNode, PieProps> oldPropsMap = {};
-    each(nodeList, (node, p1) {
-      node.select = node == clickNode;
-      oldPropsMap[node] = node.props;
-    });
-
-    ///二次布局
-    _layoutInner(nodeList);
-    Map<PieNode, PieProps> propsMap = {};
-    each(nodeList, (node, p1) {
-      if (node == clickNode) {
-        PieProps p;
-        if (series.scaleExtend.percent) {
-          var or = node.props.or * (1 + series.scaleExtend.percentRatio());
-          p = node.props.clone(or: or);
-        } else {
-          p = node.props.clone(or: node.props.or + series.scaleExtend.number);
-        }
-
-        propsMap[node] = p;
-        node.select = true;
-      } else {
-        propsMap[node] = node.props;
-        node.select = false;
-      }
-    });
-    PieNode firstNode = nodeList[0];
-    PieTween tween = PieTween(firstNode.props, firstNode.props);
-    ChartDoubleTween doubleTween = ChartDoubleTween(0, 1, duration: const Duration(milliseconds: 150));
-    doubleTween.addListener(() {
-      for (var node in nodeList) {
-        tween.changeValue(oldPropsMap[node]!, propsMap[node]!);
-        node.props = tween.safeGetValue(doubleTween.value);
-      }
-      notifyLayoutUpdate();
-    });
-    doubleTween.start(context);
-  }
-
   PieNode? findNode(Offset offset) {
     PieNode? node;
     for (var ele in nodeList) {
@@ -244,19 +183,12 @@ class PieLayout extends ChartLayout {
 
 class PieNode {
   final ItemData data;
-  final DynamicText? label;
-  final LabelStyle? labelStyle;
   final num anglePad;
-
   bool select = false;
 
   PieProps props = const PieProps(center: Offset.zero, ir: 0, or: 0, startAngle: 0, sweepAngle: 0, corner: 0);
 
-  PieNode(this.data, this.label, this.labelStyle, this.anglePad);
-
-  static PieNode fromPieData(ItemData data, PieSeries series, num minRadius, num maxRadius, num anglePad) {
-    return PieNode(data, data.label, series.labelStyleFun?.call(data, null), anglePad);
-  }
+  PieNode(this.data, this.anglePad);
 
   Path toPath() {
     Arc arc = Arc(
@@ -272,43 +204,44 @@ class PieNode {
   }
 
   ///计算文字的位置
-  TextDrawConfig? computeTextPosition(PieSeries series) {
-    if (label == null || label!.isEmpty || labelStyle == null || !labelStyle!.show) {
-      return null;
-    }
+  TextDrawConfig? textDrawConfig;
+  LabelStyle? labelStyle;
 
+  void updateTextPosition(PieSeries series) {
+    labelStyle = null;
+    textDrawConfig = null;
+    var label = data.label;
+    if (label == null || label.isEmpty) {
+      return;
+    }
+    labelStyle = series.labelStyleFun?.call(data, select ? UserAction(select: select) : null);
+    if (labelStyle == null || !labelStyle!.show) {
+      return;
+    }
     if (series.labelAlign == CircleAlign.center) {
-      return TextDrawConfig(Offset.zero, align: Alignment.center);
+      textDrawConfig = TextDrawConfig(props.center, align: Alignment.center);
+      return;
     }
-
     if (series.labelAlign == CircleAlign.inside) {
       double radius = (props.ir + props.or) / 2;
       double angle = props.startAngle + props.sweepAngle / 2;
-      Offset offset = circlePoint(radius, angle);
-      return TextDrawConfig(offset, align: Alignment.center);
+      Offset offset = circlePoint(radius, angle).translate(props.center.dx, props.center.dy);
+      textDrawConfig = TextDrawConfig(offset, align: Alignment.center);
+      return;
     }
-
     if (series.labelAlign == CircleAlign.outside) {
       num expand = labelStyle!.guideLine.length;
       double centerAngle = props.startAngle + props.sweepAngle / 2;
-
-      centerAngle %= 360;
-      if (centerAngle < 0) {
-        centerAngle += 360;
-      }
-
-      Offset offset = circlePoint(props.or + expand, centerAngle);
+      Offset offset = circlePoint(props.or + expand, centerAngle, props.center);
       Alignment align = toAlignment(centerAngle, false);
       if (centerAngle >= 90 && centerAngle <= 270) {
-        offset = offset.translate(-(expand + labelStyle!.lineMargin), 0);
         align = Alignment.centerRight;
       } else {
-        offset = offset.translate(expand + labelStyle!.lineMargin, 0);
         align = Alignment.centerLeft;
       }
-      return TextDrawConfig(offset, align: align);
+      textDrawConfig = TextDrawConfig(offset, align: align);
+      return;
     }
-    return null;
   }
 }
 

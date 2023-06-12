@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/ext/offset_ext.dart';
 
 import '../../action/hover_action.dart';
@@ -9,9 +10,8 @@ import '../../animation/tween/double_tween.dart';
 import '../../core/command.dart';
 import '../../core/view.dart';
 import '../../model/enums/circle_align.dart';
-import '../../model/text_position.dart';
 import '../../style/area_style.dart';
-import '../../style/label.dart';
+import '../../utils/log_util.dart';
 import 'layout.dart';
 import 'pie_series.dart';
 import 'pie_tween.dart';
@@ -25,36 +25,84 @@ class PieView extends SeriesView<PieSeries> {
   @override
   bool get enableDrag => false;
 
-  PieNode? _hoverNode;
-
   @override
   void onClick(Offset offset) {
-    _handleHover(offset);
+    _handleClickWithHover(offset);
   }
 
   @override
   void onHoverStart(Offset offset) {
-    _handleHover(offset);
+    _handleClickWithHover(offset);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    _handleHover(offset);
+    _handleClickWithHover(offset);
   }
 
-  void _handleHover(Offset offset) {
-    Offset center = pieLayer.center;
-    offset = offset.translate(-center.dx, -center.dy);
-    pieLayer.handleHover(offset);
+  PieNode? hoverNode;
+
+  void _handleClickWithHover(Offset offset) {
+    List<PieNode> nodeList = pieLayer.nodeList;
+    if (nodeList.isEmpty) {
+      return;
+    }
+    PieNode? clickNode = pieLayer.findNode(offset);
+    if (clickNode == null) {
+      logPrint('无法找到点击节点');
+    }
+
+    bool hasSame = clickNode == hoverNode;
+    if (hasSame) {
+      logPrint('相同节点无需处理');
+      return;
+    }
+    hoverNode = clickNode;
+    Map<PieNode, PieProps> oldPropsMap = {};
+    each(nodeList, (node, p1) {
+      node.select = node == clickNode;
+      oldPropsMap[node] = node.props;
+    });
+
+    ///二次布局
+    pieLayer.layoutNode(nodeList);
+    Map<PieNode, PieProps> propsMap = {};
+    each(nodeList, (node, p1) {
+      if (node == clickNode) {
+        PieProps p;
+        if (series.scaleExtend.percent) {
+          var or = node.props.or * (1 + series.scaleExtend.percentRatio());
+          p = node.props.clone(or: or);
+        } else {
+          p = node.props.clone(or: node.props.or + series.scaleExtend.number);
+        }
+        propsMap[node] = p;
+        node.select = true;
+      } else {
+        propsMap[node] = node.props;
+        node.select = false;
+      }
+    });
+    PieNode firstNode = nodeList[0];
+    PieTween tween = PieTween(firstNode.props, firstNode.props);
+    ChartDoubleTween doubleTween = ChartDoubleTween(0, 1, duration: const Duration(milliseconds: 150));
+    doubleTween.addListener(() {
+      for (var node in nodeList) {
+        tween.changeValue(oldPropsMap[node]!, propsMap[node]!);
+        node.props = tween.safeGetValue(doubleTween.value);
+      }
+      invalidate();
+    });
+    doubleTween.start(context);
   }
 
   @override
   void onUpdateDataCommand(Command c) {
     super.onUpdateDataCommand(c);
     pieLayer.doLayout(context, series, series.data, width, height);
-    if(c.runAnimation){
+    if (c.runAnimation) {
       doAnimator();
-    }else{
+    } else {
       invalidate();
     }
   }
@@ -78,12 +126,17 @@ class PieView extends SeriesView<PieSeries> {
     doAnimator();
   }
 
+  ChartTween? tween;
+
   void doAnimator() {
     List<PieNode> nodeList = pieLayer.nodeList;
     AnimatorProps? info = series.animation;
     if (info == null || nodeList.isEmpty) {
       return;
     }
+
+    this.tween?.dispose();
+    this.tween = null;
 
     PieAnimatorStyle style = series.animatorStyle;
     Map<PieNode, PieProps> startMap = {};
@@ -111,6 +164,7 @@ class PieView extends SeriesView<PieSeries> {
       });
       invalidate();
     });
+    this.tween = tween;
     tween.start(context);
   }
 
@@ -138,52 +192,42 @@ class PieView extends SeriesView<PieSeries> {
   }
 
   void drawText(Canvas canvas, PieNode node) {
+    node.updateTextPosition(series);
+    var labelStyle = node.labelStyle;
+    var config = node.textDrawConfig;
+
     if (node.data.label == null || node.data.label!.isEmpty) {
       return;
     }
+    if (labelStyle == null || !labelStyle.show || config == null) {
+      return;
+    }
+
     if (series.labelAlign == CircleAlign.center) {
-      if (_hoverNode == null) {
+      if (hoverNode == null) {
         return;
       }
-      if (_hoverNode != node) {
+      if (node != hoverNode) {
         return;
       }
-      TextDrawConfig? position = node.computeTextPosition(series);
-      if (position == null) {
-        return;
-      }
-      LabelStyle? style = series.labelStyleFun?.call(node.data, null);
-      if (style == null || !style.show) {
-        return;
-      }
-      style.draw(canvas, mPaint, node.data.label!, position);
+      labelStyle.draw(canvas, mPaint, node.data.label!, config);
       return;
     }
+    labelStyle.draw(canvas, mPaint, node.data.label!, config);
 
-    TextDrawConfig? position = node.computeTextPosition(series);
-    if (position == null) {
-      return;
-    }
-
-    LabelStyle? style = series.labelStyleFun?.call(node.data, null);
-    if (style == null || !style.show) {
-      return;
-    }
-    style.draw(canvas, mPaint, node.data.label!, position);
     if (series.labelAlign == CircleAlign.outside) {
-      Offset tmpOffset = circlePoint(node.props.or, node.props.startAngle + (node.props.sweepAngle / 2));
-      Offset tmpOffset2 = circlePoint(node.props.or + style.guideLine.length, node.props.startAngle + (node.props.sweepAngle / 2));
+      Offset center = pieLayer.center;
+      Offset tmpOffset = circlePoint(node.props.or, node.props.startAngle + (node.props.sweepAngle / 2), center);
+      Offset tmpOffset2 = circlePoint(
+        node.props.or + labelStyle.guideLine.length,
+        node.props.startAngle + (node.props.sweepAngle / 2),
+        center,
+      );
       Path path = Path();
       path.moveTo(tmpOffset.dx, tmpOffset.dy);
       path.lineTo(tmpOffset2.dx, tmpOffset2.dy);
-      path.lineTo(position.offset.dx, position.offset.dy);
-      style.guideLine.style.drawPath(canvas, mPaint, path);
+      path.lineTo(config.offset.dx, config.offset.dy);
+      labelStyle.guideLine.style.drawPath(canvas, mPaint, path);
     }
-  }
-
-  Offset _computeCenterPoint() {
-    double x = series.center[0].convert(width);
-    double y = series.center[1].convert(height);
-    return Offset(x, y);
   }
 }

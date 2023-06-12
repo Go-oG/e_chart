@@ -18,7 +18,6 @@ class AnimationManager {
   ///存储已经创建的控制器
   final Map<String, AnimationController> _map = {};
 
-
   AnimationController bounded(TickerProvider provider, AnimatorProps props, [String? key]) {
     AnimationController c = AnimationController(
       vsync: provider,

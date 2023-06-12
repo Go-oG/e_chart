@@ -5,6 +5,7 @@ import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../core/series.dart';
+import '../../utils/log_util.dart';
 
 enum RoseType {
   normal,
@@ -94,4 +95,9 @@ class PieSeries extends RectSeries {
           radarIndex: -1,
           polarAxisIndex: -1,
         );
+  @override
+  void dispose() {
+   logPrint('Pie Dispose');
+    super.dispose();
+  }
 }

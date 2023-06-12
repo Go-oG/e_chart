@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../utils/log_util.dart';
 import 'context.dart';
 import 'view.dart';
 
@@ -23,14 +24,22 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
   void onStart() {
     super.onStart();
     for (var c in _children) {
-      c.onStart();
+      try {
+        c.onStart();
+      } catch (e) {
+        logPrint('$e');
+      }
     }
   }
 
   @override
   void onStop() {
     for (var c in _children) {
-      c.onStop();
+      try {
+        c.onStop();
+      } catch (e) {
+        logPrint('$e');
+      }
     }
     super.onStop();
   }
