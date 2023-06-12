@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../animation/index.dart';
 import '../chart.dart';
+import '../utils/log_util.dart';
 import 'series.dart';
 import '../component/axis/base_axis.dart';
 import '../component/legend/layout.dart';
@@ -172,7 +173,11 @@ class Context {
     _title?.onStart();
     _toolTip?.onStart();
     for (var coord in coordList) {
-      coord.onStart();
+      try{
+        coord.onStart();
+      }catch(e){
+        logPrint('$e');
+      }
     }
   }
 
@@ -181,7 +186,12 @@ class Context {
     _title?.onStop();
     _toolTip?.onStop();
     for (var coord in coordList) {
-      coord.onStop();
+      try{
+        coord.onStop();
+      }catch(e){
+        logPrint('$e');
+      }
+
     }
   }
 

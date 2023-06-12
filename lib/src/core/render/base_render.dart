@@ -124,6 +124,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
 
   @override
   void dispose() {
+    context.onStop();
     context.destroy();
     super.dispose();
   }
