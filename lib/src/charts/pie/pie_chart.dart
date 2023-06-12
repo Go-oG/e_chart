@@ -48,7 +48,6 @@ class PieView extends SeriesView<PieSeries> {
     pieLayer.handleHover(offset);
   }
 
-
   @override
   void onUpdateDataCommand(Command c) {
     super.onUpdateDataCommand(c);
@@ -123,9 +122,6 @@ class PieView extends SeriesView<PieSeries> {
 
   @override
   void onDraw(Canvas canvas) {
-    canvas.save();
-    Offset center = _computeCenterPoint();
-    canvas.translate(center.dx, center.dy);
     var action = HoverAction();
     List<PieNode> nodeList = pieLayer.nodeList;
     for (var node in nodeList) {
@@ -139,7 +135,6 @@ class PieView extends SeriesView<PieSeries> {
     for (var node in nodeList) {
       drawText(canvas, node);
     }
-    canvas.restore();
   }
 
   void drawText(Canvas canvas, PieNode node) {

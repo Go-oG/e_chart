@@ -23,18 +23,37 @@ enum PieAnimatorStyle {
 class PieSeries extends RectSeries {
   List<ItemData> data;
   List<SNumber> center;
-  SNumber innerRadius; //内圆半径(<=0时为圆)
-  SNumber outerRadius; //外圆最大半径(<=0时为圆)
-  double offsetAngle; // 偏移角度
+
+  //内圆半径(<=0时为圆)
+  SNumber innerRadius;
+
+  //外圆最大半径(<=0时为圆)
+  SNumber outerRadius;
+
+  ///饼图扫过的角度(范围为(0,360]默认为360)
+  num sweepAngle;
+
+  //偏移角度默认为0
+  double offsetAngle;
+
+  //拐角半径 默认为0
   double corner;
-  RoseType roseType;
+
+  //角度间距(默认为0)
   double angleGap;
+
+  //是否为顺时针
   bool clockWise;
-  CircleAlign labelAlign;
+
+  //动画缩放扩大系数
   SNumber scaleExtend;
+
+  //布局类型
+  RoseType roseType;
+  CircleAlign labelAlign;
+  PieAnimatorStyle animatorStyle;
   StyleFun<ItemData, LabelStyle>? labelStyleFun;
   StyleFun<ItemData, AreaStyle> areaStyleFun;
-  PieAnimatorStyle animatorStyle;
 
   PieSeries(
     this.data, {
@@ -42,6 +61,7 @@ class PieSeries extends RectSeries {
     this.innerRadius = const SNumber.percent(15),
     this.outerRadius = const SNumber.percent(90),
     this.scaleExtend = const SNumber.number(16),
+    this.sweepAngle = 360,
     this.offsetAngle = 0,
     this.corner = 0,
     this.roseType = RoseType.radius,

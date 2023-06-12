@@ -1,5 +1,4 @@
 import 'package:chart_xutil/chart_xutil.dart';
-import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../animation/tween/double_tween.dart';
@@ -14,6 +13,7 @@ import '../../model/text_position.dart';
 import '../../shape/arc.dart';
 import '../../style/label.dart';
 import '../../utils/align_util.dart';
+import '../../utils/log_util.dart';
 import 'pie_series.dart';
 import 'pie_tween.dart';
 
@@ -33,6 +33,7 @@ class PieLayout extends ChartLayout {
 
   late Context context;
   Offset center = Offset.zero;
+  num pieAngle = 0;
   late PieSeries series;
 
   void doLayout(Context context, PieSeries series, List<ItemData> list, num width, num height) {
@@ -40,12 +41,13 @@ class PieLayout extends ChartLayout {
     this.series = series;
     this.width = width;
     this.height = height;
-    preHandleRadius();
+    pieAngle = adjustPieAngle(series.sweepAngle);
+    preHandlePosition();
     _nodeList = preHandleData(list);
     _layoutInner(nodeList);
   }
 
-  void preHandleRadius() {
+  void preHandlePosition() {
     center = _computeCenterPoint(series.center);
     num maxSize = min([width, height]);
     minRadius = series.innerRadius.convert(maxSize);
@@ -95,7 +97,11 @@ class PieLayout extends ChartLayout {
     }
     int count = nodeList.length;
     num gapAllAngle = (count <= 1 ? 0 : count) * series.angleGap.abs();
-    num remainAngle = 360 - gapAllAngle;
+    num remainAngle = pieAngle - gapAllAngle;
+    if (remainAngle < 0) {
+      remainAngle = 0;
+    }
+
     num startAngle = series.offsetAngle;
     int direction = series.clockWise ? 1 : -1;
     remainAngle *= direction;
@@ -104,7 +110,7 @@ class PieLayout extends ChartLayout {
     each(nodeList, (node, i) {
       var pieData = node.data;
       num sw = remainAngle * pieData.value / allData;
-      node.props = PieProps(ir: minRadius, or: maxRadius, startAngle: startAngle, sweepAngle: sw, corner: series.corner);
+      node.props = PieProps(center: center, ir: minRadius, or: maxRadius, startAngle: startAngle, sweepAngle: sw, corner: series.corner);
       startAngle += sw + angleGap;
     });
   }
@@ -116,7 +122,10 @@ class PieLayout extends ChartLayout {
     }
     int count = nodeList.length;
     num gapAllAngle = (count <= 1 ? 0 : count) * series.angleGap.abs();
-    num remainAngle = 360 - gapAllAngle;
+    num remainAngle = pieAngle - gapAllAngle;
+    if (remainAngle < 0) {
+      remainAngle = 0;
+    }
     double startAngle = series.offsetAngle;
     int direction = series.clockWise ? 1 : -1;
     double angleGap = series.angleGap.abs() * direction;
@@ -127,6 +136,7 @@ class PieLayout extends ChartLayout {
         var pieData = node.data;
         double percent = pieData.value / maxData;
         node.props = PieProps(
+          center: center,
           ir: minRadius,
           or: maxRadius * percent,
           corner: series.corner,
@@ -141,9 +151,8 @@ class PieLayout extends ChartLayout {
         ItemData pieData = node.data;
         num or = maxRadius * pieData.value / maxData;
         double sweepAngle = direction * remainAngle * pieData.value / allData;
-        node.props = PieProps(ir: minRadius, corner: series.corner, or: or, startAngle: startAngle, sweepAngle: sweepAngle);
+        node.props = PieProps(center: center, ir: minRadius, corner: series.corner, or: or, startAngle: startAngle, sweepAngle: sweepAngle);
         startAngle += sweepAngle + angleGap;
-        debugPrint('${pieData.label} ${node.props}');
       });
     }
   }
@@ -152,6 +161,16 @@ class PieLayout extends ChartLayout {
     double x = center[0].convert(width);
     double y = center[1].convert(height);
     return Offset(x, y);
+  }
+
+  num adjustPieAngle(num angle) {
+    if (angle <= 0) {
+      return 1;
+    }
+    if (angle > 360) {
+      return 360;
+    }
+    return angle.abs();
   }
 
   PieNode? _hoverNode;
@@ -183,11 +202,11 @@ class PieLayout extends ChartLayout {
     each(nodeList, (node, p1) {
       if (node == clickNode) {
         PieProps p;
-        if(series.scaleExtend.percent){
-          var or=node.props.or*(1+series.scaleExtend.percentRatio());
+        if (series.scaleExtend.percent) {
+          var or = node.props.or * (1 + series.scaleExtend.percentRatio());
           p = node.props.clone(or: or);
-        }else{
-          p = node.props.clone(or: node.props.or +series.scaleExtend.number);
+        } else {
+          p = node.props.clone(or: node.props.or + series.scaleExtend.number);
         }
 
         propsMap[node] = p;
@@ -231,7 +250,7 @@ class PieNode {
 
   bool select = false;
 
-  PieProps props = const PieProps(ir: 0, or: 0, startAngle: 0, sweepAngle: 0, corner: 0);
+  PieProps props = const PieProps(center: Offset.zero, ir: 0, or: 0, startAngle: 0, sweepAngle: 0, corner: 0);
 
   PieNode(this.data, this.label, this.labelStyle, this.anglePad);
 
@@ -241,6 +260,7 @@ class PieNode {
 
   Path toPath() {
     Arc arc = Arc(
+      center: props.center,
       innerRadius: props.ir,
       outRadius: props.or,
       startAngle: props.startAngle,
@@ -293,12 +313,14 @@ class PieNode {
 }
 
 class PieProps {
+  final Offset center;
   final num corner;
   final num ir; //内圆半径(<=0时为圆)
   final num or; //外圆最大半径(<=0时为圆)
   final num startAngle; //开始角度
   final num sweepAngle; //扫过的角度(负数为逆时针)
   const PieProps({
+    required this.center,
     required this.corner,
     required this.ir,
     required this.or,
@@ -307,6 +329,7 @@ class PieProps {
   });
 
   PieProps clone({
+    Offset? center,
     num? corner,
     num? ir,
     num? or,
@@ -314,6 +337,7 @@ class PieProps {
     num? sweepAngle,
   }) {
     return PieProps(
+      center: center ?? this.center,
       corner: corner ?? this.corner,
       ir: ir ?? this.ir,
       or: or ?? this.or,
