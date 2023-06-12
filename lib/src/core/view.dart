@@ -155,14 +155,14 @@ abstract class ChartView implements ToolTipBuilder {
 
   void onLayoutEnd() {}
 
-  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true}) {
+  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true,num r=6}) {
     if (!kDebugMode) {
       return;
     }
     Paint mPaint = Paint();
     mPaint.color = color;
     mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    canvas.drawCircle(offset, 3, mPaint);
+    canvas.drawCircle(offset, r.toDouble(), mPaint);
   }
 
   void debugDrawRect(Canvas canvas, Rect rect, {Color color = Colors.deepPurple, bool fill = false}) {

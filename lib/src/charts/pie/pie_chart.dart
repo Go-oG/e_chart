@@ -1,8 +1,10 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/ext/offset_ext.dart';
+import 'package:flutter/material.dart';
 
 import '../../action/hover_action.dart';
 import '../../animation/animator_props.dart';
@@ -176,6 +178,28 @@ class PieView extends SeriesView<PieSeries> {
 
   @override
   void onDraw(Canvas canvas) {
+    // Offset center = pieLayer.center;
+    // double r = 80;
+    // double corner = 8;
+    // Path path = Path();
+    // path.moveTo(center.dx, center.dy - r / 2);
+    // path.lineTo(center.dx, center.dy - r);
+    //
+    // path.arcTo(Rect.fromCircle(center: center, radius: r), -pi / 2, pi / 2, false);
+    // path.lineTo(center.dx + r / 2, center.dy);
+    // path.arcTo(Rect.fromCircle(center: center, radius: r / 2), 0, -pi / 2, false);
+    // path.close();
+    //
+    // AreaStyle style = AreaStyle(border: LineStyle());
+    // style.drawPath(canvas, mPaint, path);
+    // InnerOffset offset = _computeLT(r, corner, 270, center);
+    // debugDraw(canvas, offset.center, color: Colors.deepPurple, r: 2);
+    // debugDraw(canvas, offset.p1, color: Colors.blueAccent, r: 2);
+    // debugDraw(canvas, offset.p2, color: Colors.red, r: 2);
+    doDraw(canvas);
+  }
+
+  void doDraw(Canvas canvas) {
     var action = HoverAction();
     List<PieNode> nodeList = pieLayer.nodeList;
     for (var node in nodeList) {
@@ -230,4 +254,124 @@ class PieView extends SeriesView<PieSeries> {
       labelStyle.guideLine.style.drawPath(canvas, mPaint, path);
     }
   }
+}
+
+
+
+InnerOffset _computeRB(num ir, num corner, num angle, Offset center) {
+  InnerOffset result = InnerOffset();
+  num dis = (corner + ir);
+  double x = sqrt(dis * dis - corner * corner);
+  Offset c = Offset(x, -corner.toDouble());
+  result.center = c.translate(center.dx, center.dy);
+  result.p1 = Offset(result.center.dx, center.dy);
+  result.p2 = computeOutCutPoint(center, ir, result.center, corner);
+
+  ///旋转
+  result.center = result.center.rotateOffset(angle, center: center);
+  result.p1 = result.p1.rotateOffset(angle, center: center);
+  result.p2 = result.p2.rotateOffset(angle, center: center);
+  return result;
+}
+
+InnerOffset _computeRT(num or, num corner, num angle, Offset center) {
+  InnerOffset result = InnerOffset();
+  num dis = (or - corner).abs();
+  double x = sqrt(dis * dis - corner * corner);
+  Offset c = Offset(x, -corner.toDouble());
+  result.center = c.translate(center.dx, center.dy);
+  result.p1 = computeOutCutPoint(center, or, result.center, corner);
+  result.p2 = Offset(result.center.dx, center.dy);
+
+  ///旋转
+  result.center = result.center.rotateOffset(angle, center: center);
+  result.p1 = result.p1.rotateOffset(angle, center: center);
+  result.p2 = result.p2.rotateOffset(angle, center: center);
+  return result;
+}
+
+InnerOffset _computeLB(num ir, num corner, num angle, Offset center) {
+  InnerOffset result = InnerOffset();
+  num dis = (ir + corner).abs();
+  double x = sqrt(dis * dis - corner * corner);
+  Offset c = Offset(x, corner.toDouble());
+  result.center = c.translate(center.dx, center.dy);
+  result.p1 = computeOutCutPoint(center, ir, result.center, corner);
+  result.p2 = Offset(result.center.dx, center.dy);
+
+  ///旋转
+  result.center = result.center.rotateOffset(angle, center: center);
+  result.p1 = result.p1.rotateOffset(angle, center: center);
+  result.p2 = result.p2.rotateOffset(angle, center: center);
+  return result;
+}
+
+InnerOffset _computeLT(num or, num corner, num angle, Offset center) {
+  InnerOffset result = InnerOffset();
+  num dis = (or - corner).abs();
+  double x = sqrt(dis * dis - corner * corner);
+  Offset c = Offset(x, corner.toDouble());
+  result.center = c.translate(center.dx, center.dy);
+  result.p1 = Offset(result.center.dx, center.dy);
+  result.p2 = computeOutCutPoint(center, or, result.center, corner);
+
+  ///旋转
+  result.center = result.center.rotateOffset(angle, center: center);
+  result.p1 = result.p1.rotateOffset(angle, center: center);
+  result.p2 = result.p2.rotateOffset(angle, center: center);
+  return result;
+}
+
+InnerOffset _computeCornerPoint(Offset center, num r, num corner, num angle, bool left, bool top) {
+  InnerOffset result = InnerOffset();
+  num dis = (r + corner * (top ? -1 : 1)).abs();
+  double x = sqrt(dis * dis - corner * corner);
+  Offset c = Offset(x, corner.toDouble() * (left ? 1 : -1));
+  result.center = c.translate(center.dx, center.dy);
+  Offset o1 = Offset(result.center.dx, center.dy);
+  Offset o2 = computeOutCutPoint(center, r, result.center, corner);
+  if (left != top) {
+    Offset tmp = o1;
+    o1 = o2;
+    o2 = tmp;
+  }
+  result.p1 = o1;
+  result.p2 = o2;
+
+  ///旋转
+  result.center = result.center.rotateOffset(angle, center: center);
+  result.p1 = result.p1.rotateOffset(angle, center: center);
+  result.p2 = result.p2.rotateOffset(angle, center: center);
+  return result;
+}
+
+///计算两个圆外切时的切点坐标
+Offset computeOutCutPoint(Offset c1, num r1, Offset c2, num r2) {
+  double dx = c1.dx - c2.dx;
+  double dy = c1.dy - c2.dy;
+  num r12 = r1 * r1;
+  num r22 = r2 * r2;
+
+  double d = sqrt(dx * dx + dy * dy);
+  double l = (r12 - r22 + d * d) / (2 * d);
+  double h2 = r12 - l * l;
+  double h;
+  if (h2.abs() <= 0.00001) {
+    h = 0;
+  } else {
+    h = sqrt(h2);
+  }
+  double x1 = (c2.dx - c1.dx) * l / d + ((c2.dy - c1.dy) * h / d) + c1.dx;
+  double y1 = (c2.dy - c1.dy) * l / d - (c2.dx - c1.dx) * h / d + c1.dy;
+
+  double x2 = (c2.dx - c1.dx) * l / d - ((c2.dy - c1.dy) * h / d) + c1.dx;
+  double y2 = (c2.dy - c1.dy) * l / d + (c2.dx - c1.dx) * h / d + c1.dy;
+
+  return Offset(x1, y1);
+}
+
+class InnerOffset {
+  Offset center = Offset.zero;
+  Offset p1 = Offset.zero;
+  Offset p2 = Offset.zero;
 }
