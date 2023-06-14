@@ -3,7 +3,6 @@ import 'package:e_chart/src/coord/coord.dart';
 import 'package:flutter/material.dart';
 import '../../component/axis/axis_line.dart';
 import '../../component/axis/impl/line_axis_impl.dart';
-import '../../core/view.dart';
 import '../../ext/offset_ext.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/text_position.dart';

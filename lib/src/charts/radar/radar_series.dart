@@ -8,12 +8,12 @@ import '../../style/symbol/symbol.dart';
 import '../../core/series.dart';
 
 class RadarSeries extends RectSeries {
-  final List<GroupData> data;
-  final int splitNumber;
-  final StyleFun<GroupData, AreaStyle> areaStyleFun;
-  final StyleFun<GroupData, LabelStyle>? labelStyleFun;
-  final Fun3<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
-  final num nameGap;
+  List<GroupData> data;
+  int splitNumber;
+  StyleFun<GroupData, AreaStyle> areaStyleFun;
+  StyleFun<GroupData, LabelStyle>? labelStyleFun;
+  Fun3<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
+  num nameGap;
 
   RadarSeries(
     this.data, {
@@ -46,5 +46,3 @@ class RadarSeries extends RectSeries {
           polarAxisIndex: -1,
         );
 }
-
-
