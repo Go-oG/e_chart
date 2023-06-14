@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../ext/offset_ext.dart';
@@ -7,6 +6,10 @@ import '../model/constans.dart';
 import 'chart_shape.dart';
 
 class Arc implements Shape {
+  static const double circleMinAngle = 359.99;
+  static const double cornerMin = 0.01;
+  static const double innerMin = 0.001;
+
   final num innerRadius;
   final num outRadius;
   final num startAngle;
@@ -84,8 +87,8 @@ class Arc implements Shape {
     final double or = outRadius.toDouble();
     final bool clockwise = sweepAngle >= 0;
     final int direction = sweepAngle > 0 ? 1 : -1;
-    if (sweepAngle.abs() >= 360) {
-      return _buildCircle(center,startAngle,ir, or, direction);
+    if (sweepAngle.abs() >= circleMinAngle) {
+      return _buildCircle(center, startAngle, ir, or, direction);
     }
 
     double corner = min(cornerRadius, (or - ir) / 2).toDouble();
@@ -99,17 +102,16 @@ class Arc implements Shape {
     Path path = Path();
 
     ///普通扇形
-    if (ir <= 0.001) {
+    if (ir <= innerMin) {
       ///扇形(忽略内部圆角)
       path.moveTo(center.dx, center.dy);
       double cor = corner;
-
       ///扫过角度对应的弧长度
       double dd = or * pi * swa.abs() / 180;
       if (dd / 2 < cor) {
         cor = dd / 2;
       }
-      if (cor <= 0.001) {
+      if (cor <= cornerMin) {
         //认为不会有圆角
         Offset o1 = circlePoint(or, sa, center);
         path.lineTo(o1.dx, o1.dy);
@@ -129,6 +131,9 @@ class Arc implements Shape {
         path.arcToPoint(lt.p2, radius: cr, largeArc: false, clockwise: true);
         double a = lt.p2.offsetAngle(center) * Constants.angleUnit;
         double b = rt.p1.offsetAngle(center) * Constants.angleUnit;
+        if (b < a) {
+          b += 2 * pi;
+        }
         path.arcTo(orRect, a, b - a, false);
         path.arcToPoint(rt.p2, radius: cr, largeArc: false, clockwise: true);
       } else {
@@ -137,9 +142,11 @@ class Arc implements Shape {
         InnerOffset lt = _computeLT(or, corner, inEndAngle);
         path.lineTo(rt.p2.dx, rt.p2.dy);
         path.arcToPoint(rt.p1, radius: cr, largeArc: false, clockwise: false);
-
         double a = rt.p1.offsetAngle(center) * Constants.angleUnit;
         double b = lt.p2.offsetAngle(center) * Constants.angleUnit;
+        if (b > a) {
+          b -= 2 * pi;
+        }
         path.arcTo(orRect, a, b - a, false);
         path.arcToPoint(lt.p1, radius: cr, largeArc: false, clockwise: false);
       }
@@ -152,23 +159,13 @@ class Arc implements Shape {
 
     ///修正存在angleGap时视觉上间隔不一致问题(只有innerRadius>0时有效)
     if (padAngle > 0) {
-      num oldSw = swa.abs();
       double diff = padAngle * (or - ir);
       double angleDiff = diff / or;
       outEndAngle += angleDiff * direction;
-
-      ///由于修正过后，扫过的角度可能会超过360，因此这里我们缩减到359.99
-      if ((outEndAngle - sa).abs() >= 360) {
-        if (oldSw < 359.9999) {
-          outEndAngle = sa + 359.9999 * direction;
-        } else {
-          outEndAngle = inEndAngle;
-        }
-      }
     }
 
     ///没有圆角
-    if (corner <= 0.001) {
+    if (corner < cornerMin) {
       Offset op = circlePoint(or, sa, center);
       path.moveTo(op.dx, op.dy);
       double swp = (outEndAngle - sa).abs() * Constants.angleUnit;
@@ -180,7 +177,6 @@ class Arc implements Shape {
       swp = (inEndAngle - sa).abs() * Constants.angleUnit;
       double tmpAngle = (clockwise ? inEndAngle : sa) * Constants.angleUnit;
       path.arcTo(irRect, tmpAngle, -1 * swp * direction, false);
-
       path.close();
       return path;
     }
@@ -196,8 +192,9 @@ class Arc implements Shape {
     if (corner * pi > inLength) {
       inCorner = inLength / pi;
     }
+
     if (clockwise) {
-      if (outCorner > 0) {
+      if (outCorner >= cornerMin) {
         Radius ocr = Radius.circular(outCorner);
 
         ///leftTop ->rightTop
@@ -208,6 +205,9 @@ class Arc implements Shape {
 
         double a = lt.p2.offsetAngle(center) * Constants.angleUnit;
         double b = rt.p1.offsetAngle(center) * Constants.angleUnit;
+        if (b < a) {
+          b += 2 * pi;
+        }
         path.arcTo(orRect, a, b - a, false);
         path.lineTo(rt.p1.dx, rt.p1.dy); //优化
         path.arcToPoint(rt.p2, radius: ocr, largeArc: false, clockwise: true);
@@ -216,8 +216,7 @@ class Arc implements Shape {
         path.moveTo(op.dx, op.dy);
         path.arcTo(orRect, sa * Constants.angleUnit, (outEndAngle - sa) * Constants.angleUnit, false);
       }
-
-      if (inCorner > 0) {
+      if (inCorner >= cornerMin) {
         Radius icR = Radius.circular(inCorner);
 
         ///rightBottom ->leftBottom
@@ -228,6 +227,9 @@ class Arc implements Shape {
 
         double a = rb.p2.offsetAngle(center) * Constants.angleUnit;
         double b = lb.p1.offsetAngle(center) * Constants.angleUnit;
+        if (b > a) {
+          b -= 2 * pi;
+        }
         path.arcTo(irRect, a, b - a, false);
         path.lineTo(lb.p1.dx, lb.p1.dy); //优化
         path.arcToPoint(lb.p2, radius: icR, largeArc: false, clockwise: true);
@@ -242,14 +244,17 @@ class Arc implements Shape {
     }
 
     ///逆时针
-    if (outCorner > 0) {
+    if (outCorner >= cornerMin) {
       ///rightTop->leftTop
       InnerOffset rt = _computeRT(or, outCorner, sa);
       InnerOffset lt = _computeLT(or, outCorner, outEndAngle);
       path.moveTo(rt.p2.dx, rt.p2.dy);
       path.arcToPoint(rt.p1, radius: Radius.circular(outCorner), largeArc: false, clockwise: false);
-      double a = rt.p1.offsetAngle(center);
-      double b = lt.p2.offsetAngle(center);
+      double a = rt.p1.offsetAngle(center) * Constants.angleUnit;
+      double b = lt.p2.offsetAngle(center) * Constants.angleUnit;
+      if (b > a) {
+        a += 2 * pi;
+      }
       path.arcTo(orRect, a, b - a, false);
       path.lineTo(lt.p2.dx, lt.p2.dy);
       path.arcToPoint(lt.p1, radius: Radius.circular(outCorner), largeArc: false, clockwise: false);
@@ -260,7 +265,7 @@ class Arc implements Shape {
       path.arcTo(orRect, sa * Constants.angleUnit, -t, false);
     }
 
-    if (inCorner > 0) {
+    if (inCorner >= cornerMin) {
       ///leftBottom ->rightBottom
       InnerOffset lb = _computeLB(ir, inCorner, inEndAngle);
       InnerOffset rb = _computeRB(ir, inCorner, sa);
@@ -268,7 +273,10 @@ class Arc implements Shape {
       path.arcToPoint(lb.p1, radius: Radius.circular(inCorner), largeArc: false, clockwise: false);
       double a = lb.p1.offsetAngle(center) * Constants.angleUnit;
       double b = rb.p2.offsetAngle(center) * Constants.angleUnit;
-      path.arcTo(irRect, a, b - a, false);
+      if (a > b) {
+        a -= 2 * pi;
+      }
+      path.arcTo(irRect, a, (b - a).abs(), false);
       path.lineTo(rb.p2.dx, rb.p2.dy);
       path.arcToPoint(rb.p1, radius: Radius.circular(inCorner), largeArc: false, clockwise: false);
     } else {
@@ -291,7 +299,7 @@ class Arc implements Shape {
     outPath.moveTo(o1.dx, o1.dy);
     outPath.arcTo(orRect, startAngle * Constants.angleUnit, sweep, false);
     outPath.close();
-    if (ir <= 0.001) {
+    if (ir <= innerMin) {
       return outPath;
     }
 
@@ -305,8 +313,8 @@ class Arc implements Shape {
 
   Path arcOpen() {
     double r = max(innerRadius, outRadius).toDouble();
-    if (sweepAngle.abs() >= 360) {
-      return _buildCircle(center,startAngle,0, r, sweepAngle > 0 ? 1 : -1);
+    if (sweepAngle.abs() >= circleMinAngle) {
+      return _buildCircle(center, startAngle, 0, r, sweepAngle > 0 ? 1 : -1);
     }
 
     Path path = Path();
