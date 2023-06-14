@@ -172,7 +172,7 @@ class PieLayout extends ChartLayout {
     PieNode? node;
     for (var ele in nodeList) {
       PieProps cur = ele.props;
-      if (offset.inSector(cur.ir, cur.or, cur.startAngle, cur.sweepAngle)) {
+      if (offset.inSector(cur.ir, cur.or, cur.startAngle, cur.sweepAngle, center: center)) {
         node = ele;
         break;
       }
