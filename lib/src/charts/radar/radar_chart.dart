@@ -4,6 +4,7 @@ import '../../animation/animator_props.dart';
 import '../../animation/tween/double_tween.dart';
 import '../../animation/tween/offset_tween.dart';
 import '../../coord/radar/radar_child.dart';
+import '../../core/command.dart';
 import '../../core/view.dart';
 import '../../style/area_style.dart';
 import '../../style/symbol/symbol.dart';
@@ -16,6 +17,12 @@ class RadarView extends ChartView implements RadarChild {
   final RadarLayout radarLayout = RadarLayout();
 
   RadarView(this.series);
+
+  @override
+  void onUpdateDataCommand(covariant Command c) {
+    radarLayout.doLayout(context, series, series.data);
+    _initAnimator();
+  }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {

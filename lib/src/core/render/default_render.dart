@@ -145,6 +145,11 @@ class DefaultRender extends BaseRender {
 
   @override
   void onDraw(Canvas canvas) {
+    Paint mPaint =Paint();
+    mPaint.color=context.config.backgroundColor;
+    mPaint.style=PaintingStyle.fill;
+    canvas.drawRect(getGlobalAreaBounds(), mPaint);
+
     for (var v in context.coordList) {
       canvas.save();
       canvas.translate(v.left, v.top);

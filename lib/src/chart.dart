@@ -1,4 +1,8 @@
 //表格的通用配置
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+
 import 'animation/animator_props.dart';
 import 'core/series.dart';
 import 'component/legend/legend.dart';
@@ -30,6 +34,7 @@ class ChartConfig {
   ScaleType scaleType;
   DragType dragType;
   ToolTip? toolTip;
+  Color backgroundColor;
 
   ChartConfig({
     required this.series,
@@ -46,5 +51,6 @@ class ChartConfig {
     this.scaleType = ScaleType.scale,
     this.dragType = DragType.longPress,
     this.toolTip,
+    this.backgroundColor=const Color(0xFFFFFFFF)
   });
 }
