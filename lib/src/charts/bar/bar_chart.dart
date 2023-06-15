@@ -1,37 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../core/view.dart';
-import '../../ext/int_ext.dart';
 import 'bar_series.dart';
 import 'layout_helper.dart';
-import 'touch_helper.dart';
 
 ///用于处理Bar、line、point、 视图绘制相关不会包含坐标轴相关的计算和绘制
-class BarView extends  ChartView {
-  final BarSeries series;
-  final ValueNotifier<IntWrap> notifier = ValueNotifier(0.wrap());
+class BarView extends SeriesView<BarSeries> {
   late LayoutHelper _layout;
-  late TouchHelper touchHelper;
-
   ///用户优化视图绘制
-  BarView(this.series) {
-    notifier.addListener(() {
-      invalidate();
-    });
-  }
+  BarView(super.series);
 
   @override
   void onCreate() {
     super.onCreate();
-    _layout = LayoutHelper(series,  notifier);
-    touchHelper = TouchHelper(notifier, _layout);
-    touchHelper.clear();
+    _layout = LayoutHelper(series);
+
   }
 
-  @override
-  void onDestroy() {
-    super.onDestroy();
-    touchHelper.clear();
-  }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {

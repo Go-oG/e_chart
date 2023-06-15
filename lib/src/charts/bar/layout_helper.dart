@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../ext/int_ext.dart';
+import '../../core/layout.dart';
 import '../../model/enums/direction.dart';
 import 'bar_series.dart';
 import 'layout/data_util.dart';
@@ -8,18 +8,15 @@ import 'layout/stack_node.dart';
 import 'layout/value_info.dart';
 
 /// 辅助柱状图、折线图等二维坐标系进行布局
-class LayoutHelper {
+class LayoutHelper extends ChartLayout{
   final BarSeries series;
   Rect rect = Rect.zero;
 
   ///存储坐标轴对应的视图窗口
   late List<GroupNode> nodeList;
-
   late GlobalValue globalValue;
 
-  ValueNotifier<IntWrap> notifier;
-
-  LayoutHelper(this.series, this.notifier) {
+  LayoutHelper(this.series) {
     parseData(series.data);
   }
 

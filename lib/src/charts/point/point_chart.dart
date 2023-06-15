@@ -1,16 +1,54 @@
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/point/point_layout.dart';
 import 'package:flutter/material.dart';
 
-import '../../coord/polar/polar_child.dart';
-import '../../coord/polar/polar_coord.dart';
-import '../../model/dynamic_data.dart';
-import '../../../src/core/index.dart';
-import '../index.dart';
+class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
+  final PointLayout _layout = PointLayout();
 
-class PointView extends  ChartView with PolarChild {
+  PointView(super.series);
 
-  final PointSeries series;
+  @override
+  void onClick(Offset offset) {
+    PointNode? clickNode;
+    var nodeList = _layout.nodeList;
+    for (var node in nodeList) {
+      if (series.includeFun != null && series.includeFun!.call(node, offset)) {
+        clickNode = node;
+        break;
+      }
+      if (node.rect.contains(offset)) {
+        clickNode = node;
+        break;
+      }
+    }
+    for (var node in nodeList) {
+      node.select = node == clickNode;
+    }
+    invalidate();
+  }
 
-  PointView(this.series);
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    _layout.doLayout(context, series, series.data, width, height);
+  }
+
+  @override
+  void onDraw(Canvas canvas) {
+    for (var node in _layout.nodeList) {
+      ChartSymbol symbol = series.symbolStyle.call(node);
+      symbol.draw(canvas, mPaint, node.rect.center);
+    }
+  }
+
+  void drawForPolar(Canvas canvas, PolarCoord coord) {}
+
+  void drawForCalendar(Canvas canvas, CalendarCoord coord) {}
+
+  void drawForGrid(Canvas canvas, GridCoord coord) {}
+
+  @override
+  int get calendarIndex => series.calendarIndex;
 
   @override
   List<DynamicData> get angleDataSet {
@@ -28,28 +66,5 @@ class PointView extends  ChartView with PolarChild {
       dl.add(ele.x);
     }
     return dl;
-  }
-
-  @override
-  void onDraw(Canvas canvas) {
-    PolarCoord layout = context.findPolarCoord();
-    mPaint.style = PaintingStyle.stroke;
-    mPaint.strokeWidth = 2;
-    mPaint.color = Colors.blue;
-    Path path = Path();
-    bool hasMOve = false;
-    for (var ele in series.data) {
-      Offset offset = layout.dataToPoint(ele.y, ele.x);
-      if (!hasMOve) {
-        path.moveTo(offset.dx, offset.dy);
-        hasMOve = true;
-      } else {
-        path.lineTo(offset.dx, offset.dy);
-      }
-    }
-    canvas.save();
-    canvas.translate(width / 2, height / 2);
-    canvas.drawPath(path, mPaint);
-    canvas.restore();
   }
 }
