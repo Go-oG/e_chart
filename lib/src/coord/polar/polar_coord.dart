@@ -13,7 +13,6 @@ import 'polar_config.dart';
 import 'polar_child.dart';
 
 abstract class PolarCoord extends Coord{
-
   Offset dataToPoint(DynamicData angleData, DynamicData radiusData);
 }
 

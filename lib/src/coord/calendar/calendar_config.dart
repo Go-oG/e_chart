@@ -5,14 +5,13 @@ import '../../component/axis/split_line.dart';
 import '../../functions.dart';
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';
-import '../../style/label.dart';
+import '../../style/index.dart';
 import '../rect_coord.dart';
 
 ///日历坐标系
 class CalendarConfig extends RectCoordConfig {
   final Pair<DateTime> range;
   final bool sunFirst;
-
   //日历每格框的大小，可设置单值或数组
   //第一个元素是宽 第二个元素是高。
   //支持设置自适应(为空则为自适应)
@@ -22,6 +21,8 @@ class CalendarConfig extends RectCoordConfig {
   final SplitLine splitLine;
   final StyleFun<int, LabelStyle>? weekStyleFun;
   final StyleFun<DateTime, LabelStyle>? dayStyleFun;
+  final LineStyle? borderStyle;
+  final LineStyle? gridLineStyle;
 
   CalendarConfig({
     super.leftMargin,
@@ -35,6 +36,8 @@ class CalendarConfig extends RectCoordConfig {
     this.cellSize = const [20, 20],
     this.direction = Direction.horizontal,
     this.splitLine = const SplitLine(),
+    this.borderStyle,
+    this.gridLineStyle,
     this.weekStyleFun,
     this.dayStyleFun,
   });
