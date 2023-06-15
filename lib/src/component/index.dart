@@ -43,6 +43,8 @@ export 'tooltip/context_menu.dart';
 export 'tooltip/context_menu_builder.dart';
 export 'tooltip/tool_tip_view.dart';
 
+export 'shape_node.dart';
+
 
 
 

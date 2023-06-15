@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../functions.dart';
 import '../model/chart_error.dart';
+import '../utils/uuid_util.dart';
 import 'command.dart';
 import 'series.dart';
 import '../component/tooltip/context_menu.dart';
@@ -44,7 +45,11 @@ abstract class ChartView implements ToolTipBuilder {
   @protected
   bool forceMeasure = false;
 
-  ChartView();
+  late final String id;
+
+  ChartView(){
+    id=randomId();
+  }
 
   Context get context => _context!;
 
