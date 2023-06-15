@@ -64,10 +64,13 @@ class HeatMapView extends ChartView implements GridChild, CalendarChild {
         continue;
       }
 
+      Rect? rect;
       if (gridLayout != null) {
-        Offset offset = gridLayout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.y);
+        rect = gridLayout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.y);
       } else if (calendarLayout != null) {
-        Rect rect = calendarLayout.dataToPoint(data.x.data);
+         rect = calendarLayout.dataToPoint(data.x.data);
+      }
+      if(rect!=null){
         style.drawRect(canvas, mPaint, rect);
       }
     }

@@ -5,6 +5,8 @@ export 'boxplot/boxplot_series.dart';
 export 'calendar/calendar_series.dart';
 export 'candlestick/candlestick_series.dart';
 export 'funnel/funnel_series.dart';
+export 'funnel/layout.dart' hide FunnelProps;
+
 export 'heatmap/heat_map_series.dart';
 export 'line/line_series.dart';
 export 'parallel/parallel_series.dart';
