@@ -12,7 +12,7 @@ class MarkLine {
   final ChartSymbol? startSymbol;
   final ChartSymbol? endSymbol;
   final bool touch;
-  final StyleFun<int, LabelStyle>? labelStyle;
+  final Fun2<int, LabelStyle>? labelStyle;
   final LineStyle lineStyle;
   final int precision; //精度
   final MarkType startMarkType;
@@ -37,11 +37,11 @@ class MarkLine {
     endSymbol?.draw(canvas, paint, end);
     if (startText != null && startText.isNotEmpty) {
       TextDrawConfig config = TextDrawConfig(start);
-      labelStyle?.call(0, null)?.draw(canvas, paint, startText, config);
+      labelStyle?.call(0).draw(canvas, paint, startText, config);
     }
     if (endText != null && endText.isNotEmpty) {
       TextDrawConfig config = TextDrawConfig(end);
-      labelStyle?.call(1, null)?.draw(canvas, paint, endText, config);
+      labelStyle?.call(1).draw(canvas, paint, endText, config);
     }
   }
 }

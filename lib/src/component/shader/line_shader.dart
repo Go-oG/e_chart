@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import '../../core/view_state.dart';
 import 'shader.dart';
 
 class LineShader extends Shader {
@@ -23,20 +24,12 @@ class LineShader extends Shader {
   });
 
   @override
-  ui.Shader toShader(Rect rect, double? colorOpacity) {
+  ui.Shader toShader(Rect rect) {
     Offset fromOffSet;
     Offset toOffSet;
     fromOffSet = Offset(rect.left + from.dx * rect.width, rect.top + from.dy * rect.height);
     toOffSet = Offset(rect.left + to.dx * rect.width, rect.top + to.dy * rect.height);
-    List<Color> cl = [];
-    if (colorOpacity != null) {
-      for (var element in colors) {
-        cl.add(element.withOpacity(colorOpacity));
-      }
-    } else {
-      cl = colors;
-    }
-    return ui.Gradient.linear(fromOffSet, toOffSet, cl, colorStops, tileMode, matrix4);
+    return ui.Gradient.linear(fromOffSet, toOffSet, colors, colorStops, tileMode, matrix4);
   }
 
   @override
@@ -79,6 +72,25 @@ class LineShader extends Shader {
       colorStops: colorStopsList,
       tileMode: begin.tileMode == TileMode.clamp ? end.tileMode : begin.tileMode,
       matrix4: ma,
+    );
+  }
+
+  @override
+  Shader convert2(Set<ViewState>? states) {
+    if (states == null || states.isEmpty) {
+      return this;
+    }
+    List<Color> cl = [];
+    for (var c in colors) {
+      cl.add(ColorResolver(c).resolve(states)!);
+    }
+    return LineShader(
+      cl,
+      from: from,
+      to: to,
+      colorStops: colorStops,
+      tileMode: tileMode,
+      matrix4: matrix4,
     );
   }
 }

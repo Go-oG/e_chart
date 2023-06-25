@@ -1,6 +1,7 @@
 import 'package:flutter/animation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../utils/log_util.dart';
 import 'animator_props.dart';
 
 ///全局的动画管理者
@@ -18,7 +19,8 @@ class AnimationManager {
   ///存储已经创建的控制器
   final Map<String, AnimationController> _map = {};
 
-  AnimationController bounded(TickerProvider provider, AnimatorProps props, [String? key]) {
+  AnimationController bounded(TickerProvider provider, AnimatorProps props, {String? key}) {
+    _collate();
     AnimationController c = AnimationController(
       vsync: provider,
       duration: props.duration,
@@ -35,7 +37,8 @@ class AnimationManager {
     return c;
   }
 
-  AnimationController unbounded(TickerProvider provider, [String? key]) {
+  AnimationController unbounded(TickerProvider provider, {String? key}) {
+    _collate();
     AnimationController c = AnimationController.unbounded(vsync: provider, duration: const Duration(days: 999));
     key ??= _uuid.v4().replaceAll('-', '');
     if (_map.containsKey(key)) {
@@ -45,12 +48,27 @@ class AnimationManager {
     return c;
   }
 
+  int _count = 0;
+
+  void _collate() {
+    _count++;
+    if (_count < 30) {
+      return;
+    }
+    _count = 0;
+    try {
+      _map.removeWhere((key, value) => value.isCompleted || value.isDismissed);
+    } catch (e) {
+      logPrint('$e');
+    }
+  }
+
   void remove(AnimationController c, [bool dispose = true]) {
     _map.removeWhere((key, value) => value == c);
     if (dispose) {
-      try{
+      try {
         c.dispose();
-      }catch(_){}
+      } catch (_) {}
     }
   }
 
@@ -60,13 +78,13 @@ class AnimationManager {
       return;
     }
     if (dispose) {
-      try{
+      try {
         c.dispose();
-      }catch(_){}
+      } catch (_) {}
     }
   }
 
-  void updateTickerProvider(TickerProvider provider){
+  void updateTickerProvider(TickerProvider provider) {
     _map.forEach((key, value) {
       value.resync(provider);
     });
@@ -74,9 +92,9 @@ class AnimationManager {
 
   void dispose() {
     _map.forEach((key, value) {
-      try{
+      try {
         value.dispose();
-      }catch(_){}
+      } catch (_) {}
     });
     _map.clear();
   }

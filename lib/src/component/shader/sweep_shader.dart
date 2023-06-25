@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import '../../core/view_state.dart';
 import 'shader.dart';
 
 class SweepShader extends Shader {
@@ -23,19 +24,11 @@ class SweepShader extends Shader {
   });
 
   @override
-  ui.Shader toShader(Rect rect, double? colorOpacity) {
+  ui.Shader toShader(Rect rect) {
     Offset center = Offset(rect.left + rect.width / 2, rect.top + rect.height / 2);
     double sa = pi * startAngle / 180.0;
     double ea = pi * endAngle / 180.0;
-    List<Color> cl = [];
-    if (colorOpacity != null) {
-      for (var element in colors) {
-        cl.add(element.withOpacity(colorOpacity));
-      }
-    } else {
-      cl = colors;
-    }
-    return ui.Gradient.sweep(center, cl, colorStops, tileMode, sa, ea, matrix4);
+    return ui.Gradient.sweep(center, colors, colorStops, tileMode, sa, ea, matrix4);
   }
 
   @override
@@ -78,6 +71,25 @@ class SweepShader extends Shader {
       startAngle: lerpDouble(begin.startAngle, end.startAngle, animatorPercent)!,
       endAngle: lerpDouble(begin.endAngle, end.endAngle, animatorPercent)!,
       matrix4: ma,
+    );
+  }
+
+  @override
+  Shader convert2(Set<ViewState>? states) {
+    if (states == null || states.isEmpty) {
+      return this;
+    }
+    List<Color> cl = [];
+    for (var c in colors) {
+      cl.add(ColorResolver(c).resolve(states)!);
+    }
+    return SweepShader(
+      cl,
+      colorStops: colorStops,
+      tileMode: tileMode,
+      startAngle: startAngle,
+      endAngle: endAngle,
+      matrix4: matrix4,
     );
   }
 }

@@ -8,7 +8,7 @@ import '../../core/series.dart';
 
 class BoxplotSeries extends RectSeries {
   List<BoxplotData> data;
-  StyleFun<BoxplotData, LineStyle> lineStyleFun;
+  Fun2<BoxplotData, LineStyle> lineStyleFun;
 
   BoxplotSeries({
     required this.data,

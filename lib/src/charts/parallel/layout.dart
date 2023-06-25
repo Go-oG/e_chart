@@ -28,7 +28,7 @@ class ParallelLayout extends ChartLayout{
         }
         ol.add(offset);
       }
-      ParallelDataLine data = ParallelDataLine(element, ol, series.styleFun.call(element, null));
+      ParallelDataLine data = ParallelDataLine(element, ol, series.styleFun.call(element));
       resultList.add(data);
     }
     return resultList;

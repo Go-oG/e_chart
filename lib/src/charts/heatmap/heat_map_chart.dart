@@ -59,7 +59,7 @@ class HeatMapView extends ChartView implements GridChild, CalendarChild {
       calendarLayout = context.findCalendarCoord(calendarIndex);
     }
     for (var data in series.data) {
-      AreaStyle? style = series.styleFun.call(data, null);
+      AreaStyle? style = series.styleFun.call(data);
       if (style == null) {
         continue;
       }

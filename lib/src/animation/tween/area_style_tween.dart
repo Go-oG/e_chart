@@ -11,7 +11,18 @@ class AreaStyleTween extends ChartTween<AreaStyle> {
   LineStyleTween? _lineStyleTween;
   ChartShaderTween? _chartShaderTween;
 
-  AreaStyleTween(super.begin, super.end) {
+  AreaStyleTween(
+    super.begin,
+    super.end, {
+    super.allowCross,
+    super.behavior,
+    super.curve,
+    super.delay,
+    super.duration,
+    super.lowerBound,
+    super.reverseDuration,
+    super.upperBound,
+  }) {
     changeValue(begin, end);
   }
 

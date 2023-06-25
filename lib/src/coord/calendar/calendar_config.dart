@@ -19,8 +19,8 @@ class CalendarConfig extends RectCoordConfig {
   final List<num?> cellSize;
   final Direction direction;
   final SplitLine splitLine;
-  final StyleFun<int, LabelStyle>? weekStyleFun;
-  final StyleFun<DateTime, LabelStyle>? dayStyleFun;
+  final Fun2<int, LabelStyle>? weekStyleFun;
+  final Fun2<DateTime, LabelStyle>? dayStyleFun;
   final LineStyle? borderStyle;
   final LineStyle? gridLineStyle;
 

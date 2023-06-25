@@ -10,9 +10,9 @@ import '../../core/series.dart';
 class RadarSeries extends RectSeries {
   List<GroupData> data;
   int splitNumber;
-  StyleFun<GroupData, AreaStyle> areaStyleFun;
-  StyleFun<GroupData, LabelStyle>? labelStyleFun;
-  Fun3<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
+  Fun2<GroupData, AreaStyle> areaStyleFun;
+  Fun2<GroupData, LabelStyle>? labelStyleFun;
+  Fun4<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
   num nameGap;
 
   RadarSeries(

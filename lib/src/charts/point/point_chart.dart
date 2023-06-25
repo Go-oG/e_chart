@@ -9,6 +9,25 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
 
   @override
   void onClick(Offset offset) {
+    handleHover(offset);
+  }
+
+  @override
+  void onHoverStart(Offset offset) {
+    handleHover(offset);
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    handleHover(offset);
+  }
+
+  @override
+  void onHoverEnd() {
+    handleCancel();
+  }
+
+  void handleHover(Offset offset) {
     PointNode? clickNode;
     var nodeList = _layout.nodeList;
     for (var node in nodeList) {
@@ -21,10 +40,33 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
         break;
       }
     }
+    bool result = false;
     for (var node in nodeList) {
-      node.select = node == clickNode;
+      if (node == clickNode) {
+        if (node.addState(ViewState.hover)) {
+          result = true;
+        }
+      } else {
+        if (node.removeState(ViewState.hover)) {
+          result = true;
+        }
+      }
     }
-    invalidate();
+    if (result) {
+      invalidate();
+    }
+  }
+
+  void handleCancel() {
+    bool result = false;
+    for (var node in _layout.nodeList) {
+      if (node.removeState(ViewState.hover)) {
+        result = true;
+      }
+    }
+    if (result) {
+      invalidate();
+    }
   }
 
   @override

@@ -9,8 +9,8 @@ import 'point_layout.dart';
 
 class PointSeries extends RectSeries {
   List<PointData> data;
-  Fun1<PointNode, ChartSymbol> symbolStyle;
-  Fun2<PointNode, Offset, bool>? includeFun;
+  Fun2<PointNode, ChartSymbol> symbolStyle;
+  Fun3<PointNode, Offset, bool>? includeFun;
 
   PointSeries(
     this.data, {

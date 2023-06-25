@@ -69,8 +69,8 @@ class RadarView extends ChartView implements RadarChild {
       if (!group.show) {
         continue;
       }
-      AreaStyle? style = series.areaStyleFun.call(group.data, null);
-      if (style == null || !style.show) {
+      AreaStyle style = series.areaStyleFun.call(group.data);
+      if (!style.show) {
         continue;
       }
       List<Offset> ol = group.getPathOffset();

@@ -53,8 +53,8 @@ class PieSeries extends RectSeries {
   RoseType roseType;
   CircleAlign labelAlign;
   PieAnimatorStyle animatorStyle;
-  StyleFun<ItemData, LabelStyle>? labelStyleFun;
-  StyleFun<ItemData, AreaStyle> areaStyleFun;
+  Fun2<ItemData, LabelStyle?>? labelStyleFun;
+  Fun2<ItemData, AreaStyle> areaStyleFun;
 
   PieSeries(
     this.data, {

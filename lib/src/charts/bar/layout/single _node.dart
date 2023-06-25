@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../action/user_action.dart';
 import '../../../style/area_style.dart';
 import '../bar_series.dart';
 
@@ -29,7 +28,7 @@ class SingleNode {
   }
 
   void draw(Canvas canvas, Paint paint) {
-    AreaStyle? style = series.styleFun.call(data, groupData, cur.convertAction());
+    AreaStyle? style = series.styleFun.call(data, groupData);
     if (style == null) {
       return;
     }
@@ -57,7 +56,4 @@ class SingleProps {
 
   SingleProps();
 
-  UserAction? convertAction() {
-    return null;
-  }
 }

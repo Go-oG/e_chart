@@ -1,7 +1,7 @@
 export 'animator_props.dart';
 export 'animation_manager.dart';
 export 'chart_tween.dart';
-export 'tween_set.dart';
+export 'tween_set.dart' hide TweenNode;
 
 export 'tween/area_style_tween.dart';
 export 'tween/arc_tween.dart';

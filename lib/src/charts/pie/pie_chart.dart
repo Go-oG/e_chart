@@ -4,7 +4,7 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/src/ext/offset_ext.dart';
 import 'package:flutter/material.dart';
 
-import '../../action/hover_action.dart';
+
 import '../../animation/animator_props.dart';
 import '../../animation/chart_tween.dart';
 import '../../animation/tween/double_tween.dart';
@@ -193,10 +193,10 @@ class PieView extends SeriesView<PieSeries> {
   }
 
   void doDraw(Canvas canvas) {
-    var action = HoverAction();
+
     List<PieNode> nodeList = pieLayer.nodeList;
     for (var node in nodeList) {
-      AreaStyle? style = series.areaStyleFun.call(node.data, node.select ? action : null);
+      AreaStyle? style = series.areaStyleFun.call(node.data);
       if (style == null) {
         continue;
       }

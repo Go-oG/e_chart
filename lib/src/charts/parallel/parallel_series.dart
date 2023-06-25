@@ -6,7 +6,7 @@ import '../../core/series.dart';
 
 class ParallelSeries extends RectSeries {
   List<ParallelGroup> data;
-  StyleFun<ParallelGroup, LineStyle> styleFun;
+  Fun2<ParallelGroup, LineStyle> styleFun;
 
   ParallelSeries({
     required this.data,

@@ -74,7 +74,7 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
 
       LineStyle? style;
       if (axis.axisLine.styleFun != null) {
-        style = axis.axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData), null);
+        style = axis.axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
       }
       style ??= axis.axisLine.style;
       style.drawPolygon(canvas, paint, [startOffset, endOffset]);
@@ -127,7 +127,7 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
       if (axis.axisLine.tickFun != null) {
         dynamic firstData = scale.domainValue(pre);
         dynamic endData = scale.domainValue(next);
-        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData), null);
+        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
       }
       tick ??= axis.axisLine.tick;
       List<DynamicText> subList = [];

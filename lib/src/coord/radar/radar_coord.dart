@@ -111,7 +111,7 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
   void _drawShape(Canvas canvas) {
     for (int i = 0; i < _shapePathList.length; i++) {
       Path path = _shapePathList[i];
-      AreaStyle? style = props.splitStyleFun?.call(i, i - 1, null);
+      AreaStyle? style = props.splitStyleFun?.call(i, i - 1);
       if (style != null) {
         Path tmpPath = path;
         if (i != 0) {
@@ -119,7 +119,7 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
         }
         style.drawPath(canvas, mPaint, tmpPath);
       }
-      LineStyle? lineStyle = props.borderStyleFun?.call(i, null);
+      LineStyle? lineStyle = props.borderStyleFun?.call(i);
       lineStyle?.drawPath(canvas, mPaint, path);
     }
   }
@@ -137,7 +137,7 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
     int i = 0;
     for (var indicator in props.indicator) {
       LabelStyle style =
-          props.labelStyleFun?.call(indicator, null) ?? const LabelStyle(textStyle: TextStyle(color: Colors.black87, fontSize: 14));
+          props.labelStyleFun?.call(indicator) ?? const LabelStyle(textStyle: TextStyle(color: Colors.black87, fontSize: 14));
       if (!style.show) {
         i++;
         continue;

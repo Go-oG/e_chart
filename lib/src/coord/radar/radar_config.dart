@@ -20,9 +20,9 @@ class RadarConfig extends CircleCoordConfig {
   final AxisLine axisLine;
   final MainTick axisTick;
 
-  final StyleFun<RadarIndicator, LabelStyle>? labelStyleFun;
-  final StyleFun2<int, int, AreaStyle>? splitStyleFun;
-  final StyleFun<int, LineStyle>? borderStyleFun;
+  final Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
+  final Fun3<int, int, AreaStyle>? splitStyleFun;
+  final Fun2<int, LineStyle>? borderStyleFun;
 
   const RadarConfig({
     required this.indicator,

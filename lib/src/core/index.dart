@@ -6,4 +6,5 @@ export 'layout.dart';
 export 'series.dart';
 export 'view.dart';
 export 'view_group.dart';
+export 'view_state.dart';
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../functions.dart';
 import '../../model/enums/trigger.dart';
 import '../../model/enums/trigger_on.dart';
@@ -34,7 +33,7 @@ class ToolTip {
 
   final String? formatter; //字符串模版
 
-  final FormatterFun? numberFormatter;
+  final Fun2<num,String>? numberFormatter;
   final EdgeInsets padding;
   final AreaStyle background;
   final LabelStyle labelStyle;

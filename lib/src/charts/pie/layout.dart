@@ -1,7 +1,6 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:flutter/material.dart';
 
-import '../../action/user_action.dart';
 import '../../core/context.dart';
 import '../../core/layout.dart';
 import '../../ext/offset_ext.dart';
@@ -214,7 +213,7 @@ class PieNode {
     if (label == null || label.isEmpty) {
       return;
     }
-    labelStyle = series.labelStyleFun?.call(data, select ? UserAction(select: select) : null);
+    labelStyle = series.labelStyleFun?.call(data);
     if (labelStyle == null || !labelStyle!.show) {
       return;
     }

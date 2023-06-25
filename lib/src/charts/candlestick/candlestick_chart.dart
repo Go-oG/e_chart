@@ -54,8 +54,8 @@ class CandleStickView extends  ChartView implements GridChild {
   }
 
   void _drawNode(Canvas canvas, CandleStickData data, GridCoord layout) {
-    AreaStyle areaStyle = series.styleFun.call(data, null)!;
-    LineStyle lineStyle = series.lineStyleFun.call(data, null)!;
+    AreaStyle areaStyle = series.styleFun.call(data);
+    LineStyle lineStyle = series.lineStyleFun.call(data);
     DynamicData dd = DynamicData(data.time);
     Offset minCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.lowest)).topCenter;
 

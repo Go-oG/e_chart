@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
+import '../core/view_state.dart';
 import '../ext/paint_ext.dart';
 import '../ext/path_ext.dart';
 
@@ -29,13 +30,13 @@ class LineStyle {
     this.cap = StrokeCap.butt,
     this.join = StrokeJoin.miter,
     this.dash = const [],
-    this.shadow=const [],
+    this.shadow = const [],
     this.shader,
     this.smooth = false,
     this.align = Align2.center,
   });
 
-  void fillPaint(Paint paint, {Rect? rect}) {
+  void fillPaint(Paint paint, [Rect? rect]) {
     paint.reset();
     paint.color = color;
     paint.strokeCap = cap;
@@ -43,12 +44,12 @@ class LineStyle {
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = width;
     if (shader != null && rect != null) {
-      paint.shader = shader!.toShader(rect, null);
+      paint.shader = shader!.toShader(rect);
     }
   }
 
   ///绘制多边形(或者线段)
-  void drawPolygon(Canvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
+  void drawPolygon(Canvas canvas, Paint paint, List<Offset> points, [bool close = false, Set<ViewState>? states]) {
     if (points.isEmpty) {
       return;
     }
@@ -58,7 +59,7 @@ class LineStyle {
     }
     Line line = Line(points, smoothRatio: smooth ? 0.4 : null, dashList: dash);
     Path path = line.toPath(close);
-    drawPath(canvas, paint, path);
+    drawPath(canvas, paint, path, false, states);
   }
 
   ///绘制一个圆弧部分(也可以绘制圆)
@@ -67,9 +68,10 @@ class LineStyle {
     Paint paint,
     double radius,
     num startAngle,
-    num sweepAngle, {
+    num sweepAngle, [
     Offset center = Offset.zero,
-  }) {
+    Set<ViewState>? states,
+  ]) {
     //优化绘制半径、消除
     double r = radius;
     if (align == Align2.start) {
@@ -79,10 +81,10 @@ class LineStyle {
     }
     Arc arc = Arc(outRadius: r, startAngle: startAngle, sweepAngle: sweepAngle, center: center);
     Path path = arc.arcOpen();
-    drawPath(canvas, paint, path, drawDash: true);
+    drawPath(canvas, paint, path, true, states);
   }
 
-  void drawPath(Canvas canvas, Paint paint, Path path, {bool drawDash = false}) {
+  void drawPath(Canvas canvas, Paint paint, Path path, [bool drawDash = false, Set<ViewState>? states]) {
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
@@ -91,11 +93,43 @@ class LineStyle {
     if (shader != null) {
       rect = path.getBounds();
     }
-    fillPaint(paint, rect: rect);
+    fillPaint(paint, rect);
     if (drawDash && dash.isNotEmpty) {
       canvas.drawPath(dashPath(path, dash), paint);
     } else {
       canvas.drawPath(path, paint);
     }
+  }
+
+  LineStyle convert(Set<ViewState>? states) {
+    if (states == null || states.isEmpty) {
+      return this;
+    }
+
+    final Color color = ColorResolver(this.color).resolve(states)!;
+
+    final sd.Shader? shader = this.shader == null ? null : this.shader!.convert2(states);
+
+    final List<BoxShadow> shadow = [];
+    for (var bs in this.shadow) {
+      shadow.add(BoxShadow(
+        color: ColorResolver(bs.color).resolve(states)!,
+        offset: bs.offset,
+        blurRadius: bs.blurRadius,
+        spreadRadius: bs.spreadRadius,
+        blurStyle: bs.blurStyle,
+      ));
+    }
+
+    return LineStyle(
+      color: color,
+      width: width,
+      cap: cap,
+      join: join,
+      dash: dash,
+      smooth: smooth,
+      shader: shader,
+      shadow: shadow,
+    );
   }
 }

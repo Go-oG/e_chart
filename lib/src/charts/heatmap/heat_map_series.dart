@@ -9,7 +9,7 @@ import '../../core/series.dart';
 ///可以在日历坐标系和笛卡尔坐标系中使用
 class HeatMapSeries extends RectSeries {
   List<HeatMapData> data;
-  StyleFun<HeatMapData, AreaStyle> styleFun;
+  Fun2<HeatMapData, AreaStyle> styleFun;
 
   HeatMapSeries(
     this.data, {

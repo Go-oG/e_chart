@@ -1,84 +1,149 @@
 import 'package:flutter/material.dart';
-import '../../animation/animator_props.dart';
+import '../../animation/chart_tween.dart';
+import '../../animation/tween/area_style_tween.dart';
 import '../../animation/tween/double_tween.dart';
 import '../../core/view.dart';
+import '../../core/view_state.dart';
 import '../../model/dynamic_text.dart';
 import '../../model/text_position.dart';
+import '../../style/area_style.dart';
 import '../../style/label.dart';
+import 'funnel_node.dart';
 import 'funnel_series.dart';
 import 'layout.dart';
 
 /// 漏斗图
 class FunnelView extends SeriesView<FunnelSeries> {
   final FunnelLayout _layout = FunnelLayout();
-  FunnelView(super.series);
 
-  double alpha = 0;
+  FunnelView(super.series);
 
   @override
   bool get enableDrag => false;
 
   @override
   void onClick(Offset offset) {
-    _handleHover(offset);
+    handleHoverEnter(offset);
   }
 
   @override
   void onHoverStart(Offset offset) {
-    _handleHover(offset);
+    handleHoverEnter(offset);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    _handleHover(offset);
+    handleHoverEnter(offset);
   }
 
   @override
   void onHoverEnd() {
+    handleCancel();
+  }
+
+  FunnelNode? oldNode;
+
+  void handleHoverEnter(Offset local) {
     List<FunnelNode> nodeList = _layout.nodeList;
+    bool result = false;
+    Map<FunnelNode, AreaStyle> oldMap = {};
+    Map<FunnelNode, LabelStyle> oldMap2 = {};
+    FunnelNode? hoverNode;
     for (var node in nodeList) {
-      if (node.textScaleFactor != 1) {
-        ChartDoubleTween tween =
-            ChartDoubleTween(node.textScaleFactor, 1, duration: const Duration(milliseconds: 150), curve: Curves.fastLinearToSlowEaseIn);
-        tween.addListener(() {
-          node.textScaleFactor = tween.value;
-          invalidate();
-        });
-        tween.start(context);
-        break;
+      oldMap[node] = node.areaStyle;
+      if (node.labelStyle != null) {
+        oldMap2[node] = node.labelStyle!;
       }
+      if (node.path.contains(local)) {
+        hoverNode = node;
+        if (node.addState(ViewState.hover)) {
+          result = true;
+        }
+      } else {
+        if (node.removeState(ViewState.hover)) {
+          result = true;
+        }
+      }
+    }
+    if (!result) {
+      return;
+    }
+
+    final old = oldNode;
+    oldNode = hoverNode;
+    List<ChartTween> tl = [];
+    Duration duration = const Duration(milliseconds: 160);
+    if (old != null && oldMap.containsKey(old)) {
+      AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+      AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, duration: duration);
+      tween.addListener(() {
+        old.areaStyle = tween.value;
+        invalidate();
+      });
+      tl.add(tween);
+      ChartDoubleTween tween2 = ChartDoubleTween((old.textConfig?.scaleFactor ?? 1).toDouble(), 1, duration: duration);
+      tween2.addListener(() {
+        old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+        invalidate();
+      });
+      tl.add(tween2);
+    }
+    if (hoverNode != null) {
+      var node = hoverNode;
+      AreaStyle style = series.areaStyleFun.call(node).convert(node.status);
+      AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, duration: duration);
+      tween.addListener(() {
+        node.areaStyle = tween.value;
+        invalidate();
+      });
+      tl.add(tween);
+      ChartDoubleTween tween2 = ChartDoubleTween((node.textConfig?.scaleFactor ?? 1).toDouble(), 1.5, duration: duration);
+      tween2.addListener(() {
+        node.textConfig = node.textConfig?.copyWith(scaleFactor: tween2.value);
+        invalidate();
+      });
+      tl.add(tween2);
+    }
+    if (tl.isEmpty) {
+      invalidate();
+      return;
+    }
+    for (var tw in tl) {
+      tw.start(context);
     }
   }
 
-  void _handleHover(Offset local) {
-    List<FunnelNode> nodeList = _layout.nodeList;
-    for(var node in nodeList){
-      bool old=node.hovering;
-      node.hovering=node.select=node.path.contains(local);
-      if(old==node.hovering&&old){return;}
+  void handleCancel() {
+    if (oldNode == null) {
+      return;
     }
-    invalidate();
+    List<ChartTween> tl = [];
+    Duration duration = const Duration(milliseconds: 80);
+    var old = oldNode!;
+    oldNode = null;
+    AreaStyle oldStyle = old.areaStyle;
+    old.removeState(ViewState.hover);
+    AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+    AreaStyleTween tween = AreaStyleTween(oldStyle, style, duration: duration);
+    tween.addListener(() {
+      old.areaStyle = tween.value;
+      invalidate();
+    });
+    tl.add(tween);
+    ChartDoubleTween tween2 = ChartDoubleTween((old.textConfig?.scaleFactor ?? 1).toDouble(), 1, duration: duration);
+    tween2.addListener(() {
+      old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+    });
+    tl.add(tween2);
+    for (var tw in tl) {
+      tw.start(context);
+    }
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
     _layout.doLayout(context, series, series.dataList, width, height);
-    doAnimator();
-  }
-
-  void doAnimator() {
-    AnimatorProps? info = series.animation;
-    if (info == null) {
-      alpha = 0;
-      return;
-    }
-    ChartDoubleTween tween = ChartDoubleTween.fromAnimator(info);
-    tween.addListener(() {
-      alpha = 1 - tween.value;
-      invalidate();
-    });
-    tween.start(context);
   }
 
   @override
@@ -88,16 +153,10 @@ class FunnelView extends SeriesView<FunnelSeries> {
       return;
     }
     for (var node in nodeList) {
-      series.areaStyleFun.call(node).drawPath(canvas, mPaint, node.path);
+      node.areaStyle.drawPath(canvas, mPaint, node.path);
     }
     for (var node in nodeList) {
       _drawText(canvas, node);
-    }
-    if (alpha != 0) {
-      Paint paint = Paint();
-      paint.color = Colors.white.withOpacity(alpha);
-      paint.style = PaintingStyle.fill;
-      canvas.drawRect(areaBounds, paint);
     }
   }
 
@@ -107,8 +166,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
     if (label == null || label.isEmpty || config == null) {
       return;
     }
-
-    LabelStyle? style =series.labelStyleFun?.call(node);
+    LabelStyle? style = series.labelStyleFun?.call(node);
     if (style == null || !style.show) {
       return;
     }

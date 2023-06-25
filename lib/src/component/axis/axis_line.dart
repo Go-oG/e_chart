@@ -13,11 +13,11 @@ class AxisLine {
   final Offset symbolOffset;
 
   final LineStyle style;
-  final StyleFun2<DynamicData, DynamicData, LineStyle>? styleFun;
+  final Fun3<DynamicData, DynamicData, LineStyle?>? styleFun;
 
   ///Tick 相关
   final MainTick? tick;
-  final StyleFun2<DynamicData, DynamicData, MainTick>? tickFun;
+  final Fun3<DynamicData, DynamicData, MainTick?>? tickFun;
 
   const AxisLine({
     this.show = true,
