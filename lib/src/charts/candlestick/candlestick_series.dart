@@ -9,8 +9,8 @@ class CandleStickSeries extends RectSeries {
   List<CandleStickData> data;
   String name;
   bool hoverAnimation;
-  StyleFun<CandleStickData, AreaStyle> styleFun;
-  StyleFun<CandleStickData, LineStyle> lineStyleFun;
+  Fun2<CandleStickData, AreaStyle> styleFun;
+  Fun2<CandleStickData, LineStyle> lineStyleFun;
 
   CandleStickSeries(
     this.data, {

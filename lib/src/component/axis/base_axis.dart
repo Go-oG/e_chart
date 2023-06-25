@@ -47,7 +47,7 @@ abstract class BaseAxis {
   //只在时间轴下使用
   final TimeSplitType timeSplitType;
   final Pair<DateTime>? timeRange;
-  final Fun1<DateTime,DynamicText>? timeFormatFun;
+  final Fun2<DateTime,DynamicText>? timeFormatFun;
 
   final bool inverse;
 
@@ -68,7 +68,7 @@ abstract class BaseAxis {
   ///样式、交互相关
   final bool silent;
   final AxisLine axisLine;
-  final Fun1<num, DynamicText>? formatFun;
+  final Fun2<num, DynamicText>? formatFun;
 
   const BaseAxis({
     this.show = true,

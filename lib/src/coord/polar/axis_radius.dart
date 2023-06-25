@@ -12,8 +12,8 @@ class RadiusAxis extends BaseAxis {
   final num offsetAngle;
   final num nameRotate;
 
-  final StyleFun2<double, dynamic, AreaStyle>? itemStyleFun;
-  final StyleFun2<int, int, LineStyle>? axisStyleFun;
+  final Fun3<double, dynamic, AreaStyle>? itemStyleFun;
+  final Fun3<int, int, LineStyle>? axisStyleFun;
 
   final LineStyle? tipLineStyle;
 

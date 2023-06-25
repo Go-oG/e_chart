@@ -35,7 +35,6 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   }
 
   void start(Context context) {
-    stop();
     AnimatorProps props = AnimatorProps(
       duration: duration,
       reverseDuration: reverseDuration,
@@ -53,6 +52,8 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     }
     _controller!.forward();
   }
+
+  double get process => _controller?.value ?? 0;
 
   void stop() {
     try {

@@ -52,10 +52,7 @@ class BoxPlotView extends ChartView implements GridChild {
   }
 
   void _drawNode(Canvas canvas, BoxplotData data) {
-    LineStyle? style = series.lineStyleFun.call(data, null);
-    if (style == null) {
-      return;
-    }
+    LineStyle? style = series.lineStyleFun.call(data);
     GridCoord layout = context.findGridCoord();
 
     Offset minCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.min).topCenter;
@@ -99,6 +96,6 @@ class BoxPlotView extends ChartView implements GridChild {
 
     path.moveTo(maxLeft.dx, maxLeft.dy);
     path.lineTo(maxRight.dx, maxRight.dy);
-    style.drawPath(canvas, mPaint, path, drawDash: true);
+    style.drawPath(canvas, mPaint, path, true);
   }
 }

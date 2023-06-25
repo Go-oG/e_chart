@@ -10,7 +10,7 @@ import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
 import '../../core/series.dart';
-import 'layout.dart';
+import 'funnel_node.dart';
 
 class FunnelAlign {
   final Alignment align;
@@ -28,9 +28,9 @@ class FunnelSeries extends RectSeries {
   Sort sort;
   double gap;
   Align2 align;
-  Fun1<FunnelNode, AreaStyle> areaStyleFun;
-  Fun1<FunnelNode, LabelStyle>? labelStyleFun;
-  Fun1<FunnelNode, LineStyle>? labelLineStyleFun;
+  Fun2<FunnelNode, AreaStyle> areaStyleFun;
+  Fun2<FunnelNode, LabelStyle>? labelStyleFun;
+  Fun2<FunnelNode, LineStyle>? labelLineStyleFun;
 
   FunnelSeries(
     this.dataList, {

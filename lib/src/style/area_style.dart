@@ -5,6 +5,7 @@ import 'package:e_chart/src/shape/area.dart';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 
+import '../core/view_state.dart';
 import '../shape/line.dart';
 import 'line_style.dart';
 
@@ -18,6 +19,7 @@ class AreaStyle {
   final sd.Shader? shader;
   final List<BoxShadow> shadow;
   final LineStyle? border;
+
   const AreaStyle({
     this.show = true,
     this.color,
@@ -38,8 +40,9 @@ class AreaStyle {
       paint.color = color!;
     }
     if (shader != null && rect != null) {
-      paint.shader = shader!.toShader(rect, null);
+      paint.shader = shader!.toShader(rect);
     }
+    paint.style = PaintingStyle.fill;
   }
 
   void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points) {
@@ -107,9 +110,28 @@ class AreaStyle {
       path.drawShadows(canvas, path, shadow);
     }
     fillPaint(paint, path.getBounds());
-    paint.style = PaintingStyle.fill;
     canvas.drawPath(path, paint);
-    border?.drawPath(canvas, paint, path, drawDash: true);
+    border?.drawPath(canvas, paint, path, true);
+  }
+
+  AreaStyle convert(Set<ViewState>? states) {
+    if (states == null || states.isEmpty) {
+      return this;
+    }
+    final Color? color = this.color == null ? null : ColorResolver(this.color!).resolve(states);
+    final sd.Shader? shader = this.shader == null ? null : this.shader!.convert2(states);
+    final List<BoxShadow> shadow = [];
+    for (var bs in this.shadow) {
+      shadow.add(BoxShadow(
+        color: ColorResolver(bs.color).resolve(states)!,
+        offset: bs.offset,
+        blurRadius: bs.blurRadius,
+        spreadRadius: bs.spreadRadius,
+        blurStyle: bs.blurStyle,
+      ));
+    }
+    final LineStyle? border = this.border == null ? null : this.border!.convert(states);
+    return AreaStyle(show: show, smooth: smooth, shader: shader, shadow: shadow, border: border, color: color);
   }
 
   bool _notDraw() {

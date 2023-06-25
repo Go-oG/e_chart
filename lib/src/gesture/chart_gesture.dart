@@ -42,7 +42,7 @@ abstract class ChartGesture {
   EventCallback<VelocityEvent>? scaleEnd;
   VoidCallback? scaleCancel;
 
-  Fun1<Offset, bool>? edgeFun;
+  Fun2<Offset, bool>? edgeFun;
 
   bool isInArea(Offset globalOffset);
 

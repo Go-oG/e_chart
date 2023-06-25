@@ -17,8 +17,9 @@ import '../model/string_number.dart';
 import '../utils/log_util.dart';
 import 'context.dart';
 import 'view_group.dart';
+import 'view_state.dart';
 
-abstract class ChartView implements ToolTipBuilder {
+abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   Context? _context;
   LayoutParams layoutParams = LayoutParams.match();
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
@@ -47,8 +48,8 @@ abstract class ChartView implements ToolTipBuilder {
 
   late final String id;
 
-  ChartView(){
-    id=randomId();
+  ChartView() {
+    id = randomId();
   }
 
   Context get context => _context!;
@@ -160,7 +161,7 @@ abstract class ChartView implements ToolTipBuilder {
 
   void onLayoutEnd() {}
 
-  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true,num r=6}) {
+  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
     if (!kDebugMode) {
       return;
     }
@@ -286,14 +287,13 @@ abstract class ChartView implements ToolTipBuilder {
   ChartSeries? _series;
 
   ///存储命令执行相关的操作
-  final Map<Command, ValueCallback<Command>> _commandMap = {};
+  final Map<Command, VoidFun1<Command>> _commandMap = {};
 
   void clearCommand() {
     _commandMap.clear();
   }
 
-  void registerCommand(Command c, ValueCallback<Command> callback, [bool allowReplace = true]) {
-
+  void registerCommand(Command c, VoidFun1<Command> callback, [bool allowReplace = true]) {
     var old = _commandMap[c];
     if (!allowReplace && callback != old) {
       throw ChartError('not allow replace');

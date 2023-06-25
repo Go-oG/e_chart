@@ -53,7 +53,7 @@ class PointLayout extends ChartLayout {
 
 }
 
-class PointNode extends ShapeNode {
+class PointNode with ViewStateProvider {
   final PointData data;
   Rect rect = Rect.zero;
 

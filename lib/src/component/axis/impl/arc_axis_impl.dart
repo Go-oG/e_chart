@@ -56,7 +56,7 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
       LineStyle? style;
       if (axis.axisLine.styleFun != null) {
-        style = axis.axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData), null);
+        style = axis.axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
       }
       style ??= axis.axisLine.style;
       style.drawArc(canvas, paint, props.radius, startAngle, sa);
@@ -74,7 +74,7 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
       dynamic endData = scale.domainValue(axis.offsetAngle + axis.sweepAngle);
       MainTick? tick;
       if (axis.axisLine.tickFun != null) {
-        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData), null);
+        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
       }
       tick ??= axis.axisLine.tick;
       tick?.drawCircleTick(canvas, paint, props.radius, axis.offsetAngle, axis.sweepAngle, ticks);
@@ -89,7 +89,7 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
       dynamic endData = scale.domainValue(startAngle + angleInterval);
       MainTick? tick;
       if (axis.axisLine.tickFun != null) {
-        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData), null);
+        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
       }
       tick ??= axis.axisLine.tick;
       List<DynamicText> tl = [];
