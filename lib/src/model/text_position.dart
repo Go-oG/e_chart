@@ -4,6 +4,7 @@ import 'package:e_chart/src/ext/text_style_ext.dart';
 import 'package:flutter/material.dart';
 
 import '../core/view_state.dart';
+import '../utils/index.dart';
 
 ///文本绘制参数
 class TextDrawConfig {
@@ -96,5 +97,27 @@ class TextDrawConfig {
         textScaleFactor: scaleFactor.toDouble(),
         maxLines: maxLines,
         ellipsis: ellipsis);
+  }
+
+  static TextDrawConfig fromRect(Rect rect, Alignment align,[bool inside=true]) {
+    return fromAlign(rect.topLeft, rect.topRight, rect.bottomLeft, rect.bottomRight, align);
+  }
+
+  static TextDrawConfig fromAlign(Offset lt, Offset rt, Offset lb, Offset rb, Alignment align,[bool inside=true]) {
+    Offset p0 = lt;
+    Offset p1 = rt;
+    Offset p2 = rb;
+    Offset p3 = lb;
+    double centerX = (p0.dx + p1.dx) / 2;
+    double centerY = (p0.dy + p3.dy) / 2;
+    double topW = (p1.dx - p0.dx).abs();
+    double x = centerX + align.x * topW / 2;
+    double y = centerY + align.y * (p1.dy - p2.dy).abs() / 2;
+    Offset offset = Offset(x, y);
+    Alignment textAlign = toInnerAlign(align);
+    if (!inside) {
+      textAlign = Alignment(-textAlign.x, -textAlign.y);
+    }
+    return TextDrawConfig(offset, align: textAlign);
   }
 }

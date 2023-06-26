@@ -3,7 +3,7 @@ import 'dart:ui';
 import '../chart_tween.dart';
 
 class ChartSizeTween extends ChartTween<Size> {
-  ChartSizeTween(super.begin, super.end);
+  ChartSizeTween(super.begin, super.end,{super.allowCross,super.props});
 
   @override
   Size convert(double animatorPercent) {

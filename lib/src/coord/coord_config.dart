@@ -8,4 +8,6 @@ abstract class CoordConfig {
   const CoordConfig({this.show = true, this.id = ''});
 
   CoordSystem get coordSystem;
+
+
 }

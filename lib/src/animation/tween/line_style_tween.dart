@@ -9,7 +9,7 @@ class LineStyleTween extends ChartTween<LineStyle> {
 
   ChartShaderTween? _shaderTween;
 
-  LineStyleTween(super.begin, super.end) {
+  LineStyleTween(super.begin, super.end,{super.allowCross,super.props}) {
     changeValue(begin, end);
   }
 

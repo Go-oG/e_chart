@@ -15,13 +15,7 @@ class AreaStyleTween extends ChartTween<AreaStyle> {
     super.begin,
     super.end, {
     super.allowCross,
-    super.behavior,
-    super.curve,
-    super.delay,
-    super.duration,
-    super.lowerBound,
-    super.reverseDuration,
-    super.upperBound,
+    super.props,
   }) {
     changeValue(begin, end);
   }

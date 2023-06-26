@@ -50,7 +50,6 @@ class PointLayout extends ChartLayout {
       node.rect = coord.dataToPoint(series.xAxisIndex, node.data.x, series.yAxisIndex, node.data.y);
     }
   }
-
 }
 
 class PointNode with ViewStateProvider {

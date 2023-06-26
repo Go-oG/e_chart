@@ -19,7 +19,7 @@ class ArrowSymbol extends ChartSymbol {
   });
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset center) {
+  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
     Path path = Path();
     double c = sideLength / 2;
     //外接圆半径

@@ -42,7 +42,7 @@ class RadarView extends ChartView implements RadarChild {
         }
       }
       OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
-      ChartDoubleTween tween = ChartDoubleTween.fromAnimator(info);
+      ChartDoubleTween tween = ChartDoubleTween(props: series.animatorProps);
       tween.addListener(() {
         for (var group in nodeList) {
           for (var node in group.nodeList) {
@@ -77,7 +77,7 @@ class RadarView extends ChartView implements RadarChild {
       style.drawPolygonArea(canvas, mPaint, ol);
       for (int i = 0; i < ol.length; i++) {
         ChartSymbol? symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
-        symbol?.draw(canvas, mPaint, ol[i]);
+        symbol?.draw(canvas, mPaint, ol[i],1);
       }
     }
   }

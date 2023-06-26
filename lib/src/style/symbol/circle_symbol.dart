@@ -29,7 +29,7 @@ class CircleSymbol extends ChartSymbol {
         strokeWidth = 0;
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset center) {
+  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
     paint.reset();
     paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
     if (!fill) {

@@ -9,7 +9,7 @@ import 'command.dart';
 
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
-abstract class ChartSeries extends ChartNotifier<Command>{
+abstract class ChartSeries extends ChartNotifier<Command> {
   ///坐标系系统
   CoordSystem? coordSystem;
 
@@ -49,25 +49,23 @@ abstract class ChartSeries extends ChartNotifier<Command>{
     this.enableScale = false,
     this.z = 0,
     this.clip = true,
-  }):super(Command.none);
+  }) : super(Command.none);
 
-  void notifyDataSetChange() {
-    value=Command.updateData;
-  }
-
-  void notifyDataSetInserted() {
-    value=Command.insertData;
-  }
-
-  void notifyDataSetRemoved() {
-    value=Command.deleteData;
+  void notifyUpdateData() {
+    value = Command.updateData;
   }
 
   ///通知视图当前Series 配置发生了变化
   void notifySeriesConfigChange() {
-    value=Command.configChange;
+    value = Command.configChange;
   }
 
+  AnimatorProps get animatorProps {
+    if (animation != null) {
+      return animation!;
+    }
+    return const AnimatorProps();
+  }
 }
 
 abstract class RectSeries extends ChartSeries {
@@ -164,4 +162,3 @@ abstract class RectSeries extends ChartSeries {
     return bottomMargin.convert(height);
   }
 }
-

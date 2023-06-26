@@ -33,8 +33,8 @@ class MarkLine {
 
   void draw(Canvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end], false);
-    startSymbol?.draw(canvas, paint, start);
-    endSymbol?.draw(canvas, paint, end);
+    startSymbol?.draw(canvas, paint, start,1);
+    endSymbol?.draw(canvas, paint, end,1);
     if (startText != null && startText.isNotEmpty) {
       TextDrawConfig config = TextDrawConfig(start);
       labelStyle?.call(0).draw(canvas, paint, startText, config);

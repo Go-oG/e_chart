@@ -10,6 +10,8 @@ export 'funnel/layout.dart' hide FunnelProps;
 export 'funnel/funnel_node.dart';
 
 export 'heatmap/heat_map_series.dart';
+export 'heatmap/heat_map_node.dart';
+
 export 'line/line_series.dart';
 export 'parallel/parallel_series.dart';
 export 'pie/pie_series.dart';

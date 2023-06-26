@@ -16,7 +16,7 @@ class DiamondSymbol extends ChartSymbol {
   const DiamondSymbol(this.style, {this.shortSide = 8, this.loneSide = 8, this.rotate = 0});
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset center) {
+  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
     paint.reset();
     Path path = Path();
     path.moveTo(0, -shortSide / 2);
