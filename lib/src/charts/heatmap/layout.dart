@@ -1,4 +1,5 @@
 import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 import '../../animation/index.dart';
@@ -23,14 +24,45 @@ class HeatMapLayout extends ChartLayout {
     this.series = series;
     this.width = width;
     this.height = height;
-    _layoutInner(dataList, useUpdate);
+
+    List<HeatMapNode> oldList=_nodeList;
+    List<HeatMapNode> newList=convertData(dataList);
+    layoutNode(newList);
+    DiffResult<HeatMapNode,HeatMapData> result=DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData){
+      HeatMapNode node=HeatMapNode(p0);
+      node.rect=Rect.fromCenter(center: p1.rect.center, width: 0, height: 0);
+      return node;
+    });
+
+    Map<HeatMapData,Rect> startMap=result.startMap.map((key, value) => MapEntry(key, value.rect));
+    Map<HeatMapData,Rect> endMap=result.endMap.map((key, value) => MapEntry(key, value.rect));
+
+    ChartRectTween rectTween = ChartRectTween(Rect.zero, Rect.zero);
+    ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
+    doubleTween.startListener = () {
+      _nodeList = result.curList;
+    };
+    doubleTween.endListener=(){
+      _nodeList=result.finalList;
+      notifyLayoutEnd();
+    };
+    doubleTween.addListener(() {
+      var v = doubleTween.value;
+      each(result.curList, (p0, p1) {
+        rectTween.changeValue(startMap[p0.data]!, endMap[p0.data]!);
+        Rect rect = rectTween.safeGetValue(v);
+        p0.rect = rect;
+      });
+      notifyLayoutUpdate();
+    });
+    doubleTween.start(context, useUpdate);
   }
 
-  void _layoutInner(List<HeatMapData> dataList, bool useUpdate) {
-    Map<HeatMapData, HeatMapNode> oldMap = {};
-    each(_nodeList, (p0, p1) {
-      oldMap[p0.data] = p0;
-    });
+  List<HeatMapNode> convertData(List<HeatMapData> dataList){
+    return List.from(dataList.map((e) => HeatMapNode(e)));
+  }
+
+  void layoutNode(List<HeatMapNode> nodeList) {
     GridCoord? gridLayout;
     CalendarCoord? calendarLayout;
     if (series.coordSystem == CoordSystem.grid) {
@@ -38,9 +70,8 @@ class HeatMapLayout extends ChartLayout {
     } else {
       calendarLayout = context.findCalendarCoord(series.xAxisIndex);
     }
-    List<HeatMapNode> nodeList = [];
-    Map<HeatMapData, HeatMapNode> nodeMap = {};
-    for (var data in series.data) {
+    for(var node in nodeList){
+      var data=node.data;
       Rect? rect;
       if (gridLayout != null) {
         rect = gridLayout.dataToPoint(series.xAxisIndex, data.x, series.yAxisIndex, data.y);
@@ -50,63 +81,7 @@ class HeatMapLayout extends ChartLayout {
       if (rect == null) {
         throw ChartError('无法布局 $gridLayout  $calendarLayout');
       }
-      HeatMapNode node = HeatMapNode(data);
       node.rect = rect;
-      nodeList.add(node);
-      nodeMap[data] = node;
     }
-
-    Set<HeatMapData> removeSet = {};
-    Set<HeatMapData> addSet = {};
-    Set<HeatMapData> commonSet = {};
-    oldMap.forEach((key, value) {
-      if (!nodeMap.containsKey(key)) {
-        removeSet.add(key);
-      } else {
-        commonSet.add(key);
-      }
-    });
-    nodeMap.forEach((key, value) {
-      if (!oldMap.containsKey(key)) {
-        addSet.add(key);
-      } else {
-        commonSet.add(key);
-      }
-    });
-
-    for (var key in removeSet) {
-      Offset center = oldMap[key]!.rect.center;
-      HeatMapNode tmp = HeatMapNode(key);
-      tmp.rect = Rect.fromCenter(center: center, width: 0, height: 0);
-      nodeMap[key] = tmp;
-    }
-    for (var key in addSet) {
-      Offset center = nodeMap[key]!.rect.center;
-      HeatMapNode tmp = HeatMapNode(key);
-      tmp.rect = Rect.fromCenter(center: center, width: 0, height: 0);
-      oldMap[key] = tmp;
-    }
-
-    ChartRectTween rectTween = ChartRectTween(Rect.zero, Rect.zero);
-    ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
-
-    doubleTween.startListener = () {
-      _nodeList = List.from(oldMap.values);
-    };
-
-    doubleTween.addListener(() {
-      var v = doubleTween.value;
-      oldMap.forEach((key, value) {
-        rectTween.changeValue(value.rect, nodeMap[key]!.rect);
-        Rect rect = rectTween.safeGetValue(v);
-        value.rect = rect;
-      });
-      notifyLayoutUpdate();
-    });
-
-    doubleTween.endListener = () {
-      _nodeList.removeWhere((element) => removeSet.contains(element.data));
-    };
-    doubleTween.start(context, useUpdate);
   }
 }
