@@ -106,6 +106,7 @@ class Arc implements Shape {
       ///扇形(忽略内部圆角)
       path.moveTo(center.dx, center.dy);
       double cor = corner;
+
       ///扫过角度对应的弧长度
       double dd = or * pi * swa.abs() / 180;
       if (dd / 2 < cor) {
@@ -158,10 +159,10 @@ class Arc implements Shape {
     num outEndAngle = inEndAngle;
 
     ///修正存在angleGap时视觉上间隔不一致问题(只有innerRadius>0时有效)
-    if (padAngle > 0) {
-      double diff = padAngle * (or - ir);
-      double angleDiff = diff / or;
-      outEndAngle += angleDiff * direction;
+    if (padAngle > 0 && ir > 0) {
+      double diff=(or-ir)*(pi*padAngle/180)*0.5;
+      double outOffset = (diff / (pi * or)) * 180;
+      outEndAngle += outOffset * direction;
     }
 
     ///没有圆角
