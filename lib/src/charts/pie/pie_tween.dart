@@ -1,24 +1,35 @@
 import 'dart:ui';
 
 import '../../animation/chart_tween.dart';
+import '../../shape/arc.dart';
 import 'layout.dart';
 
-class PieTween extends ChartTween<PieProps> {
-  PieTween(super.begin, super.end);
+class PieTween extends ChartTween<Arc> {
+  PieTween(super.begin, super.end,{super.allowCross,super.props});
 
   @override
-  PieProps convert(double animatorPercent) {
+  Arc convert(double animatorPercent) {
     Offset center;
     if (begin.center == end.center) {
       center = end.center;
     } else {
       center = Offset.lerp(begin.center, end.center, animatorPercent)!;
     }
-    num corner = begin.corner + (end.corner - begin.corner) * animatorPercent;
-    num ir = begin.ir + (end.ir - begin.ir) * animatorPercent;
-    num or = begin.or + (end.or - begin.or) * animatorPercent;
+    num corner = begin.cornerRadius + (end.cornerRadius - begin.cornerRadius) * animatorPercent;
+    num ir = begin.innerRadius + (end.innerRadius - begin.innerRadius) * animatorPercent;
+    num or = begin.outRadius + (end.outRadius - begin.outRadius) * animatorPercent;
     num startAngle = begin.startAngle + (end.startAngle - begin.startAngle) * animatorPercent;
     num sweepAngle = begin.sweepAngle + (end.sweepAngle - begin.sweepAngle) * animatorPercent;
-    return PieProps(center: center, corner: corner, ir: ir, or: or, startAngle: startAngle, sweepAngle: sweepAngle);
+    num padAngle = begin.padAngle + (end.padAngle - begin.padAngle) * animatorPercent;
+
+    return Arc(
+      center: center,
+      cornerRadius: corner,
+      innerRadius: ir,
+      outRadius: or,
+      startAngle: startAngle,
+      sweepAngle: sweepAngle,
+      padAngle: padAngle,
+    );
   }
 }

@@ -14,7 +14,7 @@ class PositivePolygonSymbol extends ChartSymbol {
   const PositivePolygonSymbol(this.style, {this.count = 3, this.r = 8, this.rotate = 0});
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset center) {
+  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
     PositiveShape shape = PositiveShape(center: center, r: r, count: count, angleOffset: rotate);
     Path path = shape.toPath(true);
     style.drawPath(canvas, paint, path);

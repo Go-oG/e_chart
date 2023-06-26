@@ -64,7 +64,7 @@ class TweenSet extends ChartTween<int> {
   }
 
   @override
-  void start(Context context) {
+  void start(Context context, [bool useUpdate = false]) {
     if (_rootNode == null) {
       return;
     }
@@ -149,7 +149,7 @@ class TweenNode {
     if (parent == null) {
       _animationStartTime = DateTime.now().millisecondsSinceEpoch;
     } else {
-      _animationStartTime = parent!.computeStartTime() + parent!.tween.duration.inMilliseconds;
+      _animationStartTime = parent!.computeStartTime() + parent!.tween.props.duration.inMilliseconds;
     }
     if (delay.inMilliseconds > 0) {
       _animationStartTime += delay.inMilliseconds;
@@ -160,10 +160,8 @@ class TweenNode {
 
   void start(Context context) {
     running = true;
-    tween.statusListener = (status) {
-      if (!tween.isAnimating) {
-        running = false;
-      }
+    tween.endListener = () {
+      running = false;
     };
     tween.start(context);
   }

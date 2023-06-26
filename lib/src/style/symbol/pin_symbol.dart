@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
-
 import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +15,7 @@ class PinSymbol extends ChartSymbol {
   const PinSymbol({this.r = 8, this.rotate = 0, this.style = const AreaStyle(color: Colors.blue)});
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset center) {
+  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
     paint.reset();
     Path p1 = Path();
     p1.moveTo(-r, 0);

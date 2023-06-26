@@ -4,12 +4,10 @@ class Command {
   static const Command none = Command(0);
   static const Command invalidate = Command(-1);
   static const Command reLayout = Command(-2);
-  static const Command insertData = Command(-3);
-  static const Command deleteData = Command(-4);
-  static const Command updateData = Command(-5);
-  static const Command configChange = Command(-6);
-  static const Command layoutEnd = Command(-7);
-  static const Command layoutUpdate = Command(-8);
+  static const Command updateData = Command(-3);
+  static const Command configChange = Command(-4);
+  static const Command layoutEnd = Command(-5);
+  static const Command layoutUpdate = Command(-6);
 
   final int code;
 

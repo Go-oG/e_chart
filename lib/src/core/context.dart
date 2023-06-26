@@ -1,3 +1,4 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
 import '../animation/index.dart';
@@ -136,6 +137,8 @@ class Context {
         c.create(this, root);
         _coordMap[ele] = c;
         _coordList.add(c);
+      } else {
+        throw ChartError('无法转换对应的坐标系:$ele');
       }
     }
   }
@@ -173,9 +176,9 @@ class Context {
     _title?.onStart();
     _toolTip?.onStart();
     for (var coord in coordList) {
-      try{
+      try {
         coord.onStart();
-      }catch(e){
+      } catch (e) {
         logPrint('$e');
       }
     }
@@ -186,12 +189,11 @@ class Context {
     _title?.onStop();
     _toolTip?.onStop();
     for (var coord in coordList) {
-      try{
+      try {
         coord.onStop();
-      }catch(e){
+      } catch (e) {
         logPrint('$e');
       }
-
     }
   }
 
@@ -326,8 +328,8 @@ class Context {
     _gestureDispatcher.removeGesture(gesture);
   }
 
-  AnimationController boundedAnimation(AnimatorProps props) {
-    return _animationManager.bounded(_provider, props);
+  AnimationController boundedAnimation(AnimatorProps props, [bool useUpdate = false]) {
+    return _animationManager.bounded(_provider, props, useUpdate: useUpdate);
   }
 
   AnimationController unboundedAnimation() {

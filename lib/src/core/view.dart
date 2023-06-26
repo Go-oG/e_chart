@@ -317,8 +317,6 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     };
     series.addListener(_defaultCommandCallback!);
     _commandMap[Command.updateData] = onUpdateDataCommand;
-    _commandMap[Command.insertData] = onAddDataCommand;
-    _commandMap[Command.deleteData] = onDeleteDataCommand;
     _commandMap[Command.invalidate] = onInvalidateCommand;
     _commandMap[Command.reLayout] = onRelayoutCommand;
     _commandMap[Command.configChange] = onSeriesConfigChangeCommand;
@@ -365,10 +363,6 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     layout(left, top, right, bottom);
     invalidate();
   }
-
-  void onAddDataCommand(covariant Command c) {}
-
-  void onDeleteDataCommand(covariant Command c) {}
 
   void onUpdateDataCommand(covariant Command c) {}
 

@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:e_chart/src/model/dynamic_text.dart';
 import 'package:e_chart/src/model/index.dart';
 import 'package:flutter/material.dart';
 
@@ -36,7 +35,7 @@ class IconSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset center) {
+  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
     TextDrawConfig config = TextDrawConfig(center, align: Alignment.center);
     style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
   }

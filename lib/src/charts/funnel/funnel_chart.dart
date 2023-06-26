@@ -72,16 +72,19 @@ class FunnelView extends SeriesView<FunnelSeries> {
     final old = oldNode;
     oldNode = hoverNode;
     List<ChartTween> tl = [];
-    Duration duration = const Duration(milliseconds: 160);
     if (old != null && oldMap.containsKey(old)) {
       AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
-      AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, duration: duration);
+      AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, props: series.animatorProps);
       tween.addListener(() {
         old.areaStyle = tween.value;
         invalidate();
       });
       tl.add(tween);
-      ChartDoubleTween tween2 = ChartDoubleTween((old.textConfig?.scaleFactor ?? 1).toDouble(), 1, duration: duration);
+      ChartDoubleTween tween2 = ChartDoubleTween.fromValue(
+        (old.textConfig?.scaleFactor ?? 1).toDouble(),
+        1,
+        props: series.animatorProps,
+      );
       tween2.addListener(() {
         old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
         invalidate();
@@ -91,13 +94,14 @@ class FunnelView extends SeriesView<FunnelSeries> {
     if (hoverNode != null) {
       var node = hoverNode;
       AreaStyle style = series.areaStyleFun.call(node).convert(node.status);
-      AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, duration: duration);
+      AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, props: series.animatorProps);
       tween.addListener(() {
         node.areaStyle = tween.value;
         invalidate();
       });
       tl.add(tween);
-      ChartDoubleTween tween2 = ChartDoubleTween((node.textConfig?.scaleFactor ?? 1).toDouble(), 1.5, duration: duration);
+      ChartDoubleTween tween2 =
+          ChartDoubleTween.fromValue((node.textConfig?.scaleFactor ?? 1).toDouble(), 1.5, props: series.animatorProps);
       tween2.addListener(() {
         node.textConfig = node.textConfig?.copyWith(scaleFactor: tween2.value);
         invalidate();
@@ -109,7 +113,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
       return;
     }
     for (var tw in tl) {
-      tw.start(context);
+      tw.start(context, true);
     }
   }
 
@@ -118,25 +122,28 @@ class FunnelView extends SeriesView<FunnelSeries> {
       return;
     }
     List<ChartTween> tl = [];
-    Duration duration = const Duration(milliseconds: 80);
     var old = oldNode!;
     oldNode = null;
     AreaStyle oldStyle = old.areaStyle;
     old.removeState(ViewState.hover);
     AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
-    AreaStyleTween tween = AreaStyleTween(oldStyle, style, duration: duration);
+    AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: series.animatorProps);
     tween.addListener(() {
       old.areaStyle = tween.value;
       invalidate();
     });
     tl.add(tween);
-    ChartDoubleTween tween2 = ChartDoubleTween((old.textConfig?.scaleFactor ?? 1).toDouble(), 1, duration: duration);
+    ChartDoubleTween tween2 = ChartDoubleTween.fromValue(
+      (old.textConfig?.scaleFactor ?? 1).toDouble(),
+      1,
+      props: series.animatorProps,
+    );
     tween2.addListener(() {
       old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
     });
     tl.add(tween2);
     for (var tw in tl) {
-      tw.start(context);
+      tw.start(context, true);
     }
   }
 

@@ -3,54 +3,45 @@ import 'package:flutter/material.dart';
 
 /// 抽象的补间动画
 abstract class ChartTween<T> extends ValueNotifier<T> {
-  final Duration duration;
-  final Duration? reverseDuration;
-  final AnimationBehavior behavior;
-  final Curve curve;
-  final double lowerBound;
-  final double upperBound;
-  final Duration delay;
-
+  final AnimatorProps props;
   AnimationController? _controller;
   T _begin;
   T _end;
 
   late bool _allowCross;
 
-  void Function(AnimationStatus)? _statusListener;
-
   ChartTween(
     this._begin,
     this._end, {
     bool allowCross = false,
-    this.duration = const Duration(milliseconds: 800),
-    this.reverseDuration,
-    this.behavior = AnimationBehavior.normal,
-    this.curve = Curves.easeInOut,
-    this.lowerBound = 0,
-    this.upperBound = 1,
-    this.delay = Duration.zero,
+    this.props = const AnimatorProps(),
   }) : super(_begin) {
     _allowCross = allowCross;
   }
 
-  void start(Context context) {
-    AnimatorProps props = AnimatorProps(
-      duration: duration,
-      reverseDuration: reverseDuration,
-      behavior: behavior,
-      curve: curve,
-      lowerBound: lowerBound,
-      upperBound: upperBound,
-    );
-    _controller = context.boundedAnimation(props);
-    _controller!.addListener(() {
-      value = _getValue(_controller?.value ?? 0);
+  VoidCallback? startListener;
+  VoidCallback? endListener;
+
+  bool _hasCallStart = false;
+
+  void start(Context context, [bool useUpdate = false]) {
+    _hasCallStart = false;
+    _controller = context.boundedAnimation(props, useUpdate);
+    _controller?.addListener(() {
+      if (!_hasCallStart) {
+        _hasCallStart = true;
+        startListener?.call();
+      }
+      value = _getValue(_controller?.value ?? props.lowerBound);
     });
-    if (_statusListener != null) {
-      _controller!.addStatusListener(_statusListener!);
+    if (endListener != null) {
+      _controller?.addStatusListener((status) {
+        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+          endListener?.call();
+        }
+      });
     }
-    _controller!.forward();
+    _controller?.forward();
   }
 
   double get process => _controller?.value ?? 0;
@@ -68,16 +59,14 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   @override
   void dispose() {
     stop();
+    startListener = null;
+    endListener = null;
     super.dispose();
   }
 
   @override
   String toString() {
     return '$runtimeType begin:$begin  end:$end';
-  }
-
-  set statusListener(void Function(AnimationStatus)? fun) {
-    _statusListener = fun;
   }
 
   T get begin => _begin;

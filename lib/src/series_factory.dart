@@ -65,6 +65,7 @@ class DefaultSeriesConvert extends SeriesConvert {
     if (series is BoxplotSeries) {
       return BoxPlotView(series);
     }
+
     if (series is HeatMapSeries) {
       return HeatMapView(series);
     }

@@ -94,6 +94,7 @@ class CalendarCoordImpl extends CalendarCoord {
       }
       return false;
     });
+    super.onLayout(left, top, right, bottom);
   }
 
   @override

@@ -1,20 +1,12 @@
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/heatmap/layout.dart';
 import 'package:flutter/material.dart';
 
-import '../../coord/calendar/calendar_child.dart';
-import '../../coord/calendar/calendar_coord.dart';
-import '../../coord/grid/grid_child.dart';
-import '../../coord/grid/grid_coord.dart';
-import '../../core/view.dart';
-import '../../model/dynamic_data.dart';
-import '../../model/enums/coordinate.dart';
-import '../../style/area_style.dart';
-import 'heat_map_series.dart';
-
 /// 热力图
-class HeatMapView extends ChartView implements GridChild, CalendarChild {
-  final HeatMapSeries series;
+class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, CalendarChild {
+  final HeatMapLayout _layout = HeatMapLayout();
 
-  HeatMapView(this.series);
+  HeatMapView(super.series);
 
   @override
   int get xAxisIndex => series.xAxisIndex;
@@ -50,28 +42,42 @@ class HeatMapView extends ChartView implements GridChild, CalendarChild {
   int get calendarIndex => series.xAxisIndex;
 
   @override
-  void onDraw(Canvas canvas) {
-    GridCoord? gridLayout;
-    CalendarCoord? calendarLayout;
-    if (series.coordSystem == CoordSystem.grid) {
-      gridLayout = context.findGridCoord();
-    } else {
-      calendarLayout = context.findCalendarCoord(calendarIndex);
-    }
-    for (var data in series.data) {
-      AreaStyle? style = series.styleFun.call(data);
-      if (style == null) {
-        continue;
-      }
+  void onStart() {
+    super.onStart();
+    _layout.addListener(() {
+      invalidate();
+    });
+  }
 
-      Rect? rect;
-      if (gridLayout != null) {
-        rect = gridLayout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.y);
-      } else if (calendarLayout != null) {
-         rect = calendarLayout.dataToPoint(data.x.data);
-      }
-      if(rect!=null){
-        style.drawRect(canvas, mPaint, rect);
+  @override
+  void onStop() {
+    _layout.clearListener();
+    super.onStop();
+  }
+
+  @override
+  void onUpdateDataCommand(covariant Command c) {
+    _layout.doLayout(context, series, series.data, width, height, true);
+  }
+
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    _layout.doLayout(context, series, series.data, width, height, false);
+  }
+
+  @override
+  void onDraw(Canvas canvas) {
+    for (var node in _layout.nodeList) {
+      ChartSymbol symbol = series.symbolFun.call(node, node.rect.size).convert(node.status);
+      symbol.draw(canvas, mPaint, node.rect.center, 1);
+      if (node.data.label != null) {
+        LabelStyle? labelStyle = series.labelFun?.call(node);
+        if (labelStyle == null || !labelStyle.show) {
+          continue;
+        }
+        Alignment align = series.labelAlignFun?.call(node) ?? Alignment.center;
+        labelStyle.draw(canvas, mPaint, node.data.label!, TextDrawConfig.fromRect(node.rect, align));
       }
     }
   }
