@@ -31,6 +31,13 @@ class FunnelNode with ViewStateProvider {
     labelLine = computeLabelLineOffset(series, textConfig?.offset);
   }
 
+  void updatePoint(FunnelSeries series, List<Offset> pl) {
+    pointList.clear();
+    pointList.addAll(pl);
+    _path = null;
+    update(series);
+  }
+
   Path? _path;
 
   Path get path {

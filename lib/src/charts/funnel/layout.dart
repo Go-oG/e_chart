@@ -1,15 +1,7 @@
 //漏斗图布局计算相关
 import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../core/context.dart';
-import '../../core/layout.dart';
-import '../../model/enums/align2.dart';
-import '../../model/enums/direction.dart';
-import '../../model/enums/sort.dart';
-import '../../model/group_data.dart';
-import 'funnel_node.dart';
-import 'funnel_series.dart';
 
 class FunnelLayout extends ChartLayout {
   FunnelLayout() : super();
@@ -19,33 +11,80 @@ class FunnelLayout extends ChartLayout {
   late FunnelSeries series;
   double width = 0;
   double height = 0;
-
   num maxValue = 0;
 
-  void doLayout(Context context, FunnelSeries series, List<ItemData> list, double width, double height) {
+  void doLayout(Context context, FunnelSeries series, List<ItemData> list, double width, double height, bool useUpdate) {
     this.context = context;
     this.series = series;
     this.width = width;
     this.height = height;
-    maxValue = 0;
-    if (list.isEmpty) {
-      this.nodeList = [];
-      return;
-    }
+    _hoverNode = null;
 
-    ///直接降序处理
-    list.sort((a, b) {
-      return a.value.compareTo(b.value);
+    List<FunnelNode> oldList = nodeList;
+    List<FunnelNode> newList = convertData(list);
+    layoutNode(newList);
+
+    DiffResult<FunnelNode, ItemData> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
+      FunnelNode node = FunnelNode(p1.preData, p0);
+      List<Offset> pl = p1.pointList;
+      Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
+      node.pointList.addAll([o0, o0, o0, o0]);
+      return node;
     });
-    maxValue = list.first.value;
+    Map<ItemData, List<Offset>> startMap = result.startMap.map((key, value) => MapEntry(key, List.from(value.pointList)));
+    Map<ItemData, List<Offset>> endMap = result.endMap.map((key, value) => MapEntry(key, List.from(value.pointList)));
 
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
+    OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
+
+    doubleTween.startListener = () {
+      nodeList = result.curList;
+    };
+    doubleTween.endListener = () {
+      nodeList = result.finalList;
+      notifyLayoutEnd();
+    };
+    doubleTween.addListener(() {
+      each(result.curList, (p0, p1) {
+        List<Offset> sl = startMap[p0.data]!;
+        List<Offset> el = endMap[p0.data]!;
+        double t = doubleTween.value;
+        List<Offset> pl = [];
+        for (int i = 0; i < 4; i++) {
+          offsetTween.changeValue(sl[i], el[i]);
+          pl.add(offsetTween.safeGetValue(t));
+        }
+        p0.updatePoint(series, pl);
+      });
+      notifyLayoutUpdate();
+    });
+    doubleTween.start(context, useUpdate);
+  }
+
+  List<FunnelNode> convertData(List<ItemData> list) {
     List<FunnelNode> nodeList = [];
+    if (list.isEmpty) {
+      return nodeList;
+    }
     for (int i = 0; i < list.length; i++) {
       var data = list[i];
       ItemData? preData = i == 0 ? null : list[i - 1];
       nodeList.add(FunnelNode(preData, data));
-      maxValue = max([data.value, maxValue]);
     }
+
+    ///直接降序处理
+    nodeList.sort((a, b) {
+      return a.data.value.compareTo(b.data.value);
+    });
+    return nodeList;
+  }
+
+  void layoutNode(List<FunnelNode> nodeList) {
+    maxValue = 0;
+    if (nodeList.isEmpty) {
+      return;
+    }
+    maxValue = nodeList.first.data.value;
 
     if (series.maxValue != null && maxValue < series.maxValue!) {
       maxValue = series.maxValue!;
@@ -62,10 +101,10 @@ class FunnelLayout extends ChartLayout {
     } else {
       _layoutHorizontal(nodeList, itemSize);
     }
+
     for (var node in nodeList) {
       node.update(series);
     }
-    this.nodeList = nodeList;
   }
 
   void _layoutVertical(List<FunnelNode> nodeList, double itemHeight) {
@@ -176,6 +215,110 @@ class FunnelLayout extends ChartLayout {
         props.p2.translate(0, props.len2),
         props.p1.translate(0, props.len1),
       ];
+    }
+  }
+
+  FunnelNode? _hoverNode;
+
+  void hoverEnter(Offset local) {
+    bool result = false;
+    Map<FunnelNode, AreaStyle> oldMap = {};
+    Map<FunnelNode, LabelStyle> oldMap2 = {};
+    FunnelNode? hoverNode;
+    for (var node in nodeList) {
+      oldMap[node] = node.areaStyle;
+      if (node.labelStyle != null) {
+        oldMap2[node] = node.labelStyle!;
+      }
+      if (node.path.contains(local)) {
+        hoverNode = node;
+        if (node.addState(ViewState.hover)) {
+          result = true;
+        }
+      } else {
+        if (node.removeState(ViewState.hover)) {
+          result = true;
+        }
+      }
+    }
+    if (!result) {
+      return;
+    }
+    final old = _hoverNode;
+    _hoverNode = hoverNode;
+    List<ChartTween> tl = [];
+    if (old != null && oldMap.containsKey(old)) {
+      AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+      AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, props: series.animatorProps);
+      tween.addListener(() {
+        old.areaStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+      ChartDoubleTween tween2 = ChartDoubleTween.fromValue(
+        (old.textConfig?.scaleFactor ?? 1).toDouble(),
+        1,
+        props: series.animatorProps,
+      );
+      tween2.addListener(() {
+        old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+        notifyLayoutUpdate();
+      });
+      tl.add(tween2);
+    }
+    if (hoverNode != null) {
+      var node = hoverNode;
+      AreaStyle style = series.areaStyleFun.call(node).convert(node.status);
+      AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, props: series.animatorProps);
+      tween.addListener(() {
+        node.areaStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+      ChartDoubleTween tween2 =
+          ChartDoubleTween.fromValue((node.textConfig?.scaleFactor ?? 1).toDouble(), 1.5, props: series.animatorProps);
+      tween2.addListener(() {
+        node.textConfig = node.textConfig?.copyWith(scaleFactor: tween2.value);
+        notifyLayoutUpdate();
+      });
+      tl.add(tween2);
+    }
+    if (tl.isEmpty) {
+      notifyLayoutUpdate();
+      return;
+    }
+    for (var tw in tl) {
+      tw.start(context, true);
+    }
+  }
+
+  void clearHover() {
+    if (_hoverNode == null) {
+      return;
+    }
+    List<ChartTween> tl = [];
+    var old = _hoverNode!;
+    _hoverNode = null;
+    AreaStyle oldStyle = old.areaStyle;
+    old.removeState(ViewState.hover);
+    AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+    AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: series.animatorProps);
+    tween.addListener(() {
+      old.areaStyle = tween.value;
+      notifyLayoutUpdate();
+    });
+    tl.add(tween);
+    ChartDoubleTween tween2 = ChartDoubleTween.fromValue(
+      (old.textConfig?.scaleFactor ?? 1).toDouble(),
+      1,
+      props: series.animatorProps,
+    );
+    tween2.addListener(() {
+      old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+    });
+    tl.add(tween2);
+    for (var tw in tl) {
+      tw.start(context, true);
     }
   }
 }
