@@ -19,14 +19,14 @@ class AnimationManager {
   ///存储已经创建的控制器
   final Map<String, AnimationController> _map = {};
 
-  AnimationController bounded(TickerProvider provider, AnimatorProps props, {String? key,bool useUpdate=false}) {
-    //_collate();
+  AnimationController bounded(TickerProvider provider, AnimatorProps props, {String? key, bool useUpdate = false}) {
+    _collate();
     AnimationController c = AnimationController(
       vsync: provider,
-      duration:useUpdate?props.updateDuration: props.duration,
-      reverseDuration: useUpdate?props.updateDuration: props.duration,
-      lowerBound: props.lowerBound,
-      upperBound: props.upperBound,
+      duration: useUpdate ? props.updateDuration : props.duration,
+      reverseDuration: useUpdate ? props.updateDuration : props.duration,
+      lowerBound: 0,
+      upperBound: 1,
       animationBehavior: props.behavior,
     );
     key ??= _uuid.v4().replaceAll('-', '');
@@ -57,7 +57,7 @@ class AnimationManager {
     }
     _count = 0;
     try {
-      _map.removeWhere((key, value) => value.isCompleted || value.isDismissed);
+      _map.removeWhere((key, value) => value.isCompleted);
     } catch (e) {
       logPrint('$e');
     }
@@ -94,7 +94,9 @@ class AnimationManager {
     _map.forEach((key, value) {
       try {
         value.dispose();
-      } catch (_) {}
+      } catch (e) {
+        logPrint("Animator dispose: $e");
+      }
     });
     _map.clear();
   }

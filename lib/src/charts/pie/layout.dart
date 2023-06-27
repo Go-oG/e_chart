@@ -79,6 +79,11 @@ class PieLayout extends ChartLayout {
     tween.startListener=(){
       _nodeList = result.curList;
     };
+    tween.endListener = () {
+      _nodeList = result.finalList;
+      notifyLayoutEnd();
+    };
+
     tween.addListener(() {
       double v = tween.value;
       for (var node in result.curList) {
@@ -89,10 +94,6 @@ class PieLayout extends ChartLayout {
       }
       notifyLayoutUpdate();
     });
-    tween.endListener = () {
-      _nodeList = result.finalList;
-      notifyLayoutEnd();
-    };
     tween.start(context, useUpdate);
   }
 
