@@ -13,8 +13,8 @@ class AnimatorProps {
   final int threshold;
 
   const AnimatorProps({
-    this.duration = const Duration(milliseconds: 1000),
-    this.updateDuration = const Duration(milliseconds: 300),
+    this.duration = const Duration(milliseconds: 1200),
+    this.updateDuration = const Duration(milliseconds: 350),
     this.delay = Duration.zero,
     this.updateDelay = Duration.zero,
     this.threshold = 2000,

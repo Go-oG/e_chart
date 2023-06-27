@@ -2,31 +2,15 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
-import '../../animation/index.dart';
-import '../../coord/index.dart';
-import '../../core/index.dart';
-import '../../model/index.dart';
-import 'heat_map_node.dart';
-import 'heat_map_series.dart';
-
-class HeatMapLayout extends ChartLayout {
+class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
   List<HeatMapNode> _nodeList = [];
 
   List<HeatMapNode> get nodeList => _nodeList;
 
-  num width = 0;
-  num height = 0;
-  late Context context;
-  late HeatMapSeries series;
-
-  void doLayout(Context context, HeatMapSeries series, List<HeatMapData> dataList, num width, num height, bool useUpdate) {
-    this.context = context;
-    this.series = series;
-    this.width = width;
-    this.height = height;
-
+  @override
+  void onLayout(List<HeatMapData> data, LayoutAnimatorType type) {
     List<HeatMapNode> oldList=_nodeList;
-    List<HeatMapNode> newList=convertData(dataList);
+    List<HeatMapNode> newList=convertData(data);
     layoutNode(newList);
     DiffResult<HeatMapNode,HeatMapData> result=DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData){
       HeatMapNode node=HeatMapNode(p0);
@@ -55,7 +39,7 @@ class HeatMapLayout extends ChartLayout {
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, useUpdate);
+    doubleTween.start(context,type==LayoutAnimatorType.update);
   }
 
   List<HeatMapNode> convertData(List<HeatMapData> dataList){
@@ -84,4 +68,6 @@ class HeatMapLayout extends ChartLayout {
       node.rect = rect;
     }
   }
+
+
 }

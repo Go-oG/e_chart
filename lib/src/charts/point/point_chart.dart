@@ -2,6 +2,8 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/point/point_layout.dart';
 import 'package:flutter/material.dart';
 
+import 'point_node.dart';
+
 class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
   final PointLayout _layout = PointLayout();
 
@@ -72,7 +74,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, width, height);
+    _layout.doLayout(context, series, series.data, selfBoxBound,LayoutAnimatorType.layout);
   }
 
   @override

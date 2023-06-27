@@ -35,7 +35,7 @@ class PolarCoordImpl extends CircleCoord<PolarConfig> implements PolarCoord {
     super.onCreate();
     context.addGesture(gesture);
     gesture.edgeFun = (offset) {
-      return globalAreaBound.contains(offset);
+      return globalBoxBound.contains(offset);
     };
     gesture.hoverStart = (e) {
       _handleHoverWithDrag(e.globalPosition);
@@ -92,7 +92,7 @@ class PolarCoordImpl extends CircleCoord<PolarConfig> implements PolarCoord {
       props.angleAxis.offsetAngle.toDouble(),
       r + props.angleAxis.radiusOffset,
     );
-    LineProps radiusProps = LineProps(areaBounds, Offset.zero, circlePoint(r, props.radiusAxis.offsetAngle));
+    LineProps radiusProps = LineProps(boxBounds, Offset.zero, circlePoint(r, props.radiusAxis.offsetAngle));
     _angleAxis.layout(angleProps, _getAngleDataSet());
     _radiusAxis.layout(radiusProps, _getRadiusDataSet());
     gesture.startAngle = 0;

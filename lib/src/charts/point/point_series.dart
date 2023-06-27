@@ -5,7 +5,7 @@ import '../../model/enums/coordinate.dart';
 import '../../model/multi_data.dart';
 import '../../core/series.dart';
 import '../../style/symbol/symbol.dart';
-import 'point_layout.dart';
+import 'point_node.dart';
 
 class PointSeries extends RectSeries {
   List<PointData> data;

@@ -219,7 +219,7 @@ class ParallelCoordImpl extends ParallelCoord {
       mPaint.reset();
       mPaint.color = props.backgroundColor!;
       mPaint.style = PaintingStyle.fill;
-      canvas.drawRect(areaBounds, mPaint);
+      canvas.drawRect(boxBounds, mPaint);
     }
     for (var ele in _axisMap.entries) {
       ele.value.draw(canvas, mPaint);

@@ -1,11 +1,4 @@
-import '../../functions.dart';
-import '../../model/enums/circle_align.dart';
-import '../../model/group_data.dart';
-import '../../model/string_number.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
-import '../../core/series.dart';
-import '../../utils/log_util.dart';
+import 'package:e_chart/e_chart.dart';
 
 enum RoseType {
   normal,

@@ -32,7 +32,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    _layout.doLayout(context, series, series.dataList, width, height, true);
+    _layout.doLayout(context, series, series.dataList, selfBoxBound, LayoutAnimatorType.update);
   }
 
   @override
@@ -50,7 +50,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.dataList, width, height, false);
+    _layout.doLayout(context, series, series.dataList,selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override
