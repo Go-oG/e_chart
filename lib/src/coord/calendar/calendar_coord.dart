@@ -100,7 +100,7 @@ class CalendarCoordImpl extends CalendarCoord {
   @override
   void onDraw(Canvas canvas) {
     canvas.save();
-    canvas.clipRect(areaBounds);
+    canvas.clipRect(boxBounds);
     if (props.gridLineStyle != null) {
       var style = props.gridLineStyle!;
       for (int i = 0; i < columnCount; i++) {

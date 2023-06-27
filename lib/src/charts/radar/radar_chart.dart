@@ -1,15 +1,7 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../animation/animator_props.dart';
-import '../../animation/tween/double_tween.dart';
-import '../../animation/tween/offset_tween.dart';
-import '../../coord/radar/radar_child.dart';
-import '../../core/command.dart';
-import '../../core/view.dart';
-import '../../style/area_style.dart';
-import '../../style/symbol/symbol.dart';
 import 'layout.dart';
-import 'radar_series.dart';
+
 
 /// 雷达图
 class RadarView extends ChartView implements RadarChild {
@@ -20,13 +12,13 @@ class RadarView extends ChartView implements RadarChild {
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    radarLayout.doLayout(context, series, series.data);
+    radarLayout.doLayout(context, series, series.data, selfBoxBound,LayoutAnimatorType.update);
     _initAnimator();
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    radarLayout.doLayout(context, series, series.data);
+    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
     _initAnimator();
   }
 
@@ -77,7 +69,7 @@ class RadarView extends ChartView implements RadarChild {
       style.drawPolygonArea(canvas, mPaint, ol);
       for (int i = 0; i < ol.length; i++) {
         ChartSymbol? symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
-        symbol?.draw(canvas, mPaint, ol[i],1);
+        symbol?.draw(canvas, mPaint, ol[i], 1);
       }
     }
   }

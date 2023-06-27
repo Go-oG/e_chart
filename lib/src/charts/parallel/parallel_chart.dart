@@ -13,7 +13,7 @@ class ParallelView extends SeriesView<ParallelSeries> implements ParallelChild {
   void onUpdateDataCommand(covariant Command c) {
     super.onUpdateDataCommand(c);
     _layout.findCoord().onReceiveCommand(Command.updateData);
-    _layout.doLayout(context, series, series.data, width, height, true);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
   }
 
   @override
@@ -31,7 +31,7 @@ class ParallelView extends SeriesView<ParallelSeries> implements ParallelChild {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, width, height, false);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override

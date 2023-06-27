@@ -5,7 +5,6 @@ import 'package:e_chart/src/utils/diff.dart';
 import 'package:flutter/material.dart';
 
 import '../../animation/index.dart';
-import '../../core/context.dart';
 import '../../core/layout.dart';
 import '../../core/view_state.dart';
 import '../../ext/offset_ext.dart';
@@ -17,7 +16,7 @@ import '../../utils/align_util.dart';
 import 'pie_series.dart';
 
 ///饼图布局
-class PieLayout extends ChartLayout {
+class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
   List<PieNode> _nodeList = [];
 
   List<PieNode> get nodeList => _nodeList;
@@ -28,27 +27,18 @@ class PieLayout extends ChartLayout {
 
   num minRadius = 0;
   num maxRadius = 0;
-  num width = 0;
-  num height = 0;
 
-  PieLayout() : super();
-
-  late PieSeries series;
-  late Context context;
   num pieAngle = 0;
   Offset center = Offset.zero;
 
-  void doLayout(Context context, PieSeries series, List<ItemData> list, num width, num height, bool useUpdate) {
-    this.context = context;
-    this.series = series;
-    this.width = width;
-    this.height = height;
+  @override
+  void onLayout(List<ItemData> data, LayoutAnimatorType type) {
     pieAngle = _adjustPieAngle(series.sweepAngle);
     center = _computeCenterPoint(series.center);
     hoverNode = null;
     _preHandleRadius();
     List<PieNode> oldList = _nodeList;
-    List<PieNode> newList = _preHandleData(list);
+    List<PieNode> newList = _preHandleData(data);
     layoutNode(newList);
     DiffResult<PieNode, ItemData> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
       PieAnimatorStyle style = series.animatorStyle;
@@ -76,7 +66,7 @@ class PieLayout extends ChartLayout {
     Map<ItemData, Arc> startMap = result.startMap.map((key, value) => MapEntry(key, value.arc));
     Map<ItemData, Arc> endMap = result.endMap.map((key, value) => MapEntry(key, value.arc));
 
-    tween.startListener=(){
+    tween.startListener = () {
       _nodeList = result.curList;
     };
     tween.endListener = () {
@@ -94,7 +84,7 @@ class PieLayout extends ChartLayout {
       }
       notifyLayoutUpdate();
     });
-    tween.start(context, useUpdate);
+    tween.start(context, type==LayoutAnimatorType.update);
   }
 
   void layoutNode(List<PieNode> nodeList) {

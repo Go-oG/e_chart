@@ -3,20 +3,20 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../coord/radar/radar_coord.dart';
-import '../../core/context.dart';
 import '../../core/layout.dart';
 import '../../model/group_data.dart';
 import 'radar_series.dart';
 
 /// 雷达图布局
-class RadarLayout extends ChartLayout {
+class RadarLayout extends ChartLayout<RadarSeries,List<GroupData>> {
   List<RadarGroupNode> _groupNodeList = [];
   List<RadarGroupNode> get groupNodeList => _groupNodeList;
 
-  void doLayout(Context context,RadarSeries series, List<GroupData> group) {
+  @override
+  void onLayout(List<GroupData> data, LayoutAnimatorType type) {
     RadarCoord layout = context.findRadarCoord(series.radarIndex);
     List<RadarGroupNode> gl = [];
-    each(group, (data, p1) {
+    each(data, (data, p1) {
       var groupNode = RadarGroupNode(data, []);
       gl.add(groupNode);
       int i = 0;
@@ -29,6 +29,7 @@ class RadarLayout extends ChartLayout {
     });
     _groupNodeList = gl;
   }
+
 }
 
 class RadarGroupNode {

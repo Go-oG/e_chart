@@ -4,21 +4,13 @@ import 'package:flutter/material.dart';
 
 import 'parallel_node.dart';
 
-class ParallelLayout extends ChartLayout {
-  late ParallelSeries series;
-  late Context context;
-  num width = 0;
-  num height = 0;
+class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
   List<ParallelNode> nodeList = [];
 
-  void doLayout(Context context, ParallelSeries series, List<ParallelGroup> dataList, double width, double height, bool useUpdate) {
-    this.series = series;
-    this.context = context;
-    this.width = width;
-    this.height = height;
-
+  @override
+  void onLayout(List<ParallelGroup> data, LayoutAnimatorType type) {
     List<ParallelNode> oldList = nodeList;
-    List<ParallelNode> newList = convertData(dataList);
+    List<ParallelNode> newList = convertData(data);
     layoutNode(newList);
     ParallelCoord layout = context.findParallelCoord(series.parallelIndex);
     Direction direction = layout.direction;
@@ -29,7 +21,7 @@ class ParallelLayout extends ChartLayout {
           node.offsetList.add(null);
         } else {
           double dx = direction == Direction.vertical ? 0 : offset.dx;
-          double dy = direction == Direction.vertical ? offset.dy :height;
+          double dy = direction == Direction.vertical ? offset.dy : height;
           node.offsetList.add(Offset(dx, dy));
         }
       }
@@ -67,7 +59,7 @@ class ParallelLayout extends ChartLayout {
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, useUpdate);
+    doubleTween.start(context, type==LayoutAnimatorType.update);
   }
 
   void layoutNode(List<ParallelNode> nodeList) {

@@ -57,13 +57,13 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    _layout.doLayout(context, series, series.data, width, height, true);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, width, height, false);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override

@@ -358,9 +358,9 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
     forceLayout = true;
-    ChartSeries? series=_series;
+    ChartSeries? series = _series;
     unBindSeries();
-    if(series!=null){
+    if (series != null) {
       bindSeries(series);
     }
     onStop();
@@ -392,9 +392,11 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   double get centerY => height / 2.0;
 
   //返回其矩形边界
-  Rect get areaBounds => boundRect;
+  Rect get boxBounds => boundRect;
 
-  Rect get globalAreaBound => _globalBoundRect;
+  Rect get globalBoxBound => _globalBoundRect;
+
+  Rect get selfBoxBound => Rect.fromLTWH(0, 0, width, height);
 
   Offset toLocalOffset(Offset globalOffset) {
     return Offset(globalOffset.dx - _globalBoundRect.left, globalOffset.dy - _globalBoundRect.top);
@@ -438,7 +440,7 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _gesture.rect = areaBounds;
+    _gesture.rect = boxBounds;
   }
 
   Offset _lastHover = Offset.zero;

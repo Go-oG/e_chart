@@ -3,25 +3,18 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class FunnelLayout extends ChartLayout {
+class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
   FunnelLayout() : super();
   List<FunnelNode> nodeList = [];
 
-  late Context context;
-  late FunnelSeries series;
-  double width = 0;
-  double height = 0;
   num maxValue = 0;
 
-  void doLayout(Context context, FunnelSeries series, List<ItemData> list, double width, double height, bool useUpdate) {
-    this.context = context;
-    this.series = series;
-    this.width = width;
-    this.height = height;
+  @override
+  void onLayout(List<ItemData> data, LayoutAnimatorType type) {
     _hoverNode = null;
 
     List<FunnelNode> oldList = nodeList;
-    List<FunnelNode> newList = convertData(list);
+    List<FunnelNode> newList = convertData(data);
     layoutNode(newList);
 
     DiffResult<FunnelNode, ItemData> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
@@ -58,7 +51,7 @@ class FunnelLayout extends ChartLayout {
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, useUpdate);
+    doubleTween.start(context, type==LayoutAnimatorType.update);
   }
 
   List<FunnelNode> convertData(List<ItemData> list) {
@@ -91,7 +84,7 @@ class FunnelLayout extends ChartLayout {
     }
     int count = nodeList.length;
     double gapAllHeight = (count - 1) * series.gap;
-    double size = series.direction == Direction.vertical ? height : width;
+    num size = series.direction == Direction.vertical ? height : width;
     double itemSize = (size - gapAllHeight) / count;
     if (series.itemHeight != null) {
       itemSize = series.itemHeight!.convert(height);
@@ -321,6 +314,8 @@ class FunnelLayout extends ChartLayout {
       tw.start(context, true);
     }
   }
+
+
 }
 
 class FunnelProps {

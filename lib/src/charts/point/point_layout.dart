@@ -2,29 +2,34 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class PointLayout extends ChartLayout {
-  List<PointNode> nodeList = [];
-  late Context context;
-  late PointSeries series;
+import 'point_node.dart';
 
-  void doLayout(Context context, PointSeries series, List<PointData> dataList, num width, num height) {
-    this.context = context;
-    this.series = series;
-    List<PointNode> nl = [];
-    for (var d in dataList) {
-      nl.add(PointNode(d));
-    }
-    if (CoordSystem.polar == series.coordSystem) {
-      layoutForPolar(nl, context.findPolarCoord(series.polarAxisIndex));
-    } else if (CoordSystem.calendar == series.coordSystem) {
-      layoutForCalendar(nl, context.findCalendarCoord(series.calendarIndex));
-    } else if (CoordSystem.grid == series.coordSystem) {
-      layoutForGrid(nl, context.findGridCoord());
-    }
-    nodeList = nl;
+class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
+  List<PointNode> nodeList = [];
+  @override
+  void onLayout(List<PointData> data, LayoutAnimatorType type) {
+    List<PointNode> oldList = nodeList;
+    List<PointNode> newList = List.from(data.map((e) => PointNode(e)));
+    layoutNode(newList);
+    nodeList = newList;
   }
 
-  void layoutForCalendar(List<PointNode> nodeList, CalendarCoord coord) {
+  void layoutNode(List<PointNode> nodeList) {
+    if (CoordSystem.polar == series.coordSystem) {
+      _layoutForPolar(nodeList, context.findPolarCoord(series.polarAxisIndex));
+      return;
+    }
+    if (CoordSystem.calendar == series.coordSystem) {
+      _layoutForCalendar(nodeList, context.findCalendarCoord(series.calendarIndex));
+      return;
+    }
+    if (CoordSystem.grid == series.coordSystem) {
+      _layoutForGrid(nodeList, context.findGridCoord());
+      return;
+    }
+  }
+
+  void _layoutForCalendar(List<PointNode> nodeList, CalendarCoord coord) {
     for (var node in nodeList) {
       DateTime t;
       if (node.data.x.isDate) {
@@ -38,23 +43,18 @@ class PointLayout extends ChartLayout {
     }
   }
 
-  void layoutForPolar(List<PointNode> nodeList, PolarCoord coord) {
+  void _layoutForPolar(List<PointNode> nodeList, PolarCoord coord) {
     for (var node in nodeList) {
       Offset offset = coord.dataToPoint(node.data.x, node.data.y);
       node.rect = Rect.fromCircle(center: offset, radius: 1);
     }
   }
 
-  void layoutForGrid(List<PointNode> nodeList, GridCoord coord) {
+  void _layoutForGrid(List<PointNode> nodeList, GridCoord coord) {
     for (var node in nodeList) {
       node.rect = coord.dataToPoint(series.xAxisIndex, node.data.x, series.yAxisIndex, node.data.y);
     }
   }
-}
 
-class PointNode with ViewStateProvider {
-  final PointData data;
-  Rect rect = Rect.zero;
 
-  PointNode(this.data);
 }
