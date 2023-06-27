@@ -26,6 +26,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     double devicePixelRatio = 1,
   ]) {
     context = Context(this, config, tickerProvider, devicePixelRatio);
+    context.onCreate();
   }
 
   @override
@@ -124,7 +125,6 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
 
   @override
   void dispose() {
-    context.onStop();
     context.destroy();
     super.dispose();
   }

@@ -6,15 +6,8 @@ import 'animator_props.dart';
 
 ///全局的动画管理者
 class AnimationManager {
-  static final AnimationManager _instance = AnimationManager._internal();
-
-  static AnimationManager get instance => _instance;
-
   final Uuid _uuid = const Uuid();
-
-  AnimationManager._internal();
-
-  factory AnimationManager() => _instance;
+  AnimationManager();
 
   ///存储已经创建的控制器
   final Map<String, AnimationController> _map = {};

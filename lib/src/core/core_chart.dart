@@ -1,10 +1,7 @@
 import 'dart:io';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../chart.dart';
-import '../gesture/gesture_dispatcher.dart';
-import '../model/enums/drag_type.dart';
-import '../model/enums/scale_type.dart';
 import 'render/base_render.dart';
 import 'render/default_render.dart';
 
@@ -30,12 +27,6 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     init();
   }
 
-  @override
-  void didUpdateWidget(Chart oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    init();
-  }
-
   void init() {
     if (_render == null) {
       _render = DefaultRender(widget.config, this);
@@ -54,6 +45,12 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         _render?.onStart();
       }
     }
+  }
+
+  @override
+  void didUpdateWidget(Chart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    init();
   }
 
   @override

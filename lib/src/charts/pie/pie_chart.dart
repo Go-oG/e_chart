@@ -1,15 +1,7 @@
 import 'dart:ui';
-
-import 'package:e_chart/src/ext/offset_ext.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../core/command.dart';
-import '../../core/view.dart';
-import '../../model/enums/circle_align.dart';
-import '../../shape/arc.dart';
-import '../../style/area_style.dart';
 import 'layout.dart';
-import 'pie_series.dart';
 
 /// 饼图
 class PieView extends SeriesView<PieSeries> {
@@ -48,7 +40,9 @@ class PieView extends SeriesView<PieSeries> {
   @override
   void onStart() {
     super.onStart();
-    pieLayer.addListener(invalidate);
+    pieLayer.addListener(() {
+      invalidate();
+    });
   }
 
   @override
@@ -58,15 +52,15 @@ class PieView extends SeriesView<PieSeries> {
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    pieLayer.doLayout(context, series, series.data, width, height, false);
-  }
-
-  @override
   void onDestroy() {
     pieLayer.dispose();
     super.onDestroy();
+  }
+
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    pieLayer.doLayout(context, series, series.data, width, height, false);
   }
 
   @override

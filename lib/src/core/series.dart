@@ -51,6 +51,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     this.clip = true,
   }) : super(Command.none);
 
+  ///通知数据更新
   void notifyUpdateData() {
     value = Command.updateData;
   }
@@ -66,6 +67,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     }
     return const AnimatorProps();
   }
+
 }
 
 abstract class RectSeries extends ChartSeries {

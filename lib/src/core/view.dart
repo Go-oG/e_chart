@@ -309,7 +309,7 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
 
   VoidCallback? _defaultCommandCallback;
 
-  void bindSeriesCommand(covariant ChartSeries series) {
+  void bindSeries(covariant ChartSeries series) {
     unBindSeries();
     _series = series;
     _defaultCommandCallback = () {
@@ -361,7 +361,7 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     ChartSeries? series=_series;
     unBindSeries();
     if(series!=null){
-      bindSeriesCommand(series);
+      bindSeries(series);
     }
     onStop();
     onStart();
@@ -420,11 +420,11 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   SeriesView(this.series);
 
   @override
-  void bindSeriesCommand(covariant T series) {
+  void bindSeries(covariant T series) {
     if (series != this.series) {
       throw FlutterError('Not allow binding different series ');
     }
-    super.bindSeriesCommand(series);
+    super.bindSeries(series);
   }
 
   @mustCallSuper
