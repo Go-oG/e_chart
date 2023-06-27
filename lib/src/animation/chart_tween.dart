@@ -13,7 +13,7 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   ChartTween(
     this._begin,
     this._end, {
-    bool allowCross = false,
+    bool allowCross = true,
     this.props = const AnimatorProps(),
   }) : super(_begin) {
     _allowCross = allowCross;
@@ -27,15 +27,16 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   void start(Context context, [bool useUpdate = false]) {
     _hasCallStart = false;
     _controller = context.boundedAnimation(props, useUpdate);
-    _controller?.addListener(() {
+    CurvedAnimation curved = CurvedAnimation(parent: _controller!, curve: useUpdate ? props.updateCurve : props.curve);
+    curved.addListener(() {
       if (!_hasCallStart) {
         _hasCallStart = true;
         startListener?.call();
       }
-      value = _getValue(_controller?.value ?? props.lowerBound);
+      value = _getValue(curved.value);
     });
     if (endListener != null) {
-      _controller?.addStatusListener((status) {
+      curved.addStatusListener((status) {
         if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
           endListener?.call();
         }
@@ -50,7 +51,7 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     try {
       _controller?.stop(canceled: true);
     } catch (e) {
-      debugPrint('$e');
+      logPrint('$e');
     }
     _controller = null;
     notifyListeners();

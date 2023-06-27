@@ -71,10 +71,6 @@ class PieView extends SeriesView<PieSeries> {
 
   @override
   void onDraw(Canvas canvas) {
-    doDraw(canvas);
-  }
-
-  void doDraw(Canvas canvas) {
     List<PieNode> nodeList = pieLayer.nodeList;
     for (var node in nodeList) {
       AreaStyle style = series.areaStyleFun.call(node.data);

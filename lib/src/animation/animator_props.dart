@@ -9,8 +9,6 @@ class AnimatorProps {
   final Curve curve;
   final Curve updateCurve;
 
-  final double lowerBound;
-  final double upperBound;
   final AnimationBehavior behavior;
   final int threshold;
 
@@ -23,7 +21,5 @@ class AnimatorProps {
     this.behavior = AnimationBehavior.normal,
     this.curve = Curves.easeOutCubic,
     this.updateCurve = Curves.easeInOutCubic,
-    this.lowerBound = 0,
-    this.upperBound = 1,
   });
 }

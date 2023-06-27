@@ -358,6 +358,11 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
     forceLayout = true;
+    ChartSeries? series=_series;
+    unBindSeries();
+    if(series!=null){
+      bindSeriesCommand(series);
+    }
     onStop();
     onStart();
     layout(left, top, right, bottom);
