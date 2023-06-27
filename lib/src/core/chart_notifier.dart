@@ -13,6 +13,7 @@ class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
 
   set value(T newValue) {
     if (_equalsObject && _value == newValue) {
+      _value = newValue;
       return;
     }
     _value = newValue;
@@ -32,6 +33,12 @@ class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
       }
       _listenerSet.clear();
     }
+  }
+
+  @override
+  void dispose() {
+    clearListener();
+    super.dispose();
   }
 
   @override
