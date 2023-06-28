@@ -1,26 +1,11 @@
 import 'dart:math';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../../component/axis/axis_line.dart';
-import '../../component/axis/impl/line_axis_impl.dart';
-import '../../ext/offset_ext.dart';
-import '../../model/dynamic_data.dart';
-import '../../model/text_position.dart';
-import '../../shape/circle.dart';
-import '../../shape/positive.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
-import '../../style/line_style.dart';
-import '../../utils/align_util.dart';
-import '../circle_coord.dart';
-import 'radar_config.dart';
-import 'radar_axis_node.dart';
-import 'radar_axis.dart';
-import 'radar_child.dart';
 
 abstract class RadarCoord extends CircleCoord<RadarConfig> {
   RadarCoord(super.props);
 
-  Offset? dataToPoint(int axisIndex, num data);
+  RadarPosition dataToPoint(int axisIndex, num data);
 
   int getAxisCount();
 
@@ -29,9 +14,21 @@ abstract class RadarCoord extends CircleCoord<RadarConfig> {
   double getRadius();
 }
 
+class RadarPosition {
+  final Offset center;
+  final num radius;
+  final num angle;
+
+  RadarPosition(this.center, this.radius, this.angle);
+
+  Offset get point {
+    return circlePoint(radius, angle, center);
+  }
+}
+
 ///雷达图坐标系
 class RadarCoordImpl extends RadarCoord {
-  final Map<int, RadarAxisNode> axisMap = {};
+  final Map<int, RadarAxisImpl> axisMap = {};
   final List<Path> shapePathList = [];
   Offset center = Offset.zero;
   double radius = 0;
@@ -46,7 +43,7 @@ class RadarCoordImpl extends RadarCoord {
           nameGap: indicator.nameGap,
           nameStyle: indicator.nameStyle,
           splitNumber: 5);
-      axisMap[i] = RadarAxisNode(axis, i);
+      axisMap[i] = RadarAxisImpl(axis, i);
     }
   }
 
@@ -149,7 +146,7 @@ class RadarCoordImpl extends RadarCoord {
         i++;
         continue;
       }
-      RadarAxisNode node = axisMap[i]!;
+      RadarAxisImpl node = axisMap[i]!;
       Offset offset = node.props.end;
       double angle = offset.offsetAngle();
       TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle));
@@ -160,15 +157,18 @@ class RadarCoordImpl extends RadarCoord {
 
   ///给定一个数据返回其对应数据在坐标系中的位置(视图位置为中心点)
   @override
-  Offset? dataToPoint(int axisIndex, num data) {
-    RadarAxisNode? node = axisMap[axisIndex];
-    if (node == null) {
-      return null;
+  RadarPosition dataToPoint(int axisIndex, num data) {
+    if (axisIndex < 0) {
+      axisIndex = 0;
     }
+    RadarAxisImpl? node = axisMap[axisIndex];
+    if (node == null) {
+      throw ChartError("无法找到节点");
+    }
+
     double angle = node.props.end.offsetAngle(node.props.start);
     double r = node.dataToPoint(data);
-    Offset offset = circlePoint(r, angle, center);
-    return offset;
+    return RadarPosition(center, r, angle);
   }
 
   @override

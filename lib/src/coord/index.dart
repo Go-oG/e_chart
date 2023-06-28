@@ -25,7 +25,7 @@ export 'polar/polar_coord.dart';
 
 export 'radar/radar_config.dart';
 export 'radar/radar_axis.dart';
-export 'radar/radar_axis_node.dart';
+export 'radar/radar_axis_impl.dart';
 export 'radar/radar_child.dart';
 export 'radar/radar_coord.dart';
 
