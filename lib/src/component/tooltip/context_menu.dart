@@ -3,9 +3,9 @@ import 'package:e_chart/src/style/index.dart';
 import '../../model/dynamic_text.dart';
 
 class ContextMenu {
-  final DynamicText? title;
-  final LabelStyle? titleStyle;
-  final List<MenuItem> itemList;
+   DynamicText? title;
+   LabelStyle? titleStyle;
+   List<MenuItem> itemList;
 
   ContextMenu(
     this.itemList, {
@@ -15,11 +15,11 @@ class ContextMenu {
 }
 
 class MenuItem {
-  final DynamicText text;
-  final LabelStyle textStyle;
-  final DynamicText? subText;
-  final LabelStyle? subTextStyle;
-  final ChartSymbol? symbol;
+   DynamicText text;
+   LabelStyle textStyle;
+   DynamicText? subText;
+   LabelStyle? subTextStyle;
+   ChartSymbol? symbol;
 
   MenuItem(
     this.text,

@@ -3,14 +3,14 @@ import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/area_style.dart';
 import '../../style/line_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class CandleStickSeries extends RectSeries {
   List<CandleStickData> data;
   String name;
   bool hoverAnimation;
-  StyleFun<CandleStickData, AreaStyle> styleFun;
-  StyleFun<CandleStickData, LineStyle> lineStyleFun;
+  Fun2<CandleStickData, AreaStyle> styleFun;
+  Fun2<CandleStickData, LineStyle> lineStyleFun;
 
   CandleStickSeries(
     this.data, {
@@ -28,6 +28,8 @@ class CandleStickSeries extends RectSeries {
     super.height,
     super.animation,
     super.tooltip,
+    super.backgroundColor,
+    super.id,
     super.enableClick,
     super.enableHover,
     super.enableDrag,

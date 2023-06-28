@@ -24,7 +24,7 @@ class LegendViewGroup extends FlexLayout {
   }
 }
 
-class LegendItemView extends  ChartView {
+class LegendItemView extends ChartView {
   final LegendItem item;
 
   LegendItemView(this.item);
@@ -58,22 +58,22 @@ class LegendItemView extends  ChartView {
     if (p == Position.left) {
       Offset o = Offset(0, height / 2);
       Size s = item.textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.centerLeft));
-      item.symbol.draw(canvas, mPaint, Offset(s.width + item.gap + symbolSize.width / 2, height / 2));
+      item.symbol.draw(canvas, mPaint, Offset(s.width + item.gap + symbolSize.width / 2, height / 2), 1);
     } else if (p == Position.right) {
-      item.symbol.draw(canvas, mPaint, Offset(symbolSize.width / 2, height / 2));
+      item.symbol.draw(canvas, mPaint, Offset(symbolSize.width / 2, height / 2), 1);
       Offset o = Offset(symbolSize.width + item.gap, height / 2);
       textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.centerLeft));
     } else if (p == Position.top) {
       Offset o = Offset(width / 2, 0);
       Size s = textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.topCenter));
-      item.symbol.draw(canvas, mPaint, Offset(width / 2, s.height + item.gap + symbolSize.height / 2));
+      item.symbol.draw(canvas, mPaint, Offset(width / 2, s.height + item.gap + symbolSize.height / 2), 1);
     } else if (p == Position.bottom) {
-      item.symbol.draw(canvas, mPaint, Offset(width / 2, height - symbolSize.height / 2));
+      item.symbol.draw(canvas, mPaint, Offset(width / 2, height - symbolSize.height / 2), 1);
       Offset o = Offset(width / 2, height - symbolSize.height);
       textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.bottomCenter));
     } else {
       Offset o = Offset(width / 2, height / 2);
-      item.symbol.draw(canvas, mPaint, o);
+      item.symbol.draw(canvas, mPaint, o, 1);
       textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.center));
     }
     canvas.restore();

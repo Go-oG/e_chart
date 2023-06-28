@@ -1,22 +1,25 @@
-
-import '../../model/dynamic_text.dart';
-import '../../model/enums/position.dart';
-import '../../style/label.dart';
-import '../../style/symbol/empty_symbol.dart';
-import '../../style/symbol/symbol.dart';
+import 'package:e_chart/e_chart.dart';
 
 class LegendItem {
-  final String id;
-  final DynamicText name;
-  final Position position;///文字位置
-  final num gap;
+  late final String id;
+  DynamicText name;
+  Position position;
+
+  ///文字位置
+  num gap;
   LabelStyle textStyle = const LabelStyle();
-  ChartSymbol symbol = const EmptySymbol();
+  ChartSymbol symbol = EmptySymbol();
 
   LegendItem(
     this.name, {
-    this.id = '',
+    String? id,
     this.position = Position.right,
     this.gap = 8,
-  });
+  }) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+  }
 }

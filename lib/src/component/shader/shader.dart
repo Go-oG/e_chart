@@ -2,11 +2,15 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-abstract class Shader {
-  const Shader();
+import '../../core/view_state.dart';
 
-  ui.Shader toShader(Rect rect, double? colorOpacity);
+abstract class Shader {
+   Shader();
+
+  ui.Shader toShader(Rect rect);
 
   Shader convert(covariant Shader begin, covariant Shader end, double animatorPercent);
+
+  Shader convert2(Set<ViewState>? states);
 
 }

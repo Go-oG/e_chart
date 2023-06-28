@@ -3,70 +3,71 @@ import 'package:flutter/material.dart';
 
 /// 抽象的补间动画
 abstract class ChartTween<T> extends ValueNotifier<T> {
-  final Duration duration;
-  final Duration? reverseDuration;
-  final AnimationBehavior behavior;
-  final Curve curve;
-  final double lowerBound;
-  final double upperBound;
-  final Duration delay;
-
+  final AnimatorProps props;
   AnimationController? _controller;
   T _begin;
   T _end;
 
   late bool _allowCross;
 
-  void Function(AnimationStatus)? _statusListener;
-
   ChartTween(
     this._begin,
     this._end, {
-    bool allowCross = false,
-    this.duration = const Duration(milliseconds: 800),
-    this.reverseDuration,
-    this.behavior = AnimationBehavior.normal,
-    this.curve = Curves.easeInOut,
-    this.lowerBound = 0,
-    this.upperBound = 1,
-    this.delay = Duration.zero,
+    bool allowCross = true,
+    this.props = const AnimatorProps(),
   }) : super(_begin) {
     _allowCross = allowCross;
   }
 
-  void start(Context context) {
-    stop();
-    AnimatorProps props = AnimatorProps(
-      duration: duration,
-      reverseDuration: reverseDuration,
-      behavior: behavior,
-      curve: curve,
-      lowerBound: lowerBound,
-      upperBound: upperBound,
-    );
-    _controller = context.boundedAnimation(props);
-    _controller!.addListener(() {
-      value = _getValue(_controller?.value ?? 0);
+  VoidCallback? startListener;
+  VoidCallback? endListener;
+
+  bool _hasCallStart = false;
+
+  void start(Context context, [bool useUpdate = false]) {
+    _hasCallStart = false;
+    _controller = context.boundedAnimation(props, useUpdate);
+    CurvedAnimation curved = CurvedAnimation(parent: _controller!, curve: useUpdate ? props.updateCurve : props.curve);
+    curved.addListener(() {
+      if (!_hasCallStart) {
+        _hasCallStart = true;
+        startListener?.call();
+      }
+      value = _getValue(curved.value);
     });
-    if (_statusListener != null) {
-      _controller!.addStatusListener(_statusListener!);
+    if (endListener != null) {
+      curved.addStatusListener((status) {
+        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+          endListener?.call();
+        }
+      });
     }
-    _controller!.forward();
+    _controller?.forward();
   }
 
+  double get process => _controller?.value ?? 0;
+
   void stop() {
-    _controller?.stop(canceled: true);
+    try {
+      _controller?.stop(canceled: true);
+    } catch (e) {
+      logPrint('$e');
+    }
     _controller = null;
     notifyListeners();
   }
 
   @override
-  String toString() {
-    return '$runtimeType begin:$begin  end:$end';
+  void dispose() {
+    stop();
+    startListener = null;
+    endListener = null;
+    super.dispose();
   }
 
-  set statusListener(void Function(AnimationStatus)? fun) {
-    _statusListener = fun;
+  @override
+  String toString() {
+    return '$runtimeType begin:$begin  end:$end';
   }
 
   T get begin => _begin;

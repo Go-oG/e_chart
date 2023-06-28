@@ -1,48 +1,45 @@
-import 'package:e_chart/src/model/enums/coordinate.dart';
-
-import '../../component/axis/axis_line.dart';
-import '../../component/tick/main_tick.dart';
-import '../../functions.dart';
-import '../../model/dynamic_text.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
-import '../../style/line_style.dart';
-import '../circle_coord.dart';
+import 'package:e_chart/e_chart.dart';
 
 //雷达坐标系
 class RadarConfig extends CircleCoordConfig {
-  final List<RadarIndicator> indicator;
-  final num offsetAngle;
-  final int splitNumber;
-  final bool silent;
-  final bool clockwise;
-  final RadarShape shape;
-  final AxisLine axisLine;
-  final MainTick axisTick;
+  List<RadarIndicator> indicator;
+  num offsetAngle;
+  int splitNumber;
+  bool silent;
+  bool clockwise;
+  RadarShape shape;
+  AxisLine? axisLine;
+  MainTick? axisTick;
 
-  final StyleFun<RadarIndicator, LabelStyle>? labelStyleFun;
-  final StyleFun2<int, int, AreaStyle>? splitStyleFun;
-  final StyleFun<int, LineStyle>? borderStyleFun;
+  Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
+  Fun3<int, int, AreaStyle>? splitStyleFun;
+  Fun2<int, LineStyle>? borderStyleFun;
 
-  const RadarConfig({
+  RadarConfig({
     required this.indicator,
     this.offsetAngle = 0,
     this.splitNumber = 5,
+    this.axisLine,
+    this.axisTick,
     this.shape = RadarShape.polygon,
     this.silent = false,
     this.clockwise = true,
-    this.axisLine = const AxisLine(),
-    this.axisTick = const MainTick(),
     this.splitStyleFun,
     this.borderStyleFun,
     this.labelStyleFun,
     super.center,
     super.radius,
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
+    super.id,
+    super.show,
   });
 
   @override
   CoordSystem get coordSystem => CoordSystem.radar;
-
 }
 
 /// 雷达图样式

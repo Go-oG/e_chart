@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../core/view_state.dart';
 import '../ext/text_style_ext.dart';
 import '../component/guideline/guide_line.dart';
 import '../model/dynamic_text.dart';
@@ -16,7 +17,7 @@ class LabelStyle {
   final OverFlow overFlow;
   final String ellipsis;
   final double lineMargin;
-  final GuideLine guideLine;
+  final GuideLine? guideLine;
   final double minAngle; //对应在扇形形状中小于好多时则不显示
 
   const LabelStyle({
@@ -26,17 +27,17 @@ class LabelStyle {
     this.decoration,
     this.overFlow = OverFlow.cut,
     this.ellipsis = '',
-    this.guideLine = const GuideLine(),
+    this.guideLine,
     this.lineMargin = 4,
     this.minAngle = 0,
   });
 
-  Size draw(Canvas canvas, Paint paint, DynamicText text, TextDrawConfig config) {
+  Size draw(Canvas canvas, Paint paint, DynamicText text, TextDrawConfig config, [Set<ViewState>? states]) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
     if (text.isString) {
-      return drawText(canvas, paint, text.text as String, config);
+      return drawText(canvas, paint, text.text as String, config, states);
     }
     if (text.isTextSpan) {
       return drawTextSpan(canvas, paint, text.text as TextSpan, config);
@@ -44,11 +45,15 @@ class LabelStyle {
     return drawParagraph(canvas, paint, text.text as Paragraph, config);
   }
 
-  Size drawText(Canvas canvas, Paint paint, String text, TextDrawConfig config) {
+  Size drawText(Canvas canvas, Paint paint, String text, TextDrawConfig config, [Set<ViewState>? states]) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
-    return drawTextSpan(canvas, paint, TextSpan(text: text, style: textStyle), config);
+    TextStyle style = textStyle;
+    if (states != null && style.color != null) {
+      style = style.copyWith(color: ColorResolver(style.color!).resolve(states)!);
+    }
+    return drawTextSpan(canvas, paint, TextSpan(text: text, style: style), config);
   }
 
   Size drawTextSpan(Canvas canvas, Paint paint, TextSpan text, TextDrawConfig config) {

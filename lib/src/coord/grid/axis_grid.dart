@@ -1,4 +1,3 @@
-
 import '../../component/axis/axis_label.dart';
 import '../../component/axis/axis_pointer.dart';
 import '../../component/axis/base_axis.dart';
@@ -10,28 +9,28 @@ import '../../model/enums/align2.dart';
 
 ///笛卡尔坐标轴
 class GridAxis extends BaseAxis {
-  final bool alignTicks;
-  final Align2 position;
-  final double offset;
-  final MainTick axisTick;
-  final MinorTick minorTick;
-  final AxisLabel axisLabel;
-  final SplitLine splitLine;
-  final MinorSplitLine minorSplitLine;
-  final SplitArea splitArea;
-  final AxisPointer axisPointer;
+  bool alignTicks;
+  Align2 position;
+  double offset;
+  MainTick? axisTick;
+  MinorTick? minorTick;
+  AxisLabel? axisLabel;
+  SplitLine? splitLine;
+  MinorSplitLine? minorSplitLine;
+  SplitArea? splitArea;
+  AxisPointer? axisPointer;
 
-  const GridAxis({
+  GridAxis({
     this.alignTicks = false,
     this.position = Align2.end,
     this.offset = 0,
-    this.axisTick = const MainTick(),
-    this.minorTick = const MinorTick(),
-    this.axisLabel = const AxisLabel(),
-    this.splitLine = const SplitLine(),
-    this.minorSplitLine = const MinorSplitLine(),
-    this.splitArea = const SplitArea(),
-    this.axisPointer = const AxisPointer(),
+    this.axisTick,
+    this.minorTick,
+    this.axisLabel,
+    this.splitLine,
+    this.minorSplitLine,
+    this.splitArea,
+    this.axisPointer,
     super.show,
     super.name,
     super.type,

@@ -41,7 +41,11 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
   @override
   void drawAxisLine(Canvas canvas, Paint paint) {
-    if (!axis.axisLine.show) {
+    var axisLine = axis.axisLine;
+    if (axisLine == null) {
+      return;
+    }
+    if (!axisLine.show) {
       return;
     }
     num allAngle = axis.sweepAngle.abs();
@@ -55,16 +59,20 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
       dynamic endData = scale.domainValue(startAngle + sa);
 
       LineStyle? style;
-      if (axis.axisLine.styleFun != null) {
-        style = axis.axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData), null);
+      if (axisLine.styleFun != null) {
+        style = axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
       }
-      style ??= axis.axisLine.style;
+      style ??= axisLine.style;
       style.drawArc(canvas, paint, props.radius, startAngle, sa);
     }
   }
 
   @override
   void drawAxisTick(Canvas canvas, Paint paint) {
+    var axisLine = axis.axisLine;
+    if (axisLine == null) {
+      return;
+    }
     List<DynamicText> ticks = obtainTicks();
     if (ticks.isEmpty) {
       return;
@@ -73,10 +81,10 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
       dynamic firstData = scale.domainValue(axis.offsetAngle);
       dynamic endData = scale.domainValue(axis.offsetAngle + axis.sweepAngle);
       MainTick? tick;
-      if (axis.axisLine.tickFun != null) {
-        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData), null);
+      if (axisLine.tickFun != null) {
+        tick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
       }
-      tick ??= axis.axisLine.tick;
+      tick ??= axisLine.tick;
       tick?.drawCircleTick(canvas, paint, props.radius, axis.offsetAngle, axis.sweepAngle, ticks);
       return;
     }
@@ -88,10 +96,10 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
       dynamic firstData = scale.domainValue(startAngle);
       dynamic endData = scale.domainValue(startAngle + angleInterval);
       MainTick? tick;
-      if (axis.axisLine.tickFun != null) {
-        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData), null);
+      if (axisLine.tickFun != null) {
+        tick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
       }
-      tick ??= axis.axisLine.tick;
+      tick ??= axisLine.tick;
       List<DynamicText> tl = [];
       tl.add(ticks[i]);
       if (i < ticks.length - 2) {

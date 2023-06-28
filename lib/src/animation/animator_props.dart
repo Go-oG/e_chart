@@ -2,18 +2,24 @@ import 'package:flutter/animation.dart';
 
 class AnimatorProps {
   final Duration duration;
-  final Duration? reverseDuration;
-  final AnimationBehavior behavior;
+  final Duration updateDuration;
+  final Duration delay;
+  final Duration updateDelay;
+
   final Curve curve;
-  final double lowerBound;
-  final double upperBound;
+  final Curve updateCurve;
+
+  final AnimationBehavior behavior;
+  final int threshold;
 
   const AnimatorProps({
-    this.duration = const Duration(milliseconds: 800),
-    this.reverseDuration,
+    this.duration = const Duration(milliseconds: 1200),
+    this.updateDuration = const Duration(milliseconds: 350),
+    this.delay = Duration.zero,
+    this.updateDelay = Duration.zero,
+    this.threshold = 2000,
     this.behavior = AnimationBehavior.normal,
-    this.curve = Curves.easeInOut,
-    this.lowerBound = 0,
-    this.upperBound = 1,
+    this.curve = Curves.easeOutCubic,
+    this.updateCurve = Curves.easeInOutCubic,
   });
 }

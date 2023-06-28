@@ -1,40 +1,37 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../animation/animator_props.dart';
-import '../../coord/parallel/parallel_child.dart';
-import '../../core/view.dart';
-import '../../model/dynamic_data.dart';
 import 'layout.dart';
-import 'parallel_series.dart';
 
 //平行坐标系
-class ParallelView extends ChartView implements ParallelChild {
-  final ParallelSeries series;
-  late final LayoutHelper _layout;
-  List<ParallelDataLine> _result = [];
+class ParallelView extends SeriesView<ParallelSeries> implements ParallelChild {
+  final ParallelLayout _layout = ParallelLayout();
 
-  ParallelView(this.series) {
-    _layout = LayoutHelper(this);
+  ParallelView(super.series);
+
+  @override
+  void onUpdateDataCommand(covariant Command c) {
+    super.onUpdateDataCommand(c);
+    _layout.findCoord().onReceiveCommand(Command.updateData);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
   }
 
   @override
-  void onCreate() {
-    super.onCreate();
-    AnimatorProps? info = series.animation;
-    // if (info != null) {
-    //   ChartDoubleTween tween = ChartDoubleTween.fromAnimator(info);
-    //   tween.addListener(() {
-    //
-    //     invalidate();
-    //   });
-    //   tween.start(context.tickerProvider);
-    // }
+  void onStart() {
+    super.onStart();
+    _layout.addListener(invalidate);
+  }
+
+  @override
+  void onStop() {
+    _layout.clearListener();
+    super.onStop();
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _result = _layout.layout(left, top, width, height);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override
@@ -44,17 +41,19 @@ class ParallelView extends ChartView implements ParallelChild {
 
   void _drawData(Canvas canvas) {
     canvas.save();
-    for (var ele in _result) {
-      if (ele.style == null) {
-        continue;
-      }
-      if (ele.path == null) {
-        if (ele.offsetList.length == 1) {
-          ele.style?.drawPolygon(canvas, mPaint, ele.offsetList);
+    for (var ele in _layout.nodeList) {
+      List<Offset> ol = [];
+      LineStyle style = series.styleFun.call(ele.data);
+      for (var offset in ele.offsetList) {
+        if (offset == null) {
+          style.drawPolygon(canvas, mPaint, ol);
+          ol = [];
+        } else {
+          ol.add(offset);
         }
-        return;
       }
-      ele.style?.drawPath(canvas, mPaint, ele.path!);
+      style.drawPolygon(canvas, mPaint, ol);
+      ol = [];
     }
     canvas.restore();
   }

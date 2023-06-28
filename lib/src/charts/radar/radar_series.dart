@@ -5,15 +5,15 @@ import '../../model/group_data.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/symbol/symbol.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class RadarSeries extends RectSeries {
-  final List<GroupData> data;
-  final int splitNumber;
-  final StyleFun<GroupData, AreaStyle> areaStyleFun;
-  final StyleFun<GroupData, LabelStyle>? labelStyleFun;
-  final Fun3<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
-  final num nameGap;
+  List<GroupData> data;
+  int splitNumber;
+  Fun2<GroupData, AreaStyle> areaStyleFun;
+  Fun2<GroupData, LabelStyle>? labelStyleFun;
+  Fun4<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
+  num nameGap;
 
   RadarSeries(
     this.data, {
@@ -36,6 +36,8 @@ class RadarSeries extends RectSeries {
     super.enableDrag,
     super.enableScale,
     super.clip,
+    super.backgroundColor,
+    super.id,
     super.z,
   }) : super(
           coordSystem: CoordSystem.radar,
@@ -46,5 +48,3 @@ class RadarSeries extends RectSeries {
           polarAxisIndex: -1,
         );
 }
-
-

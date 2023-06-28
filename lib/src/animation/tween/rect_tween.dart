@@ -7,16 +7,7 @@ import '../chart_tween.dart';
 class ChartRectTween extends ChartTween<Rect> {
   ChartRectTween(
     super.begin,
-    super.end, {
-    super.allowCross,
-    super.behavior,
-    super.curve,
-    super.delay,
-    super.duration,
-    super.lowerBound,
-    super.reverseDuration,
-    super.upperBound,
-  });
+    super.end, {super.allowCross,super.props});
 
   @override
   Rect convert(double animatorPercent) {

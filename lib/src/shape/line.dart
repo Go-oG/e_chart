@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+
 import '../ext/path_ext.dart';
 import 'chart_shape.dart';
 
@@ -145,5 +147,25 @@ class Line implements Shape {
     double by = right.dy - (right2.dy - cur.dy) * ratioB;
 
     return [Offset(ax, ay), Offset(bx, by)];
+  }
+
+  @override
+  bool internal(Offset offset) {
+    Path path = toPath(false);
+    PathMetrics metrics = path.computeMetrics();
+    for (PathMetric metric in metrics) {
+      double i = 0;
+      while (i < metric.length) {
+        Tangent? tangent = metric.getTangentForOffset(i);
+        if (tangent != null) {
+          Offset p=tangent.position;
+          if(offset.distance2(p)<=2){
+            return true;
+          }
+        }
+        i++;
+      }
+    }
+    return false;
   }
 }

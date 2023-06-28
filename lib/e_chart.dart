@@ -1,13 +1,9 @@
-library xchart;
-
 export 'src/chart.dart';
 
 export 'src/functions.dart';
 
 export 'src/series_factory.dart';
 export 'src/coord_factory.dart';
-
-export 'src/action/index.dart';
 
 export 'src/animation/index.dart';
 

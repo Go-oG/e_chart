@@ -1,43 +1,37 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'dart:ui'as ui;
+import 'dart:ui' as ui;
 import 'dart:ui';
 
+import '../../core/view_state.dart';
 import 'shader.dart';
-class RadialShader extends Shader {
-  final List<Color> colors;
-  final List<double>? colorStops;
-  final TileMode tileMode; //= TileMode.clamp,
-  final Float64List? matrix4;
-  final Offset? focal;
-  final double focalRadius;
 
-  const RadialShader(
-      this.colors, {
-        this.colorStops,
-        this.tileMode = ui.TileMode.clamp,
-        this.matrix4,
-        this.focal,
-        this.focalRadius = 0.0,
-      });
+class RadialShader extends Shader {
+  List<Color> colors;
+  List<double>? colorStops;
+  TileMode tileMode; //= TileMode.clamp,
+  Float64List? matrix4;
+  Offset? focal;
+  double focalRadius;
+
+  RadialShader(
+    this.colors, {
+    this.colorStops,
+    this.tileMode = ui.TileMode.clamp,
+    this.matrix4,
+    this.focal,
+    this.focalRadius = 0.0,
+  });
 
   @override
-  ui.Shader toShader(Rect rect,double? colorOpacity) {
+  ui.Shader toShader(Rect rect) {
     Offset center = Offset(rect.left + rect.width / 2, rect.top + rect.height / 2);
     double radius = max(rect.width, rect.height) * 0.5;
-    List<Color> cl=[];
-    if(colorOpacity!=null){
-      for (var element in colors) {
-        cl.add(element.withOpacity(colorOpacity));
-      }
-    }else{
-      cl=colors;
-    }
-    return ui.Gradient.radial(center, radius, cl, colorStops, tileMode, matrix4, focal, focalRadius);
+    return ui.Gradient.radial(center, radius, colors, colorStops, tileMode, matrix4, focal, focalRadius);
   }
 
   @override
-  Shader convert(covariant RadialShader begin,covariant RadialShader end, double animatorPercent) {
+  Shader convert(covariant RadialShader begin, covariant RadialShader end, double animatorPercent) {
     List<Color> colorList = [];
     if (begin.colors.length == end.colors.length) {
       for (int i = 0; i < begin.colors.length; i++) {
@@ -76,6 +70,25 @@ class RadialShader extends Shader {
       matrix4: ma,
       focal: Offset.lerp(begin.focal, end.focal, animatorPercent),
       focalRadius: lerpDouble(begin.focalRadius, end.focalRadius, animatorPercent)!,
+    );
+  }
+
+  @override
+  Shader convert2(Set<ViewState>? states) {
+    if (states == null || states.isEmpty) {
+      return this;
+    }
+    List<Color> cl = [];
+    for (var c in colors) {
+      cl.add(ColorResolver(c).resolve(states)!);
+    }
+    return RadialShader(
+      cl,
+      colorStops: colorStops,
+      tileMode: tileMode,
+      focal: focal,
+      focalRadius: focalRadius,
+      matrix4: matrix4,
     );
   }
 }

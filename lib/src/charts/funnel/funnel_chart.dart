@@ -1,16 +1,9 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../../animation/animator_props.dart';
-import '../../animation/tween/double_tween.dart';
-import '../../core/view.dart';
-import '../../model/text_position.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
-import 'funnel_series.dart';
-import 'layout.dart';
 
 /// 漏斗图
 class FunnelView extends SeriesView<FunnelSeries> {
-  final List<FunnelNode> _nodeList = [];
+  final FunnelLayout _layout = FunnelLayout();
 
   FunnelView(super.series);
 
@@ -18,124 +11,76 @@ class FunnelView extends SeriesView<FunnelSeries> {
   bool get enableDrag => false;
 
   @override
-  void onCreate() {
-    super.onCreate();
-    AnimatorProps? info = series.animation;
-    if (info != null) {
-      ChartDoubleTween tween = ChartDoubleTween.fromAnimator(info);
-      tween.addListener(() {
-        for (var element in _nodeList) {
-          element.animatorPercent = tween.value;
-        }
-        invalidate();
-      });
-      tween.start(context);
-    }
-  }
-
-  @override
   void onClick(Offset offset) {
-    _handleHover(offset);
+    _layout.hoverEnter(offset);
   }
 
   @override
   void onHoverStart(Offset offset) {
-    _handleHover(offset);
+    _layout.hoverEnter(offset);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    _handleHover(offset);
+    _layout.hoverEnter(offset);
   }
 
   @override
   void onHoverEnd() {
-    for (var node in _nodeList) {
-      if (node.textScaleFactor != 1) {
-        ChartDoubleTween tween =
-            ChartDoubleTween(node.textScaleFactor, 1, duration: const Duration(milliseconds: 150), curve: Curves.fastLinearToSlowEaseIn);
-        tween.addListener(() {
-          node.textScaleFactor = tween.value;
-          invalidate();
-        });
-        tween.start(context);
-        break;
-      }
-    }
+    _layout.clearHover();
   }
 
-  void _handleHover(Offset local) {
-    Rect rect = series.computePositionBySelf(left, top, right, bottom);
-    local = local.translate(-rect.left, -rect.top);
-    for (var node in _nodeList) {
-      Path p = node.path;
-      double start = 1;
-      double end = 1;
-      if (p.contains(local)) {
-        start = 1;
-        end = 1.25;
-      } else {
-        if (node.textScaleFactor != 1) {
-          start = node.textScaleFactor;
-          end = 1;
-        }
-      }
+  @override
+  void onUpdateDataCommand(covariant Command c) {
+    _layout.doLayout(context, series, series.dataList, selfBoxBound, LayoutAnimatorType.update);
+  }
 
-      if (start != end) {
-        ChartDoubleTween tween =
-            ChartDoubleTween(start, end, duration: const Duration(milliseconds: 150), curve: Curves.fastLinearToSlowEaseIn);
-        tween.addListener(() {
-          node.textScaleFactor = tween.value;
-          invalidate();
-        });
-        tween.start(context);
-      }
-    }
+  @override
+  void onStart() {
+    super.onStart();
+    _layout.addListener(invalidate);
+  }
+
+  @override
+  void onStop() {
+    _layout.clearListener();
+    super.onStop();
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    Rect rect = series.computePositionBySelf(left, top, right, bottom);
-    _nodeList.clear();
-    FunnelLayers layers = FunnelLayers(series.gap, series.direction, series.sort, series.align);
-    _nodeList.addAll(layers.layout(rect.width, rect.height, series.dataList, maxValue: series.maxValue));
+    _layout.doLayout(context, series, series.dataList,selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    if (series.dataList.isEmpty) {
+    List<FunnelNode> nodeList = _layout.nodeList;
+    if (nodeList.isEmpty) {
       return;
     }
-    Rect rect = series.computePositionBySelf(left, top, right, bottom);
-    canvas.save();
-    canvas.translate(rect.left - left, rect.top - top);
-    for (var element in _nodeList) {
-      AreaStyle? style = series.areaStyleFun.call(element.data, null);
-      style?.drawPolygonArea(canvas, mPaint, element.pointList);
+    for (var node in nodeList) {
+      node.areaStyle.drawPath(canvas, mPaint, node.path);
     }
-    for (var element in _nodeList) {
-      _drawText(canvas, element);
+    for (var node in nodeList) {
+      _drawText(canvas, node);
     }
-    canvas.restore();
   }
 
   void _drawText(Canvas canvas, FunnelNode node) {
-    if (node.data.label == null || node.data.label!.isEmpty || series.labelStyleFun == null) {
+    TextDrawConfig? config = node.textConfig;
+    DynamicText? label = node.data.label;
+    if (label == null || label.isEmpty || config == null) {
       return;
     }
-    LabelStyle? style = series.labelStyleFun?.call(node.data, null);
+    LabelStyle? style = series.labelStyleFun?.call(node);
     if (style == null || !style.show) {
       return;
     }
-    TextDrawConfig? position = node.computeTextPosition(series);
-    if (position == null) {
-      return;
-    }
-    List<Offset>? ol = node.computeLabelLineOffset(series);
+    List<Offset>? ol = node.labelLine;
     if (ol != null) {
-      style.guideLine.style.drawPolygon(canvas, mPaint, ol);
+      style.guideLine?.style.drawPolygon(canvas, mPaint, ol);
     }
-    style.draw(canvas, mPaint, node.data.label!, position);
+    style.draw(canvas, mPaint, label, config);
   }
 }

@@ -15,7 +15,8 @@ class Area implements Shape {
   final bool upSmooth;
   final bool downSmooth;
 
-  Area(this.upList, this.downList, {this.ratioA=0.25, this.ratioB=0.25, this.dashList = const [], this.upSmooth = true, this.downSmooth = true}) {
+  Area(this.upList, this.downList,
+      {this.ratioA = 0.25, this.ratioB = 0.25, this.dashList = const [], this.upSmooth = true, this.downSmooth = true}) {
     if (upList.isEmpty || downList.isEmpty) {
       throw FlutterError('Point List must not empty');
     }
@@ -117,5 +118,10 @@ class Area implements Shape {
 
   bool downIsSmooth() {
     return downSmooth && ratioA != null && ratioB != null && ratioA! > 0 && ratioB! > 0;
+  }
+
+  @override
+  bool internal(Offset offset) {
+    return toPath(true).contains(offset);
   }
 }

@@ -1,8 +1,8 @@
+import 'package:e_chart/src/ext/int_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:chart_xutil/chart_xutil.dart';
 
-import '../../model/enums/direction.dart';
-import '../../model/range.dart';
+import '../../model/index.dart';
 import '../rect_coord.dart';
 import 'calendar_config.dart';
 
@@ -10,15 +10,27 @@ abstract class CalendarCoord extends RectCoord<CalendarConfig> {
   CalendarCoord(super.props);
 
   Rect dataToPoint(DateTime date);
+
+  int getRowCount();
+
+  int getColumnCount();
+
+  Size getCellSize();
+
+  List<Offset> getMonthPolygon(int year, int month);
+
+  List<Offset> getDateRangePolygon(DateTime start, DateTime end);
+
+  bool inRange(DateTime time);
 }
 
+///日历坐标系视图
 class CalendarCoordImpl extends CalendarCoord {
-  final Map<DateTime, CalendarNode> _nodeMap = {};
-
-  double _cellWidth = 0;
-  double _cellHeight = 0;
-  int _rowCount = 0;
-  int _columnCount = 0;
+  Map<String, CalendarNode> _nodeMap = {};
+  double cellWidth = 0;
+  double cellHeight = 0;
+  int rowCount = 0;
+  int columnCount = 0;
 
   CalendarCoordImpl(super.props);
 
@@ -30,9 +42,6 @@ class CalendarCoordImpl extends CalendarCoord {
     if (count % 7 != 0) {
       tmpCount += 1;
     }
-
-    int rowCount;
-    int columnCount;
     if (props.direction == Direction.vertical) {
       columnCount = 7;
       rowCount = tmpCount;
@@ -40,14 +49,13 @@ class CalendarCoordImpl extends CalendarCoord {
       columnCount = tmpCount;
       rowCount = 7;
     }
-
-    _nodeMap.clear();
+    _nodeMap = {};
     List<DateTime> timeList = buildDateRange(pair.start, pair.end, true);
     int rowIndex = 0;
     int columnIndex = 0;
 
-    for (var element in timeList) {
-      _nodeMap[element] = CalendarNode(element, rowIndex, columnIndex);
+    for (var time in timeList) {
+      _nodeMap[key(time)] = CalendarNode(time, rowIndex, columnIndex);
       if (props.direction == Direction.vertical) {
         columnIndex += 1;
         if (columnIndex >= 7) {
@@ -83,8 +91,8 @@ class CalendarCoordImpl extends CalendarCoord {
       }
     }
 
-    double cellWidth = vw / columnCount;
-    double cellHeight = vh / rowCount;
+    cellWidth = vw / columnCount;
+    cellHeight = vh / rowCount;
     _nodeMap.forEach((key, node) {
       double left = node.column * cellWidth;
       double top = node.row * cellHeight;
@@ -93,47 +101,91 @@ class CalendarCoordImpl extends CalendarCoord {
 
     ///移除范围以外的数据
     _nodeMap.removeWhere((key, value) {
-      if (key.isAfterDay(props.range.end) || key.isBeforeDay(props.range.start)) {
+      if (value.date.isAfterDay(props.range.end) || value.date.isBeforeDay(props.range.start)) {
         return true;
       }
       return false;
     });
+    super.onLayout(left, top, right, bottom);
+  }
 
-    _cellWidth = cellWidth;
-    _cellHeight = _cellHeight;
-    _rowCount = rowCount;
-    _columnCount = columnCount;
+  @override
+  void onDraw(Canvas canvas) {
+    canvas.save();
+    canvas.clipRect(boxBounds);
+    if (props.gridLineStyle != null) {
+      var style = props.gridLineStyle!;
+      for (int i = 0; i < columnCount; i++) {
+        Offset o1 = Offset(i * cellWidth, 0);
+        Offset o2 = Offset(i * cellWidth, rowCount * cellHeight);
+        style.drawPolygon(canvas, mPaint, [o1, o2]);
+      }
+      for (int i = 0; i < rowCount; i++) {
+        Offset o1 = Offset(0, i * cellHeight);
+        Offset o2 = Offset(columnCount * cellWidth, i * cellHeight);
+        style.drawPolygon(canvas, mPaint, [o1, o2]);
+      }
+    }
+    if (props.borderStyle != null) {
+      var style = props.borderStyle!;
+      DateTime first = props.range.start;
+      int year = first.year;
+      int month = first.month;
+      int diff = first.diffMonth(props.range.end);
+      for (int i = 0; i <= diff; i++) {
+        DateTime t1 = DateTime(year, month, 1);
+        DateTime t2 = DateTime(year, month, t1.maxDay());
+        if (t2.isAfter(props.range.end)) {
+          t2 = props.range.end;
+        }
+        style.drawPolygon(canvas, mPaint, getDateRangePolygon(t1, t2));
+      }
+    }
+
+    canvas.restore();
   }
 
   @override
   Rect dataToPoint(DateTime date) {
     date = date.first();
-    CalendarNode? node = _nodeMap[date];
+    CalendarNode? node = _nodeMap[key(date)];
     if (node == null) {
-      throw FlutterError('当前给定的日期不在范围内');
+      throw ChartError('当前给定的日期不在范围内');
     }
     return node.rect;
   }
 
   ///给定在制定月份的边缘
   ///相关数据必须在给定的范围以内
-  List<Offset> findMonthPolygon(int year, int month) {
+  @override
+  List<Offset> getMonthPolygon(int year, int month) {
     DateTime? startDate = findMinDate(year, month);
     DateTime? endDate = findMaxDate(year, month);
     if (endDate == null || startDate == null) {
-      throw FlutterError('在给定的年月中无法找到对应数据');
+      throw ChartError('在给定的年月中无法找到对应数据');
     }
+    return getDateRangePolygon(startDate, endDate);
+  }
 
-    CalendarNode startNode = _nodeMap[startDate]!;
-    CalendarNode endNode = _nodeMap[endDate]!;
-
+  @override
+  List<Offset> getDateRangePolygon(DateTime start, DateTime end) {
+    if (start.isAfter(end)) {
+      var t = end;
+      end = start;
+      start = t;
+    }
+    CalendarNode? startNode = _nodeMap[key(start)];
+    CalendarNode? endNode = _nodeMap[key(end)];
+    if (startNode == null || endNode == null) {
+      throw ChartError('给定的时间必须在时间范围以内');
+    }
     List<Offset> offsetList = [];
     if (props.direction == Direction.vertical) {
       offsetList.add(startNode.rect.topLeft);
       offsetList.add(startNode.rect.topRight);
-      if (startNode.column != _columnCount - 1) {
+      if (startNode.column != columnCount - 1) {
         Offset offset = startNode.rect.topRight;
-        offset = offset.translate(_cellWidth * (_columnCount - startNode.column - 1), 0);
+        offset = offset.translate(cellWidth * (columnCount - startNode.column - 1), 0);
         offsetList.add(offset);
       }
       offsetList.add(Offset(offsetList.last.dx, endNode.rect.topRight.dy));
@@ -141,7 +193,7 @@ class CalendarCoordImpl extends CalendarCoord {
       offsetList.add(endNode.rect.bottomLeft);
       if (endNode.column != 0) {
         Offset offset = endNode.rect.bottomLeft;
-        offset = offset.translate(-_cellWidth * endNode.column, 0);
+        offset = offset.translate(-cellWidth * endNode.column, 0);
         offsetList.add(offset);
       }
       offsetList.add(Offset(offsetList.last.dx, startNode.rect.bottomLeft.dy));
@@ -150,14 +202,14 @@ class CalendarCoordImpl extends CalendarCoord {
       offsetList.add(startNode.rect.topRight);
       if (startNode.row != 0) {
         Offset offset = startNode.rect.topRight;
-        offset = offset.translate(0, _cellHeight * startNode.row);
+        offset = offset.translate(0, cellHeight * startNode.row);
         offsetList.add(offset);
       }
       offsetList.add(Offset(endNode.rect.topRight.dx, offsetList.last.dy));
       offsetList.add(endNode.rect.bottomRight);
-      if (endNode.row != _rowCount - 1) {
+      if (endNode.row != rowCount - 1) {
         offsetList.add(endNode.rect.bottomLeft);
-        offsetList.add(Offset(offsetList.last.dx, endNode.rect.bottom + (_columnCount - endNode.column) * _cellHeight));
+        offsetList.add(Offset(offsetList.last.dx, endNode.rect.bottom + (columnCount - endNode.column) * cellHeight));
       }
       offsetList.add(Offset(startNode.rect.bottomLeft.dx, offsetList.last.dy));
     }
@@ -167,37 +219,36 @@ class CalendarCoordImpl extends CalendarCoord {
   DateTime? findMinDate(int year, int month) {
     DateTime? start;
     _nodeMap.forEach((key, value) {
-      if (key.year == year && key.month == month) {
+      if (value.date.year == year && value.date.month == month) {
         if (start == null) {
-          start = key;
+          start = value.date;
         } else {
-          if (key.isBeforeDay(start!)) {
-            start = key;
+          if (value.date.isBeforeDay(start!)) {
+            start = value.date;
           }
         }
       }
     });
-
     return start;
   }
 
   DateTime? findMaxDate(int year, int month) {
     DateTime? end;
     _nodeMap.forEach((key, value) {
-      if (key.year == year && key.month == month) {
+      if (value.date.year == year && value.date.month == month) {
         if (end == null) {
-          end = key;
+          end = value.date;
         } else {
-          if (key.isAfterDay(end!)) {
-            end = key;
+          if (value.date.isAfterDay(end!)) {
+            end = value.date;
           }
         }
       }
     });
-
     return end;
   }
 
+  ///将给定的数据调整到7的倍数，这样方便运算
   Pair<DateTime> _adjustTime(DateTime start, DateTime end) {
     final DateTime monthFirst = start.monthFirst();
     final DateTime monthEnd = end.monthLast();
@@ -234,6 +285,26 @@ class CalendarCoordImpl extends CalendarCoord {
     return Pair(startDateTime, endDateTime);
   }
 
+  String key(DateTime time) {
+    int year = time.year;
+    int month = time.month;
+    int day = time.day;
+    return '$year${month.padLeft(2, '0')}${day.padLeft(2, '0')}';
+  }
+
+  @override
+  Size getCellSize() => Size(cellWidth, cellHeight);
+
+  @override
+  int getColumnCount() => columnCount;
+
+  @override
+  int getRowCount() => rowCount;
+
+  @override
+  bool inRange(DateTime time) {
+    return _nodeMap[key(time)] != null;
+  }
 }
 
 class CalendarNode {

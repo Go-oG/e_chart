@@ -2,11 +2,11 @@ import '../../functions.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/line_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class ParallelSeries extends RectSeries {
   List<ParallelGroup> data;
-  StyleFun<ParallelGroup, LineStyle> styleFun;
+  Fun2<ParallelGroup, LineStyle> styleFun;
 
   ParallelSeries({
     required this.data,
@@ -25,6 +25,8 @@ class ParallelSeries extends RectSeries {
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.z,
   }) : super(
           coordSystem: CoordSystem.parallel,

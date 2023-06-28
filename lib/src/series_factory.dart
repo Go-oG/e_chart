@@ -18,7 +18,7 @@ import 'charts/point/point_chart.dart';
 import 'charts/point/point_series.dart';
 import 'charts/radar/radar_chart.dart';
 import 'charts/radar/radar_series.dart';
-import 'charts/series.dart';
+import 'core/series.dart';
 import 'core/view.dart';
 
 class SeriesFactory {
@@ -36,6 +36,7 @@ class SeriesFactory {
   }
 
   void removeConvert(SeriesConvert convert) {
+    if(convert==_defaultConvert){return;}
     _convertList.remove(convert);
   }
 
@@ -64,6 +65,7 @@ class DefaultSeriesConvert extends SeriesConvert {
     if (series is BoxplotSeries) {
       return BoxPlotView(series);
     }
+
     if (series is HeatMapSeries) {
       return HeatMapView(series);
     }

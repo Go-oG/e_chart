@@ -1,9 +1,13 @@
 import 'dart:io';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import '../charts/series.dart';
+import '../functions.dart';
+import '../model/chart_error.dart';
+import '../utils/uuid_util.dart';
+import 'command.dart';
+import 'series.dart';
 import '../component/tooltip/context_menu.dart';
 import '../component/tooltip/context_menu_builder.dart';
 import '../gesture/chart_gesture.dart';
@@ -13,12 +17,14 @@ import '../model/enums/scale_type.dart';
 import '../model/string_number.dart';
 import '../utils/log_util.dart';
 import 'context.dart';
-import 'draw_node.dart';
 import 'view_group.dart';
+import 'view_state.dart';
 
-abstract class ChartView extends DrawNode implements ToolTipBuilder {
+abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   Context? _context;
   LayoutParams layoutParams = LayoutParams.match();
+
+  ///存储当前视图在父视图中的位置属性
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
 
   //记录旧的边界位置，可用于动画相关的计算
@@ -43,7 +49,11 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   @protected
   bool forceMeasure = false;
 
-  ChartView();
+  late final String id;
+
+  ChartView() {
+    id = randomId();
+  }
 
   Context get context => _context!;
 
@@ -79,7 +89,6 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
 
   //=========生命周期回调方法结束==================
 
-  @override
   void measure(double parentWidth, double parentHeight) {
     bool force = forceMeasure || forceLayout;
     bool minDiff = (boundRect.width - parentWidth).abs() <= 0.00001 && (boundRect.height - parentHeight).abs() <= 0.00001;
@@ -121,7 +130,6 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
     return Size(w, h);
   }
 
-  @override
   void layout(double left, double top, double right, double bottom) {
     if (layoutCompleted && !forceLayout) {
       bool b1 = (left - boundRect.left).abs() < 1;
@@ -156,14 +164,14 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
 
   void onLayoutEnd() {}
 
-  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true}) {
+  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
     if (!kDebugMode) {
       return;
     }
     Paint mPaint = Paint();
     mPaint.color = color;
     mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    canvas.drawCircle(offset, 3, mPaint);
+    canvas.drawCircle(offset, r.toDouble(), mPaint);
   }
 
   void debugDrawRect(Canvas canvas, Rect rect, {Color color = Colors.deepPurple, bool fill = false}) {
@@ -189,11 +197,10 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   }
 
   @mustCallSuper
-  @override
   void draw(Canvas canvas) {
     inDrawing = true;
     onDrawPre();
-    drawBackground(canvas);
+    onDrawBackground(canvas);
     onDraw(canvas);
     dispatchDraw(canvas);
     onDrawEnd(canvas);
@@ -215,7 +222,7 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
     return false;
   }
 
-  void drawBackground(Canvas canvas) {}
+  void onDrawBackground(Canvas canvas) {}
 
   ///绘制时最先调用的方法，可以在这里面更改相关属性从而实现动画视觉效果
   void onDrawPre() {}
@@ -283,21 +290,18 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   ChartSeries? _series;
 
   ///存储命令执行相关的操作
-  final Map<int, VoidCallback> _commandMap = {};
+  final Map<Command, VoidFun1<Command>> _commandMap = {};
 
   void clearCommand() {
     _commandMap.clear();
   }
 
-  void registerCommand(int code, VoidCallback callback, [bool allowReplace = true]) {
-    var old = _commandMap[code];
-    if (old == null || allowReplace) {
-      _commandMap[code] = callback;
-      return;
+  void registerCommand(Command c, VoidFun1<Command> callback, [bool allowReplace = true]) {
+    var old = _commandMap[c];
+    if (!allowReplace && callback != old) {
+      throw ChartError('not allow replace');
     }
-    if (!allowReplace) {
-      throw FlutterError('not allow replace');
-    }
+    _commandMap[c] = callback;
   }
 
   void removeCommand(int code) {
@@ -305,56 +309,81 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   }
 
   ///绑定Series 主要是将Series相关的命令传递到当前View
-  void bindSeriesCommand(covariant ChartSeries series) {
+
+  VoidCallback? _defaultCommandCallback;
+
+  void bindSeries(covariant ChartSeries series) {
     unBindSeries();
     _series = series;
-    series.addListener(_handleCommand);
+    _defaultCommandCallback = () {
+      onReceiveCommand(_series?.value);
+    };
+    series.addListener(_defaultCommandCallback!);
+    registerCommandHandler();
+  }
+
+  void unBindSeries() {
+    _commandMap.clear();
+    if (_defaultCommandCallback != null) {
+      _series?.removeListener(_defaultCommandCallback!);
+    }
+    _series = null;
+  }
+
+  void registerCommandHandler() {
     _commandMap[Command.updateData] = onUpdateDataCommand;
-    _commandMap[Command.insertData] = onAddDataCommand;
-    _commandMap[Command.deleteData] = onDeleteDataCommand;
     _commandMap[Command.invalidate] = onInvalidateCommand;
     _commandMap[Command.reLayout] = onRelayoutCommand;
     _commandMap[Command.configChange] = onSeriesConfigChangeCommand;
   }
 
-  void unBindSeries() {
-    _commandMap.clear();
-    _series?.removeListener(_handleCommand);
-    _series = null;
+  void unregisterCommandHandler() {
+    _commandMap.remove(Command.updateData);
+    _commandMap.remove(Command.invalidate);
+    _commandMap.remove(Command.reLayout);
+    _commandMap.remove(Command.configChange);
   }
 
-  void _handleCommand(Command c) {
-    int code = c.code;
-    var op = _commandMap[code];
-    if (op == null) {
-      logPrint('code:$code 无法找到相关的回调');
+  void onReceiveCommand(covariant Command? c) {
+    if (c == null) {
       return;
     }
-    op.call();
+
+    var op = _commandMap[c];
+    if (op == null) {
+      logPrint('$c 无法找到能出来该命令相关的回调');
+      return;
+    }
+    try {
+      op.call(c);
+    } catch (e) {
+      logPrint('$e');
+    }
   }
 
-  void onInvalidateCommand() {
+  void onInvalidateCommand(covariant Command c) {
     invalidate();
   }
 
-  void onRelayoutCommand() {
+  void onRelayoutCommand(covariant Command c) {
     requestLayout();
   }
 
-  void onSeriesConfigChangeCommand() {
+  void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
     forceLayout = true;
+    ChartSeries? series = _series;
+    unBindSeries();
+    if (series != null) {
+      bindSeries(series);
+    }
     onStop();
     onStart();
     layout(left, top, right, bottom);
     invalidate();
   }
 
-  void onAddDataCommand() {}
-
-  void onDeleteDataCommand() {}
-
-  void onUpdateDataCommand() {}
+  void onUpdateDataCommand(covariant Command c) {}
 
   /// ====================普通属性函数=======================================
 
@@ -377,9 +406,11 @@ abstract class ChartView extends DrawNode implements ToolTipBuilder {
   double get centerY => height / 2.0;
 
   //返回其矩形边界
-  Rect get areaBounds => boundRect;
+  Rect get boxBounds => boundRect;
 
-  Rect get globalAreaBound => _globalBoundRect;
+  Rect get globalBoxBound => _globalBoundRect;
+
+  Rect get selfBoxBound => Rect.fromLTWH(0, 0, width, height);
 
   Offset toLocalOffset(Offset globalOffset) {
     return Offset(globalOffset.dx - _globalBoundRect.left, globalOffset.dy - _globalBoundRect.top);
@@ -405,11 +436,11 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   SeriesView(this.series);
 
   @override
-  void bindSeriesCommand(covariant T series) {
+  void bindSeries(covariant T series) {
     if (series != this.series) {
       throw FlutterError('Not allow binding different series ');
     }
-    super.bindSeriesCommand(series);
+    super.bindSeries(series);
   }
 
   @mustCallSuper
@@ -423,7 +454,18 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _gesture.rect = areaBounds;
+    _gesture.rect = boxBounds;
+  }
+
+  @override
+  void onDrawBackground(Canvas canvas) {
+    Color? color = series.backgroundColor;
+    if (color != null) {
+      mPaint.reset();
+      mPaint.color = color;
+      mPaint.style = PaintingStyle.fill;
+      canvas.drawRect(selfBoxBound, mPaint);
+    }
   }
 
   Offset _lastHover = Offset.zero;

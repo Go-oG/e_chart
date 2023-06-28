@@ -1,44 +1,40 @@
+import 'package:flutter/material.dart';
+
 import '../../functions.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../model/enums/sort.dart';
 import '../../model/group_data.dart';
+import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
+import 'funnel_node.dart';
 
-enum FunnelAlign {
-  left,
-  right,
-  top,
-  bottom,
-  center,
-  insideLeft,
-  insideTop,
-  insideRight,
-  insideBottom,
-  leftTop,
-  leftBottom,
-  rightTop,
-  rightBottom,
+class FunnelAlign {
+  final Alignment align;
+  final bool inside;
+
+  const FunnelAlign({this.align = Alignment.center, this.inside = true});
 }
 
 class FunnelSeries extends RectSeries {
   List<ItemData> dataList;
   double? maxValue;
+  SNumber? itemHeight;
   FunnelAlign labelAlign;
   Direction direction;
   Sort sort;
   double gap;
   Align2 align;
-  StyleFun<ItemData, AreaStyle> areaStyleFun;
-  StyleFun<ItemData, LabelStyle>? labelStyleFun;
-  StyleFun<ItemData, LineStyle>? labelLineStyleFun;
+  Fun2<FunnelNode, AreaStyle> areaStyleFun;
+  Fun2<FunnelNode, LabelStyle>? labelStyleFun;
+  Fun2<FunnelNode, LineStyle>? labelLineStyleFun;
 
   FunnelSeries(
     this.dataList, {
-    this.labelAlign = FunnelAlign.center,
+    this.labelAlign = const FunnelAlign(),
     this.maxValue,
     this.direction = Direction.vertical,
     this.sort = Sort.empty,
@@ -58,6 +54,8 @@ class FunnelSeries extends RectSeries {
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.clip,
     super.tooltip,
     super.z,
@@ -71,4 +69,3 @@ class FunnelSeries extends RectSeries {
           yAxisIndex: -1,
         );
 }
-

@@ -6,20 +6,23 @@ class CoordFactory {
 
   static CoordFactory get instance => _instance;
 
-  final DefaultCoordConvert _defaultConvert = DefaultCoordConvert();
-  final List<CoordConvert> _convertList = [];
-
   CoordFactory._() {
     _convertList.add(_defaultConvert);
   }
 
   factory CoordFactory() => _instance;
 
+  final DefaultCoordConvert _defaultConvert = DefaultCoordConvert();
+  final List<CoordConvert> _convertList = [];
+
   void addConvert(CoordConvert convert) {
     _convertList.insert(0, convert);
   }
 
   void removeConvert(CoordConvert convert) {
+    if (convert == _defaultConvert) {
+      return;
+    }
     _convertList.remove(convert);
   }
 
@@ -52,10 +55,10 @@ class DefaultCoordConvert extends CoordConvert {
     if (coord == CoordSystem.parallel) {
       return ParallelCoordImpl(config as ParallelConfig);
     }
-    if(coord==CoordSystem.polar){
+    if (coord == CoordSystem.polar) {
       return PolarCoordImpl(config as PolarConfig);
     }
-    if(coord==CoordSystem.radar){
+    if (coord == CoordSystem.radar) {
       return RadarCoordImpl(config as RadarConfig);
     }
     return null;

@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+
 import 'chart_shape.dart';
 
 class Circle implements Shape {
@@ -21,11 +23,16 @@ class Circle implements Shape {
       return _path!;
     }
     Path path = Path();
-    path.moveTo(center.dx, center.dy - r);
-    path.arcTo(Rect.fromCircle(center: center, radius: r.toDouble()), -90 * pi / 180, 359.999 * pi / 180, true);
+    path.moveTo(center.dx+r, center.dy);
+    path.arcTo(Rect.fromCircle(center: center, radius: r.toDouble()), 0, 1.9999*pi, true);
     path.close();
     _path = path;
     return path;
+  }
+
+  @override
+  bool internal(Offset offset) {
+    return offset.inCircle(r,center: center);
   }
 
 }

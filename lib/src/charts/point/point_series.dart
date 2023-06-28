@@ -1,12 +1,21 @@
+import 'dart:ui';
+
+import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
 import '../../model/multi_data.dart';
-import '../series.dart';
+import '../../core/series.dart';
+import '../../style/symbol/symbol.dart';
+import 'point_node.dart';
 
 class PointSeries extends RectSeries {
-  final List<PointData> data;
+  List<PointData> data;
+  Fun2<PointNode, ChartSymbol> symbolStyle;
+  Fun3<PointNode, Offset, bool>? includeFun;
 
   PointSeries(
     this.data, {
+    required this.symbolStyle,
+    this.includeFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -20,10 +29,12 @@ class PointSeries extends RectSeries {
     super.coordSystem = CoordSystem.grid,
     super.tooltip,
     super.animation,
-        super.enableClick,
-        super.enableHover,
-        super.enableDrag,
-        super.enableScale,
+    super.enableClick,
+    super.enableHover,
+    super.enableDrag,
+    super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.clip,
     super.z,
   }) : super(

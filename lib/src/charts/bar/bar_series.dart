@@ -14,7 +14,7 @@ import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
 import '../../style/symbol/symbol.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class BarSeries extends RectSeries {
   List<BarGroupData> data;
@@ -31,33 +31,33 @@ class BarSeries extends RectSeries {
   LinkageStyle linkageStyle;
 
   /// 主样式 对于绘制Line 使用其border 属性
-  StyleFun2<BarSingleData, BarGroupData, AreaStyle> styleFun;
+  Fun3<BarSingleData, BarGroupData, AreaStyle> styleFun;
 
   /// 只会在绘制直线组时调用该方法，返回true 表示是阶梯折线图
-  StyleFun<BarGroupData, bool>? stepLineFun;
+  Fun2<BarGroupData, bool>? stepLineFun;
 
   ///绘制对齐
-  StyleFun<BarGroupData, Align2>? alignFun;
+  Fun2<BarGroupData, Align2>? alignFun;
 
   /// 符号样式
-  StyleFun<BarSingleData, ChartSymbol>? symbolFun;
+  Fun2<BarSingleData, ChartSymbol>? symbolFun;
 
   /// 背景样式(只在某些形状下有效)
-  StyleFun<BarSingleData, AreaStyle>? backgroundStyleFun;
+  Fun2<BarSingleData, AreaStyle>? backgroundStyleFun;
 
   /// 标签转换
-  ConvertFun<BarSingleData, String>? labelFun;
+  Fun2<BarSingleData, String>? labelFun;
 
   /// 标签样式
-  StyleFun<BarSingleData, LabelStyle>? labelStyleFun;
+  Fun2<BarSingleData, LabelStyle>? labelStyleFun;
 
   /// 标签对齐
-  StyleFun<BarSingleData, Position2>? labelAlignFun;
+  Fun2<BarSingleData, Position2>? labelAlignFun;
 
   /// 标记点、线相关的
-  StyleFun<BarGroupData, MarkPoint>? markPointFun;
+  Fun2<BarGroupData, MarkPoint>? markPointFun;
 
-  StyleFun<BarGroupData, MarkLine>? markLineFun;
+  Fun2<BarGroupData, MarkLine>? markLineFun;
 
   BarSeries(
     this.data, {
@@ -96,6 +96,8 @@ class BarSeries extends RectSeries {
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.clip,
     super.z,
     super.tooltip,

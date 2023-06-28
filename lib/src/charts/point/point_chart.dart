@@ -1,16 +1,98 @@
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/point/point_layout.dart';
 import 'package:flutter/material.dart';
 
-import '../../coord/polar/polar_child.dart';
-import '../../coord/polar/polar_coord.dart';
-import '../../model/dynamic_data.dart';
-import '../../../src/core/index.dart';
-import '../index.dart';
+import 'point_node.dart';
 
-class PointView extends  ChartView with PolarChild {
+class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
+  final PointLayout _layout = PointLayout();
 
-  final PointSeries series;
+  PointView(super.series);
 
-  PointView(this.series);
+  @override
+  void onClick(Offset offset) {
+    handleHover(offset);
+  }
+
+  @override
+  void onHoverStart(Offset offset) {
+    handleHover(offset);
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    handleHover(offset);
+  }
+
+  @override
+  void onHoverEnd() {
+    handleCancel();
+  }
+
+  void handleHover(Offset offset) {
+    PointNode? clickNode;
+    var nodeList = _layout.nodeList;
+    for (var node in nodeList) {
+      if (series.includeFun != null && series.includeFun!.call(node, offset)) {
+        clickNode = node;
+        break;
+      }
+      if (node.rect.contains(offset)) {
+        clickNode = node;
+        break;
+      }
+    }
+    bool result = false;
+    for (var node in nodeList) {
+      if (node == clickNode) {
+        if (node.addState(ViewState.hover)) {
+          result = true;
+        }
+      } else {
+        if (node.removeState(ViewState.hover)) {
+          result = true;
+        }
+      }
+    }
+    if (result) {
+      invalidate();
+    }
+  }
+
+  void handleCancel() {
+    bool result = false;
+    for (var node in _layout.nodeList) {
+      if (node.removeState(ViewState.hover)) {
+        result = true;
+      }
+    }
+    if (result) {
+      invalidate();
+    }
+  }
+
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    _layout.doLayout(context, series, series.data, selfBoxBound,LayoutAnimatorType.layout);
+  }
+
+  @override
+  void onDraw(Canvas canvas) {
+    for (var node in _layout.nodeList) {
+      ChartSymbol symbol = series.symbolStyle.call(node);
+      symbol.draw(canvas, mPaint, node.rect.center,1);
+    }
+  }
+
+  void drawForPolar(Canvas canvas, PolarCoord coord) {}
+
+  void drawForCalendar(Canvas canvas, CalendarCoord coord) {}
+
+  void drawForGrid(Canvas canvas, GridCoord coord) {}
+
+  @override
+  int get calendarIndex => series.calendarIndex;
 
   @override
   List<DynamicData> get angleDataSet {
@@ -28,28 +110,5 @@ class PointView extends  ChartView with PolarChild {
       dl.add(ele.x);
     }
     return dl;
-  }
-
-  @override
-  void onDraw(Canvas canvas) {
-    PolarCoord layout = context.findPolarCoord();
-    mPaint.style = PaintingStyle.stroke;
-    mPaint.strokeWidth = 2;
-    mPaint.color = Colors.blue;
-    Path path = Path();
-    bool hasMOve = false;
-    for (var ele in series.data) {
-      Offset offset = layout.dataToPoint(ele.y, ele.x);
-      if (!hasMOve) {
-        path.moveTo(offset.dx, offset.dy);
-        hasMOve = true;
-      } else {
-        path.lineTo(offset.dx, offset.dy);
-      }
-    }
-    canvas.save();
-    canvas.translate(width / 2, height / 2);
-    canvas.drawPath(path, mPaint);
-    canvas.restore();
   }
 }

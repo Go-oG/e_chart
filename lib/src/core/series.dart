@@ -1,20 +1,14 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../animation/animator_props.dart';
-import '../component/tooltip/tool_tip.dart';
-import '../functions.dart';
-import '../model/enums/coordinate.dart';
-import '../model/string_number.dart';
 
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
-abstract class ChartSeries {
-  ///用于通知View数据发生改变或者需要重新布局等命令
-  final ValueNotifier<Command> _notifier = ValueNotifier(Command(Command.none));
-  final Set<ValueCallback<Command>> _listenerSet = {};
+abstract class ChartSeries extends ChartNotifier<Command> {
+  late final String id;
 
   ///坐标系系统
   CoordSystem? coordSystem;
+
   ///坐标轴取值索引(和coordSystem配合实现定位)
   int xAxisIndex;
   int yAxisIndex;
@@ -22,7 +16,7 @@ abstract class ChartSeries {
   int calendarIndex;
   int radarIndex;
   int parallelIndex;
-
+  Color? backgroundColor;
   AnimatorProps? animation; //动画
   ToolTip? tooltip;
 
@@ -35,75 +29,47 @@ abstract class ChartSeries {
   bool clip; // 是否裁剪
   int z; //z轴索引
 
-  ChartSeries({
-    this.xAxisIndex = 0,
-    this.yAxisIndex = 0,
-    this.polarAxisIndex = 0,
-    this.calendarIndex = 0,
-    this.radarIndex = 0,
-    this.parallelIndex = 0,
-    this.animation = const AnimatorProps(),
-    this.coordSystem,
-    this.tooltip,
-    this.enableClick,
-    this.enableHover,
-    this.enableDrag,
-    this.enableScale = false,
-    this.z = 0,
-    this.clip = true,
-  }) {
-    _notifier.addListener(() {
-      var v = _notifier.value;
-      try {
-        for (var c in _listenerSet) {
-          c.call(v);
-        }
-      } catch (_) {}
-    });
+  ChartSeries(
+      {this.xAxisIndex = 0,
+      this.yAxisIndex = 0,
+      this.polarAxisIndex = 0,
+      this.calendarIndex = 0,
+      this.radarIndex = 0,
+      this.parallelIndex = 0,
+      this.animation = const AnimatorProps(),
+      this.coordSystem,
+      this.tooltip,
+      this.enableClick,
+      this.enableHover,
+      this.enableDrag,
+      this.enableScale = false,
+      this.z = 0,
+      this.clip = true,
+      this.backgroundColor,
+      String? id})
+      : super(Command.none) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
   }
 
-  void notifyDataSetChange() {
-    notifyChange(Command.updateData);
-  }
-
-  void notifyDataSetInserted() {
-    notifyChange(Command.insertData);
-  }
-
-  void notifyDataSetRemoved() {
-    notifyChange(Command.deleteData);
+  ///通知数据更新
+  void notifyUpdateData() {
+    value = Command.updateData;
   }
 
   ///通知视图当前Series 配置发生了变化
   void notifySeriesConfigChange() {
-    notifyChange(Command.configChange);
+    value = Command.configChange;
   }
 
-  ///发送通知
-  void notifyChange(int code) {
-    ///为了避免外部缓存了数据
-    _notifier.value = Command(code);
-  }
-
-  /// 下面是对ValueNotifier的简单封装
-  void addListener(ValueCallback<Command> callback) {
-    if (_listenerSet.contains(callback)) {
-      return;
+  AnimatorProps get animatorProps {
+    if (animation != null) {
+      return animation!;
     }
-    _listenerSet.add(callback);
-  }
-
-  void removeListener(ValueCallback<Command> callback) {
-    _listenerSet.remove(callback);
-  }
-
-  bool hasListeners() {
-    return _listenerSet.isNotEmpty;
-  }
-
-  void dispose() {
-    _notifier.dispose();
-    _listenerSet.clear();
+    return const AnimatorProps();
   }
 }
 
@@ -132,6 +98,7 @@ abstract class RectSeries extends ChartSeries {
     super.polarAxisIndex,
     super.radarIndex,
     super.animation,
+    super.backgroundColor,
     super.tooltip,
     super.enableClick,
     super.enableHover,
@@ -139,6 +106,7 @@ abstract class RectSeries extends ChartSeries {
     super.enableScale,
     super.clip,
     super.z,
+    super.id,
   });
 
   /// 从当前
@@ -200,18 +168,4 @@ abstract class RectSeries extends ChartSeries {
     }
     return bottomMargin.convert(height);
   }
-}
-
-class Command {
-  static const int none = 0;
-  static const int invalidate = -1;
-  static const int reLayout = -2;
-  static const int insertData = -3;
-  static const int deleteData = -4;
-  static const int updateData = -5;
-  static const int configChange = -6;
-
-  final int code;
-
-  Command(this.code);
 }

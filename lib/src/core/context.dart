@@ -2,7 +2,9 @@ import 'package:flutter/widgets.dart';
 
 import '../animation/index.dart';
 import '../chart.dart';
-import '../charts/series.dart';
+import '../model/index.dart';
+import '../utils/log_util.dart';
+import 'series.dart';
 import '../component/axis/base_axis.dart';
 import '../component/legend/layout.dart';
 import '../component/title/title_view.dart';
@@ -26,13 +28,13 @@ import '../coord/single/single_layout.dart';
 import '../coord_factory.dart';
 import '../gesture/chart_gesture.dart';
 import '../gesture/gesture_dispatcher.dart';
-import '../model/enums/coordinate.dart';
 import '../series_factory.dart';
 import 'view.dart';
 import 'view_group.dart';
 
-///存放整个图表的配置以及相关的图形实例
-///和运行所必须的组件
+///存放整个图表的配置.包含所有的图形实例和动画、手势
+///一个Context 对应一个 GestureDispatcher和一个AnimationManager
+
 class Context {
   final ViewParent root;
   final ChartConfig config;
@@ -45,11 +47,8 @@ class Context {
 
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
 
-  AnimationManager get animationManager => _animationManager;
-
   Context(this.root, this.config, TickerProvider provider, [this.devicePixelRatio = 1]) {
     _provider = provider;
-    _init();
   }
 
   ///更新TickerProvider
@@ -90,19 +89,6 @@ class Context {
 
   ToolTipView? get toolTip => _toolTip;
 
-  void _init() {
-    _seriesViewMap.clear();
-    _coordMap.clear();
-    _axisMap.clear();
-    _coordList.clear();
-
-    ///创建组件
-    _createComponent();
-
-    ///创建渲染视图
-    _createRenderView();
-  }
-
   /// 创建Chart组件
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
@@ -131,11 +117,12 @@ class Context {
     ];
     for (var ele in coordConfigList) {
       var c = CoordFactory.instance.convert(ele);
-      if (c != null) {
-        c.create(this, root);
-        _coordMap[ele] = c;
-        _coordList.add(c);
+      if (c == null) {
+        throw ChartError('无法转换对应的坐标系:$ele');
       }
+      c.create(this, root);
+      _coordMap[ele] = c;
+      _coordList.add(c);
     }
   }
 
@@ -161,18 +148,35 @@ class Context {
         _coordList.add(layout);
       }
       view.create(this, layout);
-      view.bindSeriesCommand(key);
+      view.bindSeries(key);
       layout.addView(view);
     });
   }
 
   ///====生命周期函数=====
+  void onCreate() {
+    _seriesViewMap.clear();
+    _coordMap.clear();
+    _axisMap.clear();
+    _coordList.clear();
+
+    ///创建组件
+    _createComponent();
+
+    ///创建渲染视图
+    _createRenderView();
+  }
+
   void onStart() {
     _legend?.onStart();
     _title?.onStart();
     _toolTip?.onStart();
     for (var coord in coordList) {
-      coord.onStart();
+      try {
+        coord.onStart();
+      } catch (e) {
+        logPrint('$e');
+      }
     }
   }
 
@@ -181,7 +185,11 @@ class Context {
     _title?.onStop();
     _toolTip?.onStop();
     for (var coord in coordList) {
-      coord.onStop();
+      try {
+        coord.onStop();
+      } catch (e) {
+        logPrint('$e');
+      }
     }
   }
 
@@ -316,11 +324,18 @@ class Context {
     _gestureDispatcher.removeGesture(gesture);
   }
 
-  AnimationController boundedAnimation(AnimatorProps props) {
-    return _animationManager.bounded(_provider, props);
+  AnimationController boundedAnimation(AnimatorProps props, [bool useUpdate = false]) {
+    return _animationManager.bounded(_provider, props, useUpdate: useUpdate);
   }
 
   AnimationController unboundedAnimation() {
     return _animationManager.unbounded(_provider);
+  }
+
+  void removeAnimation(AnimationController? c, [bool cancel = true]) {
+    if (c == null) {
+      return;
+    }
+    _animationManager.remove(c, cancel);
   }
 }

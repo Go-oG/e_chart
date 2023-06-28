@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:e_chart/src/ext/offset_ext.dart';
-import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:flutter/material.dart';
 
 import '../../component/axis/base_axis.dart';
@@ -19,6 +18,11 @@ abstract class ParallelCoord extends RectCoord<ParallelConfig> {
   ParallelCoord(super.props);
 
   Offset? dataToPoint(int dimIndex, DynamicData data);
+
+  Direction get direction => props.direction;
+
+  void onDataUpdate(){}
+
 }
 
 ///平行坐标系
@@ -29,47 +33,6 @@ class ParallelCoordImpl extends ParallelCoord {
 
   ParallelCoordImpl(super.props) {
     _initData();
-    // _touchHelper.onClick = (e) {
-    //   if (!props.expandable) {
-    //     return;
-    //   }
-    //   BaseAxisNode? node = findClickAxis(e.localPosition);
-    //   if (node == null) {
-    //     return;
-    //   }
-    //   if (node.axis.silent) {
-    //     return;
-    //   }
-    //
-    //   ParallelAxisNode? leftNode;
-    //   ParallelAxisNode? rightNode;
-    //   if (_expandLeftIndex >= 0 && _expandLeftIndex < props.axisList.length) {
-    //     var axis = props.axisList[_expandLeftIndex];
-    //     leftNode = _axisMap[axis];
-    //   }
-    //   if (_expandRightIndex >= 0 && _expandRightIndex < props.axisList.length) {
-    //     var axis = props.axisList[_expandRightIndex];
-    //     rightNode = _axisMap[axis];
-    //   }
-    //   Offset offset = e.localPosition;
-    //   if (leftNode != null && rightNode != null) {
-    //     if (props.direction == Direction.horizontal) {
-    //       if (offset.dx >= leftNode.layoutProps.rect.left && offset.dx <= rightNode.layoutProps.rect.left) {
-    //         return;
-    //       }
-    //     } else {
-    //       if (offset.dy >= leftNode.layoutProps.rect.top && offset.dy <= rightNode.layoutProps.rect.top) {
-    //         return;
-    //       }
-    //     }
-    //   }
-    //
-    //   ///找到
-    //   BaseAxisNode? tmpNode = findMinDistanceAxis(offset);
-    //   if (tmpNode == null) {
-    //     return;
-    //   }
-    // };
   }
 
   void _initData() {
@@ -251,12 +214,6 @@ class ParallelCoordImpl extends ParallelCoord {
 
   @override
   void onDraw(Canvas canvas) {
-    if (props.backgroundColor != null) {
-      mPaint.reset();
-      mPaint.color = props.backgroundColor!;
-      mPaint.style = PaintingStyle.fill;
-      canvas.drawRect(areaBounds, mPaint);
-    }
     for (var ele in _axisMap.entries) {
       ele.value.draw(canvas, mPaint);
     }

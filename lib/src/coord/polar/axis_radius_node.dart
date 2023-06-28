@@ -25,8 +25,8 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis> {
     }
     double interval = props.distance / circleCount;
     for (int i = 1; i < circleCount; i++) {
-      LineStyle? style = axis.axisStyleFun!.call(i - 1, circleCount, null);
-      style?.drawArc(canvas, paint, i * interval, 0, 360);
+      LineStyle? style = axis.axisStyleFun!.call(i - 1, circleCount);
+      style.drawArc(canvas, paint, i * interval, 0, 360);
     }
   }
 

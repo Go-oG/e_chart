@@ -7,19 +7,19 @@ import '../tick/main_tick.dart';
 
 //轴线
 class AxisLine {
-  final bool show;
-  final AxisSymbol symbol; //控制是否显示箭头
-  final Size symbolSize;
-  final Offset symbolOffset;
+   bool show;
+   AxisSymbol symbol; //控制是否显示箭头
+   Size symbolSize;
+   Offset symbolOffset;
 
-  final LineStyle style;
-  final StyleFun2<DynamicData, DynamicData, LineStyle>? styleFun;
+   LineStyle style;
+   Fun3<DynamicData, DynamicData, LineStyle?>? styleFun;
 
   ///Tick 相关
-  final MainTick? tick;
-  final StyleFun2<DynamicData, DynamicData, MainTick>? tickFun;
+   MainTick? tick;
+   Fun3<DynamicData, DynamicData, MainTick?>? tickFun;
 
-  const AxisLine({
+   AxisLine({
     this.show = true,
     this.symbol = AxisSymbol.none,
     this.symbolSize = const Size(10, 15),

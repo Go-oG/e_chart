@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../chart.dart';
-import 'context.dart';
-import 'view_group.dart';
+import '../../chart.dart';
+import '../context.dart';
+import '../view_group.dart';
 
 abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewParent {
   late final Context context;
@@ -26,6 +26,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     double devicePixelRatio = 1,
   ]) {
     context = Context(this, config, tickerProvider, devicePixelRatio);
+    context.onCreate();
   }
 
   @override

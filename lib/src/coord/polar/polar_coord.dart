@@ -7,19 +7,20 @@ import '../../ext/offset_ext.dart';
 import '../../gesture/chart_gesture.dart';
 import '../../model/dynamic_data.dart';
 import '../circle_coord.dart';
-import '../coord.dart';
 import 'axis_radius_node.dart';
 import 'polar_config.dart';
 import 'polar_child.dart';
 
-abstract class PolarCoord extends Coord{
+abstract class PolarCoord extends CircleCoord<PolarConfig>{
+  PolarCoord(super.props);
 
   Offset dataToPoint(DynamicData angleData, DynamicData radiusData);
+
 }
 
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
-class PolarCoordImpl extends CircleCoord<PolarConfig> implements PolarCoord {
+class PolarCoordImpl extends PolarCoord {
   late final ArcAxisImpl _angleAxis;
   late final RadiusAxisImpl _radiusAxis;
   final ArcGesture gesture = ArcGesture();
@@ -36,7 +37,7 @@ class PolarCoordImpl extends CircleCoord<PolarConfig> implements PolarCoord {
     super.onCreate();
     context.addGesture(gesture);
     gesture.edgeFun = (offset) {
-      return globalAreaBound.contains(offset);
+      return globalBoxBound.contains(offset);
     };
     gesture.hoverStart = (e) {
       _handleHoverWithDrag(e.globalPosition);
@@ -93,7 +94,7 @@ class PolarCoordImpl extends CircleCoord<PolarConfig> implements PolarCoord {
       props.angleAxis.offsetAngle.toDouble(),
       r + props.angleAxis.radiusOffset,
     );
-    LineProps radiusProps = LineProps(areaBounds, Offset.zero, circlePoint(r, props.radiusAxis.offsetAngle));
+    LineProps radiusProps = LineProps(boxBounds, Offset.zero, circlePoint(r, props.radiusAxis.offsetAngle));
     _angleAxis.layout(angleProps, _getAngleDataSet());
     _radiusAxis.layout(radiusProps, _getRadiusDataSet());
     gesture.startAngle = 0;

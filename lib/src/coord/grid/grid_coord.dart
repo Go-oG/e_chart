@@ -16,7 +16,7 @@ import 'grid_config.dart';
 abstract class GridCoord extends RectCoord<GridConfig> {
   GridCoord(super.props);
 
-  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+  Rect dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
 }
 
 ///实现二维坐标系
@@ -130,10 +130,11 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
+  Rect dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
     double dx = _xMap[props.xAxisList[xAxisIndex]]!.dataToPoint(x);
     double dy = _yMap[props.yAxisList[yAxisIndex]]!.dataToPoint(y);
-    return Offset(dx, dy);
+    return Rect.zero;
+    //return Offset(dx, dy);
   }
 
 

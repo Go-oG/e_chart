@@ -1,12 +1,10 @@
-
 import 'base_tick.dart';
 import 'minor_tick.dart';
 
 class MainTick extends BaseTick {
+  MinorTick? minorTick;
 
-  final MinorTick? minorTick;
-
-  const MainTick({
+  MainTick({
     this.minorTick,
     super.show,
     super.inside,

@@ -1,7 +1,7 @@
 
 import '../../model/enums/coordinate.dart';
 import '../../model/multi_data.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class LineSeries extends RectSeries {
   final List<PointData> data;
@@ -27,6 +27,8 @@ class LineSeries extends RectSeries {
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.z,
   }) : super();
 }

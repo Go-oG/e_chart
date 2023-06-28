@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../ext/offset_ext.dart';
@@ -7,6 +6,10 @@ import '../model/constans.dart';
 import 'chart_shape.dart';
 
 class Arc implements Shape {
+  static const double circleMinAngle = 359.99;
+  static const double cornerMin = 0.01;
+  static const double innerMin = 0.001;
+
   final num innerRadius;
   final num outRadius;
   final num startAngle;
@@ -47,8 +50,8 @@ class Arc implements Shape {
 
   @override
   String toString() {
-    return 'IR:${innerRadius.toStringAsFixed(1)} OR:${outRadius.toStringAsFixed(1)} startAngle${startAngle.toStringAsFixed(1)} '
-        'endAngle:${endAngle.toStringAsFixed(1)} corner:${cornerRadius.toStringAsFixed(1)}';
+    return 'IR:${innerRadius.toStringAsFixed(1)} OR:${outRadius.toStringAsFixed(1)} SA:${startAngle.toStringAsFixed(1)} '
+        'EA:${endAngle.toStringAsFixed(1)} corner:${cornerRadius.toStringAsFixed(1)}';
   }
 
   double get endAngle => (startAngle + sweepAngle).toDouble();
@@ -80,261 +83,324 @@ class Arc implements Shape {
   }
 
   Path arc() {
-    double ir = innerRadius.toDouble();
-    double or = outRadius.toDouble();
+    final double ir = innerRadius <= 0.001 ? 0 : innerRadius.toDouble();
+    final double or = outRadius.toDouble();
+    final bool clockwise = sweepAngle >= 0;
+    final int direction = sweepAngle > 0 ? 1 : -1;
+    if (sweepAngle.abs() >= circleMinAngle) {
+      return _buildCircle(center, startAngle, ir, or, direction);
+    }
+
     double corner = min(cornerRadius, (or - ir) / 2).toDouble();
-    num swa = sweepAngle;
-    num sa = startAngle;
-    double direction = sweepAngle > 0 ? 1 : -1;
+    corner = max(corner, 0);
 
-    ///修正相关的角度
-    if (swa.abs() > 360) {
-      swa %= 360;
-    }
-    if (swa.abs() == 0 && sweepAngle.abs() > 0) {
-      swa = 360 * direction;
-    }
-
-    num innerEndAngle = sa + swa;
-    num outerEndAngle = innerEndAngle;
-
-    bool largeArc = swa.abs() >= 180;
-    bool hasCorner = corner > 0.001;
-    bool circle = ir <= 0.001;
-
+    final num swa = sweepAngle;
+    final double sa = startAngle.toDouble();
+    final num inEndAngle = sa + swa;
+    Rect orRect = Rect.fromCircle(center: center, radius: or);
+    Rect irRect = Rect.fromCircle(center: center, radius: ir);
     Path path = Path();
 
-    if (circle) {
+    ///普通扇形
+    if (ir <= innerMin) {
+      ///扇形(忽略内部圆角)
       path.moveTo(center.dx, center.dy);
-      if (!hasCorner) {
-        Offset o1 = circlePoint(or, sa, center);
-        Offset o2 = circlePoint(or, outerEndAngle, center);
-        path.lineTo(o1.dx, o1.dy);
-        path.arcToPoint(o2, radius: Radius.circular(or), largeArc: largeArc, clockwise: swa > 0);
-      } else {
-        if (swa > 0) {
-          List<Offset> offsetList = _computeLT(or, corner, sa);
-          Offset p1 = offsetList[0];
-          Offset p2 = offsetList[1];
-          path.lineTo(p1.dx, p1.dy);
-          path.arcToPoint(p2, radius: Radius.circular(corner.toDouble()), largeArc: false, clockwise: true);
+      double cor = corner;
 
-          offsetList = _computeRT(or, corner, outerEndAngle);
-          p1 = offsetList[0];
-          p2 = offsetList[1];
-          path.arcToPoint(p1, radius: Radius.circular(or), largeArc: largeArc, clockwise: true);
-          path.arcToPoint(p2, radius: Radius.circular(corner.toDouble()), largeArc: false, clockwise: true);
-        } else {
-          List<Offset> offsetList = _computeRT(or, corner, sa);
-          Offset p1 = offsetList[0];
-          Offset p2 = offsetList[1];
-          path.lineTo(p2.dx, p2.dy);
-          path.arcToPoint(p1, radius: Radius.circular(corner), largeArc: false, clockwise: false);
-          offsetList = _computeLT(or, corner, outerEndAngle);
-          p1 = offsetList[0];
-          p2 = offsetList[1];
-          path.arcToPoint(p2, radius: Radius.circular(or), largeArc: largeArc, clockwise: false);
-          path.arcToPoint(p1, radius: Radius.circular(corner), largeArc: false, clockwise: false);
+      ///扫过角度对应的弧长度
+      double dd = or * pi * swa.abs() / 180;
+      if (dd / 2 < cor) {
+        cor = dd / 2;
+      }
+      if (cor <= cornerMin) {
+        //认为不会有圆角
+        Offset o1 = circlePoint(or, sa, center);
+        path.lineTo(o1.dx, o1.dy);
+        double tmpAngle = swa.abs() * Constants.angleUnit;
+        path.arcTo(orRect, sa * Constants.angleUnit, tmpAngle * direction, false);
+        path.close();
+        return path;
+      }
+      Radius cr = Radius.circular(cor);
+
+      ///扇形外部有圆角
+      if (clockwise) {
+        ///leftTop->rightTop
+        InnerOffset lt = _computeLT(or, corner, sa);
+        InnerOffset rt = _computeRT(or, corner, inEndAngle);
+        path.lineTo(lt.p1.dx, lt.p1.dy);
+        path.arcToPoint(lt.p2, radius: cr, largeArc: false, clockwise: true);
+        double a = lt.p2.offsetAngle(center) * Constants.angleUnit;
+        double b = rt.p1.offsetAngle(center) * Constants.angleUnit;
+        if (b < a) {
+          b += 2 * pi;
         }
+        path.arcTo(orRect, a, b - a, false);
+        path.arcToPoint(rt.p2, radius: cr, largeArc: false, clockwise: true);
+      } else {
+        ///rightTop ->leftTop
+        InnerOffset rt = _computeRT(or, corner, sa);
+        InnerOffset lt = _computeLT(or, corner, inEndAngle);
+        path.lineTo(rt.p2.dx, rt.p2.dy);
+        path.arcToPoint(rt.p1, radius: cr, largeArc: false, clockwise: false);
+        double a = rt.p1.offsetAngle(center) * Constants.angleUnit;
+        double b = lt.p2.offsetAngle(center) * Constants.angleUnit;
+        if (b > a) {
+          b -= 2 * pi;
+        }
+        path.arcTo(orRect, a, b - a, false);
+        path.arcToPoint(lt.p1, radius: cr, largeArc: false, clockwise: false);
       }
       path.close();
       return path;
     }
 
-    ///修正存在angleGap时视觉上间隔不一致问题(只有为圆弧时才有效)
-    if (padAngle > 0) {
-      ///计算对应弧长
-      double innerDiff = padAngle * Constants.angleUnit * ir;
-      double outerDiff = padAngle * Constants.angleUnit * or;
-      double outerAngleOffset = ((outerDiff - innerDiff) / (2 * pi * or)) * 360;
-      if (swa < 0) {
-        outerEndAngle -= outerAngleOffset;
-      } else {
-        outerEndAngle += outerAngleOffset;
-      }
+    ///环形扇区
+    num outEndAngle = inEndAngle;
+
+    ///修正存在angleGap时视觉上间隔不一致问题(只有innerRadius>0时有效)
+    if (padAngle > 0 && ir > 0) {
+      double diff=(or-ir)*(pi*padAngle/180)*0.7;
+      double outOffset = (diff / (pi * or)) * 180;
+      outEndAngle += outOffset * direction;
     }
 
-    if ((outerEndAngle - sa).abs() >= 360) {
-      Path p1 = Path();
-      Offset o1 = circlePoint(or, sa, center);
-      Offset o2 = circlePoint(or, sa + 360 * direction, center);
-      p1.moveTo(o1.dx, o1.dy);
-      p1.arcToPoint(o2, radius: Radius.circular(or), largeArc: true, clockwise: direction == 1);
-      p1.close();
-      Path p2 = Path();
-      o1 = circlePoint(ir, sa, center);
-      o2 = circlePoint(ir, sa + 360 * direction, center);
-      p2.lineTo(o2.dx, o2.dy);
-      p2.arcToPoint(o1, radius: Radius.circular(ir), largeArc: true, clockwise: direction != 1);
-      p2.close();
-      path = Path.combine(PathOperation.difference, p1, p2);
+    ///没有圆角
+    if (corner < cornerMin) {
+      Offset op = circlePoint(or, sa, center);
+      path.moveTo(op.dx, op.dy);
+      double swp = (outEndAngle - sa).abs() * Constants.angleUnit;
+      path.arcTo(orRect, sa * Constants.angleUnit, swp * direction, true);
+
+      ///inner
+      Offset ip = circlePoint(ir, inEndAngle, center);
+      path.lineTo(ip.dx, ip.dy);
+      swp = (inEndAngle - sa).abs() * Constants.angleUnit;
+      double tmpAngle = (clockwise ? inEndAngle : sa) * Constants.angleUnit;
+      path.arcTo(irRect, tmpAngle, -1 * swp * direction, false);
+      path.close();
       return path;
     }
 
-    ///圆弧
-    if (!hasCorner) {
-      bool clockwise = swa > 0;
-      clockwise = outerEndAngle - sa > 0;
-      Offset o1 = circlePoint(or, sa, center);
-      Offset o2 = circlePoint(or, outerEndAngle, center);
-      path.moveTo(o1.dx, o1.dy);
-      path.arcToPoint(o2, radius: Radius.circular(or), largeArc: largeArc, clockwise: clockwise);
-      o1 = circlePoint(ir, sa, center);
-      o2 = circlePoint(ir, innerEndAngle, center);
-      path.lineTo(o2.dx, o2.dy);
-      path.arcToPoint(o1, radius: Radius.circular(ir), largeArc: largeArc, clockwise: !clockwise);
-    } else {
-      if (swa > 0) {
-        ///leftTop
-        List<Offset> offsetList = _computeLT(or, corner, sa);
-        Offset p1 = offsetList[0];
-        Offset p2 = offsetList[1];
-        path.moveTo(p1.dx, p1.dy);
-        path.arcToPoint(p2, radius: Radius.circular(corner.toDouble()), largeArc: false, clockwise: true);
+    ///计算外圆环和内圆环的最小corner
+    final num outLength = or * pi * swa.abs() / 180;
+    final num inLength = ir * pi * swa.abs() / 180;
+    double outCorner = corner;
+    double inCorner = corner;
+    if (corner * pi > outLength) {
+      outCorner = outLength / pi;
+    }
+    if (corner * pi > inLength) {
+      inCorner = inLength / pi;
+    }
 
-        ///rightTop
-        offsetList = _computeRT(or, corner, outerEndAngle);
-        p1 = offsetList[0];
-        p2 = offsetList[1];
-        path.arcToPoint(p1, radius: Radius.circular(or), largeArc: largeArc, clockwise: true);
-        path.arcToPoint(p2, radius: Radius.circular(corner.toDouble()), largeArc: false, clockwise: true);
+    if (clockwise) {
+      if (outCorner >= cornerMin) {
+        Radius ocr = Radius.circular(outCorner);
 
-        ///rightBottom
-        offsetList = _computeRB(ir, corner, innerEndAngle);
-        p1 = offsetList[0];
-        p2 = offsetList[1];
-        path.lineTo(p1.dx, p1.dy);
-        path.arcToPoint(p2, radius: Radius.circular(corner.toDouble()), largeArc: false, clockwise: true);
+        ///leftTop ->rightTop
+        InnerOffset lt = _computeLT(or, outCorner, sa);
+        InnerOffset rt = _computeRT(or, outCorner, outEndAngle);
+        path.moveTo(lt.p1.dx, lt.p1.dy);
+        path.arcToPoint(lt.p2, radius: ocr, largeArc: false, clockwise: true);
 
-        ///leftBottom
-        offsetList = _computeLB(ir, corner, sa);
-        p1 = offsetList[0];
-        p2 = offsetList[1];
-        path.arcToPoint(p1, radius: Radius.circular(ir), largeArc: largeArc, clockwise: false);
-        path.arcToPoint(p2, radius: Radius.circular(corner.toDouble()), largeArc: false, clockwise: true);
+        double a = lt.p2.offsetAngle(center) * Constants.angleUnit;
+        double b = rt.p1.offsetAngle(center) * Constants.angleUnit;
+        if (b < a) {
+          b += 2 * pi;
+        }
+        path.arcTo(orRect, a, b - a, false);
+        path.lineTo(rt.p1.dx, rt.p1.dy); //优化
+        path.arcToPoint(rt.p2, radius: ocr, largeArc: false, clockwise: true);
       } else {
-        ///rightTop
-        List<Offset> offsetList = _computeRT(or, corner, sa);
-        Offset p1 = offsetList[0];
-        Offset p2 = offsetList[1];
-        path.moveTo(p2.dx, p2.dy);
-        path.arcToPoint(p1, radius: Radius.circular(corner), largeArc: false, clockwise: false);
-
-        ///leftTop
-        offsetList = _computeLT(or, corner, outerEndAngle);
-        p1 = offsetList[0];
-        p2 = offsetList[1];
-        path.arcToPoint(p2, radius: Radius.circular(or), largeArc: largeArc, clockwise: false);
-        path.arcToPoint(p1, radius: Radius.circular(corner), largeArc: false, clockwise: false);
-
-        ///leftBottom
-        offsetList = _computeLB(ir, corner, innerEndAngle);
-        p1 = offsetList[0];
-        p2 = offsetList[1];
-        path.lineTo(p2.dx, p2.dy);
-        path.arcToPoint(p1, radius: Radius.circular(corner), largeArc: false, clockwise: false);
-
-        ///rightBottom
-        offsetList = _computeRB(ir, corner, sa);
-        p1 = offsetList[0];
-        p2 = offsetList[1];
-        path.arcToPoint(p2, radius: Radius.circular(ir), largeArc: largeArc, clockwise: true);
-        path.arcToPoint(p1, radius: Radius.circular(corner), largeArc: false, clockwise: false);
+        Offset op = circlePoint(or, sa, center);
+        path.moveTo(op.dx, op.dy);
+        path.arcTo(orRect, sa * Constants.angleUnit, (outEndAngle - sa) * Constants.angleUnit, false);
       }
+      if (inCorner >= cornerMin) {
+        Radius icR = Radius.circular(inCorner);
+
+        ///rightBottom ->leftBottom
+        InnerOffset rb = _computeRB(ir, inCorner, inEndAngle);
+        InnerOffset lb = _computeLB(ir, inCorner, sa);
+        path.lineTo(rb.p1.dx, rb.p1.dy);
+        path.arcToPoint(rb.p2, radius: icR, largeArc: false, clockwise: true);
+
+        double a = rb.p2.offsetAngle(center) * Constants.angleUnit;
+        double b = lb.p1.offsetAngle(center) * Constants.angleUnit;
+        if (b > a) {
+          b -= 2 * pi;
+        }
+        path.arcTo(irRect, a, b - a, false);
+        path.lineTo(lb.p1.dx, lb.p1.dy); //优化
+        path.arcToPoint(lb.p2, radius: icR, largeArc: false, clockwise: true);
+      } else {
+        Offset ip = circlePoint(ir, inEndAngle, center);
+        path.lineTo(ip.dx, ip.dy);
+        double t = (sa - inEndAngle) * Constants.angleUnit;
+        path.arcTo(irRect, sa * Constants.angleUnit, t, false);
+      }
+      path.close();
+      return path;
+    }
+
+    ///逆时针
+    if (outCorner >= cornerMin) {
+      ///rightTop->leftTop
+      InnerOffset rt = _computeRT(or, outCorner, sa);
+      InnerOffset lt = _computeLT(or, outCorner, outEndAngle);
+      path.moveTo(rt.p2.dx, rt.p2.dy);
+      path.arcToPoint(rt.p1, radius: Radius.circular(outCorner), largeArc: false, clockwise: false);
+      double a = rt.p1.offsetAngle(center) * Constants.angleUnit;
+      double b = lt.p2.offsetAngle(center) * Constants.angleUnit;
+      if (b > a) {
+        a += 2 * pi;
+      }
+      path.arcTo(orRect, a, b - a, false);
+      path.lineTo(lt.p2.dx, lt.p2.dy);
+      path.arcToPoint(lt.p1, radius: Radius.circular(outCorner), largeArc: false, clockwise: false);
+    } else {
+      Offset op = circlePoint(or, sa, center);
+      path.moveTo(op.dx, op.dy);
+      double t = (outEndAngle - sa).abs() * Constants.angleUnit;
+      path.arcTo(orRect, sa * Constants.angleUnit, -t, false);
+    }
+
+    if (inCorner >= cornerMin) {
+      ///leftBottom ->rightBottom
+      InnerOffset lb = _computeLB(ir, inCorner, inEndAngle);
+      InnerOffset rb = _computeRB(ir, inCorner, sa);
+      path.lineTo(lb.p2.dx, lb.p2.dy);
+      path.arcToPoint(lb.p1, radius: Radius.circular(inCorner), largeArc: false, clockwise: false);
+      double a = lb.p1.offsetAngle(center) * Constants.angleUnit;
+      double b = rb.p2.offsetAngle(center) * Constants.angleUnit;
+      if (a > b) {
+        a -= 2 * pi;
+      }
+      path.arcTo(irRect, a, (b - a).abs(), false);
+      path.lineTo(rb.p2.dx, rb.p2.dy);
+      path.arcToPoint(rb.p1, radius: Radius.circular(inCorner), largeArc: false, clockwise: false);
+    } else {
+      Offset ip = circlePoint(ir, inEndAngle, center);
+      path.lineTo(ip.dx, ip.dy);
+      double t = (inEndAngle - sa).abs() * Constants.angleUnit;
+      path.arcTo(irRect, inEndAngle * Constants.angleUnit, t, true);
     }
     path.close();
     return path;
   }
 
-  Path arcOpen() {
-    double r = max(innerRadius, outRadius).toDouble();
-    num oldSweepAngle = this.sweepAngle.abs();
-    num sweepAngle = this.sweepAngle % 360;
+  static Path _buildCircle(Offset center, num startAngle, double ir, double or, int direction) {
+    const double sweep = 1.99999 * pi;
 
-    ///修复当扫过的角度==360度时绘制异常
-    if (oldSweepAngle % 360 == 0 && oldSweepAngle != 0) {
-      sweepAngle = 359.9999;
+    ///直接为圆相关的
+    Path outPath = Path();
+    Offset o1 = circlePoint(or, startAngle, center);
+    Rect orRect = Rect.fromCircle(center: center, radius: or);
+    outPath.moveTo(o1.dx, o1.dy);
+    outPath.arcTo(orRect, startAngle * Constants.angleUnit, sweep, false);
+    outPath.close();
+    if (ir <= innerMin) {
+      return outPath;
     }
 
-    num sa = startAngle % 360;
-    num endAngle = sa + sweepAngle;
+    Rect irRect = Rect.fromCircle(center: center, radius: ir);
+    Path innerPath = Path();
+    o1 = circlePoint(ir, startAngle, center);
+    innerPath.arcTo(irRect, startAngle * Constants.angleUnit, sweep, false);
+    innerPath.close();
+    return Path.combine(PathOperation.difference, outPath, innerPath);
+  }
 
-    endAngle = endAngle % 360;
-    bool largeArc = sweepAngle >= 180;
-    Offset startOffset = circlePoint(r, sa, center);
-    Offset endOffset = circlePoint(r, endAngle, center);
+  Path arcOpen() {
+    double r = max(innerRadius, outRadius).toDouble();
+    if (sweepAngle.abs() >= circleMinAngle) {
+      return _buildCircle(center, startAngle, 0, r, sweepAngle > 0 ? 1 : -1);
+    }
+
     Path path = Path();
-    path.moveTo(startOffset.dx, startOffset.dy);
-    path.arcToPoint(endOffset, radius: Radius.circular(r), largeArc: largeArc, clockwise: true);
+    Offset op = circlePoint(r, startAngle, center);
+    path.moveTo(op.dx, op.dy);
+    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * Constants.angleUnit, sweepAngle * Constants.angleUnit, false);
     return path;
   }
 
-  //计算圆弧左上顶角当有圆角时的圆角切线两点的坐标
-  List<Offset> _computeLT(num outRadius, num corner, num angle) {
-    angle += 90;
-    double pe = (corner * corner) / (outRadius - corner);
-    double anglePCE = asin(pe / corner) * 180 / pi;
-    double py = -(outRadius - corner) * sin((90 - anglePCE) * Constants.angleUnit);
-    double px = (outRadius - corner) * cos((90 - anglePCE) * Constants.angleUnit);
-
-    double by = py;
-    double bx = px - corner;
-    double cx = outRadius * sin(pe / corner);
-    double cy = -outRadius * cos(pe / corner);
-
-    ///调整偏移量
-    bx = -by * sin(angle * Constants.angleUnit);
-    by = by * cos(angle * Constants.angleUnit);
-
-    cx = outRadius * sin((angle + anglePCE) * Constants.angleUnit);
-    cy = -outRadius * cos((angle + anglePCE) * Constants.angleUnit);
-
-    return [Offset(bx, by), Offset(cx, cy)];
+  InnerOffset _computeLT(num outRadius, num corner, num angle) {
+    return _computeCornerPoint(center, outRadius, corner, angle, true, true);
   }
 
-  //计算圆弧右上顶角当有圆角时圆角切线两点的坐标
-  List<Offset> _computeRT(num outRadius, num corner, num angle) {
-    angle += 90;
-    double tmpRadius = (outRadius - corner).toDouble();
-    double angleCorner = asin(corner / tmpRadius) * 180 / pi; //夹角度数
-    double oc = tmpRadius * cos(angleCorner * Constants.angleUnit);
-
-    double bx = outRadius * sin((angle - angleCorner) * Constants.angleUnit);
-    double by = -outRadius * cos((angle - angleCorner) * Constants.angleUnit);
-
-    double cx = oc * sin(angle * Constants.angleUnit);
-    double cy = -oc * cos(angle * Constants.angleUnit);
-
-    return [Offset(bx, by), Offset(cx, cy)];
+  InnerOffset _computeRT(num outRadius, num corner, num angle) {
+    return _computeCornerPoint(center, outRadius, corner, angle, false, true);
   }
 
-  //计算圆弧左下顶角当有圆角时圆角切线两点的坐标
-  List<Offset> _computeLB(num innerRadius, num corner, num angle) {
-    angle += 90;
-    double op = innerRadius + corner.toDouble();
-    double eb = corner * innerRadius / op;
-    double angleEOB = asin(eb / innerRadius) * 180 / pi;
-    double sa = angle.toDouble();
-    double bx = innerRadius * sin((sa + angleEOB) * Constants.angleUnit);
-    double by = -innerRadius * cos((sa + angleEOB) * Constants.angleUnit);
-    double oc = op * cos(angleEOB * Constants.angleUnit);
-    double cx = oc * sin(sa * Constants.angleUnit);
-    double cy = -op * cos(sa * Constants.angleUnit);
-    return [Offset(bx, by), Offset(cx, cy)];
+  InnerOffset _computeLB(num innerRadius, num corner, num angle) {
+    return _computeCornerPoint(center, innerRadius, corner, angle, true, false);
   }
 
-  //计算圆弧右下顶角当有圆角时圆角切线两点的坐标
-  List<Offset> _computeRB(num innerRadius, num corner, num angle) {
-    angle += 90;
-    double op = innerRadius + corner.toDouble();
-    double ec = corner * innerRadius / op;
-    double angleEOC = (asin(ec / innerRadius) * 180 / pi);
-    double ob = op * cos(angleEOC * Constants.angleUnit);
-    double angleOPB = (angle - angleEOC) * Constants.angleUnit;
-    double cx = innerRadius * sin(angleOPB);
-    double cy = -innerRadius * cos(angleOPB);
-    double bx = ob * sin(angle * Constants.angleUnit);
-    double by = -ob * cos(angle * Constants.angleUnit);
-    return [Offset(bx, by), Offset(cx, cy)];
+  InnerOffset _computeRB(num innerRadius, num corner, num angle) {
+    return _computeCornerPoint(center, innerRadius, corner, angle, false, false);
   }
+
+  ///计算切点位置
+  static InnerOffset _computeCornerPoint(Offset center, num r, num corner, num angle, bool left, bool top) {
+    InnerOffset result = InnerOffset();
+    num dis = (r + corner * (top ? -1 : 1)).abs();
+    double x = sqrt(dis * dis - corner * corner);
+    Offset c = Offset(x, corner.toDouble() * (left ? 1 : -1));
+    result.center = c.translate(center.dx, center.dy);
+    Offset o1 = Offset(result.center.dx, center.dy);
+    Offset o2 = computeCutPoint(center, r, result.center, corner);
+    if (left != top) {
+      Offset tmp = o1;
+      o1 = o2;
+      o2 = tmp;
+    }
+    result.p1 = o1;
+    result.p2 = o2;
+
+    ///旋转
+    result.center = result.center.rotateOffset(angle, center: center);
+    result.p1 = result.p1.rotateOffset(angle, center: center);
+    result.p2 = result.p2.rotateOffset(angle, center: center);
+    return result;
+  }
+
+  ///计算两个圆外切时的切点坐标
+  static Offset computeCutPoint(Offset c1, num r1, Offset c2, num r2) {
+    double dx = c1.dx - c2.dx;
+    double dy = c1.dy - c2.dy;
+    num r12 = r1 * r1;
+    num r22 = r2 * r2;
+
+    double d = sqrt(dx * dx + dy * dy);
+    double l = (r12 - r22 + d * d) / (2 * d);
+    double h2 = r12 - l * l;
+    double h;
+    if (h2.abs() <= 0.00001) {
+      h = 0;
+    } else {
+      h = sqrt(h2);
+    }
+
+    ///交点1
+    double x1 = (c2.dx - c1.dx) * l / d + ((c2.dy - c1.dy) * h / d) + c1.dx;
+    double y1 = (c2.dy - c1.dy) * l / d - (c2.dx - c1.dx) * h / d + c1.dy;
+
+    ///交点2
+    double x2 = (c2.dx - c1.dx) * l / d - ((c2.dy - c1.dy) * h / d) + c1.dx;
+    double y2 = (c2.dy - c1.dy) * l / d + (c2.dx - c1.dx) * h / d + c1.dy;
+
+    return Offset(x1, y1);
+  }
+
+  @override
+  bool internal(Offset offset) {
+    return offset.inArc(this);
+  }
+}
+
+class InnerOffset {
+  Offset center = Offset.zero;
+  Offset p1 = Offset.zero;
+  Offset p2 = Offset.zero;
 }

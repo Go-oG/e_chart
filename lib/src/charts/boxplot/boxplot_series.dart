@@ -4,11 +4,11 @@ import '../../model/dynamic_data.dart';
 import '../../model/dynamic_text.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/line_style.dart';
-import '../series.dart';
+import '../../core/series.dart';
 
 class BoxplotSeries extends RectSeries {
   List<BoxplotData> data;
-  StyleFun<BoxplotData, LineStyle> lineStyleFun;
+  Fun2<BoxplotData, LineStyle> lineStyleFun;
 
   BoxplotSeries({
     required this.data,
@@ -28,6 +28,8 @@ class BoxplotSeries extends RectSeries {
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.z,
     super.clip,
   }) : super(

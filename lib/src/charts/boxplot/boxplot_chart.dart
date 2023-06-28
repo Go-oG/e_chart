@@ -52,29 +52,26 @@ class BoxPlotView extends ChartView implements GridChild {
   }
 
   void _drawNode(Canvas canvas, BoxplotData data) {
-    LineStyle? style = series.lineStyleFun.call(data, null);
-    if (style == null) {
-      return;
-    }
+    LineStyle? style = series.lineStyleFun.call(data);
     GridCoord layout = context.findGridCoord();
 
-    Offset minCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.min)!;
+    Offset minCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.min).topCenter;
     Offset minLeft = minCenter.translate(-10, 0);
     Offset minRight = minCenter.translate(10, 0);
 
-    Offset downCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4)!;
+    Offset downCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
     Offset downLeft = minCenter.translate(-10, 0);
     Offset downRight = minCenter.translate(10, 0);
 
-    Offset middleCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4)!;
+    Offset middleCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
     Offset middleLeft = middleCenter.translate(-10, 0);
     Offset middleRight = middleCenter.translate(10, 0);
 
-    Offset upAveCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.upAve4)!;
+    Offset upAveCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.upAve4).topCenter;
     Offset upAveLeft = upAveCenter.translate(-10, 0);
     Offset upAveRight = upAveCenter.translate(10, 0);
 
-    Offset maxCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.max)!;
+    Offset maxCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.max).topCenter;
     Offset maxLeft = maxCenter.translate(-10, 0);
     Offset maxRight = maxCenter.translate(10, 0);
 
@@ -99,6 +96,6 @@ class BoxPlotView extends ChartView implements GridChild {
 
     path.moveTo(maxLeft.dx, maxLeft.dy);
     path.lineTo(maxRight.dx, maxRight.dy);
-    style.drawPath(canvas, mPaint, path, drawDash: true);
+    style.drawPath(canvas, mPaint, path, true);
   }
 }

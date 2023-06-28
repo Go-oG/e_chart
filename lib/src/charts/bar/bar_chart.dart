@@ -1,42 +1,18 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../../core/view.dart';
-import '../../ext/int_ext.dart';
-import 'bar_series.dart';
 import 'layout_helper.dart';
-import 'touch_helper.dart';
 
 ///用于处理Bar、line、point、 视图绘制相关不会包含坐标轴相关的计算和绘制
-class BarView extends  ChartView {
-  final BarSeries series;
-  final ValueNotifier<IntWrap> notifier = ValueNotifier(0.wrap());
+class BarView extends SeriesView<BarSeries> {
   late LayoutHelper _layout;
-  late TouchHelper touchHelper;
 
   ///用户优化视图绘制
-  BarView(this.series) {
-    notifier.addListener(() {
-      invalidate();
-    });
-  }
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    _layout = LayoutHelper(series,  notifier);
-    touchHelper = TouchHelper(notifier, _layout);
-    touchHelper.clear();
-  }
-
-  @override
-  void onDestroy() {
-    super.onDestroy();
-    touchHelper.clear();
-  }
+  BarView(super.series);
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.layout(0, 0, width, height);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override
@@ -64,13 +40,13 @@ class BarView extends  ChartView {
 
   /// 绘制柱状图
   void drawBarElement(Canvas canvas) {
-    for (var element in _layout.nodeList) {
-      for (var node in element.nodeList) {
-        for (var node2 in node.nodeList) {
-          node2.draw(canvas, mPaint);
-        }
-      }
-    }
+    // for (var element in _layout.nodeList) {
+    //   for (var node in element.nodeList) {
+    //     for (var node2 in node.nodeList) {
+    //       node2.draw(canvas, mPaint);
+    //     }
+    //   }
+    // }
   }
 
   /// 绘制折线图

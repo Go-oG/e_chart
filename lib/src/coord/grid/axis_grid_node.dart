@@ -30,28 +30,34 @@ class GridAxisImpl extends LineAxisImpl<GridAxis> {
   void measure(double parentWidth, double parentHeight) {
     double length = vertical ? parentHeight : parentWidth;
     double size = 0;
-    AxisLine line = axis.axisLine;
-    if (line.show) {
-      size += line.style.width;
-    }
-    if (line.tick != null && line.tick!.show) {
-      var mainTick = line.tick!;
-      if (mainTick.minorTick != null && mainTick.minorTick!.show) {
-        size += m.max(line.tick!.length, mainTick.minorTick!.length);
-      } else {
-        size += line.tick!.length;
+    AxisLine? line = axis.axisLine;
+    if (line != null) {
+      if (line.show) {
+        size += line.style.width;
       }
-    } else {
       if (line.tick != null && line.tick!.show) {
-        size += line.tick!.length;
+        var mainTick = line.tick!;
+        if (mainTick.minorTick != null && mainTick.minorTick!.show) {
+          size += m.max(line.tick!.length, mainTick.minorTick!.length);
+        } else {
+          size += line.tick!.length;
+        }
+      } else {
+        if (line.tick != null && line.tick!.show) {
+          size += line.tick!.length;
+        }
       }
     }
-    if (axis.axisLabel.show) {
-      size += axis.axisLabel.margin;
-      var maxStr = getMaxStr();
-      Size textSize = axis.axisLabel.labelStyle.measure(maxStr);
-      size += (vertical) ? textSize.height : textSize.width;
+    AxisLabel? axisLabel = axis.axisLabel;
+    if (axisLabel != null) {
+      if (axisLabel.show) {
+        size += axisLabel.margin;
+        var maxStr = getMaxStr();
+        Size textSize = axisLabel.labelStyle.measure(maxStr);
+        size += (vertical) ? textSize.height : textSize.width;
+      }
     }
+
     Rect rect;
     if (vertical) {
       rect = Rect.fromLTWH(0, 0, size, length);
@@ -105,15 +111,15 @@ class GridAxisImpl extends LineAxisImpl<GridAxis> {
 
   @override
   BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
-    double distance=0;
+    double distance = 0;
     _axisSize.rect.bottomLeft.distance2(_axisSize.rect.topLeft);
     if (vertical) {
-      distance=_axisSize.rect.bottomLeft.distance2(_axisSize.rect.topLeft);
-    }else{
-      distance=_axisSize.rect.bottomLeft.distance2(_axisSize.rect.bottomRight);
+      distance = _axisSize.rect.bottomLeft.distance2(_axisSize.rect.topLeft);
+    } else {
+      distance = _axisSize.rect.bottomLeft.distance2(_axisSize.rect.bottomRight);
     }
-    if(distance.isNaN||distance.isInfinite){
-      distance=double.maxFinite-1;
+    if (distance.isNaN || distance.isInfinite) {
+      distance = double.maxFinite - 1;
     }
 
     return axis.toScale(0, distance, dataSet);

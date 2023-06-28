@@ -1,10 +1,4 @@
-import '../../functions.dart';
-import '../../model/enums/circle_align.dart';
-import '../../model/group_data.dart';
-import '../../model/string_number.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
-import '../series.dart';
+import 'package:e_chart/e_chart.dart';
 
 enum RoseType {
   normal,
@@ -23,23 +17,45 @@ enum PieAnimatorStyle {
 class PieSeries extends RectSeries {
   List<ItemData> data;
   List<SNumber> center;
-  SNumber innerRadius; //内圆半径(<=0时为圆)
-  SNumber outerRadius; //外圆最大半径(<=0时为圆)
-  double offsetAngle; // 偏移角度
+
+  //内圆半径(<=0时为圆)
+  SNumber innerRadius;
+
+  //外圆最大半径(<=0时为圆)
+  SNumber outerRadius;
+
+  ///饼图扫过的角度(范围为(0,360]默认为360)
+  num sweepAngle;
+
+  //偏移角度默认为0
+  double offsetAngle;
+
+  //拐角半径 默认为0
   double corner;
-  RoseType roseType;
+
+  //角度间距(默认为0)
   double angleGap;
+
+  //是否为顺时针
   bool clockWise;
+
+  //动画缩放扩大系数
+  SNumber scaleExtend;
+
+  //布局类型
+  RoseType roseType;
   CircleAlign labelAlign;
-  StyleFun<ItemData, LabelStyle>? labelStyleFun;
-  StyleFun<ItemData, AreaStyle> areaStyleFun;
   PieAnimatorStyle animatorStyle;
+  Fun2<ItemData, LabelStyle?>? labelStyleFun;
+  Fun2<ItemData, AreaStyle> areaStyleFun;
 
   PieSeries(
     this.data, {
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
     this.innerRadius = const SNumber.percent(15),
     this.outerRadius = const SNumber.percent(90),
+    this.scaleExtend = const SNumber.number(16),
+    this.sweepAngle = 360,
     this.offsetAngle = 0,
     this.corner = 0,
     this.roseType = RoseType.radius,
@@ -62,8 +78,10 @@ class PieSeries extends RectSeries {
     super.enableClick,
     super.enableHover,
     super.enableDrag,
-    super.enableScale=false,
+    super.enableScale = false,
     super.clip,
+    super.backgroundColor,
+    super.id,
     super.z,
   }) : super(
           xAxisIndex: -1,
@@ -72,5 +90,10 @@ class PieSeries extends RectSeries {
           radarIndex: -1,
           polarAxisIndex: -1,
         );
-}
 
+  @override
+  void dispose() {
+    logPrint('Pie Dispose');
+    super.dispose();
+  }
+}

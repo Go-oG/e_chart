@@ -1,12 +1,5 @@
-
 extension IntExt on int {
-  IntWrap wrap() {
-    return IntWrap(this);
+  String padLeft(int width, [String padding = '']) {
+    return toString().padLeft(width, padding);
   }
-}
-
-class IntWrap {
-  final int value;
-
-  const IntWrap(this.value);
 }

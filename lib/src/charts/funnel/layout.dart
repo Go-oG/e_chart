@@ -1,484 +1,326 @@
 //漏斗图布局计算相关
+import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../animation/tween/offset_tween.dart';
-import '../../model/enums/align2.dart';
-import '../../model/enums/direction.dart';
-import '../../model/enums/sort.dart';
-import '../../model/group_data.dart';
-import '../../model/text_position.dart';
-import '../../style/label.dart';
-import 'funnel_series.dart';
+class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
+  FunnelLayout() : super();
+  List<FunnelNode> nodeList = [];
 
-class FunnelLayers {
-  final double gap;
-  final Direction direction;
-  final Sort sort;
-  final Align2 align;
+  num maxValue = 0;
 
-  FunnelLayers(this.gap, this.direction, this.sort, this.align);
+  @override
+  void onLayout(List<ItemData> data, LayoutAnimatorType type) {
+    _hoverNode = null;
 
-  List<FunnelNode> layout(double width, double height, List<ItemData> list, {double? maxValue}) {
-    if (list.isEmpty) {
-      return [];
-    }
-    sortData(list);
+    List<FunnelNode> oldList = nodeList;
+    List<FunnelNode> newList = convertData(data);
+    layoutNode(newList);
 
-    num max = list.first.value;
+    DiffResult<FunnelNode, ItemData> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
+      FunnelNode node = FunnelNode(p1.preData, p0);
+      List<Offset> pl = p1.pointList;
+      Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
+      node.pointList.addAll([o0, o0, o0, o0]);
+      return node;
+    });
+    Map<ItemData, List<Offset>> startMap = result.startMap.map((key, value) => MapEntry(key, List.from(value.pointList)));
+    Map<ItemData, List<Offset>> endMap = result.endMap.map((key, value) => MapEntry(key, List.from(value.pointList)));
+
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
+    OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
+
+    doubleTween.startListener = () {
+      nodeList = result.curList;
+    };
+    doubleTween.endListener = () {
+      nodeList = result.finalList;
+      notifyLayoutEnd();
+    };
+    doubleTween.addListener(() {
+      each(result.curList, (p0, p1) {
+        List<Offset> sl = startMap[p0.data]!;
+        List<Offset> el = endMap[p0.data]!;
+        double t = doubleTween.value;
+        List<Offset> pl = [];
+        for (int i = 0; i < 4; i++) {
+          offsetTween.changeValue(sl[i], el[i]);
+          pl.add(offsetTween.safeGetValue(t));
+        }
+        p0.updatePoint(series, pl);
+      });
+      notifyLayoutUpdate();
+    });
+    doubleTween.start(context, type==LayoutAnimatorType.update);
+  }
+
+  List<FunnelNode> convertData(List<ItemData> list) {
     List<FunnelNode> nodeList = [];
-    for (int i = 0; i < list.length; i++) {
-      var element = list[i];
-      int index;
-      if (sort == Sort.asc) {
-        index = i - 1;
-      } else {
-        index = i + 1;
-      }
-      ItemData? preData;
-      if (index >= 0 && index < list.length) {
-        preData = list[index];
-      }
-      nodeList.add(FunnelNode(preData, element));
-      preData = element;
-      if (element.value > max) {
-        max = element.value;
-      }
+    if (list.isEmpty) {
+      return nodeList;
     }
-    if (maxValue != null && max < maxValue) {
-      max = maxValue;
+    for (int i = 0; i < list.length; i++) {
+      var data = list[i];
+      ItemData? preData = i == 0 ? null : list[i - 1];
+      nodeList.add(FunnelNode(preData, data));
     }
 
-    if (direction == Direction.vertical) {
-      _layoutVertical(width, height, nodeList);
-    } else {
-      _layoutHorizontal(width, height, nodeList);
-    }
-    for (var element in nodeList) {
-      element._computePoint(align, direction, sort, max, gap);
-    }
+    ///直接降序处理
+    nodeList.sort((a, b) {
+      return a.data.value.compareTo(b.data.value);
+    });
     return nodeList;
   }
 
-  void sortData(List<ItemData> list) {
-    list.sort((a, b) {
-      if (sort == Sort.asc) {
-        return a.value.compareTo(b.value);
-      } else {
-        return b.value.compareTo(a.value);
-      }
-    });
+  void layoutNode(List<FunnelNode> nodeList) {
+    maxValue = 0;
+    if (nodeList.isEmpty) {
+      return;
+    }
+    maxValue = nodeList.first.data.value;
+
+    if (series.maxValue != null && maxValue < series.maxValue!) {
+      maxValue = series.maxValue!;
+    }
+    int count = nodeList.length;
+    double gapAllHeight = (count - 1) * series.gap;
+    num size = series.direction == Direction.vertical ? height : width;
+    double itemSize = (size - gapAllHeight) / count;
+    if (series.itemHeight != null) {
+      itemSize = series.itemHeight!.convert(height);
+    }
+    if (series.direction == Direction.vertical) {
+      _layoutVertical(nodeList, itemSize);
+    } else {
+      _layoutHorizontal(nodeList, itemSize);
+    }
+
+    for (var node in nodeList) {
+      node.update(series);
+    }
   }
 
-  void _layoutVertical(double width, double height, List<FunnelNode> nodeList) {
-    int count = nodeList.length;
-    double gapAllHeight = (count - 1) * gap;
-    double itemHeight = (height - gapAllHeight) / count;
+  void _layoutVertical(List<FunnelNode> nodeList, double itemHeight) {
     double offsetY = 0;
+    Map<FunnelNode, FunnelProps> propsMap = {};
+    double kw = width / maxValue;
     for (var node in nodeList) {
-      node.left = 0;
-      node.right = width;
-      node.top = offsetY;
-      node.bottom = node.top + itemHeight;
-      offsetY += itemHeight + gap;
+      FunnelProps props = FunnelProps();
+      propsMap[node] = props;
+      props.p1 = Offset(0, offsetY);
+      if (node.preData != null) {
+        props.len1 = node.preData!.value * kw;
+      } else {
+        props.len1 = 0;
+      }
+      props.len2 = node.data.value * kw;
+      props.p2 = props.p1.translate(0, itemHeight);
+      offsetY = props.p2.dy + series.gap;
+      if (series.align == Align2.start) {
+        continue;
+      }
+      double topOffset = width - props.len1;
+      double bottomOffset = width - props.len2;
+      if (series.align == Align2.center) {
+        topOffset *= 0.5;
+        bottomOffset *= 0.5;
+      }
+      props.p1 = props.p1.translate(topOffset, 0);
+      props.p2 = props.p2.translate(bottomOffset, 0);
+    }
+    if (series.sort == Sort.desc) {
+      FunnelProps first = propsMap[nodeList.first]!;
+      FunnelProps last = propsMap[nodeList.last]!;
+      double diff = (last.p2.dy - first.p1.dy).abs();
+
+      for (var node in nodeList) {
+        FunnelProps props = propsMap[node]!;
+        props.p1 = props.p1.scale(1, -1).translate(0, diff);
+        props.p2 = props.p2.scale(1, -1).translate(0, diff);
+        var t = props.p1;
+        props.p1 = props.p2;
+        props.p2 = t;
+        var tt2 = props.len1;
+        props.len1 = props.len2;
+        props.len2 = tt2;
+      }
+    }
+    for (var node in nodeList) {
+      FunnelProps props = propsMap[node]!;
+      node.pointList = [
+        props.p1,
+        props.p1.translate(props.len1, 0),
+        props.p2.translate(props.len2, 0),
+        props.p2,
+      ];
     }
   }
 
-  void _layoutHorizontal(double width, double height, List<FunnelNode> nodeList) {
-    int count = nodeList.length;
-    double gapAllWidth = (count - 1) * gap;
-    double itemWidth = (width - gapAllWidth) / count;
+  void _layoutHorizontal(List<FunnelNode> nodeList, double itemWidth) {
     double offsetX = 0;
+    Map<FunnelNode, FunnelProps> propsMap = {};
+    double kw = height / maxValue;
     for (var node in nodeList) {
-      node.top = 0;
-      node.bottom = height;
-      node.left = offsetX;
-      node.right = offsetX + itemWidth;
-      offsetX += itemWidth + gap;
+      FunnelProps props = FunnelProps();
+      propsMap[node] = props;
+      props.p1 = Offset(offsetX, 0);
+      if (node.preData != null) {
+        props.len1 = node.preData!.value * kw;
+      } else {
+        props.len1 = 0;
+      }
+      props.len2 = node.data.value * kw;
+      props.p2 = props.p1.translate(itemWidth, 0);
+      offsetX = props.p2.dx + series.gap;
+      if (series.align == Align2.start) {
+        continue;
+      }
+      double leftOffset = height - props.len1;
+      double rightOffset = height - props.len2;
+      if (series.align == Align2.center) {
+        leftOffset *= 0.5;
+        rightOffset *= 0.5;
+      }
+      props.p1 = props.p1.translate(0, leftOffset);
+      props.p2 = props.p2.translate(0, rightOffset);
+    }
+    if (series.sort == Sort.desc) {
+      FunnelProps first = propsMap[nodeList.first]!;
+      FunnelProps last = propsMap[nodeList.last]!;
+      double diff = (last.p2.dx - first.p1.dx).abs();
+      for (var node in nodeList) {
+        FunnelProps props = propsMap[node]!;
+        props.p1 = props.p1.scale(-1, 1).translate(diff, 0);
+        props.p2 = props.p2.scale(-1, 1).translate(diff, 0);
+        var t = props.p1;
+        props.p1 = props.p2;
+        props.p2 = t;
+        var tt2 = props.len1;
+        props.len1 = props.len2;
+        props.len2 = tt2;
+      }
+    }
+    for (var node in nodeList) {
+      FunnelProps props = propsMap[node]!;
+      node.pointList = [
+        props.p1,
+        props.p2,
+        props.p2.translate(0, props.len2),
+        props.p1.translate(0, props.len1),
+      ];
     }
   }
+
+  FunnelNode? _hoverNode;
+
+  void hoverEnter(Offset local) {
+    bool result = false;
+    Map<FunnelNode, AreaStyle> oldMap = {};
+    Map<FunnelNode, LabelStyle> oldMap2 = {};
+    FunnelNode? hoverNode;
+    for (var node in nodeList) {
+      oldMap[node] = node.areaStyle;
+      if (node.labelStyle != null) {
+        oldMap2[node] = node.labelStyle!;
+      }
+      if (node.path.contains(local)) {
+        hoverNode = node;
+        if (node.addState(ViewState.hover)) {
+          result = true;
+        }
+      } else {
+        if (node.removeState(ViewState.hover)) {
+          result = true;
+        }
+      }
+    }
+    if (!result) {
+      return;
+    }
+    final old = _hoverNode;
+    _hoverNode = hoverNode;
+    List<ChartTween> tl = [];
+    if (old != null && oldMap.containsKey(old)) {
+      AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+      AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, props: series.animatorProps);
+      tween.addListener(() {
+        old.areaStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+      ChartDoubleTween tween2 = ChartDoubleTween.fromValue(
+        (old.textConfig?.scaleFactor ?? 1).toDouble(),
+        1,
+        props: series.animatorProps,
+      );
+      tween2.addListener(() {
+        old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+        notifyLayoutUpdate();
+      });
+      tl.add(tween2);
+    }
+    if (hoverNode != null) {
+      var node = hoverNode;
+      AreaStyle style = series.areaStyleFun.call(node).convert(node.status);
+      AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, props: series.animatorProps);
+      tween.addListener(() {
+        node.areaStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+      ChartDoubleTween tween2 =
+          ChartDoubleTween.fromValue((node.textConfig?.scaleFactor ?? 1).toDouble(), 1.5, props: series.animatorProps);
+      tween2.addListener(() {
+        node.textConfig = node.textConfig?.copyWith(scaleFactor: tween2.value);
+        notifyLayoutUpdate();
+      });
+      tl.add(tween2);
+    }
+    if (tl.isEmpty) {
+      notifyLayoutUpdate();
+      return;
+    }
+    for (var tw in tl) {
+      tw.start(context, true);
+    }
+  }
+
+  void clearHover() {
+    if (_hoverNode == null) {
+      return;
+    }
+    List<ChartTween> tl = [];
+    var old = _hoverNode!;
+    _hoverNode = null;
+    AreaStyle oldStyle = old.areaStyle;
+    old.removeState(ViewState.hover);
+    AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+    AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: series.animatorProps);
+    tween.addListener(() {
+      old.areaStyle = tween.value;
+      notifyLayoutUpdate();
+    });
+    tl.add(tween);
+    ChartDoubleTween tween2 = ChartDoubleTween.fromValue(
+      (old.textConfig?.scaleFactor ?? 1).toDouble(),
+      1,
+      props: series.animatorProps,
+    );
+    tween2.addListener(() {
+      old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+    });
+    tl.add(tween2);
+    for (var tw in tl) {
+      tw.start(context, true);
+    }
+  }
+
+
 }
 
-class FunnelNode {
-  final ItemData? preData;
-  final ItemData data;
-
-  ///标识顶点坐标
-  ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
-  final List<Offset> _pointList = [];
-
-  double top = 0;
-  double right = 0;
-  double left = 0;
-  double bottom = 0;
-
-  FunnelNode(this.preData, this.data);
-
-  double animatorPercent = 1;
-  double textScaleFactor = 1;
-
-  Path? _path;
-
-  Path get path {
-    if (_path != null) {
-      return _path!;
-    }
-    _path = Path();
-    if (_pointList.isNotEmpty) {
-      _path!.moveTo(_pointList[0].dx, _pointList[0].dy);
-      for (Offset offset in _pointList) {
-        _path!.lineTo(offset.dx, offset.dy);
-      }
-    }
-    _path!.close();
-    return _path!;
-  }
-
-  List<Offset> get pointList => _pointList;
-
-  void _computePoint(Align2 align, Direction direction, Sort sort, num maxData, double gap) {
-    double width = right - left;
-    double height = bottom - top;
-    double percent = data.value / maxData;
-
-    Align2 align2 = align;
-
-    /// horizontal
-    if (direction == Direction.horizontal) {
-      double h = height * percent;
-      double preH;
-      if (preData == null) {
-        preH = 0;
-      } else {
-        preH = height * (preData!.value / maxData);
-      }
-      if (preH != 0) {
-        h -= gap;
-      }
-      if (sort == Sort.asc) {
-        if (align2 == Align2.start) {
-          _pointList.add(Offset(left, top));
-          _pointList.add(Offset(right, top));
-          _pointList.add(Offset(right, top + h));
-          _pointList.add(Offset(left, top + preH));
-          return;
-        }
-        if (align2 == Align2.center) {
-          double centerY = (top + bottom) / 2.0;
-          _pointList.add(Offset(left, centerY - preH / 2));
-          _pointList.add(Offset(right, centerY - h / 2));
-          _pointList.add(Offset(right, centerY + h / 2));
-          _pointList.add(Offset(left, centerY + preH / 2));
-          return;
-        }
-        if (align2 == Align2.end) {
-          _pointList.add(Offset(left, bottom - preH));
-          _pointList.add(Offset(right, bottom - h));
-          _pointList.add(Offset(right, bottom));
-          _pointList.add(Offset(left, bottom));
-        }
-        return;
-      }
-
-      // sortDesc
-      if (align2 == Align2.start) {
-        _pointList.add(Offset(left, top));
-        _pointList.add(Offset(right, top));
-        _pointList.add(Offset(right, top + preH));
-        _pointList.add(Offset(left, top + h));
-        return;
-      }
-      if (align2 == Align2.center) {
-        double centerY = (top + bottom) / 2.0;
-        _pointList.add(Offset(left, centerY - h / 2));
-        _pointList.add(Offset(right, centerY - preH / 2));
-        _pointList.add(Offset(right, centerY + preH / 2));
-        _pointList.add(Offset(left, centerY + h / 2));
-        return;
-      }
-      if (align2 == Align2.end) {
-        _pointList.add(Offset(left, bottom - h));
-        _pointList.add(Offset(right, bottom - preH));
-        _pointList.add(Offset(right, bottom));
-        _pointList.add(Offset(left, bottom));
-      }
-      return;
-    }
-
-    /// vertical
-    double w = width * percent;
-    double preW;
-    if (preData == null) {
-      preW = 0;
-    } else {
-      preW = width * (preData!.value / maxData);
-    }
-    if (preW != 0) {
-      w -= gap;
-    }
-
-    /// asc
-    if (sort == Sort.asc) {
-      if (align2 == Align2.start) {
-        _pointList.add(Offset(left, top));
-        _pointList.add(Offset(left + preW, top));
-        _pointList.add(Offset(left + w, bottom));
-        _pointList.add(Offset(left, bottom));
-        return;
-      }
-      if (align2 == Align2.center) {
-        double centerX = (right + left) / 2.0;
-
-        _pointList.add(Offset(centerX - preW / 2, top));
-        _pointList.add(Offset(centerX + preW / 2, top));
-        _pointList.add(Offset(centerX + w / 2, bottom));
-        _pointList.add(Offset(centerX - w / 2, bottom));
-        return;
-      }
-      if (align2 == Align2.end) {
-        _pointList.add(Offset(right - preW, top));
-        _pointList.add(Offset(right, top));
-        _pointList.add(Offset(right, bottom));
-        _pointList.add(Offset(right - w, bottom));
-      }
-      return;
-    }
-
-    /// desc
-    if (align2 == Align2.start) {
-      _pointList.add(Offset(left, top));
-      _pointList.add(Offset(left + w, top));
-      _pointList.add(Offset(left + preW, bottom));
-      _pointList.add(Offset(left, bottom));
-      return;
-    }
-    if (align2 == Align2.center) {
-      double centerX = (right + left) / 2.0;
-      _pointList.add(Offset(centerX - w / 2, top));
-      _pointList.add(Offset(centerX + w / 2, top));
-      _pointList.add(Offset(centerX + preW / 2, bottom));
-      _pointList.add(Offset(centerX - preW / 2, bottom));
-      return;
-    }
-    if (align2 == Align2.end) {
-      _pointList.add(Offset(right - w, top));
-      _pointList.add(Offset(right, top));
-      _pointList.add(Offset(right, bottom));
-      _pointList.add(Offset(right - preW, bottom));
-    }
-  }
-
-  @override
-  String toString() {
-    String s = '';
-    for (var element in _pointList) {
-      s = '$s$element ';
-    }
-
-    return 'left:$left top:$top right:$right bottom:$bottom $s';
-  }
-
-  TextDrawConfig? computeTextPosition(FunnelSeries series) {
-    LabelStyle? style = series.labelStyleFun?.call(data, null);
-    if (style == null || !style.show) {
-      return null;
-    }
-    bool vertical = series.direction == Direction.vertical;
-    double lineWidth = style.lineMargin + style.guideLine.length;
-    Offset p0 = pointList[0];
-    Offset p1 = pointList[1];
-    Offset p2 = pointList[2];
-    Offset p3 = pointList[3];
-    FunnelAlign align = series.labelAlign;
-
-    Offset offset;
-    if (align == FunnelAlign.left) {
-      if (series.direction == Direction.horizontal) {
-        offset = Offset(p0.dx, (p0.dy + p3.dy) / 2);
-        return TextDrawConfig(offset, align: Alignment.centerLeft);
-      }
-      offset = Offset((p0.dx + p3.dx) / 2, (p0.dy + p3.dy) / 2);
-      offset = offset.translate(-lineWidth, 0);
-      return TextDrawConfig(offset, align: Alignment.centerRight);
-    }
-    if (align == FunnelAlign.top) {
-      if (series.direction == Direction.vertical) {
-        offset = Offset((p0.dx + p1.dx) / 2, p0.dy);
-        return TextDrawConfig(offset, align: Alignment.topCenter);
-      }
-      offset = Offset((p0.dx + p1.dx) / 2, (p0.dy + p1.dy) / 2);
-      offset = offset.translate(0, -lineWidth);
-      return TextDrawConfig(offset, align: Alignment.bottomCenter);
-    }
-    if (align == FunnelAlign.right) {
-      if (series.direction == Direction.horizontal) {
-        offset = Offset(p2.dx, (p1.dy + p2.dy) / 2);
-        return TextDrawConfig(offset, align: Alignment.centerRight);
-      }
-
-      offset = Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
-      offset = offset.translate(lineWidth, 0);
-      return TextDrawConfig(offset, align: Alignment.centerLeft);
-    }
-    if (align == FunnelAlign.bottom) {
-      if (series.direction == Direction.vertical) {
-        offset = Offset((p0.dx + p1.dx) / 2, p2.dy);
-        return TextDrawConfig(offset, align: Alignment.bottomCenter);
-      }
-
-      offset = Offset((p2.dx + p3.dx) / 2, (p2.dy + p3.dy) / 2);
-      offset = offset.translate(0, lineWidth);
-      return TextDrawConfig(offset, align: Alignment.topCenter);
-    }
-    if (align == FunnelAlign.center) {
-      offset = Offset((p0.dx + p1.dx) / 2, (p0.dy + p3.dy) / 2);
-      return TextDrawConfig(offset, align: Alignment.center);
-    }
-    if (align == FunnelAlign.insideLeft) {
-      offset = Offset((p0.dx + p3.dx) / 2, (p0.dy + p3.dy) / 2);
-      return TextDrawConfig(offset, align: Alignment.centerLeft);
-    }
-    if (align == FunnelAlign.insideRight) {
-      offset = Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
-      return TextDrawConfig(offset, align: Alignment.centerRight);
-    }
-    if (align == FunnelAlign.insideTop) {
-      offset = Offset((p0.dx + p1.dx) / 2, (p0.dy + p1.dy) / 2);
-      return TextDrawConfig(offset, align: Alignment.topCenter);
-    }
-    if (align == FunnelAlign.insideBottom) {
-      offset = Offset((p2.dx + p3.dx) / 2, (p2.dy + p3.dy) / 2);
-      return TextDrawConfig(offset, align: Alignment.bottomCenter);
-    }
-    if (align == FunnelAlign.leftTop) {
-      offset = p0;
-      Alignment mode;
-      if (vertical) {
-        offset = offset.translate(-lineWidth, 0);
-        mode = Alignment.centerRight;
-      } else {
-        offset = offset.translate(0, -lineWidth);
-        mode = Alignment.bottomCenter;
-      }
-      return TextDrawConfig(offset, align: mode);
-    }
-    if (align == FunnelAlign.leftBottom) {
-      offset = p3;
-      Alignment mode;
-      if (vertical) {
-        offset = offset.translate(-lineWidth, 0);
-        mode = Alignment.centerRight;
-      } else {
-        offset = offset.translate(0, lineWidth);
-        mode = Alignment.topCenter;
-      }
-      return TextDrawConfig(offset, align: mode);
-    }
-    if (align == FunnelAlign.rightTop) {
-      offset = p1;
-      Alignment mode;
-      if (vertical) {
-        offset = offset.translate(lineWidth, 0);
-        mode = Alignment.centerLeft;
-      } else {
-        offset = offset.translate(0, -lineWidth);
-        mode = Alignment.bottomCenter;
-      }
-      return TextDrawConfig(offset, align: mode);
-    }
-    if (align == FunnelAlign.rightBottom) {
-      offset = p2;
-      Alignment mode;
-      if (vertical) {
-        offset = offset.translate(lineWidth, 0);
-        mode = Alignment.centerLeft;
-      } else {
-        offset = offset.translate(0, lineWidth);
-        mode = Alignment.topCenter;
-      }
-      return TextDrawConfig(offset, align: mode);
-    }
-    return null;
-  }
-
-  List<Offset>? computeLabelLineOffset(FunnelSeries series) {
-    List<Offset>? list = _computeLabelLineOffsetInner(series);
-    if (list == null) {
-      return list;
-    }
-    OffsetTween tween = OffsetTween(list[0], list[1]);
-    return [list[0], tween.safeGetValue(animatorPercent)];
-  }
-
-  List<Offset>? _computeLabelLineOffsetInner(FunnelSeries series) {
-    LabelStyle? style = series.labelStyleFun?.call(data, null);
-    if (style == null || !style.show) {
-      return null;
-    }
-    bool vertical = series.direction == Direction.vertical;
-    double lineWidth = style.guideLine.length.toDouble();
-    Offset p0 = pointList[0];
-    Offset p1 = pointList[1];
-    Offset p2 = pointList[2];
-    Offset p3 = pointList[3];
-    FunnelAlign align = series.labelAlign;
-    if (series.direction == Direction.horizontal) {
-      if (align == FunnelAlign.left || align == FunnelAlign.right) {
-        return null;
-      }
-    } else {
-      if (align == FunnelAlign.top || align == FunnelAlign.bottom) {
-        return null;
-      }
-    }
-
-    if (align == FunnelAlign.top) {
-      Offset offset = Offset((p0.dx + p1.dx) / 2, (p0.dy + p1.dy) / 2);
-      return [offset, offset.translate(0, -lineWidth)];
-    }
-    if (align == FunnelAlign.left) {
-      Offset offset = Offset((p0.dx + p3.dx) / 2, (p0.dy + p3.dy) / 2);
-      return [offset, offset.translate(-lineWidth, 0)];
-    }
-    if (align == FunnelAlign.right) {
-      Offset offset = Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
-      return [offset, offset.translate(lineWidth, 0)];
-    }
-    if (align == FunnelAlign.bottom) {
-      Offset offset = Offset((p2.dx + p3.dx) / 2, (p2.dy + p3.dy) / 2);
-      return [offset, offset.translate(0, lineWidth)];
-    }
-    if (align == FunnelAlign.leftTop) {
-      Offset offset = p0;
-      if (vertical) {
-        return [offset, offset.translate(lineWidth, 0)];
-      } else {
-        return [offset, offset.translate(0, -lineWidth)];
-      }
-    }
-    if (align == FunnelAlign.leftBottom) {
-      Offset offset = p3;
-      if (vertical) {
-        return [offset, offset.translate(-lineWidth, 0)];
-      } else {
-        return [offset, offset.translate(0, lineWidth)];
-      }
-    }
-    if (align == FunnelAlign.rightTop) {
-      Offset offset = p1;
-      if (vertical) {
-        return [offset, offset.translate(lineWidth, 0)];
-      } else {
-        return [offset, offset.translate(0, -lineWidth)];
-      }
-    }
-    if (align == FunnelAlign.rightBottom) {
-      Offset offset = p2;
-      if (vertical) {
-        return [offset, offset.translate(lineWidth, 0)];
-      } else {
-        return [offset, offset.translate(0, lineWidth)];
-      }
-    }
-    return null;
-  }
+class FunnelProps {
+  Offset p1 = Offset.zero;
+  double len1 = 0;
+  Offset p2 = Offset.zero;
+  double len2 = 0;
 }
