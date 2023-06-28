@@ -59,7 +59,7 @@ class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, type==LayoutAnimatorType.update);
+    doubleTween.start(context, type == LayoutAnimatorType.update);
   }
 
   void layoutNode(List<ParallelNode> nodeList) {
@@ -68,8 +68,7 @@ class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
       List<Offset?> ol = [];
       for (int i = 0; i < node.data.data.length; i++) {
         var data = node.data.data[i];
-        Offset? offset = layout.dataToPoint(i, data);
-        ol.add(offset);
+        ol.add(layout.dataToPosition(i, data).center);
       }
       node.offsetList = ol;
     }

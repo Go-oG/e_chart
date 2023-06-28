@@ -6,7 +6,7 @@ import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
 import 'parallel_axis.dart';
 
-class ParallelAxisImpl extends LineAxisImpl<ParallelAxis,LineProps> {
+class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, LineProps> {
   final Direction direction;
 
   ParallelAxisImpl(
@@ -15,11 +15,22 @@ class ParallelAxisImpl extends LineAxisImpl<ParallelAxis,LineProps> {
     int index,
   ) : super(index: index);
 
-  Offset dataToPoint(DynamicData data) {
-    double xy = scale.rangeValue(data).toDouble();
-    double at = atan2(props.end.dy - props.start.dy, props.end.dx - props.start.dx);
-    double x = props.start.dx + xy * cos(at);
-    double y = props.start.dy + xy * sin(at);
-    return Offset(x, y);
+  List<Offset> dataToPosition(DynamicData data) {
+    double diffY = props.end.dy - props.start.dy;
+    double diffX = props.end.dx - props.start.dx;
+    List<num> nl = [];
+    if (scale.isCategory) {
+      nl = scale.rangeValue2(data);
+    } else {
+      nl.add(scale.rangeValue(data));
+    }
+    List<Offset> ol = [];
+    for (var d in nl) {
+      double at = atan2(diffY, diffX);
+      double x = props.start.dx + d * cos(at);
+      double y = props.start.dy + d * sin(at);
+      ol.add(Offset(x, y));
+    }
+    return ol;
   }
 }
