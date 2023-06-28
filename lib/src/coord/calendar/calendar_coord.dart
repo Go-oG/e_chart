@@ -10,6 +10,18 @@ abstract class CalendarCoord extends RectCoord<CalendarConfig> {
   CalendarCoord(super.props);
 
   Rect dataToPoint(DateTime date);
+
+  int getRowCount();
+
+  int getColumnCount();
+
+  Size getCellSize();
+
+  List<Offset> getMonthPolygon(int year, int month);
+
+  List<Offset> getDateRangePolygon(DateTime start, DateTime end);
+
+  bool inRange(DateTime time);
 }
 
 ///日历坐标系视图
@@ -126,7 +138,7 @@ class CalendarCoordImpl extends CalendarCoord {
         if (t2.isAfter(props.range.end)) {
           t2 = props.range.end;
         }
-        style.drawPolygon(canvas, mPaint, findDateRangePolygon(t1, t2));
+        style.drawPolygon(canvas, mPaint, getDateRangePolygon(t1, t2));
       }
     }
 
@@ -145,16 +157,18 @@ class CalendarCoordImpl extends CalendarCoord {
 
   ///给定在制定月份的边缘
   ///相关数据必须在给定的范围以内
-  List<Offset> findMonthPolygon(int year, int month) {
+  @override
+  List<Offset> getMonthPolygon(int year, int month) {
     DateTime? startDate = findMinDate(year, month);
     DateTime? endDate = findMaxDate(year, month);
     if (endDate == null || startDate == null) {
       throw ChartError('在给定的年月中无法找到对应数据');
     }
-    return findDateRangePolygon(startDate, endDate);
+    return getDateRangePolygon(startDate, endDate);
   }
 
-  List<Offset> findDateRangePolygon(DateTime start, DateTime end) {
+  @override
+  List<Offset> getDateRangePolygon(DateTime start, DateTime end) {
     if (start.isAfter(end)) {
       var t = end;
       end = start;
@@ -276,6 +290,20 @@ class CalendarCoordImpl extends CalendarCoord {
     int month = time.month;
     int day = time.day;
     return '$year${month.padLeft(2, '0')}${day.padLeft(2, '0')}';
+  }
+
+  @override
+  Size getCellSize() => Size(cellWidth, cellHeight);
+
+  @override
+  int getColumnCount() => columnCount;
+
+  @override
+  int getRowCount() => rowCount;
+
+  @override
+  bool inRange(DateTime time) {
+    return _nodeMap[key(time)] != null;
   }
 }
 

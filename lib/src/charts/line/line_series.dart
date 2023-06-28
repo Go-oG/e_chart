@@ -27,6 +27,8 @@ class LineSeries extends RectSeries {
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.z,
   }) : super();
 }

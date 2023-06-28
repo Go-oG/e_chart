@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:e_chart/src/coord/coord.dart';
 import 'package:flutter/material.dart';
 import '../../component/axis/axis_line.dart';
 import '../../component/axis/impl/line_axis_impl.dart';
@@ -18,14 +17,21 @@ import 'radar_axis_node.dart';
 import 'radar_axis.dart';
 import 'radar_child.dart';
 
-abstract class RadarCoord extends Coord{
+abstract class RadarCoord extends CircleCoord<RadarConfig> {
+  RadarCoord(super.props);
+
   Offset? dataToPoint(int axisIndex, num data);
+
+  int getAxisCount();
+
+  Offset getCenter();
 }
 
 ///雷达图坐标系
-class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
-  final Map<int, RadarAxisNode> _axisMap = {};
-  final List<Path> _shapePathList = [];
+class RadarCoordImpl extends RadarCoord {
+  final Map<int, RadarAxisNode> axisMap = {};
+  final List<Path> shapePathList = [];
+  Offset center = Offset.zero;
 
   RadarCoordImpl(super.props) {
     for (int i = 0; i < props.indicator.length; i++) {
@@ -37,7 +43,7 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
           nameGap: indicator.nameGap,
           nameStyle: indicator.nameStyle,
           splitNumber: 5);
-      _axisMap[i] = RadarAxisNode(axis, i);
+      axisMap[i] = RadarAxisNode(axis, i);
     }
   }
 
@@ -51,16 +57,19 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
+    center = Offset(props.center[0].convert(width), props.center[1].convert(height));
     double itemAngle = 360 / props.indicator.length;
     if (!props.clockwise) {
       itemAngle *= -1;
     }
+
     double radius = width / 2;
+
     num oa = props.offsetAngle;
-    _axisMap.forEach((key, value) {
+    axisMap.forEach((key, value) {
       double angle = oa + value.index * itemAngle;
-      Offset o = circlePoint(radius, angle);
-      LineProps layoutProps = LineProps(Rect.zero, Offset.zero, o);
+      Offset o = circlePoint(radius, angle, center);
+      LineProps layoutProps = LineProps(Rect.zero, center, o);
       value.layout(layoutProps, collectChildData(value.index));
     });
 
@@ -68,16 +77,16 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
     int axisCount = props.indicator.length;
 
     ///Shape
-    _shapePathList.clear();
+    shapePathList.clear();
     for (int i = 0; i < props.splitNumber; i++) {
       double r = radiusItem * (i + 1);
       Path path;
       if (props.shape == RadarShape.circle) {
-        path = Circle(r: r).toPath(false);
+        path = Circle(r: r, center: center).toPath(false);
       } else {
-        path = PositiveShape(r: r, count: axisCount).toPath(false);
+        path = PositiveShape(r: r, count: axisCount, center: center).toPath(false);
       }
-      _shapePathList.add(path);
+      shapePathList.add(path);
     }
 
     ///布局孩子
@@ -101,21 +110,18 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
 
   @override
   void onDraw(Canvas canvas) {
-    canvas.save();
-    canvas.translate(width / 2, width / 2);
     _drawShape(canvas);
     _drawAxis(canvas);
-    canvas.restore();
   }
 
   void _drawShape(Canvas canvas) {
-    for (int i = 0; i < _shapePathList.length; i++) {
-      Path path = _shapePathList[i];
+    for (int i = 0; i < shapePathList.length; i++) {
+      Path path = shapePathList[i];
       AreaStyle? style = props.splitStyleFun?.call(i, i - 1);
       if (style != null) {
         Path tmpPath = path;
         if (i != 0) {
-          tmpPath = Path.combine(PathOperation.difference, tmpPath, _shapePathList[i - 1]);
+          tmpPath = Path.combine(PathOperation.difference, tmpPath, shapePathList[i - 1]);
         }
         style.drawPath(canvas, mPaint, tmpPath);
       }
@@ -127,8 +133,8 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
   void _drawAxis(Canvas canvas) {
     ///绘制主轴
     AxisLine? axisLine = props.axisLine;
-    if (axisLine!=null&&axisLine.show) {
-      _axisMap.forEach((key, value) {
+    if (axisLine != null && axisLine.show) {
+      axisMap.forEach((key, value) {
         axisLine.style.drawPolygon(canvas, mPaint, [value.props.start, value.props.end]);
       });
     }
@@ -142,7 +148,7 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
         i++;
         continue;
       }
-      RadarAxisNode node = _axisMap[i]!;
+      RadarAxisNode node = axisMap[i]!;
       Offset offset = node.props.end;
       double angle = offset.offsetAngle();
       TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle));
@@ -154,13 +160,19 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
   ///给定一个数据返回其对应数据在坐标系中的位置(视图位置为中心点)
   @override
   Offset? dataToPoint(int axisIndex, num data) {
-    RadarAxisNode? node = _axisMap[axisIndex];
+    RadarAxisNode? node = axisMap[axisIndex];
     if (node == null) {
       return null;
     }
     double angle = node.props.end.offsetAngle(node.props.start);
     double r = node.dataToPoint(data);
-    Offset offset = circlePoint(r, angle);
+    Offset offset = circlePoint(r, angle, center);
     return offset;
   }
+
+  @override
+  int getAxisCount() => axisMap.length;
+
+  @override
+  Offset getCenter() => center;
 }

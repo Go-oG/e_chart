@@ -1,15 +1,11 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../animation/animator_props.dart';
-import '../component/tooltip/tool_tip.dart';
-import '../model/enums/coordinate.dart';
-import '../model/string_number.dart';
-import 'chart_notifier.dart';
-import 'command.dart';
 
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
 abstract class ChartSeries extends ChartNotifier<Command> {
+  late final String id;
+
   ///坐标系系统
   CoordSystem? coordSystem;
 
@@ -20,7 +16,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   int calendarIndex;
   int radarIndex;
   int parallelIndex;
-
+  Color? backgroundColor;
   AnimatorProps? animation; //动画
   ToolTip? tooltip;
 
@@ -33,23 +29,31 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   bool clip; // 是否裁剪
   int z; //z轴索引
 
-  ChartSeries({
-    this.xAxisIndex = 0,
-    this.yAxisIndex = 0,
-    this.polarAxisIndex = 0,
-    this.calendarIndex = 0,
-    this.radarIndex = 0,
-    this.parallelIndex = 0,
-    this.animation = const AnimatorProps(),
-    this.coordSystem,
-    this.tooltip,
-    this.enableClick,
-    this.enableHover,
-    this.enableDrag,
-    this.enableScale = false,
-    this.z = 0,
-    this.clip = true,
-  }) : super(Command.none);
+  ChartSeries(
+      {this.xAxisIndex = 0,
+      this.yAxisIndex = 0,
+      this.polarAxisIndex = 0,
+      this.calendarIndex = 0,
+      this.radarIndex = 0,
+      this.parallelIndex = 0,
+      this.animation = const AnimatorProps(),
+      this.coordSystem,
+      this.tooltip,
+      this.enableClick,
+      this.enableHover,
+      this.enableDrag,
+      this.enableScale = false,
+      this.z = 0,
+      this.clip = true,
+      this.backgroundColor,
+      String? id})
+      : super(Command.none) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+  }
 
   ///通知数据更新
   void notifyUpdateData() {
@@ -67,7 +71,6 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     }
     return const AnimatorProps();
   }
-
 }
 
 abstract class RectSeries extends ChartSeries {
@@ -95,6 +98,7 @@ abstract class RectSeries extends ChartSeries {
     super.polarAxisIndex,
     super.radarIndex,
     super.animation,
+    super.backgroundColor,
     super.tooltip,
     super.enableClick,
     super.enableHover,
@@ -102,6 +106,7 @@ abstract class RectSeries extends ChartSeries {
     super.enableScale,
     super.clip,
     super.z,
+    super.id,
   });
 
   /// 从当前

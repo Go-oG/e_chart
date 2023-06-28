@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:e_chart/src/ext/offset_ext.dart';
-import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:flutter/material.dart';
 
 import '../../component/axis/base_axis.dart';
@@ -215,12 +214,6 @@ class ParallelCoordImpl extends ParallelCoord {
 
   @override
   void onDraw(Canvas canvas) {
-    if (props.backgroundColor != null) {
-      mPaint.reset();
-      mPaint.color = props.backgroundColor!;
-      mPaint.style = PaintingStyle.fill;
-      canvas.drawRect(boxBounds, mPaint);
-    }
     for (var ele in _axisMap.entries) {
       ele.value.draw(canvas, mPaint);
     }

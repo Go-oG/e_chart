@@ -1,13 +1,9 @@
-import 'package:uuid/uuid.dart';
-
 import '../../model/enums/coordinate.dart';
 import '../coord.dart';
 import '../coord_config.dart';
 
 class SingleCoordConfig extends CoordConfig {
-  SingleCoordConfig({
-    super.show,
-  }) : super(id: const Uuid().v4().toString().replaceAll('-', ''));
+  SingleCoordConfig({super.show, super.id});
 
   @override
   CoordSystem get coordSystem => CoordSystem.single;
@@ -21,5 +17,20 @@ class SingleCoordConfig extends CoordConfig {
 
 ///用于包装child
 class SingleCoordImpl extends Coord {
-  SingleCoordImpl();
+  SingleCoordImpl() : super(SingleConfig());
+}
+
+class SingleConfig extends CoordConfig {
+  SingleConfig({
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
+    super.id,
+    super.show,
+  });
+
+  @override
+  CoordSystem get coordSystem => CoordSystem.single;
 }

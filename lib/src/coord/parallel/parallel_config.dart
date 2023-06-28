@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
 import '../../model/enums/direction.dart';
@@ -8,17 +6,17 @@ import '../rect_coord.dart';
 import 'parallel_axis.dart';
 
 class ParallelConfig extends RectCoordConfig {
-  final Direction direction;
-  final bool expandable;
-  final int expandStartIndex;
-  final int expandCount;
-  final num expandWidth;
-  final Color? backgroundColor;
-  final List<ParallelAxis> axisList;
-  final SNumber leftPadding;
-  final SNumber topPadding;
-  final SNumber rightPadding;
-  final SNumber bottomPadding;
+  Direction direction;
+  bool expandable;
+  int expandStartIndex;
+  int expandCount;
+  num expandWidth;
+
+  List<ParallelAxis> axisList;
+  SNumber leftPadding;
+  SNumber topPadding;
+  SNumber rightPadding;
+  SNumber bottomPadding;
 
   ParallelConfig({
     this.direction = Direction.horizontal,
@@ -28,17 +26,21 @@ class ParallelConfig extends RectCoordConfig {
     super.width,
     super.height,
     this.expandable = false,
-    this.expandStartIndex=0,
+    this.expandStartIndex = 0,
     this.expandCount = 0,
     this.expandWidth = 30,
     this.axisList = const [],
-    this.backgroundColor,
-    this.leftPadding=const SNumber.percent(5),
-    this.topPadding=const SNumber.percent(5),
-    this.rightPadding=const SNumber.percent(5),
-    this.bottomPadding=const SNumber.percent(2),
+    this.leftPadding = const SNumber.percent(5),
+    this.topPadding = const SNumber.percent(5),
+    this.rightPadding = const SNumber.percent(5),
+    this.bottomPadding = const SNumber.percent(2),
     super.id,
     super.show,
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
   });
 
   @override

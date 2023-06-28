@@ -33,12 +33,14 @@ class HeatMapSeries extends RectSeries {
     super.xAxisIndex = 0,
     super.yAxisIndex = 0,
     super.calendarIndex = 0,
-    super.clip,
     super.tooltip,
     super.enableClick,
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
+    super.clip,
     super.z,
   }) : super(polarAxisIndex: -1, parallelIndex: -1, radarIndex: -1);
 }

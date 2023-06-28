@@ -20,6 +20,11 @@ class PolarConfig extends CircleCoordConfig {
     AngleAxis? angleAxis,
     this.toolTip,
     this.silent = true,
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
     super.id,
     super.show,
   }) {

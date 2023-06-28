@@ -54,6 +54,8 @@ class FunnelSeries extends RectSeries {
     super.enableHover,
     super.enableDrag,
     super.enableScale,
+    super.backgroundColor,
+    super.id,
     super.clip,
     super.tooltip,
     super.z,

@@ -28,6 +28,8 @@ class CandleStickSeries extends RectSeries {
     super.height,
     super.animation,
     super.tooltip,
+    super.backgroundColor,
+    super.id,
     super.enableClick,
     super.enableHover,
     super.enableDrag,

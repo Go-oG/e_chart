@@ -1,6 +1,6 @@
 export 'calendar/calendar_config.dart';
 export 'calendar/calendar_child.dart';
-export 'calendar/calendar_coord.dart';
+export 'calendar/calendar_coord.dart' hide CalendarNode;
 
 export 'grid/axis_grid.dart';
 export 'grid/axis_grid_node.dart';

@@ -31,6 +31,13 @@ class CalendarConfig extends RectCoordConfig {
     super.bottomMargin,
     super.width,
     super.height,
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
+    super.id,
+    super.show,
     required this.range,
     this.sunFirst = true,
     this.cellSize = const [20, 20],
@@ -40,6 +47,7 @@ class CalendarConfig extends RectCoordConfig {
     this.gridLineStyle,
     this.weekStyleFun,
     this.dayStyleFun,
+
   });
 
   @override
