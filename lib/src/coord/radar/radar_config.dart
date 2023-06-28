@@ -11,28 +11,28 @@ import '../circle_coord.dart';
 
 //雷达坐标系
 class RadarConfig extends CircleCoordConfig {
-  final List<RadarIndicator> indicator;
-  final num offsetAngle;
-  final int splitNumber;
-  final bool silent;
-  final bool clockwise;
-  final RadarShape shape;
-  final AxisLine axisLine;
-  final MainTick axisTick;
+  List<RadarIndicator> indicator;
+  num offsetAngle;
+  int splitNumber;
+  bool silent;
+  bool clockwise;
+  RadarShape shape;
+  AxisLine? axisLine;
+  MainTick? axisTick;
 
-  final Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
-  final Fun3<int, int, AreaStyle>? splitStyleFun;
-  final Fun2<int, LineStyle>? borderStyleFun;
+  Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
+  Fun3<int, int, AreaStyle>? splitStyleFun;
+  Fun2<int, LineStyle>? borderStyleFun;
 
-  const RadarConfig({
+  RadarConfig({
     required this.indicator,
     this.offsetAngle = 0,
     this.splitNumber = 5,
+    this.axisLine,
+    this.axisTick,
     this.shape = RadarShape.polygon,
     this.silent = false,
     this.clockwise = true,
-    this.axisLine = const AxisLine(),
-    this.axisTick = const MainTick(),
     this.splitStyleFun,
     this.borderStyleFun,
     this.labelStyleFun,
@@ -42,7 +42,6 @@ class RadarConfig extends CircleCoordConfig {
 
   @override
   CoordSystem get coordSystem => CoordSystem.radar;
-
 }
 
 /// 雷达图样式

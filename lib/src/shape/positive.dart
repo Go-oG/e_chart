@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import '../ext/offset_ext.dart';
@@ -52,5 +51,10 @@ class PositiveShape implements Shape {
       count: count ?? this.count,
       angleOffset: angleOffset ?? this.angleOffset,
     );
+  }
+
+  @override
+  bool internal(Offset offset) {
+    return toPath(true).contains(offset);
   }
 }

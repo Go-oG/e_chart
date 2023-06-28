@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/view_state.dart';
 
 abstract class Shader {
-  const Shader();
+   Shader();
 
   ui.Shader toShader(Rect rect);
 

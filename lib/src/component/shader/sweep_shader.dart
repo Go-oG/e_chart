@@ -7,14 +7,14 @@ import '../../core/view_state.dart';
 import 'shader.dart';
 
 class SweepShader extends Shader {
-  final List<Color> colors;
-  final List<double>? colorStops;
-  final TileMode tileMode;
-  final double startAngle;
-  final double endAngle;
-  final Float64List? matrix4;
+  List<Color> colors;
+  List<double>? colorStops;
+  TileMode tileMode;
+  double startAngle;
+  double endAngle;
+  Float64List? matrix4;
 
-  const SweepShader(
+  SweepShader(
     this.colors, {
     this.colorStops,
     this.tileMode = TileMode.clamp,

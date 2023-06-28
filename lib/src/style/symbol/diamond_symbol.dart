@@ -8,29 +8,52 @@ import 'package:flutter/material.dart';
 
 ///棱形
 class DiamondSymbol extends ChartSymbol {
-  final num shortSide;
-  final num loneSide;
-  final num rotate;
-  final AreaStyle style;
+  num shortSide;
+  num loneSide;
+  num rotate;
+  AreaStyle style;
 
-  const DiamondSymbol(this.style, {this.shortSide = 8, this.loneSide = 8, this.rotate = 0});
+  late Path path;
 
-  @override
-  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
-    paint.reset();
-    Path path = Path();
+  DiamondSymbol(
+    this.style, {
+    this.shortSide = 8,
+    this.loneSide = 8,
+    this.rotate = 0,
+  }) {
+    buildPath();
+  }
+
+  void buildPath() {
+    path = Path();
     path.moveTo(0, -shortSide / 2);
     path.lineTo(loneSide / 2, 0);
     path.lineTo(0, center.dy + shortSide / 2);
     path.lineTo(-loneSide / 2, 0);
     path.close();
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(rotate * pi / 180);
+    path = path.shift(center);
+  }
+
+  @override
+  set center(Offset o) {
+    super.center = o;
+    buildPath();
+  }
+
+  @override
+  void draw(Canvas canvas, Paint paint,Offset c, double animator) {
+    if (c != center) {
+      center = c;
+    }
+    paint.reset();
     canvas.drawPath(path, paint);
-    canvas.restore();
   }
 
   @override
   Size get size => Size(loneSide.toDouble(), shortSide.toDouble());
+
+  @override
+  bool internal(Offset point) {
+    return path.contains(point);
+  }
 }

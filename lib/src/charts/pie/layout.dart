@@ -355,7 +355,7 @@ class PieNode with ViewStateProvider {
       return;
     }
     if (series.labelAlign == CircleAlign.outside) {
-      num expand = labelStyle!.guideLine.length;
+      num expand = labelStyle!.guideLine?.length??0;
       double centerAngle = arc.startAngle + arc.sweepAngle / 2;
       Offset offset = circlePoint(arc.outRadius + expand, centerAngle, arc.center);
       Alignment align = toAlignment(centerAngle, false);

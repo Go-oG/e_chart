@@ -1,4 +1,3 @@
-
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
 import '../../component/tooltip/tool_tip.dart';
@@ -9,21 +8,28 @@ import 'axis_radius.dart';
 ///极坐标系
 ///一个极坐标系只能包含一个径向轴和一个角度轴
 class PolarConfig extends CircleCoordConfig {
-  final AngleAxis angleAxis;
-  final RadiusAxis radiusAxis;
-  final bool silent;
-  final ToolTip? toolTip;
+  AngleAxis angleAxis = AngleAxis();
+  RadiusAxis radiusAxis = RadiusAxis();
+  bool silent;
+  ToolTip? toolTip;
 
-  const PolarConfig({
+  PolarConfig({
     super.radius,
     super.center,
-    this.radiusAxis = const RadiusAxis(),
-    this.angleAxis = const AngleAxis(),
+    RadiusAxis? radiusAxis,
+    AngleAxis? angleAxis,
     this.toolTip,
-    this.silent=true,
+    this.silent = true,
     super.id,
-    super.show
-  });
+    super.show,
+  }) {
+    if (radiusAxis != null) {
+      this.radiusAxis = radiusAxis;
+    }
+    if (angleAxis != null) {
+      this.angleAxis = angleAxis;
+    }
+  }
 
   @override
   CoordSystem get coordSystem => CoordSystem.polar;

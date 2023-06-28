@@ -34,43 +34,43 @@ enum TimeSplitType {
 }
 
 abstract class BaseAxis {
-  final bool show;
-  final AxisType type;
-  final DynamicText? name;
-  final Align2 nameAlign;
-  final num nameGap;
-  final LabelStyle nameStyle;
+  bool show;
+  AxisType type;
+  DynamicText? name;
+  Align2 nameAlign;
+  num nameGap;
+  LabelStyle nameStyle;
 
   //只有当轴类型为类目轴才有效
-  final List<String> categoryList;
+  List<String> categoryList;
 
   //只在时间轴下使用
-  final TimeSplitType timeSplitType;
-  final Pair<DateTime>? timeRange;
-  final Fun2<DateTime,DynamicText>? timeFormatFun;
+  TimeSplitType timeSplitType;
+  Pair<DateTime>? timeRange;
+  Fun2<DateTime, DynamicText>? timeFormatFun;
 
-  final bool inverse;
+  bool inverse;
 
   ///数值轴相关
-  final num min;
-  final num? max;
+  num min;
+  num? max;
 
   ///是否是脱离 0 值比例。设置成 true 后坐标刻度不会强制包含零刻度
-  final bool start0;
-  final int splitNumber;
-  final num minInterval;
-  final num? maxInterval;
-  final num? interval;
-  final num logBase;
+  bool start0;
+  int splitNumber;
+  num minInterval;
+  num? maxInterval;
+  num? interval;
+  num logBase;
 
-  final NiceType niceType;
+  NiceType niceType;
 
   ///样式、交互相关
-  final bool silent;
-  final AxisLine axisLine;
-  final Fun2<num, DynamicText>? formatFun;
+  bool silent;
+  AxisLine? axisLine;
+  Fun2<num, DynamicText>? formatFun;
 
-  const BaseAxis({
+  BaseAxis({
     this.show = true,
     this.name,
     this.type = AxisType.value,
@@ -87,7 +87,7 @@ abstract class BaseAxis {
     this.interval,
     this.logBase = 10,
     this.silent = false,
-    this.axisLine = const AxisLine(),
+    this.axisLine,
     this.formatFun,
     this.timeRange,
     this.nameGap = 3,

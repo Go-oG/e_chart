@@ -4,15 +4,23 @@ import '../../core/view_state.dart';
 
 ///Symbol实现
 abstract class ChartSymbol {
-  const ChartSymbol();
+  Offset _center = Offset.zero;
+
+  ChartSymbol({Offset center = Offset.zero}) {
+    this._center = center;
+  }
+
+  Offset get center => _center;
+
+  set center(Offset o) => _center = o;
 
   Size get size;
 
-  void draw(Canvas canvas, Paint paint, Offset center,double animator);
+  void draw(Canvas canvas, Paint paint,Offset c, double animator);
 
-  ChartSymbol convert(Set<ViewState> states){
+  ChartSymbol convert(Set<ViewState> states) {
     return this;
   }
 
+  bool internal(Offset point);
 }
-

@@ -88,4 +88,9 @@ class Star implements Shape {
     p.close();
     return p;
   }
+
+  @override
+  bool internal(Offset offset) {
+    return toPath(true).contains(offset);
+  }
 }

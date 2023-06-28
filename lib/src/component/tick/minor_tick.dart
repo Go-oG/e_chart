@@ -2,8 +2,8 @@
 import 'base_tick.dart';
 
 class MinorTick extends BaseTick {
-  final int splitNumber;
-  const MinorTick({
+   int splitNumber;
+   MinorTick({
     this.splitNumber=5,
     super.show,
     super.inside,

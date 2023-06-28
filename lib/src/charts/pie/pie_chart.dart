@@ -108,7 +108,7 @@ class PieView extends SeriesView<PieSeries> {
       Arc arc = node.arc;
       Offset tmpOffset = circlePoint(arc.outRadius, arc.startAngle + (arc.sweepAngle / 2), center);
       Offset tmpOffset2 = circlePoint(
-        arc.outRadius + labelStyle.guideLine.length,
+        arc.outRadius + (labelStyle.guideLine?.length??0),
         arc.startAngle + (arc.sweepAngle / 2),
         center,
       );
@@ -116,7 +116,7 @@ class PieView extends SeriesView<PieSeries> {
       path.moveTo(tmpOffset.dx, tmpOffset.dy);
       path.lineTo(tmpOffset2.dx, tmpOffset2.dy);
       path.lineTo(config.offset.dx, config.offset.dy);
-      labelStyle.guideLine.style.drawPath(canvas, mPaint, path);
+      labelStyle.guideLine?.style.drawPath(canvas, mPaint, path);
     }
   }
 }

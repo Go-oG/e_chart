@@ -9,13 +9,13 @@ import '../../style/symbol/symbol.dart';
 import 'mark_type.dart';
 
 class MarkLine {
-  final ChartSymbol? startSymbol;
-  final ChartSymbol? endSymbol;
-  final bool touch;
-  final Fun2<int, LabelStyle>? labelStyle;
-  final LineStyle lineStyle;
-  final int precision; //精度
-  final MarkType startMarkType;
+  ChartSymbol? startSymbol;
+  ChartSymbol? endSymbol;
+  bool touch;
+  Fun2<int, LabelStyle>? labelStyle;
+  LineStyle lineStyle;
+  int precision; //精度
+  MarkType startMarkType;
 
   // 如果endMakeType 为null 那么绘制时则是一条水平直线
   final MarkType? endMarkType;
@@ -33,8 +33,8 @@ class MarkLine {
 
   void draw(Canvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end], false);
-    startSymbol?.draw(canvas, paint, start,1);
-    endSymbol?.draw(canvas, paint, end,1);
+    startSymbol?.draw(canvas, paint, start, 1);
+    endSymbol?.draw(canvas, paint, end, 1);
     if (startText != null && startText.isNotEmpty) {
       TextDrawConfig config = TextDrawConfig(start);
       labelStyle?.call(0).draw(canvas, paint, startText, config);

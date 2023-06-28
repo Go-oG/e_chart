@@ -46,6 +46,8 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
 
   @override
   void drawAxisLine(Canvas canvas, Paint paint) {
+    var axisLine=axis.axisLine;
+    if(axisLine==null){return;}
     List<num> viewPortList = viewRange; //distance
     num first = viewPortList[0];
     num end = viewPortList[1];
@@ -73,17 +75,19 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
       dynamic endData = scale.domainValue(next);
 
       LineStyle? style;
-      if (axis.axisLine.styleFun != null) {
-        style = axis.axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
+      if (axisLine.styleFun != null) {
+        style = axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
       }
-      style ??= axis.axisLine.style;
+      style ??= axisLine.style;
       style.drawPolygon(canvas, paint, [startOffset, endOffset]);
     }
   }
 
   @override
   void drawAxisTick(Canvas canvas, Paint paint) {
-    if (axis.axisLine.tick == null) {
+    var axisLine=axis.axisLine;
+    if(axisLine==null){return;}
+    if (axisLine.tick == null) {
       return;
     }
     List<DynamicText> ticks = obtainTicks();
@@ -124,12 +128,12 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
 
       endOffset = endOffset.translate(-scrollValue, -scrollValue);
       MainTick? tick;
-      if (axis.axisLine.tickFun != null) {
+      if (axisLine.tickFun != null) {
         dynamic firstData = scale.domainValue(pre);
         dynamic endData = scale.domainValue(next);
-        tick = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
+        tick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
       }
-      tick ??= axis.axisLine.tick;
+      tick ??= axisLine.tick;
       List<DynamicText> subList = [];
       if (axis.category) {
         subList.add(ticks[firstIndex]);

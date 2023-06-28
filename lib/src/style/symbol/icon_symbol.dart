@@ -6,10 +6,10 @@ import '../label.dart';
 import 'symbol.dart';
 
 class IconSymbol extends ChartSymbol {
-  final Icon icon;
-  late final LabelStyle style;
+  Icon icon;
+  late LabelStyle style;
 
-  IconSymbol(this.icon) {
+  IconSymbol(this.icon, {super.center}) {
     IconData data = icon.icon!;
     double? iconSize = icon.size ?? 8;
     double? iconFill = icon.fill;
@@ -35,7 +35,10 @@ class IconSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset center,double animator) {
+  void draw(Canvas canvas, Paint paint, Offset c, double animator) {
+    if (c != center) {
+      center = c;
+    }
     TextDrawConfig config = TextDrawConfig(center, align: Alignment.center);
     style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
   }
@@ -44,5 +47,11 @@ class IconSymbol extends ChartSymbol {
   Size get size {
     double s = icon.size ?? 8;
     return Size.square(s);
+  }
+
+  @override
+  bool internal(Offset point) {
+    Size s = size;
+    return Rect.fromCenter(center: center, width: s.width, height: s.height).contains(point);
   }
 }

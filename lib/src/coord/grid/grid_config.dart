@@ -8,15 +8,15 @@ import 'axis_y.dart';
 
 class GridConfig extends RectCoordConfig {
   ///grid区域是否包含坐标轴的刻度标签
-  final bool containLabel;
-  final AreaStyle? style;
-  final ToolTip? toolTip;
-  final List<XAxis> xAxisList;
-  final List<YAxis> yAxisList;
+  bool containLabel;
+  AreaStyle? style;
+  ToolTip? toolTip;
+  List<XAxis> xAxisList = [XAxis()];
+  List<YAxis> yAxisList = [YAxis()];
 
-  const GridConfig({
-    this.xAxisList = const [XAxis()],
-    this.yAxisList = const [YAxis()],
+  GridConfig({
+    List<XAxis>? xAxisList,
+    List<YAxis>? yAxisList,
     this.containLabel = false,
     this.style,
     this.toolTip,
@@ -28,7 +28,14 @@ class GridConfig extends RectCoordConfig {
     super.height,
     super.id,
     super.show,
-  });
+  }) {
+    if (xAxisList != null) {
+      this.xAxisList = xAxisList;
+    }
+    if (yAxisList != null) {
+      this.yAxisList = yAxisList;
+    }
+  }
 
   @override
   CoordSystem get coordSystem => CoordSystem.grid;

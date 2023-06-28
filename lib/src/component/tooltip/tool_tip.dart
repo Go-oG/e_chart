@@ -16,33 +16,33 @@ enum ToolTipOrder {
 
 ///提示框
 class ToolTip {
-  final bool show;
-  final Trigger trigger;
-  final AxisPointer axisPointer;
-  final bool showContent;
-  final bool alwaysShowContent;
-  final TriggerOn triggerOn;
-  final num showDelay;
-  final num hideDelay;
-  final bool enterAble;
-  final bool confine;
-  final num transitionDuration;
+   bool show;
+   Trigger trigger;
+   AxisPointer? axisPointer;
+   bool showContent;
+   bool alwaysShowContent;
+   TriggerOn triggerOn;
+   num showDelay;
+   num hideDelay;
+   bool enterAble;
+   bool confine;
+   num transitionDuration;
 
   ///浮层位置，当不设置时跟随鼠标位置
-  final List<SNumber>? position;
+   List<SNumber>? position;
 
-  final String? formatter; //字符串模版
+   String? formatter; //字符串模版
 
-  final Fun2<num,String>? numberFormatter;
-  final EdgeInsets padding;
-  final AreaStyle background;
-  final LabelStyle labelStyle;
-  final ToolTipOrder order;
+   Fun2<num,String>? numberFormatter;
+   EdgeInsets padding;
+   AreaStyle background;
+   LabelStyle labelStyle;
+   ToolTipOrder order;
 
-  const ToolTip({
+   ToolTip({
     this.show = true,
     this.trigger = Trigger.item,
-    this.axisPointer = const AxisPointer(),
+    this.axisPointer ,
     this.showContent = true,
     this.alwaysShowContent = false,
     this.triggerOn = TriggerOn.moveAndClick,

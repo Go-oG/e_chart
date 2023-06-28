@@ -3,28 +3,28 @@
 import '../../style/label.dart';
 
 class AxisLabel {
-  final bool show;
+  bool show;
 
   //坐标轴刻度标签的显示间隔，在类目轴中有效。
   // 默认会采用标签不重叠的策略间隔显示标签。默认-1
   // 可以设置成 0 强制显示所有标签。
   // 如果设置为 1，表示『隔一个标签显示一个标签』，如果值为 2，表示隔两个标签显示一个标签，以此类推。
-  final int interval;
+  int interval;
 
-  final bool inside;
+  bool inside;
 
-  final double rotate;
+  double rotate;
 
-  final double margin;
+  double margin;
 
-  final bool? showMinLabel;
-  final bool? showMaxLabel;
+  bool? showMinLabel;
+  bool? showMaxLabel;
 
   ///是否隐藏重叠的标签
-  final bool hideOverLap;
-  final LabelStyle labelStyle;
+  bool hideOverLap;
+  LabelStyle labelStyle;
 
-  const AxisLabel({
+  AxisLabel({
     this.show = true,
     this.interval = 0,
     this.inside = false,
