@@ -77,23 +77,26 @@ abstract class BaseTick {
     double tickYInterval = (end.dy - start.dy) / tickCount;
 
     for (int i = 0; i < maxLimit; i++) {
-      Offset o1 = Offset(start.dx + i * tickXInterval, start.dy + i * tickYInterval);
-      Offset o2 = Offset(start.dx + (i + 1) * tickXInterval, start.dy + (i + 1) * tickYInterval);
-      //计算轴线夹角
-      double lineAngle = o2.offsetAngle(Offset(start.dx, 0));
-      double distance = o1.distance2(start);
+
+      Offset sOffset = Offset(start.dx + i * tickXInterval, start.dy + i * tickYInterval);
+      Offset eOffset = Offset(start.dx + (i + 1) * tickXInterval, start.dy + (i + 1) * tickYInterval);
+
+      //计算结尾点和起始点轴线夹角
+      double clampAngle = eOffset.offsetAngle(start);
+      double distance = sOffset.distance2(start);
       double c2 = distance * distance + b2;
       double c = sqrt(c2);
+
       //夹角
       double angle = atan(length / distance) * 180 / pi;
-      double resultAngle = inside ? (lineAngle - angle) : (lineAngle + angle);
+      double resultAngle = inside ? (clampAngle - angle) : (clampAngle + angle);
       if (resultAngle < 0) {
         resultAngle += 360;
       }
 
       //Tick End position
       Offset o3 = circlePoint(c, resultAngle, start);
-      lineStyle.drawPolygon(canvas, paint, [o1, o3]);
+      lineStyle.drawPolygon(canvas, paint, [sOffset, o3]);
       if (i >= ticks.length) {
         continue;
       }
@@ -101,19 +104,19 @@ abstract class BaseTick {
       ///计算文本绘制点
       if (ticks.length == 1) {
         distance = Offset(start.dx + (i + 0.5) * tickXInterval, start.dy + (i + 0.5) * tickYInterval).distance2(start);
-        o2 = Offset(start.dx + (i + 1.5) * tickXInterval, start.dy + (i + 1.5) * tickYInterval);
-        lineAngle = o2.offsetAngle(Offset(start.dx, 0));
+        eOffset = Offset(start.dx + (i + 1.5) * tickXInterval, start.dy + (i + 1.5) * tickYInterval);
+        clampAngle = eOffset.offsetAngle(Offset(start.dx, 0));
       }
 
       c2 = distance * distance + b4;
       c = sqrt(c2);
       angle = atan((length + labelPadding) / distance) * 180 / pi;
-      resultAngle = inside ? (lineAngle - angle) : (lineAngle + angle);
+      resultAngle = inside ? (clampAngle - angle) : (clampAngle + angle);
       if (resultAngle < 0) {
         resultAngle += 360;
       }
       Offset textOffset = circlePoint(c, resultAngle, start);
-      TextDrawConfig config = TextDrawConfig(textOffset, align: toAlignment(lineAngle + 90, inside));
+      TextDrawConfig config = TextDrawConfig(textOffset, align: toAlignment(clampAngle + 90, inside));
       labelStyle.draw(canvas, paint, ticks[i], config);
     }
   }

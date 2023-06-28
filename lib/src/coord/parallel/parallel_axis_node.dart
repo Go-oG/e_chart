@@ -6,7 +6,7 @@ import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
 import 'parallel_axis.dart';
 
-class ParallelAxisImpl extends LineAxisImpl<ParallelAxis> {
+class ParallelAxisImpl extends LineAxisImpl<ParallelAxis,LineProps> {
   final Direction direction;
 
   ParallelAxisImpl(

@@ -11,11 +11,12 @@ import 'axis_radius_node.dart';
 import 'polar_config.dart';
 import 'polar_child.dart';
 
-abstract class PolarCoord extends CircleCoord<PolarConfig>{
+abstract class PolarCoord extends CircleCoord<PolarConfig> {
   PolarCoord(super.props);
 
-  Offset dataToPoint(DynamicData angleData, DynamicData radiusData);
+  Offset dataToPoint(DynamicData radiusData, DynamicData angleData);
 
+  Offset getCenter();
 }
 
 ///用于实现极坐标系
@@ -24,6 +25,8 @@ class PolarCoordImpl extends PolarCoord {
   late final ArcAxisImpl _angleAxis;
   late final RadiusAxisImpl _radiusAxis;
   final ArcGesture gesture = ArcGesture();
+
+  Offset center = Offset.zero;
 
   Offset? _clickOffset;
 
@@ -88,15 +91,14 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
+    center = Offset(props.center[0].convert(width), props.center[1].convert(height));
     double r = width / 2;
-    ArcProps angleProps = ArcProps(
-      Offset.zero,
-      props.angleAxis.offsetAngle.toDouble(),
-      r + props.angleAxis.radiusOffset,
-    );
-    LineProps radiusProps = LineProps(boxBounds, Offset.zero, circlePoint(r, props.radiusAxis.offsetAngle));
+    ArcProps angleProps = ArcProps(center, props.angleAxis.offsetAngle.toDouble(), r + props.angleAxis.radiusOffset);
+    RadiusProps radiusProps = RadiusProps(center, boxBounds, center, circlePoint(r, props.radiusAxis.offsetAngle, center));
+
     _angleAxis.layout(angleProps, _getAngleDataSet());
     _radiusAxis.layout(radiusProps, _getRadiusDataSet());
+
     gesture.startAngle = 0;
     gesture.sweepAngle = 360;
     gesture.innerRadius = 0;
@@ -133,41 +135,32 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   void onDraw(Canvas canvas) {
-    canvas.save();
-    canvas.translate(props.center[0].convert(width), props.center[1].convert(height));
     _angleAxis.draw(canvas, mPaint);
     _radiusAxis.draw(canvas, mPaint);
-    canvas.restore();
   }
 
   @override
   void onDrawEnd(Canvas canvas) {
-    canvas.save();
-    canvas.translate(width / 2, height / 2);
-    drawClickNode(canvas);
-    canvas.restore();
-  }
-
-  void drawClickNode(Canvas canvas) {
     if (_clickOffset == null) {
       return;
     }
-
-    Offset offset = _clickOffset!.translate(-width / 2, -height / 2);
-    double angle = offset.offsetAngle();
-    double r = offset.distance2(Offset.zero);
+    Offset offset = _clickOffset!;
+    double angle = offset.offsetAngle(center);
+    double r = offset.distance2(center);
     if (r > width / 2) {
       r = width / 2;
     }
-    props.angleAxis.tipLineStyle?.drawArc(canvas, mPaint, r, 0, 360);
-    props.radiusAxis.tipLineStyle?.drawPolygon(canvas, mPaint, [Offset.zero, circlePoint(width / 2, angle)]);
+    props.angleAxis.tipLineStyle?.drawArc(canvas, mPaint, r, 0, 360, center);
+    props.radiusAxis.tipLineStyle?.drawPolygon(canvas, mPaint, [center, circlePoint(width / 2, angle, center)]);
   }
 
   @override
-  Offset dataToPoint(DynamicData angleData, DynamicData radiusData) {
+  Offset dataToPoint(DynamicData radiusData, DynamicData angleData) {
     num angle = _angleAxis.dataToAngle(angleData);
     num r = _radiusAxis.dataToRadius(radiusData);
-    return circlePoint(r, angle);
+    return circlePoint(r, angle, center);
   }
 
+  @override
+  Offset getCenter() => center;
 }

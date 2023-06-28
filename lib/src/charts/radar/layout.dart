@@ -8,13 +8,19 @@ import '../../model/group_data.dart';
 import 'radar_series.dart';
 
 /// 雷达图布局
-class RadarLayout extends ChartLayout<RadarSeries,List<GroupData>> {
+class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
   List<RadarGroupNode> _groupNodeList = [];
+
   List<RadarGroupNode> get groupNodeList => _groupNodeList;
+
+  Offset center = Offset.zero;
+  double radius = 0;
 
   @override
   void onLayout(List<GroupData> data, LayoutAnimatorType type) {
     RadarCoord layout = context.findRadarCoord(series.radarIndex);
+    center = layout.getCenter();
+    radius = layout.getRadius();
     List<RadarGroupNode> gl = [];
     each(data, (data, p1) {
       var groupNode = RadarGroupNode(data, []);
@@ -29,7 +35,6 @@ class RadarLayout extends ChartLayout<RadarSeries,List<GroupData>> {
     });
     _groupNodeList = gl;
   }
-
 }
 
 class RadarGroupNode {

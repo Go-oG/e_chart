@@ -6,6 +6,7 @@ import 'point_node.dart';
 
 class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
   List<PointNode> nodeList = [];
+
   @override
   void onLayout(List<PointData> data, LayoutAnimatorType type) {
     List<PointNode> oldList = nodeList;

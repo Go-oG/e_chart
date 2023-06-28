@@ -2,22 +2,21 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'layout.dart';
 
-
 /// 雷达图
-class RadarView extends ChartView implements RadarChild {
-  final RadarSeries series;
+class RadarView extends SeriesView<RadarSeries> implements RadarChild {
   final RadarLayout radarLayout = RadarLayout();
 
-  RadarView(this.series);
+  RadarView(super.series);
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    radarLayout.doLayout(context, series, series.data, selfBoxBound,LayoutAnimatorType.update);
+    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
     _initAnimator();
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
     radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
     _initAnimator();
   }
@@ -28,7 +27,7 @@ class RadarView extends ChartView implements RadarChild {
     if (info != null) {
       for (var group in nodeList) {
         for (var node in group.nodeList) {
-          node.start = Offset.zero;
+          node.start = radarLayout.center;
           node.end = node.cur;
           node.cur = Offset.zero;
         }
@@ -50,13 +49,6 @@ class RadarView extends ChartView implements RadarChild {
 
   @override
   void onDraw(Canvas canvas) {
-    canvas.save();
-    canvas.translate(width / 2, height / 2);
-    _drawData(canvas);
-    canvas.restore();
-  }
-
-  void _drawData(Canvas canvas) {
     for (var group in radarLayout.groupNodeList) {
       if (!group.show) {
         continue;

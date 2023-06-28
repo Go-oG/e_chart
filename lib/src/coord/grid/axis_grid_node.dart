@@ -9,7 +9,7 @@ import '../../model/index.dart';
 import 'axis_grid.dart';
 import 'grid_child.dart';
 
-class GridAxisImpl extends LineAxisImpl<GridAxis> {
+class GridAxisImpl extends LineAxisImpl<GridAxis,LineProps> {
   final Direction direction;
   final List<GridChild> children;
 
