@@ -63,7 +63,7 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
         style = axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
       }
       style ??= axisLine.style;
-      style.drawArc(canvas, paint, props.radius, startAngle, sa);
+      style.drawArc(canvas, paint, props.radius, startAngle, sa, props.center);
     }
   }
 
@@ -85,7 +85,7 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
         tick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
       }
       tick ??= axisLine.tick;
-      tick?.drawCircleTick(canvas, paint, props.radius, axis.offsetAngle, axis.sweepAngle, ticks);
+      tick?.drawCircleTick(canvas, paint, props.radius, axis.offsetAngle, axis.sweepAngle, ticks, center: props.center);
       return;
     }
 
@@ -107,7 +107,16 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
       } else {
         tl.add(ticks[i + 1]);
       }
-      tick?.drawCircleTick(canvas, paint, props.radius, startAngle, angleInterval, tl, category: axis.category);
+      tick?.drawCircleTick(
+        canvas,
+        paint,
+        props.radius,
+        startAngle,
+        angleInterval,
+        tl,
+        category: axis.category,
+        center: props.center,
+      );
     }
 
     if (axis.subAxisStyle != null) {
@@ -124,8 +133,8 @@ class ArcAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
       for (int i = 0; i < count; i++) {
         num angle = axis.offsetAngle + i * interval;
-        Offset offset = circlePoint(props.radius, angle);
-        axis.subAxisStyle!.drawPolygon(canvas, paint, [Offset.zero, offset]);
+        Offset offset = circlePoint(props.radius, angle, props.center);
+        axis.subAxisStyle!.drawPolygon(canvas, paint, [props.center, offset]);
       }
     }
   }

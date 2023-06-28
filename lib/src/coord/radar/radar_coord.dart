@@ -25,6 +25,8 @@ abstract class RadarCoord extends CircleCoord<RadarConfig> {
   int getAxisCount();
 
   Offset getCenter();
+
+  double getRadius();
 }
 
 ///雷达图坐标系
@@ -32,6 +34,7 @@ class RadarCoordImpl extends RadarCoord {
   final Map<int, RadarAxisNode> axisMap = {};
   final List<Path> shapePathList = [];
   Offset center = Offset.zero;
+  double radius = 0;
 
   RadarCoordImpl(super.props) {
     for (int i = 0; i < props.indicator.length; i++) {
@@ -62,9 +65,7 @@ class RadarCoordImpl extends RadarCoord {
     if (!props.clockwise) {
       itemAngle *= -1;
     }
-
-    double radius = width / 2;
-
+    radius = width / 2;
     num oa = props.offsetAngle;
     axisMap.forEach((key, value) {
       double angle = oa + value.index * itemAngle;
@@ -175,4 +176,7 @@ class RadarCoordImpl extends RadarCoord {
 
   @override
   Offset getCenter() => center;
+
+  @override
+  double getRadius() => radius;
 }

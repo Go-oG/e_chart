@@ -1,4 +1,3 @@
-
 import 'package:e_chart/src/ext/offset_ext.dart';
 import 'package:flutter/material.dart';
 
@@ -13,11 +12,11 @@ import '../../tick/main_tick.dart';
 import '../base_axis.dart';
 import 'base_axis_impl.dart';
 
-class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
+class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl<T, P> {
   LineAxisImpl(super.axis, {int index = 0}) : super(index: index);
 
   @override
-  BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
+  BaseScale buildScale(P props, List<DynamicData> dataSet) {
     num distance = props.start.distance2(props.end);
     distance *= scaleValue;
     return axis.toScale(0, distance, dataSet);
@@ -41,13 +40,15 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
     num a = p.offsetAngle(center);
     double r = center.distance2(p);
     r += axis.nameGap;
-    return TextDrawConfig(circlePoint(r, a,center), align: toAlignment(a));
+    return TextDrawConfig(circlePoint(r, a, center), align: toAlignment(a));
   }
 
   @override
   void drawAxisLine(Canvas canvas, Paint paint) {
-    var axisLine=axis.axisLine;
-    if(axisLine==null){return;}
+    var axisLine = axis.axisLine;
+    if (axisLine == null) {
+      return;
+    }
     List<num> viewPortList = viewRange; //distance
     num first = viewPortList[0];
     num end = viewPortList[1];
@@ -85,8 +86,10 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
 
   @override
   void drawAxisTick(Canvas canvas, Paint paint) {
-    var axisLine=axis.axisLine;
-    if(axisLine==null){return;}
+    var axisLine = axis.axisLine;
+    if (axisLine == null) {
+      return;
+    }
     if (axisLine.tick == null) {
       return;
     }
@@ -95,6 +98,8 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
       return;
     }
     if (ticks.length == 1) {
+      //TODO 待完成
+
       return;
     }
 
@@ -108,6 +113,9 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
     }
     int count = (end - first) ~/ viewInterval;
 
+    double diffX = props.end.dx - props.start.dx;
+    double diffY = props.end.dy - props.start.dy;
+
     for (int i = 0; i < count; i += 1) {
       num pre = first + i * viewInterval;
       num next = first + (i + 1) * viewInterval;
@@ -115,18 +123,17 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
       int nextIndex = next ~/ viewInterval;
       Offset startOffset, endOffset;
       double percent = pre / allDistance;
+
       startOffset = Offset(
-        props.start.dx + (props.end.dx - props.start.dx) * percent,
-        props.start.dy + (props.end.dy - props.start.dy) * percent,
+        props.start.dx - scrollValue + diffX * percent,
+        props.start.dy - scrollValue + diffY * percent,
       );
-      startOffset = startOffset.translate(-scrollValue, -scrollValue);
       percent = next / allDistance;
       endOffset = Offset(
-        props.start.dx + (props.end.dx - props.start.dx) * percent,
-        props.start.dy + (props.end.dy - props.start.dy) * percent,
+        props.start.dx - scrollValue + diffX * percent,
+        props.start.dy - scrollValue + diffY * percent,
       );
 
-      endOffset = endOffset.translate(-scrollValue, -scrollValue);
       MainTick? tick;
       if (axisLine.tickFun != null) {
         dynamic firstData = scale.domainValue(pre);
@@ -141,6 +148,7 @@ class LineAxisImpl<T extends BaseAxis> extends BaseAxisImpl<T, LineProps> {
         subList.add(ticks[firstIndex]);
         subList.add(ticks[nextIndex]);
       }
+
       tick?.drawLineTick(canvas, paint, startOffset, endOffset, subList);
     }
   }
