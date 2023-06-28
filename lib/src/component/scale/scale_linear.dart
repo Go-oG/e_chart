@@ -1,4 +1,3 @@
-
 import '../../model/dynamic_data.dart';
 import 'scale_base.dart';
 
@@ -22,6 +21,9 @@ class LinearScale extends BaseScale<num, num> {
   num domainValue(covariant num rangeData) {
     num diff = domain.last - domain.first;
     num diff2 = range.last - range.first;
+    if (diff2 == 0) {
+      return domain.first;
+    }
     double p = (rangeData - range.first) / diff2;
     return domain.first + p * diff;
   }

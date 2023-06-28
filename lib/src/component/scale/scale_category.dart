@@ -1,4 +1,3 @@
-
 import '../../model/dynamic_data.dart';
 import 'scale_base.dart';
 
@@ -10,9 +9,11 @@ class CategoryScale extends BaseScale<String, num> {
     num diff = range.last - range.first;
     num interval = diff / domain.length;
     int diff2 = (rangeData - range.first) ~/ interval;
-    if(diff2<0){diff2=0;}
-    if(diff2>=domain.length){
-      diff2=domain.length-1;
+    if (diff2 < 0) {
+      diff2 = 0;
+    }
+    if (diff2 >= domain.length) {
+      diff2 = domain.length - 1;
     }
     return domain[diff2];
   }
@@ -24,13 +25,25 @@ class CategoryScale extends BaseScale<String, num> {
       return double.nan;
     }
     index += 0.5; //居中
-
     num diff = range.last - range.first;
     num interval = diff / domain.length;
-
     return range.first + index * interval;
   }
 
   @override
+  List<num> rangeValue2(DynamicData domainData) {
+    num index = domain.indexOf(domainData.data);
+    if (index == -1) {
+      return [double.nan, double.nan];
+    }
+    num diff = range.last - range.first;
+    num interval = diff / domain.length;
+    return [range.first + index * interval, range.first + (index + 1) * interval];
+  }
+
+  @override
   int get tickCount => domain.length;
+
+  @override
+  bool get isCategory => true;
 }

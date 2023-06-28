@@ -98,6 +98,7 @@ class ArcGesture extends ChartGesture {
   num outerRadius = 0;
   num startAngle = 0;
   num sweepAngle = 0;
+  Offset center=Offset.zero;
 
 
   @override

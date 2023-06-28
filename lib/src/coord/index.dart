@@ -18,7 +18,7 @@ export 'parallel/parallel_coord.dart';
 
 export 'polar/axis_angle.dart';
 export 'polar/axis_radius.dart';
-export 'polar/axis_radius_node.dart';
+export 'polar/axis_radius_impl.dart';
 export 'polar/polar_config.dart';
 export 'polar/polar_child.dart';
 export 'polar/polar_coord.dart';

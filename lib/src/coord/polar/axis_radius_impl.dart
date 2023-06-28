@@ -6,7 +6,7 @@ import '../../style/line_style.dart';
 import 'axis_radius.dart';
 
 ///半径轴
-class RadiusAxisImpl extends LineAxisImpl<RadiusAxis,RadiusProps> {
+class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
   RadiusAxisImpl(super.axis);
 
   @override
@@ -26,21 +26,21 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis,RadiusProps> {
     double interval = props.distance / circleCount;
     for (int i = 1; i < circleCount; i++) {
       LineStyle? style = axis.axisStyleFun!.call(i - 1, circleCount);
-      style.drawArc(canvas, paint, i * interval, 0, 360,props.center);
+      style.drawArc(canvas, paint, i * interval, props.offsetAngle, 360, props.center);
     }
   }
 
-  num dataToRadius(DynamicData data) {
-    return scale.rangeValue(data);
+  List<num> dataToRadius(DynamicData data) {
+    if (scale.isCategory) {
+      return scale.rangeValue2(data);
+    }
+    return [scale.rangeValue(data)];
   }
-
 }
 
-class RadiusProps extends LineProps{
+class RadiusProps extends LineProps {
   final Offset center;
+  final num offsetAngle;
 
-  RadiusProps(this.center,super.rect, super.start, super.end);
-
+  RadiusProps(this.center, this.offsetAngle, super.rect, super.start, super.end);
 }
-
-

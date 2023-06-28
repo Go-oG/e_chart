@@ -1,4 +1,4 @@
-export 'axis/impl/arc_axis_impl.dart';
+export 'axis/impl/angle_axis_impl.dart';
 export 'axis/impl/base_axis_impl.dart';
 export 'axis/impl/line_axis_impl.dart';
 export 'axis/axis_label.dart';

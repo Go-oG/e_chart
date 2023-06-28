@@ -46,8 +46,9 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
 
   void _layoutForPolar(List<PointNode> nodeList, PolarCoord coord) {
     for (var node in nodeList) {
-      Offset offset = coord.dataToPoint(node.data.x, node.data.y);
-      node.rect = Rect.fromCircle(center: offset, radius: 1);
+      PolarPosition position = coord.dataToPosition(node.data.x, node.data.y);
+      Offset point = circlePoint(position.radius[0], position.angle[0], position.center);
+      node.rect = Rect.fromCircle(center: point, radius: 1);
     }
   }
 
@@ -56,6 +57,4 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
       node.rect = coord.dataToPoint(series.xAxisIndex, node.data.x, series.yAxisIndex, node.data.y);
     }
   }
-
-
 }

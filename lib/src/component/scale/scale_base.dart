@@ -1,3 +1,4 @@
+import 'package:e_chart/e_chart.dart';
 
 import '../../model/dynamic_data.dart';
 
@@ -22,6 +23,11 @@ abstract class BaseScale<D, R extends num> {
 
   num rangeValue(DynamicData domainData);
 
+  ///特殊情况下(比如category)时，需要返回一个范围
+  List<num> rangeValue2(DynamicData domainData) {
+    throw ChartError("暂未实现该方法");
+  }
+
   D domainValue(covariant num rangeData);
 
   int get tickCount;
@@ -35,4 +41,6 @@ abstract class BaseScale<D, R extends num> {
     c = c - 1;
     return v / c;
   }
+
+  bool get isCategory=>false;
 }

@@ -51,4 +51,9 @@ class DynamicText {
     p.layout(const ParagraphConstraints(width: double.infinity));
     return p.width.toInt();
   }
+
+  @override
+  String toString() {
+    return '$text';
+  }
 }
