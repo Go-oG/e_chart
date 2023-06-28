@@ -8,7 +8,6 @@ import '../../style/line_style.dart';
 class AngleAxis extends BaseAxis {
   /// 起始刻度的角度，默认为90度(圆心的正上方为0度)
   num offsetAngle;
-  num sweepAngle;
   num radiusOffset;
 
   ///是否顺时针
@@ -19,7 +18,6 @@ class AngleAxis extends BaseAxis {
 
   AngleAxis({
     this.offsetAngle = 0,
-    this.sweepAngle = 360,
     this.radiusOffset = 0,
     this.clockwise = true,
     this.axisPointer,

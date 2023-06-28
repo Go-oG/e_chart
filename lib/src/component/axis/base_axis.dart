@@ -1,20 +1,7 @@
 import 'dart:math' as math;
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:chart_xutil/chart_xutil.dart';
-
-import '../../functions.dart';
-import '../../model/dynamic_data.dart';
-import '../../model/dynamic_text.dart';
-import '../../model/enums/align2.dart';
-import '../../model/enums/direction.dart';
-import '../../model/range.dart';
-import '../../style/label.dart';
-import '../scale/nice_scale.dart';
-import '../scale/scale_base.dart';
-import '../scale/scale_category.dart';
-import '../scale/scale_linear.dart';
-import '../scale/scale_time.dart';
-import 'axis_line.dart';
 
 enum AxisType {
   value,
@@ -97,14 +84,17 @@ abstract class BaseAxis {
   });
 
   BaseScale toScale(num rangeStart, num rangeEnd, [List<DynamicData>? dataSet]) {
+    dataSet ??= [];
+    if (dataSet.length < 2) {
+      dataSet.addAll([DynamicData(rangeStart), DynamicData(rangeEnd)]);
+    }
+
     List<num> rangeValue = [rangeStart, rangeEnd];
     if (category) {
       return CategoryScale(categoryList, rangeValue, inverse);
     }
-    List<DynamicData> ds = [];
-    if (dataSet != null) {
-      ds.addAll(dataSet);
-    }
+    List<DynamicData> ds = [...dataSet];
+
     ds.add(DynamicData(min));
     if (max != null) {
       ds.add(DynamicData(max));
@@ -116,16 +106,14 @@ abstract class BaseAxis {
 
     List<num> list = [];
     List<DateTime> timeList = [];
-    if (dataSet != null) {
-      for (var data in dataSet) {
-        if (data.isString) {
-          continue;
-        }
-        if (data.isNum) {
-          list.add(data.data);
-        } else if (data.isDate) {
-          timeList.add(data.data);
-        }
+    for (var data in dataSet) {
+      if (data.isString) {
+        continue;
+      }
+      if (data.isNum) {
+        list.add(data.data);
+      } else if (data.isDate) {
+        timeList.add(data.data);
       }
     }
 
@@ -156,7 +144,7 @@ abstract class BaseAxis {
       return LinearScale([step.start, step.end], rangeValue, inverse, step.tickCount);
     }
 
-    throw FlutterError('现有数据无法推导出Scale');
+    throw ChartError('现有数据无法推导出Scale');
   }
 
   List<DynamicText> buildTicks(BaseScale scale) {
@@ -208,7 +196,7 @@ abstract class BaseAxis {
     return ('${time.minute}-${time.second}');
   }
 
-  bool get category => categoryList.isNotEmpty;
+  bool get category => categoryList.isNotEmpty || type == AxisType.category;
 }
 
 ///给定坐标轴集和方向
