@@ -60,7 +60,7 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
       if (gridLayout != null) {
         rect = gridLayout.dataToPoint(series.xAxisIndex, data.x, series.yAxisIndex, data.y);
       } else if (calendarLayout != null) {
-        rect = calendarLayout.dataToPoint(data.x.data);
+        rect = calendarLayout.dataToPosition(data.x.data);
       }
       if (rect == null) {
         throw ChartError('无法布局 $gridLayout  $calendarLayout');

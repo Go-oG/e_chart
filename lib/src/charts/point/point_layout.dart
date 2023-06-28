@@ -40,7 +40,7 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
       } else {
         throw ChartError('x 或y 必须有一个是DateTime');
       }
-      node.rect = coord.dataToPoint(t);
+      node.rect = coord.dataToPosition(t);
     }
   }
 

@@ -13,16 +13,31 @@ import 'parallel_axis_node.dart';
 import 'parallel_config.dart';
 import 'parallel_axis.dart';
 import 'parallel_child.dart';
+
 ///平行坐标系
 abstract class ParallelCoord extends RectCoord<ParallelConfig> {
   ParallelCoord(super.props);
 
-  Offset dataToPoint(int dimIndex, DynamicData data);
+  ParallelPosition dataToPosition(int dimIndex, DynamicData data);
 
   Direction get direction => props.direction;
-
 }
 
+class ParallelPosition {
+  ///当为类目轴时其返回一个范围
+  final List<Offset> points;
+
+  ParallelPosition(this.points);
+
+  Offset get center {
+    if (points.length <= 1) {
+      return points[0];
+    }
+    Offset p1 = points[0];
+    Offset p2 = points[1];
+    return Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
+  }
+}
 
 class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> _axisMap = {};
@@ -239,8 +254,8 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   @override
-  Offset dataToPoint(int dimIndex, DynamicData data) {
+  ParallelPosition dataToPosition(int dimIndex, DynamicData data) {
     ParallelAxisImpl node = _axisMap[props.axisList[dimIndex]]!;
-    return node.dataToPoint(data);
+    return ParallelPosition(node.dataToPosition(data));
   }
 }

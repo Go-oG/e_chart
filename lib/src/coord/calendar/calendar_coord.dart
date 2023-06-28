@@ -9,7 +9,7 @@ import 'calendar_config.dart';
 abstract class CalendarCoord extends RectCoord<CalendarConfig> {
   CalendarCoord(super.props);
 
-  Rect dataToPoint(DateTime date);
+  Rect dataToPosition(DateTime date);
 
   int getRowCount();
 
@@ -146,7 +146,7 @@ class CalendarCoordImpl extends CalendarCoord {
   }
 
   @override
-  Rect dataToPoint(DateTime date) {
+  Rect dataToPosition(DateTime date) {
     date = date.first();
     CalendarNode? node = _nodeMap[key(date)];
     if (node == null) {
