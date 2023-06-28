@@ -1,6 +1,7 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:flutter/material.dart';
 
+import '../../component/guideline/guide_line.dart';
 import '../../core/view_state.dart';
 import '../../model/index.dart';
 import '../../style/area_style.dart';
@@ -81,8 +82,8 @@ class FunnelNode with ViewStateProvider {
     double x = centerX + align.align.x * topW / 2;
     double y = centerY + align.align.y * (p1.dy - p2.dy).abs() / 2;
     if (!series.labelAlign.inside) {
-      double lineWidth = style.guideLine.length.toDouble();
-      List<num> lineGap = style.guideLine.gap;
+      double lineWidth = (style.guideLine?.length ?? 0).toDouble();
+      List<num> lineGap = (style.guideLine?.gap ?? [0, 0]);
       if (series.direction == Direction.vertical) {
         int dir = align.align.x > 0 ? 1 : -1;
         x += dir * (lineWidth + lineGap[0]);
@@ -108,17 +109,24 @@ class FunnelNode with ViewStateProvider {
     if (style == null || !style.show) {
       return null;
     }
-    double lineWidth = style.guideLine.length.toDouble();
+    GuideLine? guideLine = style.guideLine;
+    double lineWidth = 0;
+    List<num> gap = [0, 0];
+    if (guideLine != null) {
+      lineWidth = guideLine.length.toDouble();
+      gap = guideLine.gap;
+    }
+
     double x1, y1, x2, y2;
     if (series.direction == Direction.vertical) {
       int dir = series.labelAlign.align.x > 0 ? -1 : 1;
-      x2 = textOffset.dx + dir * (style.guideLine.gap[0]);
+      x2 = textOffset.dx + dir * gap[0];
       x1 = x2 + dir * lineWidth;
       y1 = y2 = textOffset.dy;
     } else {
       x1 = x2 = textOffset.dx;
       int dir = series.labelAlign.align.y > 0 ? -1 : 1;
-      y2 = textOffset.dy + dir * (style.guideLine.gap[1]);
+      y2 = textOffset.dy + dir * gap[1];
       y1 = y2 + dir * lineWidth;
     }
     return [Offset(x1, y1), Offset(x2, y2)];

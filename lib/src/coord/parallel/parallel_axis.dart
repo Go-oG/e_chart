@@ -1,14 +1,12 @@
-import 'package:flutter/material.dart';
-
 import '../../component/axis/base_axis.dart';
 
 ///平行坐标系坐标轴
-@immutable
-class ParallelAxis extends BaseAxis {
-  final int parallelIndex;
-  final bool realTime;
 
-  const ParallelAxis({
+class ParallelAxis extends BaseAxis {
+  int parallelIndex;
+  bool realTime;
+
+  ParallelAxis({
     this.parallelIndex = 0,
     this.realTime = true,
     super.nameAlign,

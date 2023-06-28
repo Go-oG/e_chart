@@ -1,7 +1,5 @@
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/view_group.dart';
 import '../../style/label.dart';
 import '../group/linear_layout_group.dart';
 import 'context_menu.dart';

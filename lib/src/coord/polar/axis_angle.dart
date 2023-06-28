@@ -7,23 +7,22 @@ import '../../style/line_style.dart';
 ///极坐标-角度轴
 class AngleAxis extends BaseAxis {
   /// 起始刻度的角度，默认为90度(圆心的正上方为0度)
-  final num offsetAngle;
-  final num sweepAngle;
-  final num radiusOffset;
+  num offsetAngle;
+  num sweepAngle;
+  num radiusOffset;
 
   ///是否顺时针
-  final bool clockwise;
+  bool clockwise;
+  AxisPointer? axisPointer;
+  LineStyle? subAxisStyle;
+  LineStyle? tipLineStyle;
 
-  final AxisPointer axisPointer;
-  final LineStyle? subAxisStyle;
-  final LineStyle? tipLineStyle;
-
-  const AngleAxis({
+  AngleAxis({
     this.offsetAngle = 0,
     this.sweepAngle = 360,
     this.radiusOffset = 0,
     this.clockwise = true,
-    this.axisPointer = const AxisPointer(),
+    this.axisPointer,
     this.subAxisStyle = const LineStyle(color: Colors.black45),
     this.tipLineStyle = const LineStyle(color: Colors.black54, dash: [2, 6]),
     super.show,

@@ -28,4 +28,9 @@ class Prism implements Shape {
     _path = p;
     return p;
   }
+
+  @override
+  bool internal(Offset offset) {
+  return toPath(true).contains(offset);
+  }
 }

@@ -10,34 +10,34 @@ import '../../style/line_style.dart';
 import '../../utils/align_util.dart';
 
 abstract class BaseTick {
-  final bool show;
+   bool show;
 
   ///坐标轴刻度是否朝内
-  final bool inside;
+   bool inside;
 
   /// 刻度长度
-  final num length;
+   num length;
 
   ///刻度样式
-  final LineStyle lineStyle;
+   LineStyle lineStyle;
 
   ///刻度文字样式
-  final LabelStyle labelStyle;
+   LabelStyle labelStyle;
 
   ///文字和刻度之间的间距
-  final num labelPadding;
+   num labelPadding;
 
   ///Tick 和轴线之间的偏移
-  final num tickOffset;
+   num tickOffset;
 
   ///坐标轴刻度的显示间隔，只在类目轴中有效
   ///-1为默认
   /// 0 强制显示所有标签
   /// 1 『隔一个标签显示一个标签』
   /// 2 隔两个标签显示一个标签，以此类推
-  final int interval;
+   int interval;
 
-  const BaseTick({
+   BaseTick({
     this.show = true,
     this.inside = true,
     this.length = 3,

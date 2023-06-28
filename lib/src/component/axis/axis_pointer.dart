@@ -22,26 +22,29 @@ enum AxisPointerAxis {
 
 /// 坐标轴指示器
 class AxisPointer {
-  final bool show;
-  final AxisPointerType type;
-  final AxisPointerAxis axis;
+  bool show;
+  AxisPointerType type;
+  AxisPointerAxis axis;
 
   //坐标轴指示器是否自动吸附到点上。默认自动判断
-  final bool? snap;
-  //type==line 是有效
-  final LineStyle? lineStyle;
-  //type==shadow 是有效
-  final BoxShadow? shadowStyle;
-  //type==cross有效
-  final LineStyle? crossStyle;
-  final LabelStyle labelStyle;
+  bool? snap;
 
-  const AxisPointer({
+  //type==line 是有效
+  LineStyle? lineStyle;
+
+  //type==shadow 是有效
+  BoxShadow? shadowStyle;
+
+  //type==cross有效
+  LineStyle? crossStyle;
+  LabelStyle labelStyle;
+
+  AxisPointer({
     this.show = false,
     this.type = AxisPointerType.none,
     this.axis = AxisPointerAxis.auto,
     this.snap,
-    this.lineStyle ,
+    this.lineStyle,
     this.shadowStyle,
     this.crossStyle,
     this.labelStyle = const LabelStyle(),

@@ -22,35 +22,44 @@ import 'model/enums/scale_type.dart';
 class ChartConfig {
   ChartTitle? title;
   Legend? legend;
-  List<XAxis> xAxisList;
-  List<YAxis> yAxisList;
+  List<XAxis> xAxisList = [XAxis()];
+  List<YAxis> yAxisList = [YAxis()];
   List<PolarConfig> polarList;
   List<RadarConfig> radarList;
   List<ParallelConfig> parallelList;
   List<CalendarConfig> calendarList;
   List<ChartSeries> series;
   AnimatorProps animation;
-  GridConfig grid;
+  GridConfig grid = GridConfig();
   ScaleType scaleType;
   DragType dragType;
   ToolTip? toolTip;
   Color backgroundColor;
 
-  ChartConfig({
-    required this.series,
-    this.title,
-    this.legend,
-    this.xAxisList = const [XAxis()],
-    this.yAxisList = const [YAxis()],
-    this.polarList = const [],
-    this.radarList = const [],
-    this.parallelList = const [],
-    this.calendarList = const [],
-    this.animation = const AnimatorProps(),
-    this.grid = const GridConfig(),
-    this.scaleType = ScaleType.scale,
-    this.dragType = DragType.longPress,
-    this.toolTip,
-    this.backgroundColor=const Color(0xFFFFFFFF)
-  });
+  ChartConfig(
+      {required this.series,
+      this.title,
+      this.legend,
+      List<XAxis>? xAxisList,
+      List<YAxis>? yAxisList,
+      this.polarList = const [],
+      this.radarList = const [],
+      this.parallelList = const [],
+      this.calendarList = const [],
+      this.animation = const AnimatorProps(),
+      GridConfig? grid,
+      this.scaleType = ScaleType.scale,
+      this.dragType = DragType.longPress,
+      this.toolTip,
+      this.backgroundColor = const Color(0xFFFFFFFF)}) {
+    if (xAxisList != null) {
+      this.xAxisList = xAxisList;
+    }
+    if (yAxisList != null) {
+      this.yAxisList = yAxisList;
+    }
+    if (grid != null) {
+      this.grid = grid;
+    }
+  }
 }

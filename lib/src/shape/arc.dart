@@ -392,6 +392,11 @@ class Arc implements Shape {
 
     return Offset(x1, y1);
   }
+
+  @override
+  bool internal(Offset offset) {
+    return offset.inArc(this);
+  }
 }
 
 class InnerOffset {

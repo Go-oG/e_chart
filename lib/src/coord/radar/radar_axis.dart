@@ -1,8 +1,7 @@
-
 import '../../component/axis/base_axis.dart';
 
 class RadarAxis extends BaseAxis {
-  const RadarAxis({
+  RadarAxis({
     super.show,
     super.name,
     super.nameStyle,

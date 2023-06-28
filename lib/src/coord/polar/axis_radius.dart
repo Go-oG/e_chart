@@ -8,16 +8,16 @@ import '../../style/line_style.dart';
 
 ///极坐标-径向轴
 class RadiusAxis extends BaseAxis {
-  final Align2 nameLocation;
-  final num offsetAngle;
-  final num nameRotate;
+   Align2 nameLocation;
+   num offsetAngle;
+   num nameRotate;
 
-  final Fun3<double, dynamic, AreaStyle>? itemStyleFun;
-  final Fun3<int, int, LineStyle>? axisStyleFun;
+   Fun3<double, dynamic, AreaStyle>? itemStyleFun;
+   Fun3<int, int, LineStyle>? axisStyleFun;
 
-  final LineStyle? tipLineStyle;
+   LineStyle? tipLineStyle;
 
-  const RadiusAxis({
+   RadiusAxis({
     this.nameLocation = Align2.end,
     this.offsetAngle = 0,
     this.nameRotate = 0,

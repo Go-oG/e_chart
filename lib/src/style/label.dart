@@ -17,7 +17,7 @@ class LabelStyle {
   final OverFlow overFlow;
   final String ellipsis;
   final double lineMargin;
-  final GuideLine guideLine;
+  final GuideLine? guideLine;
   final double minAngle; //对应在扇形形状中小于好多时则不显示
 
   const LabelStyle({
@@ -27,7 +27,7 @@ class LabelStyle {
     this.decoration,
     this.overFlow = OverFlow.cut,
     this.ellipsis = '',
-    this.guideLine = const GuideLine(),
+    this.guideLine,
     this.lineMargin = 4,
     this.minAngle = 0,
   });

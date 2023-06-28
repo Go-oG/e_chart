@@ -126,8 +126,8 @@ class RadarCoordImpl extends CircleCoord<RadarConfig> implements RadarCoord{
 
   void _drawAxis(Canvas canvas) {
     ///绘制主轴
-    AxisLine axisLine = props.axisLine;
-    if (axisLine.show) {
+    AxisLine? axisLine = props.axisLine;
+    if (axisLine!=null&&axisLine.show) {
       _axisMap.forEach((key, value) {
         axisLine.style.drawPolygon(canvas, mPaint, [value.props.start, value.props.end]);
       });

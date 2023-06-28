@@ -7,14 +7,14 @@ import 'shader.dart';
 
 class LineShader extends Shader {
   /// 表示渐变的偏移量dx,dy取值范围从从[0,1]
-  final Offset from;
-  final Offset to;
-  final List<Color> colors;
-  final List<double>? colorStops;
-  final TileMode tileMode;
-  final Float64List? matrix4;
+   Offset from;
+   Offset to;
+   List<Color> colors;
+   List<double>? colorStops;
+   TileMode tileMode;
+   Float64List? matrix4;
 
-  const LineShader(
+   LineShader(
     this.colors, {
     this.from = const Offset(0, 0.5),
     this.to = const Offset(1, 0.5),

@@ -7,14 +7,14 @@ import '../../core/view_state.dart';
 import 'shader.dart';
 
 class RadialShader extends Shader {
-  final List<Color> colors;
-  final List<double>? colorStops;
-  final TileMode tileMode; //= TileMode.clamp,
-  final Float64List? matrix4;
-  final Offset? focal;
-  final double focalRadius;
+  List<Color> colors;
+  List<double>? colorStops;
+  TileMode tileMode; //= TileMode.clamp,
+  Float64List? matrix4;
+  Offset? focal;
+  double focalRadius;
 
-  const RadialShader(
+  RadialShader(
     this.colors, {
     this.colorStops,
     this.tileMode = ui.TileMode.clamp,

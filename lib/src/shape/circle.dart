@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+
 import 'chart_shape.dart';
 
 class Circle implements Shape {
@@ -26,6 +28,11 @@ class Circle implements Shape {
     path.close();
     _path = path;
     return path;
+  }
+
+  @override
+  bool internal(Offset offset) {
+    return offset.inCircle(r,center: center);
   }
 
 }

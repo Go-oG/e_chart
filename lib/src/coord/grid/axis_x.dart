@@ -1,7 +1,7 @@
 import 'axis_grid.dart';
 
 class XAxis extends GridAxis {
-  const XAxis({
+   XAxis({
     super.alignTicks,
     super.position,
     super.type,

@@ -79,7 +79,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
     }
     List<Offset>? ol = node.labelLine;
     if (ol != null) {
-      style.guideLine.style.drawPolygon(canvas, mPaint, ol);
+      style.guideLine?.style.drawPolygon(canvas, mPaint, ol);
     }
     style.draw(canvas, mPaint, label, config);
   }
