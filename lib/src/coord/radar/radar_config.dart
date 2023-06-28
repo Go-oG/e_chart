@@ -1,13 +1,4 @@
-import 'package:e_chart/src/model/enums/coordinate.dart';
-
-import '../../component/axis/axis_line.dart';
-import '../../component/tick/main_tick.dart';
-import '../../functions.dart';
-import '../../model/dynamic_text.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
-import '../../style/line_style.dart';
-import '../circle_coord.dart';
+import 'package:e_chart/e_chart.dart';
 
 //雷达坐标系
 class RadarConfig extends CircleCoordConfig {
@@ -38,6 +29,13 @@ class RadarConfig extends CircleCoordConfig {
     this.labelStyleFun,
     super.center,
     super.radius,
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
+    super.id,
+    super.show,
   });
 
   @override

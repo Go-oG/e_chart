@@ -16,7 +16,6 @@ class CalenderSeries extends ChartSeries {
   late num shapeSize;
   CalendarShape? shape;
   Color? middleShapeColor;
-  Color? backgroundColor;
   bool needDrawMarking;
   CalendarShape? markingShape;
   num markingSize;
@@ -61,12 +60,16 @@ class CalenderSeries extends ChartSeries {
   bool drawMiddleShape;
   bool drawLastMonth;
   bool drawNextMonth;
+
   /// 默认选中的数据
   List<DateTime>? defaultDate;
+
   /// 最大可以选择的(该值受到defaultDate和chooseRange的影响)天数 */
   int? maxChooseCount;
+
   /// 可以选择的时间范围，如果为空则都可以选择 */
   DateRange? chooseRange;
+
   /// 作用同chooseRange一样 但是优先级高且更加灵活 */
   bool Function(int year, int month, int date)? onChooseFilter;
 
@@ -91,7 +94,6 @@ class CalenderSeries extends ChartSeries {
     this.shapeSize, {
     this.shape,
     this.middleShapeColor,
-    this.backgroundColor,
     this.needDrawMarking = false,
     this.markingShape,
     this.markingSize = 2,
@@ -124,6 +126,8 @@ class CalenderSeries extends ChartSeries {
     this.styleGenerator,
     this.onChange,
     this.onClickForbidDay,
+    super.backgroundColor,
+    super.id,
     super.animation,
     super.enableClick,
     super.enableHover,

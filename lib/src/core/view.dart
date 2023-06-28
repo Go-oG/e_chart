@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../functions.dart';
@@ -22,6 +23,8 @@ import 'view_state.dart';
 abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   Context? _context;
   LayoutParams layoutParams = LayoutParams.match();
+
+  ///存储当前视图在父视图中的位置属性
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
 
   //记录旧的边界位置，可用于动画相关的计算
@@ -197,7 +200,7 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   void draw(Canvas canvas) {
     inDrawing = true;
     onDrawPre();
-    drawBackground(canvas);
+    onDrawBackground(canvas);
     onDraw(canvas);
     dispatchDraw(canvas);
     onDrawEnd(canvas);
@@ -219,7 +222,7 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     return false;
   }
 
-  void drawBackground(Canvas canvas) {}
+  void onDrawBackground(Canvas canvas) {}
 
   ///绘制时最先调用的方法，可以在这里面更改相关属性从而实现动画视觉效果
   void onDrawPre() {}
@@ -316,10 +319,7 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
       onReceiveCommand(_series?.value);
     };
     series.addListener(_defaultCommandCallback!);
-    _commandMap[Command.updateData] = onUpdateDataCommand;
-    _commandMap[Command.invalidate] = onInvalidateCommand;
-    _commandMap[Command.reLayout] = onRelayoutCommand;
-    _commandMap[Command.configChange] = onSeriesConfigChangeCommand;
+    registerCommandHandler();
   }
 
   void unBindSeries() {
@@ -328,6 +328,20 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
       _series?.removeListener(_defaultCommandCallback!);
     }
     _series = null;
+  }
+
+  void registerCommandHandler() {
+    _commandMap[Command.updateData] = onUpdateDataCommand;
+    _commandMap[Command.invalidate] = onInvalidateCommand;
+    _commandMap[Command.reLayout] = onRelayoutCommand;
+    _commandMap[Command.configChange] = onSeriesConfigChangeCommand;
+  }
+
+  void unregisterCommandHandler() {
+    _commandMap.remove(Command.updateData);
+    _commandMap.remove(Command.invalidate);
+    _commandMap.remove(Command.reLayout);
+    _commandMap.remove(Command.configChange);
   }
 
   void onReceiveCommand(covariant Command? c) {
@@ -441,6 +455,17 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
     _gesture.rect = boxBounds;
+  }
+
+  @override
+  void onDrawBackground(Canvas canvas) {
+    Color? color = series.backgroundColor;
+    if (color != null) {
+      mPaint.reset();
+      mPaint.color = color;
+      mPaint.style = PaintingStyle.fill;
+      canvas.drawRect(selfBoxBound, mPaint);
+    }
   }
 
   Offset _lastHover = Offset.zero;

@@ -26,6 +26,11 @@ class GridConfig extends RectCoordConfig {
     super.bottomMargin,
     super.width,
     super.height,
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
     super.id,
     super.show,
   }) {

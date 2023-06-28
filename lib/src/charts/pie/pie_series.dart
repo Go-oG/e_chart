@@ -80,6 +80,8 @@ class PieSeries extends RectSeries {
     super.enableDrag,
     super.enableScale = false,
     super.clip,
+    super.backgroundColor,
+    super.id,
     super.z,
   }) : super(
           xAxisIndex: -1,
@@ -88,9 +90,10 @@ class PieSeries extends RectSeries {
           radarIndex: -1,
           polarAxisIndex: -1,
         );
+
   @override
   void dispose() {
-   logPrint('Pie Dispose');
+    logPrint('Pie Dispose');
     super.dispose();
   }
 }

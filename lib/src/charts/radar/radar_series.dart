@@ -36,6 +36,8 @@ class RadarSeries extends RectSeries {
     super.enableDrag,
     super.enableScale,
     super.clip,
+    super.backgroundColor,
+    super.id,
     super.z,
   }) : super(
           coordSystem: CoordSystem.radar,
