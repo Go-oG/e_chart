@@ -27,7 +27,7 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
       gl.add(groupNode);
       int i = 0;
       for (var c in data.childData) {
-        Offset offset = layout.dataToPoint(i, c.value) ?? Offset.zero;
+        Offset offset = layout.dataToPoint(i, c.value).point;
         RadarNode radarNode = RadarNode(c, offset);
         groupNode.nodeList.add(radarNode);
         i++;
