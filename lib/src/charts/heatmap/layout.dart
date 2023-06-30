@@ -58,7 +58,7 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
       var data=node.data;
       Rect? rect;
       if (gridLayout != null) {
-        rect = gridLayout.dataToPoint(series.xAxisIndex, data.x, series.yAxisIndex, data.y);
+        rect = gridLayout.dataToPosition(series.xAxisIndex, data.x, series.yAxisIndex, data.y);
       } else if (calendarLayout != null) {
         rect = calendarLayout.dataToPosition(data.x.data);
       }

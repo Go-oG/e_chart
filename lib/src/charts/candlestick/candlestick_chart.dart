@@ -57,17 +57,17 @@ class CandleStickView extends  ChartView implements GridChild {
     AreaStyle areaStyle = series.styleFun.call(data);
     LineStyle lineStyle = series.lineStyleFun.call(data);
     DynamicData dd = DynamicData(data.time);
-    Offset minCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.lowest)).topCenter;
+    Offset minCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.lowest)).topCenter;
 
-    Offset openCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.open)).topCenter;
+    Offset openCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.open)).topCenter;
     Offset openLeft = openCenter.translate(-10, 0);
     Offset openRight = openCenter.translate(10, 0);
 
-    Offset closeCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.close)).topCenter;
+    Offset closeCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.close)).topCenter;
     Offset closeLeft = closeCenter.translate(-10, 0);
     Offset closeRight = closeCenter.translate(10, 0);
 
-    Offset maxCenter = layout.dataToPoint(xAxisIndex, dd, yAxisIndex, DynamicData(data.highest)).topCenter;
+    Offset maxCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.highest)).topCenter;
 
     Path path = Path();
 

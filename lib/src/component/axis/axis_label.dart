@@ -10,16 +10,11 @@ class AxisLabel {
   // 可以设置成 0 强制显示所有标签。
   // 如果设置为 1，表示『隔一个标签显示一个标签』，如果值为 2，表示隔两个标签显示一个标签，以此类推。
   int interval;
-
   bool inside;
-
   double rotate;
-
   double margin;
-
   bool? showMinLabel;
   bool? showMaxLabel;
-
   ///是否隐藏重叠的标签
   bool hideOverLap;
   LabelStyle labelStyle;

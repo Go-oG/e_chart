@@ -26,13 +26,14 @@ class DynamicData {
   @override
   String toString() {
     if (isString) {
-      return data as String;
+      return 'String: $data';
     }
     if (isNum) {
-      return (data as num).toStringAsFixed(1);
+      return 'Number:${(data as num).toStringAsFixed(1)}';
     }
+
     var time = data as DateTime;
-    return '${time.year}-${padLeft(time.month, 2, '0')}-${padLeft(time.day, 2, '0')} '
+    return 'Time:${time.year}-${padLeft(time.month, 2, '0')}-${padLeft(time.day, 2, '0')} '
         '${padLeft(time.hour, 2, '0')}:${padLeft(time.minute, 2, '0')}:${padLeft(time.second, 2, '0')}';
   }
 }

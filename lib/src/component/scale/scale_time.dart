@@ -1,6 +1,6 @@
-
 import 'package:chart_xutil/chart_xutil.dart';
 
+import '../../model/chart_error.dart';
 import '../../model/dynamic_data.dart';
 import '../axis/base_axis.dart';
 import 'scale_linear.dart';
@@ -11,6 +11,9 @@ class TimeScale extends BaseScale<DateTime, num> {
   late final LinearScale _lineScale;
 
   TimeScale(this.splitType, super.domain, super.range, super.inverse) {
+    if (domain.length < 2) {
+      throw ChartError('LinearScale Domain必须大于等于2');
+    }
     _lineScale = LinearScale([0, _convert(domain.first, domain.last, splitType)], this.range, inverse);
   }
 

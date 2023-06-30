@@ -35,9 +35,7 @@ abstract class BaseAxis {
   TimeSplitType timeSplitType;
   Pair<DateTime>? timeRange;
   Fun2<DateTime, DynamicText>? timeFormatFun;
-
   bool inverse;
-
   ///数值轴相关
   num min;
   num? max;
@@ -54,7 +52,9 @@ abstract class BaseAxis {
 
   ///样式、交互相关
   bool silent;
-  AxisLine? axisLine;
+
+  AxisLine axisLine = AxisLine();
+
   Fun2<num, DynamicText>? formatFun;
 
   BaseAxis({
@@ -74,27 +74,43 @@ abstract class BaseAxis {
     this.interval,
     this.logBase = 10,
     this.silent = false,
-    this.axisLine,
+    AxisLine? axisLine,
     this.formatFun,
     this.timeRange,
     this.nameGap = 3,
     this.nameStyle = const LabelStyle(),
     this.nameAlign = Align2.end,
     this.niceType = NiceType.n1,
-  });
+  }) {
+    if (axisLine != null) {
+      this.axisLine = axisLine;
+    }
+  }
 
   BaseScale toScale(num rangeStart, num rangeEnd, [List<DynamicData>? dataSet]) {
     dataSet ??= [];
+    List<num> rangeValue = [rangeStart, rangeEnd];
+    if (category) {
+      if (categoryList.isNotEmpty) {
+        return CategoryScale(categoryList, rangeValue, inverse);
+      }
+      List<String> dl = [];
+      for (var data in dataSet) {
+        if (data.isString) {
+          dl.add(data.data);
+        }
+      }
+      dl.sort();
+      if (dl.isEmpty) {
+        throw ChartError('当前提取Category数目为0');
+      }
+
+      return CategoryScale(dl, rangeValue, inverse);
+    }
     if (dataSet.length < 2) {
       dataSet.addAll([DynamicData(rangeStart), DynamicData(rangeEnd)]);
     }
-
-    List<num> rangeValue = [rangeStart, rangeEnd];
-    if (category) {
-      return CategoryScale(categoryList, rangeValue, inverse);
-    }
     List<DynamicData> ds = [...dataSet];
-
     ds.add(DynamicData(min));
     if (max != null) {
       ds.add(DynamicData(max));
@@ -103,7 +119,6 @@ abstract class BaseAxis {
       ds.add(DynamicData(timeRange!.start));
       ds.add(DynamicData(timeRange!.end));
     }
-
     List<num> list = [];
     List<DateTime> timeList = [];
     for (var data in dataSet) {

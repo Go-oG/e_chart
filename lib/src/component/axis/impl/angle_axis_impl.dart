@@ -35,7 +35,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   }
 
   @override
-  void drawAxisLine(Canvas canvas, Paint paint) {
+  void onDrawAxisLine(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
     if (axisLine == null || !axisLine.show) {
       return;
@@ -59,7 +59,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   }
 
   @override
-  void drawAxisTick(Canvas canvas, Paint paint) {
+  void onDrawAxisTick(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
     if (axisLine == null) {
       return;

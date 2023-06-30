@@ -1,9 +1,10 @@
+import '../../../model/enums/align2.dart';
 import 'axis_grid.dart';
 
 class XAxis extends GridAxis {
-   XAxis({
+  XAxis({
     super.alignTicks,
-    super.position,
+    super.position = Align2.end,
     super.type,
     super.offset,
     super.nameStyle,
@@ -20,11 +21,6 @@ class XAxis extends GridAxis {
     super.logBase,
     super.silent,
     super.axisLine,
-    super.axisTick,
-    super.minorTick,
-    super.axisLabel,
-    super.splitLine,
-    super.minorSplitLine,
     super.splitArea,
     super.categoryList,
     super.axisPointer,

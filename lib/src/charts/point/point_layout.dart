@@ -54,7 +54,7 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
 
   void _layoutForGrid(List<PointNode> nodeList, GridCoord coord) {
     for (var node in nodeList) {
-      node.rect = coord.dataToPoint(series.xAxisIndex, node.data.x, series.yAxisIndex, node.data.y);
+      node.rect = coord.dataToPosition(series.xAxisIndex, node.data.x, series.yAxisIndex, node.data.y);
     }
   }
 }
