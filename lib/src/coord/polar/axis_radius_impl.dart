@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../component/axis/impl/line_axis_impl.dart';
@@ -20,10 +22,8 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
       return;
     }
     int circleCount = scale.tickCount;
-    if (circleCount <= 0) {
-      circleCount = 1;
-    }
-    double interval = props.distance / circleCount;
+    circleCount=max(circleCount, 2);
+    double interval = props.distance / (circleCount-1);
     for (int i = 1; i < circleCount; i++) {
       LineStyle? style = axis.axisStyleFun!.call(i - 1, circleCount);
       style.drawArc(canvas, paint, i * interval, props.offsetAngle, 360, props.center);
@@ -31,10 +31,7 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
   }
 
   List<num> dataToRadius(DynamicData data) {
-    if (scale.isCategory) {
-      return scale.rangeValue2(data);
-    }
-    return [scale.rangeValue(data)];
+    return scale.toRange(data.data);
   }
 }
 

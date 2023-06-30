@@ -116,11 +116,11 @@ class GridCoordImpl extends GridCoord {
       var w = value.axisInfo.bound.width;
       if (value.axis.position == Align2.start) {
         Rect rect = Rect.fromLTWH(leftOffset - w, topMargin, w, axisHeight);
-        layoutProps = LineProps(rect, rect.topRight, rect.bottomRight);
+        layoutProps = LineProps(rect, rect.bottomRight, rect.topRight);
         leftOffset -= (w + value.axis.offset);
       } else {
         Rect rect = Rect.fromLTWH(rightOffset, topMargin, w, axisHeight);
-        layoutProps = LineProps(rect, rect.topLeft, rect.bottomLeft);
+        layoutProps = LineProps(rect, rect.bottomLeft, rect.topLeft);
         rightOffset += (w + value.axis.offset);
       }
       value.layout(layoutProps, dl);
@@ -137,7 +137,6 @@ class GridCoordImpl extends GridCoord {
       value.draw(canvas, mPaint);
     });
     yMap.forEach((key, value) {
-      logPrint("Y轴${value.axisInfo.bound} ${value.axisInfo.start}  ${value.axisInfo.end}");
       value.draw(canvas, mPaint);
     });
   }

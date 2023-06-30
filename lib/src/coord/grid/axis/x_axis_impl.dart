@@ -18,8 +18,8 @@ class XAxisImpl extends BaseGridAxisImpl {
     }
     double width = parentWidth;
     double height = line.style.width;
-    if (line.tick != null && line.tick!.show) {
-      var mainTick = line.tick!;
+    if (line.tick.show) {
+      var mainTick = line.tick;
       if (mainTick.minorTick != null && mainTick.minorTick!.show) {
         height += max([mainTick.length, mainTick.minorTick!.length]);
       } else {
@@ -44,7 +44,7 @@ class XAxisImpl extends BaseGridAxisImpl {
   void layout(LineProps layoutProps, List<DynamicData> dataSet) {
     Rect rect = layoutProps.rect;
     axisInfo.bound = rect;
-    bool inside = axis.axisLine.tick?.inside ?? true;
+    bool inside = axis.axisLine.tick.inside;
     if (inside) {
       axisInfo.start = rect.bottomLeft;
       axisInfo.end = rect.bottomRight;
@@ -59,9 +59,9 @@ class XAxisImpl extends BaseGridAxisImpl {
   BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
     double distance = axisInfo.bound.width * scaleFactor;
     if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('长度未知：$distance');
+      throw ChartError('$runtimeType 长度未知：$distance');
     }
-    var s=axis.toScale(0, distance, dataSet);
+    var s = axis.toScale([0, distance], dataSet,false);
     return s;
   }
 
@@ -69,14 +69,10 @@ class XAxisImpl extends BaseGridAxisImpl {
   void onScaleFactorChange(double factor) {
     double distance = axisInfo.bound.width * factor;
     if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('长度未知：$distance');
+      throw ChartError('$runtimeType 长度未知：$distance');
     }
-    List<DynamicData> dl = List.from(scale.domain.map((e){
-      logPrint("$e");
-     return DynamicData(e);
-    }));
-    scale = axis.toScale(0, distance, dl);
+    scale=scale.copyWithRange([0,distance]);
+    updateTickPosition();
     notifyLayoutUpdate();
   }
-
 }

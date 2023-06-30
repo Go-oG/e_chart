@@ -1,12 +1,5 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../../core/chart_notifier.dart';
-import '../../../core/command.dart';
-import '../../../model/dynamic_data.dart';
-import '../../../model/dynamic_text.dart';
-import '../../../model/text_position.dart';
-import '../../scale/scale_base.dart';
-import '../base_axis.dart';
 
 abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command> {
   final int index;
@@ -18,10 +11,8 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
   late BaseScale scale;
 
   bool expanded = true;
-  bool show = true;
 
   BaseAxisImpl(this.axis, {this.index = 0}) : super(Command.none) {
-    show = axis.show;
     titleNode = AxisTitleNode(axis.name);
   }
 
@@ -61,11 +52,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
     return axis.buildTicks(scale);
   }
 
-  ///返回当前轴显示的可见范围
-  ///返回值为 scale 中的range
-  List<num> get viewRange {
-    return [scale.range[0], scale.range[1]];
-  }
+  void updateTickPosition() {}
 
   void notifyLayoutUpdate() {
     value = Command.layoutUpdate;

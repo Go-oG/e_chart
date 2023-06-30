@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../core/view_state.dart';
 import '../ext/text_style_ext.dart';

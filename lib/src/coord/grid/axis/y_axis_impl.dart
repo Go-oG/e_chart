@@ -14,13 +14,14 @@ class YAxisImpl extends BaseGridAxisImpl {
     AxisLine line = axis.axisLine;
     if (line.show) {
       width += line.style.width;
-      MainTick? tick = line.tick;
-      if (tick != null && tick.show) {
-        if (tick.minorTick != null && tick.minorTick!.show) {
-          width += max([line.tick!.length, tick.minorTick!.length]);
-        } else {
-          width += line.tick!.length;
+      MainTick tick = line.tick;
+      if (tick.show) {
+        num l1 = tick.length;
+        num l2 = tick.minorTick?.length ?? 0;
+        if (!(tick.minorTick?.show ?? false)) {
+          l2 = 0;
         }
+        width += max([l1, l2]);
       }
     }
 
@@ -40,7 +41,7 @@ class YAxisImpl extends BaseGridAxisImpl {
   @override
   void layout(LineProps layoutProps, List<DynamicData> dataSet) {
     axisInfo.bound = layoutProps.rect;
-    bool inside = axis.axisLine.tick?.inside ?? false;
+    bool inside = axis.axisLine.tick.inside;
     if (inside) {
       axisInfo.start = layoutProps.rect.topLeft;
       axisInfo.end = layoutProps.rect.bottomLeft;
@@ -53,21 +54,21 @@ class YAxisImpl extends BaseGridAxisImpl {
 
   @override
   BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
-    double distance = axisInfo.bound.height;
+    double distance = axisInfo.bound.height*scaleFactor;
     if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('长度异常');
+      throw ChartError('$runtimeType 长度异常');
     }
-    return axis.toScale(distance, 0, dataSet);
+    return axis.toScale([distance, 0], dataSet,false);
   }
 
   @override
   void onScaleFactorChange(double factor) {
     double distance = axisInfo.bound.height * factor;
     if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('长度未知：$distance');
+      throw ChartError('$runtimeType 长度未知：$distance');
     }
-    List<DynamicData> dl = List.from(scale.domain.map((e) => DynamicData(e)));
-    scale = axis.toScale(distance, 0, dl);
+    scale=scale.copyWithRange([distance,0]);
+    updateTickPosition();
     notifyLayoutUpdate();
   }
 }

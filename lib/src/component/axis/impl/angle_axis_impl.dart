@@ -1,4 +1,6 @@
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/model/tick_result.dart';
 import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
@@ -10,14 +12,13 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   @override
   BaseScale buildScale(ArcProps props, List<DynamicData> dataSet) {
     num s = props.angleOffset;
-    if (!props.clockwise) {
-      s += maxAngle;
-    }
-    num e = props.angleOffset;
+    num e;
     if (props.clockwise) {
-      e += maxAngle;
+      e = s + maxAngle;
+    } else {
+      e = s - maxAngle;
     }
-    return axis.toScale(s, e, dataSet);
+    return axis.toScale([s, e], dataSet, false);
   }
 
   @override
@@ -37,92 +38,49 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   @override
   void onDrawAxisLine(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
-    if (axisLine == null || !axisLine.show) {
+    if (!axisLine.show) {
       return;
     }
-    int count = scale.tickCount - 1;
-    int direction = axis.clockwise ? 1 : -1;
-    num angleInterval = direction * maxAngle / count;
-
-    for (int i = 0; i < count; i++) {
-      num startAngle = axis.offsetAngle + i * angleInterval;
-      num sa = angleInterval;
-      dynamic firstData = scale.domainValue(startAngle);
-      dynamic endData = scale.domainValue(startAngle + sa);
-      LineStyle? style;
+    each(arcTickList, (arc, p1) {
+      LineStyle style = axisLine.style;
       if (axisLine.styleFun != null) {
-        style = axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
+        var s = axisLine.styleFun!.call(DynamicData(arc.startData), DynamicData(arc.endData));
+        if (s != null) {
+          style = s;
+        }
       }
-      style ??= axisLine.style;
-      style.drawArc(canvas, paint, props.radius, startAngle, sa, props.center);
-    }
+      style.drawPath(canvas, paint, arc.arc.arcOpen(), true);
+    });
   }
 
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
-    if (axisLine == null) {
+    if (!axisLine.show) {
       return;
     }
-    List<DynamicText> ticks = obtainTicks();
-    if (ticks.isEmpty) {
-      return;
-    }
-    if (ticks.length == 1) {
-      dynamic firstData = scale.domainValue(axis.offsetAngle);
-      dynamic endData = scale.domainValue(axis.offsetAngle + maxAngle);
-      MainTick? tick;
+    each(arcTickList, (arc, p1) {
+      MainTick tick = axisLine.tick;
       if (axisLine.tickFun != null) {
-        tick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
+        var t = axisLine.tickFun!.call(DynamicData(arc.startData), DynamicData(arc.endData));
+        if (t != null) {
+          tick = t;
+        }
       }
-      tick ??= axisLine.tick;
-      tick?.drawCircleTick(canvas, paint, props.radius, axis.offsetAngle, maxAngle, ticks, center: props.center);
-      return;
-    }
-
-    int direction = props.clockwise ? 1 : -1;
-    int count = ticks.length;
-    if (!axis.category) {
-      count -= 1;
-    }
-
-    final num angleInterval = direction * maxAngle / count;
-    for (int i = 0; i < count; i++) {
-      num startAngle = props.angleOffset + angleInterval * i;
-      dynamic firstData = scale.domainValue(startAngle);
-      dynamic endData = scale.domainValue(startAngle + angleInterval);
-      MainTick? tick;
-      if (axisLine.tickFun != null) {
-        tick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
+      if (!tick.show) {
+        return;
       }
-      tick ??= axisLine.tick;
-
-      List<DynamicText> tl = [ticks[i]];
-
-      ///这里添加一个empty是为了计算方便
-      if (!axis.category) {
-        tl.add(DynamicText.empty);
-      }
-
-      tick?.drawCircleTick(
-        canvas,
-        paint,
-        props.radius,
-        startAngle,
-        angleInterval,
-        tl,
-        category: axis.category,
-        center: props.center,
-      );
-    }
-
-    if (axis.subAxisStyle != null) {
-      for (int i = 0; i < count; i++) {
-        num angle = axis.offsetAngle + i * angleInterval;
-        Offset offset = circlePoint(props.radius, angle, props.center);
+      each(arc.tick, (at, p1) {
+        tick.lineStyle.drawPolygon(canvas, paint, [at.start, at.end]);
+        if (at.text != null && at.textConfig != null) {
+          tick.labelStyle.draw(canvas, paint, at.text!, at.textConfig!);
+        }
+      });
+      if (axis.subAxisStyle != null) {
+        Offset offset = circlePoint(arc.arc.outRadius, arc.arc.startAngle, arc.arc.center);
         axis.subAxisStyle!.drawPolygon(canvas, paint, [props.center, offset]);
       }
-    }
+    });
   }
 
   @override
@@ -133,13 +91,53 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
     return axis.buildTicks(scale);
   }
 
+  List<ArcRange> arcTickList = [];
+
+  @override
+  void updateTickPosition() {
+    final int count = scale.tickCount - 1;
+    final int dir = props.clockwise ? 1 : -1;
+    final num angleInterval = dir * maxAngle / count;
+
+    List<ArcRange> rangeList = [];
+    List<DynamicText> ticks = obtainTicks();
+    for (int i = 0; i < count; i++) {
+      num startAngle = axis.offsetAngle + i * angleInterval;
+      dynamic firstData = scale.toData(startAngle);
+      dynamic endData = scale.toData(startAngle + angleInterval);
+
+      var arc = Arc(
+        innerRadius: 0,
+        outRadius: props.radius,
+        startAngle: startAngle,
+        sweepAngle: angleInterval,
+        center: props.center,
+      );
+
+      MainTick tick = axis.axisLine.tick;
+      if (axis.axisLine.tickFun != null) {
+        var t = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
+        if (t != null) {
+          tick = t;
+        }
+      }
+
+      List<DynamicText> tl = [];
+      if (i < ticks.length) {
+        tl.add(ticks[i]);
+        tl.add(DynamicText.empty);
+      }
+
+      List<TickResult> result = tick.computeCircleTick(props.radius, startAngle, angleInterval, tl, center: props.center);
+      rangeList.add(ArcRange(arc, firstData, endData, result));
+    }
+    arcTickList = rangeList;
+  }
+
   ///将一个"Y轴数据" 转换到角度范围
   ///如果轴类型为category 则返回角度的范围，否则返回单一角度
   List<num> dataToAngle(DynamicData data) {
-    if(!axis.category){
-      return [scale.rangeValue(data)];
-    }
-    return scale.rangeValue2(data);
+    return scale.toRange(data.data);
   }
 }
 
@@ -156,4 +154,14 @@ class ArcProps {
     this.radius, {
     this.clockwise = true,
   });
+}
+
+class ArcRange {
+  final Arc arc;
+
+  final dynamic startData;
+  final dynamic endData;
+  final List<TickResult> tick;
+
+  ArcRange(this.arc, this.startData, this.endData, this.tick);
 }

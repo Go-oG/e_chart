@@ -21,6 +21,11 @@ class NiceScale {
     );
   }
 
+  @override
+  String toString() {
+    return 'start:${start.toStringAsFixed(2)} end:${end.toStringAsFixed(2)} tickCount:${tickCount} sep:${step.toStringAsFixed(2)}';
+  }
+
   static NiceScale nice(
     num min,
     num max,

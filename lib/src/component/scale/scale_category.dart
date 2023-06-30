@@ -1,21 +1,21 @@
-
-
 import '../../model/chart_error.dart';
-import '../../model/dynamic_data.dart';
 import 'scale_base.dart';
 
 class CategoryScale extends BaseScale<String, num> {
-  CategoryScale(super.domain, super.range, super.inverse){
-    if(domain.isEmpty){
+  CategoryScale(
+    super.domain,
+    super.range,
+  ) {
+    if (domain.isEmpty) {
       throw ChartError('Domain至少应该有一个');
     }
   }
 
   @override
-  String domainValue(num rangeData) {
-    num diff = range.last - range.first;
+  String toData(num range) {
+    num diff = this.range.last - this.range.first;
     num interval = diff / domain.length;
-    int diff2 = (rangeData - range.first) ~/ interval;
+    int diff2 = (range - this.range.first) ~/ interval;
     if (diff2 < 0) {
       diff2 = 0;
     }
@@ -26,20 +26,8 @@ class CategoryScale extends BaseScale<String, num> {
   }
 
   @override
-  num rangeValue(DynamicData domainData) {
-    num index = domain.indexOf(domainData.data);
-    if (index == -1) {
-      return double.nan;
-    }
-    index += 0.5; //居中
-    num diff = range.last - range.first;
-    num interval = diff / domain.length;
-    return range.first + index * interval;
-  }
-
-  @override
-  List<num> rangeValue2(DynamicData domainData) {
-    num index = domain.indexOf(domainData.data);
+  List<num> toRange(String data) {
+    num index = domain.indexOf(data);
     if (index == -1) {
       return [double.nan, double.nan];
     }
@@ -49,8 +37,16 @@ class CategoryScale extends BaseScale<String, num> {
   }
 
   @override
-  int get tickCount => domain.length;
+  int get tickCount => domain.length+1;
 
   @override
   bool get isCategory => true;
+
+  @override
+  List<String> get ticks=>domain;
+
+  @override
+  CategoryScale copyWithRange(List<num> range) {
+    return CategoryScale(domain, range);
+  }
 }

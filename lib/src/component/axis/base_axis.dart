@@ -1,24 +1,10 @@
 import 'dart:math' as math;
+import 'dart:math';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:chart_xutil/chart_xutil.dart';
 
-enum AxisType {
-  value,
-  category,
-  time,
-  log,
-}
-
-///时间分割类型
-enum TimeSplitType {
-  year,
-  month,
-  day,
-  hour,
-  minute,
-  sec,
-}
+import '../scale/scale_log.dart';
 
 abstract class BaseAxis {
   bool show;
@@ -36,11 +22,11 @@ abstract class BaseAxis {
   Pair<DateTime>? timeRange;
   Fun2<DateTime, DynamicText>? timeFormatFun;
   bool inverse;
+
   ///数值轴相关
   num min;
   num? max;
 
-  ///是否是脱离 0 值比例。设置成 true 后坐标刻度不会强制包含零刻度
   bool start0;
   int splitNumber;
   num minInterval;
@@ -67,7 +53,7 @@ abstract class BaseAxis {
     this.inverse = false,
     this.min = 0,
     this.max,
-    this.start0 = false,
+    this.start0 = true,
     this.splitNumber = 5,
     this.minInterval = 0,
     this.maxInterval,
@@ -87,12 +73,14 @@ abstract class BaseAxis {
     }
   }
 
-  BaseScale toScale(num rangeStart, num rangeEnd, [List<DynamicData>? dataSet]) {
-    dataSet ??= [];
-    List<num> rangeValue = [rangeStart, rangeEnd];
+  ///将指定的参数转换为标度尺
+  BaseScale toScale(List<num> range, List<DynamicData> dataSet, bool revertRange) {
+    if (revertRange) {
+      range = List.from(range.reversed);
+    }
     if (category) {
       if (categoryList.isNotEmpty) {
-        return CategoryScale(categoryList, rangeValue, inverse);
+        return CategoryScale(categoryList, range);
       }
       List<String> dl = [];
       for (var data in dataSet) {
@@ -104,11 +92,7 @@ abstract class BaseAxis {
       if (dl.isEmpty) {
         throw ChartError('当前提取Category数目为0');
       }
-
-      return CategoryScale(dl, rangeValue, inverse);
-    }
-    if (dataSet.length < 2) {
-      dataSet.addAll([DynamicData(rangeStart), DynamicData(rangeEnd)]);
+      return CategoryScale(dl, range);
     }
     List<DynamicData> ds = [...dataSet];
     ds.add(DynamicData(min));
@@ -119,9 +103,13 @@ abstract class BaseAxis {
       ds.add(DynamicData(timeRange!.start));
       ds.add(DynamicData(timeRange!.end));
     }
+    if (ds.length < 2) {
+      ds.addAll([DynamicData(range[0]), DynamicData(range[1])]);
+    }
+
     List<num> list = [];
     List<DateTime> timeList = [];
-    for (var data in dataSet) {
+    for (var data in ds) {
       if (data.isString) {
         continue;
       }
@@ -132,19 +120,35 @@ abstract class BaseAxis {
       }
     }
 
-    if (type == AxisType.time) {
+    if (type == AxisType.time || timeList.length >= 2) {
       if (timeList.isEmpty) {
-        throw FlutterError('现有数据无法推导出坐标范围');
+        throw ChartError('现有数据无法推导出坐标范围');
       }
       timeList.sort((a, b) {
         return a.millisecondsSinceEpoch.compareTo(b.millisecondsSinceEpoch);
       });
       DateTime start = timeList[0];
       DateTime end = timeList[timeList.length - 1];
-      return TimeScale(timeSplitType, [start, end], rangeValue, inverse);
+      return TimeScale(timeSplitType, [start, end], range);
     }
 
-    if (type == AxisType.value || type == AxisType.log) {
+    if (type == AxisType.log) {
+      List<num> v = extremes<num>(list, (p) => p);
+      List<num> logV = [log(v[0]) / log(logBase), log(v[1]) / log(logBase)];
+      NiceScale step = NiceScale.nice(
+        logV[0],
+        logV[1],
+        splitNumber,
+        minInterval: minInterval,
+        maxInterval: maxInterval,
+        interval: interval,
+        start0: start0,
+        type: niceType,
+      );
+      return LogScale([step.start, step.end], range, step: step.step, tickCount: step.tickCount + 1);
+    }
+
+    if (type == AxisType.value) {
       List<num> v = extremes<num>(list, (p) => p);
       NiceScale step = NiceScale.nice(
         v[0],
@@ -156,15 +160,14 @@ abstract class BaseAxis {
         start0: start0,
         type: niceType,
       );
-      return LinearScale([step.start, step.end], rangeValue, inverse, step.tickCount);
+      return LinearScale([step.start, step.end], range, step: step.step);
     }
-
     throw ChartError('现有数据无法推导出Scale');
   }
 
   List<DynamicText> buildTicks(BaseScale scale) {
     if (scale is CategoryScale) {
-      return List.from(scale.domain.map((e) => DynamicText(e)));
+      return List.from(scale.ticks.map((e) => DynamicText(e)));
     }
     List<DynamicText> ticks = [];
     if (scale is TimeScale) {
@@ -177,18 +180,17 @@ abstract class BaseAxis {
       }
       return ticks;
     }
-    if (scale is LinearScale) {
-      int count = scale.tickCount;
-      num interval = (scale.domain.last - scale.domain.first) / count;
-      for (int i = 0; i <= count; i += 1) {
-        num v = scale.domain.first + i * interval;
+
+    if (scale is LinearScale || scale is LogScale) {
+      ticks = List.from(scale.ticks.map((e) {
         if (formatFun != null) {
-          ticks.add(formatFun!.call(v));
+          return formatFun!.call(e);
         } else {
-          ticks.add(DynamicText.fromString(formatNumber(v)));
+          return DynamicText.fromString(formatNumber(e));
         }
-      }
+      }));
     }
+
     return ticks;
   }
 
@@ -241,4 +243,22 @@ List<Size> measureAxisNameTextMaxSize(Iterable<BaseAxis> axisList, Direction dir
     }
   }
   return [firstSize, lastSize];
+}
+
+enum AxisType {
+  value,
+  category,
+  time,
+  log,
+}
+
+///时间分割类型
+enum TimeSplitType {
+  year,
+  month,
+  day,
+  hour,
+  minute,
+  sec,
+  week,
 }

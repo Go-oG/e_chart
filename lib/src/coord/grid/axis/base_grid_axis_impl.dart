@@ -20,10 +20,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineProps> {
   AxisInfo get axisInfo => _axisInfo;
 
   List<num> dataToPoint(DynamicData data) {
-    if (scale.isCategory) {
-      return scale.rangeValue2(data);
-    }
-    return [scale.rangeValue(data)];
+    return scale.toRange(data.data);
   }
 
   DynamicText getMaxStr(Direction direction) {
