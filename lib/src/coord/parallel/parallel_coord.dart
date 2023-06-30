@@ -73,9 +73,6 @@ class ParallelCoordImpl extends ParallelCoord {
         node.expanded = false;
       }
       _axisMap[ele] = node;
-      if (node.show) {
-        _axisMap[ele] = node;
-      }
     }
   }
 
@@ -84,9 +81,6 @@ class ParallelCoordImpl extends ParallelCoord {
     ParallelAxisImpl? node;
     num distance = 0;
     for (var ele in _axisMap.values) {
-      if (!ele.show) {
-        continue;
-      }
       if (node == null) {
         node = ele;
         if (props.direction == Direction.horizontal) {
@@ -114,9 +108,6 @@ class ParallelCoordImpl extends ParallelCoord {
     bool hasCheck = false;
     for (var axis in props.axisList) {
       var node2 = _axisMap[axis]!;
-      if (node2.show) {
-        hasCheck = true;
-      }
       if (node == node2) {
         return !hasCheck;
       }
@@ -128,9 +119,7 @@ class ParallelCoordImpl extends ParallelCoord {
     bool hasCheck = false;
     for (int i = props.axisList.length - 1; i >= 0; i--) {
       var node2 = _axisMap[props.axisList[i]]!;
-      if (node2.show) {
-        hasCheck = true;
-      }
+
       if (node == node2) {
         return !hasCheck;
       }
@@ -153,12 +142,10 @@ class ParallelCoordImpl extends ParallelCoord {
     int expandCount = 0;
     int unExpandCount = 0;
     _axisMap.forEach((key, value) {
-      if (value.show) {
-        if (value.expanded) {
-          expandCount += 1;
-        } else {
-          unExpandCount += 1;
-        }
+      if (value.expanded) {
+        expandCount += 1;
+      } else {
+        unExpandCount += 1;
       }
     });
     num unExpandAllSize = props.expandWidth * unExpandCount;
@@ -176,9 +163,6 @@ class ParallelCoordImpl extends ParallelCoord {
 
     for (var axis in props.axisList) {
       var node = _axisMap[axis]!;
-      if (!node.show) {
-        continue;
-      }
       double tmpLeft;
       double tmpTop;
       double tmpRight;
@@ -236,9 +220,6 @@ class ParallelCoordImpl extends ParallelCoord {
   BaseAxisImpl? findClickAxis(Offset offset) {
     BaseAxisImpl? node;
     for (var ele in _axisMap.entries) {
-      if (!ele.value.show) {
-        continue;
-      }
       List<Offset> ol;
       if (props.direction == Direction.horizontal) {
         ol = [ele.value.props.rect.topLeft, ele.value.props.rect.bottomLeft];

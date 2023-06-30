@@ -18,12 +18,7 @@ class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, LineProps> {
   List<Offset> dataToPosition(DynamicData data) {
     double diffY = props.end.dy - props.start.dy;
     double diffX = props.end.dx - props.start.dx;
-    List<num> nl = [];
-    if (scale.isCategory) {
-      nl = scale.rangeValue2(data);
-    } else {
-      nl.add(scale.rangeValue(data));
-    }
+    List<num> nl = scale.toRange(data.data);
     List<Offset> ol = [];
     for (var d in nl) {
       double at = atan2(diffY, diffX);

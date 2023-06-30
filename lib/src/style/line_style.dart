@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 import '../core/view_state.dart';

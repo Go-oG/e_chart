@@ -1,4 +1,7 @@
+import 'dart:math' as m;
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/model/tick_result.dart';
 import 'package:flutter/material.dart';
 
 class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl<T, P> {
@@ -39,7 +42,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
   BaseScale buildScale(P props, List<DynamicData> dataSet) {
     num distance = props.start.distance2(props.end);
     distance *= scaleFactor;
-    return axis.toScale(0, distance, dataSet);
+    return axis.toScale([0, distance], dataSet, false);
   }
 
   @override
@@ -63,111 +66,124 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
     return TextDrawConfig(circlePoint(r, a, center), align: toAlignment(a));
   }
 
+  List<LineRange> tickPositionList = [];
+
+  @override
+  void layout(P layoutProps, List<DynamicData> dataSet) {
+    super.layout(layoutProps, dataSet);
+    updateTickPosition();
+  }
+
   @override
   void onDrawAxisLine(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
-    List<num> viewPortList = viewRange; //distance
-    final num first = viewPortList[0];
-    final num end = viewPortList[1];
-
-    num allDistance = scale.range[1] - scale.range[0];
-    num viewInterval = scale.viewInterval.abs();
-    int count = (end - first).abs() ~/ viewInterval;
-    for (int i = 0; i < count; i++) {
-      num pre = first + i * viewInterval;
-      num next = first + (i + 1) * viewInterval;
-      Offset startOffset, endOffset;
-      double percent = pre / allDistance;
-      startOffset = Offset(
-        props.start.dx + (props.end.dx - props.start.dx) * percent,
-        props.start.dy + (props.end.dy - props.start.dy) * percent,
-      );
-      startOffset = startOffset.translate(-scrollOffset, -scrollOffset);
-      percent = next / allDistance;
-      endOffset = Offset(
-        props.start.dx + (props.end.dx - props.start.dx) * percent,
-        props.start.dy + (props.end.dy - props.start.dy) * percent,
-      );
-      endOffset = endOffset.translate(-scrollOffset, -scrollOffset);
-      dynamic firstData = scale.domainValue(pre);
-      dynamic endData = scale.domainValue(next);
-      LineStyle? style;
-      if (axisLine.styleFun != null) {
-        style = axisLine.styleFun!.call(DynamicData(firstData), DynamicData(endData));
-      }
-      style ??= axisLine.style;
-      style.drawPolygon(canvas, paint, [startOffset, endOffset]);
+    if (!axisLine.show) {
+      return;
     }
+    each(tickPositionList, (tick, p1) {
+      Offset start = tick.start;
+      Offset end = tick.end;
+      LineStyle style = axisLine.style;
+      if (axisLine.styleFun != null) {
+        var s = axisLine.styleFun!.call(DynamicData(tick.startData), DynamicData(tick.endData));
+        if (s != null) {
+          style = s;
+        }
+      }
+      style.drawPolygon(canvas, paint, [start, end]);
+    });
   }
 
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
-    if (!axisLine.show || !axisLine.tick.show) {
-      logPrint("$runtimeType 轴线不显示");
-      return;
-    }
-    List<DynamicText> ticks = obtainTicks();
-    if (ticks.isEmpty) {
-      return;
-    }
-    if (ticks.length == 1) {
-      //TODO 待完成
-      logPrint("Tick Length 为 1");
+    if (!axisLine.show) {
       return;
     }
 
-    //TODO 修复
-    List<num> viewPortList = viewRange;
-    final num first = viewPortList[0];
-    final num end = viewPortList[1];
-
-    num allDistance = (scale.range[1] - scale.range[0]).abs();
-    num viewInterval = allDistance / ticks.length;
-    if (!axis.category) {
-      viewInterval = allDistance / (ticks.length - 1);
-    }
-
-    int count = (end - first).abs() ~/ viewInterval.abs();
-    double diffX = props.end.dx - props.start.dx;
-    double diffY = props.end.dy - props.start.dy;
-
-    for (int i = 0; i < count; i += 1) {
-      num pre = first + i * viewInterval;
-      num next = first + (i + 1) * viewInterval;
-      int firstIndex = pre ~/ viewInterval;
-      int nextIndex = next ~/ viewInterval;
-
-      Offset startOffset, endOffset;
-      double percent = pre / allDistance;
-
-      startOffset = Offset(
-        props.start.dx - scrollOffset + diffX * percent,
-        props.start.dy - scrollOffset + diffY * percent,
-      );
-      percent = next / allDistance;
-      endOffset = Offset(
-        props.start.dx - scrollOffset + diffX * percent,
-        props.start.dy - scrollOffset + diffY * percent,
-      );
-      MainTick? tick;
+    each(tickPositionList, (tp, p1) {
+      var mainTick = axisLine.tick;
       if (axisLine.tickFun != null) {
-        dynamic firstData = scale.domainValue(pre);
-        dynamic endData = scale.domainValue(next);
-        tick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
+        var t = axisLine.tickFun?.call(DynamicData(tp.startData), DynamicData(tp.endData));
+        if (t != null) {
+          mainTick = t;
+        }
       }
-      tick ??= axisLine.tick;
-      List<DynamicText> subList = [];
-      if (axis.category) {
-        subList.add(ticks[firstIndex]);
-      } else {
-        subList.add(ticks[firstIndex]);
-        subList.add(ticks[nextIndex]);
+      if (!mainTick.show) {
+        return;
       }
 
-      logPrint("LineDraw $runtimeType");
-      tick.drawLineTick(canvas, paint, startOffset, endOffset, subList);
+      each(tp.tick, (tick, p1) {
+        mainTick.lineStyle.drawPolygon(canvas, paint, [tick.start, tick.end]);
+        if (tick.text != null && tick.textConfig != null) {
+          mainTick.labelStyle.draw(canvas, paint, tick.text!, tick.textConfig!);
+        }
+      });
+    });
+  }
+
+  @override
+  void updateTickPosition() {
+    final num firstRange = scale.range[0];
+    final num endRange = scale.range[1];
+    final num distance = endRange - firstRange;
+    final double diffX = props.end.dx - props.start.dx;
+    final double diffY = props.end.dy - props.start.dy;
+    final num k = m.atan(diffX / diffY);
+    final num ck = m.cos(k);
+    final num sk = m.sin(k);
+    final int tickCount = scale.tickCount - 1;
+
+    List<Offset> ol = [];
+    for (int i = 0; i <= tickCount; i++) {
+      double percent = i / tickCount;
+      double dis = distance * percent;
+      Offset offset = Offset(
+        props.start.dx + dis * sk,
+        props.start.dy + dis * ck,
+      );
+      ol.add(offset);
     }
+
+    List<LineRange> rangeList = [];
+    List<DynamicText> ticks = obtainTicks();
+
+    for (int i = 0; i < ol.length - 1; i++) {
+      var s = ol[i];
+      var e = ol[i + 1];
+      num pre = s.distance2(props.start);
+      num next = e.distance2(props.start);
+      dynamic firstData = scale.toData(pre);
+      dynamic endData = scale.toData(next);
+
+      var axisLine = axis.axisLine;
+      MainTick tick = axisLine.tick;
+      if (axisLine.tickFun != null) {
+        num pre = s.distance2(props.start);
+        num next = e.distance2(props.start);
+        dynamic firstData = scale.toData(pre);
+        dynamic endData = scale.toData(next);
+        var tmpTick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
+        if (tmpTick != null) {
+          tick = tmpTick;
+        }
+      }
+      List<DynamicText> textList = [];
+      if (i < ticks.length) {
+        textList.add(ticks[i]);
+      }
+      if (!axis.category) {
+        if (i + 1 < ticks.length) {
+          textList.add(ticks[i + 1]);
+        } else {
+          textList.add(DynamicText.empty);
+        }
+      }
+
+      List<TickResult> result = tick.computeLineTick(s, e, textList);
+      rangeList.add(LineRange(s, e, firstData, endData, result));
+    }
+    this.tickPositionList = List.from(rangeList, growable: false);
   }
 }
 
@@ -192,4 +208,14 @@ class LineProps {
   });
 
   double get distance => start.distance2(end);
+}
+
+class LineRange {
+  final Offset start;
+  final Offset end;
+  final dynamic startData;
+  final dynamic endData;
+  final List<TickResult> tick;
+
+  LineRange(this.start, this.end, this.startData, this.endData, this.tick);
 }

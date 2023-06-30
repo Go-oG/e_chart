@@ -41,8 +41,6 @@ class PolarCoordImpl extends PolarCoord {
   @override
   void onHoverMove(Offset offset, Offset last) {}
 
-  @override
-  void onHoverEnd() {}
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
