@@ -1,9 +1,11 @@
+
+import '../../../model/enums/align2.dart';
 import 'axis_grid.dart';
 
 class YAxis extends GridAxis {
    YAxis({
     super.alignTicks,
-    super.position,
+    super.position=Align2.start,
     super.type,
     super.offset,
     super.nameAlign,
@@ -20,11 +22,6 @@ class YAxis extends GridAxis {
     super.logBase,
     super.silent,
     super.axisLine,
-    super.axisTick,
-    super.minorTick,
-    super.axisLabel,
-    super.splitLine,
-    super.minorSplitLine,
     super.splitArea,
     super.categoryList,
     super.axisPointer,

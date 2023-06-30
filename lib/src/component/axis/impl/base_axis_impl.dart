@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/chart_notifier.dart';
+import '../../../core/command.dart';
 import '../../../model/dynamic_data.dart';
 import '../../../model/dynamic_text.dart';
 import '../../../model/text_position.dart';
 import '../../scale/scale_base.dart';
 import '../base_axis.dart';
 
-abstract class BaseAxisImpl<T extends BaseAxis, L> {
+abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command> {
   final int index;
   final T axis;
   late final AxisTitleNode titleNode;
@@ -18,10 +20,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> {
   bool expanded = true;
   bool show = true;
 
-  num _scroll = 0;
-  num _scale = 1;
-
-  BaseAxisImpl(this.axis, {this.index = 0}) {
+  BaseAxisImpl(this.axis, {this.index = 0}) : super(Command.none) {
     show = axis.show;
     titleNode = AxisTitleNode(axis.name);
   }
@@ -42,21 +41,21 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> {
     if (!axis.show) {
       return;
     }
-    drawAxisLine(canvas, paint);
-    drawAxisTick(canvas, paint);
-    drawAxisName(canvas, paint);
+    onDrawAxisLine(canvas, paint);
+    onDrawAxisTick(canvas, paint);
+    onDrawAxisName(canvas, paint);
   }
 
-  void drawAxisName(Canvas canvas, Paint paint) {
+  void onDrawAxisName(Canvas canvas, Paint paint) {
     if (titleNode.label == null || titleNode.label!.isEmpty) {
       return;
     }
     axis.nameStyle.draw(canvas, paint, titleNode.label!, titleNode.config);
   }
 
-  void drawAxisLine(Canvas canvas, Paint paint) {}
+  void onDrawAxisLine(Canvas canvas, Paint paint) {}
 
-  void drawAxisTick(Canvas canvas, Paint paint) {}
+  void onDrawAxisTick(Canvas canvas, Paint paint) {}
 
   List<DynamicText> obtainTicks() {
     return axis.buildTicks(scale);
@@ -68,25 +67,13 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> {
     return [scale.range[0], scale.range[1]];
   }
 
-  void scrollDiff(num s) {
-    setScroll(_scroll + s);
+  void notifyLayoutUpdate() {
+    value = Command.layoutUpdate;
   }
 
-  void setScroll(num scroll) {
-    _scroll = scroll;
+  void notifyLayoutEnd() {
+    value = Command.layoutEnd;
   }
-
-  void scaleDiff(num s) {
-    setScale(_scale + s);
-  }
-
-  void setScale(num scale) {
-    _scale = scale;
-  }
-
-  double get scrollValue => _scroll.toDouble();
-
-  double get scaleValue => _scale.toDouble();
 }
 
 class AxisTitleNode {

@@ -1,3 +1,4 @@
+import '../../model/chart_error.dart';
 import '../../model/dynamic_data.dart';
 import 'scale_base.dart';
 
@@ -7,6 +8,9 @@ class LinearScale extends BaseScale<num, num> {
   ///表示域的范围
   LinearScale(super.domain, super.range, super.inverse, [int tickCount = 0]) {
     _tickCount = tickCount;
+    if (domain.length < 2) {
+      throw ChartError('LinearScale Domain必须大于等于2');
+    }
   }
 
   @override

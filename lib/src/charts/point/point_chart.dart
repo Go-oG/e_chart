@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'point_node.dart';
 
-class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
+class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild,GridChild {
   final PointLayout _layout = PointLayout();
 
   PointView(super.series);
@@ -85,12 +85,6 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
     }
   }
 
-  void drawForPolar(Canvas canvas, PolarCoord coord) {}
-
-  void drawForCalendar(Canvas canvas, CalendarCoord coord) {}
-
-  void drawForGrid(Canvas canvas, GridCoord coord) {}
-
   @override
   int get calendarIndex => series.calendarIndex;
 
@@ -111,4 +105,22 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild {
     }
     return dl;
   }
+
+  @override
+  int get xAxisIndex => series.xAxisIndex;
+
+  @override
+  List<DynamicData> get xDataSet => List.from(series.data.map((e) => e.x));
+
+  @override
+  int get xDataSetCount =>series.data.length;
+
+  @override
+  int get yAxisIndex => series.yAxisIndex;
+
+  @override
+  List<DynamicData> get yDataSet => List.from(series.data.map((e) => e.y));
+
+  @override
+  int get yDataSetCount => series.data.length;
 }

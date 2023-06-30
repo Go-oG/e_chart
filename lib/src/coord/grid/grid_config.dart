@@ -1,15 +1,13 @@
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
 import '../../component/tooltip/tool_tip.dart';
-import '../../style/area_style.dart';
 import '../rect_coord.dart';
-import 'axis_x.dart';
-import 'axis_y.dart';
+import 'axis/axis_x.dart';
+import 'axis/axis_y.dart';
 
 class GridConfig extends RectCoordConfig {
   ///grid区域是否包含坐标轴的刻度标签
   bool containLabel;
-  AreaStyle? style;
   ToolTip? toolTip;
   List<XAxis> xAxisList = [XAxis()];
   List<YAxis> yAxisList = [YAxis()];
@@ -18,7 +16,6 @@ class GridConfig extends RectCoordConfig {
     List<XAxis>? xAxisList,
     List<YAxis>? yAxisList,
     this.containLabel = false,
-    this.style,
     this.toolTip,
     super.leftMargin,
     super.topMargin,

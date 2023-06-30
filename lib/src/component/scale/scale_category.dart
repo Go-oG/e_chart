@@ -1,8 +1,15 @@
+
+
+import '../../model/chart_error.dart';
 import '../../model/dynamic_data.dart';
 import 'scale_base.dart';
 
 class CategoryScale extends BaseScale<String, num> {
-  CategoryScale(super.domain, super.range, super.inverse);
+  CategoryScale(super.domain, super.range, super.inverse){
+    if(domain.isEmpty){
+      throw ChartError('Domain至少应该有一个');
+    }
+  }
 
   @override
   String domainValue(num rangeData) {

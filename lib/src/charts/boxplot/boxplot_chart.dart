@@ -55,23 +55,23 @@ class BoxPlotView extends ChartView implements GridChild {
     LineStyle? style = series.lineStyleFun.call(data);
     GridCoord layout = context.findGridCoord();
 
-    Offset minCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.min).topCenter;
+    Offset minCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.min).topCenter;
     Offset minLeft = minCenter.translate(-10, 0);
     Offset minRight = minCenter.translate(10, 0);
 
-    Offset downCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
+    Offset downCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
     Offset downLeft = minCenter.translate(-10, 0);
     Offset downRight = minCenter.translate(10, 0);
 
-    Offset middleCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
+    Offset middleCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
     Offset middleLeft = middleCenter.translate(-10, 0);
     Offset middleRight = middleCenter.translate(10, 0);
 
-    Offset upAveCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.upAve4).topCenter;
+    Offset upAveCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.upAve4).topCenter;
     Offset upAveLeft = upAveCenter.translate(-10, 0);
     Offset upAveRight = upAveCenter.translate(10, 0);
 
-    Offset maxCenter = layout.dataToPoint(xAxisIndex, data.x, yAxisIndex, data.max).topCenter;
+    Offset maxCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.max).topCenter;
     Offset maxLeft = maxCenter.translate(-10, 0);
     Offset maxRight = maxCenter.translate(10, 0);
 

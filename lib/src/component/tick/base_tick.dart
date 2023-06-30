@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:e_chart/src/ext/offset_ext.dart';
 
@@ -40,7 +41,7 @@ abstract class BaseTick {
    BaseTick({
     this.show = true,
     this.inside = true,
-    this.length = 3,
+    this.length = 8,
     this.lineStyle = const LineStyle(),
     this.labelStyle = const LabelStyle(),
     this.labelPadding = 3,
@@ -61,6 +62,7 @@ abstract class BaseTick {
   ///大于等于2则在首尾均匀分布
   void drawLineTick(Canvas canvas, Paint paint, Offset start, Offset end, List<DynamicText> ticks) {
     if (ticks.isEmpty || !show) {
+      logPrint('baseTick drawLineTick() 数据为空');
       return;
     }
     num b2 = length * length;
@@ -97,6 +99,7 @@ abstract class BaseTick {
       //Tick End position
       Offset o3 = circlePoint(c, resultAngle, start);
       lineStyle.drawPolygon(canvas, paint, [sOffset, o3]);
+      logPrint('baseTick drawLineTick() $sOffset  $o3');
       if (i >= ticks.length) {
         continue;
       }

@@ -15,4 +15,7 @@ abstract class GridChild{
 
   List<DynamicData> get yDataSet;
 
+  ///子视图需要重新布局内容
+  //void onLayoutContent(){}
+
 }
