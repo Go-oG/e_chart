@@ -16,7 +16,7 @@ import 'model/enums/scale_type.dart';
 class ChartConfig {
   ChartTitle? title;
   Legend? legend;
-  GridConfig grid = GridConfig();
+  GridConfig? grid;
   List<PolarConfig> polarList;
   List<RadarConfig> radarList;
   List<ParallelConfig> parallelList;

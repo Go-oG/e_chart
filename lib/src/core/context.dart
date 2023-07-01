@@ -1,36 +1,18 @@
+import 'package:e_chart/src/component/title/title_view.dart';
+import 'package:e_chart/src/core/index.dart';
 import 'package:flutter/widgets.dart';
 
-import '../animation/index.dart';
+import '../animation/animation_manager.dart';
+import '../animation/animator_props.dart';
 import '../chart.dart';
-import '../model/index.dart';
-import '../utils/log_util.dart';
-import 'series.dart';
-import '../component/axis/base_axis.dart';
-import '../component/legend/layout.dart';
-import '../component/title/title_view.dart';
-import '../component/tooltip/context_menu_builder.dart';
-import '../component/tooltip/tool_tip_view.dart';
-import '../coord/calendar/calendar_config.dart';
-import '../coord/calendar/calendar_child.dart';
-import '../coord/calendar/calendar_coord.dart';
-import '../coord/coord.dart';
-import '../coord/coord_config.dart';
-import '../coord/grid/grid_child.dart';
-import '../coord/grid/grid_coord.dart';
-import '../coord/parallel/parallel_config.dart';
-import '../coord/parallel/parallel_child.dart';
-import '../coord/parallel/parallel_coord.dart';
-import '../coord/polar/polar_child.dart';
-import '../coord/polar/polar_coord.dart';
-import '../coord/radar/radar_child.dart';
-import '../coord/radar/radar_coord.dart';
-import '../coord/single/single_layout.dart';
+import '../component/index.dart';
+import '../coord/index.dart';
 import '../coord_factory.dart';
-import '../gesture/chart_gesture.dart';
-import '../gesture/gesture_dispatcher.dart';
+import '../gesture/index.dart';
+import '../model/index.dart';
 import '../series_factory.dart';
-import 'view.dart';
-import 'view_group.dart';
+import '../utils/log_util.dart';
+
 
 ///存放整个图表的配置.包含所有的图形实例和动画、手势
 ///一个Context 对应一个 GestureDispatcher和一个AnimationManager
@@ -109,12 +91,15 @@ class Context {
     ///Coord
     ///转换CoordConfig 到Coord
     List<CoordConfig> coordConfigList = [
-      config.grid,
       ...config.polarList,
       ...config.radarList,
       ...config.calendarList,
       ...config.parallelList,
     ];
+    if (config.grid != null) {
+      coordConfigList.add(config.grid!);
+    }
+
     for (var ele in coordConfigList) {
       var c = CoordFactory.instance.convert(ele);
       if (c == null) {
@@ -137,6 +122,8 @@ class Context {
       _seriesViewMap[series] = view;
     }
 
+    _fillGridAndPolarCoordIfNeed();
+
     ///将指定了坐标系的View和坐标系绑定
     _seriesViewMap.forEach((key, view) {
       Coord? layout = _findCoord(view, key);
@@ -150,6 +137,47 @@ class Context {
       view.create(this, layout);
       view.bindSeries(key);
       layout.addView(view);
+    });
+  }
+
+  ///补齐需要的坐标系
+  void _fillGridAndPolarCoordIfNeed() {
+    _seriesViewMap.forEach((series, view) {
+      if (series.coordSystem != null) {
+        var coord = series.coordSystem!;
+        bool has = false;
+        for (var e in _coordMap.entries) {
+          if (e.key.coordSystem == coord) {
+            has = true;
+            break;
+          }
+        }
+        if (has) {
+          return;
+        }
+
+        if (coord == CoordSystem.grid) {
+          var cc = GridConfig();
+          var c = CoordFactory.instance.convert(cc);
+          if (c != null) {
+            config.grid=cc;
+            _coordMap[cc] = c;
+            _coordList.add(c);
+          }
+          return;
+        }
+        if (coord == CoordSystem.polar) {
+          var cc = PolarConfig();
+          var c = CoordFactory.instance.convert(cc);
+          if (c != null) {
+            config.polarList.add(cc);
+            _coordMap[cc] = c;
+            _coordList.add(c);
+          }
+          return;
+        }
+        return;
+      }
     });
   }
 
