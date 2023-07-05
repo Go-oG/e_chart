@@ -68,17 +68,30 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
 
   @override
   void onDraw(Canvas canvas) {
+    ChartTheme chartTheme = context.config.theme;
+    HeadMapTheme theme = chartTheme.mapTheme;
     for (var node in _layout.nodeList) {
-      ChartSymbol symbol = series.symbolFun.call(node, node.rect.size).convert(node.status);
-      symbol.draw(canvas, mPaint, node.rect.center, 1);
-      if (node.data.label != null) {
-        LabelStyle? labelStyle = series.labelFun?.call(node);
-        if (labelStyle == null || !labelStyle.show) {
-          continue;
-        }
-        Alignment align = series.labelAlignFun?.call(node) ?? Alignment.center;
-        labelStyle.draw(canvas, mPaint, node.data.label!, TextDrawConfig.fromRect(node.rect, align));
+      ChartSymbol? symbol = series.symbolFun?.call(node, node.rect.size);
+      if (symbol == null && series.symbolFun == null) {
+        symbol = RectSymbol(theme.areaStyle).convert(node.status);
       }
+      symbol?.draw(canvas, mPaint, node.rect.center, 1);
+
+      if (node.data.label == null || node.data.label!.isEmpty) {
+        continue;
+      }
+      var label = node.data.label!;
+
+      LabelStyle? labelStyle = series.labelFun?.call(node);
+      if (labelStyle == null && series.labelFun == null) {
+        labelStyle = theme.labelStyle.convert(node.status);
+      }
+      if (labelStyle == null || !labelStyle.show) {
+        continue;
+      }
+      Alignment align = series.labelAlignFun?.call(node) ?? Alignment.center;
+      labelStyle.draw(canvas, mPaint, label, TextDrawConfig.fromRect(node.rect, align));
     }
   }
+
 }

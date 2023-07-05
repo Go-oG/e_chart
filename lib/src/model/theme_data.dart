@@ -49,7 +49,7 @@ class ChartTheme {
   FunnelTheme funnelTheme = FunnelTheme();
   GaugeTheme gaugeTheme = GaugeTheme();
   CandlestickTheme candlestickTheme = CandlestickTheme();
-  MapTheme mapTheme = MapTheme();
+  HeadMapTheme mapTheme = HeadMapTheme();
   GraphTheme graphTheme = GraphTheme();
 
   final Map<String, dynamic> _themeMap = {};
@@ -70,7 +70,6 @@ class ChartTheme {
     _themeMap.clear();
   }
 }
-
 
 ///其它通用配置
 class TooltipTheme {
@@ -113,13 +112,13 @@ class RadarTheme {
   num lineWidth = 2;
   num symbolSize = 4;
   ChartSymbol symbol = EmptySymbol();
-  List<Color> splitColors=[
+  List<Color> splitColors = [
     const Color(0xFFFFFFFF),
   ];
-  List<Color> borderColors=[
+  List<Color> borderColors = [
     const Color(0xFFFFFFFF),
   ];
-  num borderWidth=1;
+  num borderWidth = 1;
 }
 
 class BarTheme {
@@ -155,7 +154,7 @@ class SankeyTheme {
 class FunnelTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFCCCCCC);
-  LabelStyle labelStyle=LabelStyle();
+  LabelStyle labelStyle = LabelStyle();
   List<Color> colors = [
     const Color(0xFF5470c6),
     const Color(0xFF91cc75),
@@ -200,9 +199,8 @@ class GraphTheme {
   Color labelColor = const Color(0xFFEEEEEE);
 }
 
-class MapTheme {
+class HeadMapTheme {
   AreaStyle areaStyle = const AreaStyle(color: Color(0xFFEEEEEE), border: LineStyle(color: Color(0xFF444444), width: 0.5));
-  AreaStyle areaHoverStyle = const AreaStyle(color: Color(0xFFEEEEEE), border: LineStyle(color: Color(0xFF444444), width: 0.5));
   LabelStyle labelStyle = const LabelStyle();
 }
 
