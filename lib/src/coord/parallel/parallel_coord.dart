@@ -40,16 +40,16 @@ class ParallelPosition {
 }
 
 class ParallelCoordImpl extends ParallelCoord {
-  final Map<ParallelAxis, ParallelAxisImpl> _axisMap = {};
+  final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
   int _expandLeftIndex = -1;
   int _expandRightIndex = -1;
 
   ParallelCoordImpl(super.props) {
-    _initData();
+    initAxis();
   }
 
-  void _initData() {
-    _axisMap.clear();
+  void initAxis() {
+    axisMap.clear();
     _expandLeftIndex = -1;
     _expandRightIndex = -1;
     if (props.expandable && props.expandStartIndex >= 0 && props.expandStartIndex < props.axisList.length) {
@@ -72,15 +72,23 @@ class ParallelCoordImpl extends ParallelCoord {
       if (i >= _expandLeftIndex && i <= _expandRightIndex) {
         node.expanded = false;
       }
-      _axisMap[ele] = node;
+      axisMap[ele] = node;
     }
+  }
+
+  @override
+  void onCreate() {
+    super.onCreate();
+    axisMap.forEach((key, value) {
+      value.context=context;
+    });
   }
 
   ///找到离点击点最近的轴
   ParallelAxisImpl? findMinDistanceAxis(Offset offset) {
     ParallelAxisImpl? node;
     num distance = 0;
-    for (var ele in _axisMap.values) {
+    for (var ele in axisMap.values) {
       if (node == null) {
         node = ele;
         if (props.direction == Direction.horizontal) {
@@ -107,7 +115,7 @@ class ParallelCoordImpl extends ParallelCoord {
   bool isFirstAxis(BaseAxisImpl node) {
     bool hasCheck = false;
     for (var axis in props.axisList) {
-      var node2 = _axisMap[axis]!;
+      var node2 = axisMap[axis]!;
       if (node == node2) {
         return !hasCheck;
       }
@@ -118,7 +126,7 @@ class ParallelCoordImpl extends ParallelCoord {
   bool isLastAxis(BaseAxisImpl node) {
     bool hasCheck = false;
     for (int i = props.axisList.length - 1; i >= 0; i--) {
-      var node2 = _axisMap[props.axisList[i]]!;
+      var node2 = axisMap[props.axisList[i]]!;
 
       if (node == node2) {
         return !hasCheck;
@@ -141,7 +149,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
     int expandCount = 0;
     int unExpandCount = 0;
-    _axisMap.forEach((key, value) {
+    axisMap.forEach((key, value) {
       if (value.expanded) {
         expandCount += 1;
       } else {
@@ -159,10 +167,10 @@ class ParallelCoordImpl extends ParallelCoord {
     double offsetP = horizontal ? leftOffset : topOffset;
 
     ///计算在不同布局方向上前后占用的最大高度或者宽度
-    List<Size> textSize = measureAxisNameTextMaxSize(_axisMap.keys, props.direction, max(interval, props.expandWidth));
+    List<Size> textSize = measureAxisNameTextMaxSize(axisMap.keys, props.direction, max(interval, props.expandWidth));
 
     for (var axis in props.axisList) {
-      var node = _axisMap[axis]!;
+      var node = axisMap[axis]!;
       double tmpLeft;
       double tmpTop;
       double tmpRight;
@@ -211,7 +219,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
   @override
   void onDraw(Canvas canvas) {
-    for (var ele in _axisMap.entries) {
+    for (var ele in axisMap.entries) {
       ele.value.draw(canvas, mPaint);
     }
   }
@@ -219,7 +227,7 @@ class ParallelCoordImpl extends ParallelCoord {
   ///找到当前点击的
   BaseAxisImpl? findClickAxis(Offset offset) {
     BaseAxisImpl? node;
-    for (var ele in _axisMap.entries) {
+    for (var ele in axisMap.entries) {
       List<Offset> ol;
       if (props.direction == Direction.horizontal) {
         ol = [ele.value.props.rect.topLeft, ele.value.props.rect.bottomLeft];
@@ -236,7 +244,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
   @override
   ParallelPosition dataToPosition(int dimIndex, DynamicData data) {
-    ParallelAxisImpl node = _axisMap[props.axisList[dimIndex]]!;
+    ParallelAxisImpl node = axisMap[props.axisList[dimIndex]]!;
     return ParallelPosition(node.dataToPosition(data));
   }
 }

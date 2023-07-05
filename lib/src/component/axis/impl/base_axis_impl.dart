@@ -5,6 +5,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
   final int index;
   final T axis;
   late final AxisTitleNode titleNode;
+  late Context context;
 
   //布局参数
   late L props;

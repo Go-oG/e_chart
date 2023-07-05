@@ -1,8 +1,4 @@
 //表格的通用配置
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
-
 import 'animation/animator_props.dart';
 import 'coord/index.dart';
 import 'core/series.dart';
@@ -12,6 +8,7 @@ import 'component/tooltip/tool_tip.dart';
 
 import 'model/enums/drag_type.dart';
 import 'model/enums/scale_type.dart';
+import 'model/theme_data.dart';
 
 class ChartConfig {
   ChartTitle? title;
@@ -23,11 +20,10 @@ class ChartConfig {
   List<CalendarConfig> calendarList;
   List<ChartSeries> series;
   AnimatorProps animation;
-
   ScaleType scaleType;
   DragType dragType;
   ToolTip? toolTip;
-  Color backgroundColor;
+  ChartTheme theme = ChartTheme();
 
   ChartConfig(
       {required this.series,
@@ -44,9 +40,12 @@ class ChartConfig {
       this.scaleType = ScaleType.scale,
       this.dragType = DragType.longPress,
       this.toolTip,
-      this.backgroundColor = const Color(0xFFFFFFFF)}) {
+      ChartTheme? theme}) {
     if (grid != null) {
       this.grid = grid;
+    }
+    if (theme != null) {
+      this.theme = theme;
     }
   }
 }

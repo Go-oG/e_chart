@@ -2,30 +2,6 @@ import 'dart:math';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class RadarCoord extends CircleCoord<RadarConfig> {
-  RadarCoord(super.props);
-
-  RadarPosition dataToPoint(int axisIndex, num data);
-
-  int getAxisCount();
-
-  Offset getCenter();
-
-  double getRadius();
-}
-
-class RadarPosition {
-  final Offset center;
-  final num radius;
-  final num angle;
-
-  RadarPosition(this.center, this.radius, this.angle);
-
-  Offset get point {
-    return circlePoint(radius, angle, center);
-  }
-}
-
 ///雷达图坐标系
 class RadarCoordImpl extends RadarCoord {
   final Map<int, RadarAxisImpl> axisMap = {};
@@ -45,6 +21,14 @@ class RadarCoordImpl extends RadarCoord {
           splitNumber: 5);
       axisMap[i] = RadarAxisImpl(axis, i);
     }
+  }
+
+  @override
+  void onCreate() {
+    super.onCreate();
+    axisMap.forEach((key, value) {
+      value.context=context;
+    });
   }
 
   @override
@@ -179,4 +163,28 @@ class RadarCoordImpl extends RadarCoord {
 
   @override
   double getRadius() => radius;
+}
+
+abstract class RadarCoord extends CircleCoord<RadarConfig> {
+  RadarCoord(super.props);
+
+  RadarPosition dataToPoint(int axisIndex, num data);
+
+  int getAxisCount();
+
+  Offset getCenter();
+
+  double getRadius();
+}
+
+class RadarPosition {
+  final Offset center;
+  final num radius;
+  final num angle;
+
+  RadarPosition(this.center, this.radius, this.angle);
+
+  Offset get point {
+    return circlePoint(radius, angle, center);
+  }
 }

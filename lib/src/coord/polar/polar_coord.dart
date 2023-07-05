@@ -34,6 +34,13 @@ class PolarCoordImpl extends PolarCoord {
     _angleAxis = AngleAxisImpl(props.angleAxis);
     _radiusAxis = RadiusAxisImpl(props.radiusAxis);
   }
+  @override
+  void onCreate() {
+    super.onCreate();
+    _angleAxis.context=context;
+    _radiusAxis.context=context;
+  }
+
 
   @override
   void onHoverStart(Offset offset) {}
