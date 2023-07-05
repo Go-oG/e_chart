@@ -19,7 +19,9 @@ export 'constans.dart';
 export 'dynamic_data.dart';
 export 'dynamic_text.dart';
 export 'group_data.dart';
-export 'multi_data.dart';
+export 'point_data.dart';
 export 'range.dart';
 export 'string_number.dart';
 export 'text_position.dart';
+
+export 'theme_data.dart';

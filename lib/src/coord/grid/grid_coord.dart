@@ -28,6 +28,17 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
+  void onCreate() {
+    super.onCreate();
+    xMap.forEach((key, value) {
+      value.context = context;
+    });
+    yMap.forEach((key, value) {
+      value.context = context;
+    });
+  }
+
+  @override
   void addView(ChartView view, {int index = -1}) {
     super.addView(view, index: index);
     if (view is GridChild) {
