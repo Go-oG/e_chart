@@ -152,4 +152,12 @@ class LabelStyle {
     y = y - (align.y + 1) * (h / 2);
     return Offset(x, y);
   }
+
+  //TODO 待实现
+  LabelStyle convert(Set<ViewState> set){
+    return this;
+  }
+
+
+
 }
