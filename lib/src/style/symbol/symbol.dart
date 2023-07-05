@@ -7,7 +7,7 @@ abstract class ChartSymbol {
   Offset _center = Offset.zero;
 
   ChartSymbol({Offset center = Offset.zero}) {
-    this._center = center;
+    _center = center;
   }
 
   Offset get center => _center;

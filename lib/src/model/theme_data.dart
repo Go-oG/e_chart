@@ -4,6 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///全局的主题配置
 class ChartTheme {
+  ///该列表必须至少有一个
   List<Color> colors = [
     const Color(0xFF5470c6),
     const Color(0xFF91cc75),
@@ -18,7 +19,6 @@ class ChartTheme {
   Color backgroundColor = const Color(0xFFFFFFFF);
   Color titleTextColor = const Color(0xFF464646);
   Color titleSubTextColor = const Color(0xFF6E7079);
-
   Color markTextColor = const Color(0xFFEEEEEE);
   Color borderColor = const Color(0xFFCCCCCC);
   num borderWidth = 0;
@@ -112,8 +112,14 @@ class LineTheme {
 class RadarTheme {
   num lineWidth = 2;
   num symbolSize = 4;
-  ChartSymbol symbol = CircleSymbol();
-  bool smooth = false;
+  ChartSymbol symbol = EmptySymbol();
+  List<Color> splitColors=[
+    const Color(0xFFFFFFFF),
+  ];
+  List<Color> borderColors=[
+    const Color(0xFFFFFFFF),
+  ];
+  num borderWidth=1;
 }
 
 class BarTheme {
@@ -149,6 +155,18 @@ class SankeyTheme {
 class FunnelTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFCCCCCC);
+  LabelStyle labelStyle=LabelStyle();
+  List<Color> colors = [
+    const Color(0xFF5470c6),
+    const Color(0xFF91cc75),
+    const Color(0xFFfac858),
+    const Color(0xFFee6666),
+    const Color(0xFF73c0de),
+    const Color(0xFF3ba272),
+    const Color(0xFFfc8452),
+    const Color(0xFF9a60b4),
+    const Color(0xFFea7ccc),
+  ];
 }
 
 class GaugeTheme {

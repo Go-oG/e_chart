@@ -7,10 +7,10 @@ import 'chart_shape.dart';
 
 class Line implements Shape {
   final List<Offset> _pointList = [];
-  final double? smoothRatio;
-  final List<double> _dashList = [];
+  final num? smoothRatio;
+  final List<num> _dashList = [];
 
-  Line(List<Offset> list, {this.smoothRatio, List<double>? dashList}) {
+  Line(List<Offset> list, {this.smoothRatio, List<num>? dashList}) {
     _pointList.addAll(list);
     if (dashList != null) {
       _dashList.addAll(dashList);
@@ -108,8 +108,8 @@ class Line implements Shape {
 
   ///返回平滑曲线路径(返回的路径是未封闭的)
   Path _smooth() {
-    double ratioA = smoothRatio ?? 0.2;
-    double ratioB = smoothRatio ?? 0.2;
+    num ratioA = smoothRatio ?? 0.2;
+    num ratioB = smoothRatio ?? 0.2;
     Path path = Path();
     Offset firstPoint = _pointList.first;
     path.moveTo(firstPoint.dx, firstPoint.dy);
@@ -130,7 +130,7 @@ class Line implements Shape {
   }
 
   /// 根据已知点获取第i个控制点的坐标
-  List<Offset> _getCtrlPoint(List<Offset> pointList, int curIndex, {double ratioA = 0.2, double ratioB = 0.2, bool reverse = false}) {
+  List<Offset> _getCtrlPoint(List<Offset> pointList, int curIndex, {num ratioA = 0.2, num ratioB = 0.2, bool reverse = false}) {
     Offset cur = pointList[curIndex];
 
     int li = reverse ? curIndex + 1 : curIndex - 1;

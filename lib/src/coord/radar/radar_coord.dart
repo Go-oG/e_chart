@@ -1,11 +1,13 @@
-import 'dart:math';
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///雷达图坐标系
 class RadarCoordImpl extends RadarCoord {
   final Map<int, RadarAxisImpl> axisMap = {};
-  final List<Path> shapePathList = [];
+
+  final List<RadarSplit> splitList = [];
+
   Offset center = Offset.zero;
   double radius = 0;
 
@@ -27,15 +29,15 @@ class RadarCoordImpl extends RadarCoord {
   void onCreate() {
     super.onCreate();
     axisMap.forEach((key, value) {
-      value.context=context;
+      value.context = context;
     });
   }
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    double minValue = min(parentWidth, parentHeight);
+    num minValue = min([parentWidth, parentHeight]);
     double cv = props.radius.convert(minValue);
-    cv = min(cv, minValue) * 2;
+    cv = min([cv, minValue]) * 2;
     return Size(cv, cv);
   }
 
@@ -58,8 +60,9 @@ class RadarCoordImpl extends RadarCoord {
     double radiusItem = radius / props.splitNumber;
     int axisCount = props.indicator.length;
 
-    ///Shape
-    shapePathList.clear();
+    ///Shape Path
+    splitList.clear();
+    Path? lastPath;
     for (int i = 0; i < props.splitNumber; i++) {
       double r = radiusItem * (i + 1);
       Path path;
@@ -68,7 +71,14 @@ class RadarCoordImpl extends RadarCoord {
       } else {
         path = PositiveShape(r: r, count: axisCount, center: center).toPath(false);
       }
-      shapePathList.add(path);
+      if (lastPath == null) {
+        lastPath = path;
+        splitList.add(RadarSplit(i, path));
+      } else {
+        Path p2 = Path.combine(PathOperation.difference, path, lastPath);
+        splitList.add(RadarSplit(i, p2));
+        lastPath = path;
+      }
     }
 
     ///布局孩子
@@ -97,19 +107,30 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   void _drawShape(Canvas canvas) {
-    for (int i = 0; i < shapePathList.length; i++) {
-      Path path = shapePathList[i];
-      AreaStyle? style = props.splitStyleFun?.call(i, i - 1);
-      if (style != null) {
-        Path tmpPath = path;
-        if (i != 0) {
-          tmpPath = Path.combine(PathOperation.difference, tmpPath, shapePathList[i - 1]);
+    each(splitList, (sp, i) {
+      AreaStyle? style;
+      if (props.splitStyleFun != null) {
+        style = props.splitStyleFun?.call(i, i - 1);
+      } else {
+        RadarTheme theme = context.config.theme.radarTheme;
+        if (theme.splitColors.isNotEmpty) {
+          int index = i % (theme.splitColors.length);
+          style = AreaStyle(color: theme.splitColors[index]);
         }
-        style.drawPath(canvas, mPaint, tmpPath);
       }
-      LineStyle? lineStyle = props.borderStyleFun?.call(i);
-      lineStyle?.drawPath(canvas, mPaint, path);
-    }
+      style?.drawPath(canvas, mPaint, sp.splitPath);
+      LineStyle? lineStyle;
+      if (props.splitStyleFun != null) {
+        lineStyle = props.splitStyleFun?.call(i, i - 1).border;
+      } else {
+        RadarTheme theme = context.config.theme.radarTheme;
+        if (theme.borderColors.isNotEmpty) {
+          int index = i % (theme.borderColors.length);
+          lineStyle = LineStyle(color: theme.borderColors[index], width: theme.borderWidth);
+        }
+      }
+      lineStyle?.drawPath(canvas, mPaint, sp.splitPath);
+    });
   }
 
   void _drawAxis(Canvas canvas) {
@@ -187,4 +208,11 @@ class RadarPosition {
   Offset get point {
     return circlePoint(radius, angle, center);
   }
+}
+
+class RadarSplit {
+  final int index;
+  final Path splitPath;
+
+  RadarSplit(this.index, this.splitPath);
 }

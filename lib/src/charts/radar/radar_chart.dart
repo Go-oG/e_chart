@@ -1,3 +1,4 @@
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'layout.dart';
@@ -49,21 +50,47 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
 
   @override
   void onDraw(Canvas canvas) {
-    for (var group in radarLayout.groupNodeList) {
+    ChartTheme chartTheme = context.config.theme;
+    RadarTheme theme = chartTheme.radarTheme;
+    each(radarLayout.groupNodeList, (group, i) {
       if (!group.show) {
-        continue;
+        return;
       }
-      AreaStyle style = series.areaStyleFun.call(group.data);
-      if (!style.show) {
-        continue;
+      AreaStyle? style;
+      if (series.areaStyleFun != null) {
+        style = series.areaStyleFun?.call(group.data);
+      } else {
+        Color spColor;
+        Color borderColor;
+        if (theme.splitColors.isNotEmpty) {
+          spColor = theme.splitColors[i % theme.splitColors.length];
+        } else {
+          spColor = chartTheme.colors[i % chartTheme.colors.length];
+        }
+        if (theme.borderColors.isNotEmpty) {
+          borderColor = theme.borderColors[i % theme.borderColors.length];
+        } else {
+          borderColor = chartTheme.colors[i % chartTheme.colors.length];
+        }
+        style = AreaStyle(color: spColor, border: LineStyle(color: borderColor, width: theme.lineWidth));
       }
+
+      if (style == null || !style.show) {
+        return;
+      }
+
       List<Offset> ol = group.getPathOffset();
       style.drawPolygonArea(canvas, mPaint, ol);
       for (int i = 0; i < ol.length; i++) {
-        ChartSymbol? symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
+        ChartSymbol? symbol;
+        if (series.symbolFun != null) {
+          symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
+        } else {
+          symbol = theme.symbol;
+        }
         symbol?.draw(canvas, mPaint, ol[i], 1);
       }
-    }
+    });
   }
 
   @override

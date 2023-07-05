@@ -23,7 +23,7 @@ class LineStyleTween extends ChartTween<LineStyle> {
 
   @override
   LineStyle convert(double animatorPercent) {
-    List<double> dash;
+    List<num> dash;
     if (begin.dash.length == end.dash.length && begin.dash.isNotEmpty) {
       dash = [];
       for (int i = 0; i < begin.dash.length; i++) {

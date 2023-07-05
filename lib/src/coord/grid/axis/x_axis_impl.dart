@@ -17,7 +17,7 @@ class XAxisImpl extends BaseGridAxisImpl {
       return;
     }
     double width = parentWidth;
-    double height = line.style.width;
+    double height = line.style.width.toDouble();
     if (line.tick.show) {
       var mainTick = line.tick;
       if (mainTick.minorTick != null && mainTick.minorTick!.show) {
@@ -61,7 +61,7 @@ class XAxisImpl extends BaseGridAxisImpl {
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
-    var s = axis.toScale([0, distance], dataSet,false);
+    var s = axis.toScale([0, distance], dataSet, false);
     return s;
   }
 
@@ -71,7 +71,7 @@ class XAxisImpl extends BaseGridAxisImpl {
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
-    scale=scale.copyWithRange([0,distance]);
+    scale = scale.copyWithRange([0, distance]);
     updateTickPosition();
     notifyLayoutUpdate();
   }

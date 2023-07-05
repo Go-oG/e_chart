@@ -3,7 +3,7 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
+class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
   FunnelLayout() : super();
   List<FunnelNode> nodeList = [];
 
@@ -18,7 +18,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
     layoutNode(newList);
 
     DiffResult<FunnelNode, ItemData> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
-      FunnelNode node = FunnelNode(p1.preData, p0);
+      FunnelNode node = FunnelNode(p1.index, p1.preData, p0);
       List<Offset> pl = p1.pointList;
       Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
       node.pointList.addAll([o0, o0, o0, o0]);
@@ -47,11 +47,11 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
           offsetTween.changeValue(sl[i], el[i]);
           pl.add(offsetTween.safeGetValue(t));
         }
-        p0.updatePoint(series, pl);
+        p0.updatePoint(context, series, pl);
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, type==LayoutAnimatorType.update);
+    doubleTween.start(context, type == LayoutAnimatorType.update);
   }
 
   List<FunnelNode> convertData(List<ItemData> list) {
@@ -62,7 +62,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
     for (int i = 0; i < list.length; i++) {
       var data = list[i];
       ItemData? preData = i == 0 ? null : list[i - 1];
-      nodeList.add(FunnelNode(preData, data));
+      nodeList.add(FunnelNode(i, preData, data));
     }
 
     ///直接降序处理
@@ -96,7 +96,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
     }
 
     for (var node in nodeList) {
-      node.update(series);
+      node.update(context, series);
     }
   }
 
@@ -241,7 +241,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
     _hoverNode = hoverNode;
     List<ChartTween> tl = [];
     if (old != null && oldMap.containsKey(old)) {
-      AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+      AreaStyle style = getAreaStyle(context, series, old);
       AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, props: series.animatorProps);
       tween.addListener(() {
         old.areaStyle = tween.value;
@@ -261,7 +261,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
     }
     if (hoverNode != null) {
       var node = hoverNode;
-      AreaStyle style = series.areaStyleFun.call(node).convert(node.status);
+      AreaStyle style = getAreaStyle(context, series, node);
       AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, props: series.animatorProps);
       tween.addListener(() {
         node.areaStyle = tween.value;
@@ -294,7 +294,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
     _hoverNode = null;
     AreaStyle oldStyle = old.areaStyle;
     old.removeState(ViewState.hover);
-    AreaStyle style = series.areaStyleFun.call(old).convert(old.status);
+    AreaStyle style = getAreaStyle(context, series, old).convert(old.status);
     AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: series.animatorProps);
     tween.addListener(() {
       old.areaStyle = tween.value;
@@ -315,7 +315,23 @@ class FunnelLayout extends ChartLayout<FunnelSeries,List<ItemData>> {
     }
   }
 
-
+  static AreaStyle getAreaStyle(Context context, FunnelSeries series, FunnelNode node) {
+    ChartTheme chartTheme = context.config.theme;
+    FunnelTheme theme = chartTheme.funnelTheme;
+    AreaStyle? areaStyle = series.areaStyleFun?.call(node);
+    int index = node.index;
+    if (areaStyle == null) {
+      Color color;
+      if (theme.colors.isNotEmpty) {
+        color = theme.colors[index % theme.colors.length];
+      } else {
+        color = chartTheme.colors[index % chartTheme.colors.length];
+      }
+      Color lineColor = theme.borderColor;
+      areaStyle = AreaStyle(color: color, border: LineStyle(color: lineColor, width: theme.borderWidth));
+    }
+    return areaStyle;
+  }
 }
 
 class FunnelProps {
