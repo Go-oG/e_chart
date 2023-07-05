@@ -2,21 +2,15 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
-import '../core/view_state.dart';
-import '../ext/paint_ext.dart';
-import '../ext/path_ext.dart';
 
-import '../model/enums/align2.dart';
-import '../shape/arc.dart';
-import '../shape/line.dart';
 
 /// 线段样式
 class LineStyle {
   final Color color;
-  final double width;
+  final num width;
   final StrokeCap cap;
   final StrokeJoin join;
-  final List<double> dash;
+  final List<num> dash;
   final List<BoxShadow> shadow;
   final sd.Shader? shader;
   final bool smooth;
@@ -43,7 +37,7 @@ class LineStyle {
     paint.strokeCap = cap;
     paint.strokeJoin = join;
     paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = width;
+    paint.strokeWidth = width.toDouble();
     if (shader != null && rect != null) {
       paint.shader = shader!.toShader(rect);
     }

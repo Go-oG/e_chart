@@ -1,15 +1,16 @@
 import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/src/style/index.dart';
 import 'package:flutter/material.dart';
 
 import '../../component/guideline/guide_line.dart';
+import '../../core/context.dart';
 import '../../core/view_state.dart';
 import '../../model/index.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
 import '../../utils/align_util.dart';
 import 'funnel_series.dart';
 
 class FunnelNode with ViewStateProvider {
+  final int index;
   final ItemData? preData;
   final ItemData data;
 
@@ -17,7 +18,7 @@ class FunnelNode with ViewStateProvider {
   ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
   List<Offset> pointList = [];
 
-  FunnelNode(this.preData, this.data);
+  FunnelNode(this.index, this.preData, this.data);
 
   TextDrawConfig? textConfig;
   List<Offset>? labelLine;
@@ -25,18 +26,36 @@ class FunnelNode with ViewStateProvider {
   LabelStyle? labelStyle;
   AreaStyle areaStyle = const AreaStyle();
 
-  void update(FunnelSeries series) {
-    labelStyle = series.labelStyleFun?.call(this);
-    areaStyle = series.areaStyleFun.call(this);
+  void update(Context context, FunnelSeries series) {
+    ChartTheme chartTheme = context.config.theme;
+    FunnelTheme theme = chartTheme.funnelTheme;
+    AreaStyle? areaStyle = series.areaStyleFun?.call(this);
+    if (areaStyle == null) {
+      Color color;
+      if (theme.colors.isNotEmpty) {
+        color = theme.colors[index % theme.colors.length];
+      } else {
+        color = chartTheme.colors[index % chartTheme.colors.length];
+      }
+      Color lineColor = theme.borderColor;
+      areaStyle = AreaStyle(color: color, border: LineStyle(color: lineColor, width: theme.borderWidth));
+    }
+    this.areaStyle = areaStyle;
+    LabelStyle? labelStyle = series.labelStyleFun?.call(this);
+    if (labelStyle == null && series.labelStyleFun != null) {
+      labelStyle = theme.labelStyle;
+    }
+    this.labelStyle = labelStyle;
+
     textConfig = computeTextPosition(series);
     labelLine = computeLabelLineOffset(series, textConfig?.offset);
   }
 
-  void updatePoint(FunnelSeries series, List<Offset> pl) {
+  void updatePoint(Context context, FunnelSeries series, List<Offset> pl) {
     pointList.clear();
     pointList.addAll(pl);
     _path = null;
-    update(series);
+    update(context, series);
   }
 
   Path? _path;

@@ -26,12 +26,12 @@ extension PathExt on Path {
 
 
 ///给定一个Path和dash数据返回一个新的Path
-Path dashPath(Path path, List<double> dash) {
+Path dashPath(Path path, List<num> dash) {
   if (dash.isEmpty) {
     return path;
   }
-  double dashLength = dash[0];
-  double dashGapLength = dashLength >= 2 ? dash[1] : dash[0];
+  num dashLength = dash[0];
+  num dashGapLength = dashLength >= 2 ? dash[1] : dash[0];
   DashedPathProperties properties = DashedPathProperties(
     path: Path(),
     dashLength: dashLength,
@@ -82,18 +82,18 @@ Path mergePath(Path p1, Path p2) {
 
 ///用于实现 path dash
 class DashedPathProperties {
-  double extractedPathLength;
+  num extractedPathLength;
   Path path;
 
-  final double _dashLength;
-  double _remainingDashLength;
-  double _remainingDashGapLength;
+  final num _dashLength;
+  num _remainingDashLength;
+  num _remainingDashGapLength;
   bool _previousWasDash;
 
   DashedPathProperties({
     required this.path,
-    required double dashLength,
-    required double dashGapLength,
+    required num dashLength,
+    required num dashGapLength,
   })  : assert(dashLength > 0.0, 'dashLength must be > 0.0'),
         assert(dashGapLength > 0.0, 'dashGapLength must be > 0.0'),
         _dashLength = dashLength,
@@ -109,10 +109,10 @@ class DashedPathProperties {
     return false;
   }
 
-  void addDash(PathMetric metric, double dashLength) {
-    final end = _calculateLength(metric, _remainingDashLength);
+  void addDash(PathMetric metric, num dashLength) {
+    final end = _calculateLength(metric, _remainingDashLength).toDouble();
     final availableEnd = _calculateLength(metric, dashLength);
-    final pathSegment = metric.extractPath(extractedPathLength, end);
+    final pathSegment = metric.extractPath(extractedPathLength.toDouble(), end);
     path.addPath(pathSegment, Offset.zero);
     final delta = _remainingDashLength - (end - extractedPathLength);
     _remainingDashLength = _updateRemainingLength(
@@ -125,10 +125,10 @@ class DashedPathProperties {
     _previousWasDash = true;
   }
 
-  void addDashGap(PathMetric metric, double dashGapLength) {
+  void addDashGap(PathMetric metric, num dashGapLength) {
     final end = _calculateLength(metric, _remainingDashGapLength);
     final availableEnd = _calculateLength(metric, dashGapLength);
-    Tangent tangent = metric.getTangentForOffset(end)!;
+    Tangent tangent = metric.getTangentForOffset(end.toDouble())!;
     path.moveTo(tangent.position.dx, tangent.position.dy);
     final delta = end - extractedPathLength;
     _remainingDashGapLength = _updateRemainingLength(
@@ -141,15 +141,15 @@ class DashedPathProperties {
     _previousWasDash = false;
   }
 
-  double _calculateLength(PathMetric metric, double addedLength) {
+  num _calculateLength(PathMetric metric, num addedLength) {
     return min(extractedPathLength + addedLength, metric.length);
   }
 
-  double _updateRemainingLength({
-    required double delta,
-    required double end,
-    required double availableEnd,
-    required double initialLength,
+  num _updateRemainingLength({
+    required num delta,
+    required num end,
+    required num availableEnd,
+    required num initialLength,
   }) {
     return (delta > 0 && availableEnd == end) ? delta : initialLength;
   }

@@ -28,7 +28,7 @@ class FunnelSeries extends RectSeries {
   Sort sort;
   double gap;
   Align2 align;
-  Fun2<FunnelNode, AreaStyle> areaStyleFun;
+  Fun2<FunnelNode, AreaStyle>? areaStyleFun;
   Fun2<FunnelNode, LabelStyle>? labelStyleFun;
   Fun2<FunnelNode, LineStyle>? labelLineStyleFun;
 
