@@ -9,19 +9,19 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
   HeatMapView(super.series);
 
   @override
-  int get xAxisIndex => series.xAxisIndex;
+  int get gridX => series.xAxisIndex;
 
   @override
-  int get yAxisIndex => series.yAxisIndex;
+  int get gridY => series.yAxisIndex;
 
   @override
-  int get xDataSetCount => series.data.length;
+  int get gridXDataCount => series.data.length;
 
   @override
-  int get yDataSetCount => series.data.length;
+  int get gridYDataCount => series.data.length;
 
   @override
-  List<DynamicData> get xDataSet {
+  List<DynamicData> get gridXExtreme {
     List<DynamicData> dl = [];
     for (var element in series.data) {
       dl.add(element.x);
@@ -30,7 +30,7 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
   }
 
   @override
-  List<DynamicData> get yDataSet {
+  List<DynamicData> get gridYExtreme {
     List<DynamicData> dl = [];
     for (var element in series.data) {
       dl.add(element.y);

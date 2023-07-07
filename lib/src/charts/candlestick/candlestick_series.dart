@@ -1,31 +1,28 @@
-import '../../functions.dart';
-import '../../model/dynamic_text.dart';
-import '../../model/enums/coordinate.dart';
-import '../../style/area_style.dart';
-import '../../style/line_style.dart';
-import '../../core/series.dart';
+import 'package:e_chart/e_chart.dart';
 
-class CandleStickSeries extends RectSeries {
+class CandleStickSeries extends ChartSeries {
   List<CandleStickData> data;
   String name;
+  SNumber boxMinWidth;
+  SNumber boxMaxWidth;
+  SNumber? boxWidth;
+
   bool hoverAnimation;
-  Fun2<CandleStickData, AreaStyle> styleFun;
-  Fun2<CandleStickData, LineStyle> lineStyleFun;
+
+  Fun2<CandleStickData, AreaStyle>? styleFun;
+  Fun2<CandleStickData, LineStyle>? lineStyleFun;
 
   CandleStickSeries(
     this.data, {
     super.xAxisIndex = 0,
     super.yAxisIndex = 0,
+    this.boxMinWidth = const SNumber.number(24),
+    this.boxMaxWidth = const SNumber.number(48),
+    this.boxWidth,
     this.name = '',
     this.hoverAnimation = true,
-    required this.styleFun,
-    required this.lineStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    this.styleFun,
+    this.lineStyleFun,
     super.animation,
     super.tooltip,
     super.backgroundColor,
@@ -51,6 +48,7 @@ class CandleStickData {
   double lowest;
   double open;
   double close;
+  double lastClose;
   DynamicText? label;
 
   CandleStickData({
@@ -59,6 +57,9 @@ class CandleStickData {
     required this.close,
     required this.lowest,
     required this.highest,
+    required this.lastClose,
     this.label,
   });
+
+  bool get isUp => close >= lastClose;
 }

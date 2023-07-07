@@ -107,20 +107,20 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild,G
   }
 
   @override
-  int get xAxisIndex => series.xAxisIndex;
+  int get gridX => series.xAxisIndex;
 
   @override
-  List<DynamicData> get xDataSet => List.from(series.data.map((e) => e.x));
+  List<DynamicData> get gridXExtreme => List.from(series.data.map((e) => e.x));
 
   @override
-  int get xDataSetCount =>series.data.length;
+  int get gridXDataCount =>series.data.length;
 
   @override
-  int get yAxisIndex => series.yAxisIndex;
+  int get gridY => series.yAxisIndex;
 
   @override
-  List<DynamicData> get yDataSet => List.from(series.data.map((e) => e.y));
+  List<DynamicData> get gridYExtreme => List.from(series.data.map((e) => e.y));
 
   @override
-  int get yDataSetCount => series.data.length;
+  int get gridYDataCount => series.data.length;
 }

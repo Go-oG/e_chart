@@ -98,6 +98,7 @@ class KLineTheme {
   Color downColor = const Color(0xFF47b262);
   Color downBorderColor = const Color(0xFF47b262);
   num borderWidth = 1;
+  bool fill=true;
 }
 
 ///折线图主题
@@ -111,11 +112,11 @@ class LineTheme {
 ///Radar主题
 class RadarTheme {
   num lineWidth = 2;
-  bool showSymbol=true;
+  bool showSymbol = true;
   Size symbolSize = const Size.square(4);
   ChartSymbol symbol = EmptySymbol();
 
-  bool fill=false;
+  bool fill = false;
 
   ///用于坐标轴相关的
   List<Color> splitColors = [
@@ -175,6 +176,7 @@ class PointTheme {
 class BoxplotTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFCCCCCC);
+  Color? fillColor;
 }
 
 class ParallelTheme {
