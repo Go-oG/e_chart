@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 
 ///全局的主题配置
 class ChartTheme {
@@ -110,8 +111,13 @@ class LineTheme {
 ///Radar主题
 class RadarTheme {
   num lineWidth = 2;
-  num symbolSize = 4;
+  bool showSymbol=true;
+  Size symbolSize = const Size.square(4);
   ChartSymbol symbol = EmptySymbol();
+
+  bool fill=false;
+
+  ///用于坐标轴相关的
   List<Color> splitColors = [
     const Color(0xFFFFFFFF),
   ];
@@ -119,6 +125,36 @@ class RadarTheme {
     const Color(0xFFFFFFFF),
   ];
   num borderWidth = 1;
+
+  Color getSplitLineColor(int index) {
+    if (index < 0) {
+      throw ChartError('Index 必须大于0');
+    }
+    if (borderColors.isNotEmpty) {
+      return borderColors[index % borderColors.length];
+    }
+    return Colors.black26;
+  }
+
+  LineStyle getSplitLineStyle(int index) {
+    Color color = getSplitLineColor(index);
+    return LineStyle(color: color, width: borderWidth);
+  }
+
+  Color getSplitAreaColor(int index) {
+    if (index < 0) {
+      throw ChartError('Index 必须大于0');
+    }
+    if (splitColors.isNotEmpty) {
+      return splitColors[index % splitColors.length];
+    }
+    return Colors.white;
+  }
+
+  AreaStyle getSplitAreaStyle(int index) {
+    Color color = getSplitAreaColor(index);
+    return AreaStyle(color: color);
+  }
 }
 
 class BarTheme {
@@ -208,17 +244,99 @@ class HeadMapTheme {
 class AxisTheme {
   bool showAxisLine = true;
   Color axisLineColor = const Color(0xFF6E7079);
-  bool showTick = true;
-  Color tickColor = const Color(0xFF6E7079);
+  num axisLineWidth = 1;
+
+  MainTick? tick = MainTick(minorTick: MinorTick());
+
   bool showLabel = true;
   Color labelColor = const Color(0xFF6E7079);
   bool showSplitLine = true;
+  num splitLineWidth = 1;
   List<Color> splitLineColors = [
     const Color(0xFFE0E6F1),
   ];
+
   bool showSplitArea = false;
   List<Color> splitAreaColors = [
     const Color.fromRGBO(250, 250, 250, 0.2),
     const Color.fromRGBO(210, 219, 238, 0.2),
   ];
+
+  MainTick? getMainTick() {
+    if (tick == null || !tick!.show) {
+      return null;
+    }
+    return tick;
+  }
+
+  MinorTick? getMinorTick() {
+    if (tick == null || !tick!.show) {
+      return null;
+    }
+    if (tick!.minorTick == null || !tick!.minorTick!.show) {
+      return null;
+    }
+
+    return tick!.minorTick;
+  }
+
+  Color? getSplitLineColor(int index) {
+    if (index < 0) {
+      throw ChartError('Index 必须大于0');
+    }
+    if (!showSplitLine) {
+      return null;
+    }
+    if (splitLineColors.isNotEmpty) {
+      return splitLineColors[index % splitLineColors.length];
+    }
+    return axisLineColor;
+  }
+
+  LineStyle? getSplitLineStyle(int index) {
+    Color? color = getSplitLineColor(index);
+    if (color != null) {
+      return LineStyle(color: color, width: splitLineWidth);
+    }
+    return null;
+  }
+
+  Color? getSplitAreaColor(int index) {
+    if (index < 0) {
+      throw ChartError('Index 必须大于0');
+    }
+    if (!showSplitArea) {
+      return null;
+    }
+    if (splitAreaColors.isNotEmpty) {
+      return splitAreaColors[index % splitAreaColors.length];
+    }
+    return Colors.white;
+  }
+
+  AreaStyle? getSplitAreaStyle(int index) {
+    Color? color = getSplitAreaColor(index);
+    if (color != null) {
+      return AreaStyle(color: color);
+    }
+    return null;
+  }
+
+  Color? getAxisLineColor(int index) {
+    if (index < 0) {
+      throw ChartError('Index 必须大于0');
+    }
+    if (!showAxisLine) {
+      return null;
+    }
+    return axisLineColor;
+  }
+
+  LineStyle? getAxisLineStyle(int index) {
+    Color? color = getAxisLineColor(index);
+    if (color != null) {
+      return LineStyle(color: color, width: axisLineWidth);
+    }
+    return null;
+  }
 }

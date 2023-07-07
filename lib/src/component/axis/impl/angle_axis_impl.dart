@@ -36,38 +36,58 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   }
 
   @override
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
+    var axisLine = axis.axisLine;
+    var theme = getAxisTheme();
+    for (int i = 1; i < arcTickList.length; i++) {
+      var preArc = arcTickList[i - 1].arc;
+      var curArc = arcTickList[i].arc;
+      AreaStyle? style = axisLine.getSplitAreaStyle(i, arcTickList.length, theme);
+      if (style != null) {
+        Arc arc = Arc(
+          center: curArc.center,
+          innerRadius: preArc.outRadius,
+          outRadius: curArc.outRadius,
+          sweepAngle: maxAngle,
+          startAngle: props.angleOffset,
+        );
+        style.drawPath(canvas, paint, arc.toPath(true));
+      }
+    }
+  }
+
+  @override
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
+    var axisLine = axis.axisLine;
+    var theme = getAxisTheme();
+    each(arcTickList, (arc, index) {
+      LineStyle? style = axisLine.getSplitLineStyle(index, arcTickList.length, theme);
+      if (style != null) {
+        Offset offset = circlePoint(arc.arc.outRadius, arc.arc.startAngle, arc.arc.center);
+        style.drawPolygon(canvas, paint, [props.center, offset]);
+      }
+    });
+  }
+
+  @override
   void onDrawAxisLine(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
-    if (!axisLine.show) {
-      return;
-    }
-    each(arcTickList, (arc, p1) {
-      LineStyle style = axisLine.style;
-      if (axisLine.styleFun != null) {
-        var s = axisLine.styleFun!.call(DynamicData(arc.startData), DynamicData(arc.endData));
-        if (s != null) {
-          style = s;
-        }
+    var theme = getAxisTheme();
+    each(arcTickList, (arc, index) {
+      LineStyle? style = axisLine.getAxisLineStyle(index, arcTickList.length, theme);
+      if (style != null) {
+        style.drawPath(canvas, paint, arc.arc.arcOpen(), true);
       }
-      style.drawPath(canvas, paint, arc.arc.arcOpen(), true);
     });
   }
 
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
-    if (!axisLine.show) {
-      return;
-    }
+    var theme = getAxisTheme();
     each(arcTickList, (arc, p1) {
-      MainTick tick = axisLine.tick;
-      if (axisLine.tickFun != null) {
-        var t = axisLine.tickFun!.call(DynamicData(arc.startData), DynamicData(arc.endData));
-        if (t != null) {
-          tick = t;
-        }
-      }
-      if (!tick.show) {
+      MainTick? tick = axisLine.getMainTick(p1, arcTickList.length, theme);
+      if (tick == null || !tick.show) {
         return;
       }
       each(arc.tick, (at, p1) {
@@ -76,10 +96,6 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
           tick.labelStyle.draw(canvas, paint, at.text!, at.textConfig!);
         }
       });
-      if (axis.subAxisStyle != null) {
-        Offset offset = circlePoint(arc.arc.outRadius, arc.arc.startAngle, arc.arc.center);
-        axis.subAxisStyle!.drawPolygon(canvas, paint, [props.center, offset]);
-      }
     });
   }
 
@@ -98,9 +114,10 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
     final int count = scale.tickCount - 1;
     final int dir = props.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / count;
-
     List<ArcRange> rangeList = [];
     List<DynamicText> ticks = obtainTicks();
+
+    final tmpTick = MainTick();
     for (int i = 0; i < count; i++) {
       num startAngle = axis.offsetAngle + i * angleInterval;
       dynamic firstData = scale.toData(startAngle);
@@ -113,21 +130,12 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
         sweepAngle: angleInterval,
         center: props.center,
       );
-
-      MainTick tick = axis.axisLine.tick;
-      if (axis.axisLine.tickFun != null) {
-        var t = axis.axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
-        if (t != null) {
-          tick = t;
-        }
-      }
-
+      MainTick tick = axis.axisLine.getMainTick(i, count, getAxisTheme()) ?? tmpTick;
       List<DynamicText> tl = [];
       if (i < ticks.length) {
         tl.add(ticks[i]);
         tl.add(DynamicText.empty);
       }
-
       List<TickResult> result = tick.computeCircleTick(props.radius, startAngle, angleInterval, tl, center: props.center);
       rangeList.add(ArcRange(arc, firstData, endData, result));
     }

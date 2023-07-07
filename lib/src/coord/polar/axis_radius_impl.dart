@@ -1,33 +1,49 @@
-import 'dart:math';
-
+import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../component/axis/impl/line_axis_impl.dart';
-import '../../model/dynamic_data.dart';
-import '../../style/line_style.dart';
-import 'axis_radius.dart';
 
 ///半径轴
 class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
   RadiusAxisImpl(super.axis);
 
   @override
-  void draw(Canvas canvas, Paint paint) {
-    drawInnerCircle(canvas, paint);
-    super.draw(canvas, paint);
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
+    AxisTheme theme = getAxisTheme();
+    AxisStyle axisLine = axis.axisLine;
+    each(tickPositionList, (tick, i) {
+      LineStyle? style = axisLine.getSplitLineStyle(i, tickPositionList.length, theme);
+      if (style == null) {
+        return;
+      }
+      Arc arc = Arc(
+        innerRadius: 0,
+        outRadius: tick.end.distance2(props.center),
+        startAngle: props.offsetAngle,
+        sweepAngle: 360,
+        center: props.center,
+      );
+      style.drawPath(canvas, paint, arc.toPath(true));
+    });
   }
 
-  void drawInnerCircle(Canvas canvas, Paint paint) {
-    if (axis.axisStyleFun == null) {
-      return;
-    }
-    int circleCount = scale.tickCount;
-    circleCount=max(circleCount, 2);
-    double interval = props.distance / (circleCount-1);
-    for (int i = 1; i < circleCount; i++) {
-      LineStyle? style = axis.axisStyleFun!.call(i - 1, circleCount);
-      style.drawArc(canvas, paint, i * interval, props.offsetAngle, 360, props.center);
-    }
+  @override
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
+    AxisTheme theme = getAxisTheme();
+    AxisStyle axisLine = axis.axisLine;
+    each(tickPositionList, (tick, i) {
+      AreaStyle? style = axisLine.getSplitAreaStyle(i, tickPositionList.length, theme);
+      if (style == null || !style.show) {
+        return;
+      }
+      Arc arc = Arc(
+        innerRadius: tick.start.distance2(props.center),
+        outRadius: tick.end.distance2(props.center),
+        startAngle: props.offsetAngle,
+        sweepAngle: 360,
+        center: props.center,
+      );
+      style.drawPath(canvas, paint, arc.toPath(true));
+    });
   }
 
   List<num> dataToRadius(DynamicData data) {

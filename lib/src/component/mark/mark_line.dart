@@ -5,7 +5,7 @@ import '../../model/dynamic_text.dart';
 import '../../model/text_position.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
-import '../../style/symbol/symbol.dart';
+import '../../symbol/chart_symbol.dart';
 import 'mark_type.dart';
 
 class MarkLine {
@@ -33,8 +33,8 @@ class MarkLine {
 
   void draw(Canvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end], false);
-    startSymbol?.draw(canvas, paint, start, 1);
-    endSymbol?.draw(canvas, paint, end, 1);
+    startSymbol?.draw(canvas, paint, SymbolDesc(center: start));
+    endSymbol?.draw(canvas, paint,  SymbolDesc(center: end));
     if (startText != null && startText.isNotEmpty) {
       TextDrawConfig config = TextDrawConfig(start);
       labelStyle?.call(0).draw(canvas, paint, startText, config);

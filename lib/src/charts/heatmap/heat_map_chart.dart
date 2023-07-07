@@ -72,10 +72,11 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
     HeadMapTheme theme = chartTheme.mapTheme;
     for (var node in _layout.nodeList) {
       ChartSymbol? symbol = series.symbolFun?.call(node, node.rect.size);
-      if (symbol == null && series.symbolFun == null) {
+      if (symbol != null) {
+        symbol.draw(canvas, mPaint, SymbolDesc(center: node.rect.center));
+      } else if (series.symbolFun == null) {
         symbol = RectSymbol(theme.areaStyle).convert(node.status);
       }
-      symbol?.draw(canvas, mPaint, node.rect.center, 1);
 
       if (node.data.label == null || node.data.label!.isEmpty) {
         continue;
@@ -93,5 +94,4 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
       labelStyle.draw(canvas, mPaint, label, TextDrawConfig.fromRect(node.rect, align));
     }
   }
-
 }

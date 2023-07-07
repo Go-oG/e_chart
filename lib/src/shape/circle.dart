@@ -3,8 +3,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import 'chart_shape.dart';
-
 class Circle implements Shape {
   final num r;
   final Offset center;

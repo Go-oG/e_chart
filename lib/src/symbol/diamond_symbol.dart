@@ -1,9 +1,7 @@
-import 'dart:math';
-
 import 'package:e_chart/src/ext/paint_ext.dart';
 
-import '../../style/area_style.dart';
-import 'symbol.dart';
+import '../style/area_style.dart';
+import 'chart_symbol.dart';
 import 'package:flutter/material.dart';
 
 ///棱形
@@ -41,12 +39,26 @@ class DiamondSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint,Offset c, double animator) {
-    if (c != center) {
-      center = c;
+  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
+    if (info.center != null && center != info.center) {
+      center = info.center!;
+    }
+    if (info.size != null) {
+      if(info.size!.longestSide!=loneSide){
+        loneSide=info.size!.longestSide;
+      }
+      if(info.size!.shortestSide!=shortSide){
+        shortSide=info.size!.shortestSide;
+      }
+      buildPath();
+    }
+    AreaStyle style = this.style;
+    AreaStyle? s = info.toStyle();
+    if (s != null) {
+      style = s;
     }
     paint.reset();
-    canvas.drawPath(path, paint);
+    style.drawPath(canvas, paint, path);
   }
 
   @override

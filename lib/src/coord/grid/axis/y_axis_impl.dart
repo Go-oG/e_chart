@@ -11,10 +11,12 @@ class YAxisImpl extends BaseGridAxisImpl {
   void measure(double parentWidth, double parentHeight) {
     double length = parentHeight;
     double width = 0;
-    AxisLine line = axis.axisLine;
+    AxisStyle line = axis.axisLine;
     if (line.show) {
-      width += line.style.width;
-      MainTick tick = line.tick;
+      var lineStyle = line.getAxisLineStyle(0, 1, getAxisTheme());
+      width += (lineStyle?.width) ?? 0;
+
+      MainTick tick = line.getMainTick(0, 1, getAxisTheme()) ?? MainTick();
       if (tick.show) {
         num l1 = tick.length;
         num l2 = tick.minorTick?.length ?? 0;
@@ -41,7 +43,7 @@ class YAxisImpl extends BaseGridAxisImpl {
   @override
   void layout(LineProps layoutProps, List<DynamicData> dataSet) {
     axisInfo.bound = layoutProps.rect;
-    bool inside = axis.axisLine.tick.inside;
+    bool inside = (axis.axisLine.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
     if (inside) {
       axisInfo.start = layoutProps.rect.topLeft;
       axisInfo.end = layoutProps.rect.bottomLeft;
@@ -54,11 +56,11 @@ class YAxisImpl extends BaseGridAxisImpl {
 
   @override
   BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
-    double distance = axisInfo.bound.height*scaleFactor;
+    double distance = axisInfo.bound.height * scaleFactor;
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度异常');
     }
-    return axis.toScale([distance, 0], dataSet,false);
+    return axis.toScale([distance, 0], dataSet, false);
   }
 
   @override
@@ -67,7 +69,7 @@ class YAxisImpl extends BaseGridAxisImpl {
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
-    scale=scale.copyWithRange([distance,0]);
+    scale = scale.copyWithRange([distance, 0]);
     updateTickPosition();
     notifyLayoutUpdate();
   }

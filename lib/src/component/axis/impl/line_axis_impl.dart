@@ -75,22 +75,81 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
   }
 
   @override
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
+    Offset start = props.start;
+    Offset end = props.end;
+
+    ///只实现垂直和水平方向
+    if (!(start.dx == end.dx || start.dy == end.dy)) {
+      return;
+    }
+    bool vertical = start.dy == end.dy;
+    AxisTheme theme = getAxisTheme();
+    AxisStyle axisLine = axis.axisLine;
+    each(tickPositionList, (tick, i) {
+      AreaStyle? style = axisLine.getSplitAreaStyle(i, tickPositionList.length, theme);
+      if (style == null) {
+        return;
+      }
+      Rect rect;
+      if (vertical) {
+        rect = Rect.fromLTRB(tick.start.dx, coord.top, tick.end.dx, coord.bottom);
+      } else {
+        if (start.dy <= end.dy) {
+          rect = Rect.fromLTWH(tick.start.dx, tick.start.dy, coord.width, tick.start.distance2(tick.end));
+        } else {
+          rect = Rect.fromLTWH(tick.end.dx, tick.end.dy, coord.width, tick.start.distance2(tick.end));
+        }
+      }
+      style.drawRect(canvas, paint, rect);
+    });
+  }
+
+  @override
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
+    Offset start = props.start;
+    Offset end = props.end;
+
+    ///只实现垂直和水平方向
+    if (!(start.dx == end.dx || start.dy == end.dy)) {
+      return;
+    }
+    bool vertical = start.dy == end.dy;
+    AxisTheme theme = getAxisTheme();
+    AxisStyle axisLine = axis.axisLine;
+    each(tickPositionList, (tick, i) {
+      LineStyle? style = axisLine.getSplitLineStyle(i, tickPositionList.length, theme);
+      if (style == null) {
+        return;
+      }
+      List<Offset> ol = [tick.end];
+      if (vertical) {
+        if (start.dy < end.dy) {
+          ol.add(tick.end.translate(0, coord.height));
+        } else {
+          ol.add(tick.end.translate(0, -coord.height));
+        }
+      } else {
+        if (start.dx <= end.dx) {
+          ol.add(tick.end.translate(coord.width, 0));
+        } else {
+          ol.add(tick.end.translate(-coord.width, 0));
+        }
+      }
+      style.drawPolygon(canvas, paint, ol);
+    });
+  }
+
+  @override
   void onDrawAxisLine(Canvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return;
     }
+    AxisTheme theme = getAxisTheme();
     each(tickPositionList, (tick, p1) {
-      Offset start = tick.start;
-      Offset end = tick.end;
-      LineStyle style = axisLine.style;
-      if (axisLine.styleFun != null) {
-        var s = axisLine.styleFun!.call(DynamicData(tick.startData), DynamicData(tick.endData));
-        if (s != null) {
-          style = s;
-        }
-      }
-      style.drawPolygon(canvas, paint, [start, end]);
+      LineStyle? style = axisLine.getAxisLineStyle(p1, tickPositionList.length, theme);
+      style?.drawPolygon(canvas, paint, [tick.start, tick.end]);
     });
   }
 
@@ -101,18 +160,12 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
       return;
     }
 
+    var theme = getAxisTheme();
     each(tickPositionList, (tp, p1) {
-      var mainTick = axisLine.tick;
-      if (axisLine.tickFun != null) {
-        var t = axisLine.tickFun?.call(DynamicData(tp.startData), DynamicData(tp.endData));
-        if (t != null) {
-          mainTick = t;
-        }
-      }
-      if (!mainTick.show) {
+      var mainTick = axisLine.getMainTick(p1, tickPositionList.length, theme);
+      if (mainTick == null || !mainTick.show) {
         return;
       }
-
       each(tp.tick, (tick, p1) {
         mainTick.lineStyle.drawPolygon(canvas, paint, [tick.start, tick.end]);
         if (tick.text != null && tick.textConfig != null) {
@@ -148,6 +201,9 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
     List<LineRange> rangeList = [];
     List<DynamicText> ticks = obtainTicks();
 
+    var tmpTick = MainTick();
+    var axisLine = axis.axisLine;
+    var theme = getAxisTheme();
     for (int i = 0; i < ol.length - 1; i++) {
       var s = ol[i];
       var e = ol[i + 1];
@@ -156,18 +212,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
       dynamic firstData = scale.toData(pre);
       dynamic endData = scale.toData(next);
 
-      var axisLine = axis.axisLine;
-      MainTick tick = axisLine.tick;
-      if (axisLine.tickFun != null) {
-        num pre = s.distance2(props.start);
-        num next = e.distance2(props.start);
-        dynamic firstData = scale.toData(pre);
-        dynamic endData = scale.toData(next);
-        var tmpTick = axisLine.tickFun!.call(DynamicData(firstData), DynamicData(endData));
-        if (tmpTick != null) {
-          tick = tmpTick;
-        }
-      }
+      MainTick tick = axisLine.getMainTick(i, ol.length - 1, theme) ?? tmpTick;
       List<DynamicText> textList = [];
       if (i < ticks.length) {
         textList.add(ticks[i]);
@@ -179,7 +224,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
           textList.add(DynamicText.empty);
         }
       }
-
+      ///TODO 还需要处理MinorTick
       List<TickResult> result = tick.computeLineTick(s, e, textList);
       rangeList.add(LineRange(s, e, firstData, endData, result));
     }

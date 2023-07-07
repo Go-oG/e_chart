@@ -145,10 +145,10 @@ class GridCoordImpl extends GridCoord {
   @override
   void onDraw(Canvas canvas) {
     xMap.forEach((key, value) {
-      value.draw(canvas, mPaint);
+      value.draw(canvas, mPaint,contentBox);
     });
     yMap.forEach((key, value) {
-      value.draw(canvas, mPaint);
+      value.draw(canvas, mPaint,contentBox);
     });
   }
 

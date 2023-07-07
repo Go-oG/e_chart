@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-import '../../style/area_style.dart';
-import 'symbol.dart';
+import '../style/area_style.dart';
+import 'chart_symbol.dart';
 
 ///类似地图当前位置的形状
 ///TODO 后面贝塞尔曲线拟合
@@ -40,10 +40,21 @@ class PinSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset c,double animator) {
-    if (c != center) {
-      center = c;
+  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
+    if (info.center != null && center != info.center) {
+      center = info.center!;
     }
+    if (info.size != null) {
+      r = info.size!.shortestSide*0.5;
+      buildPath();
+    }
+
+    AreaStyle style = this.style;
+    AreaStyle? s = info.toStyle();
+    if (s != null) {
+      style = s;
+    }
+
     canvas.save();
     canvas.translate(center.dx, center.dy);
     canvas.rotate(rotate * pi / 180);

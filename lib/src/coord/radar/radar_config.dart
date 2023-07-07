@@ -8,7 +8,7 @@ class RadarConfig extends CircleCoordConfig {
   bool silent;
   bool clockwise;
   RadarShape shape;
-  AxisLine? axisLine;
+  AxisStyle? axisLine;
   MainTick? axisTick;
 
   Fun2<RadarIndicator, LabelStyle>? labelStyleFun;

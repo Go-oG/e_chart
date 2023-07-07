@@ -29,21 +29,28 @@ class CircleSymbol extends ChartSymbol {
         strokeWidth = 0;
 
   @override
-  void draw(Canvas canvas, Paint paint,Offset c, double animator) {
-    if (c != center) {
-      center = c;
+  void draw(Canvas canvas, Paint paint, SymbolDesc info) {
+    if (info.center != null && center != info.center) {
+      center = info.center!;
     }
+    num or = info.size?.longestSide ?? outerRadius;
+    num ir;
+    if (innerRadius <= 0) {
+      ir = 0;
+    } else {
+      ir = info.size == null ? innerRadius : (info.size!.longestSide - (outerRadius - innerRadius));
+    }
+
     paint.reset();
     paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
     if (!fill) {
       paint.strokeWidth = strokeWidth;
     }
-    paint.color = outerColor;
-    canvas.drawCircle(center, outerRadius.toDouble(), paint);
-    double ir = innerRadius.toDouble();
+    paint.color = info.fillColor.isEmpty ? outerColor : info.fillColor.first;
+    canvas.drawCircle(center, or.toDouble(), paint);
     if (ir > 0) {
-      paint.color = innerColor;
-      canvas.drawCircle(center, ir, paint);
+      paint.color = info.fillColor.length >= 2 ? info.fillColor[1] : innerColor;
+      canvas.drawCircle(center, ir.toDouble(), paint);
     }
   }
 

@@ -7,6 +7,8 @@ class GroupData {
   DynamicText? label;
   List<ItemData> childData;
 
+  bool show = true;
+
   GroupData(
     this.childData, {
     String? id,
@@ -34,6 +36,8 @@ class ItemData {
   late final String id;
   num value;
   DynamicText? label;
+
+  bool show = true;
 
   ItemData({this.value = 0, this.label, String? id}) {
     if (id == null || id.isEmpty) {

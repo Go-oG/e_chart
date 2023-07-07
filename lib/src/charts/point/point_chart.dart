@@ -81,7 +81,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild,G
   void onDraw(Canvas canvas) {
     for (var node in _layout.nodeList) {
       ChartSymbol symbol = series.symbolStyle.call(node);
-      symbol.draw(canvas, mPaint, node.rect.center,1);
+      symbol.draw(canvas, mPaint,SymbolDesc(center: node.rect.center));
     }
   }
 

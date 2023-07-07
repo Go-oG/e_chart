@@ -9,7 +9,7 @@ class XAxisImpl extends BaseGridAxisImpl {
 
   @override
   void measure(double parentWidth, double parentHeight) {
-    AxisLine line = axis.axisLine;
+    AxisStyle line = axis.axisLine;
     if (!line.show) {
       axisInfo.start = Offset.zero;
       axisInfo.end = Offset(parentWidth, 0);
@@ -17,16 +17,16 @@ class XAxisImpl extends BaseGridAxisImpl {
       return;
     }
     double width = parentWidth;
-    double height = line.style.width.toDouble();
-    if (line.tick.show) {
-      var mainTick = line.tick;
+    double height = (line.getAxisLineStyle(0, 1, getAxisTheme())?.width.toDouble()) ?? 0;
+    MainTick? tick = line.getMainTick(0, 1, getAxisTheme());
+    if (tick != null && tick.show) {
+      var mainTick = tick;
       if (mainTick.minorTick != null && mainTick.minorTick!.show) {
         height += max([mainTick.length, mainTick.minorTick!.length]);
       } else {
         height += mainTick.length;
       }
     }
-
     AxisLabel? axisLabel = line.label;
     if (axisLabel != null && axisLabel.show) {
       height += axisLabel.margin;
@@ -44,7 +44,8 @@ class XAxisImpl extends BaseGridAxisImpl {
   void layout(LineProps layoutProps, List<DynamicData> dataSet) {
     Rect rect = layoutProps.rect;
     axisInfo.bound = rect;
-    bool inside = axis.axisLine.tick.inside;
+    var axisLine = axis.axisLine;
+    bool inside = (axisLine.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
     if (inside) {
       axisInfo.start = rect.bottomLeft;
       axisInfo.end = rect.bottomRight;

@@ -53,42 +53,39 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
     ChartTheme chartTheme = context.config.theme;
     RadarTheme theme = chartTheme.radarTheme;
     each(radarLayout.groupNodeList, (group, i) {
-      if (!group.show) {
+      if (!group.data.show) {
         return;
       }
       AreaStyle? style;
+      Color color = chartTheme.colors[i % chartTheme.colors.length];
       if (series.areaStyleFun != null) {
         style = series.areaStyleFun?.call(group.data);
+        var c = style?.color ?? style?.border?.color;
+        if (c != null) {
+          color = c;
+        }
       } else {
-        Color spColor;
-        Color borderColor;
-        if (theme.splitColors.isNotEmpty) {
-          spColor = theme.splitColors[i % theme.splitColors.length];
-        } else {
-          spColor = chartTheme.colors[i % chartTheme.colors.length];
+        Color borderColor = color;
+        Color? fillColor;
+        if (theme.fill) {
+          fillColor = borderColor.withOpacity(0.5);
         }
-        if (theme.borderColors.isNotEmpty) {
-          borderColor = theme.borderColors[i % theme.borderColors.length];
-        } else {
-          borderColor = chartTheme.colors[i % chartTheme.colors.length];
-        }
-        style = AreaStyle(color: spColor, border: LineStyle(color: borderColor, width: theme.lineWidth));
+        style = AreaStyle(color: fillColor, border: LineStyle(color: borderColor, width: theme.lineWidth));
       }
-
-      if (style == null || !style.show) {
+      List<Offset> ol = group.getPathOffset();
+      style?.drawPolygonArea(canvas, mPaint, ol);
+      if (series.symbolFun == null && !theme.showSymbol) {
         return;
       }
-
-      List<Offset> ol = group.getPathOffset();
-      style.drawPolygonArea(canvas, mPaint, ol);
       for (int i = 0; i < ol.length; i++) {
         ChartSymbol? symbol;
         if (series.symbolFun != null) {
           symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
+          symbol?.draw(canvas, mPaint, SymbolDesc(center: ol[i]));
         } else {
-          symbol = theme.symbol;
+          symbol = theme.showSymbol ? theme.symbol : null;
+          symbol?.draw(canvas, mPaint, SymbolDesc(center: ol[i], size: theme.symbolSize, fillColor: [color]));
         }
-        symbol?.draw(canvas, mPaint, ol[i], 1);
       }
     });
   }

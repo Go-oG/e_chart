@@ -1,13 +1,5 @@
-import 'package:e_chart/src/charts/heatmap/heat_map_node.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
-
-import '../../functions.dart';
-import '../../model/dynamic_data.dart';
-import '../../model/enums/coordinate.dart';
-import '../../model/group_data.dart';
-import '../../core/series.dart';
-import '../../style/label.dart';
-import '../../style/symbol/symbol.dart';
 
 ///热力图
 ///可以在日历坐标系和笛卡尔坐标系中使用

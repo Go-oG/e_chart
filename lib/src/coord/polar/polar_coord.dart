@@ -34,20 +34,19 @@ class PolarCoordImpl extends PolarCoord {
     _angleAxis = AngleAxisImpl(props.angleAxis);
     _radiusAxis = RadiusAxisImpl(props.radiusAxis);
   }
+
   @override
   void onCreate() {
     super.onCreate();
-    _angleAxis.context=context;
-    _radiusAxis.context=context;
+    _angleAxis.context = context;
+    _radiusAxis.context = context;
   }
-
 
   @override
   void onHoverStart(Offset offset) {}
 
   @override
   void onHoverMove(Offset offset, Offset last) {}
-
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
@@ -109,8 +108,8 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   void onDraw(Canvas canvas) {
-    _angleAxis.draw(canvas, mPaint);
-    _radiusAxis.draw(canvas, mPaint);
+    _angleAxis.draw(canvas, mPaint, selfBoxBound);
+    _radiusAxis.draw(canvas, mPaint, selfBoxBound);
   }
 
   @override

@@ -40,7 +40,6 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
 class RadarGroupNode {
   final GroupData data;
   final List<RadarNode> nodeList;
-  bool show = true;
 
   RadarGroupNode(this.data, this.nodeList);
 
