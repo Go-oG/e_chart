@@ -3,6 +3,7 @@ export 'calendar/calendar_child.dart';
 export 'calendar/calendar_coord.dart' hide CalendarNode;
 
 export 'grid/axis/axis_grid.dart';
+export 'grid/axis/axis_size.dart';
 export 'grid/axis/axis_x.dart';
 export 'grid/axis/axis_y.dart';
 export 'grid/axis/x_axis_impl.dart';
@@ -14,7 +15,7 @@ export 'grid/grid_config.dart';
 
 export 'parallel/parallel_config.dart';
 export 'parallel/parallel_axis.dart';
-export 'parallel/parallel_axis_node.dart';
+export 'parallel/parallel_axis_impl.dart';
 export 'parallel/parallel_child.dart';
 export 'parallel/parallel_coord.dart';
 

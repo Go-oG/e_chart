@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl<T, P> {
   LineAxisImpl(super.axis, {int index = 0}) : super(index: index);
+  List<LineRange> tickPositionList = [];
 
   double _scaleFactor = 1;
 
@@ -34,9 +35,11 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
     onScrollOffsetChange(_scrollOffset);
   }
 
-  void onScaleFactorChange(double factor) {}
-
-  void onScrollOffsetChange(double offset) {}
+  @override
+  void layout(P layoutProps, List<DynamicData> dataSet) {
+    super.layout(layoutProps, dataSet);
+    updateTickPosition();
+  }
 
   @override
   BaseScale buildScale(P props, List<DynamicData> dataSet) {
@@ -64,14 +67,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
     double r = center.distance2(p);
     r += axis.nameGap;
     return TextDrawConfig(circlePoint(r, a, center), align: toAlignment(a));
-  }
-
-  List<LineRange> tickPositionList = [];
-
-  @override
-  void layout(P layoutProps, List<DynamicData> dataSet) {
-    super.layout(layoutProps, dataSet);
-    updateTickPosition();
   }
 
   @override
@@ -224,12 +219,17 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
           textList.add(DynamicText.empty);
         }
       }
+
       ///TODO 还需要处理MinorTick
       List<TickResult> result = tick.computeLineTick(s, e, textList);
       rangeList.add(LineRange(s, e, firstData, endData, result));
     }
     this.tickPositionList = List.from(rangeList, growable: false);
   }
+
+  void onScaleFactorChange(double factor) {}
+
+  void onScrollOffsetChange(double offset) {}
 }
 
 ///直线轴使用

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'candlestick_node.dart';
 
 /// 单个K线图
-class CandleStickView extends SeriesView<CandleStickSeries> implements GridChild {
+class CandleStickView extends CoordChildView<CandleStickSeries> implements GridChild {
   final CandlestickLayout _layout = CandlestickLayout();
 
   CandleStickView(super.series);
