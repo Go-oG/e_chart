@@ -1,29 +1,15 @@
-import 'package:flutter/material.dart';
-
 import '../../component/axis/base_axis.dart';
-import '../../functions.dart';
 import '../../model/enums/align2.dart';
-import '../../style/area_style.dart';
-import '../../style/line_style.dart';
-
 ///极坐标-径向轴
 class RadiusAxis extends BaseAxis {
-   Align2 nameLocation;
-   num offsetAngle;
-   num nameRotate;
+  Align2 nameLocation;
+  num offsetAngle;
+  num nameRotate;
 
-   Fun3<double, dynamic, AreaStyle>? itemStyleFun;
-   Fun3<int, int, LineStyle>? axisStyleFun;
-
-   LineStyle? tipLineStyle;
-
-   RadiusAxis({
+  RadiusAxis({
     this.nameLocation = Align2.end,
     this.offsetAngle = 0,
     this.nameRotate = 0,
-    this.itemStyleFun,
-    this.axisStyleFun,
-    this.tipLineStyle=const LineStyle(color: Colors.black54,dash: [2,6]),
     super.show,
     super.name,
     super.nameGap = 15,
@@ -45,5 +31,6 @@ class RadiusAxis extends BaseAxis {
     super.silent,
     super.axisLine,
     super.formatFun,
+    super.timeFormatFun,
   });
 }

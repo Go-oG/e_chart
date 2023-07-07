@@ -107,27 +107,21 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   void _drawShape(Canvas canvas) {
+    var theme = context.config.theme.radarTheme;
     each(splitList, (sp, i) {
       AreaStyle? style;
       if (props.splitStyleFun != null) {
         style = props.splitStyleFun?.call(i, i - 1);
       } else {
-        RadarTheme theme = context.config.theme.radarTheme;
-        if (theme.splitColors.isNotEmpty) {
-          int index = i % (theme.splitColors.length);
-          style = AreaStyle(color: theme.splitColors[index]);
-        }
+        style = theme.getSplitAreaStyle(i);
       }
       style?.drawPath(canvas, mPaint, sp.splitPath);
+
       LineStyle? lineStyle;
       if (props.splitStyleFun != null) {
         lineStyle = props.splitStyleFun?.call(i, i - 1).border;
       } else {
-        RadarTheme theme = context.config.theme.radarTheme;
-        if (theme.borderColors.isNotEmpty) {
-          int index = i % (theme.borderColors.length);
-          lineStyle = LineStyle(color: theme.borderColors[index], width: theme.borderWidth);
-        }
+        lineStyle = theme.getSplitLineStyle(i);
       }
       lineStyle?.drawPath(canvas, mPaint, sp.splitPath);
     });
@@ -135,12 +129,9 @@ class RadarCoordImpl extends RadarCoord {
 
   void _drawAxis(Canvas canvas) {
     ///绘制主轴
-    AxisLine? axisLine = props.axisLine;
-    if (axisLine != null && axisLine.show) {
-      axisMap.forEach((key, value) {
-        axisLine.style.drawPolygon(canvas, mPaint, [value.props.start, value.props.end]);
-      });
-    }
+    axisMap.forEach((key, value) {
+      value.draw(canvas, mPaint, boxBounds);
+    });
 
     ///绘制标签
     int i = 0;

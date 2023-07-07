@@ -1,13 +1,13 @@
 import 'dart:ui';
-import 'symbol.dart';
+import 'chart_symbol.dart';
 
 class EmptySymbol extends ChartSymbol {
   EmptySymbol();
 
   @override
-  void draw(Canvas canvas, Paint paint,Offset c, double animator) {
-    if (c != center) {
-      center = c;
+  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
+    if (info.center != null && center != info.center) {
+      center = info.center!;
     }
   }
 

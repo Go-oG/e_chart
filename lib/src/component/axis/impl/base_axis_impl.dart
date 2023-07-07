@@ -29,14 +29,21 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
 
   TextDrawConfig layoutAxisName();
 
-  void draw(Canvas canvas, Paint paint) {
-    if (!axis.show) {
+  void draw(Canvas canvas, Paint paint, Rect coord) {
+    var axisLine = axis.axisLine;
+    if (!axisLine.show) {
       return;
     }
-    onDrawAxisLine(canvas, paint);
+    onDrawAxisSplitArea(canvas, paint, coord);
+    onDrawAxisSplitLine(canvas, paint, coord);
     onDrawAxisTick(canvas, paint);
+    onDrawAxisLine(canvas, paint);
     onDrawAxisName(canvas, paint);
   }
+
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {}
+
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {}
 
   void onDrawAxisName(Canvas canvas, Paint paint) {
     if (titleNode.label == null || titleNode.label!.isEmpty) {
@@ -51,6 +58,19 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
 
   List<DynamicText> obtainTicks() {
     return axis.buildTicks(scale);
+  }
+
+  AxisTheme getAxisTheme() {
+    if (axis.category) {
+      return context.config.theme.categoryAxisTheme;
+    }
+    if (axis.isTimeAxis) {
+      return context.config.theme.timeAxisTheme;
+    }
+    if (axis.isLogAxis) {
+      return context.config.theme.logAxisTheme;
+    }
+    return context.config.theme.valueAxisTheme;
   }
 
   void updateTickPosition() {}

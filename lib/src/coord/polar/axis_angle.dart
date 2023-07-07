@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
 
 import '../../component/axis/axis_pointer.dart';
 import '../../component/axis/base_axis.dart';
-import '../../style/line_style.dart';
+
 
 ///极坐标-角度轴
 class AngleAxis extends BaseAxis {
@@ -13,16 +12,12 @@ class AngleAxis extends BaseAxis {
   ///是否顺时针
   bool clockwise;
   AxisPointer? axisPointer;
-  LineStyle? subAxisStyle;
-  LineStyle? tipLineStyle;
 
   AngleAxis({
     this.offsetAngle = 0,
     this.radiusOffset = 0,
     this.clockwise = true,
     this.axisPointer,
-    this.subAxisStyle = const LineStyle(color: Colors.black45),
-    this.tipLineStyle = const LineStyle(color: Colors.black54, dash: [2, 6]),
     super.show,
     super.name,
     super.type = AxisType.value,
@@ -43,5 +38,6 @@ class AngleAxis extends BaseAxis {
     super.nameAlign,
     super.nameGap,
     super.nameStyle,
+    super.timeFormatFun,
   }) : super(inverse: false);
 }

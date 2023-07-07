@@ -1,7 +1,7 @@
 import 'dart:ui';
-import '../../shape/positive.dart';
-import '../../style/area_style.dart';
-import 'symbol.dart';
+import '../shape/positive.dart';
+import '../style/area_style.dart';
+import 'chart_symbol.dart';
 
 ///正多边形
 class PositivePolygonSymbol extends ChartSymbol {
@@ -34,9 +34,17 @@ class PositivePolygonSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint,Offset c,  double animator) {
-    if (c != center) {
-      center = c;
+  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
+    if (info.center != null && center != info.center) {
+      center = info.center!;
+    }
+    if (info.size != null) {
+      r = info.size!.shortestSide*0.5;
+    }
+    AreaStyle style = this.style;
+    AreaStyle? s = info.toStyle();
+    if (s != null) {
+      style = s;
     }
     style.drawPath(canvas, paint, path);
   }

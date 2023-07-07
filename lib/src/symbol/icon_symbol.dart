@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:e_chart/src/model/index.dart';
 import 'package:flutter/material.dart';
 
-import '../label.dart';
-import 'symbol.dart';
+import '../style/label.dart';
+import 'chart_symbol.dart';
 
 class IconSymbol extends ChartSymbol {
   Icon icon;
@@ -35,10 +35,11 @@ class IconSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset c, double animator) {
-    if (c != center) {
-      center = c;
+  void draw(Canvas canvas, Paint paint, SymbolDesc info) {
+    if (info.center != null && center != info.center) {
+      center = info.center!;
     }
+
     TextDrawConfig config = TextDrawConfig(center, align: Alignment.center);
     style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
   }

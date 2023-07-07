@@ -15,34 +15,11 @@ import 'parallel_axis.dart';
 import 'parallel_child.dart';
 
 ///平行坐标系
-abstract class ParallelCoord extends RectCoord<ParallelConfig> {
-  ParallelCoord(super.props);
-
-  ParallelPosition dataToPosition(int dimIndex, DynamicData data);
-
-  Direction get direction => props.direction;
-}
-
-class ParallelPosition {
-  ///当为类目轴时其返回一个范围
-  final List<Offset> points;
-
-  ParallelPosition(this.points);
-
-  Offset get center {
-    if (points.length <= 1) {
-      return points[0];
-    }
-    Offset p1 = points[0];
-    Offset p2 = points[1];
-    return Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
-  }
-}
-
 class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
   int _expandLeftIndex = -1;
   int _expandRightIndex = -1;
+  Rect contentBox = Rect.zero;
 
   ParallelCoordImpl(super.props) {
     initAxis();
@@ -80,7 +57,7 @@ class ParallelCoordImpl extends ParallelCoord {
   void onCreate() {
     super.onCreate();
     axisMap.forEach((key, value) {
-      value.context=context;
+      value.context = context;
     });
   }
 
@@ -144,6 +121,8 @@ class ParallelCoordImpl extends ParallelCoord {
 
     double w = width - leftOffset - rightOffset;
     double h = height - topOffset - bottomOffset;
+    contentBox=Rect.fromLTWH(leftOffset, topOffset, w, h);
+
     bool horizontal = props.direction == Direction.horizontal;
     double size = (horizontal ? w : h);
 
@@ -207,7 +186,6 @@ class ParallelCoordImpl extends ParallelCoord {
         start = start.translate(textSize[0].width, 0);
         end = end.translate(-textSize[1].width, 0);
       }
-
       LineProps layoutProps = LineProps(rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
       node.layout(layoutProps, dataSet);
     }
@@ -220,7 +198,7 @@ class ParallelCoordImpl extends ParallelCoord {
   @override
   void onDraw(Canvas canvas) {
     for (var ele in axisMap.entries) {
-      ele.value.draw(canvas, mPaint);
+      ele.value.draw(canvas, mPaint,contentBox);
     }
   }
 
@@ -246,5 +224,29 @@ class ParallelCoordImpl extends ParallelCoord {
   ParallelPosition dataToPosition(int dimIndex, DynamicData data) {
     ParallelAxisImpl node = axisMap[props.axisList[dimIndex]]!;
     return ParallelPosition(node.dataToPosition(data));
+  }
+}
+
+abstract class ParallelCoord extends RectCoord<ParallelConfig> {
+  ParallelCoord(super.props);
+
+  ParallelPosition dataToPosition(int dimIndex, DynamicData data);
+
+  Direction get direction => props.direction;
+}
+
+class ParallelPosition {
+  ///当为类目轴时其返回一个范围
+  final List<Offset> points;
+
+  ParallelPosition(this.points);
+
+  Offset get center {
+    if (points.length <= 1) {
+      return points[0];
+    }
+    Offset p1 = points[0];
+    Offset p2 = points[1];
+    return Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
   }
 }

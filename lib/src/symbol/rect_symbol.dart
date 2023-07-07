@@ -14,9 +14,18 @@ class RectSymbol extends ChartSymbol {
   });
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset c, double animator) {
-    if (c != center) {
-      center = c;
+  void draw(Canvas canvas, Paint paint, SymbolDesc info) {
+    if (info.center != null && center != info.center) {
+      center = info.center!;
+    }
+    if (info.size != null) {
+      rectSize = info.size!;
+    }
+
+    AreaStyle style = this.style;
+    AreaStyle? s = info.toStyle();
+    if (s != null) {
+      style = s;
     }
     style.drawRect(
         canvas,

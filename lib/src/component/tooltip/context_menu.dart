@@ -1,6 +1,7 @@
 import 'package:e_chart/src/style/index.dart';
 
 import '../../model/dynamic_text.dart';
+import '../../symbol/chart_symbol.dart';
 
 class ContextMenu {
    DynamicText? title;

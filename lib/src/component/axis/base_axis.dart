@@ -39,7 +39,7 @@ abstract class BaseAxis {
   ///样式、交互相关
   bool silent;
 
-  AxisLine axisLine = AxisLine();
+  AxisStyle axisLine = AxisStyle();
 
   Fun2<num, DynamicText>? formatFun;
 
@@ -60,7 +60,7 @@ abstract class BaseAxis {
     this.interval,
     this.logBase = 10,
     this.silent = false,
-    AxisLine? axisLine,
+    AxisStyle? axisLine,
     this.formatFun,
     this.timeRange,
     this.nameGap = 3,
@@ -214,6 +214,8 @@ abstract class BaseAxis {
   }
 
   bool get category => categoryList.isNotEmpty || type == AxisType.category;
+  bool get isTimeAxis=>timeRange!=null||type==AxisType.time;
+  bool get isLogAxis=>type==AxisType.log;
 }
 
 ///给定坐标轴集和方向

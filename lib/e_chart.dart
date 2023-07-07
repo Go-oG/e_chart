@@ -25,4 +25,6 @@ export 'src/shape/index.dart';
 
 export 'src/style/index.dart';
 
+export 'src/symbol/index.dart';
+
 export 'src/utils/index.dart';

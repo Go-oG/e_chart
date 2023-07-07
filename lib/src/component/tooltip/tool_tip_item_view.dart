@@ -1,14 +1,12 @@
 import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/view.dart';
-import '../../model/text_position.dart';
-import '../../style/label.dart';
-import 'context_menu.dart';
-
-class ToolTipItemView extends  ChartView {
+class ToolTipItemView extends ChartView {
   final MenuItem item;
+
   ToolTipItemView(this.item);
+
   Size? _subSize;
   final LabelStyle _defaultSubStyle = const LabelStyle(textStyle: TextStyle(color: Colors.black87, fontSize: 13));
 
@@ -48,7 +46,7 @@ class ToolTipItemView extends  ChartView {
     double left = 0;
     if (item.symbol != null) {
       Size s = item.symbol!.size;
-      item.symbol?.draw(canvas, mPaint, Offset(s.width / 2, c),1);
+      item.symbol?.draw(canvas, mPaint, SymbolDesc(center: Offset(s.width / 2, c)));
       left += s.width + 8;
     }
     item.textStyle.draw(canvas, mPaint, item.text, TextDrawConfig(Offset(left, c), align: Alignment.centerLeft));
