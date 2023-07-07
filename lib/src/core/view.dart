@@ -612,6 +612,16 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   void onScaleEnd() {}
 }
 
+abstract class CoordChildView<T extends ChartSeries> extends SeriesView<T> {
+  CoordChildView(super.series);
+
+  @override
+  bool get enableDrag => false;
+
+  @override
+  bool get enableScale => false;
+}
+
 class LayoutParams {
   static const int matchParent = -1;
   static const int wrapContent = -2;

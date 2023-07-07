@@ -5,7 +5,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/boxplot/boxplot_layout.dart';
 
 /// 单个盒须图
-class BoxPlotView extends SeriesView<BoxplotSeries> implements GridChild {
+class BoxPlotView extends CoordChildView<BoxplotSeries> implements GridChild {
   final BoxplotLayout _layout = BoxplotLayout();
 
   BoxPlotView(super.series);

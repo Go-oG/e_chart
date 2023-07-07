@@ -9,7 +9,7 @@ import '../../component/axis/impl/line_axis_impl.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
 import '../rect_coord.dart';
-import 'parallel_axis_node.dart';
+import 'parallel_axis_impl.dart';
 import 'parallel_config.dart';
 import 'parallel_axis.dart';
 import 'parallel_child.dart';

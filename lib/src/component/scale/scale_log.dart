@@ -9,7 +9,6 @@ class LogScale extends LinearScale {
     super.domain,
     super.range, {
     this.base = 10,
-    required int tickCount,
     required super.step,
   }){
     if (base == 0) {
@@ -19,7 +18,7 @@ class LogScale extends LinearScale {
 
   @override
   LogScale copyWithRange(List<num> range) {
-    return LogScale(domain, range, base: base, tickCount: tickCount, step: step);
+    return LogScale(domain, range, base: base, step: step);
   }
 
   @override
