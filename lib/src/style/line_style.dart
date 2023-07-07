@@ -3,7 +3,6 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 
-
 /// 线段样式
 class LineStyle {
   final Color color;
@@ -44,7 +43,7 @@ class LineStyle {
   }
 
   ///绘制多边形(或者线段)
-  void drawPolygon(Canvas canvas, Paint paint, List<Offset> points, [bool close = false, Set<ViewState>? states]) {
+  void drawPolygon(Canvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
     if (points.isEmpty) {
       return;
     }
@@ -54,19 +53,11 @@ class LineStyle {
     }
     Line line = Line(points, smoothRatio: smooth ? 0.4 : null, dashList: dash);
     Path path = line.toPath(close);
-    drawPath(canvas, paint, path, false, states);
+    drawPath(canvas, paint, path, false);
   }
 
   ///绘制一个圆弧部分(也可以绘制圆)
-  void drawArc(
-    Canvas canvas,
-    Paint paint,
-    double radius,
-    num startAngle,
-    num sweepAngle, [
-    Offset center = Offset.zero,
-    Set<ViewState>? states,
-  ]) {
+  void drawArc(Canvas canvas, Paint paint, double radius, num startAngle, num sweepAngle, [Offset center = Offset.zero]) {
     //优化绘制半径、消除
     double r = radius;
     if (align == Align2.start) {
@@ -76,10 +67,10 @@ class LineStyle {
     }
     Arc arc = Arc(outRadius: r, startAngle: startAngle, sweepAngle: sweepAngle, center: center);
     Path path = arc.arcOpen();
-    drawPath(canvas, paint, path, true, states);
+    drawPath(canvas, paint, path, true);
   }
 
-  void drawPath(Canvas canvas, Paint paint, Path path, [bool drawDash = false, Set<ViewState>? states]) {
+  void drawPath(Canvas canvas, Paint paint, Path path, [bool drawDash = false]) {
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }

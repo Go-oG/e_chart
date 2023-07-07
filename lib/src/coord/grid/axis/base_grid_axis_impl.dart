@@ -26,7 +26,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineProps> {
   DynamicText getMaxStr(Direction direction) {
     DynamicText maxStr = DynamicText.empty;
     for (var ele in children) {
-      List<dynamic> dl = direction == Direction.horizontal ? ele.xDataSet : ele.yDataSet;
+      List<dynamic> dl = direction == Direction.horizontal ? ele.gridXExtreme : ele.gridYExtreme;
       for (var data in dl) {
         if (data is String) {
           if (data.length > maxStr.length) {

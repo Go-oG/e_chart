@@ -1,26 +1,26 @@
 //盒须图
-import '../../functions.dart';
-import '../../model/dynamic_data.dart';
-import '../../model/dynamic_text.dart';
-import '../../model/enums/coordinate.dart';
-import '../../style/line_style.dart';
-import '../../core/series.dart';
+import 'package:e_chart/e_chart.dart';
 
-class BoxplotSeries extends RectSeries {
+class BoxplotSeries extends ChartSeries {
   List<BoxplotData> data;
-  Fun2<BoxplotData, LineStyle> lineStyleFun;
+  Fun2<BoxplotData, LineStyle>? lineStyleFun;
+  Fun2<BoxplotData, AreaStyle>? areaStyleFun;
+  Direction direction;
+
+  SNumber boxMinWidth;
+  SNumber boxMaxWidth;
+  SNumber? boxWidth;
 
   BoxplotSeries({
     required this.data,
-    required this.lineStyleFun,
+    this.direction=Direction.vertical,
+    this.boxMinWidth = const SNumber.number(24),
+    this.boxMaxWidth = const SNumber.number(48),
+    this.boxWidth,
+    this.lineStyleFun,
+    this.areaStyleFun,
     super.animation,
-    super.bottomMargin,
-    super.leftMargin,
     super.polarAxisIndex,
-    super.rightMargin,
-    super.topMargin,
-    super.height,
-    super.width,
     super.xAxisIndex,
     super.yAxisIndex,
     super.tooltip,
@@ -41,7 +41,10 @@ class BoxplotSeries extends RectSeries {
 }
 
 class BoxplotData {
+  late final String id;
+
   DynamicData x;
+
   DynamicData max;
   DynamicData upAve4;
   DynamicData middle;
@@ -57,5 +60,12 @@ class BoxplotData {
     required this.downAve4,
     required this.min,
     this.label,
-  });
+    String? id,
+  }) {
+    if (id != null && id.isNotEmpty) {
+      this.id = id;
+    } else {
+      this.id = randomId();
+    }
+  }
 }

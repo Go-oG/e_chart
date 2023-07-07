@@ -1,32 +1,29 @@
 import 'dart:ui';
 
-import '../../coord/grid/grid_child.dart';
-import '../../coord/grid/grid_coord.dart';
-import '../../core/view.dart';
-import '../../model/dynamic_data.dart';
-import '../../style/line_style.dart';
-import 'boxplot_series.dart';
+import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/boxplot/boxplot_layout.dart';
 
 /// 单个盒须图
-class BoxPlotView extends ChartView implements GridChild {
-  final BoxplotSeries series;
+class BoxPlotView extends SeriesView<BoxplotSeries> implements GridChild {
+  final BoxplotLayout _layout = BoxplotLayout();
 
-  BoxPlotView(this.series);
-
-  @override
-  int get xAxisIndex => series.xAxisIndex;
+  BoxPlotView(super.series);
 
   @override
-  int get yAxisIndex => series.yAxisIndex;
+  int get gridX => series.xAxisIndex;
 
   @override
-  int get xDataSetCount => series.data.length;
+  int get gridY => series.yAxisIndex;
 
   @override
-  int get yDataSetCount => xDataSetCount;
+  int get gridXDataCount => series.data.length;
 
   @override
-  List<DynamicData> get xDataSet {
+  int get gridYDataCount => gridXDataCount;
+
+  @override
+  List<DynamicData> get gridXExtreme {
     List<DynamicData> dl = [];
     for (var element in series.data) {
       dl.add(element.x);
@@ -35,7 +32,8 @@ class BoxPlotView extends ChartView implements GridChild {
   }
 
   @override
-  List<DynamicData> get yDataSet {
+  List<DynamicData> get gridYExtreme {
+    if(series.data.isEmpty){return [];}
     List<DynamicData> dl = [];
     for (var element in series.data) {
       dl.add(element.min);
@@ -45,57 +43,73 @@ class BoxPlotView extends ChartView implements GridChild {
   }
 
   @override
-  void onDraw(Canvas canvas) {
-    for (var element in series.data) {
-      _drawNode(canvas, element);
-    }
+  void onClick(Offset offset) {
+    _layout.hoverEnter(offset);
   }
 
-  void _drawNode(Canvas canvas, BoxplotData data) {
-    LineStyle? style = series.lineStyleFun.call(data);
-    GridCoord layout = context.findGridCoord();
+  @override
+  void onHoverStart(Offset offset) {
+    _layout.hoverEnter(offset);
+  }
 
-    Offset minCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.min).topCenter;
-    Offset minLeft = minCenter.translate(-10, 0);
-    Offset minRight = minCenter.translate(10, 0);
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    _layout.hoverEnter(offset);
+  }
 
-    Offset downCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
-    Offset downLeft = minCenter.translate(-10, 0);
-    Offset downRight = minCenter.translate(10, 0);
+  @override
+  void onHoverEnd() {
+    _layout.clearHover();
+  }
 
-    Offset middleCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.downAve4).topCenter;
-    Offset middleLeft = middleCenter.translate(-10, 0);
-    Offset middleRight = middleCenter.translate(10, 0);
+  @override
+  void onUpdateDataCommand(covariant Command c) {
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
+  }
 
-    Offset upAveCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.upAve4).topCenter;
-    Offset upAveLeft = upAveCenter.translate(-10, 0);
-    Offset upAveRight = upAveCenter.translate(10, 0);
+  @override
+  void onStart() {
+    super.onStart();
+    _layout.addListener(invalidate);
+  }
 
-    Offset maxCenter = layout.dataToPosition(xAxisIndex, data.x, yAxisIndex, data.max).topCenter;
-    Offset maxLeft = maxCenter.translate(-10, 0);
-    Offset maxRight = maxCenter.translate(10, 0);
+  @override
+  void onStop() {
+    _layout.clearListener();
+    super.onStop();
+  }
 
-    Path path = Path();
-    path.moveTo(minLeft.dx, minLeft.dy);
-    path.lineTo(minRight.dx, minRight.dy);
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+  }
 
-    path.moveTo(minCenter.dx, minCenter.dy);
-    path.lineTo(downCenter.dx, downCenter.dy);
-
-    path.moveTo(downLeft.dx, downLeft.dy);
-    path.lineTo(downRight.dx, downRight.dy);
-    path.lineTo(upAveRight.dx, upAveRight.dy);
-    path.lineTo(upAveLeft.dx, upAveLeft.dy);
-    path.lineTo(downLeft.dx, downLeft.dy);
-
-    path.moveTo(middleLeft.dx, middleLeft.dy);
-    path.lineTo(middleRight.dx, middleRight.dy);
-
-    path.moveTo(upAveCenter.dx, upAveCenter.dy);
-    path.lineTo(maxCenter.dx, maxCenter.dy);
-
-    path.moveTo(maxLeft.dx, maxLeft.dy);
-    path.lineTo(maxRight.dx, maxRight.dy);
-    style.drawPath(canvas, mPaint, path, true);
+  @override
+  void onDraw(Canvas canvas) {
+    var of = context.findGridCoord().getTranslation(gridX, gridY);
+    var chartTheme = context.config.theme;
+    var theme = chartTheme.boxplotTheme;
+    canvas.save();
+    canvas.translate(of.dx, of.dy);
+    each(_layout.nodeList, (node, p1) {
+      AreaStyle? areaStyle;
+      if (series.areaStyleFun != null) {
+        areaStyle = series.areaStyleFun?.call(node.data);
+      } else {
+        if (theme.fillColor != null) {
+          areaStyle = AreaStyle(color: theme.fillColor).convert(node.status);
+        }
+      }
+      areaStyle?.drawPath(canvas, mPaint, node.areaPath);
+      LineStyle? style;
+      if (series.lineStyleFun != null) {
+        style = series.lineStyleFun?.call(node.data);
+      } else {
+        style = LineStyle(color: theme.borderColor, width: theme.borderWidth).convert(node.status);
+      }
+      style?.drawPath(canvas, mPaint, node.path, true);
+    });
+    canvas.restore();
   }
 }

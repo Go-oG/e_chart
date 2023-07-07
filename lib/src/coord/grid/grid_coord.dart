@@ -43,9 +43,9 @@ class GridCoordImpl extends GridCoord {
     super.addView(view, index: index);
     if (view is GridChild) {
       var childView = view as GridChild;
-      int xIndex = childView.xAxisIndex;
+      int xIndex = childView.gridX;
       getXAxis(xIndex).addChild(childView);
-      int yIndex = childView.yAxisIndex;
+      int yIndex = childView.gridY;
       getYAxis(yIndex).addChild(childView);
     }
   }
@@ -98,7 +98,7 @@ class GridCoordImpl extends GridCoord {
       var value = xMap[axis]!;
       List<DynamicData> dl = [];
       for (var ele in value.children) {
-        dl.addAll(ele.xDataSet);
+        dl.addAll(ele.gridXExtreme);
       }
       LineProps layoutProps;
       var h = value.axisInfo.bound.height;
@@ -121,7 +121,7 @@ class GridCoordImpl extends GridCoord {
       var value = yMap[axis]!;
       List<DynamicData> dl = [];
       for (var ele in value.children) {
-        dl.addAll(ele.yDataSet);
+        dl.addAll(ele.gridYExtreme);
       }
       LineProps layoutProps;
       var w = value.axisInfo.bound.width;

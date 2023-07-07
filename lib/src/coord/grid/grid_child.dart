@@ -1,21 +1,21 @@
-
 import '../../model/dynamic_data.dart';
 
-abstract class GridChild{
+abstract class GridChild {
+  ///返回访问的X轴索引
+  int get gridX;
 
-  int get xAxisIndex;
+  ///返回访问的轴索引
+  int get gridY;
 
-  int get yAxisIndex;
+  ///返回X轴方向的数据数
+  int get gridXDataCount;
 
-  int get xDataSetCount;
+  ///返回Y轴方向的数据数
+  int get gridYDataCount;
 
-  int get yDataSetCount;
+  ///返回X轴方向上的极值
+  List<DynamicData> get gridXExtreme;
 
-  List<DynamicData> get xDataSet;
-
-  List<DynamicData> get yDataSet;
-
-  ///子视图需要重新布局内容
-  //void onLayoutContent(){}
-
+  ///返回轴方向上的极值
+  List<DynamicData> get gridYExtreme;
 }

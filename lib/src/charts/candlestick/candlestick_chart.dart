@@ -1,33 +1,30 @@
+import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/candlestick/candlestick_layout.dart';
 import 'package:flutter/material.dart';
 
-import '../../coord/grid/grid_child.dart';
-import '../../coord/grid/grid_coord.dart';
-import '../../core/view.dart';
-import '../../model/dynamic_data.dart';
-import '../../style/area_style.dart';
-import '../../style/line_style.dart';
-import 'candlestick_series.dart';
+import 'candlestick_node.dart';
 
 /// 单个K线图
-class CandleStickView extends  ChartView implements GridChild {
-  final CandleStickSeries series;
+class CandleStickView extends SeriesView<CandleStickSeries> implements GridChild {
+  final CandlestickLayout _layout = CandlestickLayout();
 
-  CandleStickView(this.series);
-
-  @override
-  int get xAxisIndex => series.xAxisIndex;
+  CandleStickView(super.series);
 
   @override
-  int get yAxisIndex => series.yAxisIndex;
+  int get gridX => series.xAxisIndex;
 
   @override
-  int get xDataSetCount => series.data.length;
+  int get gridY => series.yAxisIndex;
 
   @override
-  int get yDataSetCount => xDataSetCount;
+  int get gridXDataCount => series.data.length;
 
   @override
-  List<DynamicData> get xDataSet {
+  int get gridYDataCount => gridXDataCount;
+
+  @override
+  List<DynamicData> get gridXExtreme {
     List<DynamicData> dl = [];
     for (var element in series.data) {
       dl.add(DynamicData(element.time));
@@ -36,7 +33,7 @@ class CandleStickView extends  ChartView implements GridChild {
   }
 
   @override
-  List<DynamicData> get yDataSet {
+  List<DynamicData> get gridYExtreme {
     List<DynamicData> dl = [];
     for (var element in series.data) {
       dl.add(DynamicData(element.highest));
@@ -46,49 +43,81 @@ class CandleStickView extends  ChartView implements GridChild {
   }
 
   @override
-  void onDraw(Canvas canvas) {
-    GridCoord layout = context.findGridCoord();
-    for (var element in series.data) {
-      _drawNode(canvas, element, layout);
-    }
+  void onClick(Offset offset) {
+    _layout.hoverEnter(offset);
   }
 
-  void _drawNode(Canvas canvas, CandleStickData data, GridCoord layout) {
-    AreaStyle areaStyle = series.styleFun.call(data);
-    LineStyle lineStyle = series.lineStyleFun.call(data);
-    DynamicData dd = DynamicData(data.time);
-    Offset minCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.lowest)).topCenter;
+  @override
+  void onHoverStart(Offset offset) {
+    _layout.hoverEnter(offset);
+  }
 
-    Offset openCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.open)).topCenter;
-    Offset openLeft = openCenter.translate(-10, 0);
-    Offset openRight = openCenter.translate(10, 0);
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    _layout.hoverEnter(offset);
+  }
 
-    Offset closeCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.close)).topCenter;
-    Offset closeLeft = closeCenter.translate(-10, 0);
-    Offset closeRight = closeCenter.translate(10, 0);
+  @override
+  void onHoverEnd() {
+    _layout.clearHover();
+  }
 
-    Offset maxCenter = layout.dataToPosition(xAxisIndex, dd, yAxisIndex, DynamicData(data.highest)).topCenter;
+  @override
+  void onUpdateDataCommand(covariant Command c) {
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
+  }
 
-    Path path = Path();
+  @override
+  void onStart() {
+    super.onStart();
+    _layout.addListener(invalidate);
+  }
 
-    path.moveTo(minCenter.dx, minCenter.dy);
-    if (data.close >= data.open) {
-      path.lineTo(openCenter.dx, openCenter.dy);
-      path.moveTo(closeCenter.dx, closeCenter.dy);
-      path.lineTo(maxCenter.dx, maxCenter.dy);
+  @override
+  void onStop() {
+    _layout.clearListener();
+    super.onStop();
+  }
+
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+  }
+
+  @override
+  void onDraw(Canvas canvas) {
+    GridCoord layout = context.findGridCoord();
+    Offset of = layout.getTranslation(series.xAxisIndex, series.yAxisIndex);
+    canvas.save();
+    canvas.translate(of.dx, of.dy);
+    each(_layout.nodeList, (node, index) {
+      drawNode(canvas, node);
+    });
+    canvas.restore();
+  }
+
+  void drawNode(Canvas canvas, CandlestickNode node) {
+    var theme = context.config.theme.kLineTheme;
+    AreaStyle? areaStyle;
+    var data = node.data;
+    if (series.styleFun != null) {
+      areaStyle = series.styleFun?.call(node.data);
     } else {
-      path.lineTo(closeCenter.dx, closeCenter.dy);
-      path.moveTo(openCenter.dx, openCenter.dy);
-      path.lineTo(maxCenter.dx, maxCenter.dy);
+      if (theme.fill) {
+        Color color = data.isUp ? theme.upColor : theme.downColor;
+        areaStyle = AreaStyle(color: color).convert(node.status);
+      }
     }
-    lineStyle.drawPath(canvas, mPaint, path);
+    areaStyle?.drawPath(canvas, mPaint, node.areaPath);
 
-    path.reset();
-    path.moveTo(openLeft.dx, openLeft.dy);
-    path.lineTo(openRight.dx, openRight.dy);
-    path.lineTo(closeRight.dx, closeRight.dy);
-    path.lineTo(closeLeft.dx, closeLeft.dy);
-    path.close();
-    areaStyle.drawPath(canvas, mPaint, path);
+    LineStyle? style;
+    if (series.lineStyleFun != null) {
+      style = series.lineStyleFun?.call(node.data);
+    } else {
+      Color color = data.isUp ? theme.upBorderColor : theme.downBorderColor;
+      style = LineStyle(color: color, width: theme.borderWidth).convert(node.status);
+    }
+    style?.drawPath(canvas, mPaint, node.path, false);
   }
 }

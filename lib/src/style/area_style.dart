@@ -45,7 +45,7 @@ class AreaStyle {
     paint.style = PaintingStyle.fill;
   }
 
-  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points) {
+  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points,[bool drawBorder=true]) {
     if (_notDraw()) {
       return;
     }
@@ -61,7 +61,7 @@ class AreaStyle {
     drawPath(canvas, paint, line.toPath(true));
   }
 
-  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List) {
+  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List,[bool drawBorder=true]) {
     if (_notDraw()) {
       return;
     }
@@ -69,7 +69,7 @@ class AreaStyle {
     drawPath(canvas, paint, area.toPath(true));
   }
 
-  void drawRect(Canvas canvas, Paint paint, Rect rect, [double? corner]) {
+  void drawRect(Canvas canvas, Paint paint, Rect rect, [double? corner, bool drawBorder = true]) {
     if (_notDraw()) {
       return;
     }
@@ -84,7 +84,7 @@ class AreaStyle {
     drawPath(canvas, paint, path);
   }
 
-  void drawRRect(Canvas canvas, Paint paint, RRect rect) {
+  void drawRRect(Canvas canvas, Paint paint, RRect rect, [bool drawBorder = true]) {
     if (_notDraw()) {
       return;
     }
@@ -93,7 +93,7 @@ class AreaStyle {
     drawPath(canvas, paint, path);
   }
 
-  void drawCircle(Canvas canvas, Paint paint, Offset center, num radius) {
+  void drawCircle(Canvas canvas, Paint paint, Offset center, num radius, [bool drawBorder = true]) {
     if (_notDraw()) {
       return;
     }
@@ -102,7 +102,7 @@ class AreaStyle {
     drawPath(canvas, paint, path);
   }
 
-  void drawPath(Canvas canvas, Paint paint, Path path) {
+  void drawPath(Canvas canvas, Paint paint, Path path, [bool drawBorder = true]) {
     if (_notDraw()) {
       return;
     }
@@ -111,7 +111,9 @@ class AreaStyle {
     }
     fillPaint(paint, path.getBounds());
     canvas.drawPath(path, paint);
-    border?.drawPath(canvas, paint, path, true);
+    if (drawBorder) {
+      border?.drawPath(canvas, paint, path, true);
+    }
   }
 
   AreaStyle convert(Set<ViewState>? states) {
