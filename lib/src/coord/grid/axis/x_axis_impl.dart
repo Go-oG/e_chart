@@ -22,14 +22,14 @@ class XAxisImpl extends BaseGridAxisImpl {
 
     num tickHeight = (tick?.length ?? 0);
     MinorTick? minorTick = axisStyle.getMinorTick(0, 1, getAxisTheme());
-    tickHeight=max([tickHeight,(minorTick?.length??0)]);
-    height+=tickHeight;
+    tickHeight = max([tickHeight, (minorTick?.length ?? 0)]);
+    height += tickHeight;
 
     AxisLabel axisLabel = axisStyle.axisLabel;
     if (axisLabel.show) {
       height += axisLabel.margin;
       var maxStr = getMaxStr(Direction.horizontal);
-      Size textSize = axisLabel.getLabelStyle(0,1,getAxisTheme())?.measure(maxStr)??Size.zero;
+      Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme())?.measure(maxStr) ?? Size.zero;
       height += textSize.height;
     }
     Rect rect = Rect.fromLTWH(0, 0, width, height);
@@ -76,5 +76,15 @@ class XAxisImpl extends BaseGridAxisImpl {
     scale = scale.copyWithRange([0, distance]);
     updateTickPosition();
     notifyLayoutUpdate();
+  }
+
+  @override
+  List<Offset> dataToPoint(DynamicData data) {
+    List<num> nl = scale.toRange(data.data);
+    List<Offset> ol = [];
+    for (var d in nl) {
+      ol.add(Offset(d.toDouble(), 0));
+    }
+    return ol;
   }
 }

@@ -4,7 +4,7 @@ import 'radar_axis.dart';
 class RadarAxisImpl extends LineAxisImpl<RadarAxis, LineProps> {
   RadarAxisImpl(super.axis,{super.axisIndex});
 
-  double dataToPoint(num data) {
+  double dataToRadius(num data) {
     return scale.toRange(data)[0].toDouble();
   }
 }

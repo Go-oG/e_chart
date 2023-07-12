@@ -12,9 +12,6 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineProps> {
 
   AxisInfo get axisInfo => _axisInfo;
 
-  List<num> dataToPoint(DynamicData data) {
-    return scale.toRange(data.data);
-  }
 
   DynamicText getMaxStr(Direction direction) {
     DynamicText maxStr = DynamicText.empty;

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:chart_xutil/chart_xutil.dart';
@@ -42,11 +43,11 @@ class YAxisImpl extends BaseGridAxisImpl {
     axisInfo.bound = layoutProps.rect;
     bool inside = (axis.axisStyle.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
     if (inside) {
-      axisInfo.start = layoutProps.rect.topLeft;
-      axisInfo.end = layoutProps.rect.bottomLeft;
+      axisInfo.start = layoutProps.rect.bottomLeft;
+      axisInfo.end = layoutProps.rect.topLeft;
     } else {
-      axisInfo.start = layoutProps.rect.topRight;
-      axisInfo.end = layoutProps.rect.bottomRight;
+      axisInfo.end = layoutProps.rect.topRight;
+      axisInfo.start = layoutProps.rect.bottomRight;
     }
     super.layout(layoutProps, dataSet);
   }
@@ -69,5 +70,16 @@ class YAxisImpl extends BaseGridAxisImpl {
     scale = scale.copyWithRange([distance, 0]);
     updateTickPosition();
     notifyLayoutUpdate();
+  }
+
+  @override
+  List<Offset> dataToPoint(DynamicData data) {
+    List<num> nl = scale.toRange(data.data);
+    List<Offset> ol = [];
+    for (var d in nl) {
+      double y = d.toDouble();
+      ol.add(Offset(0, y));
+    }
+    return ol;
   }
 }

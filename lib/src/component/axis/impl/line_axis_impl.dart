@@ -1,4 +1,5 @@
 import 'dart:math' as m;
+import 'dart:math';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/model/tick_result.dart';
@@ -364,6 +365,21 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
   void onScaleFactorChange(double factor) {}
 
   void onScrollOffsetChange(double offset) {}
+
+  List<Offset> dataToPoint(DynamicData data) {
+    double diffY = props.end.dy - props.start.dy;
+    double diffX = props.end.dx - props.start.dx;
+    double at = atan2(diffY, diffX);
+    List<num> nl = scale.toRange(data.data);
+    List<Offset> ol = [];
+    for (var d in nl) {
+      double x = props.start.dx + d * cos(at);
+      double y = props.start.dy + d * sin(at);
+      ol.add(Offset(x, y));
+    }
+    return ol;
+  }
+
 }
 
 ///直线轴使用

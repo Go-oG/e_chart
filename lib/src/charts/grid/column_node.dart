@@ -2,11 +2,12 @@ import 'dart:ui';
 
 import 'package:e_chart/src/model/stack_data.dart';
 
-import 'single _node.dart';
+import 'base_data.dart';
+import 'single_node.dart';
 
-class ColumnNode {
-  final StackColumn data;
-  List<SingleNode> nodeList = [];
+class ColumnNode<T extends BaseItemData,P extends BaseGroupData<T>> {
+  final StackColumn<T,P> data;
+  List<SingleNode<T,P>> nodeList = [];
 
   Rect rect = Rect.zero;
 

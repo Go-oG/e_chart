@@ -1,5 +1,6 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/grid/base_data.dart';
 
 class AxisIndex {
   final int index;
@@ -17,8 +18,8 @@ class AxisIndex {
   }
 }
 
-class AxisGroup {
-  final Map<AxisIndex, List<StackGroup>> groupMap;
+class AxisGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
+  final Map<AxisIndex, List<StackGroup<T, P>>> groupMap;
 
   const AxisGroup(this.groupMap);
 
@@ -31,7 +32,7 @@ class AxisGroup {
     // groupMap.forEach((key, value) {
     //   value.removeWhere((ele) => ele.column.isEmpty);
     // });
-   // groupMap.removeWhere((key, value) => value.isEmpty);
+    // groupMap.removeWhere((key, value) => value.isEmpty);
   }
 
   int getColumnCount(AxisIndex index) {
@@ -52,9 +53,9 @@ class AxisGroup {
   }
 }
 
-class StackGroup {
+class StackGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
   final AxisIndex index;
-  final List<StackColumn> column;
+  final List<StackColumn<T, P>> column;
 
   StackGroup(this.index, this.column);
 
@@ -62,13 +63,12 @@ class StackGroup {
     for (var col in column) {
       col.mergeData();
     }
-   // column.removeWhere((ele) => ele.data.isEmpty);
   }
 }
 
-class StackColumn {
+class StackColumn<T extends BaseItemData, P extends BaseGroupData<T>> {
   final bool isStack;
-  final List<StackData> data;
+  final List<StackData<T, P>> data;
   final StackStrategy strategy;
 
   StackColumn(this.data, this.isStack, this.strategy);
@@ -99,14 +99,13 @@ class StackColumn {
         }
       }
     });
-    // data.removeWhere((element) => !remainSet.contains(element));
   }
 }
 
-class StackData {
+class StackData<T, P> {
   final int groupIndex;
-  final GridItemData data;
-  final GridGroupData parent;
+  final T data;
+  final P parent;
   num up = 0;
   num down = 0;
 

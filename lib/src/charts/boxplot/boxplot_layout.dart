@@ -20,7 +20,7 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotData>> {
       return;
     }
 
-    Rect rect = coord.dataToPosition(series.xAxisIndex, data.first.x, series.yAxisIndex, data.first.min);
+    Rect rect = coord.dataToRect(series.xAxisIndex, data.first.x, series.yAxisIndex, data.first.min);
     num size = series.direction == Direction.vertical ? rect.width : rect.height;
     num boxWidth = 0;
     if (series.boxWidth != null) {
@@ -49,23 +49,23 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotData>> {
     var data = node.data;
     double half = boxWidth * 0.5;
 
-    Offset minCenter = coord.dataToPosition(xIndex, data.x, yIndex, data.min).topCenter;
+    Offset minCenter = coord.dataToRect(xIndex, data.x, yIndex, data.min).topCenter;
     Offset minLeft = minCenter.translate(-half, 0);
     Offset minRight = minCenter.translate(half, 0);
 
-    Offset downCenter = coord.dataToPosition(xIndex, data.x, yIndex, data.downAve4).topCenter;
+    Offset downCenter = coord.dataToRect(xIndex, data.x, yIndex, data.downAve4).topCenter;
     Offset downLeft = minCenter.translate(-half, 0);
     Offset downRight = minCenter.translate(half, 0);
 
-    Offset middleCenter = coord.dataToPosition(xIndex, data.x, yIndex, data.downAve4).topCenter;
+    Offset middleCenter = coord.dataToRect(xIndex, data.x, yIndex, data.downAve4).topCenter;
     Offset middleLeft = middleCenter.translate(-half, 0);
     Offset middleRight = middleCenter.translate(half, 0);
 
-    Offset upAveCenter = coord.dataToPosition(xIndex, data.x, yIndex, data.upAve4).topCenter;
+    Offset upAveCenter = coord.dataToRect(xIndex, data.x, yIndex, data.upAve4).topCenter;
     Offset upAveLeft = upAveCenter.translate(-half, 0);
     Offset upAveRight = upAveCenter.translate(half, 0);
 
-    Offset maxCenter = coord.dataToPosition(xIndex, data.x, yIndex, data.max).topCenter;
+    Offset maxCenter = coord.dataToRect(xIndex, data.x, yIndex, data.max).topCenter;
     Offset maxLeft = maxCenter.translate(-half, 0);
     Offset maxRight = maxCenter.translate(half, 0);
 

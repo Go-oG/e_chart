@@ -1,3 +1,4 @@
+
 import 'charts/bar/bar_chart.dart';
 import 'charts/bar/bar_series.dart';
 import 'charts/boxplot/boxplot_chart.dart';
@@ -10,6 +11,8 @@ import 'charts/funnel/funnel_chart.dart';
 import 'charts/funnel/funnel_series.dart';
 import 'charts/heatmap/heat_map_chart.dart';
 import 'charts/heatmap/heat_map_series.dart';
+import 'charts/line/line_chart.dart';
+import 'charts/line/line_series.dart';
 import 'charts/parallel/parallel_chart.dart';
 import 'charts/parallel/parallel_series.dart';
 import 'charts/pie/pie_chart.dart';
@@ -23,10 +26,13 @@ import 'core/view.dart';
 
 class SeriesFactory {
   static final SeriesFactory _instance = SeriesFactory._();
+
   static SeriesFactory get instance => _instance;
+
   SeriesFactory._() {
     _convertList.add(_defaultConvert);
   }
+
   factory SeriesFactory() => _instance;
   final DefaultSeriesConvert _defaultConvert = DefaultSeriesConvert();
   final List<SeriesConvert> _convertList = [];
@@ -36,7 +42,9 @@ class SeriesFactory {
   }
 
   void removeConvert(SeriesConvert convert) {
-    if(convert==_defaultConvert){return;}
+    if (convert == _defaultConvert) {
+      return;
+    }
     _convertList.remove(convert);
   }
 
@@ -59,22 +67,23 @@ class SeriesFactory {
 class DefaultSeriesConvert extends SeriesConvert {
   @override
   ChartView? convert(ChartSeries series) {
+    if (series is LineSeries) {
+      return LineView(series);
+    }
+    if (series is BarSeries) {
+      return BarView(series);
+    }
     if (series is CandleStickSeries) {
       return CandleStickView(series);
     }
     if (series is BoxplotSeries) {
       return BoxPlotView(series);
     }
-
     if (series is HeatMapSeries) {
       return HeatMapView(series);
     }
-
     if (series is PointSeries) {
       return PointView(series);
-    }
-    if (series is BarSeries) {
-      return BarView(series);
     }
     if (series is CalenderSeries) {
       return CalendarView(series);

@@ -10,10 +10,11 @@ export 'enums/scale_type.dart';
 export 'enums/select_mode.dart';
 export 'enums/sort.dart';
 export 'enums/stack_strategy.dart';
+export 'enums/step_type.dart';
 export 'enums/trigger.dart';
 export 'enums/trigger_on.dart';
 
-export 'bar_data.dart';
+export '../charts/bar/bar_data.dart';
 export 'chart_error.dart';
 export 'chart_offset.dart';
 export 'constans.dart';
@@ -22,6 +23,7 @@ export 'dynamic_text.dart';
 export 'group_data.dart';
 export 'point_data.dart';
 export 'range.dart';
+export 'stack_data.dart';
 export 'string_number.dart';
 export 'text_position.dart';
 

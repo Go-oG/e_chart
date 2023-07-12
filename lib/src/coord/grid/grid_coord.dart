@@ -2,10 +2,14 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'axis/base_grid_axis_impl.dart';
+
 abstract class GridCoord extends Coord<GridConfig> {
   GridCoord(super.props);
 
-  Rect dataToPosition(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+  Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+
+  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool isXAxis);
 
   ///获取平移量(滚动量)
   Offset getTranslation();
@@ -104,7 +108,7 @@ class GridCoordImpl extends GridCoord {
       if (value.axis.position == Align2.start) {
         Rect rect = Rect.fromLTWH(leftPadding, topOffset, axisWith, h);
         layoutProps = LineProps(rect, rect.topLeft, rect.topRight);
-        topOffset -= (axisInfo.bound.height + value.axis.offset);
+        topOffset -= (h + value.axis.offset);
       } else {
         Rect rect = Rect.fromLTWH(leftPadding, bottomOffset, axisWith, h);
         layoutProps = LineProps(rect, rect.topLeft, rect.topRight);
@@ -134,7 +138,6 @@ class GridCoordImpl extends GridCoord {
       }
       value.layout(layoutProps, dl);
     });
-
     for (var view in children) {
       view.layout(leftPadding, topPadding, width - rightPadding, height - bottomPadding);
     }
@@ -148,17 +151,6 @@ class GridCoordImpl extends GridCoord {
     yMap.forEach((key, value) {
       value.draw(canvas, mPaint, contentBox);
     });
-  }
-
-  @override
-  Rect dataToPosition(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
-    List<num> dx = getXAxis(xAxisIndex).dataToPoint(x);
-    List<num> dy = getYAxis(yAxisIndex).dataToPoint(y);
-    double l = dx[0].toDouble();
-    double t = dy[0].toDouble();
-    double r = dx.length >= 2 ? dx[1].toDouble() : l + 1;
-    double b = dy.length >= 2 ? dy[1].toDouble() : t + 1;
-    return Rect.fromLTRB(l, t, r, b);
   }
 
   @override
@@ -223,5 +215,22 @@ class GridCoordImpl extends GridCoord {
       }
     }
     return list;
+  }
+
+  @override
+  Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
+    List<Offset> dx = dataToPoint(xAxisIndex, x, true);
+    List<Offset> dy = dataToPoint(yAxisIndex, y, false);
+    double l = dx[0].dx;
+    double t = dy[0].dy;
+    double r = dx.length >= 2 ? dx[1].dx : l + 1;
+    double b = dy.length >= 2 ? dy[1].dy : t + 1;
+    return Rect.fromLTRB(l, t, r, b);
+  }
+
+  @override
+  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool isXAxis) {
+    BaseGridAxisImpl axisImpl = isXAxis ? getXAxis(axisIndex) : getYAxis(axisIndex);
+    return axisImpl.dataToPoint(data);
   }
 }
