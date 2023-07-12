@@ -9,18 +9,6 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
   HeatMapView(super.series);
 
   @override
-  int get gridX => series.xAxisIndex;
-
-  @override
-  int get gridY => series.yAxisIndex;
-
-  @override
-  int get gridXDataCount => series.data.length;
-
-  @override
-  int get gridYDataCount => series.data.length;
-
-  @override
   List<DynamicData> get gridXExtreme {
     List<DynamicData> dl = [];
     for (var element in series.data) {
@@ -93,5 +81,29 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
       Alignment align = series.labelAlignFun?.call(node) ?? Alignment.center;
       labelStyle.draw(canvas, mPaint, label, TextDrawConfig.fromRect(node.rect, align));
     }
+  }
+
+  @override
+  int getAxisDataCount(int axisIndex, bool isXAxis) {
+    return series.data.length;
+  }
+
+  @override
+  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
+    List<DynamicData> dl = [];
+    for (var element in series.data) {
+      if (isXAxis) {
+        dl.add(element.x);
+      } else {
+        dl.add(element.y);
+      }
+    }
+    return dl;
+  }
+
+  @override
+  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
+    // TODO: implement getAxisMaxText
+    return DynamicText.empty;
   }
 }

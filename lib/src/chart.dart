@@ -29,8 +29,6 @@ class ChartConfig {
       {required this.series,
       this.title,
       this.legend,
-      List<XAxis>? xAxisList,
-      List<YAxis>? yAxisList,
       this.polarList = const [],
       this.radarList = const [],
       this.parallelList = const [],

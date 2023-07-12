@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   static const int maxAngle = 360;
 
-  AngleAxisImpl(super.axis, [int index = 0]) : super(index: index);
+  AngleAxisImpl(super.axis, [int index = 0]) : super(axisIndex: index);
 
   @override
   BaseScale buildScale(ArcProps props, List<DynamicData> dataSet) {
@@ -37,7 +37,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
   @override
   void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
-    var axisLine = axis.axisLine;
+    var axisLine = axis.axisStyle;
     var theme = getAxisTheme();
     for (int i = 1; i < arcTickList.length; i++) {
       var preArc = arcTickList[i - 1].arc;
@@ -58,7 +58,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
-    var axisLine = axis.axisLine;
+    var axisLine = axis.axisStyle;
     var theme = getAxisTheme();
     each(arcTickList, (arc, index) {
       LineStyle? style = axisLine.getSplitLineStyle(index, arcTickList.length, theme);
@@ -71,7 +71,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
   @override
   void onDrawAxisLine(Canvas canvas, Paint paint) {
-    var axisLine = axis.axisLine;
+    var axisLine = axis.axisStyle;
     var theme = getAxisTheme();
     each(arcTickList, (arc, index) {
       LineStyle? style = axisLine.getAxisLineStyle(index, arcTickList.length, theme);
@@ -83,19 +83,48 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
 
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint) {
-    var axisLine = axis.axisLine;
+    var axisStyle = axis.axisStyle;
     var theme = getAxisTheme();
+    int maxCount = arcTickList.length;
     each(arcTickList, (arc, p1) {
-      MainTick? tick = axisLine.getMainTick(p1, arcTickList.length, theme);
-      if (tick == null || !tick.show) {
-        return;
+      MainTick? tick = axisStyle.getMainTick(p1, maxCount, theme);
+      var minorTick = axisStyle.getMinorTick(p1, maxCount, theme);
+      bool b1 = (tick != null && tick.show);
+      bool b2 = (minorTick != null && minorTick.show);
+      if (b1 || b2) {
+        each(arc.tick, (at, p2) {
+          if (b1) {
+            tick?.lineStyle.drawPolygon(canvas, paint, [at.start, at.end]);
+          }
+          if (b2) {
+            each(at.minorTickList, (minor, p1) {
+              minorTick?.lineStyle.drawPolygon(canvas, paint, [minor.start, minor.end]);
+            });
+          }
+        });
       }
-      each(arc.tick, (at, p1) {
-        tick.lineStyle.drawPolygon(canvas, paint, [at.start, at.end]);
-        if (at.text != null && at.textConfig != null) {
-          tick.labelStyle.draw(canvas, paint, at.text!, at.textConfig!);
-        }
-      });
+
+      ///绘制标签
+      var label = axisStyle.getLabelStyle(p1, maxCount, theme);
+      var minorLabel = axisStyle.getMinorLabelStyle(p1, maxCount, theme);
+
+      b1 = (label != null && label.show);
+      b2 = (minorLabel != null && minorLabel.show);
+
+      if (b1 || b2) {
+        each(arc.tick, (at, p2) {
+          if (b1 && at.text != null && at.textConfig != null) {
+            label?.draw(canvas, paint, at.text!, at.textConfig!);
+          }
+          if (b2) {
+            each(at.minorTickList, (minor, p1) {
+              if (minor.text != null && minor.textConfig != null) {
+                minorLabel?.draw(canvas, paint, minor.text!, minor.textConfig!);
+              }
+            });
+          }
+        });
+      }
     });
   }
 
@@ -117,7 +146,6 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
     List<ArcRange> rangeList = [];
     List<DynamicText> ticks = obtainTicks();
 
-    final tmpTick = MainTick();
     for (int i = 0; i < count; i++) {
       num startAngle = axis.offsetAngle + i * angleInterval;
       dynamic firstData = scale.toData(startAngle);
@@ -130,16 +158,86 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
         sweepAngle: angleInterval,
         center: props.center,
       );
-      MainTick tick = axis.axisLine.getMainTick(i, count, getAxisTheme()) ?? tmpTick;
+
       List<DynamicText> tl = [];
       if (i < ticks.length) {
         tl.add(ticks[i]);
         tl.add(DynamicText.empty);
       }
-      List<TickResult> result = tick.computeCircleTick(props.radius, startAngle, angleInterval, tl, center: props.center);
+      List<TickResult> result = computeCircleTick(i, count, startAngle, angleInterval, tl);
       rangeList.add(ArcRange(arc, firstData, endData, result));
     }
     arcTickList = rangeList;
+  }
+
+  final tmpTick = MainTick();
+  final MinorTick _tmpMinorTick = MinorTick();
+
+  List<TickResult> computeCircleTick(int index, int maxIndex, num startAngle, num sweepAngle, List<DynamicText> ticks) {
+    MainTick tick = axis.axisStyle.getMainTick(index, maxIndex, getAxisTheme()) ?? tmpTick;
+    int tickCount = ticks.length;
+    tickCount = max([tickCount, 2]).toInt();
+    double interval = sweepAngle / (tickCount - 1);
+
+    final double tickDir = tick.inside ? -1 : 1;
+    final double tickOffset = tick.length * tickDir;
+    final double r = props.radius;
+
+    List<TickResult> resultList = [];
+    for (int i = 0; i < tickCount; i++) {
+      double sa = startAngle + i * interval;
+      Offset tickStart = circlePoint(r, sa, props.center);
+      Offset tickEnd = circlePoint(r + tickOffset, sa, props.center);
+      TickResult tickResult;
+      if (i >= ticks.length) {
+        tickResult = TickResult(tickStart, tickEnd, null, null);
+      } else {
+        if (ticks.length == 1) {
+          sa += interval * 0.5;
+        }
+        Offset o3 = circlePoint(r + tickOffset, sa, props.center);
+        TextDrawConfig config = TextDrawConfig(o3, align: toAlignment(sa, tick.inside));
+        tickResult = TickResult(tickStart, tickEnd, config, ticks[i]);
+      }
+
+      tickResult.minorTickList.addAll(_computeMinorTickAndLabel(index, maxIndex, sa, interval, tick.inside));
+      resultList.add(tickResult);
+    }
+    return resultList;
+  }
+
+  List<TickResult> _computeMinorTickAndLabel(int index, int maxIndex, num startAngle, num sweepAngle, bool inside) {
+    final AxisStyle style = axis.axisStyle;
+    final bool labelInside = style.axisLabel.inside;
+    final MinorTick tick = style.getMinorTick(index, maxIndex, getAxisTheme()) ?? _tmpMinorTick;
+    int tickCount = tick.splitNumber;
+    if (tickCount <= 0) {
+      return [];
+    }
+    final double interval = sweepAngle / (tickCount - 1);
+    final double tickDir = inside ? -1 : 1;
+    final int labelDir = labelInside ? -1 : 1;
+    final double tickLen = tick.length.toDouble();
+    final double tickOffset = tick.length * tickDir;
+    final double r = props.radius;
+    List<TickResult> resultList = [];
+    for (int i = 1; i < tickCount; i++) {
+      final double sa = startAngle + i * interval;
+      final Offset ts = circlePoint(r, sa, props.center);
+      final Offset te = circlePoint(r + tickOffset, sa, props.center);
+      num offsetY = style.axisLabel.margin + style.axisLabel.padding;
+      if (inside == labelInside) {
+        offsetY += tickLen;
+      }
+      offsetY *= labelDir;
+      Offset o3 = circlePoint(r + offsetY, sa, props.center);
+      TextDrawConfig config = TextDrawConfig(o3, align: toAlignment(sa, labelInside));
+      dynamic data = scale.toData(sa);
+      DynamicText? text = style.axisLabel.formatter?.call(data);
+      TickResult tickResult = TickResult(ts, te, config, text);
+      resultList.add(tickResult);
+    }
+    return resultList;
   }
 
   ///将一个"Y轴数据" 转换到角度范围

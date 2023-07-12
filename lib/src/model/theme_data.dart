@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -98,7 +96,7 @@ class KLineTheme {
   Color downColor = const Color(0xFF47b262);
   Color downBorderColor = const Color(0xFF47b262);
   num borderWidth = 1;
-  bool fill=true;
+  bool fill = true;
 }
 
 ///折线图主题
@@ -192,7 +190,7 @@ class SankeyTheme {
 class FunnelTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFCCCCCC);
-  LabelStyle labelStyle = LabelStyle();
+  LabelStyle labelStyle = const LabelStyle();
   List<Color> colors = [
     const Color(0xFF5470c6),
     const Color(0xFF91cc75),
@@ -248,10 +246,21 @@ class AxisTheme {
   Color axisLineColor = const Color(0xFF6E7079);
   num axisLineWidth = 1;
 
-  MainTick? tick = MainTick(minorTick: MinorTick());
+  MainTick? tick = MainTick();
+  MinorTick? minorTick;
 
   bool showLabel = true;
   Color labelColor = const Color(0xFF6E7079);
+  num labelSize=15;
+
+  bool showMinorLabel = false;
+  Color minorLabelColor = const Color(0xFF6E7079);
+  num minorLabelSize=13;
+
+
+
+
+
   bool showSplitLine = true;
   num splitLineWidth = 1;
   List<Color> splitLineColors = [
@@ -272,14 +281,10 @@ class AxisTheme {
   }
 
   MinorTick? getMinorTick() {
-    if (tick == null || !tick!.show) {
+    if (minorTick == null || !minorTick!.show) {
       return null;
     }
-    if (tick!.minorTick == null || !tick!.minorTick!.show) {
-      return null;
-    }
-
-    return tick!.minorTick;
+    return minorTick;
   }
 
   Color? getSplitLineColor(int index) {

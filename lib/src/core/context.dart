@@ -121,9 +121,6 @@ class Context {
       }
       _seriesViewMap[series] = view;
     }
-
-    _fillGridAndPolarCoordIfNeed();
-
     ///将指定了坐标系的View和坐标系绑定
     _seriesViewMap.forEach((key, view) {
       Coord? layout = _findCoord(view, key);
@@ -140,46 +137,46 @@ class Context {
     });
   }
 
-  ///补齐需要的坐标系
-  void _fillGridAndPolarCoordIfNeed() {
-    _seriesViewMap.forEach((series, view) {
-      if (series.coordSystem != null) {
-        var coord = series.coordSystem!;
-        bool has = false;
-        for (var e in _coordMap.entries) {
-          if (e.key.coordSystem == coord) {
-            has = true;
-            break;
-          }
-        }
-        if (has) {
-          return;
-        }
-
-        if (coord == CoordSystem.grid) {
-          var cc = GridConfig();
-          var c = CoordFactory.instance.convert(cc);
-          if (c != null) {
-            config.grid=cc;
-            _coordMap[cc] = c;
-            _coordList.add(c);
-          }
-          return;
-        }
-        if (coord == CoordSystem.polar) {
-          var cc = PolarConfig();
-          var c = CoordFactory.instance.convert(cc);
-          if (c != null) {
-            config.polarList.add(cc);
-            _coordMap[cc] = c;
-            _coordList.add(c);
-          }
-          return;
-        }
-        return;
-      }
-    });
-  }
+  // ///补齐需要的坐标系
+  // void _fillGridAndPolarCoordIfNeed() {
+  //   _seriesViewMap.forEach((series, view) {
+  //     if (series.coordSystem != null) {
+  //       var coord = series.coordSystem!;
+  //       bool has = false;
+  //       for (var e in _coordMap.entries) {
+  //         if (e.key.coordSystem == coord) {
+  //           has = true;
+  //           break;
+  //         }
+  //       }
+  //       if (has) {
+  //         return;
+  //       }
+  //
+  //       if (coord == CoordSystem.grid) {
+  //         var cc = GridConfig();
+  //         var c = CoordFactory.instance.convert(cc);
+  //         if (c != null) {
+  //           config.grid=cc;
+  //           _coordMap[cc] = c;
+  //           _coordList.add(c);
+  //         }
+  //         return;
+  //       }
+  //       if (coord == CoordSystem.polar) {
+  //         var cc = PolarConfig();
+  //         var c = CoordFactory.instance.convert(cc);
+  //         if (c != null) {
+  //           config.polarList.add(cc);
+  //           _coordMap[cc] = c;
+  //           _coordList.add(c);
+  //         }
+  //         return;
+  //       }
+  //       return;
+  //     }
+  //   });
+  // }
 
   ///====生命周期函数=====
   void onCreate() {

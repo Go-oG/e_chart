@@ -9,9 +9,9 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
     AxisTheme theme = getAxisTheme();
-    AxisStyle axisLine = axis.axisLine;
-    each(tickPositionList, (tick, i) {
-      LineStyle? style = axisLine.getSplitLineStyle(i, tickPositionList.length, theme);
+    AxisStyle axisLine = axis.axisStyle;
+    each(lineTickList, (tick, i) {
+      LineStyle? style = axisLine.getSplitLineStyle(i, lineTickList.length, theme);
       if (style == null) {
         return;
       }
@@ -29,9 +29,9 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
   @override
   void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
     AxisTheme theme = getAxisTheme();
-    AxisStyle axisLine = axis.axisLine;
-    each(tickPositionList, (tick, i) {
-      AreaStyle? style = axisLine.getSplitAreaStyle(i, tickPositionList.length, theme);
+    AxisStyle axisLine = axis.axisStyle;
+    each(lineTickList, (tick, i) {
+      AreaStyle? style = axisLine.getSplitAreaStyle(i, lineTickList.length, theme);
       if (style == null || !style.show) {
         return;
       }

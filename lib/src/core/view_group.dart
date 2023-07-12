@@ -65,15 +65,15 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
   Size onMeasure(double parentWidth, double parentHeight) {
     double maxHeight = 0;
     double maxWidth = 0;
-    num php = layoutParams.leftPadding.convert(parentWidth) + layoutParams.rightPadding.convert(parentWidth);
-    num pvp = layoutParams.topPadding.convert(parentHeight) + layoutParams.bottomPadding.convert(parentHeight);
+    num php = layoutParams.padding.horizontal;
+    num pvp = layoutParams.padding.vertical;
     double pw = parentWidth - php;
     double ph = parentHeight - pvp;
     for (var child in children) {
       child.measure(pw, ph);
       final LayoutParams lp = child.layoutParams;
-      num hp = lp.leftMargin.convert(pw) + lp.rightMargin.convert(pw);
-      num vp = lp.topMargin.convert(ph) + lp.bottomMargin.convert(ph);
+      num hp = lp.margin.horizontal;
+      num vp = lp.margin.vertical;
       maxWidth = max(maxWidth, child.width + hp);
       maxHeight = max(maxHeight, child.height + vp);
     }
@@ -82,15 +82,15 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     maxWidth = min(maxWidth, parentWidth);
     maxHeight = min(maxHeight, parentHeight);
 
-    php = layoutParams.leftPadding.convert(maxWidth) + layoutParams.rightPadding.convert(maxWidth);
-    pvp = layoutParams.topPadding.convert(maxHeight) + layoutParams.bottomPadding.convert(maxHeight);
+    php = layoutParams.padding.horizontal;
+    pvp = layoutParams.padding.vertical;
     pw = maxWidth - php;
     ph = maxHeight - pvp;
 
     for (var child in children) {
       final LayoutParams lp = child.layoutParams;
-      num hm = lp.leftMargin.convert(maxWidth) + lp.rightMargin.convert(maxWidth);
-      num vm = lp.topMargin.convert(maxHeight) + lp.bottomMargin.convert(maxHeight);
+      num hm = lp.margin.horizontal;
+      num vm = lp.margin.vertical;
       double childWidth = child.width;
       if (lp.width.number == LayoutParams.matchParent) {
         childWidth = max(0, pw - hm);
@@ -107,12 +107,12 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    double parentLeft = layoutParams.leftPadding.convert(width);
-    double parentTop = layoutParams.topPadding.convert(height);
+    double parentLeft = layoutParams.padding.left;
+    double parentTop = layoutParams.padding.top;
     for (var child in children) {
       LayoutParams lp = child.layoutParams;
-      double childLeft = parentLeft + lp.leftMargin.convert(width);
-      double childTop = parentTop + lp.topMargin.convert(height);
+      double childLeft = parentLeft + lp.margin.left;
+      double childTop = parentTop + lp.margin.top;
       child.layout(childLeft, childTop, childLeft + child.width, childTop + child.height);
     }
   }

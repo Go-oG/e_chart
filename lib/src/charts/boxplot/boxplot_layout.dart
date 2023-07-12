@@ -131,7 +131,7 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotData>> {
   }
 
   BoxplotNode? findNode(Offset offset) {
-    var of = context.findGridCoord().getTranslation(series.xAxisIndex, series.yAxisIndex);
+    var of = context.findGridCoord().getTranslation();
     offset = offset.translate(of.dx, of.dy);
     for (BoxplotNode node in nodeList) {
       if (node.path.contains(offset)) {

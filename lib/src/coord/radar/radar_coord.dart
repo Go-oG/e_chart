@@ -21,7 +21,7 @@ class RadarCoordImpl extends RadarCoord {
           nameGap: indicator.nameGap,
           nameStyle: indicator.nameStyle,
           splitNumber: 5);
-      axisMap[i] = RadarAxisImpl(axis, i);
+      axisMap[i] = RadarAxisImpl(axis, axisIndex: i);
     }
   }
 
@@ -51,10 +51,10 @@ class RadarCoordImpl extends RadarCoord {
     radius = width / 2;
     num oa = props.offsetAngle;
     axisMap.forEach((key, value) {
-      double angle = oa + value.index * itemAngle;
+      double angle = oa + value.axisIndex * itemAngle;
       Offset o = circlePoint(radius, angle, center);
       LineProps layoutProps = LineProps(Rect.zero, center, o);
-      value.layout(layoutProps, collectChildData(value.index));
+      value.layout(layoutProps, collectChildData(value.axisIndex));
     });
 
     double radiusItem = radius / props.splitNumber;

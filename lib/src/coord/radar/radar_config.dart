@@ -8,8 +8,7 @@ class RadarConfig extends CircleCoordConfig {
   bool silent;
   bool clockwise;
   RadarShape shape;
-  AxisStyle? axisLine;
-  MainTick? axisTick;
+  AxisStyle? axisStyle;
 
   Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
   Fun3<int, int, AreaStyle>? splitStyleFun;
@@ -18,8 +17,7 @@ class RadarConfig extends CircleCoordConfig {
     required this.indicator,
     this.offsetAngle = 0,
     this.splitNumber = 5,
-    this.axisLine,
-    this.axisTick,
+    this.axisStyle,
     this.shape = RadarShape.polygon,
     this.silent = false,
     this.clockwise = true,

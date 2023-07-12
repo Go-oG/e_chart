@@ -125,8 +125,8 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     } else {
       h = parentHeight;
     }
-    w += lp.leftPadding.convert(parentWidth) + lp.rightPadding.convert(parentWidth);
-    h += lp.topPadding.convert(parentHeight) + lp.bottomPadding.convert(parentHeight);
+    w += lp.padding.horizontal;
+    h += lp.padding.vertical;
     return Size(w, h);
   }
 
@@ -629,50 +629,23 @@ class LayoutParams {
   final SNumber width;
   final SNumber height;
 
-  final SNumber leftMargin;
-  final SNumber topMargin;
-  final SNumber rightMargin;
-  final SNumber bottomMargin;
-
-  final SNumber leftPadding;
-  final SNumber topPadding;
-  final SNumber rightPadding;
-  final SNumber bottomPadding;
+  final EdgeInsets margin;
+  final EdgeInsets padding;
 
   LayoutParams(
     this.width,
     this.height, {
-    this.leftMargin = SNumber.zero,
-    this.topMargin = SNumber.zero,
-    this.rightMargin = SNumber.zero,
-    this.bottomMargin = SNumber.zero,
-    this.leftPadding = SNumber.zero,
-    this.topPadding = SNumber.zero,
-    this.rightPadding = SNumber.zero,
-    this.bottomPadding = SNumber.zero,
+    this.margin = EdgeInsets.zero,
+    this.padding = EdgeInsets.zero,
   });
 
-  LayoutParams.match()
+  LayoutParams.match({this.margin = EdgeInsets.zero, this.padding = EdgeInsets.zero})
       : width = const SNumber.number(matchParent),
-        height = const SNumber.number(matchParent),
-        leftMargin = SNumber.zero,
-        topMargin = SNumber.zero,
-        rightMargin = SNumber.zero,
-        bottomMargin = SNumber.zero,
-        leftPadding = SNumber.zero,
-        topPadding = SNumber.zero,
-        rightPadding = SNumber.zero,
-        bottomPadding = SNumber.zero;
+        height = const SNumber.number(matchParent);
 
-  LayoutParams.wrap()
-      : width = const SNumber.number(wrapContent),
-        height = const SNumber.number(wrapContent),
-        leftMargin = SNumber.zero,
-        topMargin = SNumber.zero,
-        rightMargin = SNumber.zero,
-        bottomMargin = SNumber.zero,
-        leftPadding = SNumber.zero,
-        topPadding = SNumber.zero,
-        rightPadding = SNumber.zero,
-        bottomPadding = SNumber.zero;
+  LayoutParams.wrap({
+    this.margin = EdgeInsets.zero,
+    this.padding = EdgeInsets.zero,
+  })  : width = const SNumber.number(wrapContent),
+        height = const SNumber.number(wrapContent);
 }

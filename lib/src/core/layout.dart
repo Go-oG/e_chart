@@ -19,6 +19,8 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
   Rect rect = Rect.zero;
   late T data;
 
+  void doMeasure(double parentWidth,double parentHeight){}
+
   void doLayout(Context context, S series, T data, Rect rect, LayoutAnimatorType type) {
     this.context = context;
     this.series = series;

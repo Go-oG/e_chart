@@ -8,7 +8,7 @@ import '../../component/axis/impl/base_axis_impl.dart';
 import '../../component/axis/impl/line_axis_impl.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
-import '../rect_coord.dart';
+import '../coord.dart';
 import 'parallel_axis_impl.dart';
 import 'parallel_config.dart';
 import 'parallel_axis.dart';
@@ -44,7 +44,7 @@ class ParallelCoordImpl extends ParallelCoord {
     Direction direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
-      ParallelAxisImpl node = ParallelAxisImpl(ele, direction, i);
+      ParallelAxisImpl node = ParallelAxisImpl(ele, direction, axisIndex: i);
       node.expanded = true;
       if (i >= _expandLeftIndex && i <= _expandRightIndex) {
         node.expanded = false;
@@ -121,7 +121,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
     double w = width - leftOffset - rightOffset;
     double h = height - topOffset - bottomOffset;
-    contentBox=Rect.fromLTWH(leftOffset, topOffset, w, h);
+    contentBox = Rect.fromLTWH(leftOffset, topOffset, w, h);
 
     bool horizontal = props.direction == Direction.horizontal;
     double size = (horizontal ? w : h);
@@ -174,7 +174,7 @@ class ParallelCoordImpl extends ParallelCoord {
       for (var ele in children) {
         if (ele is ParallelChild) {
           var child = ele as ParallelChild;
-          dataSet.addAll(child.getDimDataSet(node.index));
+          dataSet.addAll(child.getDimDataSet(node.axisIndex));
         }
       }
       Offset start = rect.topLeft;
@@ -198,7 +198,7 @@ class ParallelCoordImpl extends ParallelCoord {
   @override
   void onDraw(Canvas canvas) {
     for (var ele in axisMap.entries) {
-      ele.value.draw(canvas, mPaint,contentBox);
+      ele.value.draw(canvas, mPaint, Rect.zero);
     }
   }
 
@@ -227,7 +227,7 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 }
 
-abstract class ParallelCoord extends RectCoord<ParallelConfig> {
+abstract class ParallelCoord extends Coord<ParallelConfig> {
   ParallelCoord(super.props);
 
   ParallelPosition dataToPosition(int dimIndex, DynamicData data);

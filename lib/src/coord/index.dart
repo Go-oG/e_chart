@@ -37,4 +37,3 @@ export 'single/single_layout.dart';
 export 'circle_coord.dart';
 export 'coord.dart';
 export 'coord_config.dart';
-export 'rect_coord.dart';

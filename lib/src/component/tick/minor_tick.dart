@@ -6,11 +6,8 @@ class MinorTick extends BaseTick {
   MinorTick({
     this.splitNumber = 5,
     super.show,
-    super.inside,
     super.length,
     super.lineStyle,
-    super.labelStyle,
-    super.labelPadding,
     super.interval,
   });
 }

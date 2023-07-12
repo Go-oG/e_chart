@@ -20,14 +20,13 @@ class XAxis extends GridAxis {
     super.interval,
     super.logBase,
     super.silent,
-    super.axisLine,
-    super.splitArea,
+    super.axisStyle,
     super.categoryList,
     super.axisPointer,
     super.name,
     super.show,
-    super.formatFun,
     super.timeRange,
-    super.timeSplitType,
+    super.timeType,
+    super.timeFormatFun,
   });
 }

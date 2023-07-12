@@ -2,10 +2,10 @@ import 'package:e_chart/src/model/enums/coordinate.dart';
 
 import '../../model/enums/direction.dart';
 import '../../model/string_number.dart';
-import '../rect_coord.dart';
+import '../coord_config.dart';
 import 'parallel_axis.dart';
 
-class ParallelConfig extends RectCoordConfig {
+class ParallelConfig extends CoordConfig {
   Direction direction;
   bool expandable;
   int expandStartIndex;
@@ -20,11 +20,6 @@ class ParallelConfig extends RectCoordConfig {
 
   ParallelConfig({
     this.direction = Direction.horizontal,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.width,
-    super.height,
     this.expandable = false,
     this.expandStartIndex = 0,
     this.expandCount = 0,
@@ -34,6 +29,8 @@ class ParallelConfig extends RectCoordConfig {
     this.topPadding = const SNumber.percent(5),
     this.rightPadding = const SNumber.percent(5),
     this.bottomPadding = const SNumber.percent(2),
+    super.width,
+    super.height,
     super.id,
     super.show,
     super.enableClick,
@@ -41,6 +38,8 @@ class ParallelConfig extends RectCoordConfig {
     super.enableHover,
     super.enableScale,
     super.backgroundColor,
+    super.margin,
+    super.padding,
   });
 
   @override

@@ -12,37 +12,6 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
   CandleStickView(super.series);
 
   @override
-  int get gridX => series.xAxisIndex;
-
-  @override
-  int get gridY => series.yAxisIndex;
-
-  @override
-  int get gridXDataCount => series.data.length;
-
-  @override
-  int get gridYDataCount => gridXDataCount;
-
-  @override
-  List<DynamicData> get gridXExtreme {
-    List<DynamicData> dl = [];
-    for (var element in series.data) {
-      dl.add(DynamicData(element.time));
-    }
-    return dl;
-  }
-
-  @override
-  List<DynamicData> get gridYExtreme {
-    List<DynamicData> dl = [];
-    for (var element in series.data) {
-      dl.add(DynamicData(element.highest));
-      dl.add(DynamicData(element.lowest));
-    }
-    return dl;
-  }
-
-  @override
   void onClick(Offset offset) {
     _layout.hoverEnter(offset);
   }
@@ -88,7 +57,7 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
   @override
   void onDraw(Canvas canvas) {
     GridCoord layout = context.findGridCoord();
-    Offset of = layout.getTranslation(series.xAxisIndex, series.yAxisIndex);
+    Offset of = layout.getTranslation();
     canvas.save();
     canvas.translate(of.dx, of.dy);
     each(_layout.nodeList, (node, index) {
@@ -119,5 +88,30 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
       style = LineStyle(color: color, width: theme.borderWidth).convert(node.status);
     }
     style?.drawPath(canvas, mPaint, node.path, false);
+  }
+
+  @override
+  int getAxisDataCount(int axisIndex, bool isXAxis) {
+    return series.data.length;
+  }
+
+  @override
+  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
+    List<DynamicData> dl = [];
+    for (var element in series.data) {
+      if (isXAxis) {
+        dl.add(DynamicData(element.time));
+      } else {
+        dl.add(DynamicData(element.highest));
+        dl.add(DynamicData(element.lowest));
+      }
+    }
+    return dl;
+  }
+
+  @override
+  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
+    // TODO: implement getAxisMaxText
+    return DynamicText.empty;
   }
 }
