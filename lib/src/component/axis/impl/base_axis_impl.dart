@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command> {
-  final int index;
+  final int axisIndex;
   final T axis;
   late final AxisTitleNode titleNode;
   late Context context;
@@ -13,7 +13,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
 
   bool expanded = true;
 
-  BaseAxisImpl(this.axis, {this.index = 0}) : super(Command.none) {
+  BaseAxisImpl(this.axis, {this.axisIndex = 0}) : super(Command.none) {
     titleNode = AxisTitleNode(axis.name);
   }
 
@@ -30,7 +30,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
   TextDrawConfig layoutAxisName();
 
   void draw(Canvas canvas, Paint paint, Rect coord) {
-    var axisLine = axis.axisLine;
+    var axisLine = axis.axisStyle;
     if (!axisLine.show) {
       return;
     }
@@ -91,5 +91,3 @@ class AxisTitleNode {
   AxisTitleNode(this.label);
 }
 
-///存放轴的布局信息
-class AxisTickInfo {}

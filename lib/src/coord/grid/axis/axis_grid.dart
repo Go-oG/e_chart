@@ -5,14 +5,12 @@ class GridAxis extends BaseAxis {
   bool alignTicks;
   Align2 position;
   double offset;
-  SplitArea? splitArea;
   AxisPointer? axisPointer;
 
   GridAxis({
     this.alignTicks = false,
     this.position = Align2.end,
     this.offset = 0,
-    this.splitArea,
     this.axisPointer,
     super.show,
     super.name,
@@ -28,12 +26,12 @@ class GridAxis extends BaseAxis {
     super.inverse,
     super.categoryList,
     super.timeRange,
-    super.timeSplitType,
+    super.timeType,
     super.silent,
-    super.axisLine,
-    super.formatFun,
+    super.axisStyle,
     super.nameAlign,
     super.nameGap,
     super.nameStyle,
+    super.timeFormatFun
   });
 }

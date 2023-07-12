@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
 ///动态文本
@@ -52,8 +53,32 @@ class DynamicText {
     return p.width.toInt();
   }
 
+  final TextStyle _textStyle = const TextStyle(fontSize: 15);
+
+  Size getTextSize() {
+    if (isString) {
+      TextPainter painter = _textStyle.toPainter(text as String);
+      painter.layout(maxWidth: double.infinity);
+      return painter.size;
+    }
+    if (isTextSpan) {
+      TextPainter painter = TextPainter(text: text as TextSpan, textAlign: TextAlign.center);
+      painter.layout(maxWidth: double.infinity);
+      return painter.size;
+    }
+    if (isString || isTextSpan) {
+      TextPainter painter = _textStyle.toPainter(text as String);
+      painter.layout(maxWidth: double.infinity);
+      return painter.size;
+    }
+    Paragraph p = text as Paragraph;
+    p.layout(const ParagraphConstraints(width: double.infinity));
+    return Size(p.width, p.height);
+  }
+
   @override
   String toString() {
     return '$text';
   }
+
 }

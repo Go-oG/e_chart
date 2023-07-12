@@ -1,21 +1,16 @@
+import 'package:e_chart/src/model/dynamic_text.dart';
+
 import '../../model/dynamic_data.dart';
 
 abstract class GridChild {
-  ///返回访问的X轴索引
-  int get gridX;
 
-  ///返回访问的轴索引
-  int get gridY;
+  ///返回指定坐标轴的列数
+  int getAxisDataCount(int axisIndex, bool isXAxis);
 
-  ///返回X轴方向的数据数
-  int get gridXDataCount;
+  ///返回指定坐标轴上文字长度最大的文本
+  DynamicText getAxisMaxText(int axisIndex, bool isXAxis);
 
-  ///返回Y轴方向的数据数
-  int get gridYDataCount;
+  ///返回指定坐标轴上的极值
+  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis);
 
-  ///返回X轴方向上的极值
-  List<DynamicData> get gridXExtreme;
-
-  ///返回轴方向上的极值
-  List<DynamicData> get gridYExtreme;
 }

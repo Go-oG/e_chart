@@ -27,10 +27,9 @@ class RadiusAxis extends BaseAxis {
     super.inverse,
     super.categoryList,
     super.timeRange,
-    super.timeSplitType,
+    super.timeType,
     super.silent,
-    super.axisLine,
-    super.formatFun,
+    super.axisStyle,
     super.timeFormatFun,
   });
 }

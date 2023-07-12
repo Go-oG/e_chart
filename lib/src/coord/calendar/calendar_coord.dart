@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:chart_xutil/chart_xutil.dart';
 
 import '../../model/index.dart';
-import '../rect_coord.dart';
+import '../coord.dart';
 import 'calendar_config.dart';
 
-abstract class CalendarCoord extends RectCoord<CalendarConfig> {
+abstract class CalendarCoord extends Coord<CalendarConfig> {
   CalendarCoord(super.props);
 
   Rect dataToPosition(DateTime date);

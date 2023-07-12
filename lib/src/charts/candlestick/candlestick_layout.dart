@@ -110,7 +110,7 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickD
   }
 
   CandlestickNode? findNode(Offset offset) {
-    var of = context.findGridCoord().getTranslation(series.xAxisIndex, series.yAxisIndex);
+    var of = context.findGridCoord().getTranslation();
     offset = offset.translate(of.dx, of.dy);
     for (CandlestickNode node in nodeList) {
       if (node.path.contains(offset)) {

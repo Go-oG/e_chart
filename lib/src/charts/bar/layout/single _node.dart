@@ -1,39 +1,13 @@
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/model/stack_data.dart';
 import 'package:flutter/material.dart';
 
-import '../../../style/area_style.dart';
-import '../bar_series.dart';
-
 /// 不可再分的最小绘制单元，
-class SingleNode {
-  final BarSeries series;
-  final BarGroupData groupData;
-  final BarSingleData data;
+class SingleNode with ViewStateProvider {
+  final StackData data;
+  Rect rect = Rect.zero;
 
-  ///实现动画相关的
-  late SingleProps cur;
-
-  late SingleProps start;
-
-  late SingleProps end;
-
-  late num up;
-  late num down;
-
-  SingleNode(this.series, this.groupData, this.data) {
-    cur = SingleProps();
-    start = SingleProps();
-    end = SingleProps();
-    up = data.up;
-    down = data.down;
-  }
-
-  void draw(Canvas canvas, Paint paint) {
-    AreaStyle? style = series.styleFun.call(data, groupData);
-    if (style == null) {
-      return;
-    }
-    style.drawRect(canvas, paint,cur.rect);
-  }
+  SingleNode(this.data);
 
   @override
   int get hashCode {
@@ -47,13 +21,8 @@ class SingleNode {
     }
     return false;
   }
-}
 
-class SingleProps {
-  Rect rect = Rect.zero;
-  bool hover = false;
-  bool select = false;
+  num get up => data.up;
 
-  SingleProps();
-
+  num get down => data.down;
 }

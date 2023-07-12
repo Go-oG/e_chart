@@ -41,13 +41,11 @@ class DefaultRender extends BaseRender {
         double r = v.props.radius.convert(min(rect.width, rect.height));
         Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: r * 2, height: r * 2);
         v.layout(r2.left, r2.top, r2.right, r2.bottom);
-      } else if (v is RectCoord) {
-        var props = v.props;
-        double lm = props.leftMargin.convert(rect.width);
-        double tm = props.topMargin.convert(rect.height);
-        v.layout(rect.left + lm, rect.top + tm, rect.left + lm + v.width, rect.top + tm + v.height);
       } else {
-        v.layout(rect.left, rect.top, rect.left + v.width, rect.top + v.height);
+        var props = v.props;
+        double lm = props.margin.left;
+        double tm = props.margin.top;
+        v.layout(rect.left + lm, rect.top + tm, rect.left + lm + v.width, rect.top + tm + v.height);
       }
     }
   }
@@ -145,9 +143,9 @@ class DefaultRender extends BaseRender {
 
   @override
   void onDraw(Canvas canvas) {
-    Paint mPaint =Paint();
-    mPaint.color=context.config.theme.backgroundColor;
-    mPaint.style=PaintingStyle.fill;
+    Paint mPaint = Paint();
+    mPaint.color = context.config.theme.backgroundColor;
+    mPaint.style = PaintingStyle.fill;
     canvas.drawRect(getGlobalAreaBounds(), mPaint);
 
     for (var v in context.coordList) {

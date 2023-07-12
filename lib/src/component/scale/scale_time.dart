@@ -6,7 +6,7 @@ import 'scale_base.dart';
 
 /// 支持年月日 周
 class TimeScale extends BaseScale<DateTime, num> {
-  final TimeSplitType splitType;
+  final TimeType splitType;
 
   TimeScale(this.splitType, super.domain, super.range) {
     if (domain.length < 2) {
@@ -47,8 +47,8 @@ class TimeScale extends BaseScale<DateTime, num> {
     return tl;
   }
 
-  static int _convert(DateTime s, DateTime e, TimeSplitType splitType) {
-    if (splitType == TimeSplitType.week) {
+  static int _convert(DateTime s, DateTime e, TimeType splitType) {
+    if (splitType == TimeType.week) {
       int day = s.diffDay(e);
       if (day % 7 == 0) {
         return day;
@@ -56,44 +56,44 @@ class TimeScale extends BaseScale<DateTime, num> {
       return day ~/ 7 + 1;
     }
 
-    if (splitType == TimeSplitType.year) {
+    if (splitType == TimeType.year) {
       return s.diffYear(e);
     }
-    if (splitType == TimeSplitType.month) {
+    if (splitType == TimeType.month) {
       return s.diffMonth(e);
     }
-    if (splitType == TimeSplitType.day) {
+    if (splitType == TimeType.day) {
       return s.diffDay(e);
     }
-    if (splitType == TimeSplitType.hour) {
+    if (splitType == TimeType.hour) {
       return s.diffHour(e);
     }
-    if (splitType == TimeSplitType.minute) {
+    if (splitType == TimeType.minute) {
       return s.diffMinute(e);
     }
     return s.diffSec(e);
   }
 
-  static DateTime _convertValue(DateTime start, int v, TimeSplitType splitType) {
-    if (splitType == TimeSplitType.week) {
+  static DateTime _convertValue(DateTime start, int v, TimeType splitType) {
+    if (splitType == TimeType.week) {
       return start.add(Duration(days: v * 7));
     }
-    if (splitType == TimeSplitType.year) {
+    if (splitType == TimeType.year) {
       return DateTime(start.year + v, start.month, start.day);
     }
-    if (splitType == TimeSplitType.month) {
+    if (splitType == TimeType.month) {
       int year = start.year;
       year += v ~/ 12;
       int m = v % 12;
       return DateTime(year, m, 1);
     }
-    if (splitType == TimeSplitType.day) {
+    if (splitType == TimeType.day) {
       return start.add(Duration(days: v));
     }
-    if (splitType == TimeSplitType.hour) {
+    if (splitType == TimeType.hour) {
       return start.add(Duration(hours: v));
     }
-    if (splitType == TimeSplitType.minute) {
+    if (splitType == TimeType.minute) {
       return start.add(Duration(minutes: v));
     }
     return start.add(Duration(seconds: v));

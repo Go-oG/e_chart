@@ -5,10 +5,10 @@ import '../../functions.dart';
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';
 import '../../style/index.dart';
-import '../rect_coord.dart';
+import '../coord_config.dart';
 
 ///日历坐标系
-class CalendarConfig extends RectCoordConfig {
+class CalendarConfig extends CoordConfig {
   Pair<DateTime> range;
   bool sunFirst;
 
@@ -25,19 +25,6 @@ class CalendarConfig extends RectCoordConfig {
   LineStyle? gridLineStyle;
 
   CalendarConfig({
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
-    super.enableClick,
-    super.enableDrag,
-    super.enableHover,
-    super.enableScale,
-    super.backgroundColor,
-    super.id,
-    super.show,
     required this.range,
     this.sunFirst = true,
     this.cellSize = const [20, 20],
@@ -47,7 +34,17 @@ class CalendarConfig extends RectCoordConfig {
     this.gridLineStyle,
     this.weekStyleFun,
     this.dayStyleFun,
-
+    super.padding,
+    super.margin,
+    super.width,
+    super.height,
+    super.enableClick,
+    super.enableDrag,
+    super.enableHover,
+    super.enableScale,
+    super.backgroundColor,
+    super.id,
+    super.show,
   });
 
   @override

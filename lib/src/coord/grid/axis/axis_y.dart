@@ -1,11 +1,11 @@
-
+import '../../../component/axis/axis_style.dart';
 import '../../../model/enums/align2.dart';
 import 'axis_grid.dart';
 
 class YAxis extends GridAxis {
-   YAxis({
+  YAxis({
     super.alignTicks,
-    super.position=Align2.start,
+    super.position = Align2.start,
     super.type,
     super.offset,
     super.nameAlign,
@@ -21,14 +21,20 @@ class YAxis extends GridAxis {
     super.interval,
     super.logBase,
     super.silent,
-    super.axisLine,
-    super.splitArea,
+    AxisStyle? axisStyle,
     super.categoryList,
     super.axisPointer,
     super.name,
     super.show,
-    super.formatFun,
     super.timeRange,
-    super.timeSplitType,
-  });
+    super.timeType,
+    super.timeFormatFun,
+  }) {
+    if (axisStyle != null) {
+      this.axisStyle = axisStyle;
+    } else {
+      this.axisStyle.axisTick.tick?.inside = false;
+      this.axisStyle.axisLabel.inside = true;
+    }
+  }
 }

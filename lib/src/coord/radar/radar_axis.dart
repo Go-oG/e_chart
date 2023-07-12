@@ -15,7 +15,9 @@ class RadarAxis extends BaseAxis {
     super.maxInterval,
     super.minInterval,
     super.silent,
-    super.axisLine,
-    super.formatFun,
+    super.axisStyle,
+    super.nameAlign,
+    super.timeFormatFun,
+    super.timeType,
   }) : super(type: AxisType.value, categoryList: const [], timeRange: null);
 }

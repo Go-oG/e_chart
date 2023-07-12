@@ -4,51 +4,46 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:chart_xutil/chart_xutil.dart';
 
-import '../scale/scale_log.dart';
-
 abstract class BaseAxis {
   bool show;
   AxisType type;
+
   DynamicText? name;
   Align2 nameAlign;
   num nameGap;
   LabelStyle nameStyle;
 
-  //只有当轴类型为类目轴才有效
+  ///类目数据
   List<String> categoryList;
 
   //只在时间轴下使用
-  TimeSplitType timeSplitType;
+  TimeType timeType;
   Pair<DateTime>? timeRange;
   Fun2<DateTime, DynamicText>? timeFormatFun;
-  bool inverse;
 
   ///数值轴相关
   num min;
   num? max;
-
   bool start0;
   int splitNumber;
   num minInterval;
   num? maxInterval;
   num? interval;
   num logBase;
-
   NiceType niceType;
+
+  bool inverse;
 
   ///样式、交互相关
   bool silent;
-
-  AxisStyle axisLine = AxisStyle();
-
-  Fun2<num, DynamicText>? formatFun;
+  AxisStyle axisStyle = AxisStyle();
 
   BaseAxis({
     this.show = true,
     this.name,
     this.type = AxisType.value,
     this.categoryList = const [],
-    this.timeSplitType = TimeSplitType.day,
+    this.timeType = TimeType.day,
     this.timeFormatFun,
     this.inverse = false,
     this.min = 0,
@@ -60,16 +55,15 @@ abstract class BaseAxis {
     this.interval,
     this.logBase = 10,
     this.silent = false,
-    AxisStyle? axisLine,
-    this.formatFun,
+    AxisStyle? axisStyle,
     this.timeRange,
     this.nameGap = 3,
     this.nameStyle = const LabelStyle(),
     this.nameAlign = Align2.end,
     this.niceType = NiceType.n1,
   }) {
-    if (axisLine != null) {
-      this.axisLine = axisLine;
+    if (axisStyle != null) {
+      this.axisStyle = axisStyle;
     }
   }
 
@@ -83,12 +77,13 @@ abstract class BaseAxis {
         return CategoryScale(categoryList, range);
       }
       List<String> dl = [];
+      Set<String> dSet = {};
       for (var data in dataSet) {
-        if (data.isString) {
+        if (data.isString && !dSet.contains(data.data as String)) {
           dl.add(data.data);
+          dSet.add(data.data);
         }
       }
-      dl.sort();
       if (dl.isEmpty) {
         throw ChartError('当前提取Category数目为0');
       }
@@ -122,7 +117,7 @@ abstract class BaseAxis {
     if (type == AxisType.time || timeList.length >= 2) {
       if (timeList.length < 2) {
         DateTime st = timeList.isEmpty ? DateTime.now() : timeList.first;
-        DateTime end = st.add(_timeDurationMap[timeSplitType]!);
+        DateTime end = st.add(_timeDurationMap[timeType]!);
         timeList.clear();
         timeList.add(st);
         timeList.add(end);
@@ -132,7 +127,7 @@ abstract class BaseAxis {
       });
       DateTime start = timeList[0];
       DateTime end = timeList[timeList.length - 1];
-      return TimeScale(timeSplitType, [start, end], range);
+      return TimeScale(timeType, [start, end], range);
     }
 
     if (list.length < 2) {
@@ -172,45 +167,44 @@ abstract class BaseAxis {
     if (scale is CategoryScale) {
       return List.from(scale.ticks.map((e) => DynamicText(e)));
     }
+    var formatter = axisStyle.axisLabel.formatter;
     List<DynamicText> ticks = [];
     if (scale is TimeScale) {
       for (var ele in scale.ticks) {
-        if (formatFun != null) {
-          ticks.add(formatFun!.call(ele.millisecondsSinceEpoch));
+        if (formatter != null) {
+          ticks.add(formatter.call(ele.millisecondsSinceEpoch));
         } else {
           ticks.add(DynamicText.fromString(defaultTimeFormat(ele)));
         }
       }
       return ticks;
     }
-
     if (scale is LinearScale || scale is LogScale) {
       ticks = List.from(scale.ticks.map((e) {
-        if (formatFun != null) {
-          return formatFun!.call(e);
+        if (formatter != null) {
+          return formatter.call(e);
         } else {
           return DynamicText.fromString(formatNumber(e));
         }
       }));
     }
-
     return ticks;
   }
 
   String defaultTimeFormat(DateTime time) {
-    if (timeSplitType == TimeSplitType.year) {
+    if (timeType == TimeType.year) {
       return ('${time.year}');
     }
-    if (timeSplitType == TimeSplitType.month) {
+    if (timeType == TimeType.month) {
       return ('${time.year}-${time.month}');
     }
-    if (timeSplitType == TimeSplitType.day) {
+    if (timeType == TimeType.day) {
       return ('${time.year}-${time.month}-${time.day}');
     }
-    if (timeSplitType == TimeSplitType.hour) {
+    if (timeType == TimeType.hour) {
       return ('${time.hour}');
     }
-    if (timeSplitType == TimeSplitType.minute) {
+    if (timeType == TimeType.minute) {
       return ('${time.hour}-${time.minute}');
     }
     return ('${time.minute}-${time.second}');
@@ -260,7 +254,7 @@ enum AxisType {
 }
 
 ///时间分割类型
-enum TimeSplitType {
+enum TimeType {
   year,
   month,
   day,
@@ -270,12 +264,12 @@ enum TimeSplitType {
   week,
 }
 
-Map<TimeSplitType, Duration> _timeDurationMap = {
-  TimeSplitType.year: const Duration(days: 365),
-  TimeSplitType.month: const Duration(days: 30),
-  TimeSplitType.day: const Duration(days: 10),
-  TimeSplitType.hour: const Duration(days: 24),
-  TimeSplitType.minute: const Duration(days: 60),
-  TimeSplitType.sec: const Duration(days: 60),
-  TimeSplitType.week: const Duration(days: 7),
+Map<TimeType, Duration> _timeDurationMap = {
+  TimeType.year: const Duration(days: 365),
+  TimeType.month: const Duration(days: 30),
+  TimeType.day: const Duration(days: 10),
+  TimeType.hour: const Duration(days: 24),
+  TimeType.minute: const Duration(days: 60),
+  TimeType.sec: const Duration(days: 60),
+  TimeType.week: const Duration(days: 7),
 };

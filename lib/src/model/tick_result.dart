@@ -1,13 +1,13 @@
-
 import 'dart:ui';
 
 import 'index.dart';
 
 class TickResult {
-  final Offset start;
-  final Offset end;
-  final TextDrawConfig? textConfig;
-  final DynamicText? text;
+  Offset start;
+  Offset end;
+  TextDrawConfig? textConfig;
+  DynamicText? text;
+  List<TickResult> minorTickList = [];
 
   TickResult(this.start, this.end, this.textConfig, this.text);
 }

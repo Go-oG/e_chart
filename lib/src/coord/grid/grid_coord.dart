@@ -1,15 +1,18 @@
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class GridCoord extends RectCoord<GridConfig> {
+abstract class GridCoord extends Coord<GridConfig> {
   GridCoord(super.props);
 
   Rect dataToPosition(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
 
-  ///获取平移量
-  Offset getTranslation(int xAxisIndex, int yAxisIndex);
+  ///获取平移量(滚动量)
+  Offset getTranslation();
 
-  Offset getScaleFactor(int xAxisIndex, int yAxisIndex);
+  Offset getScaleFactor();
+
+  List<GridChild> getGridChildList();
 }
 
 ///实现二维坐标系
@@ -18,13 +21,18 @@ class GridCoordImpl extends GridCoord {
   final Map<YAxis, YAxisImpl> yMap = {};
   Rect contentBox = Rect.zero;
 
+  double scaleXFactor = 1;
+  double scaleYFactor = 1;
+  double scrollXOffset = 0;
+  double scrollYOffset = 0;
+
   GridCoordImpl(super.props) {
-    for (var ele in props.xAxisList) {
-      xMap[ele] = XAxisImpl(ele);
-    }
-    for (var ele in props.yAxisList) {
-      yMap[ele] = YAxisImpl(ele);
-    }
+    each(props.xAxisList, (ele, p1) {
+      xMap[ele] = XAxisImpl(this, ele, axisIndex: p1);
+    });
+    each(props.yAxisList, (axis, p1) {
+      yMap[axis] = YAxisImpl(this, axis, axisIndex: p1);
+    });
   }
 
   @override
@@ -36,18 +44,6 @@ class GridCoordImpl extends GridCoord {
     yMap.forEach((key, value) {
       value.context = context;
     });
-  }
-
-  @override
-  void addView(ChartView view, {int index = -1}) {
-    super.addView(view, index: index);
-    if (view is GridChild) {
-      var childView = view as GridChild;
-      int xIndex = childView.gridX;
-      getXAxis(xIndex).addChild(childView);
-      int yIndex = childView.gridY;
-      getYAxis(yIndex).addChild(childView);
-    }
   }
 
   @override
@@ -64,91 +60,93 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    double topMargin = 0;
-    double bottomMargin = 0;
-
-    double leftMargin = 0;
-    double rightMargin = 0;
+    double topPadding = props.padding.top;
+    double bottomPadding = props.padding.bottom;
+    double leftPadding = props.padding.left;
+    double rightPadding = props.padding.right;
 
     xMap.forEach((key, value) {
       if (Align2.start == value.axis.position) {
-        topMargin += value.axisInfo.bound.height + value.axis.offset;
+        topPadding += value.axisInfo.bound.height + value.axis.offset;
       } else {
-        bottomMargin += value.axisInfo.bound.height + value.axis.offset;
+        bottomPadding += value.axisInfo.bound.height + value.axis.offset;
       }
     });
 
     yMap.forEach((key, value) {
       var v = value.axisInfo.bound.width + value.axis.offset;
       if (Align2.end == value.axis.position) {
-        rightMargin += v;
+        rightPadding += v;
       } else {
-        leftMargin += v;
+        leftPadding += v;
       }
     });
 
-    double axisWith = width - (rightMargin + leftMargin);
-    double axisHeight = height - (topMargin + bottomMargin);
-    contentBox = Rect.fromLTWH(leftMargin, topMargin, axisWith, axisHeight);
+    double axisWith = width - (rightPadding + leftPadding);
+    double axisHeight = height - (topPadding + bottomPadding);
+    contentBox = Rect.fromLTWH(leftPadding, topPadding, axisWith, axisHeight);
 
     ///布局X轴
-    double topOffset = topMargin;
-    double bottomOffset = height - bottomMargin;
-    for (var axis in props.xAxisList) {
-      var value = xMap[axis]!;
+    double topOffset = topPadding;
+    double bottomOffset = height - bottomPadding;
+
+    List<GridChild> childList = getGridChildList();
+
+    xMap.forEach((key, value) {
+      var axisInfo = value.axisInfo;
       List<DynamicData> dl = [];
-      for (var ele in value.children) {
-        dl.addAll(ele.gridXExtreme);
+      for (var child in childList) {
+        dl.addAll(child.getAxisExtreme(value.axisIndex, true));
       }
+
       LineProps layoutProps;
-      var h = value.axisInfo.bound.height;
+      var h = axisInfo.bound.height;
       if (value.axis.position == Align2.start) {
-        Rect rect = Rect.fromLTWH(leftMargin, topOffset, axisWith, h);
+        Rect rect = Rect.fromLTWH(leftPadding, topOffset, axisWith, h);
         layoutProps = LineProps(rect, rect.topLeft, rect.topRight);
-        topOffset -= (value.axisInfo.bound.height + value.axis.offset);
+        topOffset -= (axisInfo.bound.height + value.axis.offset);
       } else {
-        Rect rect = Rect.fromLTWH(leftMargin, bottomOffset, axisWith, h);
+        Rect rect = Rect.fromLTWH(leftPadding, bottomOffset, axisWith, h);
         layoutProps = LineProps(rect, rect.topLeft, rect.topRight);
         bottomOffset += (h + value.axis.offset);
       }
       value.layout(layoutProps, dl);
-    }
+    });
 
     ///布局Y轴
-    double leftOffset = leftMargin;
-    double rightOffset = width - rightMargin;
-    for (var axis in props.yAxisList) {
-      var value = yMap[axis]!;
+    double leftOffset = leftPadding;
+    double rightOffset = width - rightPadding;
+    yMap.forEach((key, value) {
       List<DynamicData> dl = [];
-      for (var ele in value.children) {
-        dl.addAll(ele.gridYExtreme);
+      for (var ele in childList) {
+        dl.addAll(ele.getAxisExtreme(value.axisIndex, false));
       }
       LineProps layoutProps;
-      var w = value.axisInfo.bound.width;
+      var w = value.axisInfo.bound.width + value.axis.offset;
       if (value.axis.position == Align2.start) {
-        Rect rect = Rect.fromLTWH(leftOffset - w, topMargin, w, axisHeight);
+        Rect rect = Rect.fromLTWH(leftOffset - w, topPadding, w, axisHeight);
         layoutProps = LineProps(rect, rect.bottomRight, rect.topRight);
-        leftOffset -= (w + value.axis.offset);
+        leftOffset -= w;
       } else {
-        Rect rect = Rect.fromLTWH(rightOffset, topMargin, w, axisHeight);
+        Rect rect = Rect.fromLTWH(rightOffset, topPadding, w, axisHeight);
         layoutProps = LineProps(rect, rect.bottomLeft, rect.topLeft);
-        rightOffset += (w + value.axis.offset);
+        rightOffset += w;
       }
       value.layout(layoutProps, dl);
-    }
+    });
+
     for (var view in children) {
-      //  view.layout(leftMargin, topMargin, view.width - rightMargin, view.height - bottomMargin);
-      view.layout(leftMargin, topMargin, width - rightMargin, height - bottomMargin);
+      view.layout(leftPadding, topPadding, width - rightPadding, height - bottomPadding);
     }
   }
 
   @override
   void onDraw(Canvas canvas) {
     xMap.forEach((key, value) {
-      value.draw(canvas, mPaint,contentBox);
+      value.draw(canvas, mPaint, contentBox);
     });
     yMap.forEach((key, value) {
-      value.draw(canvas, mPaint,contentBox);
+      value.draw(canvas, mPaint, contentBox);
     });
   }
 
@@ -164,17 +162,13 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  Offset getScaleFactor(int xAxisIndex, int yAxisIndex) {
-    var x = getXAxis(xAxisIndex);
-    var y = getYAxis(yAxisIndex);
-    return Offset(x.scaleFactor, y.scaleFactor);
+  Offset getScaleFactor() {
+    return Offset(scaleXFactor, scaleYFactor);
   }
 
   @override
-  Offset getTranslation(int xAxisIndex, int yAxisIndex) {
-    var x = getXAxis(xAxisIndex);
-    var y = getYAxis(yAxisIndex);
-    return Offset(x.scrollOffset, y.scrollOffset);
+  Offset getTranslation() {
+    return Offset(scrollXOffset, scrollYOffset);
   }
 
   @override
@@ -182,15 +176,12 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
+    scrollXOffset += diff.dx;
+    scrollYOffset += diff.dy;
     xMap.forEach((key, value) {
-      value.scrollOffset = value.scrollOffset + diff.dx;
+      value.updateScrollOffset(scrollXOffset);
     });
-
     invalidate();
-
-    // _yMap.forEach((key, value) {
-    //   value.scrollOffset=value.scrollOffset+diff.dy;
-    // });
   }
 
   @override
@@ -198,14 +189,13 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    Set<GridChild> childSet = {};
+    scaleXFactor += hScale;
+    scaleYFactor += vScale;
     xMap.forEach((key, value) {
-      value.scaleFactor = value.scaleFactor + hScale;
-      childSet.addAll(value.children);
+      value.updateScaleFactor(scaleXFactor);
     });
     yMap.forEach((key, value) {
-      value.scaleFactor = value.scaleFactor + vScale;
-      childSet.addAll(value.children);
+      value.updateScaleFactor(scaleYFactor);
     });
     invalidate();
   }
@@ -222,5 +212,16 @@ class GridCoordImpl extends GridCoord {
       yAxisIndex = 0;
     }
     return yMap[props.yAxisList[yAxisIndex]]!;
+  }
+
+  @override
+  List<GridChild> getGridChildList() {
+    List<GridChild> list = [];
+    for (var child in children) {
+      if (child is GridChild) {
+        list.add(child as GridChild);
+      }
+    }
+    return list;
   }
 }

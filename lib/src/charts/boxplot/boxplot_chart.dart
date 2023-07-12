@@ -11,38 +11,6 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> implements GridChild {
   BoxPlotView(super.series);
 
   @override
-  int get gridX => series.xAxisIndex;
-
-  @override
-  int get gridY => series.yAxisIndex;
-
-  @override
-  int get gridXDataCount => series.data.length;
-
-  @override
-  int get gridYDataCount => gridXDataCount;
-
-  @override
-  List<DynamicData> get gridXExtreme {
-    List<DynamicData> dl = [];
-    for (var element in series.data) {
-      dl.add(element.x);
-    }
-    return dl;
-  }
-
-  @override
-  List<DynamicData> get gridYExtreme {
-    if(series.data.isEmpty){return [];}
-    List<DynamicData> dl = [];
-    for (var element in series.data) {
-      dl.add(element.min);
-      dl.add(element.max);
-    }
-    return dl;
-  }
-
-  @override
   void onClick(Offset offset) {
     _layout.hoverEnter(offset);
   }
@@ -87,7 +55,7 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> implements GridChild {
 
   @override
   void onDraw(Canvas canvas) {
-    var of = context.findGridCoord().getTranslation(gridX, gridY);
+    var of = context.findGridCoord().getTranslation();
     var chartTheme = context.config.theme;
     var theme = chartTheme.boxplotTheme;
     canvas.save();
@@ -111,5 +79,30 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> implements GridChild {
       style?.drawPath(canvas, mPaint, node.path, true);
     });
     canvas.restore();
+  }
+
+  @override
+  int getAxisDataCount(int axisIndex, bool isXAxis) {
+   return series.data.length;
+  }
+
+  @override
+  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
+    List<DynamicData> dl = [];
+    for (var element in series.data) {
+      if(isXAxis){
+        dl.add(element.x);
+      }else{
+        dl.add(element.min);
+        dl.add(element.max);
+      }
+    }
+    return dl;
+  }
+
+  @override
+  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
+    // TODO: implement getAxisMaxText
+    throw UnimplementedError();
   }
 }

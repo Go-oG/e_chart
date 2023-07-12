@@ -9,11 +9,7 @@ import 'parallel_axis.dart';
 class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, LineProps> {
   final Direction direction;
 
-  ParallelAxisImpl(
-    super.axis,
-    this.direction,
-    int index,
-  ) : super(index: index);
+  ParallelAxisImpl(super.axis, this.direction, {super.axisIndex});
 
   List<Offset> dataToPosition(DynamicData data) {
     double diffY = props.end.dy - props.start.dy;
@@ -28,4 +24,10 @@ class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, LineProps> {
     }
     return ol;
   }
+
+  @override
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {}
+
+  @override
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {}
 }

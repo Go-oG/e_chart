@@ -1,18 +1,11 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 
-import 'axis_size.dart';
-
 abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineProps> {
-  final List<GridChild> children = [];
+  final GridCoord coord;
 
-  BaseGridAxisImpl(super.axis);
-
-  void addChild(GridChild child) {
-    children.add(child);
-  }
+  BaseGridAxisImpl(this.coord, super.axis, {super.axisIndex});
 
   ///表示轴的大小
   final AxisInfo _axisInfo = AxisInfo(Direction.vertical, Offset.zero, Offset.zero, Rect.zero);
@@ -25,31 +18,26 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineProps> {
 
   DynamicText getMaxStr(Direction direction) {
     DynamicText maxStr = DynamicText.empty;
-    for (var ele in children) {
-      List<dynamic> dl = direction == Direction.horizontal ? ele.gridXExtreme : ele.gridYExtreme;
-      for (var data in dl) {
-        if (data is String) {
-          if (data.length > maxStr.length) {
-            maxStr = DynamicText(data);
-          }
-          continue;
+    Size size = Size.zero;
+    bool isXAxis = direction == Direction.horizontal;
+    for (var ele in coord.getGridChildList()) {
+      DynamicText text = ele.getAxisMaxText(axisIndex, isXAxis);
+      if ((maxStr.isString || maxStr.isTextSpan) && (text.isString || text.isTextSpan)) {
+        if (text.length > maxStr.length) {
+          maxStr = text;
         }
-        if (data is num) {
-          var s = axis.formatFun?.call(data) ?? DynamicText(formatNumber(data));
-          if (s.length > maxStr.length) {
-            maxStr = s;
-          }
-          continue;
+      } else {
+        if (size == Size.zero) {
+          size = maxStr.getTextSize();
         }
-        if (data is DateTime) {
-          var s = axis.timeFormatFun?.call(data) ?? DynamicText(data.toString());
-          if (s.length > maxStr.length) {
-            maxStr = s;
-          }
-          continue;
+        Size size2 = text.getTextSize();
+        if (size2.height > size.width) {
+          maxStr = text;
+          size = size2;
         }
       }
     }
     return maxStr;
   }
+
 }

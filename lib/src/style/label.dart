@@ -2,13 +2,6 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../core/view_state.dart';
-import '../ext/text_style_ext.dart';
-import '../component/guideline/guide_line.dart';
-import '../model/dynamic_text.dart';
-import '../model/enums/over_flow.dart';
-import '../model/text_position.dart';
-import 'area_style.dart';
 
 class LabelStyle {
   final bool show;

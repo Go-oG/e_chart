@@ -1,13 +1,18 @@
 export 'axis/impl/base_axis_impl.dart';
 export 'axis/impl/angle_axis_impl.dart' hide ArcRange;
 export 'axis/impl/line_axis_impl.dart' hide LineRange;
-
 export 'axis/axis_label.dart';
 export 'axis/axis_line.dart';
+export 'axis/axis_minor_tick.dart';
 export 'axis/axis_pointer.dart';
+export 'axis/axis_style.dart';
+export 'axis/axis_symbol.dart';
+export 'axis/axis_tick.dart';
 export 'axis/base_axis.dart';
+export 'axis/minor_split_line.dart';
 export 'axis/split_area.dart';
 export 'axis/split_line.dart';
+
 
 export 'group/flex_layout_group.dart';
 export 'group/linear_layout_group.dart';

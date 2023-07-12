@@ -5,33 +5,30 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/coord/grid/axis/base_grid_axis_impl.dart';
 
 class YAxisImpl extends BaseGridAxisImpl {
-  YAxisImpl(super.axis);
+  YAxisImpl(super.coord, super.axis, {super.axisIndex});
 
   @override
   void measure(double parentWidth, double parentHeight) {
     double length = parentHeight;
     double width = 0;
-    AxisStyle line = axis.axisLine;
-    if (line.show) {
-      var lineStyle = line.getAxisLineStyle(0, 1, getAxisTheme());
+    AxisStyle axisStyle = axis.axisStyle;
+    if (axisStyle.show) {
+      var lineStyle = axisStyle.getAxisLineStyle(0, 1, getAxisTheme());
       width += (lineStyle?.width) ?? 0;
 
-      MainTick tick = line.getMainTick(0, 1, getAxisTheme()) ?? MainTick();
-      if (tick.show) {
-        num l1 = tick.length;
-        num l2 = tick.minorTick?.length ?? 0;
-        if (!(tick.minorTick?.show ?? false)) {
-          l2 = 0;
-        }
-        width += max([l1, l2]);
-      }
+      MainTick? tick = axisStyle.getMainTick(0, 1, getAxisTheme());
+      num tw = (tick?.length ?? 0);
+
+      MinorTick? minorTick = axisStyle.getMinorTick(0, 1, getAxisTheme());
+      tw = max([tw, (minorTick?.length ?? 0)]);
+      width += tw;
     }
 
-    AxisLabel? axisLabel = line.label;
-    if (axisLabel != null && axisLabel.show) {
-      width += axisLabel.margin;
+    AxisLabel axisLabel = axisStyle.axisLabel;
+    if (axisLabel.show) {
+      width += axisLabel.margin + axisLabel.padding;
       var maxStr = getMaxStr(Direction.vertical);
-      Size textSize = axisLabel.labelStyle.measure(maxStr);
+      Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme())?.measure(maxStr) ?? Size.zero;
       width += textSize.width;
     }
     Rect rect = Rect.fromLTWH(0, 0, width, length);
@@ -43,7 +40,7 @@ class YAxisImpl extends BaseGridAxisImpl {
   @override
   void layout(LineProps layoutProps, List<DynamicData> dataSet) {
     axisInfo.bound = layoutProps.rect;
-    bool inside = (axis.axisLine.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
+    bool inside = (axis.axisStyle.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
     if (inside) {
       axisInfo.start = layoutProps.rect.topLeft;
       axisInfo.end = layoutProps.rect.bottomLeft;
