@@ -1,13 +1,13 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
+
 import 'layout_helper.dart';
 
-///BarView
-class BarView extends CoordChildView<BarSeries> implements GridChild {
-  final BarLayoutHelper layoutHelper = BarLayoutHelper();
+class LineView extends CoordChildView<LineSeries> implements GridChild {
+  final LineLayoutHelper layoutHelper = LineLayoutHelper();
 
   ///用户优化视图绘制
-  BarView(super.series);
+  LineView(super.series);
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
@@ -23,18 +23,14 @@ class BarView extends CoordChildView<BarSeries> implements GridChild {
 
   @override
   void onDraw(Canvas canvas) {
-    drawBarElement(canvas);
-    drawMakePoint(canvas);
-    drawMakeLine(canvas);
+    for (var line in layoutHelper.lineList) {
+      LineStyle style = LineStyle(color: randomColor(), width: 1);
+      style.drawPath(canvas, mPaint, line.toPath(false));
+    }
   }
 
   /// 绘制柱状图
-  void drawBarElement(Canvas canvas) {
-    for (var node in layoutHelper.nodeList) {
-      AreaStyle style = AreaStyle(color: randomColor());
-      style.drawRect(canvas, mPaint, node.rect);
-    }
-  }
+  void drawBarElement(Canvas canvas) {}
 
   /// 绘制标记点
   void drawMakePoint(Canvas canvas) {}

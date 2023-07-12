@@ -223,7 +223,7 @@ class ParallelCoordImpl extends ParallelCoord {
   @override
   ParallelPosition dataToPosition(int dimIndex, DynamicData data) {
     ParallelAxisImpl node = axisMap[props.axisList[dimIndex]]!;
-    return ParallelPosition(node.dataToPosition(data));
+    return ParallelPosition(node.dataToPoint(data));
   }
 }
 

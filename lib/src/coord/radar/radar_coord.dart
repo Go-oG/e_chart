@@ -163,7 +163,7 @@ class RadarCoordImpl extends RadarCoord {
     }
 
     double angle = node.props.end.offsetAngle(node.props.start);
-    double r = node.dataToPoint(data);
+    double r = node.dataToRadius(data);
     return RadarPosition(center, r, angle);
   }
 

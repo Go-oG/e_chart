@@ -19,7 +19,7 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickD
       return;
     }
     GridCoord coord = context.findGridCoord();
-    Rect rect = coord.dataToPosition(
+    Rect rect = coord.dataToRect(
       series.xAxisIndex,
       DynamicData(data.first.time),
       series.yAxisIndex,
@@ -53,16 +53,16 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickD
     var data = node.data;
     double half = boxWidth * 0.5;
     DynamicData dd = DynamicData(data.time);
-    Offset minCenter = coord.dataToPosition(xIndex, dd, yIndex, DynamicData(data.lowest)).topCenter;
+    Offset minCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.lowest)).topCenter;
 
-    Offset openCenter = coord.dataToPosition(xIndex, dd, yIndex, DynamicData(data.open)).topCenter;
+    Offset openCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.open)).topCenter;
     Offset openLeft = openCenter.translate(-half, 0);
     Offset openRight = openCenter.translate(half, 0);
 
-    Offset closeCenter = coord.dataToPosition(xIndex, dd, yIndex, DynamicData(data.close)).topCenter;
+    Offset closeCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.close)).topCenter;
     Offset closeLeft = closeCenter.translate(-half, 0);
     Offset closeRight = closeCenter.translate(half, 0);
-    Offset maxCenter = coord.dataToPosition(xIndex, dd, yIndex, DynamicData(data.highest)).topCenter;
+    Offset maxCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.highest)).topCenter;
 
     Path path = Path();
     path.moveTo(minCenter.dx, minCenter.dy);
