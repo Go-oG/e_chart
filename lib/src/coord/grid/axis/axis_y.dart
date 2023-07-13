@@ -23,6 +23,7 @@ class YAxis extends GridAxis {
     super.silent,
     AxisStyle? axisStyle,
     super.categoryList,
+    super.categoryCenter,
     super.axisPointer,
     super.name,
     super.show,

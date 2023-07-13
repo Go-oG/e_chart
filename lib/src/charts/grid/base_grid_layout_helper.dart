@@ -19,8 +19,17 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   ///映射数据到节点
   Map<T, SingleNode<T, P>> dataNodeMap = {};
 
+  ///这个数据有问题
+
   List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
     List<DynamicData> dl = [];
+    if (!isXAxis) {
+      List<num> nl = helper.getExtreme(axisIndex, series, series.data);
+      for (var d in nl) {
+        dl.add(DynamicData(d));
+      }
+      return dl;
+    }
     for (var group in series.data) {
       if (group.data.isEmpty) {
         continue;
@@ -29,36 +38,11 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       if (xIndex < 0) {
         xIndex = 0;
       }
-      int yIndex = group.yAxisIndex ?? series.yAxisIndex;
-      if (yIndex < 0) {
-        yIndex = 0;
-      }
       if (isXAxis && xIndex != axisIndex) {
         continue;
       }
-      if (!isXAxis && yIndex != axisIndex) {
-        continue;
-      }
-      num maxValue = group.data.first.up;
-      num minValue = group.data.first.down;
-      if (maxValue < minValue) {
-        num t = minValue;
-        minValue = maxValue;
-        maxValue = t;
-      }
       for (var data in group.data) {
-        if (isXAxis) {
-          dl.add(data.x);
-        } else {
-          maxValue = max([maxValue, data.down]);
-          maxValue = max([maxValue, data.up]);
-          minValue = min([maxValue, data.down]);
-          minValue = min([maxValue, data.up]);
-        }
-      }
-      if (!isXAxis) {
-        dl.add(DynamicData(minValue));
-        dl.add(DynamicData(maxValue));
+        dl.add(data.x);
       }
     }
     return dl;
@@ -70,7 +54,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       return DynamicText.empty;
     }
     String text = dl.first.getText();
-    for (DynamicData data in dl) {
+    for (var data in dl) {
       String str = data.getText();
       if (str.length > text.length) {
         text = str;
@@ -124,7 +108,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         } else {
           groupNode.rect = Rect.fromLTWH(0, areaRect.top, width, areaRect.height);
         }
-        onLayoutGroupNode(axisGroup, groupNode, coord, xIndex, x);
+        doLayoutGroupNode(axisGroup, groupNode, coord, xIndex, x);
       }
 
       for (var node in groupNodeList) {
@@ -133,6 +117,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         }
       }
     });
+
     this.nodeList = nodeList;
     this.dataNodeMap = nodeMap;
   }
@@ -146,7 +131,15 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return nodeList;
   }
 
-  ///布局StackGroupNode
+  void doLayoutGroupNode(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, GridCoord coord, AxisIndex xIndex, DynamicData x) {
+    onLayoutGroupNode(axisGroup, groupNode, coord, xIndex, x);
+    each(groupNode.nodeList, (node, i) {
+      onLayoutColumnNode(node, coord, xIndex, x);
+    });
+  }
+
+  ///布局GroupNode的Column
+  ///子类实现该方法来布局对应数据
   void onLayoutGroupNode(
     AxisGroup<T, P> axisGroup,
     GroupNode<T, P> groupNode,
@@ -155,18 +148,17 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     DynamicData x,
   );
 
-  ///布局StackNode
-  void onLayoutStackNode(ColumnNode<T, P> stackNode) {
-    final num up = stackNode.nodeList[stackNode.nodeList.length - 1].up;
-    final num down = stackNode.nodeList.first.down;
-    final Rect rect = stackNode.rect;
+  ///布局Column里面的子View
+  void onLayoutColumnNode(ColumnNode<T, P> columnNode, GridCoord coord, AxisIndex xIndex, DynamicData x) {
+    final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
+    final num down = columnNode.nodeList.first.down;
+    final Rect rect = columnNode.rect;
     final num diff = up - down;
     final bool vertical = series.direction == Direction.vertical;
     final double size = vertical ? rect.height : rect.width;
-
     double bottom = rect.bottom;
     double left = rect.left;
-    for (var node in stackNode.nodeList) {
+    for (var node in columnNode.nodeList) {
       num percent = (node.up - node.down) / diff;
       double length = percent * size;
       if (vertical) {
@@ -176,6 +168,11 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         node.rect = Rect.fromLTWH(left, rect.top, length, rect.height);
         left += length;
       }
+      node.position = node.rect.center;
     }
+  }
+
+  GridAxis findAxis(GridCoord coord, int index, bool isXAxis) {
+    return coord.getAxis(index, isXAxis);
   }
 }

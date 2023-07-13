@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'base_data.dart';
 
 /// 不可再分的最小绘制单元，
-class SingleNode<T extends BaseItemData,P extends BaseGroupData<T>> with ViewStateProvider {
-  final StackData<T,P> data;
+class SingleNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewStateProvider {
+  final StackData<T, P> data;
   Rect rect = Rect.zero;
+  Offset position = Offset.zero;
 
   SingleNode(this.data);
 

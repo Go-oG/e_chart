@@ -128,14 +128,6 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
     });
   }
 
-  @override
-  List<DynamicText> obtainTicks() {
-    if (scale is! LinearScale) {
-      return super.obtainTicks();
-    }
-    return axis.buildTicks(scale);
-  }
-
   List<ArcRange> arcTickList = [];
 
   @override
@@ -207,6 +199,9 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, ArcProps> {
   }
 
   List<TickResult> _computeMinorTickAndLabel(int index, int maxIndex, num startAngle, num sweepAngle, bool inside) {
+    if (axis.category) {
+      return [];
+    }
     final AxisStyle style = axis.axisStyle;
     final bool labelInside = style.axisLabel.inside;
     final MinorTick tick = style.getMinorTick(index, maxIndex, getAxisTheme()) ?? _tmpMinorTick;

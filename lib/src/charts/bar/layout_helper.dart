@@ -97,7 +97,6 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
         top += columnGap + sizeList[i];
       }
       node.rect = tmpRect;
-      onLayoutStackNode(node);
     });
   }
 }

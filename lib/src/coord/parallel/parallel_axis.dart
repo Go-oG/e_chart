@@ -30,5 +30,6 @@ class ParallelAxis extends BaseAxis {
     super.silent,
     super.axisStyle,
     super.timeFormatFun,
+    super.categoryCenter,
   });
 }
