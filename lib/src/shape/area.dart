@@ -1,6 +1,8 @@
+
 import 'package:e_chart/src/ext/path_ext.dart';
 import 'package:flutter/material.dart';
 
+import '../model/constans.dart';
 import 'chart_shape.dart';
 
 ///代表一个封闭的图形
@@ -9,14 +11,11 @@ class Area implements Shape {
   final List<Offset> upList;
   final List<Offset> downList;
 
-  final double? ratioA;
-  final double? ratioB;
   final List<double> dashList;
   final bool upSmooth;
   final bool downSmooth;
 
-  Area(this.upList, this.downList,
-      {this.ratioA = 0.25, this.ratioB = 0.25, this.dashList = const [], this.upSmooth = true, this.downSmooth = true}) {
+  Area(this.upList, this.downList, {this.dashList = const [], this.upSmooth = true, this.downSmooth = true}) {
     if (upList.isEmpty || downList.isEmpty) {
       throw FlutterError('Point List must not empty');
     }
@@ -39,7 +38,7 @@ class Area implements Shape {
 
   Path buildPath() {
     Path mPath = Path();
-    if (upIsSmooth()) {
+    if (upSmooth) {
       Offset firstPoint = upList.first;
       mPath.moveTo(firstPoint.dx, firstPoint.dy);
       List<Offset> tmpList = [];
@@ -48,7 +47,7 @@ class Area implements Shape {
       tmpList.add(upList.last);
       tmpList.add(upList.last);
       for (int i = 1; i < tmpList.length - 3; i++) {
-        List<Offset> list = _getCtrlPoint(tmpList, i, ratioA: ratioA!, ratioB: ratioB!);
+        List<Offset> list = _getCtrlPoint(tmpList, i, ratioA: Constants.smoothRatio, ratioB: Constants.smoothRatio);
         Offset leftPoint = list[0];
         Offset rightPoint = list[1];
         Offset p = tmpList[i + 1];
@@ -67,14 +66,14 @@ class Area implements Shape {
     }
     Offset end = downList.last;
     mPath.lineTo(end.dx, end.dy);
-    if (downIsSmooth()) {
+    if (downSmooth) {
       List<Offset> tmpList = [];
       tmpList.add(downList.first);
       tmpList.addAll(downList);
       tmpList.add(downList.last);
       tmpList.add(downList.last);
       for (int i = tmpList.length - 3; i >= 2; i--) {
-        List<Offset> list = _getCtrlPoint(tmpList, i, ratioA: ratioA!, ratioB: ratioB!, reverse: true);
+        List<Offset> list = _getCtrlPoint(tmpList, i, ratioA: Constants.smoothRatio, ratioB: Constants.smoothRatio, reverse: true);
         Offset leftPoint = list[0];
         Offset rightPoint = list[1];
         Offset p = tmpList[i - 1];
@@ -110,14 +109,6 @@ class Area implements Shape {
     double by = right.dy - (right2.dy - cur.dy) * ratioB;
 
     return [Offset(ax, ay), Offset(bx, by)];
-  }
-
-  bool upIsSmooth() {
-    return upSmooth && ratioA != null && ratioB != null && ratioA! > 0 && ratioB! > 0;
-  }
-
-  bool downIsSmooth() {
-    return downSmooth && ratioA != null && ratioB != null && ratioA! > 0 && ratioB! > 0;
   }
 
   @override

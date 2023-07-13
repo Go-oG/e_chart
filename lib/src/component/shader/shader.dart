@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 
 import '../../core/view_state.dart';
 
-abstract class Shader {
-   Shader();
+abstract class ChartShader {
+  ChartShader();
 
   ui.Shader toShader(Rect rect);
 
-  Shader convert(covariant Shader begin, covariant Shader end, double animatorPercent);
+  ChartShader convert(covariant ChartShader begin, covariant ChartShader end, double animatorPercent);
 
-  Shader convert2(Set<ViewState>? states);
-
+  ChartShader convert2(Set<ViewState>? states);
 }

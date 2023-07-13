@@ -6,13 +6,28 @@ import '../grid/column_node.dart';
 import '../grid/group_node.dart';
 
 class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> {
-  List<Line> lineList = [];
+  List<LineResult> lineList = [];
 
   @override
   void onLayout(List<LineGroupData> data, LayoutAnimatorType type) {
     super.onLayout(data, type);
-    List<Line> lineList = [];
-    each(data, (group, p1) {
+
+    Map<String, List<LineGroupData>> stackMap = {};
+    List<LineGroupData> normalList = [];
+    each(data, (group, i) {
+      if (group.isStack) {
+        List<LineGroupData> dl = stackMap[group.stackId!] ?? [];
+        stackMap[group.stackId!] = dl;
+        dl.add(group);
+      } else {
+        normalList.add(group);
+      }
+    });
+
+    List<LineResult> lineList = [];
+
+    List<Offset> bottomList = [Offset(0, height), Offset(width, height)];
+    each(normalList, (group, i) {
       if (group.data.isEmpty) {
         return;
       }
@@ -21,8 +36,29 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
         var node = dataNodeMap[item]!;
         ol.add(node.position);
       });
-      lineList.add(Line(ol));
+      lineList.add(buildPath(ol, bottomList, true, group, i));
     });
+
+    stackMap.forEach((key, value) {
+      List<List<Offset>> dl = [];
+      each(value, (group, i) {
+        if (group.data.isEmpty) {
+          return;
+        }
+        List<Offset> ol = [];
+        dl.add(ol);
+        each(group.data, (item, p) {
+          var node = dataNodeMap[item]!;
+          ol.add(node.position);
+        });
+        if (i == 0) {
+          lineList.add(buildPath(ol, bottomList, true, group, i));
+        } else {
+          lineList.add(buildPath(ol, lineList[i - 1].offsetList, false, group, i));
+        }
+      });
+    });
+
     this.lineList = lineList;
   }
 
@@ -76,4 +112,41 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       }
     }
   }
+
+  LineResult buildPath(List<Offset> ol, List<Offset> bottomLine, isBottom, LineGroupData group, int index) {
+    Line line = Line(ol);
+    StepType? type = series.stepLineFun?.call(group);
+    if (type != null) {
+      if (type == StepType.step) {
+        line = Line(line.step());
+      } else if (type == StepType.after) {
+        line = Line(line.stepAfter());
+      } else {
+        line = Line(line.stepBefore());
+      }
+      Path path = Area(line.pointList, bottomLine, upSmooth: false, downSmooth: false).toPath(true);
+      return LineResult(group, line.pointList, line.toPath(false), path);
+    }
+
+    AreaStyle? style = series.styleFun?.call(group, index);
+    bool smooth = false;
+    if (style != null) {
+      smooth = style.border?.smooth ?? false;
+    } else {
+      LineTheme theme = context.config.theme.lineTheme;
+      smooth = theme.smooth;
+    }
+    Path path = Area(ol, bottomLine, upSmooth: smooth, downSmooth: isBottom ? false : smooth).toPath(true);
+    line = Line(ol, smooth: smooth);
+    return LineResult(group, ol, line.toPath(false), path);
+  }
+}
+
+class LineResult {
+  final LineGroupData data;
+  final List<Offset> offsetList;
+  final Path borderPath;
+  final Path areaPath;
+
+  LineResult(this.data, this.offsetList, this.borderPath, this.areaPath);
 }

@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import '../grid/group_node.dart';
 
 class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
+
   ///布局StackGroupNode
   @override
   void onLayoutGroupNode(

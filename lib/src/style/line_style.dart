@@ -11,7 +11,7 @@ class LineStyle {
   final StrokeJoin join;
   final List<num> dash;
   final List<BoxShadow> shadow;
-  final sd.Shader? shader;
+  final sd.ChartShader? shader;
   final bool smooth;
 
   ///因为Flutter绘制直线时是平分的，
@@ -51,7 +51,7 @@ class LineStyle {
       canvas.drawPoints(PointMode.points, points, paint);
       return;
     }
-    Line line = Line(points, smoothRatio: smooth ? 0.4 : null, dashList: dash);
+    Line line = Line(points, smooth: smooth, dashList: dash);
     Path path = line.toPath(close);
     drawPath(canvas, paint, path, false);
   }
@@ -94,7 +94,7 @@ class LineStyle {
 
     final Color color = ColorResolver(this.color).resolve(states)!;
 
-    final sd.Shader? shader = this.shader == null ? null : this.shader!.convert2(states);
+    final sd.ChartShader? shader = this.shader == null ? null : this.shader!.convert2(states);
 
     final List<BoxShadow> shadow = [];
     for (var bs in this.shadow) {

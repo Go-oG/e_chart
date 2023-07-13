@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:e_chart/e_chart.dart';
+
+import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../functions.dart';

@@ -61,6 +61,7 @@ class GridCoordImpl extends GridCoord {
     yMap.forEach((key, value) {
       value.measure(parentWidth, parentHeight);
     });
+
     return size;
   }
 

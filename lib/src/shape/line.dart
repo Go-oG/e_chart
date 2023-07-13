@@ -1,16 +1,15 @@
 import 'dart:ui';
 
-import 'package:e_chart/e_chart.dart';
-
-import '../ext/path_ext.dart';
+import 'package:e_chart/src/ext/index.dart';
+import '../model/constans.dart';
 import 'chart_shape.dart';
 
 class Line implements Shape {
   final List<Offset> _pointList = [];
-  final num? smoothRatio;
+  final bool smooth;
   final List<num> _dashList = [];
 
-  Line(List<Offset> list, {this.smoothRatio, List<num>? dashList}) {
+  Line(List<Offset> list, {this.smooth = false, List<num>? dashList}) {
     _pointList.addAll(list);
     if (dashList != null) {
       _dashList.addAll(dashList);
@@ -19,6 +18,8 @@ class Line implements Shape {
 
   Path? _closePath;
   Path? _openPath;
+
+  List<Offset> get pointList => _pointList;
 
   @override
   Path toPath(bool close) {
@@ -29,7 +30,7 @@ class Line implements Shape {
       return _openPath!;
     }
     Path path = Path();
-    if (smoothRatio != null) {
+    if (smooth) {
       path = _smooth();
     } else {
       Offset first = _pointList.first;
@@ -108,8 +109,8 @@ class Line implements Shape {
 
   ///返回平滑曲线路径(返回的路径是未封闭的)
   Path _smooth() {
-    num ratioA = smoothRatio ?? 0.2;
-    num ratioB = smoothRatio ?? 0.2;
+    num ratioA = Constants.smoothRatio;
+    num ratioB = Constants.smoothRatio;
     Path path = Path();
     Offset firstPoint = _pointList.first;
     path.moveTo(firstPoint.dx, firstPoint.dy);
@@ -158,8 +159,8 @@ class Line implements Shape {
       while (i < metric.length) {
         Tangent? tangent = metric.getTangentForOffset(i);
         if (tangent != null) {
-          Offset p=tangent.position;
-          if(offset.distance2(p)<=2){
+          Offset p = tangent.position;
+          if (offset.distance2(p) <= 2) {
             return true;
           }
         }

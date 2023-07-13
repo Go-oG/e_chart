@@ -1,6 +1,7 @@
 import '../../core/index.dart';
 import '../../model/index.dart';
 import 'base_data.dart';
+import 'data_helper.dart';
 
 class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends ChartSeries {
   List<P> data;
@@ -27,4 +28,23 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
     super.yAxisIndex,
     super.z,
   });
+
+  DataHelper<T, P, BaseGridSeries>? _helper;
+
+  DataHelper<T, P, BaseGridSeries> get helper {
+    _helper ??= DataHelper(this, data);
+    return _helper!;
+  }
+
+  @override
+  void notifySeriesConfigChange() {
+    _helper = null;
+    super.notifySeriesConfigChange();
+  }
+
+  @override
+  void notifyUpdateData() {
+    _helper = null;
+    super.notifyUpdateData();
+  }
 }

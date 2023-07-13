@@ -102,8 +102,11 @@ class KLineTheme {
 ///折线图主题
 class LineTheme {
   num lineWidth = 2;
-  num symbolSize = 4;
+  List<num> dashList = [];
+  bool fill = false;
+  double opacity = 0.5;
   ChartSymbol symbol = CircleSymbol();
+  bool showSymbol = false;
   bool smooth = false;
 }
 
@@ -251,15 +254,11 @@ class AxisTheme {
 
   bool showLabel = true;
   Color labelColor = const Color(0xFF6E7079);
-  num labelSize=15;
+  num labelSize = 15;
 
   bool showMinorLabel = false;
   Color minorLabelColor = const Color(0xFF6E7079);
-  num minorLabelSize=13;
-
-
-
-
+  num minorLabelSize = 13;
 
   bool showSplitLine = true;
   num splitLineWidth = 1;

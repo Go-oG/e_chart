@@ -6,7 +6,7 @@ import 'dart:ui';
 import '../../core/view_state.dart';
 import 'shader.dart';
 
-class SweepShader extends Shader {
+class SweepShader extends ChartShader {
   List<Color> colors;
   List<double>? colorStops;
   TileMode tileMode;
@@ -32,7 +32,7 @@ class SweepShader extends Shader {
   }
 
   @override
-  Shader convert(covariant SweepShader begin, covariant SweepShader end, double animatorPercent) {
+  ChartShader convert(covariant SweepShader begin, covariant SweepShader end, double animatorPercent) {
     List<Color> colorList = [];
     if (begin.colors.length == end.colors.length) {
       for (int i = 0; i < begin.colors.length; i++) {
@@ -75,7 +75,7 @@ class SweepShader extends Shader {
   }
 
   @override
-  Shader convert2(Set<ViewState>? states) {
+  ChartShader convert2(Set<ViewState>? states) {
     if (states == null || states.isEmpty) {
       return this;
     }
