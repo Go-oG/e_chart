@@ -22,6 +22,7 @@ class XAxis extends GridAxis {
     super.silent,
     super.axisStyle,
     super.categoryList,
+    super.categoryCenter,
     super.axisPointer,
     super.name,
     super.show,

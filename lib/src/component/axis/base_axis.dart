@@ -16,6 +16,10 @@ abstract class BaseAxis {
   ///类目数据
   List<String> categoryList;
 
+  ///当坐标轴为类目轴时，类别是否对齐中间
+  ///如果为false 则对齐开始
+  bool categoryCenter;
+
   //只在时间轴下使用
   TimeType timeType;
   Pair<DateTime>? timeRange;
@@ -43,6 +47,7 @@ abstract class BaseAxis {
     this.name,
     this.type = AxisType.value,
     this.categoryList = const [],
+    this.categoryCenter = true,
     this.timeType = TimeType.day,
     this.timeFormatFun,
     this.inverse = false,
@@ -74,7 +79,7 @@ abstract class BaseAxis {
     }
     if (category) {
       if (categoryList.isNotEmpty) {
-        return CategoryScale(categoryList, range);
+        return CategoryScale(categoryList, range,categoryCenter);
       }
       List<String> dl = [];
       Set<String> dSet = {};
@@ -87,7 +92,7 @@ abstract class BaseAxis {
       if (dl.isEmpty) {
         throw ChartError('当前提取Category数目为0');
       }
-      return CategoryScale(dl, range);
+      return CategoryScale(dl, range,categoryCenter);
     }
     List<DynamicData> ds = [...dataSet];
 

@@ -35,7 +35,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     }
     Map<AxisIndex, List<StackGroup<T, P>>> resultMap = {};
     axisGroupMap.forEach((key, value) {
-      resultMap[key] = parseStep2(key, value, parentMap, sortMap);
+      resultMap[key] = _parseStep2(key, value, parentMap, sortMap);
     });
 
     AxisGroup<T, P> group = AxisGroup(resultMap);
@@ -43,7 +43,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return group;
   }
 
-  List<StackGroup<T, P>> parseStep2(
+  List<StackGroup<T, P>> _parseStep2(
     AxisIndex axisIndex,
     List<P> list,
     Map<T, P> parentMap,
@@ -127,5 +127,107 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
       }
     }
     return max;
+  }
+
+  //========================
+  List<num> getExtreme(int axisIndex, S series, List<P> list) {
+    if (list.isEmpty) {
+      return [];
+    }
+    if (axisIndex < 0) {
+      axisIndex = 0;
+    }
+    List<P> groupList = [];
+    Map<T, P> parentMap = {};
+
+    for (var group in list) {
+      int xIndex = group.xAxisIndex ?? series.xAxisIndex;
+      if (xIndex < 0) {
+        xIndex = 0;
+      }
+      if (xIndex != axisIndex) {
+        continue;
+      }
+      groupList.add(group);
+
+      for (var element in group.data) {
+        parentMap[element] = group;
+      }
+    }
+
+    List<StackGroup<T, P>> rl = _getExtremeStep2(AxisIndex(axisIndex), groupList, parentMap);
+    each(rl, (group, p1) {
+      group.mergeData();
+    });
+    if (rl.isEmpty) {
+      return [];
+    }
+
+    num minValue = double.infinity;
+    num maxValue = double.negativeInfinity;
+    for (var group in rl) {
+      for (var column in group.column) {
+        for (var data in column.data) {
+          var up = data.up;
+          var down = data.down;
+          minValue = min([minValue, down]);
+          maxValue = max([maxValue, up]);
+        }
+      }
+    }
+    List<num> dl = [];
+    if (minValue.isFinite) {
+      dl.add(minValue);
+    }
+    if (maxValue.isFinite) {
+      dl.add(maxValue);
+    }
+    return dl;
+  }
+
+  List<StackGroup<T, P>> _getExtremeStep2(AxisIndex axisIndex, List<P> list, Map<T, P> parentMap) {
+    int barGroupCount = _computeBarCount(list);
+    List<List<T>> itemList = List.generate(barGroupCount, (index) => []);
+    for (int i = 0; i < barGroupCount; i++) {
+      for (var data in list) {
+        if (data.data.length <= i) {
+          continue;
+        }
+        itemList[i].add(data.data[i]);
+      }
+    }
+    List<StackGroup<T, P>> groupList = [];
+
+    ///合并数据
+    each(itemList, (group, index) {
+      ///<stackId>
+      Map<String, List<T>> stackDataMap = {};
+      List<T> singleDataList = [];
+      each(group, (data, p1) {
+        var parent = parentMap[data]!;
+        if (parent.isStack) {
+          List<T> dl = stackDataMap[parent.stackId!] ?? [];
+          stackDataMap[parent.stackId!] = dl;
+          dl.add(data);
+        } else {
+          singleDataList.add(data);
+        }
+      });
+      StackGroup<T, P> stackGroup = StackGroup(axisIndex, []);
+      stackDataMap.forEach((key, value) {
+        List<StackData<T, P>> dl = [];
+        for (var ele in value) {
+          dl.add(StackData<T, P>(index, ele, parentMap[ele]!));
+        }
+        StackColumn<T, P> column = StackColumn(dl, true, parentMap[value.first]!.strategy);
+        stackGroup.column.add(column);
+      });
+      for (var data in singleDataList) {
+        StackColumn<T, P> column = StackColumn([StackData(index, data, parentMap[data]!)], false, StackStrategy.all);
+        stackGroup.column.add(column);
+      }
+      groupList.add(stackGroup);
+    });
+    return groupList;
   }
 }

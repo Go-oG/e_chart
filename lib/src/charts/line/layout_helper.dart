@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/grid/base_grid_layout_helper.dart';
+import '../grid/column_node.dart';
 import '../grid/group_node.dart';
 
 class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> {
@@ -17,9 +18,8 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       }
       List<Offset> ol = [];
       each(group.data, (item, i) {
-        Rect rect = dataNodeMap[item]!.rect;
-        Offset center = rect.topCenter;
-        ol.add(center);
+        var node = dataNodeMap[item]!;
+        ol.add(node.position);
       });
       lineList.add(Line(ol));
     });
@@ -47,6 +47,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     each(groupNode.nodeList, (node, i) {
       int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
       num up = node.getUp();
+
       ///确定上界和下界
       Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(up));
       Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));
@@ -57,11 +58,22 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       if (vertical) {
         tmpRect = Rect.fromLTWH(rect.left, rect.bottom - h, rect.width, h);
       } else {
-        tmpRect = Rect.fromLTWH(rect.left, rect.top, w,rect.height);
+        tmpRect = Rect.fromLTWH(rect.left, rect.top, w, rect.height);
       }
       node.rect = tmpRect;
-      onLayoutStackNode(node);
     });
+  }
 
+  @override
+  void onLayoutColumnNode(ColumnNode<LineItemData, LineGroupData> columnNode, GridCoord coord, AxisIndex xIndex, DynamicData x) {
+    super.onLayoutColumnNode(columnNode, coord, xIndex, x);
+    GridAxis xAxis = coord.getAxis(xIndex.index, true);
+    for (var node in columnNode.nodeList) {
+      if (xAxis.category && !xAxis.categoryCenter) {
+        node.position = node.rect.topLeft;
+      } else {
+        node.position = node.rect.topCenter;
+      }
+    }
   }
 }

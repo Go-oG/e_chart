@@ -25,6 +25,7 @@ class GridAxis extends BaseAxis {
     super.minInterval,
     super.inverse,
     super.categoryList,
+    super.categoryCenter,
     super.timeRange,
     super.timeType,
     super.silent,

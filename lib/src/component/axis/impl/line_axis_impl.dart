@@ -196,7 +196,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
         });
       }
     });
-
   }
 
   @override
@@ -236,6 +235,15 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
       List<DynamicText> textList = [];
       if (i < ticks.length) {
         textList.add(ticks[i]);
+      }
+      if (axis.category && !axis.categoryCenter) {
+        if (i == ol.length - 2) {
+          if (i + 1 < ticks.length) {
+            textList.add(ticks[i + 1]);
+          }
+        } else {
+          textList.add(DynamicText.empty);
+        }
       }
       if (!axis.category) {
         if (i + 1 < ticks.length) {
@@ -300,15 +308,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
       }
 
       ///计算minorTick 和minorLabel
-      tickResult.minorTickList.addAll(_computeMinorTickAndLabel(
-        index,
-        maxIndex,
-        s,
-        e,
-        clampAngle,
-        tick.inside,
-        start,
-      ));
+      tickResult.minorTickList.addAll(_computeMinorTickAndLabel(index, maxIndex, s, e, clampAngle, tick.inside, start));
       resultList.add(tickResult);
     }
     return resultList;
@@ -323,6 +323,10 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
     final bool inside,
     final Offset center,
   ) {
+    if (axis.category) {
+      return [];
+    }
+
     final AxisStyle style = axis.axisStyle;
     final MinorTick tick = style.getMinorTick(index, maxIndex, getAxisTheme()) ?? _tmpMinorTick;
     int tickCount = tick.splitNumber;
@@ -330,13 +334,11 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
       return [];
     }
     final bool labelInside = style.axisLabel.inside;
-
     final double distance = e.distance2(s);
     final double interval = distance / (tickCount - 1);
     final int tickDir = inside ? -1 : 1;
     final int labelDir = labelInside ? -1 : 1;
     final double tickLen = tick.length.toDouble();
-
     List<TickResult> resultList = [];
     for (int i = 1; i < tickCount; i++) {
       final Offset s2 = s.translate(i * interval, 0);
@@ -379,7 +381,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineProps> extends BaseAxisImpl
     }
     return ol;
   }
-
 }
 
 ///直线轴使用

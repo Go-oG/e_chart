@@ -2,14 +2,16 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'axis/base_grid_axis_impl.dart';
-
 abstract class GridCoord extends Coord<GridConfig> {
   GridCoord(super.props);
 
+  ///该方法适用于Bar
   Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
 
-  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool isXAxis);
+  ///该方法适用于Line
+  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+
+  GridAxis getAxis(int axisIndex,bool isXAxis);
 
   ///获取平移量(滚动量)
   Offset getTranslation();
@@ -219,8 +221,8 @@ class GridCoordImpl extends GridCoord {
 
   @override
   Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
-    List<Offset> dx = dataToPoint(xAxisIndex, x, true);
-    List<Offset> dy = dataToPoint(yAxisIndex, y, false);
+    List<Offset> dx = getXAxis(xAxisIndex).dataToPoint(x);
+    List<Offset> dy = getYAxis(yAxisIndex).dataToPoint(y);
     double l = dx[0].dx;
     double t = dy[0].dy;
     double r = dx.length >= 2 ? dx[1].dx : l + 1;
@@ -229,8 +231,20 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool isXAxis) {
-    BaseGridAxisImpl axisImpl = isXAxis ? getXAxis(axisIndex) : getYAxis(axisIndex);
-    return axisImpl.dataToPoint(data);
+  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
+    List<Offset> dx = getXAxis(xAxisIndex).dataToPoint(x);
+    List<Offset> dy = getYAxis(yAxisIndex).dataToPoint(y);
+    return Offset(dx[0].dx, dy[0].dy);
+  }
+
+  @override
+  GridAxis getAxis(int axisIndex, bool isXAxis) {
+    if(axisIndex<0){
+      axisIndex=0;
+    }
+    if(isXAxis){
+      return getXAxis(axisIndex).axis;
+    }
+    return getYAxis(axisIndex).axis;
   }
 }

@@ -2,10 +2,9 @@ import '../../model/chart_error.dart';
 import 'scale_base.dart';
 
 class CategoryScale extends BaseScale<String, num> {
-  CategoryScale(
-    super.domain,
-    super.range,
-  ) {
+  bool categoryCenter;
+
+  CategoryScale(super.domain, super.range, this.categoryCenter) {
     if (domain.isEmpty) {
       throw ChartError('Domain至少应该有一个');
     }
@@ -32,21 +31,29 @@ class CategoryScale extends BaseScale<String, num> {
       return [double.nan, double.nan];
     }
     num diff = range.last - range.first;
-    num interval = diff / domain.length;
+    int c = domain.length;
+    if (!categoryCenter) {
+      c -= 1;
+    }
+    if (c <= 0) {
+      c = 1;
+    }
+
+    num interval = diff / c;
     return [range.first + index * interval, range.first + (index + 1) * interval];
   }
 
   @override
-  int get tickCount => domain.length+1;
+  int get tickCount => categoryCenter ? domain.length + 1 : domain.length;
 
   @override
   bool get isCategory => true;
 
   @override
-  List<String> get ticks=>domain;
+  List<String> get ticks => domain;
 
   @override
   CategoryScale copyWithRange(List<num> range) {
-    return CategoryScale(domain, range);
+    return CategoryScale(domain, range, categoryCenter);
   }
 }
