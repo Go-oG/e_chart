@@ -6,7 +6,6 @@ import 'package:e_chart/src/charts/grid/base_data.dart';
 
 import 'base_grid_series.dart';
 import 'column_node.dart';
-import 'data_helper.dart';
 import 'group_node.dart';
 import 'single_node.dart';
 
@@ -14,22 +13,22 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     extends ChartLayout<S, List<P>> {
   List<SingleNode<T, P>> nodeList = [];
 
-  DataHelper<T, P, S> helper = DataHelper();
-
   ///映射数据到节点
   Map<T, SingleNode<T, P>> dataNodeMap = {};
 
-  ///这个数据有问题
+  Offset? getNodePosition(T data){
+    return dataNodeMap[data]?.position;
+  }
 
   List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
     List<DynamicData> dl = [];
     if (!isXAxis) {
-      List<num> nl = helper.getExtreme(axisIndex, series, series.data);
-      for (var d in nl) {
+      for (var d in series.helper.getExtreme(axisIndex)) {
         dl.add(DynamicData(d));
       }
       return dl;
     }
+
     for (var group in series.data) {
       if (group.data.isEmpty) {
         continue;
@@ -65,7 +64,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 
   @override
   void onLayout(List<P> data, LayoutAnimatorType type) {
-    AxisGroup<T, P> axisGroup = helper.parse(series, data);
+    AxisGroup<T, P> axisGroup = series.helper.result;
     List<SingleNode<T, P>> nodeList = [];
     bool vertical = series.direction == Direction.vertical;
     final DynamicData tmpData = DynamicData(1000000);

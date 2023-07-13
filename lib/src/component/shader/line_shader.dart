@@ -5,7 +5,7 @@ import 'dart:ui';
 import '../../core/view_state.dart';
 import 'shader.dart';
 
-class LineShader extends Shader {
+class LineShader extends ChartShader {
   /// 表示渐变的偏移量dx,dy取值范围从从[0,1]
    Offset from;
    Offset to;
@@ -33,7 +33,7 @@ class LineShader extends Shader {
   }
 
   @override
-  Shader convert(covariant LineShader begin, covariant LineShader end, double animatorPercent) {
+  ChartShader convert(covariant LineShader begin, covariant LineShader end, double animatorPercent) {
     List<Color> colorList = [];
     if (begin.colors.length == end.colors.length) {
       for (int i = 0; i < begin.colors.length; i++) {
@@ -76,7 +76,7 @@ class LineShader extends Shader {
   }
 
   @override
-  Shader convert2(Set<ViewState>? states) {
+  ChartShader convert2(Set<ViewState>? states) {
     if (states == null || states.isEmpty) {
       return this;
     }

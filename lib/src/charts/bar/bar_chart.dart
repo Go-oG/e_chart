@@ -11,7 +11,7 @@ class BarView extends CoordChildView<BarSeries> implements GridChild {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    layoutHelper.doMeasure(parentWidth, parentHeight);
+    layoutHelper.doMeasure(context,series,series.data,parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
   }
 

@@ -34,7 +34,7 @@ class LineStyleTween extends ChartTween<LineStyle> {
     }
 
     List<BoxShadow> shadowList=BoxShadow.lerpList(begin.shadow, end.shadow, animatorPercent)??[];
-    sd.Shader? shader;
+    sd.ChartShader? shader;
     if (_shaderTween != null) {
       shader = _shaderTween!.convert(animatorPercent);
     } else {

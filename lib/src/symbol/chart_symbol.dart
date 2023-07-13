@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/index.dart';
 import 'package:flutter/material.dart';
 
 import '../component/shader/shader.dart' as sd;
@@ -24,33 +23,33 @@ abstract class ChartSymbol {
 }
 
 class SymbolDesc {
-  static const empty = SymbolDesc();
+  static final empty = SymbolDesc();
 
-  final List<Color> fillColor;
-  final Color? borderColor;
-  final num? borderWidth;
-  final List<num> dash;
-  final List<BoxShadow> shadow;
-  final sd.Shader? shader;
-  final Offset? center;
-  final Size? size;
+  List<Color> fillColor;
+  Color? borderColor;
+  num? borderWidth;
+  List<num> dash;
+  List<BoxShadow> shadow;
+  sd.ChartShader? shader;
+  Offset? center;
+  Size? size;
 
-  const SymbolDesc({
-    this.fillColor=const [],
+  SymbolDesc({
+    this.fillColor = const [],
     this.borderColor,
     this.borderWidth,
-    this.dash=const [],
-    this.shadow=const [],
+    this.dash = const [],
+    this.shadow = const [],
     this.shader,
     this.center,
     this.size,
   });
 
   AreaStyle? toStyle() {
-    Color? color = (fillColor == null || fillColor!.isEmpty) ? null : fillColor!.first;
+    Color? color = fillColor.isEmpty ? null : fillColor.first;
     LineStyle? border;
     if (borderColor != null && borderWidth != null && borderWidth! > 0) {
-      border = LineStyle(color: borderColor!, width: borderWidth!, dash: dash ?? [], shadow: shadow ?? [], shader: shader);
+      border = LineStyle(color: borderColor!, width: borderWidth!, dash: dash, shadow: shadow, shader: shader);
     }
     if (color != null || border != null) {
       return AreaStyle(color: color, border: border);

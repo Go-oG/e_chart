@@ -12,11 +12,8 @@ import 'line_style.dart';
 /// 区域样式
 class AreaStyle {
   final bool show;
-
-  ///控制是否是曲线
-  final bool smooth;
   final Color? color;
-  final sd.Shader? shader;
+  final sd.ChartShader? shader;
   final List<BoxShadow> shadow;
   final LineStyle? border;
 
@@ -26,7 +23,6 @@ class AreaStyle {
     this.shader,
     this.shadow = const [],
     this.border,
-    this.smooth = false,
   });
 
   @override
@@ -45,7 +41,7 @@ class AreaStyle {
     paint.style = PaintingStyle.fill;
   }
 
-  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points,[bool drawBorder=true]) {
+  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points,[bool drawBorder=true,bool smooth=false,]) {
     if (_notDraw()) {
       return;
     }
@@ -57,15 +53,15 @@ class AreaStyle {
       canvas.drawPoints(PointMode.points, points, paint);
       return;
     }
-    Line line = Line(points, smoothRatio: smooth ? 0.25 : null);
+    Line line = Line(points, smooth: smooth);
     drawPath(canvas, paint, line.toPath(true));
   }
 
-  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List,[bool drawBorder=true]) {
+  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List,[bool drawBorder=true,bool smooth=false]) {
     if (_notDraw()) {
       return;
     }
-    Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth, ratioA: 0.25, ratioB: 0.25);
+    Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth);
     drawPath(canvas, paint, area.toPath(true));
   }
 
@@ -121,7 +117,7 @@ class AreaStyle {
       return this;
     }
     final Color? color = this.color == null ? null : ColorResolver(this.color!).resolve(states);
-    final sd.Shader? shader = this.shader == null ? null : this.shader!.convert2(states);
+    final sd.ChartShader? shader = this.shader == null ? null : this.shader!.convert2(states);
     final List<BoxShadow> shadow = [];
     for (var bs in this.shadow) {
       shadow.add(BoxShadow(
@@ -133,7 +129,7 @@ class AreaStyle {
       ));
     }
     final LineStyle? border = this.border == null ? null : this.border!.convert(states);
-    return AreaStyle(show: show, smooth: smooth, shader: shader, shadow: shadow, border: border, color: color);
+    return AreaStyle(show: show,  shader: shader, shadow: shadow, border: border, color: color);
   }
 
   bool _notDraw() {

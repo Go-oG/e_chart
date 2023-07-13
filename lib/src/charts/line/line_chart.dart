@@ -1,3 +1,4 @@
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +12,7 @@ class LineView extends CoordChildView<LineSeries> implements GridChild {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    layoutHelper.doMeasure(parentWidth, parentHeight);
+    layoutHelper.doMeasure(context, series, series.data, parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
   }
 
@@ -23,9 +24,43 @@ class LineView extends CoordChildView<LineSeries> implements GridChild {
 
   @override
   void onDraw(Canvas canvas) {
-    for (var line in layoutHelper.lineList) {
-      LineStyle style = LineStyle(color: randomColor(), width: 1);
-      style.drawPath(canvas, mPaint, line.toPath(false));
+    var chartTheme = context.config.theme;
+    var theme = chartTheme.lineTheme;
+    final List<LineResult> list = layoutHelper.lineList;
+    Map<LineGroupData, AreaStyle> styleMap = {};
+
+    ///这里分开绘制是为了避免边框被遮挡
+    each(list, (result, i) {
+      AreaStyle? style = series.styleFun?.call(result.data,i);
+      if (style == null) {
+        Color color = chartTheme.colors[i % chartTheme.colors.length];
+        style = AreaStyle(
+          color: theme.fill ? color.withOpacity(theme.opacity) : null,
+          border: LineStyle(color: color, width: theme.lineWidth, dash: theme.dashList),
+        );
+      }
+      styleMap[result.data] = style;
+      style.drawPath(canvas, mPaint, result.areaPath, false);
+    });
+    each(list, (result, i) {
+      AreaStyle style = styleMap[result.data]!;
+      style.border?.drawPath(canvas, mPaint, result.borderPath);
+    });
+    if (series.symbolFun != null || theme.showSymbol) {
+      ///绘制symbol
+      SymbolDesc desc=SymbolDesc();
+      each(list, (result, p1) {
+        each(result.data.data, (data, i) {
+          ChartSymbol? symbol=series.symbolFun?.call(data,result.data);
+          if(symbol!=null){
+            desc.center=layoutHelper.getNodePosition(data);
+            symbol.draw(canvas, mPaint, desc);
+          }else if(theme.showSymbol){
+            desc.center=layoutHelper.getNodePosition(data);
+            theme.symbol.draw(canvas, mPaint, desc);
+          }
+        });
+      });
     }
   }
 

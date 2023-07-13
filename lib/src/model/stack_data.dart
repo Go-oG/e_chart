@@ -103,13 +103,14 @@ class StackColumn<T extends BaseItemData, P extends BaseGroupData<T>> {
 }
 
 class StackData<T, P> {
+  final bool stack;
   final int groupIndex;
   final T data;
   final P parent;
   num up = 0;
   num down = 0;
 
-  StackData(this.groupIndex, this.data, this.parent);
+  StackData(this.stack,this.groupIndex, this.data, this.parent);
 
   @override
   int get hashCode {

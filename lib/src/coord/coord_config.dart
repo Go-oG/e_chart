@@ -11,7 +11,7 @@ abstract class CoordConfig extends ChartNotifier<Command> {
   SNumber? height;
 
   EdgeInsets margin = const EdgeInsets.all(8);
-  EdgeInsets padding = const EdgeInsets.all(8);
+  EdgeInsets padding = const EdgeInsets.all(16);
 
   ///手势相关
   bool enableClick;

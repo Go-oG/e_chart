@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/grid/base_grid_series.dart';
 
@@ -5,14 +7,13 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
   bool legendHoverLink; // 是否启用图例hover的联动高亮
   bool connectNulls; // 是否连接空数据
   bool realtimeSort; // 是否启用实时排序
-
   LinkageStyle linkageStyle;
 
   /// 主样式 对于绘制Line 使用其border 属性
-  Fun3<LineItemData, LineGroupData, AreaStyle>? styleFun;
+  Fun3<LineGroupData, int, AreaStyle>? styleFun;
 
   /// 符号样式
-  Fun3<LineItemData, LineGroupData, ChartSymbol>? symbolFun;
+  Fun3<LineItemData, LineGroupData, ChartSymbol?>? symbolFun;
 
   ///返回非空值表示是阶梯折线图
   Fun2<LineGroupData, StepType?>? stepLineFun;
