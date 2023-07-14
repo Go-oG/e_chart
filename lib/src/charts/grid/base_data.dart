@@ -65,4 +65,13 @@ class BaseItemData {
       this.id = randomId();
     }
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is BaseItemData && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
 }

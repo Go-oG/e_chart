@@ -45,16 +45,19 @@ class SymbolDesc {
     this.size,
   });
 
-  AreaStyle? toStyle() {
+  AreaStyle? toAreaStyle() {
     Color? color = fillColor.isEmpty ? null : fillColor.first;
+    if (color != null) {
+      return AreaStyle(color: color);
+    }
+    return null;
+  }
+
+  LineStyle? toLineStyle() {
     LineStyle? border;
     if (borderColor != null && borderWidth != null && borderWidth! > 0) {
       border = LineStyle(color: borderColor!, width: borderWidth!, dash: dash, shadow: shadow, shader: shader);
     }
-    if (color != null || border != null) {
-      return AreaStyle(color: color, border: border);
-    }
-
-    return null;
+    return border;
   }
 }

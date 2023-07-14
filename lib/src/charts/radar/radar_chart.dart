@@ -52,42 +52,66 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
   void onDraw(Canvas canvas) {
     ChartTheme chartTheme = context.config.theme;
     RadarTheme theme = chartTheme.radarTheme;
-    each(radarLayout.groupNodeList, (group, i) {
+    var nodeList = radarLayout.groupNodeList;
+    each(nodeList, (group, i) {
       if (!group.data.show) {
         return;
       }
-      AreaStyle? style;
-      Color color = chartTheme.colors[i % chartTheme.colors.length];
-      if (series.areaStyleFun != null) {
-        style = series.areaStyleFun?.call(group.data);
-        var c = style?.color ?? style?.border?.color;
-        if (c != null) {
-          color = c;
-        }
-      } else {
-        Color borderColor = color;
-        Color? fillColor;
-        if (theme.fill) {
-          fillColor = borderColor.withOpacity(0.5);
-        }
-        style = AreaStyle(color: fillColor, border: LineStyle(color: borderColor, width: theme.lineWidth));
-      }
-      List<Offset> ol = group.getPathOffset();
-      style?.drawPolygonArea(canvas, mPaint, ol);
-      if (series.symbolFun == null && !theme.showSymbol) {
+
+      AreaStyle? areaStyle = getAreaStyle(group, i);
+      LineStyle? lineStyle = getLineStyle(group, i);
+      bool drawSymbol = series.symbolFun != null || theme.showSymbol;
+      if (areaStyle == null && lineStyle == null && !drawSymbol) {
         return;
       }
+      List<Offset> ol = group.getPathOffset();
+      areaStyle?.drawPolygonArea(canvas, mPaint, ol);
+      lineStyle?.drawPolygon(canvas, mPaint, ol, true);
+
+      if (!drawSymbol) {
+        return;
+      }
+
+      SymbolDesc desc = SymbolDesc();
       for (int i = 0; i < ol.length; i++) {
+        desc.center = ol[i];
         ChartSymbol? symbol;
         if (series.symbolFun != null) {
           symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
-          symbol?.draw(canvas, mPaint, SymbolDesc(center: ol[i]));
+          symbol?.draw(canvas, mPaint, desc);
         } else {
           symbol = theme.showSymbol ? theme.symbol : null;
-          symbol?.draw(canvas, mPaint, SymbolDesc(center: ol[i], size: theme.symbolSize, fillColor: [color]));
+          symbol?.draw(canvas, mPaint, desc);
         }
       }
+
     });
+  }
+
+  AreaStyle? getAreaStyle(RadarGroupNode group, int index) {
+    var theme = context.config.theme.radarTheme;
+    var chartTheme = context.config.theme;
+
+    if (series.areaStyleFun != null) {
+      return series.areaStyleFun?.call(group.data);
+    } else if (theme.fill) {
+      Color fillColor = chartTheme.getColor(index);
+      return AreaStyle(color: fillColor);
+    }
+    return null;
+  }
+
+  LineStyle? getLineStyle(RadarGroupNode group, int index) {
+    var theme = context.config.theme.radarTheme;
+    var chartTheme = context.config.theme;
+    LineStyle? lineStyle;
+    if (series.lineStyleFun != null) {
+      lineStyle = series.lineStyleFun?.call(group.data);
+    } else if (theme.lineWidth > 0) {
+      Color lineColor = chartTheme.getColor(index);
+      lineStyle = LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList);
+    }
+    return lineStyle;
   }
 
   @override

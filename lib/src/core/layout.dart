@@ -30,6 +30,7 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
     this.context = context;
     this.series = series;
     this.rect = rect;
+    this.data=data;
     onLayout(data, type);
   }
 

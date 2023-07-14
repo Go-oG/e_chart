@@ -53,7 +53,7 @@ class DiamondSymbol extends ChartSymbol {
       buildPath();
     }
     AreaStyle style = this.style;
-    AreaStyle? s = info.toStyle();
+    AreaStyle? s = info.toAreaStyle();
     if (s != null) {
       style = s;
     }

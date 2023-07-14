@@ -2,14 +2,15 @@ import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/grid/base_grid_layout_helper.dart';
+import 'package:e_chart/src/charts/grid/base_grid_series.dart';
+import 'package:e_chart/src/charts/grid/single_node.dart';
 import 'package:flutter/cupertino.dart';
 import '../grid/group_node.dart';
 
 class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
-
   ///布局StackGroupNode
   @override
-  void onLayoutGroupNode(
+  void onLayoutGroupColumn(
     AxisGroup<BarItemData, BarGroupData> axisGroup,
     GroupNode<BarItemData, BarGroupData> groupNode,
     GridCoord coord,
@@ -100,4 +101,5 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
       node.rect = tmpRect;
     });
   }
+
 }

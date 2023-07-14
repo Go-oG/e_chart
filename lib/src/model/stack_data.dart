@@ -103,14 +103,26 @@ class StackColumn<T extends BaseItemData, P extends BaseGroupData<T>> {
 }
 
 class StackData<T, P> {
+  ///标识是否是一个堆叠数据
   final bool stack;
+
+  ///标识该数据所属的Group组的序号
   final int groupIndex;
+
+  ///标识该数据在其Group中的位置
+  final int dataIndex;
   final T data;
   final P parent;
   num up = 0;
   num down = 0;
 
-  StackData(this.stack,this.groupIndex, this.data, this.parent);
+  StackData(
+    this.stack,
+    this.data,
+    this.parent,
+    this.groupIndex,
+    this.dataIndex,
+  );
 
   @override
   int get hashCode {

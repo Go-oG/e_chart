@@ -2,15 +2,15 @@
 import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
 import '../../model/group_data.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
+import '../../style/index.dart';
 import '../../core/series.dart';
 import '../../symbol/chart_symbol.dart';
 
 class RadarSeries extends RectSeries {
   List<GroupData> data;
   int splitNumber;
-  Fun2<GroupData, AreaStyle>? areaStyleFun;
+  Fun2<GroupData, AreaStyle?>? areaStyleFun;
+  Fun2<GroupData, LineStyle?>? lineStyleFun;
   Fun2<GroupData, LabelStyle>? labelStyleFun;
   Fun4<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
   num nameGap;

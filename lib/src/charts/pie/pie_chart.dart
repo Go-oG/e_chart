@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'layout.dart';
@@ -66,17 +67,14 @@ class PieView extends SeriesView<PieSeries> {
   @override
   void onDraw(Canvas canvas) {
     List<PieNode> nodeList = pieLayer.nodeList;
-    for (var node in nodeList) {
-      AreaStyle style = series.areaStyleFun.call(node.data);
-      if (!style.show) {
-        continue;
-      }
-      style.drawPath(canvas, mPaint, node.arc.toPath(true));
-    }
-
-    for (var node in nodeList) {
+    each(nodeList, (node, i) {
+      Path path=node.arc.toPath(true);
+      getAreaStyle(node, i)?.drawPath(canvas, mPaint, path);
+      getBorderStyle(node, i)?.drawPath(canvas, mPaint, path);
+    });
+    each(nodeList, (node, i) {
       drawText(canvas, node);
-    }
+    });
   }
 
   void drawText(Canvas canvas, PieNode node) {
@@ -108,7 +106,7 @@ class PieView extends SeriesView<PieSeries> {
       Arc arc = node.arc;
       Offset tmpOffset = circlePoint(arc.outRadius, arc.startAngle + (arc.sweepAngle / 2), center);
       Offset tmpOffset2 = circlePoint(
-        arc.outRadius + (labelStyle.guideLine?.length??0),
+        arc.outRadius + (labelStyle.guideLine?.length ?? 0),
         arc.startAngle + (arc.sweepAngle / 2),
         center,
       );
@@ -118,5 +116,22 @@ class PieView extends SeriesView<PieSeries> {
       path.lineTo(config.offset.dx, config.offset.dy);
       labelStyle.guideLine?.style.drawPath(canvas, mPaint, path);
     }
+  }
+
+  AreaStyle? getAreaStyle(PieNode node, int index) {
+    if (series.areaStyleFun != null) {
+      return series.areaStyleFun?.call(node.data);
+    }
+    var chartTheme = context.config.theme;
+    Color fillColor = chartTheme.getColor(index);
+    return AreaStyle(color: fillColor);
+  }
+
+  LineStyle? getBorderStyle(PieNode node, int index) {
+    if (series.borderFun != null) {
+      return series.borderFun?.call(node.data);
+    }
+    var theme = context.config.theme.pieTheme;
+    return theme.getBorderStyle();
   }
 }

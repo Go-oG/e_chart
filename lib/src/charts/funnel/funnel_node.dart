@@ -1,13 +1,6 @@
 import 'package:chart_xutil/chart_xutil.dart';
-import 'package:e_chart/src/style/index.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../component/guideline/guide_line.dart';
-import '../../core/context.dart';
-import '../../core/view_state.dart';
-import '../../model/index.dart';
-import '../../utils/align_util.dart';
-import 'funnel_series.dart';
 
 class FunnelNode with ViewStateProvider {
   final int index;
@@ -29,18 +22,9 @@ class FunnelNode with ViewStateProvider {
   void update(Context context, FunnelSeries series) {
     ChartTheme chartTheme = context.config.theme;
     FunnelTheme theme = chartTheme.funnelTheme;
-    AreaStyle? areaStyle = series.areaStyleFun?.call(this);
-    if (areaStyle == null) {
-      Color color;
-      if (theme.colors.isNotEmpty) {
-        color = theme.colors[index % theme.colors.length];
-      } else {
-        color = chartTheme.colors[index % chartTheme.colors.length];
-      }
-      Color lineColor = theme.borderColor;
-      areaStyle = AreaStyle(color: color, border: LineStyle(color: lineColor, width: theme.borderWidth));
-    }
+    AreaStyle? areaStyle =FunnelLayout.getAreaStyle(context, series, this);
     this.areaStyle = areaStyle;
+
     LabelStyle? labelStyle = series.labelStyleFun?.call(this);
     if (labelStyle == null && series.labelStyleFun != null) {
       labelStyle = theme.labelStyle;

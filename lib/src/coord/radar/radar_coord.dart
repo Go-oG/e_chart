@@ -110,16 +110,16 @@ class RadarCoordImpl extends RadarCoord {
     var theme = context.config.theme.radarTheme;
     each(splitList, (sp, i) {
       AreaStyle? style;
-      if (props.splitStyleFun != null) {
-        style = props.splitStyleFun?.call(i, i - 1);
+      if (props.splitAreaStyleFun != null) {
+        style = props.splitAreaStyleFun?.call(i, i - 1);
       } else {
         style = theme.getSplitAreaStyle(i);
       }
       style?.drawPath(canvas, mPaint, sp.splitPath);
 
       LineStyle? lineStyle;
-      if (props.splitStyleFun != null) {
-        lineStyle = props.splitStyleFun?.call(i, i - 1).border;
+      if (props.splitAreaStyleFun != null) {
+        lineStyle = props.splitLineStyleFun?.call(i, i - 1);
       } else {
         lineStyle = theme.getSplitLineStyle(i);
       }

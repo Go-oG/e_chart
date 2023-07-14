@@ -75,6 +75,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
   List<StackGroup<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list, OriginInfo<T, P> originInfo) {
     int barGroupCount = _computeBarCount(list);
     List<List<T>> itemList = List.generate(barGroupCount, (index) => []);
+
     for (int i = 0; i < barGroupCount; i++) {
       for (var data in list) {
         if (data.data.length <= i) {
@@ -87,7 +88,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     List<StackGroup<T, P>> groupList = [];
 
     ///合并数据
-    each(itemList, (group, index) {
+    each(itemList, (group, dataIndex) {
       ///<stackId>
       Map<String, List<T>> stackDataMap = {};
       List<T> singleDataList = [];
@@ -101,24 +102,27 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
           singleDataList.add(data);
         }
       });
-
       StackGroup<T, P> stackGroup = StackGroup(axisIndex, []);
+
       stackDataMap.forEach((key, value) {
         List<StackData<T, P>> dl = [];
-        for (var ele in value) {
-          dl.add(StackData<T, P>(true, index, ele, originInfo.parentMap[ele]!));
-        }
+        each(value, (ele, i) {
+          int groupIndex = originInfo.sortMap[originInfo.parentMap[ele]]!;
+          dl.add(StackData<T, P>(true, ele, originInfo.parentMap[ele]!, groupIndex, dataIndex));
+        });
         StackColumn<T, P> column = StackColumn(dl, true, originInfo.parentMap[value.first]!.strategy);
         stackGroup.column.add(column);
       });
-      for (var data in singleDataList) {
+
+      each(singleDataList, (ele, i) {
+        int groupIndex = originInfo.sortMap[originInfo.parentMap[ele]]!;
         StackColumn<T, P> column = StackColumn(
-          [StackData(false, index, data, originInfo.parentMap[data]!)],
+          [StackData(false, ele, originInfo.parentMap[ele]!, groupIndex, dataIndex)],
           false,
           StackStrategy.all,
         );
         stackGroup.column.add(column);
-      }
+      });
       groupList.add(stackGroup);
     });
 

@@ -1,16 +1,26 @@
-import '../../core/index.dart';
-import '../../model/index.dart';
-import 'base_data.dart';
-import 'data_helper.dart';
+import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 
 class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends ChartSeries {
   List<P> data;
   Direction direction;
+  SelectedMode selectedMode;
+  GridAnimatorStyle animatorStyle;
+
+  // 是否启用图例hover的联动高亮
+  bool legendHoverLink;
+
+  // 是否启用实时排序
+  bool realtimeSort;
 
   BaseGridSeries(
     this.data, {
     this.direction = Direction.vertical,
-    super.animation,
+    this.selectedMode = SelectedMode.group,
+    this.animatorStyle = GridAnimatorStyle.expand,
+    this.legendHoverLink = true,
+    this.realtimeSort = false,
+    super.animation = const AnimatorProps(curve: Curves.easeOutQuart),
     super.backgroundColor,
     super.calendarIndex,
     super.clip,
@@ -48,3 +58,6 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
     super.notifyUpdateData();
   }
 }
+
+///动画样式
+enum GridAnimatorStyle { expand, originExpand }

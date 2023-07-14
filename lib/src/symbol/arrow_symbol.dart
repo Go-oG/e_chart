@@ -38,7 +38,7 @@ class ArrowSymbol extends ChartSymbol {
       sideLength = info.size!.longestSide;
     }
     AreaStyle style = this.style;
-    AreaStyle? s = info.toStyle();
+    AreaStyle? s = info.toAreaStyle();
     if (s != null) {
       style = s;
     }

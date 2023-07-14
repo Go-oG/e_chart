@@ -32,7 +32,7 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
     AxisStyle axisLine = axis.axisStyle;
     each(lineTickList, (tick, i) {
       AreaStyle? style = axisLine.getSplitAreaStyle(i, lineTickList.length, theme);
-      if (style == null || !style.show) {
+      if (style == null) {
         return;
       }
       Arc arc = Arc(
