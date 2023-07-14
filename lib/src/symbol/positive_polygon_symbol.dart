@@ -42,7 +42,7 @@ class PositivePolygonSymbol extends ChartSymbol {
       r = info.size!.shortestSide*0.5;
     }
     AreaStyle style = this.style;
-    AreaStyle? s = info.toStyle();
+    AreaStyle? s = info.toAreaStyle();
     if (s != null) {
       style = s;
     }

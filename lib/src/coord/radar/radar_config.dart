@@ -11,7 +11,8 @@ class RadarConfig extends CircleCoordConfig {
   AxisStyle? axisStyle;
 
   Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
-  Fun3<int, int, AreaStyle>? splitStyleFun;
+  Fun3<int, int, AreaStyle?>? splitAreaStyleFun;
+  Fun3<int, int, LineStyle?>? splitLineStyleFun;
 
   RadarConfig({
     required this.indicator,
@@ -21,7 +22,8 @@ class RadarConfig extends CircleCoordConfig {
     this.shape = RadarShape.polygon,
     this.silent = false,
     this.clockwise = true,
-    this.splitStyleFun,
+    this.splitAreaStyleFun,
+    this.splitLineStyleFun,
     this.labelStyleFun,
     super.center,
     super.radius,

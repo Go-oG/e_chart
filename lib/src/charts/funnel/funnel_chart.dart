@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 /// 漏斗图
 class FunnelView extends SeriesView<FunnelSeries> {
-  final FunnelLayout _layout = FunnelLayout();
+  final FunnelLayout helper = FunnelLayout();
 
   FunnelView(super.series);
 
@@ -12,55 +12,56 @@ class FunnelView extends SeriesView<FunnelSeries> {
 
   @override
   void onClick(Offset offset) {
-    _layout.hoverEnter(offset);
+    helper.hoverEnter(offset);
   }
 
   @override
   void onHoverStart(Offset offset) {
-    _layout.hoverEnter(offset);
+    helper.hoverEnter(offset);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    _layout.hoverEnter(offset);
+    helper.hoverEnter(offset);
   }
 
   @override
   void onHoverEnd() {
-    _layout.clearHover();
+    helper.clearHover();
   }
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    _layout.doLayout(context, series, series.dataList, selfBoxBound, LayoutAnimatorType.update);
+    helper.doLayout(context, series, series.dataList, selfBoxBound, LayoutAnimatorType.update);
   }
 
   @override
   void onStart() {
     super.onStart();
-    _layout.addListener(invalidate);
+    helper.addListener(invalidate);
   }
 
   @override
   void onStop() {
-    _layout.clearListener();
+    helper.clearListener();
     super.onStop();
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.dataList,selfBoxBound, LayoutAnimatorType.layout);
+    helper.doLayout(context, series, series.dataList, selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    List<FunnelNode> nodeList = _layout.nodeList;
+    List<FunnelNode> nodeList = helper.nodeList;
     if (nodeList.isEmpty) {
       return;
     }
     for (var node in nodeList) {
       node.areaStyle.drawPath(canvas, mPaint, node.path);
+      FunnelLayout.getBorderStyle(context, series, node)?.drawPath(canvas, mPaint, node.path);
     }
     for (var node in nodeList) {
       _drawText(canvas, node);

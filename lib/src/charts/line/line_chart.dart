@@ -5,46 +5,69 @@ import 'package:flutter/material.dart';
 import 'layout_helper.dart';
 
 class LineView extends CoordChildView<LineSeries> implements GridChild {
-  final LineLayoutHelper layoutHelper = LineLayoutHelper();
+  final LineLayoutHelper helper = LineLayoutHelper();
 
   ///用户优化视图绘制
   LineView(super.series);
 
   @override
+  void onHoverStart(Offset offset) {
+    helper.handleHoverOrClick(offset, false);
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    helper.handleHoverOrClick(offset, false);
+  }
+
+  @override
+  void onHoverEnd() {
+    helper.clearHover();
+  }
+
+  @override
+  void onClick(Offset offset) {
+    helper.handleHoverOrClick(offset, true);
+  }
+
+  @override
+  void onStart() {
+    super.onStart();
+    helper.addListener(invalidate);
+  }
+
+  @override
+  void onStop() {
+    helper.removeListener(invalidate);
+    super.onStop();
+  }
+
+
+
+  @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    layoutHelper.doMeasure(context, series, series.data, parentWidth, parentHeight);
+    helper.doMeasure(context, series, series.data, parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    helper.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
-    final List<LineResult> list = layoutHelper.lineList;
-    Map<LineGroupData, AreaStyle> styleMap = {};
-
+    final List<LineResult> list = helper.lineList;
     ///这里分开绘制是为了避免边框被遮挡
     each(list, (result, i) {
-      AreaStyle? style = series.styleFun?.call(result.data,i);
-      if (style == null) {
-        Color color = chartTheme.colors[i % chartTheme.colors.length];
-        style = AreaStyle(
-          color: theme.fill ? color.withOpacity(theme.opacity) : null,
-          border: LineStyle(color: color, width: theme.lineWidth, dash: theme.dashList),
-        );
-      }
-      styleMap[result.data] = style;
-      style.drawPath(canvas, mPaint, result.areaPath, false);
+      AreaStyle? style =helper.getAreaStyle(result.data, i);
+      style?.drawPath(canvas, mPaint, result.areaPath);
     });
     each(list, (result, i) {
-      AreaStyle style = styleMap[result.data]!;
-      style.border?.drawPath(canvas, mPaint, result.borderPath);
+      helper.getLineStyle(result.data, i)?.drawPath(canvas, mPaint, result.borderPath);
     });
     if (series.symbolFun != null || theme.showSymbol) {
       ///绘制symbol
@@ -53,10 +76,10 @@ class LineView extends CoordChildView<LineSeries> implements GridChild {
         each(result.data.data, (data, i) {
           ChartSymbol? symbol=series.symbolFun?.call(data,result.data);
           if(symbol!=null){
-            desc.center=layoutHelper.getNodePosition(data);
+            desc.center=helper.getNodePosition(data);
             symbol.draw(canvas, mPaint, desc);
           }else if(theme.showSymbol){
-            desc.center=layoutHelper.getNodePosition(data);
+            desc.center=helper.getNodePosition(data);
             theme.symbol.draw(canvas, mPaint, desc);
           }
         });
@@ -86,11 +109,13 @@ class LineView extends CoordChildView<LineSeries> implements GridChild {
 
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
-    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
+    return helper.getAxisExtreme(series, axisIndex, isXAxis);
   }
 
   @override
   DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
-    return layoutHelper.getAxisMaxText(series, axisIndex, isXAxis);
+    return helper.getAxisMaxText(series, axisIndex, isXAxis);
   }
+
+
 }

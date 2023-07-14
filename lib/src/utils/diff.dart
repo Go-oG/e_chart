@@ -83,5 +83,13 @@ class DiffResult<T, K> {
   final Set<K> addSet;
   final Set<K> commonSet;
 
-  DiffResult(this.startMap, this.endMap, this.curList, this.finalList, this.removeSet, this.addSet, this.commonSet);
+  DiffResult(
+    this.startMap,
+    this.endMap,
+    this.curList,
+    this.finalList,
+    this.removeSet,
+    this.addSet,
+    this.commonSet,
+  );
 }

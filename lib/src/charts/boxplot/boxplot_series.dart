@@ -3,8 +3,8 @@ import 'package:e_chart/e_chart.dart';
 
 class BoxplotSeries extends ChartSeries {
   List<BoxplotData> data;
-  Fun2<BoxplotData, LineStyle>? lineStyleFun;
-  Fun2<BoxplotData, AreaStyle>? areaStyleFun;
+  Fun2<BoxplotData, LineStyle>? borderStyleFun;
+  Fun2<BoxplotData, AreaStyle?>? areaStyleFun;
   Direction direction;
 
   SNumber boxMinWidth;
@@ -17,7 +17,7 @@ class BoxplotSeries extends ChartSeries {
     this.boxMinWidth = const SNumber.number(24),
     this.boxMaxWidth = const SNumber.number(48),
     this.boxWidth,
-    this.lineStyleFun,
+    this.borderStyleFun,
     this.areaStyleFun,
     super.animation,
     super.polarAxisIndex,

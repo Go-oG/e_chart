@@ -1,34 +1,46 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/grid/base_grid_series.dart';
+import 'package:e_chart/src/charts/grid/group_node.dart';
+import 'package:flutter/material.dart';
 
-class BarSeries extends BaseGridSeries<BarItemData,BarGroupData> {
-  SNumber corner; // 圆角只有在 bar时才有效
-  SNumber groupGap; // Group组的间隔
-  SNumber columnGap; //Group组中柱状图之间的间隔
-  num innerGap; // Column组里面的间隔
+import '../grid/single_node.dart';
 
-  bool legendHoverLink; // 是否启用图例hover的联动高亮
-  bool realtimeSort; // 是否启用实时排序
-  AnimatorStyle animatorStyle;
+class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
+  Corner corner;
+
+  // Group组的间隔
+  SNumber groupGap;
+
+  //Group组中柱状图之间的间隔
+  SNumber columnGap;
+
+  // Column组里面的间隔
+  num innerGap;
+
+  Color groupHoverColor = const Color(0xFFE3F2FD);
+
   LinkageStyle linkageStyle;
 
-  /// 主样式 对于绘制Line 使用其border 属性
-  Fun3<BarItemData, BarGroupData, AreaStyle>? itemStyleFun;
+  Fun2<SingleNode<BarItemData, BarGroupData>, AreaStyle?>? areaStyleFun;
+  Fun2<SingleNode<BarItemData, BarGroupData>, LineStyle?>? borderStyleFun;
+  Fun2<SingleNode<BarItemData, BarGroupData>, Corner>? cornerFun;
 
   ///绘制对齐
-  Fun2<BarGroupData, Align2>? alignFun;
+  Fun2<SingleNode<BarItemData, BarGroupData>, Align2>? alignFun;
 
   /// 背景样式
-  Fun2<BarItemData, AreaStyle>? backgroundStyleFun;
+  Fun2<GroupNode<BarItemData, BarGroupData>, AreaStyle?>? groupStyleFun;
 
   /// 标签转换
-  Fun2<BarItemData, String>? labelFun;
+  Fun2<SingleNode<BarItemData, BarGroupData>, String>? labelFun;
 
   /// 标签样式
-  Fun2<BarItemData, LabelStyle>? labelStyleFun;
+  Fun2<SingleNode<BarItemData, BarGroupData>, LabelStyle>? labelStyleFun;
 
   /// 标签对齐
-  Fun2<BarItemData, Position2>? labelAlignFun;
+  Fun2<SingleNode<BarItemData, BarGroupData>, Position2>? labelAlignFun;
 
   /// 标记点、线相关的
   Fun2<BarGroupData, MarkPoint>? markPointFun;
@@ -37,23 +49,25 @@ class BarSeries extends BaseGridSeries<BarItemData,BarGroupData> {
 
   BarSeries(
     super.data, {
-    this.legendHoverLink = true,
-    super.direction,
-    this.corner = SNumber.zero,
-    this.columnGap =const SNumber.number(4),
+    this.corner = Corner.zero,
+    this.columnGap = const SNumber.number(4),
     this.groupGap = const SNumber.number(4),
     this.innerGap = 0,
-    this.realtimeSort = false,
-    this.animatorStyle = AnimatorStyle.expand,
     this.linkageStyle = LinkageStyle.group,
-    this.itemStyleFun,
+    this.areaStyleFun,
+    this.borderStyleFun,
     this.alignFun,
     this.labelFun,
     this.labelStyleFun,
     this.labelAlignFun,
-    this.backgroundStyleFun,
+    this.groupStyleFun,
     this.markPointFun,
     this.markLineFun,
+    super.realtimeSort,
+    super.legendHoverLink,
+    super.direction,
+    super.animatorStyle,
+    super.selectedMode,
     super.xAxisIndex = 0,
     super.yAxisIndex = 0,
     super.polarAxisIndex = -1,
@@ -70,9 +84,6 @@ class BarSeries extends BaseGridSeries<BarItemData,BarGroupData> {
     super.tooltip,
   }) : super(radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
 }
-
-///动画样式
-enum AnimatorStyle { expand, selfExpand }
 
 /// 标识一个Group的手势联动策略
 enum LinkageStyle {

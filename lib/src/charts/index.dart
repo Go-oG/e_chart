@@ -9,6 +9,14 @@ export 'funnel/funnel_series.dart';
 export 'funnel/layout.dart' hide FunnelProps;
 export 'funnel/funnel_node.dart';
 
+export 'grid/base_data.dart';
+export 'grid/base_grid_layout_helper.dart';
+export 'grid/base_grid_series.dart';
+export 'grid/column_node.dart';
+export 'grid/data_helper.dart';
+export 'grid/group_node.dart';
+export 'grid/single_node.dart';
+
 export 'bar/bar_data.dart';
 
 export 'line/line_data.dart';

@@ -47,7 +47,8 @@ class PieSeries extends RectSeries {
   CircleAlign labelAlign;
   PieAnimatorStyle animatorStyle;
   Fun2<ItemData, LabelStyle?>? labelStyleFun;
-  Fun2<ItemData, AreaStyle> areaStyleFun;
+  Fun2<ItemData, AreaStyle?>? areaStyleFun;
+  Fun2<ItemData, LineStyle?>? borderFun;
 
   PieSeries(
     this.data, {
@@ -64,7 +65,8 @@ class PieSeries extends RectSeries {
     this.clockWise = true,
     this.labelAlign = CircleAlign.inside,
     this.animatorStyle = PieAnimatorStyle.expandScale,
-    required this.areaStyleFun,
+    this.areaStyleFun,
+    this.borderFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,

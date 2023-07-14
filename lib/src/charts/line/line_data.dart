@@ -11,11 +11,6 @@ class LineGroupData extends BaseGroupData<LineItemData> {
     super.stackId,
     super.strategy,
   });
-
-  @override
-  bool operator ==(Object other) {
-    return other is LineGroupData && other.id == id;
-  }
 }
 
 class LineItemData extends BaseItemData {

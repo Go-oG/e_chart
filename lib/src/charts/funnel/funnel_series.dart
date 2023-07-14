@@ -29,6 +29,8 @@ class FunnelSeries extends RectSeries {
   double gap;
   Align2 align;
   Fun2<FunnelNode, AreaStyle>? areaStyleFun;
+  Fun2<FunnelNode, LineStyle?>? borderStyleFun;
+
   Fun2<FunnelNode, LabelStyle>? labelStyleFun;
   Fun2<FunnelNode, LineStyle>? labelLineStyleFun;
 
@@ -42,7 +44,8 @@ class FunnelSeries extends RectSeries {
     this.align = Align2.center,
     this.labelStyleFun,
     this.labelLineStyleFun,
-    required this.areaStyleFun,
+    this.areaStyleFun,
+    this.borderStyleFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,

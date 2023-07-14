@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 class RectSymbol extends ChartSymbol {
   AreaStyle style;
   Size rectSize;
-  num corner;
+  Corner corner;
 
   RectSymbol(
     this.style, {
     this.rectSize = const Size(16, 16),
-    this.corner = 0,
+    this.corner = Corner.zero,
     super.center,
   });
 
@@ -23,7 +23,7 @@ class RectSymbol extends ChartSymbol {
     }
 
     AreaStyle style = this.style;
-    AreaStyle? s = info.toStyle();
+    AreaStyle? s = info.toAreaStyle();
     if (s != null) {
       style = s;
     }
@@ -35,7 +35,7 @@ class RectSymbol extends ChartSymbol {
           width: rectSize.width,
           height: rectSize.height,
         ),
-        corner.toDouble());
+        corner);
   }
 
   @override

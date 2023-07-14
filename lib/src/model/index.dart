@@ -14,6 +14,7 @@ export 'enums/step_type.dart';
 export 'enums/trigger.dart';
 export 'enums/trigger_on.dart';
 
+export 'corner.dart';
 export '../charts/bar/bar_data.dart';
 export 'chart_error.dart';
 export 'chart_offset.dart';

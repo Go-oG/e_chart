@@ -15,6 +15,11 @@ class ChartTheme {
     const Color(0xFF9a60b4),
     const Color(0xFFea7ccc),
   ];
+
+  Color getColor(int index) {
+    return colors[index % colors.length];
+  }
+
   Color backgroundColor = const Color(0xFFFFFFFF);
   Color titleTextColor = const Color(0xFF464646);
   Color titleSubTextColor = const Color(0xFF6E7079);
@@ -48,7 +53,7 @@ class ChartTheme {
   FunnelTheme funnelTheme = FunnelTheme();
   GaugeTheme gaugeTheme = GaugeTheme();
   CandlestickTheme candlestickTheme = CandlestickTheme();
-  HeadMapTheme mapTheme = HeadMapTheme();
+  HeadMapTheme headMapTheme = HeadMapTheme();
   GraphTheme graphTheme = GraphTheme();
 
   final Map<String, dynamic> _themeMap = {};
@@ -108,15 +113,18 @@ class LineTheme {
   ChartSymbol symbol = CircleSymbol();
   bool showSymbol = false;
   bool smooth = false;
+
+  LineStyle getLineStyle(ChartTheme theme, int index) {
+    return LineStyle(color: theme.getColor(index), width: lineWidth, dash: dashList, smooth: smooth);
+  }
 }
 
 ///Radar主题
 class RadarTheme {
   num lineWidth = 2;
+  List<num> dashList = [];
   bool showSymbol = true;
-  Size symbolSize = const Size.square(4);
   ChartSymbol symbol = EmptySymbol();
-
   bool fill = false;
 
   ///用于坐标轴相关的
@@ -162,11 +170,27 @@ class RadarTheme {
 class BarTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFCCCCCC);
+  List<num> dashList = [];
+  LineStyle? getBorderStyle() {
+    if (borderWidth <= 0) {
+      return null;
+    }
+    return LineStyle(color: borderColor, width: borderWidth, dash: dashList);
+  }
+
 }
 
 class PieTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFCCCCCC);
+  List<num> dashList = [];
+
+  LineStyle? getBorderStyle() {
+    if (borderWidth <= 0) {
+      return null;
+    }
+    return LineStyle(color: borderColor, width: borderWidth, dash: dashList);
+  }
 }
 
 class PointTheme {
@@ -175,9 +199,14 @@ class PointTheme {
 }
 
 class BoxplotTheme {
-  num borderWidth = 0;
-  Color borderColor = const Color(0xFFCCCCCC);
-  Color? fillColor;
+  num borderWidth = 1;
+
+  LineStyle getBorderStyle(ChartTheme theme, int index) {
+    if (borderWidth <= 0) {
+      borderWidth = 1;
+    }
+    return LineStyle(color: theme.getColor(index), width: borderWidth);
+  }
 }
 
 class ParallelTheme {
@@ -192,7 +221,9 @@ class SankeyTheme {
 
 class FunnelTheme {
   num borderWidth = 0;
+  List<num> borderDash = [];
   Color borderColor = const Color(0xFFCCCCCC);
+
   LabelStyle labelStyle = const LabelStyle();
   List<Color> colors = [
     const Color(0xFF5470c6),
@@ -239,7 +270,16 @@ class GraphTheme {
 }
 
 class HeadMapTheme {
-  AreaStyle areaStyle = const AreaStyle(color: Color(0xFFEEEEEE), border: LineStyle(color: Color(0xFF444444), width: 0.5));
+  num borderWidth = 0;
+  Color borderColor = const Color(0xFFEEEEEE);
+
+  LineStyle? getBorderStyle() {
+    if (borderWidth > 0) {
+      return LineStyle(color: borderColor, width: borderWidth);
+    }
+    return null;
+  }
+
   LabelStyle labelStyle = const LabelStyle();
 }
 
