@@ -1,11 +1,7 @@
 import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/grid/base_grid_layout_helper.dart';
-import 'package:e_chart/src/charts/grid/base_grid_series.dart';
-import 'package:e_chart/src/charts/grid/single_node.dart';
 import 'package:flutter/cupertino.dart';
-import '../grid/group_node.dart';
 
 class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
   ///布局StackGroupNode
@@ -102,4 +98,29 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     });
   }
 
+  AreaStyle? getAreaStyle(SingleNode<BarItemData, BarGroupData> node, int index) {
+    if (series.areaStyleFun != null) {
+      return series.areaStyleFun?.call(node);
+    }
+    var chartTheme = context.config.theme;
+    return AreaStyle(color: chartTheme.getColor(index)).convert(node.status);
+  }
+
+  LineStyle? getBorderStyle(SingleNode<BarItemData, BarGroupData> node, int index) {
+    if (series.borderStyleFun != null) {
+      return series.borderStyleFun?.call(node);
+    }
+    var theme = context.config.theme.barTheme;
+    return theme.getBorderStyle();
+  }
+
+  @override
+  AreaStyle? generateAreaStyle(SingleNode<BarItemData, BarGroupData> node) {
+    return getAreaStyle(node, node.data.groupIndex);
+  }
+
+  @override
+  LineStyle? generateLineStyle(SingleNode<BarItemData, BarGroupData> node) {
+    return getBorderStyle(node, node.data.groupIndex);
+  }
 }

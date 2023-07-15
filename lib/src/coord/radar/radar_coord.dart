@@ -11,7 +11,12 @@ class RadarCoordImpl extends RadarCoord {
   Offset center = Offset.zero;
   double radius = 0;
 
-  RadarCoordImpl(super.props) {
+  RadarCoordImpl(super.props);
+
+  @override
+  void onCreate() {
+    super.onCreate();
+    axisMap.clear();
     for (int i = 0; i < props.indicator.length; i++) {
       var indicator = props.indicator[i];
       RadarAxis axis = RadarAxis(
@@ -21,16 +26,8 @@ class RadarCoordImpl extends RadarCoord {
           nameGap: indicator.nameGap,
           nameStyle: indicator.nameStyle,
           splitNumber: 5);
-      axisMap[i] = RadarAxisImpl(axis, axisIndex: i);
+      axisMap[i] = RadarAxisImpl(context, axis, axisIndex: i);
     }
-  }
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    axisMap.forEach((key, value) {
-      value.context = context;
-    });
   }
 
   @override
@@ -53,8 +50,8 @@ class RadarCoordImpl extends RadarCoord {
     axisMap.forEach((key, value) {
       double angle = oa + value.axisIndex * itemAngle;
       Offset o = circlePoint(radius, angle, center);
-      LineProps layoutProps = LineProps(Rect.zero, center, o);
-      value.layout(layoutProps, collectChildData(value.axisIndex));
+      LineAxisAttrs layoutProps = LineAxisAttrs(Rect.zero, center, o);
+      value.doLayout(layoutProps, collectChildData(value.axisIndex));
     });
 
     double radiusItem = radius / props.splitNumber;
@@ -143,7 +140,7 @@ class RadarCoordImpl extends RadarCoord {
         continue;
       }
       RadarAxisImpl node = axisMap[i]!;
-      Offset offset = node.props.end;
+      Offset offset = node.attrs.end;
       double angle = offset.offsetAngle();
       TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle));
       style.draw(canvas, mPaint, indicator.name, config);
@@ -162,7 +159,7 @@ class RadarCoordImpl extends RadarCoord {
       throw ChartError("无法找到节点");
     }
 
-    double angle = node.props.end.offsetAngle(node.props.start);
+    double angle = node.attrs.end.offsetAngle(node.attrs.start);
     double r = node.dataToRadius(data);
     return RadarPosition(center, r, angle);
   }

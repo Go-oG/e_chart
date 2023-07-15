@@ -1,6 +1,6 @@
-import '../../functions.dart';
-import '../../model/theme_data.dart';
-import '../../style/area_style.dart';
+import '../../../functions.dart';
+import '../../theme/theme_data.dart';
+import '../../../style/area_style.dart';
 
 class SplitArea {
   bool show;

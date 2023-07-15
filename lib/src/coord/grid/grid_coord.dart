@@ -11,7 +11,7 @@ abstract class GridCoord extends Coord<GridConfig> {
   ///该方法适用于Line
   Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
 
-  GridAxis getAxis(int axisIndex,bool isXAxis);
+  GridAxis getAxis(int axisIndex, bool isXAxis);
 
   ///获取平移量(滚动量)
   Offset getTranslation();
@@ -32,23 +32,18 @@ class GridCoordImpl extends GridCoord {
   double scrollXOffset = 0;
   double scrollYOffset = 0;
 
-  GridCoordImpl(super.props) {
-    each(props.xAxisList, (ele, p1) {
-      xMap[ele] = XAxisImpl(this, ele, axisIndex: p1);
-    });
-    each(props.yAxisList, (axis, p1) {
-      yMap[axis] = YAxisImpl(this, axis, axisIndex: p1);
-    });
-  }
+  GridCoordImpl(super.props);
 
   @override
   void onCreate() {
     super.onCreate();
-    xMap.forEach((key, value) {
-      value.context = context;
+    xMap.clear();
+    yMap.clear();
+    each(props.xAxisList, (ele, p1) {
+      xMap[ele] = XAxisImpl(this, context, ele, axisIndex: p1);
     });
-    yMap.forEach((key, value) {
-      value.context = context;
+    each(props.yAxisList, (axis, p1) {
+      yMap[axis] = YAxisImpl(this, context, axis, axisIndex: p1);
     });
   }
 
@@ -56,10 +51,10 @@ class GridCoordImpl extends GridCoord {
   Size onMeasure(double parentWidth, double parentHeight) {
     Size size = super.onMeasure(parentWidth, parentHeight);
     xMap.forEach((key, value) {
-      value.measure(parentWidth, parentHeight);
+      value.doMeasure(parentWidth, parentHeight);
     });
     yMap.forEach((key, value) {
-      value.measure(parentWidth, parentHeight);
+      value.doMeasure(parentWidth, parentHeight);
     });
 
     return size;
@@ -106,18 +101,18 @@ class GridCoordImpl extends GridCoord {
         dl.addAll(child.getAxisExtreme(value.axisIndex, true));
       }
 
-      LineProps layoutProps;
+      LineAxisAttrs layoutProps;
       var h = axisInfo.bound.height;
       if (value.axis.position == Align2.start) {
         Rect rect = Rect.fromLTWH(leftPadding, topOffset, axisWith, h);
-        layoutProps = LineProps(rect, rect.topLeft, rect.topRight);
+        layoutProps = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
         topOffset -= (h + value.axis.offset);
       } else {
         Rect rect = Rect.fromLTWH(leftPadding, bottomOffset, axisWith, h);
-        layoutProps = LineProps(rect, rect.topLeft, rect.topRight);
+        layoutProps = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
         bottomOffset += (h + value.axis.offset);
       }
-      value.layout(layoutProps, dl);
+      value.doLayout(layoutProps, dl);
     });
 
     ///布局Y轴
@@ -128,18 +123,18 @@ class GridCoordImpl extends GridCoord {
       for (var ele in childList) {
         dl.addAll(ele.getAxisExtreme(value.axisIndex, false));
       }
-      LineProps layoutProps;
+      LineAxisAttrs layoutProps;
       var w = value.axisInfo.bound.width + value.axis.offset;
       if (value.axis.position == Align2.start) {
         Rect rect = Rect.fromLTWH(leftOffset - w, topPadding, w, axisHeight);
-        layoutProps = LineProps(rect, rect.bottomRight, rect.topRight);
+        layoutProps = LineAxisAttrs(rect, rect.bottomRight, rect.topRight);
         leftOffset -= w;
       } else {
         Rect rect = Rect.fromLTWH(rightOffset, topPadding, w, axisHeight);
-        layoutProps = LineProps(rect, rect.bottomLeft, rect.topLeft);
+        layoutProps = LineAxisAttrs(rect, rect.bottomLeft, rect.topLeft);
         rightOffset += w;
       }
-      value.layout(layoutProps, dl);
+      value.doLayout(layoutProps, dl);
     });
     for (var view in children) {
       view.layout(leftPadding, topPadding, width - rightPadding, height - bottomPadding);
@@ -240,10 +235,10 @@ class GridCoordImpl extends GridCoord {
 
   @override
   GridAxis getAxis(int axisIndex, bool isXAxis) {
-    if(axisIndex<0){
-      axisIndex=0;
+    if (axisIndex < 0) {
+      axisIndex = 0;
     }
-    if(isXAxis){
+    if (isXAxis) {
       return getXAxis(axisIndex).axis;
     }
     return getYAxis(axisIndex).axis;

@@ -1,17 +1,31 @@
-export 'axis/impl/base_axis_impl.dart';
-export 'axis/impl/angle_axis_impl.dart' hide ArcRange;
-export 'axis/impl/line_axis_impl.dart' hide LineRange;
-export 'axis/axis_label.dart';
-export 'axis/axis_line.dart';
-export 'axis/axis_minor_tick.dart';
-export 'axis/axis_pointer.dart';
-export 'axis/axis_style.dart';
-export 'axis/axis_symbol.dart';
-export 'axis/axis_tick.dart';
+export 'axis/angle/angle_axis_impl.dart';
+export 'axis/angle/angle_attrs.dart';
+export 'axis/angle/angle_layout_result.dart';
+
+export 'axis/line/line_attrs.dart';
+export 'axis/line/line_axis_impl.dart';
+export 'axis/line/line_layout_result.dart';
+export 'axis/line/line_split_area.dart';
+
+export 'axis/model/axis_layout_result.dart';
+export 'axis/model/axis_tile_node.dart';
+export 'axis/model/label_result.dart';
+export 'axis/model/tick_result.dart';
+
+export 'axis/style/axis_label.dart';
+export 'axis/style/axis_line.dart';
+export 'axis/style/axis_minor_tick.dart';
+export 'axis/style/axis_pointer.dart';
+export 'axis/style/axis_style.dart';
+export 'axis/style/axis_symbol.dart';
+export 'axis/style/axis_tick.dart';
+export 'axis/style/minor_split_line.dart';
+export 'axis/style/split_area.dart';
+export 'axis/style/split_line.dart';
+
 export 'axis/base_axis.dart';
-export 'axis/minor_split_line.dart';
-export 'axis/split_area.dart';
-export 'axis/split_line.dart';
+export 'axis/axis_attrs.dart';
+export 'axis/base_axis_impl.dart';
 
 
 export 'group/flex_layout_group.dart';

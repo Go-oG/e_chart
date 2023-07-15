@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:chart_xutil/chart_xutil.dart';
@@ -6,10 +5,10 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/coord/grid/axis/base_grid_axis_impl.dart';
 
 class YAxisImpl extends BaseGridAxisImpl {
-  YAxisImpl(super.coord, super.axis, {super.axisIndex});
+  YAxisImpl(super.coord, super.context, super.axis, {super.axisIndex});
 
   @override
-  void measure(double parentWidth, double parentHeight) {
+  void doMeasure(double parentWidth, double parentHeight) {
     double length = parentHeight;
     double width = 0;
     AxisStyle axisStyle = axis.axisStyle;
@@ -39,21 +38,21 @@ class YAxisImpl extends BaseGridAxisImpl {
   }
 
   @override
-  void layout(LineProps layoutProps, List<DynamicData> dataSet) {
-    axisInfo.bound = layoutProps.rect;
+  void doLayout(LineAxisAttrs attrs, List<DynamicData> dataSet) {
+    axisInfo.bound = attrs.rect;
     bool inside = (axis.axisStyle.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
     if (inside) {
-      axisInfo.start = layoutProps.rect.bottomLeft;
-      axisInfo.end = layoutProps.rect.topLeft;
+      axisInfo.start = attrs.rect.bottomLeft;
+      axisInfo.end = attrs.rect.topLeft;
     } else {
-      axisInfo.end = layoutProps.rect.topRight;
-      axisInfo.start = layoutProps.rect.bottomRight;
+      axisInfo.end = attrs.rect.topRight;
+      axisInfo.start = attrs.rect.bottomRight;
     }
-    super.layout(layoutProps, dataSet);
+    super.doLayout(attrs, dataSet);
   }
 
   @override
-  BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
+  BaseScale onBuildScale(LineAxisAttrs attrs, List<DynamicData> dataSet) {
     double distance = axisInfo.bound.height * scaleFactor;
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度异常');
@@ -68,7 +67,10 @@ class YAxisImpl extends BaseGridAxisImpl {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
     scale = scale.copyWithRange([distance, 0]);
-    updateTickPosition();
+
+    //TODO 更新
+    //  updateTickPosition();
+
     notifyLayoutUpdate();
   }
 

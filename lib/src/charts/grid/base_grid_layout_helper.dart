@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
@@ -40,21 +41,6 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       }
     }
     return dl;
-  }
-
-  DynamicText getAxisMaxText(S series, int axisIndex, bool isXAxis) {
-    List<DynamicData> dl = getAxisExtreme(series, axisIndex, false);
-    if (dl.isEmpty) {
-      return DynamicText.empty;
-    }
-    String text = dl.first.getText();
-    for (var data in dl) {
-      String str = data.getText();
-      if (str.length > text.length) {
-        text = str;
-      }
-    }
-    return DynamicText(text);
   }
 
   @nonVirtual
@@ -233,12 +219,88 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   //==============================================================================
   //==============================================================================
 
+  SingleNode<T, P>? _oldNode;
+
   void handleHoverOrClick(Offset offset, bool click) {
     Offset tr = context.findGridCoord().getTranslation();
     offset = offset.translate(tr.dx, tr.dy);
+    var node = findNode(offset);
+    if (node == _oldNode) {
+      return;
+    }
+    if (series.selectedMode == SelectedMode.group && node?.data.parent == _oldNode?.data.parent) {
+      return;
+    }
+    onHandleHoverEnd(_oldNode, node);
   }
 
-  void clearHover() {}
+  void onHandleHoverEnd(SingleNode<T, P>? oldNode, SingleNode<T, P>? newNode) {
+    var states = [ViewState.focused, ViewState.hover, ViewState.disabled];
+    var states2 = [ViewState.focused, ViewState.hover];
+    each(nodeList, (group, i) {
+      for (var ele in group.data.parent.data) {
+        dataNodeMap[ele]?.removeStates(states);
+        if (newNode == null) {
+          continue;
+        }
+        if (ele == newNode.data.data || (group.data.parent == newNode.data.parent && series.selectedMode == SelectedMode.group)) {
+          dataNodeMap[ele]?.addStates(states2);
+        } else {
+          dataNodeMap[ele]?.addState(ViewState.disabled);
+        }
+      }
+    });
+
+    Map<SingleNode<T, P>, AreaStyle?> oldAreStyleMap = {};
+    Map<SingleNode<T, P>, LineStyle?> oldLineStyleMap = {};
+
+    Map<SingleNode<T, P>, AreaStyle?> newAreStyleMap = {};
+    Map<SingleNode<T, P>, LineStyle?> newLineStyleMap = {};
+
+    each(nodeList, (node, p1) {
+      oldAreStyleMap[node] = node.areaStyle;
+      oldLineStyleMap[node] = node.lineStyle;
+      newAreStyleMap[node] = generateAreaStyle(node);
+      newLineStyleMap[node] = generateLineStyle(node);
+      node.areaStyle = null;
+      node.lineStyle = null;
+    });
+
+    ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
+    AreaStyleTween areaTween = AreaStyleTween(const AreaStyle(), const AreaStyle());
+    LineStyleTween lineTween = LineStyleTween(const LineStyle(), const LineStyle());
+    doubleTween.addListener(() {
+      double t = doubleTween.value;
+      each(nodeList, (node, p1) {
+        var oa = oldAreStyleMap[node];
+        var ol = oldLineStyleMap[node];
+        var na = newAreStyleMap[node];
+        var nl = newLineStyleMap[node];
+        if (oa != null && na != null) {
+          areaTween.changeValue(oa, na);
+          node.areaStyle = areaTween.safeGetValue(t);
+        } else {
+          node.areaStyle = oa ?? na;
+        }
+        if (ol != null && nl != null) {
+          lineTween.changeValue(ol, nl);
+          node.lineStyle = lineTween.safeGetValue(t);
+        } else {
+          node.lineStyle = ol ?? nl;
+        }
+      });
+      notifyLayoutUpdate();
+    });
+    _oldNode = newNode;
+    doubleTween.start(context, true);
+  }
+
+  void clearHover() {
+    if (_oldNode == null) {
+      return;
+    }
+    onHandleHoverEnd(_oldNode, null);
+  }
 
   GridAxis findAxis(Context context, int index, bool isXAxis) {
     return context.findGridCoord().getAxis(index, isXAxis);
@@ -253,25 +315,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return null;
   }
 
-  void changeNodeHoverStatus(SingleNode<T, P> node, SelectedMode mode, bool hover) {
-    if (mode == SelectedMode.group) {
-      for (var data in node.data.parent.data) {
-        if (hover) {
-          dataNodeMap[data]?.addState(ViewState.hover);
-        } else {
-          dataNodeMap[data]?.removeState(ViewState.hover);
-        }
-      }
-      return;
-    }
-    for (var data in node.data.parent.data) {
-      if (data == node.data.data && hover) {
-        dataNodeMap[data]?.addState(ViewState.hover);
-      } else {
-        dataNodeMap[data]?.removeState(ViewState.hover);
-      }
-    }
-  }
+  AreaStyle? generateAreaStyle(SingleNode<T, P> node);
+
+  LineStyle? generateLineStyle(SingleNode<T, P> node);
 }
 
 class MapNode {

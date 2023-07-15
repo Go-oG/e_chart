@@ -1,5 +1,5 @@
 
-import '../../component/axis/axis_pointer.dart';
+import '../../component/axis/style/axis_pointer.dart';
 import '../../component/axis/base_axis.dart';
 
 

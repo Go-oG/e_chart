@@ -1,11 +1,10 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../grid/single_node.dart';
 import 'layout_helper.dart';
 
 ///BarView
-class BarView extends CoordChildView<BarSeries> implements GridChild {
+class BarView extends CoordChildView<BarSeries> with GridChild {
   final BarLayoutHelper helper = BarLayoutHelper();
 
   ///用户优化视图绘制
@@ -82,8 +81,12 @@ class BarView extends CoordChildView<BarSeries> implements GridChild {
       if (series.cornerFun != null) {
         corner = series.cornerFun!.call(node);
       }
-      getAreaStyle(node, node.data.groupIndex)?.drawRect(canvas, mPaint, node.rect, corner);
-      getBorderStyle(node, node.data.groupIndex)?.drawRect(canvas, mPaint, node.rect, corner);
+      var as = helper.getAreaStyle(node, node.data.groupIndex);
+      node.areaStyle = as;
+      as?.drawRect(canvas, mPaint, node.rect, corner);
+      var ls = helper.getBorderStyle(node, node.data.groupIndex);
+      node.lineStyle = ls;
+      ls?.drawRect(canvas, mPaint, node.rect, corner);
     }
   }
 
@@ -107,26 +110,5 @@ class BarView extends CoordChildView<BarSeries> implements GridChild {
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
     return helper.getAxisExtreme(series, axisIndex, isXAxis);
-  }
-
-  @override
-  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
-    return helper.getAxisMaxText(series, axisIndex, isXAxis);
-  }
-
-  AreaStyle? getAreaStyle(SingleNode<BarItemData, BarGroupData> node, int index) {
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node);
-    }
-    var chartTheme = context.config.theme;
-    return AreaStyle(color: chartTheme.getColor(index)).convert(node.status);
-  }
-
-  LineStyle? getBorderStyle(SingleNode<BarItemData, BarGroupData> node, int index) {
-    if (series.borderStyleFun != null) {
-      return series.borderStyleFun?.call(node);
-    }
-    var theme = context.config.theme.barTheme;
-    return theme.getBorderStyle();
   }
 }

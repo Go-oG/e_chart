@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../functions.dart';
-import '../../model/theme_data.dart';
-import '../../style/line_style.dart';
+import '../../../functions.dart';
+import '../../theme/theme_data.dart';
+import '../../../style/line_style.dart';
 import 'axis_symbol.dart';
 
 class AxisLine {
@@ -42,6 +42,23 @@ class AxisLine {
         style = theme.getAxisLineStyle(index);
       }
     }
+    return style;
+  }
+
+  LineStyle? getAxisLineStyleNotFun(AxisTheme theme) {
+    if (!show) {
+      return null;
+    }
+    if (styleFun != null) {
+      return null;
+    }
+    LineStyle? style;
+    if (lineStyle != null) {
+      style = lineStyle;
+    } else {
+      style = theme.getAxisLineStyle(0);
+    }
+
     return style;
   }
 }

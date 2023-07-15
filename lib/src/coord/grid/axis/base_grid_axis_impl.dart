@@ -2,16 +2,15 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineProps> {
+abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs> {
   final GridCoord coord;
 
-  BaseGridAxisImpl(this.coord, super.axis, {super.axisIndex});
+  BaseGridAxisImpl(this.coord,super.context, super.axis, {super.axisIndex});
 
   ///表示轴的大小
   final AxisInfo _axisInfo = AxisInfo(Direction.vertical, Offset.zero, Offset.zero, Rect.zero);
 
   AxisInfo get axisInfo => _axisInfo;
-
 
   DynamicText getMaxStr(Direction direction) {
     DynamicText maxStr = DynamicText.empty;

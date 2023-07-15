@@ -3,24 +3,26 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///半径轴
-class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
-  RadiusAxisImpl(super.axis);
+class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs> {
+  RadiusAxisImpl(super.context,super.axis);
 
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
     AxisTheme theme = getAxisTheme();
     AxisStyle axisLine = axis.axisStyle;
-    each(lineTickList, (tick, i) {
-      LineStyle? style = axisLine.getSplitLineStyle(i, lineTickList.length, theme);
+    int c=layoutResult.split.length;
+    each(layoutResult.split, (split, i) {
+      LineStyle? style = axisLine.getSplitLineStyle(i,c, theme);
       if (style == null) {
         return;
       }
+
       Arc arc = Arc(
         innerRadius: 0,
-        outRadius: tick.end.distance2(props.center),
-        startAngle: props.offsetAngle,
+        outRadius: split.start.distance2(split.center),
+        startAngle: attrs.offsetAngle,
         sweepAngle: 360,
-        center: props.center,
+        center: attrs.center,
       );
       style.drawPath(canvas, paint, arc.toPath(true));
     });
@@ -30,17 +32,18 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
   void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
     AxisTheme theme = getAxisTheme();
     AxisStyle axisLine = axis.axisStyle;
-    each(lineTickList, (tick, i) {
-      AreaStyle? style = axisLine.getSplitAreaStyle(i, lineTickList.length, theme);
+    int c=layoutResult.split.length;
+    each(layoutResult.split, (split, i) {
+      AreaStyle? style = axisLine.getSplitAreaStyle(i, c, theme);
       if (style == null) {
         return;
       }
       Arc arc = Arc(
-        innerRadius: tick.start.distance2(props.center),
-        outRadius: tick.end.distance2(props.center),
-        startAngle: props.offsetAngle,
+        innerRadius: split.start.distance2(split.center),
+        outRadius: split.end.distance2(split.center),
+        startAngle: attrs.offsetAngle,
         sweepAngle: 360,
-        center: props.center,
+        center: attrs.center,
       );
       style.drawPath(canvas, paint, arc.toPath(true));
     });
@@ -49,11 +52,12 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusProps> {
   List<num> dataToRadius(DynamicData data) {
     return scale.toRange(data.data);
   }
+
 }
 
-class RadiusProps extends LineProps {
+class RadiusAxisAttrs extends LineAxisAttrs {
   final Offset center;
   final num offsetAngle;
 
-  RadiusProps(this.center, this.offsetAngle, super.rect, super.start, super.end);
+  RadiusAxisAttrs(this.center, this.offsetAngle, super.rect, super.start, super.end);
 }

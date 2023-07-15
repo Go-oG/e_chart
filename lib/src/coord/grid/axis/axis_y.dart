@@ -1,4 +1,4 @@
-import '../../../component/axis/axis_style.dart';
+import '../../../component/axis/style/axis_style.dart';
 import '../../../model/enums/align2.dart';
 import 'axis_grid.dart';
 

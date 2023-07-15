@@ -30,16 +30,13 @@ class PolarCoordImpl extends PolarCoord {
 
   Offset center = Offset.zero;
 
-  PolarCoordImpl(super.props) {
-    _angleAxis = AngleAxisImpl(props.angleAxis);
-    _radiusAxis = RadiusAxisImpl(props.radiusAxis);
-  }
+  PolarCoordImpl(super.props);
 
   @override
   void onCreate() {
     super.onCreate();
-    _angleAxis.context = context;
-    _radiusAxis.context = context;
+    _angleAxis = AngleAxisImpl(context,props.angleAxis);
+    _radiusAxis = RadiusAxisImpl(context,props.radiusAxis);
   }
 
   @override
@@ -61,21 +58,21 @@ class PolarCoordImpl extends PolarCoord {
 
     double r = width / 2;
     AngleAxis angleAxis = props.angleAxis;
-    ArcProps angleProps = ArcProps(
+    AngleAxisAttrs angleProps = AngleAxisAttrs(
       center,
       angleAxis.offsetAngle.toDouble(),
       r + angleAxis.radiusOffset,
       clockwise: angleAxis.clockwise,
     );
-    RadiusProps radiusProps = RadiusProps(
+    RadiusAxisAttrs radiusProps = RadiusAxisAttrs(
       center,
       angleAxis.offsetAngle,
       boxBounds,
       center,
       circlePoint(r, props.radiusAxis.offsetAngle, center),
     );
-    _angleAxis.layout(angleProps, _getAngleDataSet());
-    _radiusAxis.layout(radiusProps, _getRadiusDataSet());
+    _angleAxis.doLayout(angleProps, _getAngleDataSet());
+    _radiusAxis.doLayout(radiusProps, _getRadiusDataSet());
 
     for (var c in children) {
       c.layout(0, 0, width, height);
@@ -89,7 +86,7 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.angleDataSet);
+      list.addAll(c.getAngleDataSet());
     }
     return list;
   }
@@ -101,7 +98,7 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.radiusDataSet);
+      list.addAll(c.getRadiusDataSet());
     }
     return list;
   }

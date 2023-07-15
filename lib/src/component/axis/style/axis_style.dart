@@ -1,6 +1,14 @@
-import '../../model/theme_data.dart';
-import '../../style/index.dart';
-import '../index.dart';
+import '../../../style/index.dart';
+import '../../theme/theme_data.dart';
+import '../../tick/main_tick.dart';
+import '../../tick/minor_tick.dart';
+import 'axis_label.dart';
+import 'axis_line.dart';
+import 'axis_minor_tick.dart';
+import 'axis_tick.dart';
+import 'minor_split_line.dart';
+import 'split_line.dart';
+import 'split_area.dart';
 
 //坐标轴样式相关的配置
 class AxisStyle {
@@ -9,6 +17,7 @@ class AxisStyle {
   AxisLabel axisLabel = AxisLabel();
   SplitLine splitLine = SplitLine();
   AxisTick axisTick = AxisTick();
+
   AxisMinorTick? minorTick;
   MinorSplitLine? minorSplitLine;
   SplitArea? splitArea;
@@ -60,6 +69,7 @@ class AxisStyle {
   LabelStyle? getLabelStyle(int index, int maxIndex, AxisTheme theme) {
     return axisLabel.getLabelStyle(index, maxIndex, theme);
   }
+
   LabelStyle? getMinorLabelStyle(int index, int maxIndex, AxisTheme theme) {
     return axisLabel.getMinorLabelStyle(index, maxIndex, theme);
   }
