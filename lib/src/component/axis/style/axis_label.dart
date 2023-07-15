@@ -1,9 +1,9 @@
 // 轴标签相关
 import 'package:flutter/painting.dart';
 
-import '../../functions.dart';
-import '../../model/index.dart';
-import '../../style/index.dart';
+import '../../../functions.dart';
+import '../../../model/index.dart';
+import '../../../style/index.dart';
 
 class AxisLabel {
   bool show;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../style/index.dart';
+import '../../../style/index.dart';
 
 enum AxisPointerType {
   //直线指示器

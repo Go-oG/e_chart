@@ -89,7 +89,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
   int get calendarIndex => series.calendarIndex;
 
   @override
-  List<DynamicData> get angleDataSet {
+  List<DynamicData> getAngleDataSet() {
     List<DynamicData> dl = [];
     for (var ele in series.data) {
       dl.add(ele.y);
@@ -98,7 +98,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
   }
 
   @override
-  List<DynamicData> get radiusDataSet {
+  List<DynamicData> getRadiusDataSet() {
     List<DynamicData> dl = [];
     for (var ele in series.data) {
       dl.add(ele.x);
@@ -120,10 +120,4 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
     }
   }
 
-  @override
-  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
-  //TODO
-    return DynamicText.empty;
-
-  }
 }

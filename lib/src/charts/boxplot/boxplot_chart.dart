@@ -6,7 +6,7 @@ import 'package:e_chart/src/charts/boxplot/boxplot_layout.dart';
 import 'package:e_chart/src/charts/boxplot/boxplot_node.dart';
 
 /// 单个盒须图
-class BoxPlotView extends CoordChildView<BoxplotSeries> implements GridChild {
+class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
   final BoxplotLayout _layout = BoxplotLayout();
 
   BoxPlotView(super.series);
@@ -83,12 +83,6 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> implements GridChild {
       }
     }
     return dl;
-  }
-
-  @override
-  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
-    // TODO: implement getAxisMaxText
-    throw UnimplementedError();
   }
 
   AreaStyle? getAreaStyle(BoxplotNode node, int index) {

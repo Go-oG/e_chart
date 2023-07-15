@@ -1,16 +1,13 @@
-import 'dart:math';
 import 'dart:ui';
 
-import '../../component/axis/impl/line_axis_impl.dart';
-import '../../model/dynamic_data.dart';
+import '../../component/index.dart';
 import '../../model/enums/direction.dart';
 import 'parallel_axis.dart';
 
-class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, LineProps> {
+class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, LineAxisAttrs> {
   final Direction direction;
 
-  ParallelAxisImpl(super.axis, this.direction, {super.axisIndex});
-
+  ParallelAxisImpl(super.context, super.axis, this.direction, {super.axisIndex});
 
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {}

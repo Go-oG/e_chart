@@ -5,10 +5,10 @@ import 'package:e_chart/src/coord/grid/axis/base_grid_axis_impl.dart';
 
 ///横向轴
 class XAxisImpl extends BaseGridAxisImpl {
-  XAxisImpl(super.coord, super.axis, {super.axisIndex});
+  XAxisImpl(super.coord, super.context, super.axis, {super.axisIndex});
 
   @override
-  void measure(double parentWidth, double parentHeight) {
+  void doMeasure(double parentWidth, double parentHeight) {
     AxisStyle axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
       axisInfo.start = Offset.zero;
@@ -39,12 +39,12 @@ class XAxisImpl extends BaseGridAxisImpl {
   }
 
   @override
-  void layout(LineProps layoutProps, List<DynamicData> dataSet) {
-    Rect rect = layoutProps.rect;
+  void doLayout(LineAxisAttrs attrs, List<DynamicData> dataSet) {
+    Rect rect = attrs.rect;
     axisInfo.bound = rect;
     var axisLine = axis.axisStyle;
     bool inside = (axisLine.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
-    if (axis.category) {
+    if (axis.isCategoryAxis) {
       inside = false;
     }
     if (inside) {
@@ -54,11 +54,11 @@ class XAxisImpl extends BaseGridAxisImpl {
       axisInfo.start = rect.topLeft;
       axisInfo.end = rect.topRight;
     }
-    super.layout(layoutProps, dataSet);
+    super.doLayout(attrs, dataSet);
   }
 
   @override
-  BaseScale buildScale(LineProps props, List<DynamicData> dataSet) {
+  BaseScale onBuildScale(LineAxisAttrs attrs, List<DynamicData> dataSet) {
     double distance = axisInfo.bound.width * scaleFactor;
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
@@ -74,7 +74,7 @@ class XAxisImpl extends BaseGridAxisImpl {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
     scale = scale.copyWithRange([0, distance]);
-    updateTickPosition();
+
     notifyLayoutUpdate();
   }
 

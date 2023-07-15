@@ -1,33 +1,39 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/axis/axis_attrs.dart';
+import 'package:e_chart/src/component/axis/model/axis_layout_result.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command> {
+import 'model/axis_tile_node.dart';
+
+abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult> extends ChartNotifier<Command> {
   final int axisIndex;
+  final Context context;
   final T axis;
   late final AxisTitleNode titleNode;
-  late Context context;
-
-  //布局参数
-  late L props;
+  late L attrs;
   late BaseScale scale;
+  late R layoutResult;
 
   bool expanded = true;
 
-  BaseAxisImpl(this.axis, {this.axisIndex = 0}) : super(Command.none) {
+  BaseAxisImpl(this.context, this.axis, {this.axisIndex = 0}) : super(Command.none) {
     titleNode = AxisTitleNode(axis.name);
   }
 
-  void measure(double parentWidth, double parentHeight) {}
+  void doMeasure(double parentWidth, double parentHeight) {}
 
-  void layout(L layoutProps, List<DynamicData> dataSet) {
-    this.props = layoutProps;
-    scale = buildScale(layoutProps, dataSet);
-    titleNode.config = layoutAxisName();
+  void doLayout(L attrs, List<DynamicData> dataSet) {
+    this.attrs = attrs;
+    scale = onBuildScale(attrs, dataSet);
+    titleNode.config = onLayoutAxisName();
+    layoutResult = onLayout(attrs, scale, dataSet);
   }
 
-  BaseScale buildScale(L props, List<DynamicData> dataSet);
+  R onLayout(L attrs, BaseScale scale, List<DynamicData> dataSet);
 
-  TextDrawConfig layoutAxisName();
+  BaseScale onBuildScale(L attrs, List<DynamicData> dataSet);
+
+  TextDrawConfig onLayoutAxisName();
 
   void draw(Canvas canvas, Paint paint, Rect coord) {
     var axisLine = axis.axisStyle;
@@ -56,12 +62,12 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
 
   void onDrawAxisTick(Canvas canvas, Paint paint) {}
 
-  List<DynamicText> obtainTicks() {
-    return axis.buildTicks(scale);
+  List<DynamicText> obtainLabel() {
+    return axis.buildLabels(scale);
   }
 
   AxisTheme getAxisTheme() {
-    if (axis.category) {
+    if (axis.isCategoryAxis) {
       return context.config.theme.categoryAxisTheme;
     }
     if (axis.isTimeAxis) {
@@ -73,8 +79,6 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
     return context.config.theme.valueAxisTheme;
   }
 
-  void updateTickPosition() {}
-
   void notifyLayoutUpdate() {
     value = Command.layoutUpdate;
   }
@@ -83,11 +87,3 @@ abstract class BaseAxisImpl<T extends BaseAxis, L> extends ChartNotifier<Command
     value = Command.layoutEnd;
   }
 }
-
-class AxisTitleNode {
-  final DynamicText? label;
-  TextDrawConfig config = TextDrawConfig(Offset.zero, align: Alignment.center);
-
-  AxisTitleNode(this.label);
-}
-

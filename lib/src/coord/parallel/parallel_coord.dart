@@ -3,9 +3,7 @@ import 'dart:math';
 import 'package:e_chart/src/ext/offset_ext.dart';
 import 'package:flutter/material.dart';
 
-import '../../component/axis/base_axis.dart';
-import '../../component/axis/impl/base_axis_impl.dart';
-import '../../component/axis/impl/line_axis_impl.dart';
+import '../../component/index.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
 import '../coord.dart';
@@ -21,9 +19,7 @@ class ParallelCoordImpl extends ParallelCoord {
   int _expandRightIndex = -1;
   Rect contentBox = Rect.zero;
 
-  ParallelCoordImpl(super.props) {
-    initAxis();
-  }
+  ParallelCoordImpl(super.props);
 
   void initAxis() {
     axisMap.clear();
@@ -44,7 +40,7 @@ class ParallelCoordImpl extends ParallelCoord {
     Direction direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
-      ParallelAxisImpl node = ParallelAxisImpl(ele, direction, axisIndex: i);
+      ParallelAxisImpl node = ParallelAxisImpl(context, ele, direction, axisIndex: i);
       node.expanded = true;
       if (i >= _expandLeftIndex && i <= _expandRightIndex) {
         node.expanded = false;
@@ -56,9 +52,7 @@ class ParallelCoordImpl extends ParallelCoord {
   @override
   void onCreate() {
     super.onCreate();
-    axisMap.forEach((key, value) {
-      value.context = context;
-    });
+    initAxis();
   }
 
   ///找到离点击点最近的轴
@@ -69,16 +63,16 @@ class ParallelCoordImpl extends ParallelCoord {
       if (node == null) {
         node = ele;
         if (props.direction == Direction.horizontal) {
-          distance = (node.props.rect.left - offset.dx).abs();
+          distance = (node.attrs.rect.left - offset.dx).abs();
         } else {
-          distance = (node.props.rect.top - offset.dy).abs();
+          distance = (node.attrs.rect.top - offset.dy).abs();
         }
       } else {
         double tmp;
         if (props.direction == Direction.horizontal) {
-          tmp = (ele.props.rect.left - offset.dx).abs();
+          tmp = (ele.attrs.rect.left - offset.dx).abs();
         } else {
-          tmp = (ele.props.rect.top - offset.dy).abs();
+          tmp = (ele.attrs.rect.top - offset.dy).abs();
         }
         if (tmp < distance) {
           distance = tmp;
@@ -186,8 +180,8 @@ class ParallelCoordImpl extends ParallelCoord {
         start = start.translate(textSize[0].width, 0);
         end = end.translate(-textSize[1].width, 0);
       }
-      LineProps layoutProps = LineProps(rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
-      node.layout(layoutProps, dataSet);
+      LineAxisAttrs layoutProps = LineAxisAttrs(rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
+      node.doLayout(layoutProps, dataSet);
     }
 
     for (var ele in children) {
@@ -208,9 +202,9 @@ class ParallelCoordImpl extends ParallelCoord {
     for (var ele in axisMap.entries) {
       List<Offset> ol;
       if (props.direction == Direction.horizontal) {
-        ol = [ele.value.props.rect.topLeft, ele.value.props.rect.bottomLeft];
+        ol = [ele.value.attrs.rect.topLeft, ele.value.attrs.rect.bottomLeft];
       } else {
-        ol = [ele.value.props.rect.topLeft, ele.value.props.rect.topRight];
+        ol = [ele.value.attrs.rect.topLeft, ele.value.attrs.rect.topRight];
       }
       if (offset.inLine(ol[0], ol[1])) {
         node = ele.value;

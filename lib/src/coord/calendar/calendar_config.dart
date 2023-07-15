@@ -1,6 +1,6 @@
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
-import '../../component/axis/split_line.dart';
+import '../../component/index.dart';
 import '../../functions.dart';
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';

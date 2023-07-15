@@ -1,6 +1,7 @@
-import '../../functions.dart';
-import '../../model/theme_data.dart';
-import '../../style/line_style.dart';
+
+import '../../../functions.dart';
+import '../../../style/index.dart';
+import '../../theme/theme_data.dart';
 
 ///坐标轴在grid区域中的分隔线
 class SplitLine {

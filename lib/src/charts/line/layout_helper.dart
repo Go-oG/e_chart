@@ -43,7 +43,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     super.onLayoutColumn(columnNode, coord, xIndex, x);
     GridAxis xAxis = coord.getAxis(xIndex.index, true);
     for (var node in columnNode.nodeList) {
-      if (xAxis.category && !xAxis.categoryCenter) {
+      if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
         node.position = node.rect.topLeft;
       } else {
         node.position = node.rect.topCenter;
@@ -164,6 +164,24 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     return LineResult(group, ol, line.toPath(false), path);
   }
 
+  @override
+  AreaStyle? generateAreaStyle(SingleNode<LineItemData, LineGroupData> node) {
+    var s = getAreaStyle(node.data.parent, node.data.groupIndex);
+    if (s == null || series.areaStyleFun != null) {
+      return s;
+    }
+    return s.convert(node.status);
+  }
+
+  @override
+  LineStyle? generateLineStyle(SingleNode<LineItemData, LineGroupData> node) {
+    LineStyle? style = getLineStyle(node.data.parent, node.data.groupIndex);
+    if (style == null || series.lineStyleFun != null) {
+      return style;
+    }
+    return style.convert(node.status);
+  }
+
   AreaStyle? getAreaStyle(LineGroupData group, int index) {
     if (series.areaStyleFun != null) {
       return series.areaStyleFun?.call(group, index);
@@ -192,6 +210,9 @@ class LineResult {
   final List<Offset> offsetList;
   final Path borderPath;
   final Path areaPath;
+
+  AreaStyle? areaStyle;
+  LineStyle? lineStyle;
 
   LineResult(this.data, this.offsetList, this.borderPath, this.areaPath);
 }

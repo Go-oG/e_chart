@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/model/tick_result.dart';
+import 'package:e_chart/src/component/axis/model/tick_result.dart';
 import 'package:flutter/material.dart';
 
 abstract class BaseTick {

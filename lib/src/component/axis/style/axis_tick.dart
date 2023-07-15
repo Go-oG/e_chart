@@ -1,6 +1,6 @@
-import '../../functions.dart';
-import '../../model/index.dart';
-import '../tick/main_tick.dart';
+import '../../../functions.dart';
+import '../../../model/index.dart';
+import '../../tick/main_tick.dart';
 
 class AxisTick {
   bool show;
@@ -30,6 +30,20 @@ class AxisTick {
       } else {
         tick = theme.getMainTick();
       }
+    }
+    return tick;
+  }
+
+  MainTick? getTickNotFun(AxisTheme theme) {
+    if (!show || tickFun == null) {
+      return null;
+    }
+
+    MainTick? tick;
+    if (this.tick != null) {
+      tick = this.tick;
+    } else {
+      tick = theme.getMainTick();
     }
     return tick;
   }

@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/heatmap/layout.dart';
 import 'package:flutter/material.dart';
 
 /// 热力图
-class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, CalendarChild {
+class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChild {
   final HeatMapLayout helper = HeatMapLayout();
 
   HeatMapView(super.series);
@@ -79,12 +79,6 @@ class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, Calend
       }
     }
     return dl;
-  }
-
-  @override
-  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
-    // TODO: implement getAxisMaxText
-    return DynamicText.empty;
   }
 
   AreaStyle? getAreaStyle(HeatMapNode node, int index) {

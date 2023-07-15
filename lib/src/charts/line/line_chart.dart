@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'layout_helper.dart';
 
-class LineView extends CoordChildView<LineSeries> implements GridChild {
+class LineView extends CoordChildView<LineSeries> with GridChild {
   final LineLayoutHelper helper = LineLayoutHelper();
 
   ///用户优化视图绘制
@@ -42,8 +42,6 @@ class LineView extends CoordChildView<LineSeries> implements GridChild {
     super.onStop();
   }
 
-
-
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     helper.doMeasure(context, series, series.data, parentWidth, parentHeight);
@@ -61,25 +59,29 @@ class LineView extends CoordChildView<LineSeries> implements GridChild {
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
     final List<LineResult> list = helper.lineList;
+
     ///这里分开绘制是为了避免边框被遮挡
     each(list, (result, i) {
-      AreaStyle? style =helper.getAreaStyle(result.data, i);
+      AreaStyle? style = helper.getAreaStyle(result.data, i);
+      result.areaStyle = style;
       style?.drawPath(canvas, mPaint, result.areaPath);
     });
     each(list, (result, i) {
-      helper.getLineStyle(result.data, i)?.drawPath(canvas, mPaint, result.borderPath);
+      var ls = helper.getLineStyle(result.data, i);
+      result.lineStyle = ls;
+      ls?.drawPath(canvas, mPaint, result.borderPath);
     });
     if (series.symbolFun != null || theme.showSymbol) {
       ///绘制symbol
-      SymbolDesc desc=SymbolDesc();
+      SymbolDesc desc = SymbolDesc();
       each(list, (result, p1) {
         each(result.data.data, (data, i) {
-          ChartSymbol? symbol=series.symbolFun?.call(data,result.data);
-          if(symbol!=null){
-            desc.center=helper.getNodePosition(data);
+          ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
+          if (symbol != null) {
+            desc.center = helper.getNodePosition(data);
             symbol.draw(canvas, mPaint, desc);
-          }else if(theme.showSymbol){
-            desc.center=helper.getNodePosition(data);
+          } else if (theme.showSymbol) {
+            desc.center = helper.getNodePosition(data);
             theme.symbol.draw(canvas, mPaint, desc);
           }
         });
@@ -111,11 +113,4 @@ class LineView extends CoordChildView<LineSeries> implements GridChild {
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
     return helper.getAxisExtreme(series, axisIndex, isXAxis);
   }
-
-  @override
-  DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
-    return helper.getAxisMaxText(series, axisIndex, isXAxis);
-  }
-
-
 }

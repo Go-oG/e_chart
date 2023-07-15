@@ -77,7 +77,7 @@ abstract class BaseAxis {
     if (revertRange) {
       range = List.from(range.reversed);
     }
-    if (category) {
+    if (isCategoryAxis) {
       if (categoryList.isNotEmpty) {
         return CategoryScale(categoryList, range,categoryCenter);
       }
@@ -168,7 +168,7 @@ abstract class BaseAxis {
     throw ChartError('现有数据无法推导出Scale');
   }
 
-  List<DynamicText> buildTicks(BaseScale scale) {
+  List<DynamicText> buildLabels(BaseScale scale) {
     if (scale is CategoryScale) {
       return List.from(scale.ticks.map((e) => DynamicText(e)));
     }
@@ -215,7 +215,7 @@ abstract class BaseAxis {
     return ('${time.minute}-${time.second}');
   }
 
-  bool get category => categoryList.isNotEmpty || type == AxisType.category;
+  bool get isCategoryAxis => categoryList.isNotEmpty || type == AxisType.category;
 
   bool get isTimeAxis => timeRange != null || type == AxisType.time;
 
