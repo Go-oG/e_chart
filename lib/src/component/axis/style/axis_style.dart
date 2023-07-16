@@ -1,5 +1,5 @@
 import '../../../style/index.dart';
-import '../../theme/theme_data.dart';
+import '../../theme/axis_theme.dart';
 import '../../tick/main_tick.dart';
 import '../../tick/minor_tick.dart';
 import 'axis_label.dart';

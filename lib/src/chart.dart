@@ -8,7 +8,7 @@ import 'component/tooltip/tool_tip.dart';
 
 import 'model/enums/drag_type.dart';
 import 'model/enums/scale_type.dart';
-import 'component/theme/theme_data.dart';
+import 'component/theme/theme.dart';
 
 class ChartConfig {
   ChartTitle? title;

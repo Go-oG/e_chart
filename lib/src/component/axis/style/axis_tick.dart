@@ -1,5 +1,5 @@
 import '../../../functions.dart';
-import '../../../model/index.dart';
+import '../../theme/axis_theme.dart';
 import '../../tick/main_tick.dart';
 
 class AxisTick {
