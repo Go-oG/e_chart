@@ -53,6 +53,8 @@ export 'shader/radial_shader.dart';
 export 'shader/line_shader.dart';
 export 'shader/sweep_shader.dart';
 
+export 'theme/index.dart';
+
 export 'tick/base_tick.dart';
 export 'tick/main_tick.dart';
 export 'tick/minor_tick.dart';

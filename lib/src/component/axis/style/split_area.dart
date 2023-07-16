@@ -1,5 +1,5 @@
 import '../../../functions.dart';
-import '../../theme/theme_data.dart';
+import '../../theme/axis_theme.dart';
 import '../../../style/area_style.dart';
 
 class SplitArea {

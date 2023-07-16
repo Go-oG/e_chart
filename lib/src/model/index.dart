@@ -28,4 +28,4 @@ export 'stack_data.dart';
 export 'string_number.dart';
 export 'text_position.dart';
 
-export '../component/theme/theme_data.dart';
+export '../component/theme/theme.dart';
