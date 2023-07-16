@@ -26,11 +26,10 @@ abstract class BaseTick {
 
   BaseTick({
     this.show = true,
-    this.inside = true,
+    this.inside = false,
     this.length = 8,
     this.lineStyle = const LineStyle(),
     this.interval = -1,
   });
-
 
 }

@@ -1,9 +1,5 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/axis/angle/angle_attrs.dart';
-import 'package:e_chart/src/component/axis/angle/angle_layout_result.dart';
-import 'package:e_chart/src/component/axis/model/label_result.dart';
-import 'package:e_chart/src/component/axis/model/tick_result.dart';
 import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
@@ -23,7 +19,8 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
     } else {
       e = s - maxAngle;
     }
-    return axis.toScale([s, e], dataSet, false);
+
+    return BaseAxisImpl.toScale(axis, [s, e], dataSet);
   }
 
   @override
@@ -129,7 +126,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
     }
 
     List<LabelResult> resultList = [];
-    List<DynamicText> labels = axis.buildLabels(scale);
+    List<DynamicText> labels = obtainLabel();
     for (int i = 0; i < labels.length; i++) {
       DynamicText text = labels[i];
       num d = i;
@@ -270,7 +267,6 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
         }
       });
     }
-
   }
 
   ///将一个"Y轴数据" 转换到角度范围

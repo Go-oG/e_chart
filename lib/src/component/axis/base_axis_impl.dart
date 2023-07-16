@@ -1,9 +1,9 @@
+import 'dart:math';
+
+import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/axis/axis_attrs.dart';
-import 'package:e_chart/src/component/axis/model/axis_layout_result.dart';
 import 'package:flutter/material.dart';
 
-import 'model/axis_tile_node.dart';
 
 abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult> extends ChartNotifier<Command> {
   final int axisIndex;
@@ -63,7 +63,31 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   void onDrawAxisTick(Canvas canvas, Paint paint) {}
 
   List<DynamicText> obtainLabel() {
-    return axis.buildLabels(scale);
+    if (scale is CategoryScale) {
+      return List.from(scale.labels.map((e) => DynamicText(e)));
+    }
+    var formatter = axis.axisStyle.axisLabel.formatter;
+    List<DynamicText> labels = [];
+    if (scale is TimeScale) {
+      for (var ele in scale.labels) {
+        if (formatter != null) {
+          labels.add(formatter.call(ele.millisecondsSinceEpoch));
+        } else {
+          labels.add(DynamicText.fromString(defaultTimeFormat(axis.timeType, ele)));
+        }
+      }
+      return labels;
+    }
+    if (scale is LinearScale || scale is LogScale) {
+      labels = List.from(scale.labels.map((e) {
+        if (formatter != null) {
+          return formatter.call(e);
+        } else {
+          return DynamicText.fromString(formatNumber(e));
+        }
+      }));
+    }
+    return labels;
   }
 
   AxisTheme getAxisTheme() {
@@ -86,4 +110,129 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   void notifyLayoutEnd() {
     value = Command.layoutEnd;
   }
+
+  ///将指定的参数转换为标度尺
+  static BaseScale toScale(BaseAxis axis, List<num> range, List<DynamicData> dataSet) {
+    if (axis.isCategoryAxis) {
+      List<String> sl = List.from(axis.categoryList);
+      if (axis.categoryList.isEmpty) {
+        Set<String> dSet = {};
+        for (var data in dataSet) {
+          if (data.isString && !dSet.contains(data.data as String)) {
+            sl.add(data.data);
+            dSet.add(data.data);
+          }
+        }
+      }
+      if (sl.isEmpty) {
+        throw ChartError('当前提取Category数目为0');
+      }
+      if (axis.inverse) {
+        return CategoryScale(List.from(sl.reversed), range, axis.categoryCenter);
+      }
+      return CategoryScale(sl, range, axis.categoryCenter);
+    }
+    List<DynamicData> ds = [...dataSet];
+    ds.add(DynamicData(axis.min));
+    if (axis.max != null) {
+      ds.add(DynamicData(axis.max));
+    }
+
+    if (axis.timeRange != null) {
+      ds.add(DynamicData(axis.timeRange!.start));
+      ds.add(DynamicData(axis.timeRange!.end));
+    }
+
+    List<num> list = [];
+    List<DateTime> timeList = [];
+    for (var data in ds) {
+      if (data.isString) {
+        continue;
+      }
+      if (data.isNum) {
+        list.add(data.data);
+      } else if (data.isDate) {
+        timeList.add(data.data);
+      }
+    }
+
+    var type = axis.type;
+    if (type == AxisType.time || timeList.length >= 2) {
+      if (timeList.length < 2) {
+        DateTime st = timeList.isEmpty ? DateTime.now() : timeList.first;
+        DateTime end = st.add(_timeDurationMap[axis.timeType]!);
+        timeList.clear();
+        timeList.add(st);
+        timeList.add(end);
+      }
+      timeList.sort((a, b) {
+        return a.millisecondsSinceEpoch.compareTo(b.millisecondsSinceEpoch);
+      });
+      DateTime start = timeList[0];
+      DateTime end = timeList[timeList.length - 1];
+      return TimeScale(axis.timeType, [start, end], range);
+    }
+
+    if (list.length < 2) {
+      if (list.length == 1) {
+        list.add(list.first + 100);
+      } else {
+        list.addAll([0, 100]);
+      }
+    }
+
+    List<num> v = extremes<num>(list, (p) => p);
+    if (axis.type == AxisType.log) {
+      num base = log(axis.logBase);
+      List<num> logV = [log(v[0]) / base, log(v[1]) / base];
+      v = logV;
+    }
+
+    NiceScale step = NiceScale.nice(
+      v[0],
+      v[1],
+      axis.splitNumber,
+      minInterval: axis.minInterval,
+      maxInterval: axis.maxInterval,
+      interval: axis.interval,
+      start0: axis.start0,
+      type: axis.niceType,
+    );
+    if (type == AxisType.log) {
+      return LogScale([step.start, step.end], range, step: step.step);
+    }
+    if (type == AxisType.value) {
+      return LinearScale([step.start, step.end], range, step: step.step);
+    }
+    throw ChartError('现有数据无法推导出Scale');
+  }
+
+  static String defaultTimeFormat(TimeType timeType, DateTime time) {
+    if (timeType == TimeType.year) {
+      return ('${time.year}');
+    }
+    if (timeType == TimeType.month) {
+      return ('${time.year}-${time.month}');
+    }
+    if (timeType == TimeType.day) {
+      return ('${time.year}-${time.month}-${time.day}');
+    }
+    if (timeType == TimeType.hour) {
+      return ('${time.hour}');
+    }
+    if (timeType == TimeType.minute) {
+      return ('${time.hour}-${time.minute}');
+    }
+    return ('${time.minute}-${time.second}');
+  }
 }
+
+Map<TimeType, Duration> _timeDurationMap = {
+  TimeType.year: const Duration(days: 365),
+  TimeType.month: const Duration(days: 30),
+  TimeType.day: const Duration(days: 10),
+  TimeType.hour: const Duration(days: 24),
+  TimeType.minute: const Duration(days: 60),
+  TimeType.sec: const Duration(days: 60),
+  TimeType.week: const Duration(days: 7),
+};

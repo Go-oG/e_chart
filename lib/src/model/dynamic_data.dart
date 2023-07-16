@@ -8,13 +8,13 @@ class DynamicData {
 
   DynamicData(this.data) {
     if (data is! String && data is! DateTime && data is! num) {
-      throw FlutterError('只能是 String DateTime num');
+      throw FlutterError('只能是 String、DateTime、num CurrentType:${data.runtimeType}');
     }
   }
 
   DynamicData change(dynamic data) {
     if (data is! String && data is! DateTime && data is! num) {
-      throw FlutterError('只能是 String DateTime num');
+      throw FlutterError('只能是 String DateTime num CurrentType:${data.runtimeType}');
     }
     this.data = data;
     return this;

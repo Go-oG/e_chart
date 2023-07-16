@@ -29,7 +29,7 @@ abstract class BaseScale<D, R extends num> {
   ///返回Tick的个数
   int get tickCount;
 
-  List<D> get ticks;
+  List<D> get labels;
 
   num get tickInterval {
     num v = (range[1] - range[0]).abs();

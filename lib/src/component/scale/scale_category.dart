@@ -50,7 +50,7 @@ class CategoryScale extends BaseScale<String, num> {
   bool get isCategory => true;
 
   @override
-  List<String> get ticks => domain;
+  List<String> get labels => domain;
 
   @override
   CategoryScale copyWithRange(List<num> range) {

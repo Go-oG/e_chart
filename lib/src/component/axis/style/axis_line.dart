@@ -8,7 +8,6 @@ import 'axis_symbol.dart';
 class AxisLine {
   bool show;
   LineStyle? lineStyle;
-
   AxisSymbol symbol; //控制是否显示箭头
   Size symbolSize;
   Offset symbolOffset;

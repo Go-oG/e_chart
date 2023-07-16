@@ -3,7 +3,6 @@ import 'package:e_chart/e_chart.dart';
 class AxisMinorTick{
   bool show;
   MinorTick? tick;
-
   Fun3<int, int, MinorTick>? tickFun;
 
   AxisMinorTick({

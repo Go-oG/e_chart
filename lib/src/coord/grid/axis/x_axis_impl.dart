@@ -58,16 +58,6 @@ class XAxisImpl extends BaseGridAxisImpl {
   }
 
   @override
-  BaseScale onBuildScale(LineAxisAttrs attrs, List<DynamicData> dataSet) {
-    double distance = axisInfo.bound.width * scaleFactor;
-    if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('$runtimeType 长度未知：$distance');
-    }
-    var s = axis.toScale([0, distance], dataSet, false);
-    return s;
-  }
-
-  @override
   void onScaleFactorChange(double factor) {
     double distance = axisInfo.bound.width * factor;
     if (distance.isNaN || distance.isInfinite) {
