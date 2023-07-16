@@ -38,7 +38,7 @@ class TimeScale extends BaseScale<DateTime, num> {
   bool get isTime => true;
 
   @override
-  List<DateTime> get ticks {
+  List<DateTime> get labels {
     List<DateTime> tl = [];
     int count = tickCount;
     for (int i = 0; i <= count; i++) {

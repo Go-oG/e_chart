@@ -46,7 +46,10 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   BaseScale onBuildScale(P attrs, List<DynamicData> dataSet) {
     num distance = attrs.start.distance2(attrs.end);
     distance *= scaleFactor;
-    return axis.toScale([0, distance], dataSet, false);
+    if (distance.isNaN || distance.isInfinite) {
+      throw ChartError('$runtimeType 长度未知：$distance');
+    }
+    return BaseAxisImpl.toScale(axis,[0, distance], dataSet);
   }
 
   @override
@@ -107,10 +110,10 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
 
   List<LineSplitResult> buildSplitResult(List<TickResult> tickResult, Offset center) {
     List<LineSplitResult> resultList = [];
-    int c = resultList.length - 1;
+    int c = tickResult.length - 1;
     for (int i = 0; i < c; i++) {
-      LineSplitResult pre = resultList[i];
-      LineSplitResult next = resultList[i + 1];
+      TickResult pre = tickResult[i];
+      TickResult next = tickResult[i + 1];
       LineSplitResult result = LineSplitResult(center, pre.start, next.start);
       resultList.add(result);
     }
@@ -233,7 +236,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
     Offset start = attrs.start;
     Offset end = attrs.end;
-
     ///只实现垂直和水平方向
     if (!(start.dx == end.dx || start.dy == end.dy)) {
       return;
@@ -273,6 +275,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   void onDrawAxisLine(Canvas canvas, Paint paint) {
     var axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
+      logPrint("onDrawAxisLine() axisStyle.show==false not Draw");
       return;
     }
     AxisTheme theme = getAxisTheme();

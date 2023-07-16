@@ -52,15 +52,6 @@ class YAxisImpl extends BaseGridAxisImpl {
   }
 
   @override
-  BaseScale onBuildScale(LineAxisAttrs attrs, List<DynamicData> dataSet) {
-    double distance = axisInfo.bound.height * scaleFactor;
-    if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('$runtimeType 长度异常');
-    }
-    return axis.toScale([distance, 0], dataSet, false);
-  }
-
-  @override
   void onScaleFactorChange(double factor) {
     double distance = axisInfo.bound.height * factor;
     if (distance.isNaN || distance.isInfinite) {

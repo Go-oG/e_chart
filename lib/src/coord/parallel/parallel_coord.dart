@@ -171,14 +171,14 @@ class ParallelCoordImpl extends ParallelCoord {
           dataSet.addAll(child.getDimDataSet(node.axisIndex));
         }
       }
-      Offset start = rect.topLeft;
-      Offset end = (props.direction == Direction.horizontal) ? rect.bottomLeft : rect.topRight;
+
+      Offset start,end ;
       if (props.direction == Direction.horizontal) {
-        start = start.translate(0, textSize[0].height);
-        end = end.translate(0, -textSize[1].height);
+        start=rect.bottomLeft.translate(0, -textSize[1].height);
+        end=rect.topLeft.translate(0, textSize[0].height);
       } else {
-        start = start.translate(textSize[0].width, 0);
-        end = end.translate(-textSize[1].width, 0);
+        start = rect.topLeft.translate(textSize[0].width, 0);
+        end = rect.topRight.translate(-textSize[1].width, 0);
       }
       LineAxisAttrs layoutProps = LineAxisAttrs(rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
       node.doLayout(layoutProps, dataSet);

@@ -7,7 +7,6 @@ import '../../../style/index.dart';
 
 class AxisLabel {
   bool show;
-
   //坐标轴刻度标签的显示间隔，在类目轴中有效。
   // 默认会采用标签不重叠的策略间隔显示标签。默认-1
   // 可以设置成 0 强制显示所有标签。
@@ -25,9 +24,6 @@ class AxisLabel {
   LabelStyle? style;
   LabelStyle? minorStyle;
 
-  AreaStyle? decoration;
-  AreaStyle? minorDecoration;
-
   Fun2<dynamic, DynamicText>? formatter;
   Fun3<int, int, LabelStyle?>? styleFun;
   Fun3<int, int, LabelStyle?>? minorStyleFun;
@@ -43,11 +39,9 @@ class AxisLabel {
     this.showMaxLabel,
     this.hideOverLap = true,
     LabelStyle? style,
-    this.decoration,
     this.formatter,
     this.styleFun,
     this.minorStyle,
-    this.minorDecoration,
     this.minorStyleFun,
   }) {
     if (style != null) {

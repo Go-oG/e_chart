@@ -47,7 +47,7 @@ class LinearScale extends BaseScale<num, num> {
   }
 
   @override
-  List<num> get ticks {
+  List<num> get labels {
     int count = tickCount;
     num interval = (domain[1] - domain[0]) / (count - 1);
     List<num> tl = [];
