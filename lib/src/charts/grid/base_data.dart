@@ -6,6 +6,7 @@ class BaseGroupData<T> {
   List<T?> data;
   int? xAxisIndex;
   int? yAxisIndex;
+  int? polarAxisIndex;
   String? stackId;
   StackStrategy strategy;
 
@@ -13,6 +14,7 @@ class BaseGroupData<T> {
     this.data, {
     this.xAxisIndex,
     this.yAxisIndex,
+        this.polarAxisIndex,
     String? id,
     this.stackId,
     this.strategy = StackStrategy.all,

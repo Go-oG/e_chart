@@ -6,8 +6,8 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   List<LineResult> lineList = [];
 
   @override
-  void onLayoutGroupColumn(AxisGroup<LineItemData, LineGroupData> axisGroup, GroupNode<LineItemData, LineGroupData> groupNode,
-      GridCoord coord, AxisIndex xIndex, DynamicData x) {
+  void onLayoutGroupColumn(
+      AxisGroup<LineItemData, LineGroupData> axisGroup, GroupNode<LineItemData, LineGroupData> groupNode, AxisIndex xIndex, DynamicData x) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -16,41 +16,69 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
 
     final bool vertical = series.direction == Direction.vertical;
     final Rect rect = groupNode.rect;
+    final Arc arc = groupNode.arc;
 
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
-      int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
-      num up = node.getUp();
+      if (series.coordSystem == CoordSystem.polar) {
+        int yIndex = node.data.data.first.parent.polarAxisIndex ?? series.polarAxisIndex;
+        var coord = context.findPolarCoord(yIndex);
+        num up = node.getUp();
 
-      ///确定上界和下界
-      Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(up));
-      Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));
-
-      double h = (r1.top - r2.top).abs();
-      double w = (r1.left - r2.left).abs();
-      Rect tmpRect;
-      if (vertical) {
-        tmpRect = Rect.fromLTWH(rect.left, rect.bottom - h, rect.width, h);
+        ///确定上界和下界
+        var r1 = coord.dataToPosition(x, tmpData.change(up));
+        var r2 = coord.dataToPosition(x, tmpData.change(node.getDown()));
+        double h = (r1.radius[0] - r2.radius[0]).abs() + 0;
+        double w = (r1.angle[0] - r2.angle[0]) + 0;
+        Arc tmpArc;
+        if (vertical) {
+          tmpArc = arc.copy(outRadius: arc.innerRadius + h);
+        } else {
+          tmpArc = arc.copy(sweepAngle: w);
+        }
+        node.arc = tmpArc;
       } else {
-        tmpRect = Rect.fromLTWH(rect.left, rect.top, w, rect.height);
+        int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
+        num up = node.getUp();
+
+        ///确定上界和下界
+        var coord = context.findGridCoord();
+        Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(up));
+        Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));
+
+        double h = (r1.top - r2.top).abs();
+        double w = (r1.left - r2.left).abs();
+        Rect tmpRect;
+        if (vertical) {
+          tmpRect = Rect.fromLTWH(rect.left, rect.bottom - h, rect.width, h);
+        } else {
+          tmpRect = Rect.fromLTWH(rect.left, rect.top, w, rect.height);
+        }
+        node.rect = tmpRect;
       }
-      node.rect = tmpRect;
     });
   }
 
   @override
-  void onLayoutColumn(ColumnNode<LineItemData, LineGroupData> columnNode, GridCoord coord, AxisIndex xIndex) {
-    super.onLayoutColumn(columnNode, coord, xIndex);
-    GridAxis xAxis = coord.getAxis(xIndex.index, true);
-    for (var node in columnNode.nodeList) {
-      if (node.data.data != null) {
-        if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
-          node.position = node.rect.topLeft;
+  void onLayoutColumn(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
+    super.onLayoutColumn(columnNode, xIndex);
+    if (series.coordSystem == CoordSystem.polar) {
+      for (var node in columnNode.nodeList) {
+        var arc = node.arc;
+        node.position = circlePoint((arc.innerRadius + arc.outRadius) / 2, (arc.startAngle + arc.sweepAngle / 2), arc.center);
+      }
+    } else {
+      GridAxis xAxis = context.findGridCoord().getAxis(xIndex.index, true);
+      for (var node in columnNode.nodeList) {
+        if (node.data.data != null) {
+          if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
+            node.position = node.rect.topLeft;
+          } else {
+            node.position = node.rect.topCenter;
+          }
         } else {
-          node.position = node.rect.topCenter;
+          node.position = Offset(node.rect.center.dx, height);
         }
-      } else {
-        node.position = Offset(node.rect.center.dx, height);
       }
     }
   }
@@ -64,10 +92,19 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObj(data, node, newData);
     Offset pos = node.position;
     Offset offset;
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      offset = Offset(pos.dx, height);
+    if (series.coordSystem == CoordSystem.polar) {
+      if (series.animatorStyle == GridAnimatorStyle.expand) {
+        offset = circlePoint(0, 0, node.arc.center);
+      } else {
+        var angle = node.arc.startAngle + node.arc.sweepAngle / 2;
+        offset = circlePoint(node.arc.innerRadius, angle, node.arc.center);
+      }
     } else {
-      offset = Offset(pos.dx, rect.bottom);
+      if (series.animatorStyle == GridAnimatorStyle.expand) {
+        offset = Offset(pos.dx, height);
+      } else {
+        offset = Offset(pos.dx, rect.bottom);
+      }
     }
     rn.position = offset;
     return rn;
@@ -142,10 +179,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       }
       var group = list.first.data.parent;
       var index = list.first.data.groupIndex;
-      var axisIndex = group.xAxisIndex ?? series.xAxisIndex;
-      var maxLength = context.findGridCoord().getAxisLength(axisIndex, true);
-      var bottomList = [Offset(0, height), Offset(maxLength, height)];
-      resultList.add(buildNormalResult(index, group, list, bottomList));
+      resultList.add(buildNormalResult(index, group, list));
     });
 
     ///处理堆叠数据
@@ -162,14 +196,14 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       for (int i = 0; i < keyList2.length; i++) {
         var group = keyList2[i];
         var cur = map[group]!;
-        resultList.add(buildStackResult(cur.first.data.groupIndex,group, cur, resultList, i));
+        resultList.add(buildStackResult(cur.first.data.groupIndex, group, cur, resultList, i));
       }
     });
     lineList = resultList;
   }
 
   LineResult buildNormalResult(
-      int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list, List<Offset> bottomLine) {
+      int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
     List<Path> borderList = _buildBorderPath(list);
     List<Path> areaList = buildAreaPathForNormal(list);
     return LineResult(groupIndex, group, _collectOffset(list), borderList, areaList);
@@ -246,7 +280,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     StepType? preStepType = series.stepLineFun?.call(preGroup);
     LineStyle? preLineStyle = getLineStyle(preGroup, resultList[curIndex - 1].groupIndex);
     bool preSmooth = (preStepType == null) ? (preLineStyle?.smooth ?? false) : false;
-    List<Path> borderList=[];
+    List<Path> borderList = [];
     List<List<List<Offset>>> areaList = [];
     if (series.connectNulls) {
       List<Offset> topList = [];
@@ -288,13 +322,13 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       }
 
       for (var list in areaList) {
-        topList=list[0];
-        if(stepType!=null){
-          topList=_buildLine(topList, stepType, false, []).pointList;
+        topList = list[0];
+        if (stepType != null) {
+          topList = _buildLine(topList, stepType, false, []).pointList;
         }
-        preList=list[1];
-        if(preStepType!=null){
-          preList=_buildLine(preList, preStepType,false, []).pointList;
+        preList = list[1];
+        if (preStepType != null) {
+          preList = _buildLine(preList, preStepType, false, []).pointList;
         }
 
         var area = Area(topList, preList, upSmooth: smooth, downSmooth: preSmooth);
@@ -303,7 +337,6 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     }
     return borderList;
   }
-
 
   Offset? findBottomOffset(int curIndex, List<LineResult> resultList, int arrayIndex) {
     int i = curIndex - 1;

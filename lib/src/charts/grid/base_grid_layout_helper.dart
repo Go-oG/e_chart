@@ -57,7 +57,6 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     Map<T, SingleNode<T, P>> nodeMap = {};
 
     ///开始布局
-    var coord = context.findGridCoord();
     axisGroup.groupMap.forEach((key, value) {
       List<StackGroup<T, P>> groupList = value;
       List<GroupNode<T, P>> groupNodeList = [];
@@ -89,15 +88,32 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
           continue;
         }
         var x = groupNode.getX();
-        Rect areaRect = coord.dataToRect(xIndex.index, x, 0, tmpData.change(groupNode.nodeList.first.getUp()));
-        if (vertical) {
-          groupNode.rect = Rect.fromLTWH(areaRect.left, 0, areaRect.width, height);
+        if (series.coordSystem == CoordSystem.polar) {
+          var coord = context.findPolarCoord(series.polarAxisIndex);
+          PolarPosition position = coord.dataToPosition(x, tmpData.change(groupNode.nodeList.first.getUp()));
+          num ir = position.radius.length == 1 ? 0 : position.radius[1];
+          num or = position.radius.length == 1 ? position.radius[0] : position.radius[1];
+          num sa = position.angle[0];
+          num ea = position.angle.length >= 2 ? position.angle[1] : sa;
+          groupNode.arc = Arc(
+            center: position.center,
+            innerRadius: ir,
+            outRadius: or,
+            startAngle: sa,
+            sweepAngle: ea - sa,
+          );
         } else {
-          groupNode.rect = Rect.fromLTWH(0, areaRect.top, width, areaRect.height);
+          var coord = context.findGridCoord();
+          Rect areaRect = coord.dataToRect(xIndex.index, x, 0, tmpData.change(groupNode.nodeList.first.getUp()));
+          if (vertical) {
+            groupNode.rect = Rect.fromLTWH(areaRect.left, 0, areaRect.width, height);
+          } else {
+            groupNode.rect = Rect.fromLTWH(0, areaRect.top, width, areaRect.height);
+          }
         }
-        onLayoutGroupColumn(axisGroup, groupNode, coord, xIndex, x);
+        onLayoutGroupColumn(axisGroup, groupNode, xIndex, x);
         each(groupNode.nodeList, (node, i) {
-          onLayoutColumn(node, coord, xIndex);
+          onLayoutColumn(node, xIndex);
         });
       }
       gNodeList.addAll(groupNodeList);
@@ -122,8 +138,14 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     ///动画
     DiffResult<SingleNode<T, P>, SingleData<T, P>> diffResult =
         DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data, onCreateAnimatorObj);
-    Map<SingleData<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(key, MapNode(value.rect, value.position)));
-    Map<SingleData<T, P>, MapNode> endMap = diffResult.endMap.map((key, value) => MapEntry(key, MapNode(value.rect, value.position)));
+    Map<SingleData<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
+          key,
+          MapNode(value.rect, value.position, value.arc),
+        ));
+    Map<SingleData<T, P>, MapNode> endMap = diffResult.endMap.map((key, value) => MapEntry(
+          key,
+          MapNode(value.rect, value.position, value.arc),
+        ));
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
       onAnimatorStart(diffResult);
@@ -148,29 +170,50 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   ///布局GroupNode的Column
-  void onLayoutGroupColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, GridCoord coord, AxisIndex xIndex, DynamicData x);
+  void onLayoutGroupColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
 
   ///布局Column里面的子View
-  void onLayoutColumn(ColumnNode<T, P> columnNode, GridCoord coord, AxisIndex xIndex) {
+  void onLayoutColumn(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
     final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
     final num down = columnNode.nodeList.first.down;
-    final Rect rect = columnNode.rect;
     final num diff = up - down;
     final bool vertical = series.direction == Direction.vertical;
+
+    ///Rect
+    final Rect rect = columnNode.rect;
     final double size = vertical ? rect.height : rect.width;
     double bottom = rect.bottom;
     double left = rect.left;
+
+    ///Polar
+    final Arc arc = columnNode.arc;
+    final num arcSize = vertical ? (arc.outRadius - arc.innerRadius).abs() : arc.sweepAngle;
+    double radius = arc.innerRadius.toDouble();
+    double angle = arc.startAngle.toDouble();
+
     for (var node in columnNode.nodeList) {
       num percent = (node.up - node.down) / diff;
-      double length = percent * size;
-      if (vertical) {
-        bottom = bottom - length;
-        node.rect = Rect.fromLTWH(rect.left, bottom, rect.width, length);
+      if (series.coordSystem == CoordSystem.polar) {
+        double length = percent * arcSize.toDouble();
+        if (vertical) {
+          node.arc = arc.copy(innerRadius: radius, outRadius: radius + length);
+          radius += length;
+        } else {
+          node.arc = arc.copy(startAngle: angle, sweepAngle: length);
+          angle += length;
+        }
+        node.position = node.rect.center;
       } else {
-        node.rect = Rect.fromLTWH(left, rect.top, length, rect.height);
-        left += length;
+        double length = percent * size;
+        if (vertical) {
+          bottom = bottom - length;
+          node.rect = Rect.fromLTWH(rect.left, bottom, rect.width, length);
+        } else {
+          node.rect = Rect.fromLTWH(left, rect.top, length, rect.height);
+          left += length;
+        }
+        node.position = node.rect.center;
       }
-      node.position = node.rect.center;
     }
   }
 
@@ -178,16 +221,28 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   SingleNode<T, P> onCreateAnimatorObj(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
     var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
     var rn = SingleNode<T, P>(node.parent, dd);
-    final Rect rect = node.rect;
-
-    Rect rr;
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
+    if (series.coordSystem == CoordSystem.polar) {
+      final Arc arc = node.arc;
+      Arc rr;
+      if (series.animatorStyle == GridAnimatorStyle.expand) {
+        rr = arc.copy(innerRadius: 0, outRadius: 0);
+      } else {
+        rr = arc.copy(outRadius: arc.innerRadius);
+      }
+      rn.arc = rr;
+      rn.position = circlePoint((rr.innerRadius + rr.outRadius) / 2, (rr.startAngle + rr.sweepAngle / 2), rr.center);
     } else {
-      rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
+      final Rect rect = node.rect;
+      Rect rr;
+      if (series.animatorStyle == GridAnimatorStyle.expand) {
+        rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
+      } else {
+        rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
+      }
+      rn.rect = rr;
+      rn.position = rr.center;
     }
-    rn.rect = rr;
-    rn.position = rr.center;
+
     return rn;
   }
 
@@ -196,15 +251,21 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   ///更新动画节点
   void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleData<T, P>, MapNode> startMap, Map<SingleData<T, P>, MapNode> endMap) {
     var data = node.data;
-    var s = startMap[data]!.rect;
-    var e = endMap[data]!.rect;
-    Rect r;
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      r = Rect.lerp(s, e, t)!;
+    if (series.coordSystem == CoordSystem.polar) {
+      var s = startMap[data]!.arc;
+      var e = endMap[data]!.arc;
+      node.arc = Arc.lerp(s, e, t);
     } else {
-      r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
+      var s = startMap[data]!.rect;
+      var e = endMap[data]!.rect;
+      Rect r;
+      if (series.animatorStyle == GridAnimatorStyle.expand) {
+        r = Rect.lerp(s, e, t)!;
+      } else {
+        r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
+      }
+      node.rect = r;
     }
-    node.rect = r;
   }
 
   void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
@@ -328,6 +389,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 class MapNode {
   final Rect rect;
   final Offset offset;
+  final Arc arc;
 
-  MapNode(this.rect, this.offset);
+  MapNode(this.rect, this.offset, this.arc);
 }
