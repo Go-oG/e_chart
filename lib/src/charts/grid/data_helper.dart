@@ -75,7 +75,12 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
   Map<AxisIndex, List<StackGroup<T, P>>> _splitDataByAxis(OriginInfo<T, P> originInfo, List<P> dataList) {
     Map<AxisIndex, List<P>> axisGroupMap = {};
     for (var group in dataList) {
-      int xIndex = group.xAxisIndex ?? _series.xAxisIndex;
+      int xIndex;
+      if (_series.coordSystem == CoordSystem.polar) {
+        xIndex = group.polarAxisIndex ?? _series.polarAxisIndex;
+      } else {
+        xIndex = group.xAxisIndex ?? _series.xAxisIndex;
+      }
       if (xIndex < 0) {
         xIndex = 0;
       }
@@ -113,6 +118,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     ///合并数据
     each(groupDataSetList, (group, index) {
       StackGroup<T, P> stackGroup = stackGroupList[index];
+
       ///<stackId>
       Map<String, List<Wrap<T, P>>> stackDataMap = {};
       List<Wrap<T, P>> singleDataList = [];

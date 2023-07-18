@@ -285,11 +285,14 @@ class Context {
   }
 
   PolarCoord findPolarCoord([int polarIndex = 0]) {
-    if (polarIndex > config.polarList.length) {
-      polarIndex = 0;
-    }
     if (config.polarList.isEmpty) {
       throw FlutterError('暂无Polar坐标系');
+    }
+    if(polarIndex<0){
+      polarIndex=0;
+    }
+    if (polarIndex > config.polarList.length) {
+      polarIndex = 0;
     }
     return _coordMap[config.polarList[polarIndex]]! as PolarCoord;
   }

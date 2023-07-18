@@ -1,11 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/grid/base_grid_series.dart';
-import 'package:e_chart/src/charts/grid/group_node.dart';
 import 'package:flutter/material.dart';
-
-import '../grid/single_node.dart';
 
 class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
   Corner corner;
@@ -82,7 +78,7 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
     super.clip,
     super.z,
     super.tooltip,
-  }) : super(radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
+  });
 }
 
 /// 标识一个Group的手势联动策略

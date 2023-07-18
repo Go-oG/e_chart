@@ -48,6 +48,21 @@ class Arc implements Shape {
     );
   }
 
+  static Arc lerp(Arc begin, Arc end, double t) {
+    double innerRadius = begin.innerRadius + (end.innerRadius - begin.innerRadius) * t;
+    double outerRadius = begin.outRadius + (end.outRadius - begin.outRadius) * t;
+    double startAngle = begin.startAngle + (end.startAngle - begin.startAngle) * t;
+    double sweepAngle = begin.sweepAngle + (end.sweepAngle - begin.sweepAngle) * t;
+    Offset center = Offset.lerp(begin.center, end.center, t)!;
+    return Arc(
+      innerRadius: innerRadius,
+      outRadius: outerRadius,
+      sweepAngle: sweepAngle,
+      startAngle: startAngle,
+      center: center,
+    );
+  }
+
   @override
   String toString() {
     return 'IR:${innerRadius.toStringAsFixed(1)} OR:${outRadius.toStringAsFixed(1)} SA:${startAngle.toStringAsFixed(1)} '
@@ -160,7 +175,7 @@ class Arc implements Shape {
 
     ///修正存在angleGap时视觉上间隔不一致问题(只有innerRadius>0时有效)
     if (padAngle > 0 && ir > 0) {
-      double diff=(or-ir)*(pi*padAngle/180)*0.7;
+      double diff = (or - ir) * (pi * padAngle / 180) * 0.7;
       double outOffset = (diff / (pi * or)) * 180;
       outEndAngle += outOffset * direction;
     }

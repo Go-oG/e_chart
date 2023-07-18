@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+
 import '../../core/view_state.dart';
 import '../../model/index.dart';
 import 'base_data.dart';
@@ -13,7 +15,11 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
 
   GroupNode(this.group);
 
+  ///二维坐标使用
   Rect rect = Rect.zero;
+
+  ///极坐标使用
+  Arc arc = Arc();
 
   DynamicData getX() {
     for (var list in nodeList) {
@@ -26,5 +32,4 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
     }
     throw ChartError("无法找到对应的横坐标");
   }
-
 }

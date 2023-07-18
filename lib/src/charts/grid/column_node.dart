@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/src/charts/grid/group_node.dart';
 import 'package:e_chart/src/charts/grid/stack_data.dart';
 
+import '../../shape/arc.dart';
 import 'base_data.dart';
 import 'single_node.dart';
 
@@ -12,6 +13,9 @@ class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
   List<SingleNode<T, P>> nodeList = [];
 
   Rect rect = Rect.zero;
+
+  Arc arc=Arc();
+
 
   ColumnNode(this.parent, this.data);
 

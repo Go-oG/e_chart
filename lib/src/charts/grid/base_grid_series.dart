@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 
 class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends ChartSeries {
   List<P> data;
+
+  ///指示图形排列方式
   Direction direction;
+
   SelectedMode selectedMode;
   GridAnimatorStyle animatorStyle;
 
@@ -22,22 +25,19 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
     this.realtimeSort = false,
     super.animation = const AnimatorProps(curve: Curves.easeOutQuart),
     super.backgroundColor,
-    super.calendarIndex,
     super.clip,
-    super.coordSystem,
+    super.coordSystem = CoordSystem.grid,
+    super.xAxisIndex,
+    super.yAxisIndex,
+    super.polarAxisIndex,
     super.enableClick,
     super.enableDrag,
     super.enableHover,
     super.enableScale,
     super.id,
-    super.parallelIndex,
-    super.polarAxisIndex,
-    super.radarIndex,
     super.tooltip,
-    super.xAxisIndex,
-    super.yAxisIndex,
     super.z,
-  });
+  }) : super(radarIndex: -1, parallelIndex: -1, calendarIndex: -1);
 
   DataHelper<T, P, BaseGridSeries>? _helper;
 

@@ -9,17 +9,14 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
   void onLayoutGroupColumn(
     AxisGroup<BarItemData, BarGroupData> axisGroup,
     GroupNode<BarItemData, BarGroupData> groupNode,
-    GridCoord coord,
     AxisIndex xIndex,
     DynamicData x,
   ) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
-
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
       columnCount = 0;
     }
-
     final bool vertical = series.direction == Direction.vertical;
     final Rect rect = groupNode.rect;
     final num groupSize = vertical ? rect.width : rect.height;
@@ -75,26 +72,49 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     double left = rect.left + groupGap * 0.5;
     double top = rect.top + groupGap * 0.5;
 
+    ///极坐标
+    num angle = groupNode.arc.startAngle;
+    num radius = groupNode.arc.innerRadius;
+
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
-      var parent=node.data.data.first.parent;
-      int yIndex =parent.yAxisIndex ?? series.yAxisIndex;
-      num up = node.getUp();
-      ///确定上界和下界
-      Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(up));
-      Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));
+      var parent = node.data.data.first.parent;
+      int yIndex = parent.yAxisIndex ?? series.yAxisIndex;
 
-      double h = (r1.top - r2.top).abs();
-      double w = (r1.left - r2.left).abs();
-      Rect tmpRect;
-      if (vertical) {
-        tmpRect = Rect.fromLTWH(left, rect.bottom - h, sizeList[i], h);
-        left += columnGap + sizeList[i];
+      if (series.coordSystem == CoordSystem.polar) {
+        var coord = context.findPolarCoord(series.polarAxisIndex);
+
+        ///确定上界和下界
+        var p1 = coord.dataToPosition(x, tmpData.change(node.getUp()));
+        var p2 = coord.dataToPosition(x, tmpData.change(node.getDown()));
+        Arc arc;
+        if (vertical) {
+          var tmpAngle = (p1.angle[0] - p2.angle[0]);
+          arc = groupNode.arc.copy(startAngle: angle, sweepAngle: tmpAngle);
+          angle += tmpAngle;
+        } else {
+          var rr = (p1.radius[0] - p1.radius[0]).abs();
+          arc = groupNode.arc.copy(innerRadius: radius, outRadius: radius + rr);
+          radius += rr;
+        }
+        node.arc = arc;
       } else {
-        tmpRect = Rect.fromLTWH(left, top, w, sizeList[i]);
-        top += columnGap + sizeList[i];
+        var coord = context.findGridCoord();
+        ///确定上界和下界
+        Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getUp()));
+        Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));
+        double h = (r1.top - r2.top).abs();
+        double w = (r1.left - r2.left).abs();
+        Rect tmpRect;
+        if (vertical) {
+          tmpRect = Rect.fromLTWH(left, rect.bottom - h, sizeList[i], h);
+          left += columnGap + sizeList[i];
+        } else {
+          tmpRect = Rect.fromLTWH(left, top, w, sizeList[i]);
+          top += columnGap + sizeList[i];
+        }
+        node.rect = tmpRect;
       }
-      node.rect = tmpRect;
     });
   }
 
@@ -123,4 +143,5 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
   LineStyle? generateLineStyle(SingleNode<BarItemData, BarGroupData> node) {
     return getBorderStyle(node, node.data.groupIndex);
   }
+
 }

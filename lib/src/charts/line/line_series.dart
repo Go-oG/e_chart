@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/grid/base_grid_series.dart';
 
 class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
   bool connectNulls; // 是否连接空数据
@@ -61,5 +60,5 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
     super.clip,
     super.z,
     super.tooltip,
-  }) : super(radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
+  });
 }
