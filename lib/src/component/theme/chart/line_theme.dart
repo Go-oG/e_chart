@@ -1,4 +1,3 @@
-import '../../../style/label.dart';
 import '../../../style/line_style.dart';
 import '../../../symbol/chart_symbol.dart';
 import '../../../symbol/circle_symbol.dart';
@@ -9,8 +8,8 @@ class LineTheme {
   List<num> dashList = [];
   bool fill = false;
   double opacity = 0.5;
-  ChartSymbol symbol = CircleSymbol();
-  bool showSymbol = false;
+  ChartSymbol symbol = CircleSymbol(outerRadius: 4);
+  bool showSymbol = true;
   bool smooth = false;
 
   LineStyle getLineStyle(ChartTheme theme, int index) {

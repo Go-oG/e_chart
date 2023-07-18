@@ -1,6 +1,5 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/grid/base_data.dart';
 
 ///处理二维坐标系下堆叠数据
 ///只针对数字类型处理
@@ -34,21 +33,42 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
 
   OriginInfo<T, P> _originInfo = OriginInfo({}, {});
 
+  ///解析数据
+  ///将给定数据解析为类似于栈的数据
+  ///并保存相关的数据信息
+  AxisGroup<T, P> _parse() {
+    ///解析原始数据信息
+    _originInfo = _parseOriginInfo(_dataList);
+
+    ///将数据安装使用的X坐标轴进行分割
+    Map<AxisIndex, List<StackGroup<T, P>>> resultMap = _splitDataByAxis(_originInfo, _dataList);
+
+    ///最后进行数据合并整理
+    AxisGroup<T, P> group = AxisGroup(resultMap);
+    group.mergeData();
+    _extremeMap = _collectExtreme(group);
+    return group;
+  }
+
   ///解析数据的原始信息
   ///包括子数据-父数据映射关系、
   ///排序索引
   OriginInfo<T, P> _parseOriginInfo(List<P> dataList) {
     Map<P, int> sortMap = {};
-    Map<T, P> parentMap = {};
-    each(dataList, (p0, p1) {
-      if (!sortMap.containsKey(p0)) {
-        sortMap[p0] = p1;
+    Map<P, Map<int, Wrap<T, P>>> dataMap = {};
+
+    each(dataList, (group, groupIndex) {
+      if (!sortMap.containsKey(group)) {
+        sortMap[group] = groupIndex;
       }
-      for (var ele in p0.data) {
-        parentMap[ele] = p0;
-      }
+      Map<int, Wrap<T, P>> childMap = dataMap[group] ?? {};
+      dataMap[group] = childMap;
+
+      each(group.data, (childData, i) {
+        childMap[i] = Wrap(childData, group, groupIndex, i);
+      });
     });
-    return OriginInfo(sortMap, parentMap);
+    return OriginInfo(sortMap, dataMap);
   }
 
   ///将给定的数据按照其使用的X 坐标轴进行分割
@@ -65,6 +85,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
       }
       axisGroupMap[index]!.add(group);
     }
+
     Map<AxisIndex, List<StackGroup<T, P>>> resultMap = {};
     axisGroupMap.forEach((key, value) {
       resultMap[key] = _handleSingleAxis(key, value, originInfo);
@@ -72,82 +93,76 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return resultMap;
   }
 
+  ///处理单根坐标轴
   List<StackGroup<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list, OriginInfo<T, P> originInfo) {
     int barGroupCount = _computeBarCount(list);
-    List<List<T>> itemList = List.generate(barGroupCount, (index) => []);
 
+    ///存放分组数据
+    List<List<InnerData<T, P>>> groupDataSetList = List.generate(barGroupCount, (index) => []);
     for (int i = 0; i < barGroupCount; i++) {
       for (var data in list) {
-        if (data.data.length <= i) {
+        if (i >= data.data.length) {
           continue;
         }
-        itemList[i].add(data.data[i]);
+        groupDataSetList[i].add(InnerData(data.data[i], data));
       }
     }
 
-    List<StackGroup<T, P>> groupList = [];
+    List<StackGroup<T, P>> stackGroupList = List.generate(barGroupCount, (index) => StackGroup(axisIndex, []));
 
     ///合并数据
-    each(itemList, (group, dataIndex) {
+    each(groupDataSetList, (group, index) {
+      StackGroup<T, P> stackGroup = stackGroupList[index];
       ///<stackId>
-      Map<String, List<T>> stackDataMap = {};
-      List<T> singleDataList = [];
-      each(group, (data, p1) {
-        var parent = originInfo.parentMap[data]!;
-        if (parent.isStack) {
-          List<T> dl = stackDataMap[parent.stackId!] ?? [];
-          stackDataMap[parent.stackId!] = dl;
-          dl.add(data);
+      Map<String, List<Wrap<T, P>>> stackDataMap = {};
+      List<Wrap<T, P>> singleDataList = [];
+      each(group, (innerData, p1) {
+        var wrap = originInfo.dataMap[innerData.parent]![index];
+        if (wrap == null) {
+          return;
+        }
+        if (wrap.parent.isStack) {
+          var stackId = wrap.parent.stackId!;
+          List<Wrap<T, P>> dl = stackDataMap[stackId] ?? [];
+          stackDataMap[stackId] = dl;
+          dl.add(wrap);
         } else {
-          singleDataList.add(data);
+          singleDataList.add(wrap);
         }
       });
-      StackGroup<T, P> stackGroup = StackGroup(axisIndex, []);
-
       stackDataMap.forEach((key, value) {
-        List<StackData<T, P>> dl = [];
-        each(value, (ele, i) {
-          int groupIndex = originInfo.sortMap[originInfo.parentMap[ele]]!;
-          dl.add(StackData<T, P>(true, ele, originInfo.parentMap[ele]!, groupIndex, dataIndex));
-        });
-        StackColumn<T, P> column = StackColumn(dl, true, originInfo.parentMap[value.first]!.strategy);
+        List<SingleData<T, P>> dl = List.from(value.map((e) => SingleData(e, true)));
+        ColumnData<T, P> column = ColumnData(dl, true, value.first.parent.strategy);
         stackGroup.column.add(column);
       });
-
       each(singleDataList, (ele, i) {
-        int groupIndex = originInfo.sortMap[originInfo.parentMap[ele]]!;
-        StackColumn<T, P> column = StackColumn(
-          [StackData(false, ele, originInfo.parentMap[ele]!, groupIndex, dataIndex)],
-          false,
-          StackStrategy.all,
-        );
+        ColumnData<T, P> column = ColumnData([SingleData(ele, false)], false, StackStrategy.all);
         stackGroup.column.add(column);
       });
-      groupList.add(stackGroup);
     });
 
     ///排序
-    for (StackGroup group in groupList) {
+    for (StackGroup group in stackGroupList) {
       //排序孩子
       for (var child in group.column) {
         if (child.data.length > 1) {
           child.data.sort((a, b) {
-            var ap = originInfo.parentMap[a.data];
-            var bp = originInfo.parentMap[b.data];
-            return originInfo.sortMap[ap]!.compareTo(originInfo.sortMap[bp]!);
+            var ai = a.wrap.groupIndex;
+            var bi = b.wrap.groupIndex;
+            return ai.compareTo(bi);
           });
         }
       }
       //排序自身
       if (group.column.length > 1) {
         group.column.sort((a, b) {
-          var ap = originInfo.parentMap[a.data.last.data]!;
-          var bp = originInfo.parentMap[b.data.last.data]!;
-          return originInfo.sortMap[ap]!.compareTo(originInfo.sortMap[bp]!);
+          var ai = a.data.first.wrap.groupIndex;
+          var bi = b.data.first.wrap.groupIndex;
+          return ai.compareTo(bi);
         });
       }
     }
-    return groupList;
+    return stackGroupList;
   }
 
   ///收集极值信息
@@ -179,23 +194,6 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return map;
   }
 
-  ///解析数据
-  ///将给定数据解析为类似于栈的数据
-  ///并保存相关的数据信息
-  AxisGroup<T, P> _parse() {
-    ///解析原始数据信息
-    _originInfo = _parseOriginInfo(_dataList);
-
-    ///将数据安装使用的X坐标轴进行分割
-    Map<AxisIndex, List<StackGroup<T, P>>> resultMap = _splitDataByAxis(_originInfo, _dataList);
-
-    ///最后进行数据合并整理
-    AxisGroup<T, P> group = AxisGroup(resultMap);
-    group.mergeData();
-    _extremeMap = _collectExtreme(group);
-    return group;
-  }
-
   int _computeBarCount(List<P> list) {
     int max = 0;
     for (P data in list) {
@@ -209,8 +207,14 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
 
 class OriginInfo<T extends BaseItemData, P extends BaseGroupData<T>> {
   final Map<P, int> sortMap;
+  final Map<P, Map<int, Wrap<T, P>>> dataMap;
 
-  final Map<T, P> parentMap;
+  OriginInfo(this.sortMap, this.dataMap);
+}
 
-  OriginInfo(this.sortMap, this.parentMap);
+class InnerData<T extends BaseItemData, P extends BaseGroupData<T>> {
+  final T? data;
+  final P parent;
+
+  InnerData(this.data, this.parent);
 }

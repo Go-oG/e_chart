@@ -13,7 +13,7 @@ export 'grid/base_data.dart';
 export 'grid/base_grid_layout_helper.dart';
 export 'grid/base_grid_series.dart';
 export 'grid/column_node.dart';
-export 'grid/data_helper.dart';
+export 'grid/data_helper.dart' hide InnerData;
 export 'grid/group_node.dart';
 export 'grid/single_node.dart';
 

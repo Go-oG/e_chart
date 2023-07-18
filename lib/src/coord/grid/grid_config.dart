@@ -1,4 +1,5 @@
 import 'package:e_chart/src/model/enums/coordinate.dart';
+import 'package:flutter/painting.dart';
 
 import '../../component/tooltip/tool_tip.dart';
 import '../coord_config.dart';
@@ -17,7 +18,7 @@ class GridConfig extends CoordConfig {
     List<YAxis>? yAxisList,
     this.containLabel = false,
     this.toolTip,
-    super.padding,
+    super.padding=const EdgeInsets.only(left: 24,right: 24,bottom: 16,top: 16),
     super.margin,
     super.width,
     super.height,

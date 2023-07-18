@@ -16,7 +16,7 @@ class AxisTheme {
 
   bool showLabel = true;
   Color labelColor = const Color(0xFF6E7079);
-  num labelSize = 15;
+  num labelSize = 13;
 
   bool showMinorLabel = false;
   Color minorLabelColor = const Color(0xFF6E7079);

@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
@@ -37,7 +36,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         continue;
       }
       for (var data in group.data) {
-        dl.add(data.x);
+        if (data != null) {
+          dl.add(data.x);
+        }
       }
     }
     return dl;
@@ -52,6 +53,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 
     List<SingleNode<T, P>> nodeList = [];
     List<GroupNode<T, P>> gNodeList = [];
+
     Map<T, SingleNode<T, P>> nodeMap = {};
 
     ///开始布局
@@ -65,13 +67,17 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         var groupNode = GroupNode<T, P>(group);
         groupNodeList.add(groupNode);
         List<ColumnNode<T, P>> stackNodeList = [];
+
         for (var stack in group.column) {
-          ColumnNode<T, P> stackNode = ColumnNode(groupNode, stack);
-          stackNode.nodeList = buildSingleNode(stackNode, stack.data);
-          for (var ele in stackNode.nodeList) {
-            nodeMap[ele.data.data] = ele;
+          ColumnNode<T, P> columnNode = ColumnNode(groupNode, stack);
+          columnNode.nodeList = buildSingleNode(columnNode, stack.data);
+          for (var ele in columnNode.nodeList) {
+            var cd = ele.data.data;
+            if (cd != null) {
+              nodeMap[cd] = ele;
+            }
           }
-          stackNodeList.add(stackNode);
+          stackNodeList.add(columnNode);
         }
         groupNode.nodeList = stackNodeList;
       }
@@ -89,10 +95,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         } else {
           groupNode.rect = Rect.fromLTWH(0, areaRect.top, width, areaRect.height);
         }
-
         onLayoutGroupColumn(axisGroup, groupNode, coord, xIndex, x);
         each(groupNode.nodeList, (node, i) {
-          onLayoutColumn(node, coord, xIndex, x);
+          onLayoutColumn(node, coord, xIndex);
         });
       }
       gNodeList.addAll(groupNodeList);
@@ -115,9 +120,10 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     LayoutAnimatorType type,
   ) {
     ///动画
-    DiffResult<SingleNode<T, P>, T> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data.data, onCreateAnimatorObj);
-    Map<T, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(key, MapNode(value.rect, value.position)));
-    Map<T, MapNode> endMap = diffResult.endMap.map((key, value) => MapEntry(key, MapNode(value.rect, value.position)));
+    DiffResult<SingleNode<T, P>, SingleData<T, P>> diffResult =
+        DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data, onCreateAnimatorObj);
+    Map<SingleData<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(key, MapNode(value.rect, value.position)));
+    Map<SingleData<T, P>, MapNode> endMap = diffResult.endMap.map((key, value) => MapEntry(key, MapNode(value.rect, value.position)));
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
       onAnimatorStart(diffResult);
@@ -145,7 +151,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   void onLayoutGroupColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, GridCoord coord, AxisIndex xIndex, DynamicData x);
 
   ///布局Column里面的子View
-  void onLayoutColumn(ColumnNode<T, P> columnNode, GridCoord coord, AxisIndex xIndex, DynamicData x) {
+  void onLayoutColumn(ColumnNode<T, P> columnNode, GridCoord coord, AxisIndex xIndex) {
     final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
     final num down = columnNode.nodeList.first.down;
     final Rect rect = columnNode.rect;
@@ -169,9 +175,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   ///创建动画对象
-  SingleNode<T, P> onCreateAnimatorObj(T data, SingleNode<T, P> node, bool newData) {
-    var sd = node.data;
-    var dd = StackData<T, P>(node.data.stack, data, node.data.parent, sd.groupIndex, sd.dataIndex);
+  SingleNode<T, P> onCreateAnimatorObj(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
+    var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
     var rn = SingleNode<T, P>(node.parent, dd);
     final Rect rect = node.rect;
 
@@ -186,11 +191,11 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return rn;
   }
 
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, T> result) {}
+  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
 
   ///更新动画节点
-  void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<T, MapNode> startMap, Map<T, MapNode> endMap) {
-    var data = node.data.data;
+  void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleData<T, P>, MapNode> startMap, Map<SingleData<T, P>, MapNode> endMap) {
+    var data = node.data;
     var s = startMap[data]!.rect;
     var e = endMap[data]!.rect;
     Rect r;
@@ -202,12 +207,12 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     node.rect = r;
   }
 
-  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, T> result) {}
+  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
 
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, T> result) {}
+  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
 
   @nonVirtual
-  List<SingleNode<T, P>> buildSingleNode(ColumnNode<T, P> stackNode, List<StackData<T, P>> dataList) {
+  List<SingleNode<T, P>> buildSingleNode(ColumnNode<T, P> stackNode, List<SingleData<T, P>> dataList) {
     List<SingleNode<T, P>> nodeList = [];
     each(dataList, (data, i) {
       SingleNode<T, P> node = SingleNode(stackNode, data);

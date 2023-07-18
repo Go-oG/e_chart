@@ -24,7 +24,7 @@ export 'dynamic_text.dart';
 export 'group_data.dart';
 export 'point_data.dart';
 export 'range.dart';
-export 'stack_data.dart';
+export '../charts/grid/stack_data.dart';
 export 'string_number.dart';
 export 'text_position.dart';
 

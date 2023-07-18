@@ -64,26 +64,43 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
     each(list, (result, i) {
       AreaStyle? style = helper.getAreaStyle(result.data, i);
       result.areaStyle = style;
-      style?.drawPath(canvas, mPaint, result.areaPath);
+      if (style != null) {
+        for (var path in result.areaPathList) {
+          style.drawPath(canvas, mPaint, path);
+        }
+      }
     });
     each(list, (result, i) {
       var ls = helper.getLineStyle(result.data, i);
       result.lineStyle = ls;
-      ls?.drawPath(canvas, mPaint, result.borderPath);
+      if (ls != null) {
+        for (var path in result.borderPathList) {
+          ls.drawPath(canvas, mPaint, path);
+        }
+      }
     });
+
     if (series.symbolFun != null || theme.showSymbol) {
       ///绘制symbol
       SymbolDesc desc = SymbolDesc();
       each(list, (result, p1) {
         each(result.data.data, (data, i) {
+          if (data == null || i >= result.offsetList.length) {
+            return;
+          }
+          var offset = result.offsetList[i];
+          if (offset == null) {
+            return;
+          }
+
+          desc.center = offset;
           ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
           if (symbol != null) {
-            desc.center = helper.getNodePosition(data);
             symbol.draw(canvas, mPaint, desc);
           } else if (theme.showSymbol) {
-            desc.center = helper.getNodePosition(data);
             theme.symbol.draw(canvas, mPaint, desc);
           }
+
         });
       });
     }

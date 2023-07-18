@@ -3,7 +3,7 @@ import '../../utils/uuid_util.dart';
 
 class BaseGroupData<T> {
   late final String id;
-  List<T> data;
+  List<T?> data;
   int? xAxisIndex;
   int? yAxisIndex;
   String? stackId;
@@ -45,8 +45,8 @@ class BaseGroupData<T> {
 
 class BaseItemData {
   late final String id;
-  late num up;
-  late num down;
+  num up;
+  num down = 0;
   DynamicData x;
 
   BaseItemData(this.x, this.up, this.down, {String? id}) {
@@ -55,10 +55,20 @@ class BaseItemData {
     } else {
       this.id = randomId();
     }
+    if (up < down) {
+      num d = up;
+      up = down;
+      down = d;
+    }
   }
 
   BaseItemData.number(this.x, this.up, {String? id}) {
     down = 0;
+    if (up < down) {
+      num d = up;
+      up = down;
+      down = d;
+    }
     if (id != null && id.isNotEmpty) {
       this.id = id;
     } else {
@@ -73,5 +83,4 @@ class BaseItemData {
 
   @override
   int get hashCode => id.hashCode;
-
 }

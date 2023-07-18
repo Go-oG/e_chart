@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 
 abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult> extends ChartNotifier<Command> {
   final int axisIndex;
@@ -35,6 +35,26 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   TextDrawConfig onLayoutAxisName();
 
+  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
+    if (!kDebugMode) {
+      return;
+    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    canvas.drawCircle(offset, r.toDouble(), mPaint);
+  }
+
+  void debugDrawRect(Canvas canvas, Rect rect, {Color color = Colors.deepPurple, bool fill = false}) {
+    if (!kDebugMode) {
+      return;
+    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    canvas.drawRect(rect, mPaint);
+  }
+
   void draw(Canvas canvas, Paint paint, Rect coord) {
     var axisLine = axis.axisStyle;
     if (!axisLine.show) {
@@ -43,6 +63,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     onDrawAxisSplitArea(canvas, paint, coord);
     onDrawAxisSplitLine(canvas, paint, coord);
     onDrawAxisTick(canvas, paint);
+    onDrawAxisLabel(canvas, paint);
     onDrawAxisLine(canvas, paint);
     onDrawAxisName(canvas, paint);
   }
@@ -61,6 +82,8 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   void onDrawAxisLine(Canvas canvas, Paint paint) {}
 
   void onDrawAxisTick(Canvas canvas, Paint paint) {}
+
+  void onDrawAxisLabel(Canvas canvas, Paint paint) {}
 
   List<DynamicText> obtainLabel() {
     if (scale is CategoryScale) {

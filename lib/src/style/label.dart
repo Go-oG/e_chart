@@ -151,6 +151,4 @@ class LabelStyle {
     return this;
   }
 
-
-
 }

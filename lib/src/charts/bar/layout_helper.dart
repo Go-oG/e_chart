@@ -77,9 +77,9 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
 
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
-      int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
+      var parent=node.data.data.first.parent;
+      int yIndex =parent.yAxisIndex ?? series.yAxisIndex;
       num up = node.getUp();
-
       ///确定上界和下界
       Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(up));
       Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));

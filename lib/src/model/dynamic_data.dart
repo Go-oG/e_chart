@@ -37,7 +37,7 @@ class DynamicData {
       return '$data';
     }
     if (isNum) {
-      return (data as num).toStringAsFixed(1);
+      return formatNumber(data as num,1);
     }
 
     var time = data as DateTime;

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-
 import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -182,6 +181,7 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     Paint mPaint = Paint();
     mPaint.color = color;
     mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
     canvas.drawRect(rect, mPaint);
   }
 
@@ -215,13 +215,23 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     computeScroll();
     canvas.save();
     canvas.translate(left, top);
-    if (_series != null && _series!.clip) {
+    bool? clip = clipChild;
+    if (clip == null) {
+      if (_series != null) {
+        clip = _series!.clip;
+      } else {
+        clip = false;
+      }
+    }
+    if (clip) {
       canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
     }
     draw(canvas);
     canvas.restore();
     return false;
   }
+
+  bool? get clipChild => null;
 
   void onDrawBackground(Canvas canvas) {}
 
