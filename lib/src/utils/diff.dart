@@ -72,6 +72,7 @@ class DiffUtil {
     }
     return DiffResult(startMap, endMap, curList, finalList, removeSet, addSet, commonSet);
   }
+
 }
 
 class DiffResult<T, K> {

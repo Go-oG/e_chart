@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 /// 不可再分的最小绘制单元，
 class SingleNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewStateProvider {
   final ColumnNode<T, P> parent;
-  final StackData<T, P> data;
+  final SingleData<T, P> data;
 
   SingleNode(this.parent, this.data);
 
@@ -17,13 +17,13 @@ class SingleNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSt
 
   @override
   int get hashCode {
-    return data.data.hashCode;
+    return data.hashCode;
   }
 
   @override
   bool operator ==(Object other) {
     if (other is SingleNode) {
-      return other.data.data == data.data;
+      return other.data == data;
     }
     return false;
   }

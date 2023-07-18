@@ -147,7 +147,6 @@ class DefaultRender extends BaseRender {
     mPaint.color = context.config.theme.backgroundColor;
     mPaint.style = PaintingStyle.fill;
     canvas.drawRect(getGlobalAreaBounds(), mPaint);
-
     for (var v in context.coordList) {
       canvas.save();
       canvas.translate(v.left, v.top);

@@ -1,10 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 
-import '../grid/base_data.dart';
-
 class LineGroupData extends BaseGroupData<LineItemData> {
+  bool? smooth;
+
   LineGroupData(
     super.data, {
+    this.smooth,
     super.xAxisIndex,
     super.yAxisIndex,
     String? id,
@@ -14,15 +15,5 @@ class LineGroupData extends BaseGroupData<LineItemData> {
 }
 
 class LineItemData extends BaseItemData {
-  LineItemData(DynamicData x, num value) : super(x, value, 0);
-
-  @override
-  int get hashCode {
-    return id.hashCode;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is LineItemData && other.id == id;
-  }
+  LineItemData(DynamicData x, num value, {super.id}) : super(x, value, 0);
 }

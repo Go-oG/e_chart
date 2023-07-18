@@ -13,6 +13,8 @@ abstract class GridCoord extends Coord<GridConfig> {
 
   GridAxis getAxis(int axisIndex, bool isXAxis);
 
+  double getAxisLength(int axisIndex, bool isXAxis);
+
   ///获取平移量(滚动量)
   Offset getTranslation();
 
@@ -49,96 +51,155 @@ class GridCoordImpl extends GridCoord {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    Size size = super.onMeasure(parentWidth, parentHeight);
+    Size size = Size(parentWidth, parentHeight);
+    double w = parentWidth - props.padding.horizontal;
+    double h = parentHeight - props.padding.vertical;
+
     xMap.forEach((key, value) {
-      value.doMeasure(parentWidth, parentHeight);
+      value.doMeasure(w, h);
     });
     yMap.forEach((key, value) {
-      value.doMeasure(parentWidth, parentHeight);
+      value.doMeasure(w, h);
     });
-
+    for (var child in children) {
+      child.measure(w, h);
+    }
     return size;
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    double topPadding = props.padding.top;
-    double bottomPadding = props.padding.bottom;
-    double leftPadding = props.padding.left;
-    double rightPadding = props.padding.right;
+    double topOffset = props.padding.top;
+    double bottomOffset = props.padding.bottom;
+    double leftOffset = props.padding.left;
+    double rightOffset = props.padding.right;
 
+    num topEnd = 0;
+    num bottomEnd = 0;
     xMap.forEach((key, value) {
       if (Align2.start == value.axis.position) {
-        topPadding += value.axisInfo.bound.height + value.axis.offset;
+        topOffset += value.axisInfo.bound.height + value.axis.offset;
+        topEnd = value.axis.offset;
       } else {
-        bottomPadding += value.axisInfo.bound.height + value.axis.offset;
+        bottomOffset += value.axisInfo.bound.height + value.axis.offset;
+        bottomEnd = value.axis.offset;
       }
     });
+    topOffset -= topEnd;
+    bottomOffset -= bottomEnd;
 
+    num leftEnd = 0;
+    num rightEnd = 0;
     yMap.forEach((key, value) {
       var v = value.axisInfo.bound.width + value.axis.offset;
       if (Align2.end == value.axis.position) {
-        rightPadding += v;
+        rightOffset += v;
+        rightEnd += value.axis.offset;
       } else {
-        leftPadding += v;
+        leftOffset += v;
+        leftEnd += value.axis.offset;
       }
     });
+    rightOffset -= rightEnd;
+    leftOffset -= leftEnd;
 
-    double axisWith = width - (rightPadding + leftPadding);
-    double axisHeight = height - (topPadding + bottomPadding);
-    contentBox = Rect.fromLTWH(leftPadding, topPadding, axisWith, axisHeight);
-
-    ///布局X轴
-    double topOffset = topPadding;
-    double bottomOffset = height - bottomPadding;
-
+    double axisWith = width - (rightOffset + leftOffset);
+    double axisHeight = height - (topOffset + bottomOffset);
+    contentBox = Rect.fromLTWH(leftOffset, topOffset, axisWith, axisHeight);
     List<GridChild> childList = getGridChildList();
 
-    xMap.forEach((key, value) {
+    ///布局X轴
+    layoutXAxis(childList, contentBox);
+
+    ///布局Y轴
+    layoutYAxis(childList, contentBox);
+    for (var view in children) {
+      view.layout(contentBox.left, contentBox.top, contentBox.right, contentBox.bottom);
+    }
+  }
+
+  void layoutXAxis(List<GridChild> childList, Rect contentBox) {
+    List<XAxisImpl> topList = [];
+    List<XAxisImpl> bottomList = [];
+    for (var ele in props.xAxisList) {
+      if (ele.position == Align2.start) {
+        topList.add(xMap[ele]!);
+      } else {
+        bottomList.add(xMap[ele]!);
+      }
+    }
+    double topOffset = contentBox.top;
+    for (var value in topList) {
+      var axisInfo = value.axisInfo;
+      List<DynamicData> dl = [];
+      for (var child in childList) {
+        dl.addAll(child.getAxisExtreme(value.axisIndex, true));
+      }
+      var h = axisInfo.bound.height;
+      Rect rect = Rect.fromLTWH(contentBox.left, topOffset, contentBox.width, h);
+      var layoutAttrs = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
+      topOffset -= (h + value.axis.offset);
+      value.doLayout(layoutAttrs, dl);
+    }
+    double bottomOffset = contentBox.bottom;
+    for (var value in bottomList) {
       var axisInfo = value.axisInfo;
       List<DynamicData> dl = [];
       for (var child in childList) {
         dl.addAll(child.getAxisExtreme(value.axisIndex, true));
       }
 
-      LineAxisAttrs layoutProps;
       var h = axisInfo.bound.height;
-      if (value.axis.position == Align2.start) {
-        Rect rect = Rect.fromLTWH(leftPadding, topOffset, axisWith, h);
-        layoutProps = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
-        topOffset -= (h + value.axis.offset);
-      } else {
-        Rect rect = Rect.fromLTWH(leftPadding, bottomOffset, axisWith, h);
-        layoutProps = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
-        bottomOffset += (h + value.axis.offset);
-      }
-      value.doLayout(layoutProps, dl);
-    });
+      Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
+      var layoutAttrs = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
+      bottomOffset += (h + value.axis.offset);
+      value.doLayout(layoutAttrs, dl);
+    }
+  }
 
-    ///布局Y轴
-    double leftOffset = leftPadding;
-    double rightOffset = width - rightPadding;
-    yMap.forEach((key, value) {
+  void layoutYAxis(List<GridChild> childList, Rect contentBox) {
+    List<YAxisImpl> leftList = [];
+    List<YAxisImpl> rightList = [];
+    for (var ele in props.yAxisList) {
+      if (ele.position == Align2.start) {
+        leftList.add(yMap[ele]!);
+      } else {
+        rightList.add(yMap[ele]!);
+      }
+    }
+    double rightOffset = contentBox.left;
+    each(leftList, (value, i) {
       List<DynamicData> dl = [];
       for (var ele in childList) {
         dl.addAll(ele.getAxisExtreme(value.axisIndex, false));
       }
       LineAxisAttrs layoutProps;
-      var w = value.axisInfo.bound.width + value.axis.offset;
-      if (value.axis.position == Align2.start) {
-        Rect rect = Rect.fromLTWH(leftOffset - w, topPadding, w, axisHeight);
-        layoutProps = LineAxisAttrs(rect, rect.bottomRight, rect.topRight);
-        leftOffset -= w;
-      } else {
-        Rect rect = Rect.fromLTWH(rightOffset, topPadding, w, axisHeight);
-        layoutProps = LineAxisAttrs(rect, rect.bottomLeft, rect.topLeft);
-        rightOffset += w;
+      if (i != 0) {
+        rightOffset -= value.axis.offset;
       }
+      double w = value.axisInfo.bound.width;
+      Rect rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
+      layoutProps = LineAxisAttrs(rect, rect.bottomRight, rect.topRight);
+      rightOffset -= w;
       value.doLayout(layoutProps, dl);
     });
-    for (var view in children) {
-      view.layout(leftPadding, topPadding, width - rightPadding, height - bottomPadding);
-    }
+
+    double leftOffset = contentBox.right;
+    each(rightList, (value, i) {
+      List<DynamicData> dl = [];
+      for (var ele in childList) {
+        dl.addAll(ele.getAxisExtreme(value.axisIndex, false));
+      }
+      LineAxisAttrs layoutProps;
+      double w = value.axisInfo.bound.width;
+      if (i != 0) {
+        leftOffset += value.axis.offset;
+      }
+      Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
+      layoutProps = LineAxisAttrs(rect, rect.bottomLeft, rect.topLeft);
+      leftOffset += w;
+      value.doLayout(layoutProps, dl);
+    });
   }
 
   @override
@@ -242,5 +303,11 @@ class GridCoordImpl extends GridCoord {
       return getXAxis(axisIndex).axis;
     }
     return getYAxis(axisIndex).axis;
+  }
+
+  @override
+  double getAxisLength(int axisIndex, bool isXAxis) {
+    var axis = isXAxis ? getXAxis(axisIndex) : getYAxis(axisIndex);
+    return axis.getLength();
   }
 }

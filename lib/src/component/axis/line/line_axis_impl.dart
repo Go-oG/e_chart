@@ -13,7 +13,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   final tmpTick = MainTick();
   final MinorTick tmpMinorTick = MinorTick();
 
-  LineAxisImpl(super.context,super.axis, {super.axisIndex = 0});
+  LineAxisImpl(super.context, super.axis, {super.axisIndex = 0});
 
   double _scaleFactor = 1;
 
@@ -49,7 +49,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
-    return BaseAxisImpl.toScale(axis,[0, distance], dataSet);
+    return BaseAxisImpl.toScale(axis, [0, distance], dataSet);
   }
 
   @override
@@ -236,6 +236,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
     Offset start = attrs.start;
     Offset end = attrs.end;
+
     ///只实现垂直和水平方向
     if (!(start.dx == end.dx || start.dy == end.dy)) {
       return;
@@ -289,9 +290,11 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint) {
     var axisStyle = axis.axisStyle;
+    if(!axisStyle.show){
+      return;
+    }
     var theme = getAxisTheme();
     int maxCount = layoutResult.tick.length;
-
     each(layoutResult.tick, (line, i) {
       MainTick? tick = axisStyle.getMainTick(i, maxCount, theme);
       var minorTick = axisStyle.getMinorTick(i, maxCount, theme);
@@ -306,9 +309,16 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
         });
       }
     });
+  }
 
-    ///绘制标签
-    maxCount = layoutResult.label.length;
+  @override
+  void onDrawAxisLabel(Canvas canvas, Paint paint) {
+    var axisStyle = axis.axisStyle;
+    if(!axisStyle.show){
+      return;
+    }
+    var theme = getAxisTheme();
+    int maxCount = layoutResult.label.length;
     each(layoutResult.label, (label, i) {
       var labelStyle = axisStyle.getLabelStyle(i, maxCount, theme);
       var minorStyle = axisStyle.getMinorLabelStyle(i, maxCount, theme);
@@ -325,7 +335,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
         });
       }
     });
-
   }
 
   void onScaleFactorChange(double factor) {}
@@ -344,5 +353,9 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
       ol.add(Offset(x, y));
     }
     return ol;
+  }
+
+  double getLength() {
+    return (scale.range[0] - scale.range[1]).abs().toDouble();
   }
 }

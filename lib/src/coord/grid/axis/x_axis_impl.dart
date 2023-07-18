@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/coord/grid/axis/base_grid_axis_impl.dart';
+import 'package:flutter/material.dart';
 
 ///横向轴
 class XAxisImpl extends BaseGridAxisImpl {
@@ -11,7 +12,7 @@ class XAxisImpl extends BaseGridAxisImpl {
   void doMeasure(double parentWidth, double parentHeight) {
     AxisStyle axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
-      axisInfo.start = Offset.zero;
+      axisInfo.start = axis.position == Align2.start ? const Offset(0, 0) : Offset(0, parentHeight);
       axisInfo.end = Offset(parentWidth, 0);
       axisInfo.bound = Rect.fromLTWH(0, 0, parentWidth, 0);
       return;
@@ -19,15 +20,19 @@ class XAxisImpl extends BaseGridAxisImpl {
     double width = parentWidth;
     double height = (axisStyle.getAxisLineStyle(0, 1, getAxisTheme())?.width.toDouble()) ?? 0;
     MainTick? tick = axisStyle.getMainTick(0, 1, getAxisTheme());
-
-    num tickHeight = (tick?.length ?? 0);
+    num tickHeight = 0;
+    if (tick != null && tick.show) {
+      tickHeight = tick.length;
+    }
     MinorTick? minorTick = axisStyle.getMinorTick(0, 1, getAxisTheme());
-    tickHeight = max([tickHeight, (minorTick?.length ?? 0)]);
+    if (minorTick != null && minorTick.show) {
+      tickHeight = max([tickHeight, minorTick.length]);
+    }
     height += tickHeight;
 
     AxisLabel axisLabel = axisStyle.axisLabel;
     if (axisLabel.show) {
-      height += axisLabel.margin;
+      height += axisLabel.margin+axisLabel.padding;
       var maxStr = getMaxStr(Direction.horizontal);
       Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme())?.measure(maxStr) ?? Size.zero;
       height += textSize.height;

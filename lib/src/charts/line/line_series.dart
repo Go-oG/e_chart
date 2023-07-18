@@ -6,6 +6,7 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
   LinkageStyle linkageStyle;
 
   Fun3<LineGroupData, int, LineStyle?>? lineStyleFun;
+
   Fun3<LineGroupData, int, AreaStyle?>? areaStyleFun;
 
   /// 符号样式
@@ -30,7 +31,7 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
 
   LineSeries(
     super.data, {
-    this.connectNulls = true,
+    this.connectNulls = false,
     this.linkageStyle = LinkageStyle.group,
     this.lineStyleFun,
     this.areaStyleFun,
