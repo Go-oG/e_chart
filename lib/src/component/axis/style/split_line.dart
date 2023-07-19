@@ -11,7 +11,7 @@ class SplitLine {
   Fun3<int, int, LineStyle?>? splitLineFun;
 
   SplitLine({
-    this.show = false,
+    this.show = true,
     this.interval = -1,
     LineStyle? style,
     this.splitLineFun,
