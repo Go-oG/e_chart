@@ -6,10 +6,10 @@ import 'package:e_chart/e_chart.dart';
 class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends ChartSeries> {
   final List<P> _dataList;
   final S _series;
-
+  final Direction direction;
   late AxisGroup<T, P> _result;
 
-  DataHelper(this._series, this._dataList) {
+  DataHelper(this._series, this._dataList, this.direction) {
     _result = _parse();
   }
 
@@ -75,19 +75,24 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
   Map<AxisIndex, List<StackData<T, P>>> _splitDataByAxis(OriginInfo<T, P> originInfo, List<P> dataList) {
     Map<AxisIndex, List<P>> axisGroupMap = {};
     for (var group in dataList) {
-      int xIndex;
+      int axisIndex;
       CoordSystem system;
       if (_series.coordSystem == CoordSystem.polar) {
         system = CoordSystem.polar;
-        xIndex = group.polarAxisIndex ?? _series.polarAxisIndex;
+        axisIndex = group.polarAxisIndex ?? _series.polarAxisIndex;
       } else {
         system = CoordSystem.grid;
-        xIndex = group.xAxisIndex ?? _series.xAxisIndex;
+        if (direction == Direction.vertical) {
+          axisIndex = group.xAxisIndex ?? _series.xAxisIndex;
+        } else {
+          axisIndex = group.yAxisIndex ?? _series.yAxisIndex;
+        }
       }
-      if (xIndex < 0) {
-        xIndex = 0;
+      if (axisIndex < 0) {
+        axisIndex = 0;
       }
-      AxisIndex index = AxisIndex(system, xIndex);
+
+      AxisIndex index = AxisIndex(system, axisIndex);
       if (!axisGroupMap.containsKey(index)) {
         axisGroupMap[index] = [];
       }

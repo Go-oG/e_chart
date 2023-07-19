@@ -23,8 +23,8 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     var coord = context.findGridCoord();
     each(groupNode.nodeList, (node, i) {
       int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
-      var up = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getUp()));
-      var down = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getDown()));
+      var up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
+      var down = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getDown()));
       double h = (up.top - down.top).abs();
       double w = (up.left - down.left).abs();
       Rect tmpRect;
@@ -80,7 +80,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
         node.position = circlePoint((arc.innerRadius + arc.outRadius) / 2, (arc.startAngle + arc.sweepAngle / 2), arc.center);
       }
     } else {
-      GridAxis xAxis = context.findGridCoord().getAxis(xIndex.xIndex, true);
+      GridAxis xAxis = context.findGridCoord().getAxis(xIndex.axisIndex, true);
       for (var node in columnNode.nodeList) {
         if (node.data.data != null) {
           if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {

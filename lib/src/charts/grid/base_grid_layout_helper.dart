@@ -68,6 +68,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       }
     });
     bool usePolar = series.coordSystem == CoordSystem.polar;
+
     ///开始布局
     axisMap.forEach((key, value) {
       ///布局Group
@@ -78,32 +79,30 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         }
         var x = groupNode.getX();
         if (usePolar) {
-          int polarIndex=groupNode.nodeList.first.nodeList.first.data.parent.polarAxisIndex??series.polarAxisIndex;
+          int polarIndex = groupNode.nodeList.first.nodeList.first.data.parent.polarAxisIndex ?? series.polarAxisIndex;
           var coord = context.findPolarCoord(polarIndex);
-          PolarPosition position = coord.dataToPosition(x, tmpData.change(groupNode.nodeList.first.getUp()));
+          PolarPosition position;
+          if (vertical) {
+            position = coord.dataToPosition(x, tmpData.change(groupNode.nodeList.first.getUp()));
+          } else {
+            position = coord.dataToPosition(tmpData.change(groupNode.nodeList.first.getUp()), x);
+          }
           num ir = position.radius.length == 1 ? 0 : position.radius[0];
           num or = position.radius.length == 1 ? position.radius[0] : position.radius[1];
-          num sa = position.angle[0];
-          num ea = position.angle.length >= 2 ? position.angle[1] : sa;
-          groupNode.arc = Arc(
-            center: position.center,
-            innerRadius: ir,
-            outRadius: or,
-            startAngle: sa,
-            sweepAngle: ea - sa,
-          );
+          num sa = position.angle.length < 2 ? coord.getStartAngle() : position.angle[0];
+          num ea = position.angle.length >= 2 ? position.angle[1] : position.angle[0];
+          groupNode.arc = Arc(center: position.center, innerRadius: ir, outRadius: or, startAngle: sa, sweepAngle: ea - sa);
+          onLayoutColumnForPolar(axisGroup, groupNode, xIndex, x);
         } else {
           var coord = context.findGridCoord();
-          Rect areaRect = coord.dataToRect(xIndex.xIndex, x, 0, tmpData.change(groupNode.nodeList.first.getUp()));
+          int yIndex = groupNode.nodeList.first.nodeList.first.data.parent.yAxisIndex ?? series.yAxisIndex;
           if (vertical) {
-            groupNode.rect = Rect.fromLTWH(areaRect.left, 0, areaRect.width, height);
+            var rect = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(groupNode.nodeList.first.getUp()));
+            groupNode.rect = Rect.fromLTWH(rect.left, 0, rect.width, height);
           } else {
-            groupNode.rect = Rect.fromLTWH(0, areaRect.top, width, areaRect.height);
+            var rect = coord.dataToRect(xIndex.axisIndex, tmpData.change(groupNode.nodeList.first.getUp()), yIndex, x);
+            groupNode.rect = Rect.fromLTWH(0, rect.top, width, rect.height);
           }
-        }
-        if(usePolar){
-          onLayoutColumnForPolar(axisGroup, groupNode, xIndex, x);
-        }else{
           onLayoutColumnForGrid(axisGroup, groupNode, xIndex, x);
         }
         each(groupNode.nodeList, (node, i) {
@@ -134,42 +133,6 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       map[key] = groupNodeList;
     });
     return map;
-  }
-
-  ///归一化
-  void normalize(AxisGroup<T, P> axisGroup) {
-    axisGroup.groupMap.forEach((axisIndex, value) {
-      BaseScale xScale;
-      if (axisIndex.system == CoordSystem.polar) {
-        xScale = context.findPolarCoord(axisIndex.xIndex).getScale(false);
-      } else {
-        var coord = context.findGridCoord();
-        xScale = coord.getScale(axisIndex.xIndex, true);
-      }
-      for (var stack in value) {
-        for (var column in stack.data) {
-          for (var single in column.data) {
-            var cd = single;
-            var itemData = cd.data;
-            if (itemData == null) {
-              continue;
-            }
-            BaseScale yScale;
-            if (axisIndex.system == CoordSystem.polar) {
-              int yIndex = single.parent.polarAxisIndex ?? series.polarAxisIndex;
-              yScale = context.findPolarCoord(yIndex).getScale(true);
-            } else {
-              int yIndex = single.parent.yAxisIndex ?? series.yAxisIndex;
-              var coord = context.findGridCoord();
-              yScale = coord.getScale(yIndex, true);
-            }
-            cd.hRatio = xScale.toRangeRatio(itemData.x);
-            List<double> vr = [yScale.toRangeRatio(DynamicData(cd.down))[0], yScale.toRangeRatio(DynamicData(cd.up))[0]];
-            cd.vRatio = vr;
-          }
-        }
-      }
-    });
   }
 
   void onLayoutEnd(
@@ -257,7 +220,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     final Arc arc = columnNode.arc;
     final num arcSize = vertical ? arc.sweepAngle : (arc.outRadius - arc.innerRadius).abs();
     num offset = vertical ? arc.startAngle : arc.innerRadius;
-    for (var node in columnNode.nodeList) {
+    each(columnNode.nodeList, (node, i) {
       num percent = (node.up - node.down) / diff;
       num length = percent * arcSize;
       if (vertical) {
@@ -266,8 +229,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         node.arc = arc.copy(innerRadius: offset, outRadius: offset + length);
       }
       offset += length;
-      node.position = node.rect.center;
-    }
+      node.position = node.arc.centroid();
+    });
   }
 
   @nonVirtual
@@ -282,11 +245,20 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
     var rn = SingleNode<T, P>(node.parent, dd);
     final Rect rect = node.rect;
+
     Rect rr;
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
+    if (series.direction == Direction.vertical) {
+      if (series.animatorStyle == GridAnimatorStyle.expand) {
+        rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
+      } else {
+        rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
+      }
     } else {
-      rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
+      if (series.animatorStyle == GridAnimatorStyle.expand) {
+        rr = Rect.fromLTWH(0, rect.top, 0, rect.height);
+      } else {
+        rr = Rect.fromLTWH(rect.left, rect.top, 0, rect.height);
+      }
     }
     rn.rect = rr;
     rn.position = rr.center;
@@ -332,7 +304,11 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     if (series.animatorStyle == GridAnimatorStyle.expand) {
       r = Rect.lerp(s, e, t)!;
     } else {
-      r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
+      if (series.direction == Direction.vertical) {
+        r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
+      } else {
+        r = Rect.fromLTWH(e.left, e.top, e.width * t, e.height);
+      }
     }
     node.rect = r;
   }
@@ -471,5 +447,3 @@ class MapNode {
 
   MapNode(this.rect, this.offset, this.arc);
 }
-
-class InnerNode<T extends BaseItemData, P extends BaseGroupData<T>> {}

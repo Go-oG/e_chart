@@ -191,9 +191,14 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       timeList.sort((a, b) {
         return a.millisecondsSinceEpoch.compareTo(b.millisecondsSinceEpoch);
       });
+
       DateTime start = timeList[0];
       DateTime end = timeList[timeList.length - 1];
-      return TimeScale(axis.timeType, [start, end], range);
+      List<DateTime> resultList = [start, end];
+      if (axis.inverse) {
+        resultList = List.from(resultList.reversed);
+      }
+      return TimeScale(axis.timeType, resultList, range);
     }
 
     if (list.length < 2) {
@@ -210,7 +215,6 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       List<num> logV = [log(v[0]) / base, log(v[1]) / base];
       v = logV;
     }
-
     NiceScale step = NiceScale.nice(
       v[0],
       v[1],
@@ -221,11 +225,15 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       start0: axis.start0,
       type: axis.niceType,
     );
+    List<num> resultList = [step.start, step.end];
+    if (axis.inverse) {
+      resultList = List.from(resultList.reversed);
+    }
     if (type == AxisType.log) {
-      return LogScale([step.start, step.end], range, step: step.step);
+      return LogScale(resultList, range, step: step.step);
     }
     if (type == AxisType.value) {
-      return LinearScale([step.start, step.end], range, step: step.step);
+      return LinearScale(resultList, range, step: step.step);
     }
     throw ChartError('现有数据无法推导出Scale');
   }

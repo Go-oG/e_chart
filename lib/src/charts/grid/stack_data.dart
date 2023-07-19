@@ -2,18 +2,18 @@ import 'package:e_chart/e_chart.dart';
 
 class AxisIndex {
   final CoordSystem system;
-  ///X 轴索引
-  final int xIndex;
-  const AxisIndex(this.system, this.xIndex);
+  ///轴索引,在垂直方向上其应该对应X轴 水平方向上应该对应Y轴索引
+  final int axisIndex;
+  const AxisIndex(this.system, this.axisIndex);
 
   @override
   int get hashCode {
-    return Object.hash(system, xIndex);
+    return Object.hash(system, axisIndex);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AxisIndex && other.xIndex == xIndex && other.system == system;
+    return other is AxisIndex && other.axisIndex == axisIndex && other.system == system;
   }
 }
 
@@ -34,19 +34,10 @@ class AxisGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
 
   int getColumnCount(AxisIndex index) {
     List<StackData>? group = groupMap[index];
-    if (group == null) {
-      return 1;
+    if (group == null || group.isEmpty) {
+      return 0;
     }
-    int count = 0;
-    for (StackData sg in group) {
-      if (sg.data.length > count) {
-        count = sg.data.length;
-      }
-    }
-    if (count == 0) {
-      return 1;
-    }
-    return count;
+    return group.first.data.length;
   }
 }
 
