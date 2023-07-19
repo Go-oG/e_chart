@@ -5,6 +5,14 @@ import 'package:e_chart/e_chart.dart';
 abstract class Coord<T extends CoordConfig> extends ChartViewGroup {
   final T props;
 
+  double scaleXFactor = 1;
+  double scaleYFactor = 1;
+  double scrollXOffset = 0;
+  double scrollYOffset = 0;
+
+  ///存储内容的边界
+  Rect contentBox = Rect.zero;
+
   Coord(this.props);
 
   final RectGesture _gesture = RectGesture();
@@ -190,4 +198,17 @@ abstract class Coord<T extends CoordConfig> extends ChartViewGroup {
   void onScaleUpdate(Offset offset, double rotation, double scale, double hScale, double vScale, bool doubleClick) {}
 
   void onScaleEnd() {}
+
+  Offset getScaleFactor() {
+    return Offset(scaleXFactor, scaleYFactor);
+  }
+
+  Offset getTranslation() {
+    return Offset(scrollXOffset, scrollYOffset);
+  }
+
+  ///获取最大能够平移的值
+  Offset getMaxTranslation() {
+    return Offset.zero;
+  }
 }

@@ -17,7 +17,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   int radarIndex;
   int parallelIndex;
   Color? backgroundColor;
-  AnimatorProps? animation; //动画
+  AnimatorAttrs? animation; //动画
   ToolTip? tooltip;
 
   ///手势相关
@@ -36,7 +36,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       this.calendarIndex = 0,
       this.radarIndex = 0,
       this.parallelIndex = 0,
-      this.animation = const AnimatorProps(),
+      this.animation = const AnimatorAttrs(),
       this.coordSystem,
       this.tooltip,
       this.enableClick,
@@ -65,11 +65,11 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     value = Command.configChange;
   }
 
-  AnimatorProps get animatorProps {
+  AnimatorAttrs get animatorProps {
     if (animation != null) {
       return animation!;
     }
-    return const AnimatorProps();
+    return const AnimatorAttrs();
   }
 }
 

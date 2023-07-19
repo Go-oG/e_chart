@@ -1,6 +1,6 @@
 import 'package:flutter/animation.dart';
 
-class AnimatorProps {
+class AnimatorAttrs {
   final Duration duration;
   final Duration updateDuration;
   final Duration delay;
@@ -12,10 +12,10 @@ class AnimatorProps {
   final AnimationBehavior behavior;
   final int threshold;
 
-  const AnimatorProps({
+  const AnimatorAttrs({
     this.duration = const Duration(milliseconds: 1200),
-    this.updateDuration = const Duration(milliseconds: 350),
-    this.delay = Duration.zero,
+    this.updateDuration = const Duration(milliseconds: 400),
+    this.delay = const Duration(milliseconds: 60),  ///这里默认有个延迟是为了让动画更自然
     this.updateDelay = Duration.zero,
     this.threshold = 2000,
     this.behavior = AnimationBehavior.normal,
