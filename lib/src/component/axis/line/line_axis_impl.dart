@@ -290,7 +290,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint) {
     var axisStyle = axis.axisStyle;
-    if(!axisStyle.show){
+    if (!axisStyle.show) {
       return;
     }
     var theme = getAxisTheme();
@@ -314,7 +314,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   @override
   void onDrawAxisLabel(Canvas canvas, Paint paint) {
     var axisStyle = axis.axisStyle;
-    if(!axisStyle.show){
+    if (!axisStyle.show) {
       return;
     }
     var theme = getAxisTheme();

@@ -66,7 +66,7 @@ class Arc implements Shape {
   @override
   String toString() {
     return 'IR:${innerRadius.toStringAsFixed(1)} OR:${outRadius.toStringAsFixed(1)} SA:${startAngle.toStringAsFixed(1)} '
-        'EA:${endAngle.toStringAsFixed(1)} corner:${cornerRadius.toStringAsFixed(1)}';
+        'EA:${endAngle.toStringAsFixed(1)}';
   }
 
   double get endAngle => (startAngle + sweepAngle).toDouble();

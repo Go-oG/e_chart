@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
@@ -12,18 +13,18 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     AxisIndex xIndex,
     DynamicData x,
   ) {
-    int groupInnerCount = axisGroup.getColumnCount(xIndex);
-    int columnCount = groupInnerCount;
-    if (columnCount <= 1) {
-      columnCount = 0;
+    final int groupInnerCount = axisGroup.getColumnCount(xIndex);
+    int colGapCount = groupInnerCount - 1;
+    if (colGapCount <= 1) {
+      colGapCount = 0;
     }
     final bool vertical = series.direction == Direction.vertical;
-    final Rect rect = groupNode.rect;
-    final num groupSize = vertical ? rect.width : rect.height;
+    final Rect groupRect = groupNode.rect;
+    final num groupSize = vertical ? groupRect.width : groupRect.height;
 
     double groupGap = series.groupGap.convert(groupSize) * 2;
     double columnGap = series.columnGap.convert(groupSize);
-    double allGap = groupGap + columnCount * columnGap;
+    double allGap = groupGap + colGapCount * columnGap;
 
     double canUseSize = groupSize - allGap;
     if (canUseSize < 0) {
@@ -69,27 +70,32 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
       }
     }
 
-    double left = rect.left + groupGap * 0.5;
-    double top = rect.top + groupGap * 0.5;
+    double offset = vertical ? groupRect.left : groupRect.top;
+    offset += groupGap * 0.5;
 
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
       var parent = node.data.data.first.parent;
       int yIndex = parent.yAxisIndex ?? series.yAxisIndex;
       var coord = context.findGridCoord();
+      Rect up, down;
+      if (vertical) {
+        up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
+        down = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getDown()));
+      } else {
+        up = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getUp()), yIndex, x);
+        down = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getDown()), yIndex, x);
+      }
 
-      ///上界和下界
-      Rect up = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getUp()));
-      Rect down = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getDown()));
       double h = (up.top - down.top).abs();
       double w = (up.left - down.left).abs();
       Rect tmpRect;
       if (vertical) {
-        tmpRect = Rect.fromLTWH(left, rect.bottom - h, sizeList[i], h);
-        left += columnGap + sizeList[i];
+        tmpRect = Rect.fromLTWH(offset, groupRect.bottom - h, sizeList[i], h);
+        offset += columnGap + sizeList[i];
       } else {
-        tmpRect = Rect.fromLTWH(left, top, w, sizeList[i]);
-        top += columnGap + sizeList[i];
+        tmpRect = Rect.fromLTWH(groupRect.left, offset, w, sizeList[i]);
+        offset += columnGap + sizeList[i];
       }
       node.rect = tmpRect;
     });
@@ -102,39 +108,125 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     AxisIndex xIndex,
     DynamicData x,
   ) {
-    int groupInnerCount = axisGroup.getColumnCount(xIndex);
-    int columnCount = groupInnerCount;
-    if (columnCount <= 1) {
-      columnCount = 0;
+    final int groupInnerCount = axisGroup.getColumnCount(xIndex);
+    int colGapCount = groupInnerCount - 1;
+    if (colGapCount <= 1) {
+      colGapCount = 0;
     }
+
     final bool vertical = series.direction == Direction.vertical;
+    final Arc groupArc = groupNode.arc;
+    final num groupSize = vertical ? (groupArc.outRadius - groupArc.innerRadius).abs() : groupArc.sweepAngle.abs();
+    final int dir = groupArc.sweepAngle >= 0 ? 1 : -1;
 
-    num angle = groupNode.arc.startAngle;
-    num radius = groupNode.arc.innerRadius;
+    num groupGap = series.groupGap.convert(groupSize);
+    num columnGap = series.columnGap.convert(groupSize);
 
-    final DynamicData tmpData = DynamicData(0);
+    num allGap = groupGap * 2 + colGapCount * columnGap;
 
+    num canUseSize = groupSize - allGap;
+    if (canUseSize <= 0) {
+      canUseSize = groupSize;
+    }
+    num allBarSize = 0;
+
+    ///计算Group占用的大小
+    List<num> sizeList = [];
     each(groupNode.nodeList, (node, i) {
-      var parent = node.data.data.first.parent;
+      var first = node.nodeList.first.data;
+      var groupData = first.parent;
+      double tmpSize;
+      if (groupData.barSize != null) {
+        tmpSize = groupData.barSize!.convert(canUseSize);
+      } else {
+        tmpSize = canUseSize / groupInnerCount;
+        if (groupData.barMaxSize != null) {
+          var s = groupData.barMaxSize!.convert(canUseSize);
+          if (tmpSize > s) {
+            tmpSize = s;
+          }
+        }
+        if (groupData.barMinSize != null) {
+          var size = groupData.barMinSize!.convert(canUseSize);
+          if (tmpSize < size) {
+            tmpSize = size;
+          }
+        }
+      }
+      allBarSize += tmpSize;
+      sizeList.add(tmpSize);
+    });
+
+    if (allBarSize + allGap > groupSize) {
+      final double k = groupSize / (allBarSize + allGap);
+      groupGap *= k;
+      columnGap *= k;
+      allBarSize *= k;
+      allGap *= k;
+      for (int i = 0; i < sizeList.length; i++) {
+        sizeList[i] = sizeList[i] * k;
+      }
+    } else {
+      num tmp = groupSize - (allBarSize + allGap);
+      groupGap += tmp / 2;
+    }
+
+    num offset = vertical ? groupArc.innerRadius : groupArc.startAngle;
+    if (vertical) {
+      offset += groupGap;
+    } else {
+      offset += groupGap * dir;
+    }
+
+    DynamicData tmpData = DynamicData(0);
+
+    each(groupNode.nodeList, (colNode, i) {
+      var parent = colNode.data.data.first.parent;
       int polarIndex = parent.polarAxisIndex ?? series.polarAxisIndex;
       var coord = context.findPolarCoord(polarIndex);
-
-      ///确定上界和下界
-      var up = coord.dataToPosition(x, tmpData.change(node.getUp()));
-      var down = coord.dataToPosition(x, tmpData.change(node.getDown()));
-
       Arc arc;
       if (vertical) {
+        var up = coord.dataToPosition(x, tmpData.change(colNode.getUp()));
+        var down = coord.dataToPosition(x, tmpData.change(colNode.getDown()));
+        num or = offset + sizeList[i];
+        var sa = down.angle[0];
         var tmpAngle = (up.angle[0] - down.angle[0]);
-        arc = groupNode.arc.copy(startAngle: angle, sweepAngle: tmpAngle);
-        angle += tmpAngle;
+        arc = groupArc.copy(startAngle: sa, sweepAngle: tmpAngle, innerRadius: offset, outRadius: or);
+        offset = or + columnGap;
       } else {
-        var rr = (up.radius[0] - down.radius[0]).abs();
-        arc = groupNode.arc.copy(innerRadius: radius, outRadius: radius + rr);
-        radius += rr;
+        var up = coord.dataToPosition(tmpData.change(colNode.getUp()), x);
+        var down = coord.dataToPosition(tmpData.change(colNode.getDown()), x);
+        var diffAngle = sizeList[i] * dir;
+        arc = groupArc.copy(innerRadius: down.radius[0], outRadius: up.radius[0], startAngle: offset, sweepAngle: diffAngle);
+        offset += diffAngle;
+        offset += columnGap * dir;
       }
-      node.arc = arc;
+      colNode.arc = arc;
     });
+  }
+
+  @override
+  void onLayoutNodeForPolar(ColumnNode<BarItemData, BarGroupData> columnNode, AxisIndex xIndex) {
+    super.onLayoutNodeForPolar(columnNode, xIndex);
+    if (series.innerGap.abs() == 0 || columnNode.nodeList.length < 2) {
+      return;
+    }
+    bool vertical = series.direction == Direction.vertical;
+    each(columnNode.nodeList, (node, i) {
+      var arc = node.arc;
+      if (vertical) {
+        var dd = 2 * pi * arc.outRadius;
+        num per = 360 * series.innerGap / dd;
+        if (arc.sweepAngle <= per) {
+          per = 0;
+        }
+        node.arc = arc.copy(sweepAngle: arc.sweepAngle - per, padAngle: per);
+      } else {
+        node.arc = arc.copy(outRadius: arc.outRadius - series.innerGap);
+      }
+      node.position = node.arc.centroid();
+    });
+
   }
 
   @override

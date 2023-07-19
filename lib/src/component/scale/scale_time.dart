@@ -29,6 +29,9 @@ class TimeScale extends BaseScale<DateTime, num> {
   List<double> toRangeRatio(DateTime data) {
     int diff = _convert(domain.first, domain.last, splitType);
     int diff2 = _convert(domain.first, data, splitType);
+    if(diff2.abs()==0){
+      return [0];
+    }
     return [diff / diff2];
   }
 

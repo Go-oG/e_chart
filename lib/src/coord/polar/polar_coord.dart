@@ -9,7 +9,11 @@ abstract class PolarCoord extends CircleCoord<PolarConfig> {
 
   Offset getCenter();
 
+  num getStartAngle();
+
   BaseScale getScale(bool angleAxis);
+
+
 }
 
 class PolarPosition {
@@ -22,6 +26,11 @@ class PolarPosition {
   final List<num> angle;
 
   PolarPosition(this.center, this.radius, this.angle);
+
+  @override
+  String toString() {
+    return "$runtimeType $center radius:$radius angle:$angle";
+  }
 }
 
 ///用于实现极坐标系
@@ -127,5 +136,10 @@ class PolarCoordImpl extends PolarCoord {
       return _angleAxis.scale;
     }
     return _radiusAxis.scale;
+  }
+
+  @override
+  num getStartAngle() {
+    return _angleAxis.axis.offsetAngle;
   }
 }
