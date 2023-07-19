@@ -17,15 +17,15 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
 
   void layoutNode(List<PointNode> nodeList) {
     if (CoordSystem.polar == series.coordSystem) {
-      _layoutForPolar(nodeList, context.findPolarCoord(series.polarAxisIndex));
+      _layoutForPolar(nodeList, findPolarCoord());
       return;
     }
     if (CoordSystem.calendar == series.coordSystem) {
-      _layoutForCalendar(nodeList, context.findCalendarCoord(series.calendarIndex));
+      _layoutForCalendar(nodeList, findCalendarCoord());
       return;
     }
     if (CoordSystem.grid == series.coordSystem) {
-      _layoutForGrid(nodeList, context.findGridCoord());
+      _layoutForGrid(nodeList, findGridCoord());
       return;
     }
   }
@@ -54,7 +54,8 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
 
   void _layoutForGrid(List<PointNode> nodeList, GridCoord coord) {
     for (var node in nodeList) {
-      node.rect = coord.dataToRect(series.xAxisIndex, node.data.x, series.yAxisIndex, node.data.y);
+      //TODO 轴
+      node.rect = coord.dataToRect(0, node.data.x, 0, node.data.y);
     }
   }
 }

@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 class CandleStickSeries extends ChartSeries {
-  List<CandleStickData> data;
+  List<CandleStickGroup> data;
   String name;
   SNumber boxMinWidth;
   SNumber boxMaxWidth;
@@ -14,8 +14,7 @@ class CandleStickSeries extends ChartSeries {
 
   CandleStickSeries(
     this.data, {
-    super.xAxisIndex = 0,
-    super.yAxisIndex = 0,
+    super.gridIndex = 0,
     this.boxMinWidth = const SNumber.number(24),
     this.boxMaxWidth = const SNumber.number(48),
     this.boxWidth,
@@ -36,10 +35,18 @@ class CandleStickSeries extends ChartSeries {
   }) : super(
           coordSystem: CoordSystem.grid,
           parallelIndex: -1,
-          polarAxisIndex: -1,
+          polarIndex: -1,
           radarIndex: -1,
           calendarIndex: -1,
         );
+}
+
+class CandleStickGroup {
+  int xAxisIndex;
+  int yAxisIndex;
+  List<CandleStickData> data;
+
+  CandleStickGroup(this.data, {this.xAxisIndex = 0, this.yAxisIndex = 0});
 }
 
 class CandleStickData {

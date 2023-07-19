@@ -66,9 +66,8 @@ class FunnelSeries extends RectSeries {
           coordSystem: null,
           calendarIndex: -1,
           parallelIndex: -1,
-          polarAxisIndex: -1,
+          polarIndex: -1,
           radarIndex: -1,
-          xAxisIndex: -1,
-          yAxisIndex: -1,
+          gridIndex: -1,
         );
 }

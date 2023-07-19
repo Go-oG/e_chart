@@ -45,7 +45,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         }
         var x = groupNode.getX();
         if (usePolar) {
-          int polarIndex = groupNode.nodeList.first.nodeList.first.data.parent.polarAxisIndex ?? series.polarAxisIndex;
+          int polarIndex = series.polarIndex;
           var coord = context.findPolarCoord(polarIndex);
           PolarPosition position;
           if (vertical) {
@@ -60,8 +60,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
           groupNode.arc = Arc(center: position.center, innerRadius: ir, outRadius: or, startAngle: sa, sweepAngle: ea - sa);
           onLayoutColumnForPolar(axisGroup, groupNode, xIndex, x);
         } else {
-          var coord = context.findGridCoord();
-          int yIndex = groupNode.nodeList.first.nodeList.first.data.parent.yAxisIndex ?? series.yAxisIndex;
+          var coord = findGridCoord();
+          int yIndex = groupNode.getYAxisIndex();
           if (vertical) {
             var rect = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(groupNode.nodeList.first.getUp()));
             groupNode.rect = Rect.fromLTWH(rect.left, 0, rect.width, height);
@@ -308,7 +308,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   SingleNode<T, P>? _oldNode;
 
   void handleHoverOrClick(Offset offset, bool click) {
-    Offset tr = context.findGridCoord().getTranslation();
+    Offset tr = findGridCoord().getTranslation();
     offset = offset.translate(tr.dx, tr.dy);
     var node = findNode(offset);
     if (node == _oldNode) {
@@ -406,7 +406,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       if (group.data.isEmpty) {
         continue;
       }
-      int xIndex = group.xAxisIndex ?? series.xAxisIndex;
+      int xIndex = group.xAxisIndex;
       if (xIndex < 0) {
         xIndex = 0;
       }
@@ -422,21 +422,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return dl;
   }
 
-  GridAxis findGridAxis(int index, bool isXAxis) {
-    return context.findGridCoord().getAxis(index, isXAxis);
-  }
-
-  GridCoord findGridCoord() {
-    return context.findGridCoord();
-  }
-
-  PolarCoord findPolarCoord(int index) {
-    return context.findPolarCoord(index);
-  }
-
-  Offset getTranslation(){
-    if(series.coordSystem==CoordSystem.polar){
-      return findPolarCoord(series.polarAxisIndex).getTranslation();
+  Offset getTranslation() {
+    if (series.coordSystem == CoordSystem.polar) {
+      return findPolarCoord().getTranslation();
     }
     return findGridCoord().getTranslation();
   }

@@ -33,5 +33,13 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
     throw ChartError("无法找到对应的横坐标");
   }
 
-
+  int getYAxisIndex() {
+    int index = 0;
+    for (var node in nodeList) {
+      for (var d in node.nodeList) {
+        return d.data.parent.yAxisIndex;
+      }
+    }
+    return index;
+  }
 }

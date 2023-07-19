@@ -24,8 +24,7 @@ class HeatMapSeries extends RectSeries {
     super.height,
     super.animation,
     super.coordSystem = CoordSystem.calendar,
-    super.xAxisIndex = 0,
-    super.yAxisIndex = 0,
+    super.gridIndex,
     super.calendarIndex = 0,
     super.tooltip,
     super.enableClick,
@@ -36,7 +35,7 @@ class HeatMapSeries extends RectSeries {
     super.id,
     super.clip,
     super.z,
-  }) : super(polarAxisIndex: -1, parallelIndex: -1, radarIndex: -1);
+  }) : super(polarIndex: -1, parallelIndex: -1, radarIndex: -1);
 }
 
 class HeatMapData extends ItemData {

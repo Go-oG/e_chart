@@ -76,8 +76,8 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
       var parent = node.data.data.first.parent;
-      int yIndex = parent.yAxisIndex ?? series.yAxisIndex;
-      var coord = context.findGridCoord();
+      int yIndex = parent.yAxisIndex;
+      var coord = findGridCoord();
       Rect up, down;
       if (vertical) {
         up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
@@ -181,8 +181,7 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     DynamicData tmpData = DynamicData(0);
 
     each(groupNode.nodeList, (colNode, i) {
-      var parent = colNode.data.data.first.parent;
-      int polarIndex = parent.polarAxisIndex ?? series.polarAxisIndex;
+      int polarIndex = series.polarIndex;
       var coord = context.findPolarCoord(polarIndex);
       Arc arc;
       if (vertical) {
@@ -226,7 +225,6 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
       }
       node.position = node.arc.centroid();
     });
-
   }
 
   @override

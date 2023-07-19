@@ -30,10 +30,9 @@ class ParallelSeries extends RectSeries {
     super.z,
   }) : super(
           coordSystem: CoordSystem.parallel,
-          xAxisIndex: -1,
-          yAxisIndex: -1,
+          gridIndex: -1,
           calendarIndex: -1,
-          polarAxisIndex: -1,
+          polarIndex: -1,
           radarIndex: -1,
         );
 }

@@ -79,13 +79,13 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
       CoordSystem system;
       if (_series.coordSystem == CoordSystem.polar) {
         system = CoordSystem.polar;
-        axisIndex = group.polarAxisIndex ?? _series.polarAxisIndex;
+        axisIndex = _series.polarIndex;
       } else {
         system = CoordSystem.grid;
         if (direction == Direction.vertical) {
-          axisIndex = group.xAxisIndex ?? _series.xAxisIndex;
+          axisIndex = group.xAxisIndex;
         } else {
-          axisIndex = group.yAxisIndex ?? _series.yAxisIndex;
+          axisIndex = group.yAxisIndex;
         }
       }
       if (axisIndex < 0) {

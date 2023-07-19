@@ -85,13 +85,7 @@ class PieSeries extends RectSeries {
     super.backgroundColor,
     super.id,
     super.z,
-  }) : super(
-          xAxisIndex: -1,
-          yAxisIndex: -1,
-          parallelIndex: -1,
-          radarIndex: -1,
-          polarAxisIndex: -1,
-        );
+  }) : super(gridIndex: -1, parallelIndex: -1, radarIndex: -1, polarIndex: -1);
 
   @override
   void dispose() {

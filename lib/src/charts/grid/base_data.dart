@@ -4,17 +4,16 @@ import '../../utils/uuid_util.dart';
 class BaseGroupData<T> {
   late final String id;
   List<T?> data;
-  int? xAxisIndex;
-  int? yAxisIndex;
-  int? polarAxisIndex;
+  int xAxisIndex;
+  int yAxisIndex;
+
   String? stackId;
   StackStrategy strategy;
 
   BaseGroupData(
     this.data, {
-    this.xAxisIndex,
-    this.yAxisIndex,
-        this.polarAxisIndex,
+    this.xAxisIndex = 0,
+    this.yAxisIndex = 0,
     String? id,
     this.stackId,
     this.strategy = StackStrategy.all,

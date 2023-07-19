@@ -39,12 +39,5 @@ class RadarSeries extends RectSeries {
     super.backgroundColor,
     super.id,
     super.z,
-  }) : super(
-          coordSystem: CoordSystem.radar,
-          parallelIndex: -1,
-          xAxisIndex: -1,
-          yAxisIndex: -1,
-          calendarIndex: -1,
-          polarAxisIndex: -1,
-        );
+  }) : super(coordSystem: CoordSystem.radar, parallelIndex: -1, gridIndex: -1, calendarIndex: -1, polarIndex: -1);
 }

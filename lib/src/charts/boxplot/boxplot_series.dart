@@ -2,9 +2,9 @@
 import 'package:e_chart/e_chart.dart';
 
 class BoxplotSeries extends ChartSeries {
-  List<BoxplotData> data;
-  Fun2<BoxplotData, LineStyle>? borderStyleFun;
-  Fun2<BoxplotData, AreaStyle?>? areaStyleFun;
+  List<BoxplotGroup> data;
+  Fun3<BoxplotData, BoxplotGroup, LineStyle>? borderStyleFun;
+  Fun3<BoxplotData, BoxplotGroup, AreaStyle?>? areaStyleFun;
   Direction direction;
 
   SNumber boxMinWidth;
@@ -13,16 +13,15 @@ class BoxplotSeries extends ChartSeries {
 
   BoxplotSeries({
     required this.data,
-    this.direction=Direction.vertical,
+    this.direction = Direction.vertical,
     this.boxMinWidth = const SNumber.number(24),
     this.boxMaxWidth = const SNumber.number(48),
     this.boxWidth,
     this.borderStyleFun,
     this.areaStyleFun,
     super.animation,
-    super.polarAxisIndex,
-    super.xAxisIndex,
-    super.yAxisIndex,
+    super.polarIndex,
+    super.gridIndex,
     super.tooltip,
     super.enableClick,
     super.enableHover,
@@ -32,19 +31,20 @@ class BoxplotSeries extends ChartSeries {
     super.id,
     super.z,
     super.clip,
-  }) : super(
-          coordSystem: CoordSystem.grid,
-          calendarIndex: -1,
-          parallelIndex: -1,
-          radarIndex: -1,
-        );
+  }) : super(coordSystem: CoordSystem.grid, calendarIndex: -1, parallelIndex: -1, radarIndex: -1);
+}
+
+class BoxplotGroup {
+  List<BoxplotData> data;
+  int xAxisIndex;
+  int yAxisIndex;
+
+  BoxplotGroup(this.data, {this.xAxisIndex = 0, this.yAxisIndex = 0});
 }
 
 class BoxplotData {
   late final String id;
-
   DynamicData x;
-
   DynamicData max;
   DynamicData upAve4;
   DynamicData middle;
