@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
   ///布局StackGroupNode
   @override
-  void onLayoutGroupColumn(
+  void onLayoutColumnForGrid(
     AxisGroup<BarItemData, BarGroupData> axisGroup,
     GroupNode<BarItemData, BarGroupData> groupNode,
     AxisIndex xIndex,
@@ -72,76 +72,86 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     double left = rect.left + groupGap * 0.5;
     double top = rect.top + groupGap * 0.5;
 
-    ///极坐标
-    num angle = groupNode.arc.startAngle;
-    num radius = groupNode.arc.innerRadius;
-
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
       var parent = node.data.data.first.parent;
       int yIndex = parent.yAxisIndex ?? series.yAxisIndex;
+      var coord = context.findGridCoord();
 
-      if (series.coordSystem == CoordSystem.polar) {
-        var coord = context.findPolarCoord(series.polarAxisIndex);
-
-        ///确定上界和下界
-        var p1 = coord.dataToPosition(x, tmpData.change(node.getUp()));
-        var p2 = coord.dataToPosition(x, tmpData.change(node.getDown()));
-        Arc arc;
-        if (vertical) {
-          var tmpAngle = (p1.angle[0] - p2.angle[0]);
-          arc = groupNode.arc.copy(startAngle: angle, sweepAngle: tmpAngle);
-          angle += tmpAngle;
-        } else {
-          var rr = (p1.radius[0] - p1.radius[0]).abs();
-          arc = groupNode.arc.copy(innerRadius: radius, outRadius: radius + rr);
-          radius += rr;
-        }
-        node.arc = arc;
+      ///上界和下界
+      Rect up = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getUp()));
+      Rect down = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getDown()));
+      double h = (up.top - down.top).abs();
+      double w = (up.left - down.left).abs();
+      Rect tmpRect;
+      if (vertical) {
+        tmpRect = Rect.fromLTWH(left, rect.bottom - h, sizeList[i], h);
+        left += columnGap + sizeList[i];
       } else {
-        var coord = context.findGridCoord();
-        ///确定上界和下界
-        Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getUp()));
-        Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));
-        double h = (r1.top - r2.top).abs();
-        double w = (r1.left - r2.left).abs();
-        Rect tmpRect;
-        if (vertical) {
-          tmpRect = Rect.fromLTWH(left, rect.bottom - h, sizeList[i], h);
-          left += columnGap + sizeList[i];
-        } else {
-          tmpRect = Rect.fromLTWH(left, top, w, sizeList[i]);
-          top += columnGap + sizeList[i];
-        }
-        node.rect = tmpRect;
+        tmpRect = Rect.fromLTWH(left, top, w, sizeList[i]);
+        top += columnGap + sizeList[i];
       }
+      node.rect = tmpRect;
     });
   }
 
-  AreaStyle? getAreaStyle(SingleNode<BarItemData, BarGroupData> node, int index) {
+  @override
+  void onLayoutColumnForPolar(
+    AxisGroup<BarItemData, BarGroupData> axisGroup,
+    GroupNode<BarItemData, BarGroupData> groupNode,
+    AxisIndex xIndex,
+    DynamicData x,
+  ) {
+    int groupInnerCount = axisGroup.getColumnCount(xIndex);
+    int columnCount = groupInnerCount;
+    if (columnCount <= 1) {
+      columnCount = 0;
+    }
+    final bool vertical = series.direction == Direction.vertical;
+
+    num angle = groupNode.arc.startAngle;
+    num radius = groupNode.arc.innerRadius;
+
+    final DynamicData tmpData = DynamicData(0);
+
+    each(groupNode.nodeList, (node, i) {
+      var parent = node.data.data.first.parent;
+      int polarIndex = parent.polarAxisIndex ?? series.polarAxisIndex;
+      var coord = context.findPolarCoord(polarIndex);
+
+      ///确定上界和下界
+      var up = coord.dataToPosition(x, tmpData.change(node.getUp()));
+      var down = coord.dataToPosition(x, tmpData.change(node.getDown()));
+
+      Arc arc;
+      if (vertical) {
+        var tmpAngle = (up.angle[0] - down.angle[0]);
+        arc = groupNode.arc.copy(startAngle: angle, sweepAngle: tmpAngle);
+        angle += tmpAngle;
+      } else {
+        var rr = (up.radius[0] - down.radius[0]).abs();
+        arc = groupNode.arc.copy(innerRadius: radius, outRadius: radius + rr);
+        radius += rr;
+      }
+      node.arc = arc;
+    });
+  }
+
+  @override
+  AreaStyle? buildAreaStyle(SingleNode<BarItemData, BarGroupData> node) {
     if (series.areaStyleFun != null) {
       return series.areaStyleFun?.call(node);
     }
     var chartTheme = context.config.theme;
-    return AreaStyle(color: chartTheme.getColor(index)).convert(node.status);
+    return AreaStyle(color: chartTheme.getColor(node.data.groupIndex)).convert(node.status);
   }
 
-  LineStyle? getBorderStyle(SingleNode<BarItemData, BarGroupData> node, int index) {
+  @override
+  LineStyle? buildLineStyle(SingleNode<BarItemData, BarGroupData> node) {
     if (series.borderStyleFun != null) {
       return series.borderStyleFun?.call(node);
     }
     var theme = context.config.theme.barTheme;
     return theme.getBorderStyle();
   }
-
-  @override
-  AreaStyle? generateAreaStyle(SingleNode<BarItemData, BarGroupData> node) {
-    return getAreaStyle(node, node.data.groupIndex);
-  }
-
-  @override
-  LineStyle? generateLineStyle(SingleNode<BarItemData, BarGroupData> node) {
-    return getBorderStyle(node, node.data.groupIndex);
-  }
-
 }

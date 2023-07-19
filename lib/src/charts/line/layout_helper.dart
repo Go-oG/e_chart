@@ -6,69 +6,81 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   List<LineResult> lineList = [];
 
   @override
-  void onLayoutGroupColumn(
-      AxisGroup<LineItemData, LineGroupData> axisGroup, GroupNode<LineItemData, LineGroupData> groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutColumnForGrid(
+    AxisGroup<LineItemData, LineGroupData> axisGroup,
+    GroupNode<LineItemData, LineGroupData> groupNode,
+    AxisIndex xIndex,
+    DynamicData x,
+  ) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
       columnCount = 0;
     }
-
     final bool vertical = series.direction == Direction.vertical;
     final Rect rect = groupNode.rect;
-    final Arc arc = groupNode.arc;
-
     DynamicData tmpData = DynamicData(0);
+    var coord = context.findGridCoord();
     each(groupNode.nodeList, (node, i) {
-      if (series.coordSystem == CoordSystem.polar) {
-        int yIndex = node.data.data.first.parent.polarAxisIndex ?? series.polarAxisIndex;
-        var coord = context.findPolarCoord(yIndex);
-        num up = node.getUp();
-
-        ///确定上界和下界
-        var r1 = coord.dataToPosition(x, tmpData.change(up));
-        var r2 = coord.dataToPosition(x, tmpData.change(node.getDown()));
-        double h = (r1.radius[0] - r2.radius[0]).abs() + 0;
-        double w = (r1.angle[0] - r2.angle[0]) + 0;
-        Arc tmpArc;
-        if (vertical) {
-          tmpArc = arc.copy(outRadius: arc.innerRadius + h);
-        } else {
-          tmpArc = arc.copy(sweepAngle: w);
-        }
-        node.arc = tmpArc;
+      int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
+      var up = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getUp()));
+      var down = coord.dataToRect(xIndex.xIndex, x, yIndex, tmpData.change(node.getDown()));
+      double h = (up.top - down.top).abs();
+      double w = (up.left - down.left).abs();
+      Rect tmpRect;
+      if (vertical) {
+        tmpRect = Rect.fromLTWH(rect.left, rect.bottom - h, rect.width, h);
       } else {
-        int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
-        num up = node.getUp();
-
-        ///确定上界和下界
-        var coord = context.findGridCoord();
-        Rect r1 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(up));
-        Rect r2 = coord.dataToRect(xIndex.index, x, yIndex, tmpData.change(node.getDown()));
-
-        double h = (r1.top - r2.top).abs();
-        double w = (r1.left - r2.left).abs();
-        Rect tmpRect;
-        if (vertical) {
-          tmpRect = Rect.fromLTWH(rect.left, rect.bottom - h, rect.width, h);
-        } else {
-          tmpRect = Rect.fromLTWH(rect.left, rect.top, w, rect.height);
-        }
-        node.rect = tmpRect;
+        tmpRect = Rect.fromLTWH(rect.left, rect.top, w, rect.height);
       }
+      node.rect = tmpRect;
     });
   }
 
   @override
-  void onLayoutColumn(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
-    super.onLayoutColumn(columnNode, xIndex);
+  void onLayoutColumnForPolar(
+    AxisGroup<LineItemData, LineGroupData> axisGroup,
+    GroupNode<LineItemData, LineGroupData> groupNode,
+    AxisIndex xIndex,
+    DynamicData x,
+  ) {
+    int groupInnerCount = axisGroup.getColumnCount(xIndex);
+    int columnCount = groupInnerCount;
+    if (columnCount <= 1) {
+      columnCount = 0;
+    }
+    final bool vertical = series.direction == Direction.vertical;
+    final Arc arc = groupNode.arc;
+
+    DynamicData tmpData = DynamicData(0);
+    each(groupNode.nodeList, (node, i) {
+      int polarIndex = node.data.data.first.parent.polarAxisIndex ?? series.polarAxisIndex;
+      var coord = context.findPolarCoord(polarIndex);
+      var up = coord.dataToPosition(x, tmpData.change(node.getUp()));
+      var down = coord.dataToPosition(x, tmpData.change(node.getDown()));
+      num dx = (up.radius[0] - down.radius[0]).abs();
+      num dy = (up.angle[0] - down.angle[0]);
+
+      Arc tmpArc;
+      if (vertical) {
+        tmpArc = arc.copy(sweepAngle: dy);
+      } else {
+        tmpArc = arc.copy(outRadius: dx);
+      }
+      node.arc = tmpArc;
+    });
+  }
+
+  @override
+  void onLayoutNodeForGrid(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
+    super.onLayoutNodeForGrid(columnNode, xIndex);
     if (series.coordSystem == CoordSystem.polar) {
       for (var node in columnNode.nodeList) {
         var arc = node.arc;
         node.position = circlePoint((arc.innerRadius + arc.outRadius) / 2, (arc.startAngle + arc.sweepAngle / 2), arc.center);
       }
     } else {
-      GridAxis xAxis = context.findGridCoord().getAxis(xIndex.index, true);
+      GridAxis xAxis = context.findGridCoord().getAxis(xIndex.xIndex, true);
       for (var node in columnNode.nodeList) {
         if (node.data.data != null) {
           if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
@@ -84,27 +96,30 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  SingleNode<LineItemData, LineGroupData> onCreateAnimatorObj(
-    SingleData<LineItemData, LineGroupData> data,
-    SingleNode<LineItemData, LineGroupData> node,
-    bool newData,
-  ) {
-    SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObj(data, node, newData);
+  SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForGrid(
+      SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
+    SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForGrid(data, node, newData);
     Offset pos = node.position;
     Offset offset;
-    if (series.coordSystem == CoordSystem.polar) {
-      if (series.animatorStyle == GridAnimatorStyle.expand) {
-        offset = circlePoint(0, 0, node.arc.center);
-      } else {
-        var angle = node.arc.startAngle + node.arc.sweepAngle / 2;
-        offset = circlePoint(node.arc.innerRadius, angle, node.arc.center);
-      }
+    if (series.animatorStyle == GridAnimatorStyle.expand) {
+      offset = Offset(pos.dx, height);
     } else {
-      if (series.animatorStyle == GridAnimatorStyle.expand) {
-        offset = Offset(pos.dx, height);
-      } else {
-        offset = Offset(pos.dx, rect.bottom);
-      }
+      offset = Offset(pos.dx, rect.bottom);
+    }
+    rn.position = offset;
+    return rn;
+  }
+
+  @override
+  SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForPolar(
+      SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
+    SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForPolar(data, node, newData);
+    Offset offset;
+    if (series.animatorStyle == GridAnimatorStyle.expand) {
+      offset = circlePoint(0, 0, node.arc.center);
+    } else {
+      var angle = node.arc.startAngle + node.arc.sweepAngle / 2;
+      offset = circlePoint(node.arc.innerRadius, angle, node.arc.center);
     }
     rn.position = offset;
     return rn;
@@ -113,13 +128,17 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   final OffsetTween _offsetTween = OffsetTween(Offset.zero, Offset.zero);
 
   @override
-  void onAnimatorUpdate(
-    SingleNode<LineItemData, LineGroupData> node,
-    double t,
-    Map<SingleData<LineItemData, LineGroupData>, MapNode> startMap,
-    Map<SingleData<LineItemData, LineGroupData>, MapNode> endMap,
-  ) {
-    super.onAnimatorUpdate(node, t, startMap, endMap);
+  void onAnimatorUpdateForGrid(SingleNode<LineItemData, LineGroupData> node, double t, Map<SingleData<LineItemData, LineGroupData>, MapNode> startMap, Map<SingleData<LineItemData, LineGroupData>, MapNode> endMap) {
+    super.onAnimatorUpdateForGrid(node, t, startMap, endMap);
+    var s = startMap[node.data]!.offset;
+    var e = endMap[node.data]!.offset;
+    _offsetTween.changeValue(s, e);
+    node.position = _offsetTween.safeGetValue(t);
+  }
+
+  @override
+  void onAnimatorUpdateForPolar(SingleNode<LineItemData, LineGroupData> node, double t, Map<SingleData<LineItemData, LineGroupData>, MapNode> startMap, Map<SingleData<LineItemData, LineGroupData>, MapNode> endMap) {
+    super.onAnimatorUpdateForPolar(node, t, startMap, endMap);
     var s = startMap[node.data]!.offset;
     var e = endMap[node.data]!.offset;
     _offsetTween.changeValue(s, e);
@@ -202,8 +221,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     lineList = resultList;
   }
 
-  LineResult buildNormalResult(
-      int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
+  LineResult buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
     List<Path> borderList = _buildBorderPath(list);
     List<Path> areaList = buildAreaPathForNormal(list);
     return LineResult(groupIndex, group, _collectOffset(list), borderList, areaList);
@@ -445,16 +463,21 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  AreaStyle? generateAreaStyle(SingleNode<LineItemData, LineGroupData> node) {
-    var s = getAreaStyle(node.data.parent, node.data.groupIndex);
-    if (s == null || series.areaStyleFun != null) {
-      return s;
+  AreaStyle? buildAreaStyle(SingleNode<LineItemData, LineGroupData> node) {
+    if (series.areaStyleFun != null) {
+      return series.areaStyleFun?.call(node.data.parent, node.data.groupIndex);
     }
-    return s.convert(node.status);
+    var chartTheme = context.config.theme;
+    var theme = chartTheme.lineTheme;
+    if (theme.fill) {
+      Color fillColor = chartTheme.getColor(node.data.groupIndex).withOpacity(theme.opacity);
+      return AreaStyle(color: fillColor);
+    }
+    return null;
   }
 
   @override
-  LineStyle? generateLineStyle(SingleNode<LineItemData, LineGroupData> node) {
+  LineStyle? buildLineStyle(SingleNode<LineItemData, LineGroupData> node) {
     LineStyle? style = getLineStyle(node.data.parent, node.data.groupIndex);
     if (style == null || series.lineStyleFun != null) {
       return style;

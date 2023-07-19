@@ -47,7 +47,7 @@ class Area implements Shape {
       tmpList.add(upList.last);
       tmpList.add(upList.last);
       for (int i = 1; i < tmpList.length - 3; i++) {
-        List<Offset> list = _getCtrlPoint(tmpList, i, ratioA: Constants.smoothRatio, ratioB: Constants.smoothRatio);
+        List<Offset> list = _getCtrlPoint(tmpList, i);
         Offset leftPoint = list[0];
         Offset rightPoint = list[1];
         Offset p = tmpList[i + 1];
@@ -73,7 +73,7 @@ class Area implements Shape {
       tmpList.add(downList.last);
       tmpList.add(downList.last);
       for (int i = tmpList.length - 3; i >= 2; i--) {
-        List<Offset> list = _getCtrlPoint(tmpList, i, ratioA: Constants.smoothRatio, ratioB: Constants.smoothRatio, reverse: true);
+        List<Offset> list = _getCtrlPoint(tmpList, i, reverse: true);
         Offset leftPoint = list[0];
         Offset rightPoint = list[1];
         Offset p = tmpList[i - 1];
@@ -88,13 +88,13 @@ class Area implements Shape {
     return mPath;
   }
 
+  ///TODO 后续优化
   List<Offset> _getCtrlPoint(
     List<Offset> pointList,
     int curIndex, {
-    double ratioA = 0.2,
-    double ratioB = 0.2,
     bool reverse = false,
   }) {
+    double ratio=Constants.smoothRatio;
     Offset cur = pointList[curIndex];
     int li = reverse ? curIndex + 1 : curIndex - 1;
     int ri = reverse ? curIndex - 1 : curIndex + 1;
@@ -103,10 +103,10 @@ class Area implements Shape {
     Offset right = pointList[ri];
     Offset right2 = pointList[ri2];
 
-    double ax = cur.dx + (right.dx - left.dx) * ratioA;
-    double ay = cur.dy + (right.dy - left.dy) * ratioA;
-    double bx = right.dx - (right2.dx - cur.dx) * ratioB;
-    double by = right.dy - (right2.dy - cur.dy) * ratioB;
+    double ax = cur.dx + (right.dx - left.dx) * ratio;
+    double ay = cur.dy + (right.dy - left.dy) * ratio;
+    double bx = right.dx - (right2.dx - cur.dx) * ratio;
+    double by = right.dy - (right2.dy - cur.dy) * ratio;
 
     return [Offset(ax, ay), Offset(bx, by)];
   }

@@ -78,11 +78,11 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
   void drawBar(Canvas canvas) {
     for (var node in helper.nodeList) {
       if (series.coordSystem == CoordSystem.polar) {
-        var as = helper.getAreaStyle(node, node.data.groupIndex);
+        var as = helper.buildAreaStyle(node);
         node.areaStyle = as;
         Path path = node.arc.toPath(true);
         as?.drawPath(canvas, mPaint, path);
-        var ls = helper.getBorderStyle(node, node.data.groupIndex);
+        var ls = helper.buildLineStyle(node);
         node.lineStyle = ls;
         ls?.drawPath(canvas, mPaint, path);
       } else {
@@ -90,10 +90,10 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
         if (series.cornerFun != null) {
           corner = series.cornerFun!.call(node);
         }
-        var as = helper.getAreaStyle(node, node.data.groupIndex);
+        var as = helper.buildAreaStyle(node);
         node.areaStyle = as;
         as?.drawRect(canvas, mPaint, node.rect, corner);
-        var ls = helper.getBorderStyle(node, node.data.groupIndex);
+        var ls = helper.buildLineStyle(node);
         node.lineStyle = ls;
         ls?.drawRect(canvas, mPaint, node.rect, corner);
       }

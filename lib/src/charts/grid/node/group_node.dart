@@ -2,18 +2,18 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import '../../core/view_state.dart';
-import '../../model/index.dart';
-import 'base_data.dart';
+import '../../../core/view_state.dart';
+import '../../../model/index.dart';
+import '../base_data.dart';
 import 'column_node.dart';
 
 ///表示为系列数据
 class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewStateProvider {
-  final StackGroup<T, P> group;
+  final StackData<T, P> data;
 
   List<ColumnNode<T, P>> nodeList = [];
 
-  GroupNode(this.group);
+  GroupNode(this.data);
 
   ///二维坐标使用
   Rect rect = Rect.zero;
@@ -32,4 +32,6 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
     }
     throw ChartError("无法找到对应的横坐标");
   }
+
+
 }
