@@ -16,10 +16,20 @@ class TimeScale extends BaseScale<DateTime, num> {
 
   @override
   List<num> toRange(DateTime data) {
+    double p = toRangeRatio(data)[0];
+    return [convertRatio(p)];
+  }
+
+  @override
+  num convertRatio(double ratio) {
+    return this.range.first + (this.range.last - this.range.first) * ratio;
+  }
+
+  @override
+  List<double> toRangeRatio(DateTime data) {
     int diff = _convert(domain.first, domain.last, splitType);
     int diff2 = _convert(domain.first, data, splitType);
-    double p = diff / diff2;
-    return [this.range.first + (this.range.last - this.range.first) * p];
+    return [diff / diff2];
   }
 
   @override
@@ -32,7 +42,7 @@ class TimeScale extends BaseScale<DateTime, num> {
   }
 
   @override
-  int get tickCount => _convert(domain.first, domain.last, splitType)+1;
+  int get tickCount => _convert(domain.first, domain.last, splitType) + 1;
 
   @override
   bool get isTime => true;

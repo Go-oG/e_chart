@@ -24,6 +24,11 @@ abstract class BaseScale<D, R extends num> {
   ///当为范围时至少会返回两个
   List<R> toRange(D data);
 
+  List<double> toRangeRatio(D data);
+
+  R convertRatio(double ratio);
+
+
   D toData(covariant num range);
 
   ///返回Tick的个数

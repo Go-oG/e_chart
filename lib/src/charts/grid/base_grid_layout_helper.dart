@@ -5,20 +5,22 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 
+///适用于极坐标系和笛卡尔坐标系的布局器
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends ChartLayout<S, List<P>> {
   List<SingleNode<T, P>> nodeList = [];
   List<GroupNode<T, P>> groupNodeList = [];
   Map<T, SingleNode<T, P>> dataNodeMap = {};
 
-  Offset? getNodePosition(T data) {
-    return dataNodeMap[data]?.position;
-  }
-
   List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
+    CoordSystem system = CoordSystem.grid;
+    if (series.coordSystem == CoordSystem.polar) {
+      system = CoordSystem.polar;
+    }
+
     List<DynamicData> dl = [];
     if (!isXAxis) {
-      for (var d in series.helper.getExtreme(axisIndex)) {
+      for (var d in series.helper.getExtreme(system, axisIndex)) {
         dl.add(DynamicData(d));
       }
       return dl;
@@ -49,49 +51,37 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   void onLayout(List<P> data, LayoutAnimatorType type) {
     AxisGroup<T, P> axisGroup = series.helper.result;
     bool vertical = series.direction == Direction.vertical;
+    Map<AxisIndex, List<GroupNode<T, P>>> axisMap = _buildGroupNode(axisGroup);
     final DynamicData tmpData = DynamicData(1000000);
-
-    List<SingleNode<T, P>> nodeList = [];
-    List<GroupNode<T, P>> gNodeList = [];
-
-    Map<T, SingleNode<T, P>> nodeMap = {};
-
-    ///开始布局
-    axisGroup.groupMap.forEach((key, value) {
-      List<StackGroup<T, P>> groupList = value;
-      List<GroupNode<T, P>> groupNodeList = [];
-
-      ///创建节点
-      for (var group in groupList) {
-        var groupNode = GroupNode<T, P>(group);
-        groupNodeList.add(groupNode);
-        List<ColumnNode<T, P>> stackNodeList = [];
-
-        for (var stack in group.column) {
-          ColumnNode<T, P> columnNode = ColumnNode(groupNode, stack);
-          columnNode.nodeList = buildSingleNode(columnNode, stack.data);
-          for (var ele in columnNode.nodeList) {
-            var cd = ele.data.data;
-            if (cd != null) {
-              nodeMap[cd] = ele;
+    List<GroupNode<T, P>> newNodeList = [];
+    Map<T, SingleNode<T, P>> newNodeMap = {};
+    axisMap.forEach((key, value) {
+      newNodeList.addAll(value);
+      for (var cv in value) {
+        for (var ele in cv.nodeList) {
+          for (var element in ele.nodeList) {
+            if (element.data.data != null) {
+              newNodeMap[element.data.data!] = element;
             }
           }
-          stackNodeList.add(columnNode);
         }
-        groupNode.nodeList = stackNodeList;
       }
-
+    });
+    bool usePolar = series.coordSystem == CoordSystem.polar;
+    ///开始布局
+    axisMap.forEach((key, value) {
       ///布局Group
-      for (var groupNode in groupNodeList) {
+      for (var groupNode in value) {
         var xIndex = key;
         if (groupNode.nodeList.isEmpty) {
           continue;
         }
         var x = groupNode.getX();
-        if (series.coordSystem == CoordSystem.polar) {
-          var coord = context.findPolarCoord(series.polarAxisIndex);
+        if (usePolar) {
+          int polarIndex=groupNode.nodeList.first.nodeList.first.data.parent.polarAxisIndex??series.polarAxisIndex;
+          var coord = context.findPolarCoord(polarIndex);
           PolarPosition position = coord.dataToPosition(x, tmpData.change(groupNode.nodeList.first.getUp()));
-          num ir = position.radius.length == 1 ? 0 : position.radius[1];
+          num ir = position.radius.length == 1 ? 0 : position.radius[0];
           num or = position.radius.length == 1 ? position.radius[0] : position.radius[1];
           num sa = position.angle[0];
           num ea = position.angle.length >= 2 ? position.angle[1] : sa;
@@ -104,26 +94,82 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
           );
         } else {
           var coord = context.findGridCoord();
-          Rect areaRect = coord.dataToRect(xIndex.index, x, 0, tmpData.change(groupNode.nodeList.first.getUp()));
+          Rect areaRect = coord.dataToRect(xIndex.xIndex, x, 0, tmpData.change(groupNode.nodeList.first.getUp()));
           if (vertical) {
             groupNode.rect = Rect.fromLTWH(areaRect.left, 0, areaRect.width, height);
           } else {
             groupNode.rect = Rect.fromLTWH(0, areaRect.top, width, areaRect.height);
           }
         }
-        onLayoutGroupColumn(axisGroup, groupNode, xIndex, x);
+        if(usePolar){
+          onLayoutColumnForPolar(axisGroup, groupNode, xIndex, x);
+        }else{
+          onLayoutColumnForGrid(axisGroup, groupNode, xIndex, x);
+        }
         each(groupNode.nodeList, (node, i) {
-          onLayoutColumn(node, xIndex);
+          usePolar ? onLayoutNodeForPolar(node, xIndex) : onLayoutNodeForGrid(node, xIndex);
         });
       }
-      gNodeList.addAll(groupNodeList);
-      for (var node in groupNodeList) {
-        for (var cn in node.nodeList) {
-          nodeList.addAll(cn.nodeList);
+    });
+    onLayoutEnd(this.nodeList, this.groupNodeList, this.dataNodeMap, List.from(newNodeMap.values), newNodeList, newNodeMap, type);
+  }
+
+  ///构建节点
+  Map<AxisIndex, List<GroupNode<T, P>>> _buildGroupNode(AxisGroup<T, P> axisGroup) {
+    Map<AxisIndex, List<GroupNode<T, P>>> map = {};
+    axisGroup.groupMap.forEach((key, value) {
+      List<GroupNode<T, P>> groupNodeList = [];
+      for (var group in value) {
+        var groupNode = GroupNode<T, P>(group);
+        groupNodeList.add(groupNode);
+
+        List<ColumnNode<T, P>> columnNodeList = [];
+        for (var stack in group.data) {
+          ColumnNode<T, P> columnNode = ColumnNode(groupNode, stack);
+          columnNode.nodeList = buildSingleNode(columnNode, stack.data);
+          columnNodeList.add(columnNode);
+        }
+        groupNode.nodeList = columnNodeList;
+      }
+      map[key] = groupNodeList;
+    });
+    return map;
+  }
+
+  ///归一化
+  void normalize(AxisGroup<T, P> axisGroup) {
+    axisGroup.groupMap.forEach((axisIndex, value) {
+      BaseScale xScale;
+      if (axisIndex.system == CoordSystem.polar) {
+        xScale = context.findPolarCoord(axisIndex.xIndex).getScale(false);
+      } else {
+        var coord = context.findGridCoord();
+        xScale = coord.getScale(axisIndex.xIndex, true);
+      }
+      for (var stack in value) {
+        for (var column in stack.data) {
+          for (var single in column.data) {
+            var cd = single;
+            var itemData = cd.data;
+            if (itemData == null) {
+              continue;
+            }
+            BaseScale yScale;
+            if (axisIndex.system == CoordSystem.polar) {
+              int yIndex = single.parent.polarAxisIndex ?? series.polarAxisIndex;
+              yScale = context.findPolarCoord(yIndex).getScale(true);
+            } else {
+              int yIndex = single.parent.yAxisIndex ?? series.yAxisIndex;
+              var coord = context.findGridCoord();
+              yScale = coord.getScale(yIndex, true);
+            }
+            cd.hRatio = xScale.toRangeRatio(itemData.x);
+            List<double> vr = [yScale.toRangeRatio(DynamicData(cd.down))[0], yScale.toRangeRatio(DynamicData(cd.up))[0]];
+            cd.vRatio = vr;
+          }
         }
       }
     });
-    onLayoutEnd(this.nodeList, this.groupNodeList, this.dataNodeMap, nodeList, gNodeList, nodeMap, type);
   }
 
   void onLayoutEnd(
@@ -146,6 +192,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
           key,
           MapNode(value.rect, value.position, value.arc),
         ));
+
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
       onAnimatorStart(diffResult);
@@ -170,10 +217,12 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   ///布局GroupNode的Column
-  void onLayoutGroupColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
+  void onLayoutColumnForGrid(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
 
-  ///布局Column里面的子View
-  void onLayoutColumn(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
+  void onLayoutColumnForPolar(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
+
+  ///布局Column里面的子View适用于笛卡尔坐标系
+  void onLayoutNodeForGrid(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
     final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
     final num down = columnNode.nodeList.first.down;
     final num diff = up - down;
@@ -184,88 +233,120 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     final double size = vertical ? rect.height : rect.width;
     double bottom = rect.bottom;
     double left = rect.left;
-
-    ///Polar
-    final Arc arc = columnNode.arc;
-    final num arcSize = vertical ? (arc.outRadius - arc.innerRadius).abs() : arc.sweepAngle;
-    double radius = arc.innerRadius.toDouble();
-    double angle = arc.startAngle.toDouble();
-
     for (var node in columnNode.nodeList) {
       num percent = (node.up - node.down) / diff;
-      if (series.coordSystem == CoordSystem.polar) {
-        double length = percent * arcSize.toDouble();
-        if (vertical) {
-          node.arc = arc.copy(innerRadius: radius, outRadius: radius + length);
-          radius += length;
-        } else {
-          node.arc = arc.copy(startAngle: angle, sweepAngle: length);
-          angle += length;
-        }
-        node.position = node.rect.center;
+      double length = percent * size;
+      if (vertical) {
+        bottom = bottom - length;
+        node.rect = Rect.fromLTWH(rect.left, bottom, rect.width, length);
       } else {
-        double length = percent * size;
-        if (vertical) {
-          bottom = bottom - length;
-          node.rect = Rect.fromLTWH(rect.left, bottom, rect.width, length);
-        } else {
-          node.rect = Rect.fromLTWH(left, rect.top, length, rect.height);
-          left += length;
-        }
-        node.position = node.rect.center;
+        node.rect = Rect.fromLTWH(left, rect.top, length, rect.height);
+        left += length;
       }
+      node.position = node.rect.center;
     }
   }
 
-  ///创建动画对象
+  ///布局Column里面的子View适用于极坐标系
+  void onLayoutNodeForPolar(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
+    final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
+    final num down = columnNode.nodeList.first.down;
+    final num diff = up - down;
+    final bool vertical = series.direction == Direction.vertical;
+
+    final Arc arc = columnNode.arc;
+    final num arcSize = vertical ? arc.sweepAngle : (arc.outRadius - arc.innerRadius).abs();
+    num offset = vertical ? arc.startAngle : arc.innerRadius;
+    for (var node in columnNode.nodeList) {
+      num percent = (node.up - node.down) / diff;
+      num length = percent * arcSize;
+      if (vertical) {
+        node.arc = arc.copy(startAngle: offset, sweepAngle: length);
+      } else {
+        node.arc = arc.copy(innerRadius: offset, outRadius: offset + length);
+      }
+      offset += length;
+      node.position = node.rect.center;
+    }
+  }
+
+  @nonVirtual
   SingleNode<T, P> onCreateAnimatorObj(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
+    if (series.coordSystem == CoordSystem.polar) {
+      return onCreateAnimatorObjForPolar(data, node, newData);
+    }
+    return onCreateAnimatorObjForGrid(data, node, newData);
+  }
+
+  SingleNode<T, P> onCreateAnimatorObjForGrid(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
     var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
     var rn = SingleNode<T, P>(node.parent, dd);
-    if (series.coordSystem == CoordSystem.polar) {
-      final Arc arc = node.arc;
-      Arc rr;
-      if (series.animatorStyle == GridAnimatorStyle.expand) {
-        rr = arc.copy(innerRadius: 0, outRadius: 0);
-      } else {
-        rr = arc.copy(outRadius: arc.innerRadius);
-      }
-      rn.arc = rr;
-      rn.position = circlePoint((rr.innerRadius + rr.outRadius) / 2, (rr.startAngle + rr.sweepAngle / 2), rr.center);
+    final Rect rect = node.rect;
+    Rect rr;
+    if (series.animatorStyle == GridAnimatorStyle.expand) {
+      rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
     } else {
-      final Rect rect = node.rect;
-      Rect rr;
-      if (series.animatorStyle == GridAnimatorStyle.expand) {
-        rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
-      } else {
-        rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
-      }
-      rn.rect = rr;
-      rn.position = rr.center;
+      rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
     }
+    rn.rect = rr;
+    rn.position = rr.center;
+    return rn;
+  }
 
+  SingleNode<T, P> onCreateAnimatorObjForPolar(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
+    var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
+    var rn = SingleNode<T, P>(node.parent, dd);
+    Arc arc;
+    if (series.animatorStyle == GridAnimatorStyle.expand) {
+      arc = node.arc.copy(innerRadius: 0, outRadius: 0);
+    } else {
+      arc = node.arc.copy(outRadius: node.arc.innerRadius);
+    }
+    rn.arc = arc;
+    rn.position = arc.centroid();
     return rn;
   }
 
   void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
 
   ///更新动画节点
+  @nonVirtual
   void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleData<T, P>, MapNode> startMap, Map<SingleData<T, P>, MapNode> endMap) {
-    var data = node.data;
     if (series.coordSystem == CoordSystem.polar) {
-      var s = startMap[data]!.arc;
-      var e = endMap[data]!.arc;
-      node.arc = Arc.lerp(s, e, t);
+      onAnimatorUpdateForPolar(node, t, startMap, endMap);
     } else {
-      var s = startMap[data]!.rect;
-      var e = endMap[data]!.rect;
-      Rect r;
-      if (series.animatorStyle == GridAnimatorStyle.expand) {
-        r = Rect.lerp(s, e, t)!;
-      } else {
-        r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
-      }
-      node.rect = r;
+      onAnimatorUpdateForGrid(node, t, startMap, endMap);
     }
+  }
+
+  void onAnimatorUpdateForGrid(
+    SingleNode<T, P> node,
+    double t,
+    Map<SingleData<T, P>, MapNode> startMap,
+    Map<SingleData<T, P>, MapNode> endMap,
+  ) {
+    var data = node.data;
+    var s = startMap[data]!.rect;
+    var e = endMap[data]!.rect;
+    Rect r;
+    if (series.animatorStyle == GridAnimatorStyle.expand) {
+      r = Rect.lerp(s, e, t)!;
+    } else {
+      r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
+    }
+    node.rect = r;
+  }
+
+  void onAnimatorUpdateForPolar(
+    SingleNode<T, P> node,
+    double t,
+    Map<SingleData<T, P>, MapNode> startMap,
+    Map<SingleData<T, P>, MapNode> endMap,
+  ) {
+    var data = node.data;
+    var s = startMap[data]!.arc;
+    var e = endMap[data]!.arc;
+    node.arc = Arc.lerp(s, e, t);
   }
 
   void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
@@ -281,9 +362,6 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     });
     return nodeList;
   }
-
-  //==============================================================================
-  //==============================================================================
 
   SingleNode<T, P>? _oldNode;
 
@@ -326,8 +404,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     each(nodeList, (node, p1) {
       oldAreStyleMap[node] = node.areaStyle;
       oldLineStyleMap[node] = node.lineStyle;
-      newAreStyleMap[node] = generateAreaStyle(node);
-      newLineStyleMap[node] = generateLineStyle(node);
+      newAreStyleMap[node] = buildAreaStyle(node);
+      newLineStyleMap[node] = buildLineStyle(node);
       node.areaStyle = null;
       node.lineStyle = null;
     });
@@ -381,9 +459,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return null;
   }
 
-  AreaStyle? generateAreaStyle(SingleNode<T, P> node);
+  AreaStyle? buildAreaStyle(SingleNode<T, P> node);
 
-  LineStyle? generateLineStyle(SingleNode<T, P> node);
+  LineStyle? buildLineStyle(SingleNode<T, P> node);
 }
 
 class MapNode {
@@ -393,3 +471,5 @@ class MapNode {
 
   MapNode(this.rect, this.offset, this.arc);
 }
+
+class InnerNode<T extends BaseItemData, P extends BaseGroupData<T>> {}

@@ -19,14 +19,14 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
 
   Map<AxisIndex, List<num>> _extremeMap = {};
 
-  List<num> getExtreme(int axisIndex) {
+  List<num> getExtreme(CoordSystem system, int axisIndex) {
     if (_extremeMap.isEmpty) {
       return [];
     }
     if (axisIndex < 0) {
       axisIndex = 0;
     }
-    AxisIndex index = AxisIndex(axisIndex);
+    AxisIndex index = AxisIndex(system, axisIndex);
     List<num> dl = _extremeMap[index] ?? [];
     return dl;
   }
@@ -41,7 +41,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     _originInfo = _parseOriginInfo(_dataList);
 
     ///将数据安装使用的X坐标轴进行分割
-    Map<AxisIndex, List<StackGroup<T, P>>> resultMap = _splitDataByAxis(_originInfo, _dataList);
+    Map<AxisIndex, List<StackData<T, P>>> resultMap = _splitDataByAxis(_originInfo, _dataList);
 
     ///最后进行数据合并整理
     AxisGroup<T, P> group = AxisGroup(resultMap);
@@ -72,26 +72,29 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
   }
 
   ///将给定的数据按照其使用的X 坐标轴进行分割
-  Map<AxisIndex, List<StackGroup<T, P>>> _splitDataByAxis(OriginInfo<T, P> originInfo, List<P> dataList) {
+  Map<AxisIndex, List<StackData<T, P>>> _splitDataByAxis(OriginInfo<T, P> originInfo, List<P> dataList) {
     Map<AxisIndex, List<P>> axisGroupMap = {};
     for (var group in dataList) {
       int xIndex;
+      CoordSystem system;
       if (_series.coordSystem == CoordSystem.polar) {
+        system = CoordSystem.polar;
         xIndex = group.polarAxisIndex ?? _series.polarAxisIndex;
       } else {
+        system = CoordSystem.grid;
         xIndex = group.xAxisIndex ?? _series.xAxisIndex;
       }
       if (xIndex < 0) {
         xIndex = 0;
       }
-      AxisIndex index = AxisIndex(xIndex);
+      AxisIndex index = AxisIndex(system, xIndex);
       if (!axisGroupMap.containsKey(index)) {
         axisGroupMap[index] = [];
       }
       axisGroupMap[index]!.add(group);
     }
 
-    Map<AxisIndex, List<StackGroup<T, P>>> resultMap = {};
+    Map<AxisIndex, List<StackData<T, P>>> resultMap = {};
     axisGroupMap.forEach((key, value) {
       resultMap[key] = _handleSingleAxis(key, value, originInfo);
     });
@@ -99,7 +102,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
   }
 
   ///处理单根坐标轴
-  List<StackGroup<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list, OriginInfo<T, P> originInfo) {
+  List<StackData<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list, OriginInfo<T, P> originInfo) {
     int barGroupCount = _computeBarCount(list);
 
     ///存放分组数据
@@ -113,11 +116,11 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
       }
     }
 
-    List<StackGroup<T, P>> stackGroupList = List.generate(barGroupCount, (index) => StackGroup(axisIndex, []));
+    List<StackData<T, P>> stackGroupList = List.generate(barGroupCount, (index) => StackData(axisIndex, []));
 
     ///合并数据
     each(groupDataSetList, (group, index) {
-      StackGroup<T, P> stackGroup = stackGroupList[index];
+      StackData<T, P> stackGroup = stackGroupList[index];
 
       ///<stackId>
       Map<String, List<Wrap<T, P>>> stackDataMap = {};
@@ -139,18 +142,18 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
       stackDataMap.forEach((key, value) {
         List<SingleData<T, P>> dl = List.from(value.map((e) => SingleData(e, true)));
         ColumnData<T, P> column = ColumnData(dl, true, value.first.parent.strategy);
-        stackGroup.column.add(column);
+        stackGroup.data.add(column);
       });
       each(singleDataList, (ele, i) {
         ColumnData<T, P> column = ColumnData([SingleData(ele, false)], false, StackStrategy.all);
-        stackGroup.column.add(column);
+        stackGroup.data.add(column);
       });
     });
 
     ///排序
-    for (StackGroup group in stackGroupList) {
+    for (StackData group in stackGroupList) {
       //排序孩子
-      for (var child in group.column) {
+      for (var child in group.data) {
         if (child.data.length > 1) {
           child.data.sort((a, b) {
             var ai = a.wrap.groupIndex;
@@ -160,8 +163,8 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
         }
       }
       //排序自身
-      if (group.column.length > 1) {
-        group.column.sort((a, b) {
+      if (group.data.length > 1) {
+        group.data.sort((a, b) {
           var ai = a.data.first.wrap.groupIndex;
           var bi = b.data.first.wrap.groupIndex;
           return ai.compareTo(bi);
@@ -181,7 +184,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
       num minValue = double.infinity;
       num maxValue = double.negativeInfinity;
       for (var group in value) {
-        for (var column in group.column) {
+        for (var column in group.data) {
           for (var data in column.data) {
             var up = data.up;
             var down = data.down;

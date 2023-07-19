@@ -8,6 +8,8 @@ abstract class PolarCoord extends CircleCoord<PolarConfig> {
   PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
 
   Offset getCenter();
+
+  BaseScale getScale(bool angleAxis);
 }
 
 class PolarPosition {
@@ -35,8 +37,8 @@ class PolarCoordImpl extends PolarCoord {
   @override
   void onCreate() {
     super.onCreate();
-    _angleAxis = AngleAxisImpl(context,props.angleAxis);
-    _radiusAxis = RadiusAxisImpl(context,props.radiusAxis);
+    _angleAxis = AngleAxisImpl(context, props.angleAxis);
+    _radiusAxis = RadiusAxisImpl(context, props.radiusAxis);
   }
 
   @override
@@ -118,4 +120,12 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   Offset getCenter() => center;
+
+  @override
+  BaseScale<dynamic, num> getScale(bool angleAxis) {
+    if (angleAxis) {
+      return _angleAxis.scale;
+    }
+    return _radiusAxis.scale;
+  }
 }

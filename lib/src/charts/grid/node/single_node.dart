@@ -18,10 +18,15 @@ class SingleNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSt
   ///通用的节点位置，一般只有折线图和散点图使用
   Offset position = Offset.zero;
 
-
   ///临时记录样式相关的
   AreaStyle? areaStyle;
   LineStyle? lineStyle;
+
+  ///记录当前节点分别在水平和竖直方向上的位置百分比
+  List<double> vRatio=[];
+  List<double> hRatio=[];
+
+
 
   @override
   int get hashCode {

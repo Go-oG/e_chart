@@ -1,10 +1,10 @@
 import 'dart:ui';
 
-import 'package:e_chart/src/charts/grid/group_node.dart';
+import 'package:e_chart/src/charts/grid/node/group_node.dart';
 import 'package:e_chart/src/charts/grid/stack_data.dart';
 
-import '../../shape/arc.dart';
-import 'base_data.dart';
+import '../../../shape/arc.dart';
+import '../base_data.dart';
 import 'single_node.dart';
 
 class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
@@ -15,7 +15,6 @@ class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
   Rect rect = Rect.zero;
 
   Arc arc=Arc();
-
 
   ColumnNode(this.parent, this.data);
 
@@ -28,4 +27,5 @@ class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
     if(nodeList.isEmpty){return 0;}
     return nodeList[0].data.down;
   }
+
 }

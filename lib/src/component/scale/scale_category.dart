@@ -38,9 +38,31 @@ class CategoryScale extends BaseScale<String, num> {
     if (c <= 0) {
       c = 1;
     }
-
     num interval = diff / c;
     return [range.first + index * interval, range.first + (index + 1) * interval];
+  }
+
+  @override
+  num convertRatio(double ratio) {
+    num diff = range.last - range.first;
+    return range.first+ratio*diff;
+  }
+
+  @override
+  List<double> toRangeRatio(String data) {
+    num index = domain.indexOf(data);
+    if (index == -1) {
+      return [0, 0];
+    }
+    int c = domain.length;
+    if (!categoryCenter) {
+      c -= 1;
+    }
+    if (c <= 0) {
+      c = 1;
+    }
+
+    return [index / c, (index + 1) / c];
   }
 
   @override
@@ -56,4 +78,6 @@ class CategoryScale extends BaseScale<String, num> {
   CategoryScale copyWithRange(List<num> range) {
     return CategoryScale(domain, range, categoryCenter);
   }
+
+
 }

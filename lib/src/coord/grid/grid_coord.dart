@@ -13,6 +13,9 @@ abstract class GridCoord extends Coord<GridConfig> {
 
   GridAxis getAxis(int axisIndex, bool isXAxis);
 
+  ///获取比例尺
+  BaseScale getScale(int axisIndex,bool isXAxis);
+
   double getAxisLength(int axisIndex, bool isXAxis);
 
   ///获取平移量(滚动量)
@@ -309,5 +312,13 @@ class GridCoordImpl extends GridCoord {
   double getAxisLength(int axisIndex, bool isXAxis) {
     var axis = isXAxis ? getXAxis(axisIndex) : getYAxis(axisIndex);
     return axis.getLength();
+  }
+
+  @override
+  BaseScale<dynamic, num> getScale(int axisIndex, bool isXAxis) {
+    if(isXAxis){
+      return getXAxis(axisIndex).scale;
+    }
+    return getYAxis(axisIndex).scale;
   }
 }

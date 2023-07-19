@@ -1,24 +1,26 @@
-import '../../model/enums/stack_strategy.dart';
-import 'base_data.dart';
+import 'package:e_chart/e_chart.dart';
 
 class AxisIndex {
-  final int index;
-
-  const AxisIndex(this.index);
+  final CoordSystem system;
+  ///X 轴索引
+  final int xIndex;
+  const AxisIndex(this.system, this.xIndex);
 
   @override
   int get hashCode {
-    return index.hashCode;
+    return Object.hash(system, xIndex);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AxisIndex && other.index == index;
+    return other is AxisIndex && other.xIndex == xIndex && other.system == system;
   }
 }
 
+///存储数据处理结果
 class AxisGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
-  final Map<AxisIndex, List<StackGroup<T, P>>> groupMap;
+  ///存储不同坐标轴的数据
+  final Map<AxisIndex, List<StackData<T, P>>> groupMap;
 
   const AxisGroup(this.groupMap);
 
@@ -28,21 +30,17 @@ class AxisGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
         ele.mergeData();
       }
     });
-    // groupMap.forEach((key, value) {
-    //   value.removeWhere((ele) => ele.column.isEmpty);
-    // });
-    // groupMap.removeWhere((key, value) => value.isEmpty);
   }
 
   int getColumnCount(AxisIndex index) {
-    List<StackGroup>? group = groupMap[index];
+    List<StackData>? group = groupMap[index];
     if (group == null) {
       return 1;
     }
     int count = 0;
-    for (StackGroup sg in group) {
-      if (sg.column.length > count) {
-        count = sg.column.length;
+    for (StackData sg in group) {
+      if (sg.data.length > count) {
+        count = sg.data.length;
       }
     }
     if (count == 0) {
@@ -52,14 +50,14 @@ class AxisGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
   }
 }
 
-class StackGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
+class StackData<T extends BaseItemData, P extends BaseGroupData<T>> {
   final AxisIndex index;
-  final List<ColumnData<T, P>> column;
+  final List<ColumnData<T, P>> data;
 
-  StackGroup(this.index, this.column);
+  StackData(this.index, this.data);
 
   void mergeData() {
-    for (var col in column) {
+    for (var col in data) {
       col.mergeData();
     }
   }
@@ -81,7 +79,6 @@ class ColumnData<T extends BaseItemData, P extends BaseGroupData<T>> {
         cd.up = up;
         continue;
       }
-
       if (i == 0) {
         if (strategy == StackStrategy.all ||
             strategy == StackStrategy.samesign ||
@@ -103,6 +100,7 @@ class ColumnData<T extends BaseItemData, P extends BaseGroupData<T>> {
       }
     }
   }
+
 }
 
 class SingleData<T extends BaseItemData, P extends BaseGroupData<T>> {
@@ -110,8 +108,13 @@ class SingleData<T extends BaseItemData, P extends BaseGroupData<T>> {
 
   ///标识是否是一个堆叠数据
   final bool stack;
+
   num up = 0;
+
   num down = 0;
+
+  List<double> hRatio = [];
+  List<double> vRatio = [];
 
   SingleData(this._wrap, this.stack);
 
