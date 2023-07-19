@@ -5,51 +5,65 @@ import 'package:e_chart/e_chart.dart';
 
 import 'candlestick_node.dart';
 
-class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickData>> {
-  List<CandlestickNode> nodeList = [];
+class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickGroup>> {
+  List<CandlestickGroupNode> nodeList = [];
 
   @override
-  void onLayout(List<CandleStickData> data, LayoutAnimatorType type) {
-    List<CandlestickNode> list = [];
-    each(data, (p0, p1) {
-      list.add(CandlestickNode(p0));
+  void onLayout(List<CandleStickGroup> data, LayoutAnimatorType type) {
+    List<CandlestickGroupNode> list = [];
+
+    each(data, (group, p1) {
+      var groupNode = CandlestickGroupNode(group, []);
+      each(group.data, (p0, p1) {
+        groupNode.nodeList.add(CandlestickNode(group, p0));
+      });
     });
+
     if (list.isEmpty) {
       nodeList = list;
       return;
     }
-    GridCoord coord = context.findGridCoord();
-    Rect rect = coord.dataToRect(
-      series.xAxisIndex,
-      DynamicData(data.first.time),
-      series.yAxisIndex,
-      DynamicData(data.first.highest),
-    );
-    num size = rect.width;
-    num boxWidth = 0;
-    if (series.boxWidth != null) {
-      boxWidth = series.boxWidth!.convert(size);
-      if (boxWidth > size) {
-        boxWidth = size;
-      }
-    } else {
-      num m1 = series.boxMinWidth.convert(size);
-      num m2 = series.boxMaxWidth.convert(size);
-      boxWidth = (m1 + m2) / 2;
-      if (boxWidth > size) {
-        boxWidth = size;
-      }
-    }
 
-    each(list, (p0, p1) {
-      _layoutSingleNode(coord, p0, boxWidth);
+    GridCoord coord = findGridCoord();
+
+    each(list, (group, p1) {
+      if (group.nodeList.isEmpty) {
+        return;
+      }
+
+      int xIndex = group.data.xAxisIndex;
+      int yIndex = group.data.yAxisIndex;
+      Rect rect = coord.dataToRect(
+        xIndex,
+        DynamicData(group.nodeList.first.data.time),
+        yIndex,
+        DynamicData(group.nodeList.first.data.highest),
+      );
+      num size = rect.width;
+      num boxWidth = 0;
+      if (series.boxWidth != null) {
+        boxWidth = series.boxWidth!.convert(size);
+        if (boxWidth > size) {
+          boxWidth = size;
+        }
+      } else {
+        num m1 = series.boxMinWidth.convert(size);
+        num m2 = series.boxMaxWidth.convert(size);
+        boxWidth = (m1 + m2) / 2;
+        if (boxWidth > size) {
+          boxWidth = size;
+        }
+      }
+
+      each(group.nodeList, (p0, p1) {
+        _layoutSingleNode(coord, p0, boxWidth, xIndex, yIndex);
+      });
     });
+
     nodeList = list;
   }
 
-  void _layoutSingleNode(GridCoord coord, CandlestickNode node, num boxWidth) {
-    int xIndex = series.xAxisIndex;
-    int yIndex = series.yAxisIndex;
+  void _layoutSingleNode(GridCoord coord, CandlestickNode node, num boxWidth, int xIndex, int yIndex) {
     var data = node.data;
     double half = boxWidth * 0.5;
     DynamicData dd = DynamicData(data.time);
@@ -112,9 +126,11 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickD
   CandlestickNode? findNode(Offset offset) {
     var of = context.findGridCoord().getTranslation();
     offset = offset.translate(of.dx, of.dy);
-    for (CandlestickNode node in nodeList) {
-      if (node.path.contains(offset)) {
-        return node;
+    for (var group in nodeList) {
+      for (var node in group.nodeList) {
+        if (node.path.contains(offset)) {
+          return node;
+        }
       }
     }
     return null;

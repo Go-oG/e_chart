@@ -10,12 +10,12 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   CoordSystem? coordSystem;
 
   ///坐标轴取值索引(和coordSystem配合实现定位)
-  int xAxisIndex;
-  int yAxisIndex;
-  int polarAxisIndex;
+  int gridIndex;
+  int polarIndex;
   int calendarIndex;
   int radarIndex;
   int parallelIndex;
+
   Color? backgroundColor;
   AnimatorAttrs? animation; //动画
   ToolTip? tooltip;
@@ -30,9 +30,8 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   int z; //z轴索引
 
   ChartSeries(
-      {this.xAxisIndex = 0,
-      this.yAxisIndex = 0,
-      this.polarAxisIndex = 0,
+      {this.gridIndex = 0,
+      this.polarIndex = 0,
       this.calendarIndex = 0,
       this.radarIndex = 0,
       this.parallelIndex = 0,
@@ -91,11 +90,10 @@ abstract class RectSeries extends ChartSeries {
     this.width,
     this.height,
     super.coordSystem,
-    super.xAxisIndex,
-    super.yAxisIndex,
+    super.gridIndex,
     super.calendarIndex,
     super.parallelIndex,
-    super.polarAxisIndex,
+    super.polarIndex,
     super.radarIndex,
     super.animation,
     super.backgroundColor,

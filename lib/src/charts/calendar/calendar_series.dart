@@ -135,11 +135,5 @@ class CalenderSeries extends ChartSeries {
     super.enableScale,
     super.clip,
     super.z,
-  }) : super(
-          xAxisIndex: -1,
-          yAxisIndex: -1,
-          calendarIndex: -1,
-          parallelIndex: -1,
-          polarAxisIndex: -1,
-        );
+  }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1);
 }

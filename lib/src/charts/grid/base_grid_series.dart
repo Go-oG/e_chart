@@ -2,6 +2,12 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends ChartSeries {
+  static const defaultAnimatorAttrs = AnimatorAttrs(
+    curve: Curves.easeOutQuart,
+    updateDuration: Duration(milliseconds: 800),
+    duration: Duration(milliseconds: 2000),
+  );
+
   List<P> data;
 
   ///指示图形排列方式
@@ -25,14 +31,12 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
     this.animatorStyle = GridAnimatorStyle.expand,
     this.legendHoverLink = true,
     this.realtimeSort = false,
-    super.animation = const AnimatorAttrs(
-        curve: Curves.easeOutQuart, updateDuration: Duration(milliseconds: 800), duration: Duration(milliseconds: 2000)),
+    super.animation = defaultAnimatorAttrs,
     super.backgroundColor,
     super.clip,
     super.coordSystem = CoordSystem.grid,
-    super.xAxisIndex,
-    super.yAxisIndex,
-    super.polarAxisIndex,
+    super.gridIndex,
+    super.polarIndex,
     super.enableClick,
     super.enableDrag,
     super.enableHover,

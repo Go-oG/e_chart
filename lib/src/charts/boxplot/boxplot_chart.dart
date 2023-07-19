@@ -59,9 +59,11 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
     var of = context.findGridCoord().getTranslation();
     canvas.save();
     canvas.translate(of.dx, of.dy);
-    each(_layout.nodeList, (node, p1) {
-      getAreaStyle(node, p1)?.drawPath(canvas, mPaint, node.areaPath);
-      getBorderStyle(node, p1).drawPath(canvas, mPaint, node.path);
+    each(_layout.nodeList, (group, p1) {
+      each(group.nodeList, (node, i) {
+        getAreaStyle(node, group, p1)?.drawPath(canvas, mPaint, node.areaPath);
+        getBorderStyle(node, group, p1).drawPath(canvas, mPaint, node.path);
+      });
     });
     canvas.restore();
   }
@@ -74,29 +76,31 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
     List<DynamicData> dl = [];
-    for (var element in series.data) {
-      if (isXAxis) {
-        dl.add(element.x);
-      } else {
-        dl.add(element.min);
-        dl.add(element.max);
+    for (var group in series.data) {
+      for (var element in group.data) {
+        if (isXAxis) {
+          dl.add(element.x);
+        } else {
+          dl.add(element.min);
+          dl.add(element.max);
+        }
       }
     }
     return dl;
   }
 
-  AreaStyle? getAreaStyle(BoxplotNode node, int index) {
+  AreaStyle? getAreaStyle(BoxplotNode node, BoxplotGroupNode group, int index) {
     if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node.data);
+      return series.areaStyleFun?.call(node.data, group.data);
     }
     var chartTheme = context.config.theme;
     Color fillColor = chartTheme.getColor(index);
     return AreaStyle(color: fillColor).convert(node.status);
   }
 
-  LineStyle getBorderStyle(BoxplotNode node, int index) {
+  LineStyle getBorderStyle(BoxplotNode node, BoxplotGroupNode group, int index) {
     if (series.borderStyleFun != null) {
-      return series.borderStyleFun!.call(node.data);
+      return series.borderStyleFun!.call(node.data, group.data);
     }
     var theme = context.config.theme.boxplotTheme;
     return theme.getBorderStyle(context.config.theme, index).convert(node.status);

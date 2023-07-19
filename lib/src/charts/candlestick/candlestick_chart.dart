@@ -61,7 +61,10 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
     canvas.save();
     canvas.translate(of.dx, of.dy);
     each(_layout.nodeList, (node, index) {
-      drawNode(canvas, node);
+      each(node.nodeList, (p0, p1) {
+        drawNode(canvas, p0);
+      });
+
     });
     canvas.restore();
   }
@@ -98,14 +101,17 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
     List<DynamicData> dl = [];
-    for (var element in series.data) {
-      if (isXAxis) {
-        dl.add(DynamicData(element.time));
-      } else {
-        dl.add(DynamicData(element.highest));
-        dl.add(DynamicData(element.lowest));
+    for(var group in series.data){
+      for (var element in group.data) {
+        if (isXAxis) {
+          dl.add(DynamicData(element.time));
+        } else {
+          dl.add(DynamicData(element.highest));
+          dl.add(DynamicData(element.lowest));
+        }
       }
     }
+
     return dl;
   }
 

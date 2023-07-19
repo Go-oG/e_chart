@@ -5,47 +5,59 @@ import 'package:e_chart/e_chart.dart';
 
 import 'boxplot_node.dart';
 
-class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotData>> {
-  List<BoxplotNode> nodeList = [];
+class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
+  List<BoxplotGroupNode> nodeList = [];
 
   @override
-  void onLayout(List<BoxplotData> data, LayoutAnimatorType type) {
-    List<BoxplotNode> list = [];
+  void onLayout(List<BoxplotGroup> data, LayoutAnimatorType type) {
+    List<BoxplotGroupNode> list = [];
     each(data, (p0, p1) {
-      list.add(BoxplotNode(p0));
+      var groupNode = BoxplotGroupNode(p0, []);
+      list.add(groupNode);
+      each(p0.data, (item, i) {
+        groupNode.nodeList.add(BoxplotNode(p0, item));
+      });
     });
+
     GridCoord coord = context.findGridCoord();
     if (list.isEmpty) {
       nodeList = list;
       return;
     }
 
-    Rect rect = coord.dataToRect(series.xAxisIndex, data.first.x, series.yAxisIndex, data.first.min);
-    num size = series.direction == Direction.vertical ? rect.width : rect.height;
-    num boxWidth = 0;
-    if (series.boxWidth != null) {
-      boxWidth = series.boxWidth!.convert(size);
-      if (boxWidth > size) {
-        boxWidth = size;
+    each(list, (group, p1) {
+      int xAxisIndex = group.data.xAxisIndex;
+      int yAxisIndex = group.data.yAxisIndex;
+      if (group.nodeList.isEmpty) {
+        return;
       }
-    } else {
-      num m1 = series.boxMinWidth.convert(size);
-      num m2 = series.boxMaxWidth.convert(size);
-      boxWidth = (m1 + m2) / 2;
-      if (boxWidth > size) {
-        boxWidth = size;
-      }
-    }
 
-    each(list, (p0, p1) {
-      _layoutSingleNode(coord, p0, boxWidth);
+      var firstData = group.nodeList.first.data;
+      Rect rect = coord.dataToRect(xAxisIndex, firstData.x, yAxisIndex, firstData.min);
+      num size = series.direction == Direction.vertical ? rect.width : rect.height;
+      num boxWidth = 0;
+      if (series.boxWidth != null) {
+        boxWidth = series.boxWidth!.convert(size);
+        if (boxWidth > size) {
+          boxWidth = size;
+        }
+      } else {
+        num m1 = series.boxMinWidth.convert(size);
+        num m2 = series.boxMaxWidth.convert(size);
+        boxWidth = (m1 + m2) / 2;
+        if (boxWidth > size) {
+          boxWidth = size;
+        }
+      }
+      each(group.nodeList, (p0, p1) {
+        _layoutSingleNode(coord, p0, boxWidth, xAxisIndex, yAxisIndex);
+      });
     });
+
     nodeList = list;
   }
 
-  void _layoutSingleNode(GridCoord coord, BoxplotNode node, num boxWidth) {
-    int xIndex = series.xAxisIndex;
-    int yIndex = series.yAxisIndex;
+  void _layoutSingleNode(GridCoord coord, BoxplotNode node, num boxWidth, int xIndex, int yIndex) {
     var data = node.data;
     double half = boxWidth * 0.5;
 
@@ -133,11 +145,14 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotData>> {
   BoxplotNode? findNode(Offset offset) {
     var of = context.findGridCoord().getTranslation();
     offset = offset.translate(of.dx, of.dy);
-    for (BoxplotNode node in nodeList) {
-      if (node.path.contains(offset)) {
-        return node;
+    for (var groupNode in nodeList) {
+      for (var node in groupNode.nodeList) {
+        if (node.path.contains(offset)) {
+          return node;
+        }
       }
     }
+
     return null;
   }
 }

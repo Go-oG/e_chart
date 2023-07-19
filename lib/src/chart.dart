@@ -13,7 +13,7 @@ import 'component/theme/theme.dart';
 class ChartConfig {
   ChartTitle? title;
   Legend? legend;
-  GridConfig? grid;
+  List<GridConfig> gridList;
   List<PolarConfig> polarList;
   List<RadarConfig> radarList;
   List<ParallelConfig> parallelList;
@@ -29,6 +29,7 @@ class ChartConfig {
       {required this.series,
       this.title,
       this.legend,
+      this.gridList = const [],
       this.polarList = const [],
       this.radarList = const [],
       this.parallelList = const [],
@@ -39,9 +40,6 @@ class ChartConfig {
       this.dragType = DragType.longPress,
       this.toolTip,
       ChartTheme? theme}) {
-    if (grid != null) {
-      this.grid = grid;
-    }
     if (theme != null) {
       this.theme = theme;
     }

@@ -50,15 +50,15 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
     GridCoord? gridLayout;
     CalendarCoord? calendarLayout;
     if (series.coordSystem == CoordSystem.grid) {
-      gridLayout = context.findGridCoord();
+      gridLayout = findGridCoord();
     } else {
-      calendarLayout = context.findCalendarCoord(series.xAxisIndex);
+      calendarLayout = findCalendarCoord();
     }
     for(var node in nodeList){
       var data=node.data;
       Rect? rect;
       if (gridLayout != null) {
-        rect = gridLayout.dataToRect(series.xAxisIndex, data.x, series.yAxisIndex, data.y);
+        rect = gridLayout.dataToRect(0, data.x,0, data.y);
       } else if (calendarLayout != null) {
         rect = calendarLayout.dataToPosition(data.x.data);
       }

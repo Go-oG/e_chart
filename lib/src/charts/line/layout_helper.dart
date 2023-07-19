@@ -24,7 +24,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     DynamicData tmpData = DynamicData(0);
     var coord = context.findGridCoord();
     each(groupNode.nodeList, (node, i) {
-      int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
+      int yIndex = groupNode.getYAxisIndex();
       Rect up, down;
       if (vertical) {
         up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
@@ -62,7 +62,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
 
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
-      int polarIndex = node.data.data.first.parent.polarAxisIndex ?? series.polarAxisIndex;
+      int polarIndex = series.polarIndex;
       var coord = context.findPolarCoord(polarIndex);
       var up = coord.dataToPosition(x, tmpData.change(node.getUp()));
       var down = coord.dataToPosition(x, tmpData.change(node.getDown()));

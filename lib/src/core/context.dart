@@ -89,14 +89,12 @@ class Context {
     ///Coord
     ///转换CoordConfig 到Coord
     List<CoordConfig> coordConfigList = [
+      ...config.gridList,
       ...config.polarList,
       ...config.radarList,
       ...config.calendarList,
       ...config.parallelList,
     ];
-    if (config.grid != null) {
-      coordConfigList.add(config.grid!);
-    }
 
     for (var ele in coordConfigList) {
       var c = CoordFactory.instance.convert(ele);
@@ -119,6 +117,7 @@ class Context {
       }
       _seriesViewMap[series] = view;
     }
+
     ///将指定了坐标系的View和坐标系绑定
     _seriesViewMap.forEach((key, view) {
       Coord? layout = _findCoord(view, key);
@@ -205,7 +204,7 @@ class Context {
         return findGridCoord();
       }
       if (coord == CoordSystem.polar) {
-        return findPolarCoord(series.polarAxisIndex);
+        return findPolarCoord(series.polarIndex);
       }
       if (coord == CoordSystem.radar) {
         return findRadarCoord(series.radarIndex);
@@ -237,16 +236,25 @@ class Context {
   }
 
   /// 坐标系查找相关函数
-  GridCoord findGridCoord() {
-    return _coordMap[config.grid]! as GridCoord;
+  GridCoord findGridCoord([int gridIndex = 0]) {
+    if (config.gridList.isEmpty) {
+      throw FlutterError('暂无Grid坐标系');
+    }
+    if (gridIndex < 0) {
+      gridIndex = 0;
+    }
+    if (gridIndex > config.polarList.length) {
+      gridIndex = config.polarList.length - 1;
+    }
+    return _coordMap[config.gridList[gridIndex]]! as GridCoord;
   }
 
   PolarCoord findPolarCoord([int polarIndex = 0]) {
     if (config.polarList.isEmpty) {
       throw FlutterError('暂无Polar坐标系');
     }
-    if(polarIndex<0){
-      polarIndex=0;
+    if (polarIndex < 0) {
+      polarIndex = 0;
     }
     if (polarIndex > config.polarList.length) {
       polarIndex = 0;

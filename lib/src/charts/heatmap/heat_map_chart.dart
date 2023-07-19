@@ -10,7 +10,7 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
   HeatMapView(super.series);
 
   @override
-  int get calendarIndex => series.xAxisIndex;
+  int get calendarIndex => series.calendarIndex;
 
   @override
   void onStart() {
