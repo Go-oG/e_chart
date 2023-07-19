@@ -23,7 +23,7 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
   }
 
   void _initAnimator() {
-    AnimatorProps? info = series.animation;
+    AnimatorAttrs? info = series.animation;
     List<RadarGroupNode> nodeList = radarLayout.groupNodeList;
     if (info != null) {
       for (var group in nodeList) {

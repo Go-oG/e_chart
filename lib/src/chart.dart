@@ -19,7 +19,7 @@ class ChartConfig {
   List<ParallelConfig> parallelList;
   List<CalendarConfig> calendarList;
   List<ChartSeries> series;
-  AnimatorProps animation;
+  AnimatorAttrs animation;
   ScaleType scaleType;
   DragType dragType;
   ToolTip? toolTip;
@@ -33,7 +33,7 @@ class ChartConfig {
       this.radarList = const [],
       this.parallelList = const [],
       this.calendarList = const [],
-      this.animation = const AnimatorProps(),
+      this.animation = const AnimatorAttrs(),
       GridConfig? grid,
       this.scaleType = ScaleType.scale,
       this.dragType = DragType.longPress,

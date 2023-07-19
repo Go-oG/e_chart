@@ -5,6 +5,8 @@ import 'package:e_chart/e_chart.dart';
 class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> {
   List<LineResult> lineList = [];
 
+  double? clipPercent;
+
   @override
   void onLayoutColumnForGrid(
     AxisGroup<LineItemData, LineGroupData> axisGroup,
@@ -18,20 +20,26 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       columnCount = 0;
     }
     final bool vertical = series.direction == Direction.vertical;
-    final Rect rect = groupNode.rect;
+    final Rect groupRect = groupNode.rect;
     DynamicData tmpData = DynamicData(0);
     var coord = context.findGridCoord();
     each(groupNode.nodeList, (node, i) {
       int yIndex = node.data.data.first.parent.yAxisIndex ?? series.yAxisIndex;
-      var up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
-      var down = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getDown()));
+      Rect up, down;
+      if (vertical) {
+        up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
+        down = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getDown()));
+      } else {
+        up = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getUp()), yIndex, x);
+        down = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getDown()), yIndex, x);
+      }
       double h = (up.top - down.top).abs();
       double w = (up.left - down.left).abs();
       Rect tmpRect;
       if (vertical) {
-        tmpRect = Rect.fromLTWH(rect.left, rect.bottom - h, rect.width, h);
+        tmpRect = Rect.fromLTWH(groupRect.left, groupRect.bottom - h, groupRect.width, h);
       } else {
-        tmpRect = Rect.fromLTWH(rect.left, rect.top, w, rect.height);
+        tmpRect = Rect.fromLTWH(groupRect.left, groupRect.top, w, groupRect.height);
       }
       node.rect = tmpRect;
     });
@@ -96,63 +104,74 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForGrid(
-      SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
-    SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForGrid(data, node, newData);
-    Offset pos = node.position;
-    Offset offset;
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      offset = Offset(pos.dx, height);
-    } else {
-      offset = Offset(pos.dx, rect.bottom);
-    }
-    rn.position = offset;
-    return rn;
-  }
-
-  @override
-  SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForPolar(
-      SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
-    SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForPolar(data, node, newData);
-    Offset offset;
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      offset = circlePoint(0, 0, node.arc.center);
-    } else {
-      var angle = node.arc.startAngle + node.arc.sweepAngle / 2;
-      offset = circlePoint(node.arc.innerRadius, angle, node.arc.center);
-    }
-    rn.position = offset;
-    return rn;
-  }
-
-  final OffsetTween _offsetTween = OffsetTween(Offset.zero, Offset.zero);
-
-  @override
-  void onAnimatorUpdateForGrid(SingleNode<LineItemData, LineGroupData> node, double t, Map<SingleData<LineItemData, LineGroupData>, MapNode> startMap, Map<SingleData<LineItemData, LineGroupData>, MapNode> endMap) {
-    super.onAnimatorUpdateForGrid(node, t, startMap, endMap);
-    var s = startMap[node.data]!.offset;
-    var e = endMap[node.data]!.offset;
-    _offsetTween.changeValue(s, e);
-    node.position = _offsetTween.safeGetValue(t);
-  }
-
-  @override
-  void onAnimatorUpdateForPolar(SingleNode<LineItemData, LineGroupData> node, double t, Map<SingleData<LineItemData, LineGroupData>, MapNode> startMap, Map<SingleData<LineItemData, LineGroupData>, MapNode> endMap) {
-    super.onAnimatorUpdateForPolar(node, t, startMap, endMap);
-    var s = startMap[node.data]!.offset;
-    var e = endMap[node.data]!.offset;
-    _offsetTween.changeValue(s, e);
-    node.position = _offsetTween.safeGetValue(t);
-  }
-
-  @override
-  void onAnimatorUpdateEnd(DiffResult<SingleNode<LineItemData, LineGroupData>, SingleData<LineItemData, LineGroupData>> result) {
+  void onAnimatorStart(var result) {
     _updateLine(result.curList);
+    super.onAnimatorStart(result);
+  }
+
+  // @override
+  // SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForGrid(
+  //     SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
+  //
+  //   SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForGrid(data, node, newData);
+  //   Offset pos = node.position;
+  //   Offset offset;
+  //   if (series.animatorStyle == GridAnimatorStyle.expand) {
+  //     offset = Offset(pos.dx, height);
+  //   } else {
+  //     offset = Offset(pos.dx, rect.bottom);
+  //   }
+  //   rn.position = offset;
+  //   return rn;
+  // }
+
+  // @override
+  // SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForPolar(
+  //     SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
+  //   SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForPolar(data, node, newData);
+  //   Offset offset;
+  //   if (series.animatorStyle == GridAnimatorStyle.expand) {
+  //     offset = circlePoint(0, 0, node.arc.center);
+  //   } else {
+  //     var angle = node.arc.startAngle + node.arc.sweepAngle / 2;
+  //     offset = circlePoint(node.arc.innerRadius, angle, node.arc.center);
+  //   }
+  //   rn.position = offset;
+  //   return rn;
+  // }
+
+  @override
+  void onAnimatorUpdateForGrid(var node, double t, var startMap, var endMap) {
+    // super.onAnimatorUpdateForGrid(node, t, startMap, endMap);
+
+    // var s = startMap[node.data]!.offset;
+    // var e = endMap[node.data]!.offset;
+    // _offsetTween.changeValue(s, e);
+    // node.position = _offsetTween.safeGetValue(t);
+
+    clipPercent = t;
   }
 
   @override
-  void onAnimatorEnd(DiffResult<SingleNode<LineItemData, LineGroupData>, SingleData<LineItemData, LineGroupData>> result) {
-    _updateLine(result.finalList);
+  void onAnimatorUpdateForPolar(var node, double t, var startMap, var endMap) {
+    // super.onAnimatorUpdateForPolar(node, t, startMap, endMap);
+    // var s = startMap[node.data]!.offset;
+    // var e = endMap[node.data]!.offset;
+    // _offsetTween.changeValue(s, e);
+    // node.position = _offsetTween.safeGetValue(t);
+    clipPercent = t;
+  }
+
+  @override
+  void onAnimatorUpdateEnd(var result, double t) {
+    //  _updateLine(result.curList);
+    clipPercent = t;
+  }
+
+  @override
+  void onAnimatorEnd(var result) {
+    // _updateLine(result.finalList);
+    clipPercent = null;
   }
 
   void _updateLine(List<SingleNode<LineItemData, LineGroupData>> list) {

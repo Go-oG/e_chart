@@ -1,20 +1,21 @@
+import 'dart:async';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 /// 抽象的补间动画
 abstract class ChartTween<T> extends ValueNotifier<T> {
-  final AnimatorProps props;
+  final AnimatorAttrs props;
   AnimationController? _controller;
   T _begin;
   T _end;
-
   late bool _allowCross;
 
   ChartTween(
     this._begin,
     this._end, {
     bool allowCross = true,
-    this.props = const AnimatorProps(),
+    this.props = const AnimatorAttrs(),
   }) : super(_begin) {
     _allowCross = allowCross;
   }
@@ -23,12 +24,32 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   VoidCallback? endListener;
 
   bool _hasCallStart = false;
+  bool _cancelFlag = false;
+  Timer? _waitTimer;
 
   void start(Context context, [bool useUpdate = false]) {
+    var delay = useUpdate ? props.updateDelay : props.delay;
+    if (delay.inMilliseconds <= 0) {
+      _startInner(context, useUpdate);
+      return;
+    }
+    _cancelFlag = true;
+    _waitTimer?.cancel();
+    _waitTimer = Timer(delay, () {
+      _startInner(context, useUpdate);
+    });
+  }
+
+  void _startInner(Context context, [bool useUpdate = false]) {
     _hasCallStart = false;
+    _cancelFlag = false;
     _controller = context.boundedAnimation(props, useUpdate);
     CurvedAnimation curved = CurvedAnimation(parent: _controller!, curve: useUpdate ? props.updateCurve : props.curve);
     curved.addListener(() {
+      if (_cancelFlag) {
+        stop();
+        return;
+      }
       if (!_hasCallStart) {
         _hasCallStart = true;
         startListener?.call();
@@ -49,6 +70,8 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
 
   void stop() {
     try {
+      _waitTimer?.cancel();
+      _cancelFlag = true;
       _controller?.stop(canceled: true);
     } catch (e) {
       logPrint('$e');

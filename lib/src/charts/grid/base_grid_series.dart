@@ -8,6 +8,8 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
   Direction direction;
 
   SelectedMode selectedMode;
+
+  ///该动画样式只在柱状图中使用
   GridAnimatorStyle animatorStyle;
 
   // 是否启用图例hover的联动高亮
@@ -23,7 +25,8 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
     this.animatorStyle = GridAnimatorStyle.expand,
     this.legendHoverLink = true,
     this.realtimeSort = false,
-    super.animation = const AnimatorProps(curve: Curves.easeOutQuart),
+    super.animation = const AnimatorAttrs(
+        curve: Curves.easeOutQuart, updateDuration: Duration(milliseconds: 800), duration: Duration(milliseconds: 2000)),
     super.backgroundColor,
     super.clip,
     super.coordSystem = CoordSystem.grid,
@@ -42,7 +45,7 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
   DataHelper<T, P, BaseGridSeries>? _helper;
 
   DataHelper<T, P, BaseGridSeries> get helper {
-    _helper ??= DataHelper(this, data,direction);
+    _helper ??= DataHelper(this, data, direction);
     return _helper!;
   }
 

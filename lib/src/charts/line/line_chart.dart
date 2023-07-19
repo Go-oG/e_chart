@@ -56,6 +56,19 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
 
   @override
   void onDraw(Canvas canvas) {
+    canvas.save();
+    Offset offset = helper.getTranslation();
+    if (helper.clipPercent != null) {
+      double t = helper.clipPercent!;
+      if (series.direction == Direction.vertical) {
+        double rightOffset = offset.dx + width * t;
+        canvas.clipRect(Rect.fromLTRB(offset.dx, 0, rightOffset, height));
+      } else {
+        double topOffset = height * (1 - t);
+        canvas.clipRect(Rect.fromLTRB(offset.dx, topOffset, width, height));
+      }
+    }
+    canvas.translate(offset.dx, offset.dy);
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
     final List<LineResult> list = helper.lineList;
@@ -100,10 +113,10 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
           } else if (theme.showSymbol) {
             theme.symbol.draw(canvas, mPaint, desc);
           }
-
         });
       });
     }
+    canvas.restore();
   }
 
   /// 绘制柱状图

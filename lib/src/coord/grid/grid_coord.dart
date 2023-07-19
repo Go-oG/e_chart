@@ -11,6 +11,7 @@ abstract class GridCoord extends Coord<GridConfig> {
   ///该方法适用于Line
   Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
 
+
   GridAxis getAxis(int axisIndex, bool isXAxis);
 
   ///获取比例尺
@@ -18,24 +19,14 @@ abstract class GridCoord extends Coord<GridConfig> {
 
   double getAxisLength(int axisIndex, bool isXAxis);
 
-  ///获取平移量(滚动量)
-  Offset getTranslation();
-
-  Offset getScaleFactor();
-
   List<GridChild> getGridChildList();
+
 }
 
 ///实现二维坐标系
 class GridCoordImpl extends GridCoord {
   final Map<XAxis, XAxisImpl> xMap = {};
   final Map<YAxis, YAxisImpl> yMap = {};
-  Rect contentBox = Rect.zero;
-
-  double scaleXFactor = 1;
-  double scaleYFactor = 1;
-  double scrollXOffset = 0;
-  double scrollYOffset = 0;
 
   GridCoordImpl(super.props);
 
@@ -215,15 +206,6 @@ class GridCoordImpl extends GridCoord {
     });
   }
 
-  @override
-  Offset getScaleFactor() {
-    return Offset(scaleXFactor, scaleYFactor);
-  }
-
-  @override
-  Offset getTranslation() {
-    return Offset(scrollXOffset, scrollYOffset);
-  }
 
   @override
   void onDragMove(Offset offset, Offset diff) {
@@ -254,19 +236,7 @@ class GridCoordImpl extends GridCoord {
     invalidate();
   }
 
-  XAxisImpl getXAxis(int xAxisIndex) {
-    if (xAxisIndex < 0) {
-      xAxisIndex = 0;
-    }
-    return xMap[props.xAxisList[xAxisIndex]]!;
-  }
 
-  YAxisImpl getYAxis(int yAxisIndex) {
-    if (yAxisIndex < 0) {
-      yAxisIndex = 0;
-    }
-    return yMap[props.yAxisList[yAxisIndex]]!;
-  }
 
   @override
   List<GridChild> getGridChildList() {
@@ -320,5 +290,19 @@ class GridCoordImpl extends GridCoord {
       return getXAxis(axisIndex).scale;
     }
     return getYAxis(axisIndex).scale;
+  }
+
+  XAxisImpl getXAxis(int xAxisIndex) {
+    if (xAxisIndex < 0) {
+      xAxisIndex = 0;
+    }
+    return xMap[props.xAxisList[xAxisIndex]]!;
+  }
+
+  YAxisImpl getYAxis(int yAxisIndex) {
+    if (yAxisIndex < 0) {
+      yAxisIndex = 0;
+    }
+    return yMap[props.yAxisList[yAxisIndex]]!;
   }
 }

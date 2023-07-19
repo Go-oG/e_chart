@@ -12,40 +12,6 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   List<GroupNode<T, P>> groupNodeList = [];
   Map<T, SingleNode<T, P>> dataNodeMap = {};
 
-  List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
-    CoordSystem system = CoordSystem.grid;
-    if (series.coordSystem == CoordSystem.polar) {
-      system = CoordSystem.polar;
-    }
-
-    List<DynamicData> dl = [];
-    if (!isXAxis) {
-      for (var d in series.helper.getExtreme(system, axisIndex)) {
-        dl.add(DynamicData(d));
-      }
-      return dl;
-    }
-
-    for (var group in series.data) {
-      if (group.data.isEmpty) {
-        continue;
-      }
-      int xIndex = group.xAxisIndex ?? series.xAxisIndex;
-      if (xIndex < 0) {
-        xIndex = 0;
-      }
-      if (isXAxis && xIndex != axisIndex) {
-        continue;
-      }
-      for (var data in group.data) {
-        if (data != null) {
-          dl.add(data.x);
-        }
-      }
-    }
-    return dl;
-  }
-
   @nonVirtual
   @override
   void onLayout(List<P> data, LayoutAnimatorType type) {
@@ -171,7 +137,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       each(diffResult.curList, (node, p1) {
         onAnimatorUpdate(node, t, startMap, endMap);
       });
-      onAnimatorUpdateEnd(diffResult);
+      onAnimatorUpdateEnd(diffResult, t);
       notifyLayoutUpdate();
     });
     doubleTween.start(context, type == LayoutAnimatorType.update);
@@ -325,7 +291,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     node.arc = Arc.lerp(s, e, t);
   }
 
-  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
+  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, double t) {}
 
   void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
 
@@ -422,8 +388,57 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     onHandleHoverEnd(_oldNode, null);
   }
 
-  GridAxis findAxis(Context context, int index, bool isXAxis) {
+  List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
+    CoordSystem system = CoordSystem.grid;
+    if (series.coordSystem == CoordSystem.polar) {
+      system = CoordSystem.polar;
+    }
+
+    List<DynamicData> dl = [];
+    if (!isXAxis) {
+      for (var d in series.helper.getExtreme(system, axisIndex)) {
+        dl.add(DynamicData(d));
+      }
+      return dl;
+    }
+
+    for (var group in series.data) {
+      if (group.data.isEmpty) {
+        continue;
+      }
+      int xIndex = group.xAxisIndex ?? series.xAxisIndex;
+      if (xIndex < 0) {
+        xIndex = 0;
+      }
+      if (isXAxis && xIndex != axisIndex) {
+        continue;
+      }
+      for (var data in group.data) {
+        if (data != null) {
+          dl.add(data.x);
+        }
+      }
+    }
+    return dl;
+  }
+
+  GridAxis findGridAxis(int index, bool isXAxis) {
     return context.findGridCoord().getAxis(index, isXAxis);
+  }
+
+  GridCoord findGridCoord() {
+    return context.findGridCoord();
+  }
+
+  PolarCoord findPolarCoord(int index) {
+    return context.findPolarCoord(index);
+  }
+
+  Offset getTranslation(){
+    if(series.coordSystem==CoordSystem.polar){
+      return findPolarCoord(series.polarAxisIndex).getTranslation();
+    }
+    return findGridCoord().getTranslation();
   }
 
   SingleNode<T, P>? findNode(Offset offset) {
