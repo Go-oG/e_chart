@@ -38,8 +38,8 @@ class DefaultRender extends BaseRender {
       if (v is CircleCoord) {
         double dx = v.props.center[0].convert(rect.width);
         double dy = v.props.center[1].convert(rect.height);
-        double r = v.props.radius.convert(min(rect.width, rect.height));
-        Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: r * 2, height: r * 2);
+        double s = v.props.radius.convert(min(rect.width, rect.height))*2;
+        Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: s, height: s);
         v.layout(r2.left, r2.top, r2.right, r2.bottom);
       } else {
         var props = v.props;

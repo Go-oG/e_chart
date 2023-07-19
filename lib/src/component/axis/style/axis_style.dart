@@ -55,7 +55,10 @@ class AxisStyle {
   }
 
   AreaStyle? getSplitAreaStyle(int index, int maxIndex, AxisTheme theme) {
-    return splitArea?.getSplitAreaStyle(index, maxIndex, theme);
+    if (splitArea != null) {
+      return splitArea?.getSplitAreaStyle(index, maxIndex, theme);
+    }
+    return theme.getSplitAreaStyle(index);
   }
 
   MainTick? getMainTick(int index, int maxIndex, AxisTheme theme) {
