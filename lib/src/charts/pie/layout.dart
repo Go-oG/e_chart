@@ -32,7 +32,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
   Offset center = Offset.zero;
 
   @override
-  void onLayout(List<ItemData> data, LayoutAnimatorType type) {
+  void onLayout(List<ItemData> data, LayoutType type) {
     pieAngle = _adjustPieAngle(series.sweepAngle);
     center = _computeCenterPoint(series.center);
     hoverNode = null;
@@ -84,7 +84,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
       }
       notifyLayoutUpdate();
     });
-    tween.start(context, type==LayoutAnimatorType.update);
+    tween.start(context, type==LayoutType.update);
   }
 
   void layoutNode(List<PieNode> nodeList) {

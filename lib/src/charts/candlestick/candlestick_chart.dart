@@ -33,7 +33,7 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
@@ -51,7 +51,7 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override

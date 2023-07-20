@@ -51,7 +51,7 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override

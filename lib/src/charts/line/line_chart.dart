@@ -51,21 +51,27 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
     canvas.save();
     Offset offset = helper.getTranslation();
+    bool usePolar = series.coordSystem == CoordSystem.polar;
     if (helper.clipPercent != null) {
       double t = helper.clipPercent!;
-      if (series.direction == Direction.vertical) {
-        double rightOffset = offset.dx + width * t;
-        canvas.clipRect(Rect.fromLTRB(offset.dx, 0, rightOffset, height));
+      if (usePolar) {
+        double r = max([width, height]) * 0.5 * t;
+        canvas.clipRect(Rect.fromCircle(center: helper.findPolarCoord().getCenter(), radius: r));
       } else {
-        double topOffset = height * (1 - t);
-        canvas.clipRect(Rect.fromLTRB(offset.dx, topOffset, width, height));
+        if (series.direction == Direction.vertical) {
+          double rightOffset = offset.dx + width * t;
+          canvas.clipRect(Rect.fromLTRB(offset.dx, 0, rightOffset, height));
+        } else {
+          double topOffset = height * (1 - t);
+          canvas.clipRect(Rect.fromLTRB(offset.dx, topOffset, width, height));
+        }
       }
     }
     canvas.translate(offset.dx, offset.dy);
@@ -75,7 +81,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
 
     ///这里分开绘制是为了避免边框被遮挡
     each(list, (result, i) {
-      AreaStyle? style = helper.getAreaStyle(result.data, i);
+      AreaStyle? style = helper.getAreaStyle(result.data, result.groupIndex);
       result.areaStyle = style;
       if (style != null) {
         for (var path in result.areaPathList) {
@@ -97,6 +103,10 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
       ///绘制symbol
       SymbolDesc desc = SymbolDesc();
       each(list, (result, p1) {
+        var cl = helper.getLineStyle(result.data, result.groupIndex)?.color;
+        if (cl != null) {
+          desc.fillColor = [cl];
+        }
         each(result.data.data, (data, i) {
           if (data == null || i >= result.offsetList.length) {
             return;
@@ -105,8 +115,8 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
           if (offset == null) {
             return;
           }
-
           desc.center = offset;
+
           ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
           if (symbol != null) {
             symbol.draw(canvas, mPaint, desc);

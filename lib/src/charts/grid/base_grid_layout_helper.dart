@@ -14,7 +14,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 
   @nonVirtual
   @override
-  void onLayout(List<P> data, LayoutAnimatorType type) {
+  void onLayout(List<P> data, LayoutType type) {
     AxisGroup<T, P> axisGroup = series.helper.result;
     bool vertical = series.direction == Direction.vertical;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = _buildGroupNode(axisGroup);
@@ -108,11 +108,12 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     List<SingleNode<T, P>> newNodeList,
     List<GroupNode<T, P>> newGroupNodeList,
     Map<T, SingleNode<T, P>> newNodeMap,
-    LayoutAnimatorType type,
+    LayoutType type,
   ) {
     ///动画
-    DiffResult<SingleNode<T, P>, SingleData<T, P>> diffResult =
-        DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data, onCreateAnimatorObj);
+    DiffResult<SingleNode<T, P>, SingleData<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data, (a, b, c) {
+      return onCreateAnimatorObj(a, b, c, type);
+    });
     Map<SingleData<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
           key,
           MapNode(value.rect, value.position, value.arc),
@@ -124,23 +125,23 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
-      onAnimatorStart(diffResult);
+      onAnimatorStart(diffResult, type);
       this.nodeList = diffResult.curList;
     };
     doubleTween.endListener = () {
-      onAnimatorEnd(diffResult);
+      onAnimatorEnd(diffResult, type);
       this.nodeList = diffResult.finalList;
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
       double t = doubleTween.value;
       each(diffResult.curList, (node, p1) {
-        onAnimatorUpdate(node, t, startMap, endMap);
+        onAnimatorUpdate(node, t, startMap, endMap, type);
       });
-      onAnimatorUpdateEnd(diffResult, t);
+      onAnimatorUpdateEnd(diffResult, t, type);
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, type == LayoutAnimatorType.update);
+    doubleTween.start(context, type == LayoutType.update);
     this.groupNodeList = newGroupNodeList;
     this.dataNodeMap = newNodeMap;
   }
@@ -200,14 +201,14 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   @nonVirtual
-  SingleNode<T, P> onCreateAnimatorObj(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
+  SingleNode<T, P> onCreateAnimatorObj(SingleData<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
     if (series.coordSystem == CoordSystem.polar) {
-      return onCreateAnimatorObjForPolar(data, node, newData);
+      return onCreateAnimatorObjForPolar(data, node, newData, type);
     }
-    return onCreateAnimatorObjForGrid(data, node, newData);
+    return onCreateAnimatorObjForGrid(data, node, newData, type);
   }
 
-  SingleNode<T, P> onCreateAnimatorObjForGrid(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
+  SingleNode<T, P> onCreateAnimatorObjForGrid(SingleData<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
     var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
     var rn = SingleNode<T, P>(node.parent, dd);
     final Rect rect = node.rect;
@@ -231,7 +232,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return rn;
   }
 
-  SingleNode<T, P> onCreateAnimatorObjForPolar(SingleData<T, P> data, SingleNode<T, P> node, bool newData) {
+  SingleNode<T, P> onCreateAnimatorObjForPolar(SingleData<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
     var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
     var rn = SingleNode<T, P>(node.parent, dd);
     Arc arc;
@@ -245,15 +246,21 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return rn;
   }
 
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
+  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, LayoutType type) {}
 
   ///更新动画节点
   @nonVirtual
-  void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleData<T, P>, MapNode> startMap, Map<SingleData<T, P>, MapNode> endMap) {
+  void onAnimatorUpdate(
+    SingleNode<T, P> node,
+    double t,
+    Map<SingleData<T, P>, MapNode> startMap,
+    Map<SingleData<T, P>, MapNode> endMap,
+    LayoutType type,
+  ) {
     if (series.coordSystem == CoordSystem.polar) {
-      onAnimatorUpdateForPolar(node, t, startMap, endMap);
+      onAnimatorUpdateForPolar(node, t, startMap, endMap, type);
     } else {
-      onAnimatorUpdateForGrid(node, t, startMap, endMap);
+      onAnimatorUpdateForGrid(node, t, startMap, endMap, type);
     }
   }
 
@@ -262,6 +269,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     double t,
     Map<SingleData<T, P>, MapNode> startMap,
     Map<SingleData<T, P>, MapNode> endMap,
+    LayoutType type,
   ) {
     var data = node.data;
     var s = startMap[data]!.rect;
@@ -284,6 +292,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     double t,
     Map<SingleData<T, P>, MapNode> startMap,
     Map<SingleData<T, P>, MapNode> endMap,
+    LayoutType type,
   ) {
     var data = node.data;
     var s = startMap[data]!.arc;
@@ -291,9 +300,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     node.arc = Arc.lerp(s, e, t);
   }
 
-  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, double t) {}
+  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, double t, LayoutType type) {}
 
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result) {}
+  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, LayoutType type) {}
 
   @nonVirtual
   List<SingleNode<T, P>> buildSingleNode(ColumnNode<T, P> stackNode, List<SingleData<T, P>> dataList) {

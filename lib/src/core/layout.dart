@@ -26,7 +26,7 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
     onMeasure();
   }
 
-  void doLayout(Context context, S series, T data, Rect rect, LayoutAnimatorType type) {
+  void doLayout(Context context, S series, T data, Rect rect, LayoutType type) {
     this.context = context;
     this.series = series;
     this.rect = rect;
@@ -34,7 +34,7 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
     onLayout(data, type);
   }
 
-  void onLayout(T data, LayoutAnimatorType type);
+  void onLayout(T data, LayoutType type);
 
   void onMeasure() {}
 
@@ -69,4 +69,4 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
   }
 }
 
-enum LayoutAnimatorType { none, layout, update }
+enum LayoutType { none, layout, update }

@@ -35,7 +35,7 @@ class PieView extends SeriesView<PieSeries> {
 
   @override
   void onUpdateDataCommand(Command c) {
-    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
+    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
@@ -61,7 +61,7 @@ class PieView extends SeriesView<PieSeries> {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override

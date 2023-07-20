@@ -28,13 +28,13 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
+    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override

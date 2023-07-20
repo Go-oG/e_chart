@@ -8,7 +8,7 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
   List<PointNode> nodeList = [];
 
   @override
-  void onLayout(List<PointData> data, LayoutAnimatorType type) {
+  void onLayout(List<PointData> data, LayoutType type) {
     List<PointNode> oldList = nodeList;
     List<PointNode> newList = List.from(data.map((e) => PointNode(e)));
     layoutNode(newList);

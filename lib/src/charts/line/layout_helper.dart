@@ -64,8 +64,16 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     each(groupNode.nodeList, (node, i) {
       int polarIndex = series.polarIndex;
       var coord = context.findPolarCoord(polarIndex);
-      var up = coord.dataToPosition(x, tmpData.change(node.getUp()));
-      var down = coord.dataToPosition(x, tmpData.change(node.getDown()));
+
+      PolarPosition up, down;
+      if (vertical) {
+        up = coord.dataToPosition(x, tmpData.change(node.getUp()));
+        down = coord.dataToPosition(x, tmpData.change(node.getDown()));
+      } else {
+        up = coord.dataToPosition(tmpData.change(node.getUp()), x);
+        down = coord.dataToPosition(tmpData.change(node.getDown()), x);
+      }
+
       num dx = (up.radius[0] - down.radius[0]).abs();
       num dy = (up.angle[0] - down.angle[0]);
 
@@ -82,31 +90,34 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   @override
   void onLayoutNodeForGrid(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
     super.onLayoutNodeForGrid(columnNode, xIndex);
-    if (series.coordSystem == CoordSystem.polar) {
-      for (var node in columnNode.nodeList) {
-        var arc = node.arc;
-        node.position = circlePoint((arc.innerRadius + arc.outRadius) / 2, (arc.startAngle + arc.sweepAngle / 2), arc.center);
-      }
-    } else {
-      GridAxis xAxis = context.findGridCoord().getAxis(xIndex.axisIndex, true);
-      for (var node in columnNode.nodeList) {
-        if (node.data.data != null) {
-          if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
-            node.position = node.rect.topLeft;
-          } else {
-            node.position = node.rect.topCenter;
-          }
+
+    GridAxis xAxis = context.findGridCoord().getAxis(xIndex.axisIndex, true);
+    for (var node in columnNode.nodeList) {
+      if (node.data.data != null) {
+        if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
+          node.position = node.rect.topLeft;
         } else {
-          node.position = Offset(node.rect.center.dx, height);
+          node.position = node.rect.topCenter;
         }
+      } else {
+        node.position = Offset(node.rect.center.dx, height);
       }
     }
   }
 
   @override
-  void onAnimatorStart(var result) {
+  void onLayoutNodeForPolar(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
+    super.onLayoutNodeForPolar(columnNode, xIndex);
+    for (var node in columnNode.nodeList) {
+      var arc = node.arc;
+      node.position = arc.centroid();
+    }
+  }
+
+  @override
+  void onAnimatorStart(var result, LayoutType type) {
     _updateLine(result.curList);
-    super.onAnimatorStart(result);
+    super.onAnimatorStart(result, type);
   }
 
   // @override
@@ -141,19 +152,18 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   // }
 
   @override
-  void onAnimatorUpdateForGrid(var node, double t, var startMap, var endMap) {
+  void onAnimatorUpdateForGrid(var node, double t, var startMap, var endMap, LayoutType type) {
     // super.onAnimatorUpdateForGrid(node, t, startMap, endMap);
 
     // var s = startMap[node.data]!.offset;
     // var e = endMap[node.data]!.offset;
     // _offsetTween.changeValue(s, e);
     // node.position = _offsetTween.safeGetValue(t);
-
     clipPercent = t;
   }
 
   @override
-  void onAnimatorUpdateForPolar(var node, double t, var startMap, var endMap) {
+  void onAnimatorUpdateForPolar(var node, double t, var startMap, var endMap, LayoutType type) {
     // super.onAnimatorUpdateForPolar(node, t, startMap, endMap);
     // var s = startMap[node.data]!.offset;
     // var e = endMap[node.data]!.offset;
@@ -163,13 +173,13 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  void onAnimatorUpdateEnd(var result, double t) {
+  void onAnimatorUpdateEnd(var result, double t, LayoutType type) {
     //  _updateLine(result.curList);
     clipPercent = t;
   }
 
   @override
-  void onAnimatorEnd(var result) {
+  void onAnimatorEnd(var result, LayoutType type) {
     // _updateLine(result.finalList);
     clipPercent = null;
   }

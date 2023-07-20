@@ -11,14 +11,14 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
+    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
     _initAnimator();
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
     _initAnimator();
   }
 
