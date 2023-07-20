@@ -3,7 +3,7 @@ import 'package:e_chart/src/core/index.dart';
 import 'package:flutter/widgets.dart';
 
 import '../animation/animation_manager.dart';
-import '../animation/animator_props.dart';
+import '../animation/animator_attrs.dart';
 import '../chart.dart';
 import '../component/index.dart';
 import '../coord/index.dart';

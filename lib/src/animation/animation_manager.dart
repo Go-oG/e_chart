@@ -2,7 +2,7 @@ import 'package:flutter/animation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../utils/log_util.dart';
-import 'animator_props.dart';
+import 'animator_attrs.dart';
 
 ///全局的动画管理者
 class AnimationManager {
