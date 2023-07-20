@@ -7,15 +7,14 @@ import 'chart/line_theme.dart';
 class ChartTheme {
   ///该列表必须至少有一个
   List<Color> colors = [
-    const Color(0xFF5470c6),
-    const Color(0xFF91cc75),
-    const Color(0xFFfac858),
+    const Color(0xFF5C6BC0),
+    const Color(0xFFF98000),
     const Color(0xFFee6666),
-    const Color(0xFF73c0de),
-    const Color(0xFF3ba272),
-    const Color(0xFFfc8452),
+    const Color.fromARGB(255, 105, 189, 67),
     const Color(0xFF9a60b4),
+    const Color(0xFFfac858),
     const Color(0xFFea7ccc),
+    const Color(0xFF73c0de),
   ];
 
   Color getColor(int index) {
@@ -73,5 +72,13 @@ class ChartTheme {
 
   void clearTheme() {
     _themeMap.clear();
+  }
+
+  static ChartTheme dark() {
+    ChartTheme theme = ChartTheme();
+    theme.colors = [];
+    theme.backgroundColor = const Color(0xFF121212);
+
+    return theme;
   }
 }
