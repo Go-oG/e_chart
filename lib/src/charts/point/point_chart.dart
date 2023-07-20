@@ -74,7 +74,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override

@@ -8,7 +8,7 @@ class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
   List<ParallelNode> nodeList = [];
 
   @override
-  void onLayout(List<ParallelGroup> data, LayoutAnimatorType type) {
+  void onLayout(List<ParallelGroup> data, LayoutType type) {
     List<ParallelNode> oldList = nodeList;
     List<ParallelNode> newList = convertData(data);
     layoutNode(newList);
@@ -59,7 +59,7 @@ class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, type == LayoutAnimatorType.update);
+    doubleTween.start(context, type == LayoutType.update);
   }
 
   void layoutNode(List<ParallelNode> nodeList) {

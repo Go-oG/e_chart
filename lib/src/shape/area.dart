@@ -1,4 +1,3 @@
-
 import 'package:e_chart/src/ext/path_ext.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +29,7 @@ class Area implements Shape {
     }
     Path mPath = buildPath();
     if (dashList.isNotEmpty) {
-      mPath = dashPath(mPath, dashList);
+      mPath = mPath.dashPath(dashList);
     }
     _path = mPath;
     return mPath;
@@ -94,7 +93,7 @@ class Area implements Shape {
     int curIndex, {
     bool reverse = false,
   }) {
-    double ratio=Constants.smoothRatio;
+    double ratio = Constants.smoothRatio;
     Offset cur = pointList[curIndex];
     int li = reverse ? curIndex + 1 : curIndex - 1;
     int ri = reverse ? curIndex - 1 : curIndex + 1;

@@ -9,7 +9,7 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
   List<BoxplotGroupNode> nodeList = [];
 
   @override
-  void onLayout(List<BoxplotGroup> data, LayoutAnimatorType type) {
+  void onLayout(List<BoxplotGroup> data, LayoutType type) {
     List<BoxplotGroupNode> list = [];
     each(data, (p0, p1) {
       var groupNode = BoxplotGroupNode(p0, []);

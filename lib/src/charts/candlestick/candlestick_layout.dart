@@ -9,7 +9,7 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickG
   List<CandlestickGroupNode> nodeList = [];
 
   @override
-  void onLayout(List<CandleStickGroup> data, LayoutAnimatorType type) {
+  void onLayout(List<CandleStickGroup> data, LayoutType type) {
     List<CandlestickGroupNode> list = [];
 
     each(data, (group, p1) {

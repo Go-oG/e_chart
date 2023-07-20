@@ -44,7 +44,7 @@ class Line implements Shape {
       path.close();
     }
     if (_dashList.isNotEmpty) {
-      path = dashPath(path, _dashList);
+      path = path.dashPath(_dashList);
     }
 
     if (close) {

@@ -10,7 +10,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
   num maxValue = 0;
 
   @override
-  void onLayout(List<ItemData> data, LayoutAnimatorType type) {
+  void onLayout(List<ItemData> data, LayoutType type) {
     _hoverNode = null;
 
     List<FunnelNode> oldList = nodeList;
@@ -51,7 +51,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, type == LayoutAnimatorType.update);
+    doubleTween.start(context, type == LayoutType.update);
   }
 
   List<FunnelNode> convertData(List<ItemData> list) {

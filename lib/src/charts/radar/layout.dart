@@ -17,7 +17,7 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
   double radius = 0;
 
   @override
-  void onLayout(List<GroupData> data, LayoutAnimatorType type) {
+  void onLayout(List<GroupData> data, LayoutType type) {
     RadarCoord layout = context.findRadarCoord(series.radarIndex);
     center = layout.getCenter();
     radius = layout.getRadius();

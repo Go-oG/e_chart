@@ -8,7 +8,7 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
   List<HeatMapNode> get nodeList => _nodeList;
 
   @override
-  void onLayout(List<HeatMapData> data, LayoutAnimatorType type) {
+  void onLayout(List<HeatMapData> data, LayoutType type) {
     List<HeatMapNode> oldList=_nodeList;
     List<HeatMapNode> newList=convertData(data);
     layoutNode(newList);
@@ -39,7 +39,7 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
       });
       notifyLayoutUpdate();
     });
-    doubleTween.start(context,type==LayoutAnimatorType.update);
+    doubleTween.start(context,type==LayoutType.update);
   }
 
   List<HeatMapNode> convertData(List<HeatMapData> dataList){

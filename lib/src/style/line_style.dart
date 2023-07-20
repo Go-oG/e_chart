@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/model/corner.dart';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 
@@ -82,7 +81,7 @@ class LineStyle {
     }
     fillPaint(paint, rect);
     if (drawDash && dash.isNotEmpty) {
-      canvas.drawPath(dashPath(path, dash), paint);
+      canvas.drawPath(path.dashPath(dash), paint);
     } else {
       canvas.drawPath(path, paint);
     }
