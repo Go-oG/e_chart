@@ -1,4 +1,4 @@
-export 'animator_props.dart';
+export 'animator_attrs.dart';
 export 'animation_manager.dart';
 export 'chart_tween.dart';
 export 'tween_set.dart' hide TweenNode;

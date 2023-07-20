@@ -1,7 +1,5 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../../chart.dart';
-import '../context.dart';
-import '../view_group.dart';
 
 abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewParent {
   late final Context context;
@@ -45,6 +43,8 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     return false;
   }
 
+  final Stopwatch _stopwatch = Stopwatch();
+
   @protected
   @override
   void paint(Canvas canvas, Size size) {
@@ -52,6 +52,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
       return;
     }
     if (_boundRect.height != size.height || _boundRect.width != size.width) {
+      _stopwatch.start();
       _inLayout = true;
       _boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
       try {
@@ -62,6 +63,8 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
       } finally {
         _inLayout = false;
       }
+      _stopwatch.stop();
+      logPrint('Layout耗时:${_stopwatch.elapsedMilliseconds}');
     }
     if (_inDrawing) {
       return;

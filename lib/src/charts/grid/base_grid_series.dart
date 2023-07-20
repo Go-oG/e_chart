@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends ChartSeries {
   static const defaultAnimatorAttrs = AnimatorAttrs(
-    curve: Curves.easeOutQuart,
-    updateDuration: Duration(milliseconds: 800),
-    duration: Duration(milliseconds: 2000),
+    curve: Curves.linear,
+    updateDuration: Duration(milliseconds: 600),
+    duration: Duration(milliseconds: 1200),
   );
 
   List<P> data;

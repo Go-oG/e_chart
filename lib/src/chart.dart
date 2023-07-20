@@ -1,5 +1,5 @@
 //表格的通用配置
-import 'animation/animator_props.dart';
+import 'animation/animator_attrs.dart';
 import 'coord/index.dart';
 import 'core/series.dart';
 import 'component/legend/legend.dart';
