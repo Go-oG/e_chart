@@ -12,6 +12,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   List<GroupNode<T, P>> groupNodeList = [];
   Map<T, SingleNode<T, P>> dataNodeMap = {};
 
+
   @nonVirtual
   @override
   void onLayout(List<P> data, LayoutType type) {
@@ -457,5 +458,5 @@ class MapNode {
   final Offset offset;
   final Arc arc;
 
-  MapNode(this.rect, this.offset, this.arc);
+  const MapNode(this.rect, this.offset, this.arc);
 }
