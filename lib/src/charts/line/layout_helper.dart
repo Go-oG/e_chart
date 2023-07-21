@@ -2,18 +2,14 @@ import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 
+import '../grid/model/axis_index.dart';
+
 class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> {
   List<LineResult> lineList = [];
-
   double? clipPercent;
 
   @override
-  void onLayoutColumnForGrid(
-    AxisGroup<LineItemData, LineGroupData> axisGroup,
-    GroupNode<LineItemData, LineGroupData> groupNode,
-    AxisIndex xIndex,
-    DynamicData x,
-  ) {
+  void onLayoutColumnForGrid(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -46,12 +42,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  void onLayoutColumnForPolar(
-    AxisGroup<LineItemData, LineGroupData> axisGroup,
-    GroupNode<LineItemData, LineGroupData> groupNode,
-    AxisIndex xIndex,
-    DynamicData x,
-  ) {
+  void onLayoutColumnForPolar(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -88,12 +79,12 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  void onLayoutNodeForGrid(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
+  void onLayoutNodeForGrid(var columnNode, AxisIndex xIndex) {
     super.onLayoutNodeForGrid(columnNode, xIndex);
 
     GridAxis xAxis = context.findGridCoord().getAxis(xIndex.axisIndex, true);
     for (var node in columnNode.nodeList) {
-      if (node.data.data != null) {
+      if (node.data != null) {
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topLeft;
         } else {
@@ -115,10 +106,9 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  void onLayoutEnd(List<SingleNode<LineItemData, LineGroupData>> oldNodeList, List<GroupNode<LineItemData, LineGroupData>> oldGroupNodeList, Map<LineItemData, SingleNode<LineItemData, LineGroupData>> oldNodeMap, List<SingleNode<LineItemData, LineGroupData>> newNodeList, List<GroupNode<LineItemData, LineGroupData>> newGroupNodeList, Map<LineItemData, SingleNode<LineItemData, LineGroupData>> newNodeMap, LayoutType type) {
-    super.onLayoutEnd(oldNodeList, oldGroupNodeList, oldNodeMap, newNodeList, newGroupNodeList, newNodeMap, type);
-    if(series.animation==null){
-      logPrint("不执行动画");
+  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
+    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    if (series.animation == null) {
       _updateLine(nodeList);
     }
   }
@@ -131,34 +121,21 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
 
   @override
   void onAnimatorUpdateForGrid(var node, double t, var startMap, var endMap, LayoutType type) {
-    // super.onAnimatorUpdateForGrid(node, t, startMap, endMap);
-
-    // var s = startMap[node.data]!.offset;
-    // var e = endMap[node.data]!.offset;
-    // _offsetTween.changeValue(s, e);
-    // node.position = _offsetTween.safeGetValue(t);
     clipPercent = t;
   }
 
   @override
   void onAnimatorUpdateForPolar(var node, double t, var startMap, var endMap, LayoutType type) {
-    // super.onAnimatorUpdateForPolar(node, t, startMap, endMap);
-    // var s = startMap[node.data]!.offset;
-    // var e = endMap[node.data]!.offset;
-    // _offsetTween.changeValue(s, e);
-    // node.position = _offsetTween.safeGetValue(t);
     clipPercent = t;
   }
 
   @override
   void onAnimatorUpdateEnd(var result, double t, LayoutType type) {
-    //  _updateLine(result.curList);
     clipPercent = t;
   }
 
   @override
   void onAnimatorEnd(var result, LayoutType type) {
-    // _updateLine(result.finalList);
     clipPercent = null;
   }
 
@@ -166,10 +143,10 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> groupMap = {};
     Map<LineGroupData, int> groupSortMap = {};
     each(list, (node, p1) {
-      List<SingleNode<LineItemData, LineGroupData>> tl = groupMap[node.data.parent] ?? [];
-      groupMap[node.data.parent] = tl;
+      List<SingleNode<LineItemData, LineGroupData>> tl = groupMap[node.parent] ?? [];
+      groupMap[node.parent] = tl;
       tl.add(node);
-      groupSortMap[node.data.parent] = node.data.groupIndex;
+      groupSortMap[node.parent] = node.groupIndex;
     });
 
     Map<String, Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>>> stackMap = {};
@@ -178,21 +155,22 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     Map<String, int> sortMap = {};
 
     for (var ele in list) {
-      if (ele.data.parent.isStack) {
-        var stackId = ele.data.parent.stackId!;
+      if (ele.parent.isStack) {
+        var stackId = ele.parent.stackId!;
         Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> map = stackMap[stackId] ?? {};
         stackMap[stackId] = map;
-        map[ele.data.parent] = groupMap[ele.data.parent]!;
+
+        map[ele.parent] = groupMap[ele.parent]!;
         int? sort = sortMap[stackId];
         if (sort == null) {
-          sortMap[stackId] = ele.data.groupIndex;
+          sortMap[stackId] = ele.groupIndex;
         } else {
-          if (sort > ele.data.groupIndex) {
-            sortMap[stackId] = ele.data.groupIndex;
+          if (sort > ele.groupIndex) {
+            sortMap[stackId] = ele.groupIndex;
           }
         }
       } else {
-        normalList.add(groupMap[ele.data.parent]!);
+        normalList.add(groupMap[ele.parent]!);
       }
     }
 
@@ -203,8 +181,8 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       if (list.isEmpty) {
         return;
       }
-      var group = list.first.data.parent;
-      var index = list.first.data.groupIndex;
+      var group = list.first.parent;
+      var index = list.first.groupIndex;
       resultList.add(buildNormalResult(index, group, list));
     });
 
@@ -222,7 +200,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       for (int i = 0; i < keyList2.length; i++) {
         var group = keyList2[i];
         var cur = map[group]!;
-        resultList.add(buildStackResult(cur.first.data.groupIndex, group, cur, resultList, i));
+        resultList.add(buildStackResult(cur.first.groupIndex, group, cur, resultList, i));
       }
     });
     lineList = resultList;
@@ -238,8 +216,8 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     if (curList.length < 2) {
       return [];
     }
-    var group = curList.first.data.parent;
-    var index = curList.first.data.groupIndex;
+    var group = curList.first.parent;
+    var index = curList.first.groupIndex;
     StepType? stepType = series.stepLineFun?.call(group);
     LineStyle? lineStyle = getLineStyle(group, index);
     bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
@@ -247,7 +225,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     if (series.connectNulls) {
       List<Offset> ol = [];
       each(curList, (p0, p1) {
-        if (p0.data.data != null) {
+        if (p0.data != null) {
           ol.add(p0.position);
         }
       });
@@ -296,8 +274,8 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     if (curIndex <= 0) {
       return buildAreaPathForNormal(curList);
     }
-    var group = curList.first.data.parent;
-    var index = curList.first.data.groupIndex;
+    var group = curList.first.parent;
+    var index = curList.first.groupIndex;
     var preGroup = resultList[curIndex - 1].data;
     StepType? stepType = series.stepLineFun?.call(group);
     LineStyle? lineStyle = getLineStyle(group, index);
@@ -311,7 +289,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       List<Offset> topList = [];
       List<Offset> preList = [];
       each(curList, (p0, i) {
-        if (p0.data.data != null) {
+        if (p0.data != null) {
           Offset offset = p0.position;
           topList.add(offset);
           Offset? preOffset = findBottomOffset(curIndex, resultList, i);
@@ -326,7 +304,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       List<Offset> topList = [];
       List<Offset> preList = [];
       each(curList, (p0, i) {
-        if (p0.data.data == null) {
+        if (p0.data == null) {
           if (topList.length >= 2) {
             areaList.add([topList, preList]);
             topList = [];
@@ -383,8 +361,8 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     if (nodeList.length < 2) {
       return [];
     }
-    var group = nodeList.first.data.parent;
-    var index = nodeList.first.data.groupIndex;
+    var group = nodeList.first.parent;
+    var index = nodeList.first.groupIndex;
 
     List<Path> borderList = [];
     LineStyle? lineStyle = getLineStyle(group, index);
@@ -393,7 +371,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     if (series.connectNulls) {
       List<Offset> offsetList = [];
       each(nodeList, (p0, p1) {
-        if (p0.data.wrap.data != null) {
+        if (p0.data != null) {
           offsetList.add(p0.position);
         }
       });
@@ -408,7 +386,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     List<Offset> tmpList = [];
     StepType? type = series.stepLineFun?.call(group);
     each(nodeList, (p0, p1) {
-      if (p0.data.wrap.data != null) {
+      if (p0.data != null) {
         tmpList.add(p0.position);
       } else {
         if (tmpList.length >= 2) {
@@ -441,7 +419,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     List<List<Offset>> olList = [];
     List<Offset> tmpList = [];
     for (var node in nodeList) {
-      if (node.data.data != null) {
+      if (node.data != null) {
         tmpList.add(node.position);
       } else {
         if (tmpList.isNotEmpty) {
@@ -460,7 +438,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   List<Offset?> _collectOffset(List<SingleNode<LineItemData, LineGroupData>> nodeList) {
     List<Offset?> tmpList = [];
     for (var node in nodeList) {
-      if (node.data.data != null) {
+      if (node.data != null) {
         tmpList.add(node.position);
       } else {
         tmpList.add(null);
@@ -472,12 +450,12 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   @override
   AreaStyle? buildAreaStyle(SingleNode<LineItemData, LineGroupData> node) {
     if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node.data.parent, node.data.groupIndex);
+      return series.areaStyleFun?.call(node.parent, node.groupIndex);
     }
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
     if (theme.fill) {
-      Color fillColor = chartTheme.getColor(node.data.groupIndex).withOpacity(theme.opacity);
+      Color fillColor = chartTheme.getColor(node.groupIndex).withOpacity(theme.opacity);
       return AreaStyle(color: fillColor);
     }
     return null;
@@ -485,7 +463,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
 
   @override
   LineStyle? buildLineStyle(SingleNode<LineItemData, LineGroupData> node) {
-    LineStyle? style = getLineStyle(node.data.parent, node.data.groupIndex);
+    LineStyle? style = getLineStyle(node.parent, node.groupIndex);
     if (style == null || series.lineStyleFun != null) {
       return style;
     }

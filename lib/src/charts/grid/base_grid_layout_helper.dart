@@ -5,35 +5,39 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 
+import 'model/axis_group.dart';
+import 'model/axis_index.dart';
+
 ///适用于极坐标系和笛卡尔坐标系的布局器
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends ChartLayout<S, List<P>> {
   List<SingleNode<T, P>> nodeList = [];
-  List<GroupNode<T, P>> groupNodeList = [];
-  Map<T, SingleNode<T, P>> dataNodeMap = {};
-
+  Map<T, SingleNode<T, P>> nodeMap = {};
 
   @nonVirtual
   @override
   void onLayout(List<P> data, LayoutType type) {
     AxisGroup<T, P> axisGroup = series.helper.result;
     bool vertical = series.direction == Direction.vertical;
-    Map<AxisIndex, List<GroupNode<T, P>>> axisMap = _buildGroupNode(axisGroup);
+    Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
+
     final DynamicData tmpData = DynamicData(1000000);
     List<GroupNode<T, P>> newNodeList = [];
     Map<T, SingleNode<T, P>> newNodeMap = {};
+
     axisMap.forEach((key, value) {
       newNodeList.addAll(value);
       for (var cv in value) {
         for (var ele in cv.nodeList) {
           for (var element in ele.nodeList) {
-            if (element.data.data != null) {
-              newNodeMap[element.data.data!] = element;
+            if (element.data != null) {
+              newNodeMap[element.data!] = element;
             }
           }
         }
       }
     });
+
     bool usePolar = series.coordSystem == CoordSystem.polar;
 
     ///开始布局
@@ -77,57 +81,31 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         });
       }
     });
-
-    onLayoutEnd(this.nodeList, this.groupNodeList, this.dataNodeMap, List.from(newNodeMap.values), newNodeList, newNodeMap, type);
-  }
-
-  ///构建节点
-  Map<AxisIndex, List<GroupNode<T, P>>> _buildGroupNode(AxisGroup<T, P> axisGroup) {
-    Map<AxisIndex, List<GroupNode<T, P>>> map = {};
-    axisGroup.groupMap.forEach((key, value) {
-      List<GroupNode<T, P>> groupNodeList = [];
-      for (var group in value) {
-        var groupNode = GroupNode<T, P>(group);
-        groupNodeList.add(groupNode);
-
-        List<ColumnNode<T, P>> columnNodeList = [];
-        for (var stack in group.data) {
-          ColumnNode<T, P> columnNode = ColumnNode(groupNode, stack);
-          columnNode.nodeList = buildSingleNode(columnNode, stack.data);
-          columnNodeList.add(columnNode);
-        }
-        groupNode.nodeList = columnNodeList;
-      }
-      map[key] = groupNodeList;
-    });
-    return map;
+    onLayoutEnd(this.nodeList, this.nodeMap, List.from(newNodeMap.values), newNodeMap, type);
   }
 
   void onLayoutEnd(
     List<SingleNode<T, P>> oldNodeList,
-    List<GroupNode<T, P>> oldGroupNodeList,
     Map<T, SingleNode<T, P>> oldNodeMap,
     List<SingleNode<T, P>> newNodeList,
-    List<GroupNode<T, P>> newGroupNodeList,
     Map<T, SingleNode<T, P>> newNodeMap,
     LayoutType type,
   ) {
-    if(series.animation==null){
+    if (series.animation == null) {
       this.nodeList = newNodeList;
-      this.groupNodeList = newGroupNodeList;
-      this.dataNodeMap = newNodeMap;
+      this.nodeMap = newNodeMap;
       return;
     }
 
     ///动画
-    DiffResult<SingleNode<T, P>, SingleData<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data, (a, b, c) {
+    DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0, (a, b, c) {
       return onCreateAnimatorObj(a, b, c, type);
     });
-    Map<SingleData<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
+    Map<SingleNode<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
           key,
           MapNode(value.rect, value.position, value.arc),
         ));
-    Map<SingleData<T, P>, MapNode> endMap = diffResult.endMap.map((key, value) => MapEntry(
+    Map<SingleNode<T, P>, MapNode> endMap = diffResult.endMap.map((key, value) => MapEntry(
           key,
           MapNode(value.rect, value.position, value.arc),
         ));
@@ -151,8 +129,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       notifyLayoutUpdate();
     });
     doubleTween.start(context, type == LayoutType.update);
-    this.groupNodeList = newGroupNodeList;
-    this.dataNodeMap = newNodeMap;
+    this.nodeMap = newNodeMap;
   }
 
   ///布局GroupNode的Column
@@ -210,18 +187,16 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   @nonVirtual
-  SingleNode<T, P> onCreateAnimatorObj(SingleData<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
+  SingleNode<T, P> onCreateAnimatorObj(SingleNode<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
     if (series.coordSystem == CoordSystem.polar) {
       return onCreateAnimatorObjForPolar(data, node, newData, type);
     }
     return onCreateAnimatorObjForGrid(data, node, newData, type);
   }
 
-  SingleNode<T, P> onCreateAnimatorObjForGrid(SingleData<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
-    var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
-    var rn = SingleNode<T, P>(node.parent, dd);
+  SingleNode<T, P> onCreateAnimatorObjForGrid(SingleNode<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
+    var rn = SingleNode<T, P>(node.parentNode, node.wrap, node.stack);
     final Rect rect = node.rect;
-
     Rect rr;
     if (series.direction == Direction.vertical) {
       if (series.animatorStyle == GridAnimatorStyle.expand) {
@@ -241,9 +216,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return rn;
   }
 
-  SingleNode<T, P> onCreateAnimatorObjForPolar(SingleData<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
-    var dd = SingleData<T, P>(node.data.wrap, node.data.stack);
-    var rn = SingleNode<T, P>(node.parent, dd);
+  SingleNode<T, P> onCreateAnimatorObjForPolar(SingleNode<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
+    var rn = SingleNode<T, P>(node.parentNode, node.wrap, node.stack);
     Arc arc;
     if (series.animatorStyle == GridAnimatorStyle.expand) {
       arc = node.arc.copy(innerRadius: 0, outRadius: 0);
@@ -255,15 +229,15 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     return rn;
   }
 
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, LayoutType type) {}
+  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {}
 
   ///更新动画节点
   @nonVirtual
   void onAnimatorUpdate(
     SingleNode<T, P> node,
     double t,
-    Map<SingleData<T, P>, MapNode> startMap,
-    Map<SingleData<T, P>, MapNode> endMap,
+    Map<SingleNode<T, P>, MapNode> startMap,
+    Map<SingleNode<T, P>, MapNode> endMap,
     LayoutType type,
   ) {
     if (series.coordSystem == CoordSystem.polar) {
@@ -276,13 +250,12 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   void onAnimatorUpdateForGrid(
     SingleNode<T, P> node,
     double t,
-    Map<SingleData<T, P>, MapNode> startMap,
-    Map<SingleData<T, P>, MapNode> endMap,
+    Map<SingleNode<T, P>, MapNode> startMap,
+    Map<SingleNode<T, P>, MapNode> endMap,
     LayoutType type,
   ) {
-    var data = node.data;
-    var s = startMap[data]!.rect;
-    var e = endMap[data]!.rect;
+    var s = startMap[node]!.rect;
+    var e = endMap[node]!.rect;
     Rect r;
     if (series.animatorStyle == GridAnimatorStyle.expand) {
       r = Rect.lerp(s, e, t)!;
@@ -297,31 +270,15 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   void onAnimatorUpdateForPolar(
-    SingleNode<T, P> node,
-    double t,
-    Map<SingleData<T, P>, MapNode> startMap,
-    Map<SingleData<T, P>, MapNode> endMap,
-    LayoutType type,
-  ) {
-    var data = node.data;
-    var s = startMap[data]!.arc;
-    var e = endMap[data]!.arc;
+      SingleNode<T, P> node, double t, Map<SingleNode<T, P>, MapNode> startMap, Map<SingleNode<T, P>, MapNode> endMap, LayoutType type) {
+    var s = startMap[node]!.arc;
+    var e = endMap[node]!.arc;
     node.arc = Arc.lerp(s, e, t);
   }
 
-  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, double t, LayoutType type) {}
+  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, double t, LayoutType type) {}
 
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleData<T, P>> result, LayoutType type) {}
-
-  @nonVirtual
-  List<SingleNode<T, P>> buildSingleNode(ColumnNode<T, P> stackNode, List<SingleData<T, P>> dataList) {
-    List<SingleNode<T, P>> nodeList = [];
-    each(dataList, (data, i) {
-      SingleNode<T, P> node = SingleNode(stackNode, data);
-      nodeList.add(node);
-    });
-    return nodeList;
-  }
+  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {}
 
   SingleNode<T, P>? _oldNode;
 
@@ -332,7 +289,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     if (node == _oldNode) {
       return;
     }
-    if (series.selectedMode == SelectedMode.group && node?.data.parent == _oldNode?.data.parent) {
+    if (series.selectedMode == SelectedMode.group && node?.parentNode == _oldNode?.parentNode) {
       return;
     }
     onHandleHoverEnd(_oldNode, node);
@@ -342,15 +299,15 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     var states = [ViewState.focused, ViewState.hover, ViewState.disabled];
     var states2 = [ViewState.focused, ViewState.hover];
     each(nodeList, (group, i) {
-      for (var ele in group.data.parent.data) {
-        dataNodeMap[ele]?.removeStates(states);
+      for (var ele in group.parentNode.nodeList) {
+        nodeMap[ele]?.removeStates(states);
         if (newNode == null) {
           continue;
         }
-        if (ele == newNode.data.data || (group.data.parent == newNode.data.parent && series.selectedMode == SelectedMode.group)) {
-          dataNodeMap[ele]?.addStates(states2);
+        if (ele.data == newNode.data || (group.parent == newNode.parent && series.selectedMode == SelectedMode.group)) {
+          nodeMap[ele]?.addStates(states2);
         } else {
-          dataNodeMap[ele]?.addState(ViewState.disabled);
+          nodeMap[ele]?.addState(ViewState.disabled);
         }
       }
     });

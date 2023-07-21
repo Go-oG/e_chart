@@ -4,15 +4,13 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../grid/model/axis_group.dart';
+import '../grid/model/axis_index.dart';
+
 class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
   ///布局StackGroupNode
   @override
-  void onLayoutColumnForGrid(
-    AxisGroup<BarItemData, BarGroupData> axisGroup,
-    GroupNode<BarItemData, BarGroupData> groupNode,
-    AxisIndex xIndex,
-    DynamicData x,
-  ) {
+  void onLayoutColumnForGrid(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int colGapCount = groupInnerCount - 1;
     if (colGapCount <= 1) {
@@ -35,7 +33,7 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     ///计算Group占用的大小
     List<double> sizeList = [];
     each(groupNode.nodeList, (node, i) {
-      var first = node.nodeList.first.data;
+      var first = node.nodeList.first;
       var groupData = first.parent;
       double tmpSize;
       if (groupData.barSize != null) {
@@ -75,7 +73,7 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
 
     DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
-      var parent = node.data.data.first.parent;
+      var parent = node.nodeList.first.parent;
       int yIndex = parent.yAxisIndex;
       var coord = findGridCoord();
       Rect up, down;
@@ -133,7 +131,7 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
     ///计算Group占用的大小
     List<num> sizeList = [];
     each(groupNode.nodeList, (node, i) {
-      var first = node.nodeList.first.data;
+      var first = node.nodeList.first;
       var groupData = first.parent;
       double tmpSize;
       if (groupData.barSize != null) {
@@ -233,7 +231,7 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
       return series.areaStyleFun?.call(node);
     }
     var chartTheme = context.config.theme;
-    return AreaStyle(color: chartTheme.getColor(node.data.groupIndex)).convert(node.status);
+    return AreaStyle(color: chartTheme.getColor(node.groupIndex)).convert(node.status);
   }
 
   @override

@@ -63,16 +63,17 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
   }
 
   void drawGroupBk(Canvas canvas) {
-    final list = helper.groupNodeList;
-    AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
-    each(list, (group, p1) {
-      if (series.groupStyleFun != null) {
-        AreaStyle? s = series.groupStyleFun?.call(group);
-        s?.drawRect(canvas, mPaint, group.rect);
-      } else if (group.isHover) {
-        s2.drawRect(canvas, mPaint, group.rect);
-      }
-    });
+
+    // final list = helper.groupNodeList;
+    // AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
+    // each(list, (group, p1) {
+    //   if (series.groupStyleFun != null) {
+    //     AreaStyle? s = series.groupStyleFun?.call(group);
+    //     s?.drawRect(canvas, mPaint, group.rect);
+    //   } else if (group.isHover) {
+    //     s2.drawRect(canvas, mPaint, group.rect);
+    //   }
+    // });
   }
 
   void drawBar(Canvas canvas) {

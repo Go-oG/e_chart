@@ -1,13 +1,22 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../model/wrap_data.dart';
+
 /// 不可再分的最小绘制单元
 /// 其用于极坐标系和二维坐标系下的节点位置表示
 class SingleNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewStateProvider {
-  final ColumnNode<T, P> parent;
-  final SingleData<T, P> data;
+  final ColumnNode<T, P> parentNode;
+  final WrapData<T, P> _wrap;
 
-  SingleNode(this.parent, this.data);
+  ///标识是否是一个堆叠数据
+  final bool stack;
+
+  SingleNode(this.parentNode, this._wrap, this.stack);
+
+  ///布局过程中使用的临时变量
+  num up = 0;
+  num down = 0;
 
   ///只在二维坐标系下使用
   Rect rect = Rect.zero;
@@ -22,26 +31,26 @@ class SingleNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSt
   AreaStyle? areaStyle;
   LineStyle? lineStyle;
 
-  ///记录当前节点分别在水平和竖直方向上的位置百分比
-  List<double> vRatio=[];
-  List<double> hRatio=[];
+  WrapData<T, P> get wrap => _wrap;
 
+  T? get data => _wrap.data;
 
+  P get parent => _wrap.parent;
+
+  int get groupIndex => _wrap.groupIndex;
+
+  int get dataIndex => _wrap.dataIndex;
 
   @override
   int get hashCode {
-    return data.hashCode;
+    return _wrap.hashCode;
   }
 
   @override
   bool operator ==(Object other) {
     if (other is SingleNode) {
-      return other.data == data;
+      return other._wrap == _wrap;
     }
     return false;
   }
-
-  num get up => data.up;
-
-  num get down => data.down;
 }
