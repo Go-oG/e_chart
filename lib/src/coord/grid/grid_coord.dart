@@ -301,10 +301,7 @@ class GridCoordImpl extends GridCoord {
       return;
     }
     scaleXFactor = sx;
-    xMap.forEach((key, value) {
-      // value.attrs.scroll = sx;
-      // value.onScrollChange(sx);
-    });
+    xMap.forEach((key, value) {});
     invalidate();
   }
 

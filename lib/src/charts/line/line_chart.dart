@@ -1,6 +1,6 @@
+import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 
 import 'layout_helper.dart';
 
@@ -51,46 +51,47 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
+    logPrint("$runtimeType 布局");
     helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
+  Image? image;
+
   @override
   void onDraw(Canvas canvas) {
-    canvas.save();
-    Offset offset = helper.getTranslation();
-    bool usePolar = series.coordSystem == CoordSystem.polar;
-    if (helper.clipPercent != null) {
-      double t = helper.clipPercent!;
-      if (usePolar) {
-        double r = max([width, height]) * 0.5 * t;
-        canvas.clipRect(Rect.fromCircle(center: helper.findPolarCoord().getCenter(), radius: r));
-      } else {
-        if (series.direction == Direction.vertical) {
-          double rightOffset = offset.dx + width * t;
-          canvas.clipRect(Rect.fromLTRB(offset.dx, 0, rightOffset, height));
-        } else {
-          double topOffset = height * (1 - t);
-          canvas.clipRect(Rect.fromLTRB(offset.dx, topOffset, width, height));
-        }
-      }
+    if (image == null) {
+      PictureRecorder recorder = PictureRecorder();
+      Canvas canvas2 = Canvas(recorder);
+      onDrawInner(canvas2);
+      var picture = recorder.endRecording();
+      int w = helper.findGridCoord().getAxisLength(0, true).floor();
+      int h = helper.findGridCoord().getAxisLength(0, false).floor();
+      image = picture.toImageSync(w, h);
     }
-    canvas.translate(offset.dx, offset.dy);
+    if (image == null) {
+      return;
+    }
+    Offset offset = helper.getTranslation();
+    Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
+    canvas.save();
+    canvas.translate(offset.dx, 0);
+    canvas.drawImageRect(image!, clipRect, selfBoxBound.translate(-offset.dx, 0), mPaint);
+    canvas.restore();
+  }
+
+  void onDrawInner(Canvas canvas) {
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
     final List<LineResult> list = helper.lineList;
-
-    ///这里分开绘制是为了避免边框被遮挡
-
-    // each(list, (result, i) {
-    //   AreaStyle? style = helper.getAreaStyle(result.data, result.groupIndex);
-    //   result.areaStyle = style;
-    //   if (style != null) {
-    //     for (var path in result.areaPathList) {
-    //       style.drawPath(canvas, mPaint, path);
-    //     }
-    //   }
-    // });
-
+    each(list, (result, i) {
+      AreaStyle? style = helper.getAreaStyle(result.data, result.groupIndex);
+      result.areaStyle = style;
+      if (style != null) {
+        for (var path in result.areaPathList) {
+          style.drawPath(canvas, mPaint, path);
+        }
+      }
+    });
     each(list, (result, i) {
       var ls = helper.getLineStyle(result.data, i);
       result.lineStyle = ls;
@@ -100,37 +101,31 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
         }
       }
     });
-
-    // if (series.symbolFun != null || theme.showSymbol) {
-    //   ///绘制symbol
-    //   SymbolDesc desc = SymbolDesc();
-    //   each(list, (result, p1) {
-    //     var cl = helper.getLineStyle(result.data, result.groupIndex)?.color;
-    //     if (cl != null) {
-    //       desc.fillColor = [cl];
-    //     }
-    //     each(result.data.data, (data, i) {
-    //       if (data == null || i >= result.offsetList.length) {
-    //         return;
-    //       }
-    //       var offset = result.offsetList[i];
-    //       if (offset == null) {
-    //         return;
-    //       }
-    //       desc.center = offset;
-    //
-    //       ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
-    //       if (symbol != null) {
-    //         symbol.draw(canvas, mPaint, desc);
-    //       } else if (theme.showSymbol) {
-    //         theme.symbol.draw(canvas, mPaint, desc);
-    //       }
-    //     });
-    //   });
-    // }
-    //
-
-    canvas.restore();
+    if (series.symbolFun != null || theme.showSymbol) {
+      SymbolDesc desc = SymbolDesc();
+      each(list, (result, p1) {
+        var cl = helper.getLineStyle(result.data, result.groupIndex)?.color;
+        if (cl != null) {
+          desc.fillColor = [cl];
+        }
+        each(result.data.data, (data, i) {
+          if (data == null || i >= result.offsetList.length) {
+            return;
+          }
+          var offset = result.offsetList[i];
+          if (offset == null) {
+            return;
+          }
+          desc.center = offset;
+          ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
+          if (symbol != null) {
+            symbol.draw(canvas, mPaint, desc);
+          } else if (theme.showSymbol) {
+            theme.symbol.draw(canvas, mPaint, desc);
+          }
+        });
+      });
+    }
   }
 
   /// 绘制柱状图
