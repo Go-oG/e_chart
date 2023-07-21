@@ -71,6 +71,7 @@ class LineStyle {
   }
 
   void drawPath(Canvas canvas, Paint paint, Path path, [bool drawDash = false]) {
+
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
@@ -80,6 +81,7 @@ class LineStyle {
       rect = path.getBounds();
     }
     fillPaint(paint, rect);
+
     if (drawDash && dash.isNotEmpty) {
       canvas.drawPath(path.dashPath(dash), paint);
     } else {

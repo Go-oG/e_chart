@@ -37,7 +37,7 @@ class Line implements Shape {
       path.moveTo(first.dx, first.dy);
       for (int i = 1; i < _pointList.length; i++) {
         Offset p = _pointList[i];
-        path.lineTo(p.dx.toDouble(), p.dy.toDouble());
+        path.lineTo(p.dx, p.dy);
       }
     }
     if (close) {
