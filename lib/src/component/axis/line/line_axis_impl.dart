@@ -1,51 +1,45 @@
 import 'dart:math';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/src/ext/index.dart';
-
 import 'package:flutter/material.dart';
 
+import '../../../coord/coord.dart';
 import '../../../model/index.dart';
 import '../../../style/index.dart';
 import '../../../utils/index.dart';
 import '../../index.dart';
 
-class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxisImpl<T, P, LineAxisLayoutResult> {
+class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord> extends BaseAxisImpl<T, P, LineAxisLayoutResult, C> {
   final tmpTick = MainTick();
   final MinorTick tmpMinorTick = MinorTick();
 
-  LineAxisImpl(super.context, super.axis, {super.axisIndex = 0});
+  LineAxisImpl(super.context, super.coord, super.axis, {super.axisIndex = 0});
 
-  double _scaleFactor = 1;
-
-  double get scaleFactor => _scaleFactor;
-
-  double _scrollOffset = 0;
-
-  double get scrollOffset => _scrollOffset;
-
-  void updateScaleFactor(num v) {
-    if (v <= 0) {
-      throw ChartError('scaleFactor 必须大于0 当前值：$v');
-    }
-    if (_scaleFactor == v) {
+  @override
+  void onAttrsChange(P attrs) {
+    var old = this.attrs;
+    this.attrs = attrs;
+    if (old.rect != attrs.rect || old.start != attrs.start || old.end != attrs.end) {
+      super.onAttrsChange(attrs);
       return;
     }
-    _scaleFactor = v.toDouble();
-    onScaleFactorChange(_scaleFactor);
-  }
-
-  void updateScrollOffset(num v) {
-    if (_scrollOffset == v) {
-      return;
+    if (old.scaleRatio != attrs.scaleRatio) {
+      List<DynamicData> dl = [];
+      for (var data in scale.domain) {
+        if (data is DynamicData) {
+          dl.add(data);
+        } else {
+          dl.add(DynamicData(data));
+        }
+      }
+      scale = onBuildScale(attrs, dl);
+      layoutResult = onLayout(attrs, scale);
     }
-    _scrollOffset = v.toDouble();
-    onScrollOffsetChange(_scrollOffset);
   }
 
   @override
   BaseScale onBuildScale(P attrs, List<DynamicData> dataSet) {
-    num distance = attrs.start.distance2(attrs.end);
-    distance *= scaleFactor;
+    num distance = attrs.distance;
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
@@ -53,24 +47,21 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   }
 
   @override
-  LineAxisLayoutResult onLayout(P attrs, BaseScale<dynamic, num> scale, List<DynamicData> dataSet) {
+  LineAxisLayoutResult onLayout(P attrs, BaseScale<dynamic, num> scale) {
     num viewSize = attrs.start.distance2(attrs.end);
-    final double distance = (scale.range[1] - scale.range[0]).toDouble();
+    final double distance = attrs.distance;
 
     ///夹角
     final angle = attrs.end.offsetAngle(attrs.start);
     final Offset end = circlePoint(distance, angle, attrs.start);
-
-    List<TickResult> tickResult = buildTickResult(scale, attrs.start, distance, angle);
-    List<LineSplitResult> splitResult = buildSplitResult(tickResult, attrs.start);
-    List<LabelResult> labelResult = buildLabelResult(attrs, scale, attrs.start, distance, angle);
-
+    List<TickResult> tickResult = onBuildTickResult(scale, attrs.start, distance, angle);
+    List<LineSplitResult> splitResult = onBuildSplitResult(tickResult, attrs.start);
+    List<LabelResult> labelResult = onBuildLabelResult(attrs, scale, attrs.start, distance, angle);
     return LineAxisLayoutResult(viewSize, attrs.start, end, splitResult, tickResult, labelResult);
   }
 
-  List<TickResult> buildTickResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+  List<TickResult> onBuildTickResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
     int tickCount = scale.tickCount;
-
     if (tickCount <= 0) {
       tickCount = 1;
     }
@@ -88,7 +79,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
 
       Offset start = offset.rotateOffset(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotateOffset(angle, center: center);
-      TickResult result = TickResult(start, end, []);
+      TickResult result = TickResult(i, tickCount, start, end, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -102,25 +93,25 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
 
         ms = ms.rotateOffset(angle, center: center);
         me = me.rotateOffset(angle, center: center);
-        result.minorTickList.add(TickResult(ms, me));
+        result.minorTickList.add(TickResult(i, tickCount, ms, me));
       }
     }
     return resultList;
   }
 
-  List<LineSplitResult> buildSplitResult(List<TickResult> tickResult, Offset center) {
+  List<LineSplitResult> onBuildSplitResult(List<TickResult> tickResult, Offset center) {
     List<LineSplitResult> resultList = [];
     int c = tickResult.length - 1;
     for (int i = 0; i < c; i++) {
       TickResult pre = tickResult[i];
       TickResult next = tickResult[i + 1];
-      LineSplitResult result = LineSplitResult(center, pre.start, next.start);
+      LineSplitResult result = LineSplitResult(pre.index, pre.maxIndex - 1, center, pre.start, next.start);
       resultList.add(result);
     }
     return resultList;
   }
 
-  List<LabelResult> buildLabelResult(P attrs, BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+  List<LabelResult> onBuildLabelResult(P attrs, BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
@@ -156,7 +147,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
         text = labels[i];
       }
 
-      LabelResult result = LabelResult(config, text, []);
+      LabelResult result = LabelResult(i, tickCount, config, text, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -172,7 +163,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
         TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
         dynamic data = scale.toData(dis);
         DynamicText? text = axisLabel.formatter?.call(data);
-        result.minorLabel.add(LabelResult(minorConfig, text));
+        result.minorLabel.add(LabelResult(i, tickCount, minorConfig, text));
       }
     }
     return resultList;
@@ -200,7 +191,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   }
 
   @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
     Offset start = attrs.start;
     Offset end = attrs.end;
 
@@ -212,6 +203,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
     AxisTheme theme = getAxisTheme();
     AxisStyle axisLine = axis.axisStyle;
     int count = layoutResult.split.length;
+    canvas.save();
+    canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.split, (split, i) {
       AreaStyle? style = axisLine.getSplitAreaStyle(i, count, theme);
       if (style == null) {
@@ -230,10 +223,11 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
       }
       style.drawRect(canvas, paint, rect);
     });
+    canvas.restore();
   }
 
   @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
     Offset start = attrs.start;
     Offset end = attrs.end;
 
@@ -242,12 +236,14 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
       return;
     }
     bool vertical = start.dx == end.dx;
+    AxisStyle axisStyle = axis.axisStyle;
     AxisTheme theme = getAxisTheme();
-    AxisStyle axisLine = axis.axisStyle;
     int count = layoutResult.split.length;
-    for (int i = 0; i < count; i++) {
-      var split = layoutResult.split[i];
-      LineStyle? style = axisLine.getSplitLineStyle(i, count, theme);
+
+    canvas.save();
+    canvas.translate(scroll.dx, scroll.dy);
+    each(layoutResult.split, (split, i) {
+      LineStyle? style = axisStyle.getSplitLineStyle(i, count, theme);
       if (style != null) {
         List<Offset> ol = [];
         if (vertical) {
@@ -269,36 +265,35 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
         }
         style.drawPolygon(canvas, paint, ol);
       }
-    }
+    });
+    canvas.restore();
   }
 
   @override
-  void onDrawAxisLine(Canvas canvas, Paint paint) {
+  void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      logPrint("onDrawAxisLine() axisStyle.show==false not Draw");
-      return;
-    }
     AxisTheme theme = getAxisTheme();
     int c = layoutResult.split.length;
+    canvas.save();
+    canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.split, (split, i) {
       LineStyle? style = axisStyle.getAxisLineStyle(i, c, theme);
       style?.drawPolygon(canvas, paint, [split.start, split.end]);
     });
+    canvas.restore();
   }
 
   @override
-  void onDrawAxisTick(Canvas canvas, Paint paint) {
+  void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     var theme = getAxisTheme();
     int maxCount = layoutResult.tick.length;
+    canvas.save();
+    canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.tick, (line, i) {
       MainTick? tick = axisStyle.getMainTick(i, maxCount, theme);
-      var minorTick = axisStyle.getMinorTick(i, maxCount, theme);
       bool b1 = (tick != null && tick.show);
+      var minorTick = axisStyle.getMinorTick(i, maxCount, theme);
       bool b2 = (minorTick != null && minorTick.show);
       if (b1) {
         tick.lineStyle.drawPolygon(canvas, paint, [line.start, line.end]);
@@ -309,16 +304,16 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
         });
       }
     });
+    canvas.restore();
   }
 
   @override
-  void onDrawAxisLabel(Canvas canvas, Paint paint) {
+  void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     var theme = getAxisTheme();
     int maxCount = layoutResult.label.length;
+    canvas.save();
+    canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.label, (label, i) {
       var labelStyle = axisStyle.getLabelStyle(i, maxCount, theme);
       var minorStyle = axisStyle.getMinorLabelStyle(i, maxCount, theme);
@@ -335,11 +330,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
         });
       }
     });
+    canvas.restore();
   }
-
-  void onScaleFactorChange(double factor) {}
-
-  void onScrollOffsetChange(double offset) {}
 
   List<Offset> dataToPoint(DynamicData data) {
     double diffY = attrs.end.dy - attrs.start.dy;
@@ -356,6 +348,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxis
   }
 
   double getLength() {
-    return (scale.range[0] - scale.range[1]).abs().toDouble();
+    return attrs.distance;
   }
 }

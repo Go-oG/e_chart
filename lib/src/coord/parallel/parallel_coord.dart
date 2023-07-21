@@ -17,7 +17,6 @@ class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
   int _expandLeftIndex = -1;
   int _expandRightIndex = -1;
-  Rect contentBox = Rect.zero;
 
   ParallelCoordImpl(super.props);
 
@@ -40,12 +39,7 @@ class ParallelCoordImpl extends ParallelCoord {
     Direction direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
-      ParallelAxisImpl node = ParallelAxisImpl(context, ele, direction, axisIndex: i);
-      node.expanded = true;
-      if (i >= _expandLeftIndex && i <= _expandRightIndex) {
-        node.expanded = false;
-      }
-      axisMap[ele] = node;
+      axisMap[ele] = ParallelAxisImpl(context, this, ele, direction, axisIndex: i);
     }
   }
 
@@ -123,7 +117,7 @@ class ParallelCoordImpl extends ParallelCoord {
     int expandCount = 0;
     int unExpandCount = 0;
     axisMap.forEach((key, value) {
-      if (value.expanded) {
+      if (value.attrs.expand) {
         expandCount += 1;
       } else {
         unExpandCount += 1;
@@ -150,7 +144,7 @@ class ParallelCoordImpl extends ParallelCoord {
       double tmpBottom;
       if (horizontal) {
         tmpLeft = offsetP;
-        tmpRight = tmpLeft + (node.expanded ? interval : props.expandWidth);
+        tmpRight = tmpLeft + (node.attrs.expand ? interval : props.expandWidth);
         tmpTop = topOffset;
         tmpBottom = h;
         offsetP += (tmpRight - tmpLeft);
@@ -158,8 +152,8 @@ class ParallelCoordImpl extends ParallelCoord {
         tmpLeft = leftOffset;
         tmpTop = offsetP;
         tmpRight = width - rightOffset;
-        tmpBottom = tmpTop + (node.expanded ? interval : props.expandWidth);
-        offsetP += (node.expanded ? interval : props.expandWidth);
+        tmpBottom = tmpTop + (node.attrs.expand ? interval : props.expandWidth);
+        offsetP += (node.attrs.expand ? interval : props.expandWidth);
       }
 
       ///处理轴内部
@@ -172,16 +166,25 @@ class ParallelCoordImpl extends ParallelCoord {
         }
       }
 
-      Offset start,end ;
+      Offset start, end;
       if (props.direction == Direction.horizontal) {
-        start=rect.bottomLeft.translate(0, -textSize[1].height);
-        end=rect.topLeft.translate(0, textSize[0].height);
+        start = rect.bottomLeft.translate(0, -textSize[1].height);
+        end = rect.topLeft.translate(0, textSize[0].height);
       } else {
         start = rect.topLeft.translate(textSize[0].width, 0);
         end = rect.topRight.translate(-textSize[1].width, 0);
       }
-      LineAxisAttrs layoutProps = LineAxisAttrs(rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
-      node.doLayout(layoutProps, dataSet);
+
+      var attrs = ParallelAxisAttrs(
+        scaleYFactor,
+        scrollXOffset,
+        rect,
+        start,
+        end,
+        textStartSize: textSize[0],
+        textEndSize: textSize[1],
+      );
+      node.doLayout(attrs, dataSet);
     }
 
     for (var ele in children) {

@@ -8,10 +8,23 @@ class AngleAxisAttrs extends AxisAttrs {
   final double angleOffset;
   final bool clockwise;
 
-  AngleAxisAttrs(
-    this.center,
-    this.angleOffset,
-    this.radius, {
-    this.clockwise = true,
-  });
+  AngleAxisAttrs(this.center, this.angleOffset, this.radius, super.scaleRatio, super.scroll, {this.clockwise = true});
+
+  AngleAxisAttrs copyWith({
+    Offset? center,
+    double? angleOffset,
+    double? radius,
+    double? scaleRatio,
+    double? scroll,
+    bool? clockwise,
+  }) {
+    return AngleAxisAttrs(
+      center ?? this.center,
+      angleOffset ?? this.angleOffset,
+      radius ?? this.radius,
+      scaleRatio ?? this.scaleRatio,
+      scroll ?? this.scroll,
+      clockwise: clockwise ?? this.clockwise,
+    );
+  }
 }

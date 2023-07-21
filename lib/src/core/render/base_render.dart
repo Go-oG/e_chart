@@ -85,7 +85,6 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     } finally {
       _inDrawing = false;
     }
-    _inDrawing = false;
   }
 
   @override

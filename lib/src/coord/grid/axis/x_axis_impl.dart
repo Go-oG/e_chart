@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 class XAxisImpl extends BaseGridAxisImpl {
   XAxisImpl(super.coord, super.context, super.axis, {super.axisIndex});
 
+  Rect? clipRect;
+
   @override
   void doMeasure(double parentWidth, double parentHeight) {
     AxisStyle axisStyle = axis.axisStyle;
@@ -32,7 +34,7 @@ class XAxisImpl extends BaseGridAxisImpl {
 
     AxisLabel axisLabel = axisStyle.axisLabel;
     if (axisLabel.show) {
-      height += axisLabel.margin+axisLabel.padding;
+      height += axisLabel.margin + axisLabel.padding;
       var maxStr = getMaxStr(Direction.horizontal);
       Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme())?.measure(maxStr) ?? Size.zero;
       height += textSize.height;
@@ -44,33 +46,121 @@ class XAxisImpl extends BaseGridAxisImpl {
   }
 
   @override
-  void doLayout(LineAxisAttrs attrs, List<DynamicData> dataSet) {
-    Rect rect = attrs.rect;
-    axisInfo.bound = rect;
-    var axisLine = axis.axisStyle;
-    bool inside = (axisLine.getMainTick(0, 1, getAxisTheme())?.inside) ?? true;
-    if (axis.isCategoryAxis) {
-      inside = false;
+  LineAxisLayoutResult onLayout(LineAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    Rect rect = coord.contentBox;
+    Offset offset = splitScrollOffset(coord.getTranslation());
+    if (offset.dx.abs() != 0) {
+      clipRect =Rect.fromLTWH(attrs.start.dx, attrs.start.dy - 1, rect.width, attrs.rect.height + 1);
+    }else{
+      clipRect=null;
     }
-    if (inside) {
-      axisInfo.start = rect.bottomLeft;
-      axisInfo.end = rect.bottomRight;
-    } else {
-      axisInfo.start = rect.topLeft;
-      axisInfo.end = rect.topRight;
-    }
-    super.doLayout(attrs, dataSet);
+    return super.onLayout(attrs, scale);
   }
 
   @override
-  void onScaleFactorChange(double factor) {
-    double distance = axisInfo.bound.width * factor;
-    if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('$runtimeType 长度未知：$distance');
+  List<TickResult> onBuildTickResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+    int tickCount = scale.tickCount;
+    if (tickCount <= 0) {
+      tickCount = 1;
     }
-    scale = scale.copyWithRange([0, distance]);
+    final double interval = distance / (tickCount - 1);
+    List<int> indexList = computeIndex(distance, tickCount, interval);
+    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    final double tickOffset = (tick.inside ? -tick.length : tick.length).toDouble();
+    final double minorOffset = (tick.inside ? -minorTick.length : minorTick.length).toDouble();
+    List<TickResult> resultList = [];
+    for (int i = indexList[0]; i < indexList[1]; i++) {
+      Offset offset = center.translate(interval * i, 0);
+      Offset start = offset.rotateOffset(angle, center: center);
+      Offset end = offset.translate(0, tickOffset).rotateOffset(angle, center: center);
+      TickResult result = TickResult(i, tickCount, start, end, []);
+      resultList.add(result);
 
-    notifyLayoutUpdate();
+      int minorCount = minorTick.splitNumber;
+      if (minorCount <= 0) {
+        continue;
+      }
+      double minorInterval = interval / (minorCount + 1);
+      for (int j = 1; j <= minorTick.splitNumber; j++) {
+        Offset ms = offset.translate(minorInterval * j, 0);
+        Offset me = ms.translate(0, minorOffset);
+
+        ms = ms.rotateOffset(angle, center: center);
+        me = me.rotateOffset(angle, center: center);
+        result.minorTickList.add(TickResult(i, tickCount, ms, me));
+      }
+    }
+    return resultList;
+  }
+
+  @override
+  List<LabelResult> onBuildLabelResult(LineAxisAttrs attrs, BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+    int tickCount = scale.tickCount;
+    if (tickCount <= 0) {
+      tickCount = 1;
+    }
+    final double interval = distance / (tickCount - 1);
+    List<int> indexList = computeIndex(distance, tickCount, interval);
+
+    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+
+    AxisLabel axisLabel = axis.axisStyle.axisLabel;
+    List<DynamicText> labels = obtainLabel();
+
+    double labelOffset = axisLabel.padding + axisLabel.margin + 0;
+    if (axisLabel.inside == tick.inside) {
+      labelOffset += tick.length;
+    }
+    labelOffset *= axisLabel.inside ? -1 : 1;
+
+    List<LabelResult> resultList = [];
+    for (int i = indexList[0]; i < indexList[1]; i++) {
+      double d = i.toDouble();
+      if (scale.isCategory && axis.categoryCenter) {
+        d += 0.5;
+      }
+      final double parenDis = interval * d;
+      Offset offset = center.translate(parenDis, 0);
+      Offset textOffset = offset.translate(0, labelOffset);
+      textOffset = textOffset.rotateOffset(angle, center: center);
+      TextDrawConfig config = TextDrawConfig(textOffset, align: toAlignment(angle + 90, axisLabel.inside));
+      DynamicText? text;
+      if (labels.length > i) {
+        text = labels[i];
+      }
+
+      LabelResult result = LabelResult(i, tickCount, config, text, []);
+      resultList.add(result);
+
+      int minorCount = minorTick.splitNumber;
+      if (minorCount <= 0 || scale.isCategory || scale.isTime) {
+        continue;
+      }
+
+      ///构建minorLabel
+      double minorInterval = interval / (minorCount + 1);
+      for (int j = 1; j <= minorTick.splitNumber; j++) {
+        num dis = parenDis + minorInterval * j;
+        final labelOffset = circlePoint(dis, angle, center);
+        TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+        dynamic data = scale.toData(dis);
+        DynamicText? text = axisLabel.formatter?.call(data);
+        result.minorLabel.add(LabelResult(i, tickCount, minorConfig, text));
+      }
+    }
+    return resultList;
+  }
+
+  @override
+  void draw(Canvas canvas, Paint paint, Rect coord) {
+    canvas.save();
+    if (clipRect != null) {
+      canvas.clipRect(clipRect!);
+    }
+    super.draw(canvas, paint, coord);
+    canvas.restore();
   }
 
   @override
@@ -78,8 +168,38 @@ class XAxisImpl extends BaseGridAxisImpl {
     List<num> nl = scale.toRange(data.data);
     List<Offset> ol = [];
     for (var d in nl) {
-      ol.add(Offset(d.toDouble(), 0));
+      ol.add(Offset(d.toDouble(), attrs.start.dy));
     }
     return ol;
+  }
+
+  @override
+  void onScrollChange(double scroll) {
+    layoutResult = onLayout(attrs, scale);
+  }
+
+  @override
+  Offset splitScrollOffset(Offset scroll) {
+    return Offset(scroll.dx, 0);
+  }
+
+  List<int> computeIndex(num distance, int tickCount, num interval) {
+    Rect rect = coord.contentBox;
+    int startIndex, endIndex;
+    if (distance <= rect.width) {
+      startIndex = 0;
+      endIndex = tickCount;
+    } else {
+      double scroll = coord.scrollXOffset.abs();
+      startIndex = scroll ~/ interval - 2;
+      if (startIndex < 0) {
+        startIndex = 0;
+      }
+      endIndex = (scroll + rect.width) ~/ interval + 2;
+      if (endIndex > tickCount) {
+        endIndex = tickCount;
+      }
+    }
+    return [startIndex, endIndex];
   }
 }

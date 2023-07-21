@@ -2,9 +2,11 @@ import '../../../model/dynamic_text.dart';
 import '../../../model/text_position.dart';
 
 class LabelResult {
-  TextDrawConfig textConfig;
-  DynamicText? text;
-  List<LabelResult> minorLabel;
+  final int index;
+  final int maxIndex;
+  final TextDrawConfig textConfig;
+  final DynamicText? text;
+  final List<LabelResult> minorLabel;
 
-  LabelResult(this.textConfig, this.text, [this.minorLabel = const []]);
+  LabelResult(this.index,this.maxIndex,this.textConfig, this.text, [this.minorLabel = const []]);
 }

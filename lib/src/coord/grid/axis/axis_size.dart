@@ -10,7 +10,6 @@ class AxisInfo {
 
   ///轴的边界信息
   Rect bound;
-  double scaleFactory = 1;
 
   AxisInfo( this.start, this.end, this.bound);
 

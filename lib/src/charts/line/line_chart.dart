@@ -80,15 +80,17 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
     final List<LineResult> list = helper.lineList;
 
     ///这里分开绘制是为了避免边框被遮挡
-    each(list, (result, i) {
-      AreaStyle? style = helper.getAreaStyle(result.data, result.groupIndex);
-      result.areaStyle = style;
-      if (style != null) {
-        for (var path in result.areaPathList) {
-          style.drawPath(canvas, mPaint, path);
-        }
-      }
-    });
+
+    // each(list, (result, i) {
+    //   AreaStyle? style = helper.getAreaStyle(result.data, result.groupIndex);
+    //   result.areaStyle = style;
+    //   if (style != null) {
+    //     for (var path in result.areaPathList) {
+    //       style.drawPath(canvas, mPaint, path);
+    //     }
+    //   }
+    // });
+
     each(list, (result, i) {
       var ls = helper.getLineStyle(result.data, i);
       result.lineStyle = ls;
@@ -99,33 +101,35 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
       }
     });
 
-    if (series.symbolFun != null || theme.showSymbol) {
-      ///绘制symbol
-      SymbolDesc desc = SymbolDesc();
-      each(list, (result, p1) {
-        var cl = helper.getLineStyle(result.data, result.groupIndex)?.color;
-        if (cl != null) {
-          desc.fillColor = [cl];
-        }
-        each(result.data.data, (data, i) {
-          if (data == null || i >= result.offsetList.length) {
-            return;
-          }
-          var offset = result.offsetList[i];
-          if (offset == null) {
-            return;
-          }
-          desc.center = offset;
+    // if (series.symbolFun != null || theme.showSymbol) {
+    //   ///绘制symbol
+    //   SymbolDesc desc = SymbolDesc();
+    //   each(list, (result, p1) {
+    //     var cl = helper.getLineStyle(result.data, result.groupIndex)?.color;
+    //     if (cl != null) {
+    //       desc.fillColor = [cl];
+    //     }
+    //     each(result.data.data, (data, i) {
+    //       if (data == null || i >= result.offsetList.length) {
+    //         return;
+    //       }
+    //       var offset = result.offsetList[i];
+    //       if (offset == null) {
+    //         return;
+    //       }
+    //       desc.center = offset;
+    //
+    //       ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
+    //       if (symbol != null) {
+    //         symbol.draw(canvas, mPaint, desc);
+    //       } else if (theme.showSymbol) {
+    //         theme.symbol.draw(canvas, mPaint, desc);
+    //       }
+    //     });
+    //   });
+    // }
+    //
 
-          ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
-          if (symbol != null) {
-            symbol.draw(canvas, mPaint, desc);
-          } else if (theme.showSymbol) {
-            theme.symbol.draw(canvas, mPaint, desc);
-          }
-        });
-      });
-    }
     canvas.restore();
   }
 
