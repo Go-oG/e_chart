@@ -26,7 +26,7 @@ class RadarCoordImpl extends RadarCoord {
           nameGap: indicator.nameGap,
           nameStyle: indicator.nameStyle,
           splitNumber: 5);
-      axisMap[i] = RadarAxisImpl(context, axis, axisIndex: i);
+      axisMap[i] = RadarAxisImpl(context, this, axis, axisIndex: i);
     }
   }
 
@@ -50,8 +50,8 @@ class RadarCoordImpl extends RadarCoord {
     axisMap.forEach((key, value) {
       double angle = oa + value.axisIndex * itemAngle;
       Offset o = circlePoint(radius, angle, center);
-      LineAxisAttrs layoutProps = LineAxisAttrs(Rect.zero, center, o);
-      value.doLayout(layoutProps, collectChildData(value.axisIndex));
+      var attrs = LineAxisAttrs(scaleXFactor, scrollXOffset, Rect.zero, center, o);
+      value.doLayout(attrs, collectChildData(value.axisIndex));
     });
 
     double radiusItem = radius / props.splitNumber;

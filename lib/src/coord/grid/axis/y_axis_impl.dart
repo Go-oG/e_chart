@@ -1,10 +1,10 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/coord/grid/axis/base_grid_axis_impl.dart';
+
 import 'package:flutter/material.dart';
 
-class YAxisImpl extends BaseGridAxisImpl {
-  YAxisImpl(super.coord, super.context, super.axis, {super.axisIndex});
+class YAxisImpl extends XAxisImpl {
+  YAxisImpl(super.context, super.coord, super.axis, {super.axisIndex});
 
   @override
   void doMeasure(double parentWidth, double parentHeight) {
@@ -29,7 +29,7 @@ class YAxisImpl extends BaseGridAxisImpl {
         double tmp = axisLabel.margin + axisLabel.padding + 0;
         var maxStr = getMaxStr(Direction.vertical);
         Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme())?.measure(maxStr, maxWidth: 100) ?? Size.zero;
-        tmp += textSize.width*0.5;
+        tmp += textSize.width * 0.5;
         width += tmp;
       }
     }
@@ -45,30 +45,15 @@ class YAxisImpl extends BaseGridAxisImpl {
   }
 
   @override
-  void doLayout(LineAxisAttrs attrs, List<DynamicData> dataSet) {
-    axisInfo.bound = attrs.rect;
-    if (axis.position == Align2.end) {
-      axisInfo.start = attrs.rect.bottomLeft;
-      axisInfo.end = attrs.rect.topLeft;
+  LineAxisLayoutResult onLayout(LineAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    Rect rect = coord.contentBox;
+    Offset offset = splitScrollOffset(coord.getTranslation());
+    if (offset.dy.abs() != 0) {
+      clipRect = Rect.fromLTWH(0, rect.top, rect.width, rect.height);
     } else {
-      axisInfo.start = attrs.rect.bottomRight;
-      axisInfo.end = attrs.rect.topRight;
+      clipRect = null;
     }
-    super.doLayout(attrs, dataSet);
-  }
-
-  @override
-  void onScaleFactorChange(double factor) {
-    double distance = axisInfo.bound.height * factor;
-    if (distance.isNaN || distance.isInfinite) {
-      throw ChartError('$runtimeType 长度未知：$distance');
-    }
-    scale = scale.copyWithRange([distance, 0]);
-
-    //TODO 更新
-    //  updateTickPosition();
-
-    notifyLayoutUpdate();
+    return super.onLayout(attrs, scale);
   }
 
   @override
@@ -77,8 +62,34 @@ class YAxisImpl extends BaseGridAxisImpl {
     List<Offset> ol = [];
     for (var d in nl) {
       double y = d.toDouble();
-      ol.add(Offset(0, y));
+      ol.add(Offset(attrs.start.dx, y));
     }
     return ol;
+  }
+
+  @override
+  List<int> computeIndex(num distance, int tickCount, num interval) {
+    Rect rect = coord.contentBox;
+    int startIndex, endIndex;
+    if (distance <= rect.height) {
+      startIndex = 0;
+      endIndex = tickCount;
+    } else {
+      double scroll = coord.scrollXOffset.abs();
+      startIndex = scroll ~/ interval - 2;
+      if (startIndex < 0) {
+        startIndex = 0;
+      }
+      endIndex = (scroll + rect.height) ~/ interval + 2;
+      if (endIndex > tickCount) {
+        endIndex = tickCount;
+      }
+    }
+    return [startIndex, endIndex];
+  }
+
+  @override
+  Offset splitScrollOffset(Offset scroll) {
+    return Offset(0, scroll.dy);
   }
 }

@@ -12,8 +12,6 @@ abstract class PolarCoord extends CircleCoord<PolarConfig> {
   num getStartAngle();
 
   BaseScale getScale(bool angleAxis);
-
-
 }
 
 class PolarPosition {
@@ -36,7 +34,7 @@ class PolarPosition {
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
-  late final AngleAxisImpl _angleAxis;
+  late final AngleAxisImpl<PolarCoord> _angleAxis;
   late final RadiusAxisImpl _radiusAxis;
 
   Offset center = Offset.zero;
@@ -46,8 +44,8 @@ class PolarCoordImpl extends PolarCoord {
   @override
   void onCreate() {
     super.onCreate();
-    _angleAxis = AngleAxisImpl(context, props.angleAxis);
-    _radiusAxis = RadiusAxisImpl(context, props.radiusAxis);
+    _angleAxis = AngleAxisImpl(context, this, props.angleAxis);
+    _radiusAxis = RadiusAxisImpl(context, this, props.radiusAxis);
   }
 
   @override
@@ -69,21 +67,25 @@ class PolarCoordImpl extends PolarCoord {
 
     double r = width / 2;
     AngleAxis angleAxis = props.angleAxis;
-    AngleAxisAttrs angleProps = AngleAxisAttrs(
+    var angleAttrs = AngleAxisAttrs(
       center,
       angleAxis.offsetAngle.toDouble(),
       r + angleAxis.radiusOffset,
+      scaleYFactor,
+      scrollYOffset,
       clockwise: angleAxis.clockwise,
     );
-    RadiusAxisAttrs radiusProps = RadiusAxisAttrs(
+    var radiusAttrs = RadiusAxisAttrs(
       center,
       angleAxis.offsetAngle,
+      scaleXFactor,
+      scrollXOffset,
       boxBounds,
       center,
       circlePoint(r, props.radiusAxis.offsetAngle, center),
     );
-    _angleAxis.doLayout(angleProps, _getAngleDataSet());
-    _radiusAxis.doLayout(radiusProps, _getRadiusDataSet());
+    _angleAxis.doLayout(angleAttrs, _getAngleDataSet());
+    _radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
 
     for (var c in children) {
       c.layout(0, 0, width, height);

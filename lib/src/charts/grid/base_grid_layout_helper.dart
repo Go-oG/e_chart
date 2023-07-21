@@ -77,6 +77,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
         });
       }
     });
+
     onLayoutEnd(this.nodeList, this.groupNodeList, this.dataNodeMap, List.from(newNodeMap.values), newNodeList, newNodeMap, type);
   }
 
@@ -111,6 +112,13 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     Map<T, SingleNode<T, P>> newNodeMap,
     LayoutType type,
   ) {
+    if(series.animation==null){
+      this.nodeList = newNodeList;
+      this.groupNodeList = newGroupNodeList;
+      this.dataNodeMap = newNodeMap;
+      return;
+    }
+
     ///动画
     DiffResult<SingleNode<T, P>, SingleData<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data, (a, b, c) {
       return onCreateAnimatorObj(a, b, c, type);

@@ -5,18 +5,19 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult> extends ChartNotifier<Command> {
+abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult, C extends Coord>
+    extends ChartNotifier<Command> {
   final int axisIndex;
+  final C coord;
   final Context context;
   final T axis;
-  late final AxisTitleNode titleNode;
   late L attrs;
   late BaseScale scale;
   late R layoutResult;
 
-  bool expanded = true;
+  late final AxisTitleNode titleNode;
 
-  BaseAxisImpl(this.context, this.axis, {this.axisIndex = 0}) : super(Command.none) {
+  BaseAxisImpl(this.context, this.coord, this.axis, {this.axisIndex = 0}) : super(Command.none) {
     titleNode = AxisTitleNode(axis.name);
   }
 
@@ -26,10 +27,25 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     this.attrs = attrs;
     scale = onBuildScale(attrs, dataSet);
     titleNode.config = onLayoutAxisName();
-    layoutResult = onLayout(attrs, scale, dataSet);
+    layoutResult = onLayout(attrs, scale);
   }
 
-  R onLayout(L attrs, BaseScale scale, List<DynamicData> dataSet);
+  void onAttrsChange(L attrs) {
+    this.attrs = attrs;
+    List<DynamicData> dl = [];
+    for (var data in scale.domain) {
+      if (data is DynamicData) {
+        dl.add(data);
+      } else {
+        dl.add(DynamicData(data));
+      }
+    }
+    scale = onBuildScale(attrs, dl);
+    titleNode.config = onLayoutAxisName();
+    layoutResult = onLayout(attrs, scale);
+  }
+
+  R onLayout(L attrs, BaseScale scale);
 
   BaseScale onBuildScale(L attrs, List<DynamicData> dataSet);
 
@@ -55,22 +71,29 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     canvas.drawRect(rect, mPaint);
   }
 
+  final stopWatch = Stopwatch();
+
   void draw(Canvas canvas, Paint paint, Rect coord) {
-    var axisLine = axis.axisStyle;
-    if (!axisLine.show) {
+    var axisStyle = axis.axisStyle;
+    if (!axisStyle.show) {
       return;
     }
-    onDrawAxisSplitArea(canvas, paint, coord);
-    onDrawAxisSplitLine(canvas, paint, coord);
-    onDrawAxisTick(canvas, paint);
-    onDrawAxisLabel(canvas, paint);
-    onDrawAxisLine(canvas, paint);
+    Offset offset = splitScrollOffset(this.coord.getTranslation());
+    onDrawAxisSplitArea(canvas, paint, offset);
+    onDrawAxisSplitLine(canvas, paint, offset);
+    onDrawAxisTick(canvas, paint, offset);
+    onDrawAxisLabel(canvas, paint, offset);
+    onDrawAxisLine(canvas, paint, offset);
     onDrawAxisName(canvas, paint);
   }
 
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {}
+  Offset splitScrollOffset(Offset scroll) {
+    return scroll;
+  }
 
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {}
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {}
+
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {}
 
   void onDrawAxisName(Canvas canvas, Paint paint) {
     if (titleNode.label == null || titleNode.label!.isEmpty) {
@@ -79,11 +102,11 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     axis.nameStyle.draw(canvas, paint, titleNode.label!, titleNode.config);
   }
 
-  void onDrawAxisLine(Canvas canvas, Paint paint) {}
+  void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {}
 
-  void onDrawAxisTick(Canvas canvas, Paint paint) {}
+  void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {}
 
-  void onDrawAxisLabel(Canvas canvas, Paint paint) {}
+  void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {}
 
   List<DynamicText> obtainLabel() {
     if (scale is CategoryScale) {

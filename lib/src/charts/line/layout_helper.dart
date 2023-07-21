@@ -115,41 +115,19 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
+  void onLayoutEnd(List<SingleNode<LineItemData, LineGroupData>> oldNodeList, List<GroupNode<LineItemData, LineGroupData>> oldGroupNodeList, Map<LineItemData, SingleNode<LineItemData, LineGroupData>> oldNodeMap, List<SingleNode<LineItemData, LineGroupData>> newNodeList, List<GroupNode<LineItemData, LineGroupData>> newGroupNodeList, Map<LineItemData, SingleNode<LineItemData, LineGroupData>> newNodeMap, LayoutType type) {
+    super.onLayoutEnd(oldNodeList, oldGroupNodeList, oldNodeMap, newNodeList, newGroupNodeList, newNodeMap, type);
+    if(series.animation==null){
+      logPrint("不执行动画");
+      _updateLine(nodeList);
+    }
+  }
+
+  @override
   void onAnimatorStart(var result, LayoutType type) {
     _updateLine(result.curList);
     super.onAnimatorStart(result, type);
   }
-
-  // @override
-  // SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForGrid(
-  //     SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
-  //
-  //   SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForGrid(data, node, newData);
-  //   Offset pos = node.position;
-  //   Offset offset;
-  //   if (series.animatorStyle == GridAnimatorStyle.expand) {
-  //     offset = Offset(pos.dx, height);
-  //   } else {
-  //     offset = Offset(pos.dx, rect.bottom);
-  //   }
-  //   rn.position = offset;
-  //   return rn;
-  // }
-
-  // @override
-  // SingleNode<LineItemData, LineGroupData> onCreateAnimatorObjForPolar(
-  //     SingleData<LineItemData, LineGroupData> data, SingleNode<LineItemData, LineGroupData> node, bool newData) {
-  //   SingleNode<LineItemData, LineGroupData> rn = super.onCreateAnimatorObjForPolar(data, node, newData);
-  //   Offset offset;
-  //   if (series.animatorStyle == GridAnimatorStyle.expand) {
-  //     offset = circlePoint(0, 0, node.arc.center);
-  //   } else {
-  //     var angle = node.arc.startAngle + node.arc.sweepAngle / 2;
-  //     offset = circlePoint(node.arc.innerRadius, angle, node.arc.center);
-  //   }
-  //   rn.position = offset;
-  //   return rn;
-  // }
 
   @override
   void onAnimatorUpdateForGrid(var node, double t, var startMap, var endMap, LayoutType type) {

@@ -48,6 +48,12 @@ abstract class Coord<T extends CoordConfig> extends ChartViewGroup {
   }
 
   @override
+  void onLayoutEnd() {
+    super.onLayoutEnd();
+    _gesture.rect=globalBoxBound;
+  }
+
+  @override
   void onDrawBackground(Canvas canvas) {
     Color? color = props.backgroundColor;
     if (color == null) {

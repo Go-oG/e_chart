@@ -27,9 +27,9 @@ abstract class CoordConfig extends ChartNotifier<Command> {
     SNumber? width,
     SNumber? height,
     this.backgroundColor,
-    this.enableClick = false,
-    this.enableHover = false,
-    this.enableDrag = false,
+    this.enableClick = true,
+    this.enableHover = true,
+    this.enableDrag = true,
     this.enableScale = false,
   }) : super(Command.none) {
     if (id == null || id.isEmpty) {

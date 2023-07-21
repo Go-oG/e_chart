@@ -1,9 +1,6 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../model/chart_error.dart';
-import '../../style/index.dart';
-import '../tick/main_tick.dart';
-import '../tick/minor_tick.dart';
 
 ///坐标轴主题
 class AxisTheme {
@@ -95,6 +92,7 @@ class AxisTheme {
       throw ChartError('Index 必须大于0');
     }
     if (!showAxisLine) {
+      logPrint("不显示该轴");
       return null;
     }
     return axisLineColor;

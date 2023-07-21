@@ -2,10 +2,9 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs> {
-  final GridCoord coord;
+abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs,GridCoord> {
 
-  BaseGridAxisImpl(this.coord, super.context, super.axis, {super.axisIndex});
+  BaseGridAxisImpl(super.context,super.coord, super.axis, {super.axisIndex});
 
   ///表示轴的大小
   final AxisInfo _axisInfo = AxisInfo(Offset.zero, Offset.zero, Rect.zero);
@@ -35,4 +34,9 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs> {
     }
     return maxStr;
   }
+
+  void onScrollChange(double scroll);
+
+
+
 }

@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
 ///不会绘制最后一个label和tick
-class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult> {
+class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult, C> {
   static const int maxAngle = 360;
   final tmpTick = MainTick();
   final MinorTick tmpMinorTick = MinorTick();
 
-  AngleAxisImpl(super.context, super.axis, {super.axisIndex});
+  AngleAxisImpl(super.context, super.coord, super.axis, {super.axisIndex});
 
   @override
   BaseScale onBuildScale(AngleAxisAttrs attrs, List<DynamicData> dataSet) {
@@ -25,7 +25,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
   }
 
   @override
-  AngleAxisLayoutResult onLayout(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale, List<DynamicData> dataSet) {
+  AngleAxisLayoutResult onLayout(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     Arc arc = Arc(
       center: attrs.center,
       outRadius: attrs.radius,
@@ -84,7 +84,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
       Offset so = circlePoint(attrs.radius, angle, attrs.center);
       Offset eo = circlePoint(r, angle, attrs.center);
       List<TickResult> minorList = [];
-      tickList.add(TickResult(so, eo, minorList));
+      tickList.add(TickResult(i,tickCount,so, eo, minorList));
       if (axis.isCategoryAxis || axis.isTimeAxis || i == tickCount - 1) {
         continue;
       }
@@ -100,7 +100,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
       for (int j = 1; j < minorTick.splitNumber; j++) {
         Offset minorSo = circlePoint(attrs.radius, angle + minorInterval * j, attrs.center);
         Offset minorEo = circlePoint(minorR, angle + minorInterval * j, attrs.center);
-        minorList.add(TickResult(minorSo, minorEo));
+        minorList.add(TickResult(i,tickCount,minorSo, minorEo));
       }
     }
     return tickList;
@@ -138,7 +138,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
       num angle = attrs.angleOffset + angleInterval * d;
       Offset offset = circlePoint(r, angle, attrs.center);
       TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle, axisLabel.inside));
-      resultList.add(LabelResult(config, text));
+      resultList.add(LabelResult(i,labels.length,config, text));
       if (axis.isCategoryAxis || axis.isTimeAxis) {
         continue;
       }
@@ -163,17 +163,17 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
   }
 
   @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Rect coord) {
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
       return;
     }
-    var splitArea=axisStyle.splitArea;
-    if(splitArea!=null&&!splitArea.show){
+    var splitArea = axisStyle.splitArea;
+    if (splitArea != null && !splitArea.show) {
       return;
     }
     var theme = getAxisTheme();
-    if(splitArea==null&&!theme.showSplitArea){
+    if (splitArea == null && !theme.showSplitArea) {
       return;
     }
 
@@ -185,7 +185,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
   }
 
   @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Rect coord) {
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
       return;
@@ -206,7 +206,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
   }
 
   @override
-  void onDrawAxisLine(Canvas canvas, Paint paint) {
+  void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
       return;
@@ -229,7 +229,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
   }
 
   @override
-  void onDrawAxisTick(Canvas canvas, Paint paint) {
+  void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
       return;
@@ -257,7 +257,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLay
   }
 
   @override
-  void onDrawAxisLabel(Canvas canvas, Paint paint) {
+  void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
     if (!axisStyle.show) {
       return;

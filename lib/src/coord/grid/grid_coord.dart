@@ -11,16 +11,14 @@ abstract class GridCoord extends Coord<GridConfig> {
   ///该方法适用于Line
   Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
 
-
   GridAxis getAxis(int axisIndex, bool isXAxis);
 
   ///获取比例尺
-  BaseScale getScale(int axisIndex,bool isXAxis);
+  BaseScale getScale(int axisIndex, bool isXAxis);
 
   double getAxisLength(int axisIndex, bool isXAxis);
 
   List<GridChild> getGridChildList();
-
 }
 
 ///实现二维坐标系
@@ -36,10 +34,10 @@ class GridCoordImpl extends GridCoord {
     xMap.clear();
     yMap.clear();
     each(props.xAxisList, (ele, p1) {
-      xMap[ele] = XAxisImpl(this, context, ele, axisIndex: p1);
+      xMap[ele] = XAxisImpl(context, this, ele, axisIndex: p1);
     });
     each(props.yAxisList, (axis, p1) {
-      yMap[axis] = YAxisImpl(this, context, axis, axisIndex: p1);
+      yMap[axis] = YAxisImpl(context, this, axis, axisIndex: p1);
     });
   }
 
@@ -130,8 +128,8 @@ class GridCoordImpl extends GridCoord {
         dl.addAll(child.getAxisExtreme(value.axisIndex, true));
       }
       var h = axisInfo.bound.height;
-      Rect rect = Rect.fromLTWH(contentBox.left, topOffset, contentBox.width, h);
-      var layoutAttrs = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
+      Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
+      var layoutAttrs = LineAxisAttrs(scaleXFactor, scrollXOffset, rect, rect.bottomLeft, rect.bottomRight);
       topOffset -= (h + value.axis.offset);
       value.doLayout(layoutAttrs, dl);
     }
@@ -142,12 +140,53 @@ class GridCoordImpl extends GridCoord {
       for (var child in childList) {
         dl.addAll(child.getAxisExtreme(value.axisIndex, true));
       }
-
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
-      var layoutAttrs = LineAxisAttrs(rect, rect.topLeft, rect.topRight);
+      var layoutAttrs = LineAxisAttrs(
+        scaleXFactor,
+        scrollXOffset,
+        rect,
+        rect.topLeft.translate(0, -1),
+        rect.topRight.translate(0, -1),
+      );
       bottomOffset += (h + value.axis.offset);
       value.doLayout(layoutAttrs, dl);
+    }
+
+    final w = contentBox.width;
+    double maxWidth = w;
+    for (var axis in [...topList, ...bottomList]) {
+      if (axis.scale.isCategory) {
+        int c = axis.scale.domain.length;
+        num diff = maxWidth / c;
+        if (diff < 48) {
+          maxWidth = c * 48;
+        }
+      } else if (axis.scale.isTime) {
+        int c = axis.scale.tickCount;
+        if (c < 0) {
+          continue;
+        }
+        if (maxWidth / c < 16) {
+          maxWidth = c * 16;
+        }
+      } else {
+        var scale = axis.scale as LinearScale;
+        int c = (scale.step * scale.tickCount).toInt();
+        if (c < 0) {
+          continue;
+        }
+        if (maxWidth / c < 16) {
+          maxWidth = c * 16;
+        }
+      }
+    }
+    logPrint("maxWidth:$maxWidth W:$w");
+    if (maxWidth > w) {
+      double k = maxWidth / w;
+      for (var axis in [...topList, ...bottomList]) {
+        axis.onAttrsChange(axis.attrs.copyWith(scaleRatio: k));
+      }
     }
   }
 
@@ -173,7 +212,7 @@ class GridCoordImpl extends GridCoord {
       }
       double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
-      layoutProps = LineAxisAttrs(rect, rect.bottomRight, rect.topRight);
+      layoutProps = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight);
       rightOffset -= w;
       value.doLayout(layoutProps, dl);
     });
@@ -190,7 +229,7 @@ class GridCoordImpl extends GridCoord {
         leftOffset += value.axis.offset;
       }
       Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
-      layoutProps = LineAxisAttrs(rect, rect.bottomLeft, rect.topLeft);
+      layoutProps = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft);
       leftOffset += w;
       value.doLayout(layoutProps, dl);
     });
@@ -206,17 +245,43 @@ class GridCoordImpl extends GridCoord {
     });
   }
 
-
   @override
   void onDragMove(Offset offset, Offset diff) {
     if (!contentBox.contains(offset)) {
       return;
     }
-    scrollXOffset += diff.dx;
-    scrollYOffset += diff.dy;
-    xMap.forEach((key, value) {
-      value.updateScrollOffset(scrollXOffset);
-    });
+    var sx = diff.dx + scrollXOffset;
+    var sy = diff.dy + scrollYOffset;
+
+    Offset maxOffset = getMaxTranslation();
+    if (sx.abs() > maxOffset.dx) {
+      sx = -maxOffset.dx;
+    }
+    if (sx > 0) {
+      sx = 0;
+    }
+    if (sx != scrollXOffset) {
+      scrollXOffset = sx;
+      xMap.forEach((key, value) {
+        value.attrs.scroll = sx;
+        value.onScrollChange(sx);
+      });
+    }
+
+    if (sy.abs() > maxOffset.dy) {
+      sy = maxOffset.dy;
+    }
+    if (sy < 0) {
+      sy = 0;
+    }
+    if (sy != scrollYOffset) {
+      scrollYOffset = sy;
+      yMap.forEach((key, value) {
+        value.attrs.scroll = sy;
+        value.onScrollChange(sy);
+      });
+    }
+
     invalidate();
   }
 
@@ -225,18 +290,23 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    scaleXFactor += hScale;
-    scaleYFactor += vScale;
+    var sx = scaleXFactor + hScale;
+    if (sx < 0.001) {
+      sx = 0.001;
+    }
+    if (sx > 100) {
+      sx = 100;
+    }
+    if (sx == scaleXFactor) {
+      return;
+    }
+    scaleXFactor = sx;
     xMap.forEach((key, value) {
-      value.updateScaleFactor(scaleXFactor);
-    });
-    yMap.forEach((key, value) {
-      value.updateScaleFactor(scaleYFactor);
+      // value.attrs.scroll = sx;
+      // value.onScrollChange(sx);
     });
     invalidate();
   }
-
-
 
   @override
   List<GridChild> getGridChildList() {
@@ -286,10 +356,37 @@ class GridCoordImpl extends GridCoord {
 
   @override
   BaseScale<dynamic, num> getScale(int axisIndex, bool isXAxis) {
-    if(isXAxis){
+    if (isXAxis) {
       return getXAxis(axisIndex).scale;
     }
     return getYAxis(axisIndex).scale;
+  }
+
+  @override
+  Offset getMaxTranslation() {
+    double dx = 0;
+    xMap.forEach((key, value) {
+      List<num> rv = value.scale.range;
+      double diff = (rv[0] - rv[1]).abs().toDouble();
+      if (diff > contentBox.width) {
+        diff = diff - contentBox.width;
+        if (diff > dx) {
+          dx = diff;
+        }
+      }
+    });
+    double dy = 0;
+    yMap.forEach((key, value) {
+      List<num> rv = value.scale.range;
+      double diff = (rv[0] - rv[1]).abs().toDouble();
+      if (diff > contentBox.height) {
+        diff = diff - contentBox.height;
+        if (diff > dy) {
+          dy = diff;
+        }
+      }
+    });
+    return Offset(dx, dy);
   }
 
   XAxisImpl getXAxis(int xAxisIndex) {
