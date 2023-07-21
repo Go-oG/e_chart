@@ -1,19 +1,14 @@
 import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 
-import '../../../core/view_state.dart';
-import '../../../model/index.dart';
-import '../base_data.dart';
-import 'column_node.dart';
+import '../model/axis_index.dart';
 
 ///表示为系列数据
 class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewStateProvider {
-  final StackData<T, P> data;
+  final AxisIndex index;
+  final List<ColumnNode<T, P>> nodeList;
 
-  List<ColumnNode<T, P>> nodeList = [];
-
-  GroupNode(this.data);
+  GroupNode(this.index, this.nodeList);
 
   ///二维坐标使用
   Rect rect = Rect.zero;
@@ -23,8 +18,8 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
 
   DynamicData getX() {
     for (var list in nodeList) {
-      for (var data in list.data.data) {
-        var x = data.wrap.data?.x;
+      for (var node in list.nodeList) {
+        var x = node.data?.x;
         if (x != null) {
           return x;
         }
@@ -35,11 +30,19 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
 
   int getYAxisIndex() {
     int index = 0;
-    for (var node in nodeList) {
-      for (var d in node.nodeList) {
-        return d.data.parent.yAxisIndex;
+    for (var list in nodeList) {
+      for (var d in list.nodeList) {
+        return d.parent.yAxisIndex;
       }
     }
     return index;
   }
+
+  void mergeData() {
+    for (var col in nodeList) {
+      col.mergeData();
+    }
+  }
+
+
 }
