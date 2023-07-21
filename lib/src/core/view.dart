@@ -197,6 +197,17 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
     canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
   }
 
+  void debugDrawPath(Canvas canvas, Path path, {Color color = Colors.deepPurple, bool fill = false}) {
+    if (!kDebugMode) {
+      return;
+    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawPath(path, mPaint);
+  }
+
   @mustCallSuper
   void draw(Canvas canvas) {
     inDrawing = true;

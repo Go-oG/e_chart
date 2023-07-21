@@ -84,6 +84,36 @@ extension PathExt on Path {
     return null;
   }
 
+  ///将当前Path进行拆分
+  List<Path> split([double maxLength = 300]) {
+    List<Path> pathList = [];
+
+    PathMetrics metrics = computeMetrics();
+    for (PathMetric metric in metrics) {
+      final double length = metric.length;
+      if (metric.length <= 0) {
+        continue;
+      }
+      if (length <= maxLength) {
+        pathList.add(metric.extractPath(0, length));
+        continue;
+      }
+      double start = 0;
+      while (start < length) {
+        double end = start + maxLength;
+        if (end > length) {
+          end = length;
+        }
+        pathList.add(metric.extractPath(start, end));
+        if (end >= length) {
+          break;
+        }
+        start += maxLength;
+      }
+    }
+     return pathList;
+  }
+
   ///合并两个Path,并将其头相连，尾相连
   Path mergePath(Path p2) {
     Path path = this;

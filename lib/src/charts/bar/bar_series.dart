@@ -19,24 +19,24 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
 
   LinkageStyle linkageStyle;
 
-  Fun2<SingleNode<BarItemData, BarGroupData>, AreaStyle?>? areaStyleFun;
-  Fun2<SingleNode<BarItemData, BarGroupData>, LineStyle?>? borderStyleFun;
-  Fun2<SingleNode<BarItemData, BarGroupData>, Corner>? cornerFun;
+  Fun3<BarItemData, BarGroupData, AreaStyle?>? areaStyleFun;
+  Fun3<BarItemData, BarGroupData, LineStyle?>? borderStyleFun;
+  Fun3<BarItemData, BarGroupData, Corner>? cornerFun;
 
   ///绘制对齐
-  Fun2<SingleNode<BarItemData, BarGroupData>, Align2>? alignFun;
+  Fun3<BarItemData, BarGroupData, Align2>? alignFun;
 
   /// 背景样式
-  Fun2<GroupNode<BarItemData, BarGroupData>, AreaStyle?>? groupStyleFun;
+  Fun3<BarItemData, BarGroupData, AreaStyle?>? groupStyleFun;
 
   /// 标签转换
-  Fun2<SingleNode<BarItemData, BarGroupData>, String>? labelFun;
+  Fun3<BarItemData, BarGroupData, String>? labelFun;
 
   /// 标签样式
-  Fun2<SingleNode<BarItemData, BarGroupData>, LabelStyle>? labelStyleFun;
+  Fun3<BarItemData, BarGroupData, LabelStyle>? labelStyleFun;
 
   /// 标签对齐
-  Fun2<SingleNode<BarItemData, BarGroupData>, Position2>? labelAlignFun;
+  Fun3<BarItemData, BarGroupData, Position2>? labelAlignFun;
 
   /// 标记点、线相关的
   Fun2<BarGroupData, MarkPoint>? markPointFun;

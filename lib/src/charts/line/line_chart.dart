@@ -1,13 +1,14 @@
 import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 
 import 'layout_helper.dart';
+import 'line_node.dart';
 
 class LineView extends CoordChildView<LineSeries> with GridChild {
   final LineLayoutHelper helper = LineLayoutHelper();
 
-  ///用户优化视图绘制
   LineView(super.series);
 
   @override
@@ -51,81 +52,85 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    logPrint("$runtimeType 布局");
     helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
-  Image? image;
-
   @override
   void onDraw(Canvas canvas) {
-    if (image == null) {
-      PictureRecorder recorder = PictureRecorder();
-      Canvas canvas2 = Canvas(recorder);
-      onDrawInner(canvas2);
-      var picture = recorder.endRecording();
-      int w = helper.findGridCoord().getAxisLength(0, true).floor();
-      int h = helper.findGridCoord().getAxisLength(0, false).floor();
-      image = picture.toImageSync(w, h);
-    }
-    if (image == null) {
-      return;
-    }
     Offset offset = helper.getTranslation();
     Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
+    var lineList = helper.lineList;
+    var theme = context.config.theme.lineTheme;
     canvas.save();
     canvas.translate(offset.dx, 0);
-    canvas.drawImageRect(image!, clipRect, selfBoxBound.translate(-offset.dx, 0), mPaint);
+    each(lineList, (lineNode, p1) {
+      drawArea(canvas, lineNode, clipRect, offset, theme);
+      drawLine(canvas, lineNode, clipRect, theme);
+      if (series.symbolFun != null || theme.showSymbol) {
+        drawSymbol(canvas, lineNode, clipRect, theme);
+      }
+    });
     canvas.restore();
   }
 
-  void onDrawInner(Canvas canvas) {
-    var chartTheme = context.config.theme;
-    var theme = chartTheme.lineTheme;
-    final List<LineResult> list = helper.lineList;
-    each(list, (result, i) {
-      AreaStyle? style = helper.getAreaStyle(result.data, result.groupIndex);
-      result.areaStyle = style;
-      if (style != null) {
-        for (var path in result.areaPathList) {
-          style.drawPath(canvas, mPaint, path);
-        }
-      }
-    });
-    each(list, (result, i) {
-      var ls = helper.getLineStyle(result.data, i);
-      result.lineStyle = ls;
-      if (ls != null) {
-        for (var path in result.borderPathList) {
-          ls.drawPath(canvas, mPaint, path);
-        }
-      }
-    });
-    if (series.symbolFun != null || theme.showSymbol) {
-      SymbolDesc desc = SymbolDesc();
-      each(list, (result, p1) {
-        var cl = helper.getLineStyle(result.data, result.groupIndex)?.color;
-        if (cl != null) {
-          desc.fillColor = [cl];
-        }
-        each(result.data.data, (data, i) {
-          if (data == null || i >= result.offsetList.length) {
-            return;
-          }
-          var offset = result.offsetList[i];
-          if (offset == null) {
-            return;
-          }
-          desc.center = offset;
-          ChartSymbol? symbol = series.symbolFun?.call(data, result.data);
-          if (symbol != null) {
-            symbol.draw(canvas, mPaint, desc);
-          } else if (theme.showSymbol) {
-            theme.symbol.draw(canvas, mPaint, desc);
-          }
-        });
-      });
+  void drawLine(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
+    if (lineNode.borderList.isEmpty) {
+      return;
     }
+    var ls = helper.getLineStyle(lineNode.data, lineNode.groupIndex);
+    if (ls == null) {
+      return;
+    }
+    lineNode.lineStyle = ls;
+    for (var border in lineNode.borderList) {
+      if (!clipRect.overlaps(border.rect)) {
+        continue;
+      }
+      for (var subPath in border.subPathList) {
+        if (!clipRect.overlaps(subPath.bound)) {
+          continue;
+        }
+        ls.drawPath(canvas, mPaint, subPath.path, needSplit: false);
+      }
+    }
+  }
+
+  void drawArea(Canvas canvas, LineNode lineNode, Rect clipRect, Offset scroll, LineTheme theme) {
+    if (lineNode.areaList.isEmpty) {
+      return;
+    }
+    var style = helper.getAreaStyle(lineNode.data, lineNode.groupIndex);
+    if (style == null) {
+      return;
+    }
+    lineNode.areaStyle = style;
+
+    for (var area in lineNode.areaList) {
+      List<Path> cl = area.getAreaPath(width, height, scroll);
+      for (var p in cl) {
+        style.drawPath(canvas, mPaint, p);
+      }
+    }
+  }
+
+  void drawSymbol(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
+    SymbolDesc desc = SymbolDesc();
+    lineNode.symbolMap.forEach((key, node) {
+      if (!clipRect.contains(node.offset)) {
+        return;
+      }
+      var cl = helper.getLineStyle(node.group, node.groupIndex)?.color;
+      if (cl != null) {
+        desc.fillColor = [cl];
+      }
+      desc.center = node.offset;
+      if (series.symbolFun != null) {
+        ChartSymbol? symbol = series.symbolFun?.call(node.data, node.group);
+        symbol?.draw(canvas, mPaint, desc);
+      } else if (theme.showSymbol) {
+        theme.symbol.draw(canvas, mPaint, desc);
+      }
+    });
   }
 
   /// 绘制柱状图
@@ -151,5 +156,16 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
     return helper.getAxisExtreme(series, axisIndex, isXAxis);
+  }
+
+  @override
+  void onGridScrollChange(Offset scroll) {
+    helper.onGridScrollChange(scroll);
+  }
+
+  @override
+  void onGridScrollEnd(Offset scroll) {
+    super.onGridScrollEnd(scroll);
+    helper.onGridScrollEnd(scroll);
   }
 }

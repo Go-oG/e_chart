@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'candlestick_node.dart';
 
 /// 单个K线图
-class CandleStickView extends CoordChildView<CandleStickSeries> implements GridChild {
+class CandleStickView extends CoordChildView<CandleStickSeries> with GridChild {
   final CandlestickLayout _layout = CandlestickLayout();
 
   CandleStickView(super.series);
@@ -90,7 +90,7 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
       Color color = data.isUp ? theme.upBorderColor : theme.downBorderColor;
       style = LineStyle(color: color, width: theme.borderWidth).convert(node.status);
     }
-    style?.drawPath(canvas, mPaint, node.path, false);
+    style?.drawPath(canvas, mPaint, node.path);
   }
 
   @override
@@ -119,5 +119,9 @@ class CandleStickView extends CoordChildView<CandleStickSeries> implements GridC
   DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
     // TODO: implement getAxisMaxText
     return DynamicText.empty;
+  }
+  @override
+  void onGridScrollChange(Offset scroll) {
+
   }
 }

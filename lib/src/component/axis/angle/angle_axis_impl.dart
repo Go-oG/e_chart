@@ -223,7 +223,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       int maxCount = layoutResult.splitList.length;
       each(layoutResult.splitList, (arc, index) {
         var s = axisLine.getAxisLineStyle(index, maxCount, theme);
-        s?.drawPath(canvas, paint, arc.arcOpen(), true);
+        s?.drawPath(canvas, paint, arc.arcOpen(),drawDash: true);
       });
     }
   }

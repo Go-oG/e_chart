@@ -10,6 +10,7 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
 
   GroupNode(this.index, this.nodeList);
 
+  ///布局中使用的数据
   ///二维坐标使用
   Rect rect = Rect.zero;
 
@@ -43,6 +44,4 @@ class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSta
       col.mergeData();
     }
   }
-
-
 }

@@ -261,6 +261,9 @@ class GestureDispatcher {
     if (details.pointerCount < 2 || details.rotation == 0) {
       //滑动
       if (_dragFirst) {
+        if(_dragDetails==null){
+          return;
+        }
         _dragFirst = false;
         ScaleStartDetails fd = _dragDetails!;
         double dx = details.focalPoint.dx - fd.focalPoint.dx;
