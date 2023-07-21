@@ -1,4 +1,3 @@
-import 'package:e_chart/src/ext/path_ext.dart';
 import 'package:flutter/material.dart';
 
 import '../model/constans.dart';
@@ -10,11 +9,10 @@ class Area implements Shape {
   final List<Offset> upList;
   final List<Offset> downList;
 
-  final List<double> dashList;
   final bool upSmooth;
   final bool downSmooth;
 
-  Area(this.upList, this.downList, {this.dashList = const [], this.upSmooth = true, this.downSmooth = true}) {
+  Area(this.upList, this.downList, {this.upSmooth = true, this.downSmooth = true}) {
     if (upList.isEmpty || downList.isEmpty) {
       throw FlutterError('Point List must not empty');
     }
@@ -27,12 +25,8 @@ class Area implements Shape {
     if (_path != null) {
       return _path!;
     }
-    Path mPath = buildPath();
-    if (dashList.isNotEmpty) {
-      mPath = mPath.dashPath(dashList);
-    }
-    _path = mPath;
-    return mPath;
+    _path = buildPath();
+    return _path!;
   }
 
   Path buildPath() {

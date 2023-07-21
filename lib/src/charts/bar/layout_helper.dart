@@ -228,7 +228,10 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
   @override
   AreaStyle? buildAreaStyle(SingleNode<BarItemData, BarGroupData> node) {
     if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node);
+      if (node.data == null) {
+        return null;
+      }
+      return series.areaStyleFun?.call(node.data!, node.parent);
     }
     var chartTheme = context.config.theme;
     return AreaStyle(color: chartTheme.getColor(node.groupIndex)).convert(node.status);
@@ -237,7 +240,10 @@ class BarLayoutHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, Ba
   @override
   LineStyle? buildLineStyle(SingleNode<BarItemData, BarGroupData> node) {
     if (series.borderStyleFun != null) {
-      return series.borderStyleFun?.call(node);
+      if (node.data == null) {
+        return null;
+      }
+      return series.borderStyleFun?.call(node.data!, node.parent);
     }
     var theme = context.config.theme.barTheme;
     return theme.getBorderStyle();

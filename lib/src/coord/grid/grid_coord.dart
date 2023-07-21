@@ -260,7 +260,9 @@ class GridCoordImpl extends GridCoord {
     if (sx > 0) {
       sx = 0;
     }
+    bool hasChange = false;
     if (sx != scrollXOffset) {
+      hasChange = true;
       scrollXOffset = sx;
       xMap.forEach((key, value) {
         value.attrs.scroll = sx;
@@ -275,6 +277,7 @@ class GridCoordImpl extends GridCoord {
       sy = 0;
     }
     if (sy != scrollYOffset) {
+      hasChange = true;
       scrollYOffset = sy;
       yMap.forEach((key, value) {
         value.attrs.scroll = sy;
@@ -282,7 +285,21 @@ class GridCoordImpl extends GridCoord {
       });
     }
 
+    if (hasChange) {
+      Offset offset = Offset(scrollXOffset, scrollYOffset);
+      each(getGridChildList(), (p0, p1) {
+        p0.onGridScrollChange(offset);
+      });
+    }
+
     invalidate();
+  }
+  @override
+  void onDragEnd() {
+    Offset offset = Offset(scrollXOffset, scrollYOffset);
+    each(getGridChildList(), (p0, p1) {
+      p0.onGridScrollEnd(offset);
+    });
   }
 
   @override

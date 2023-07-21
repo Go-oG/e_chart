@@ -14,6 +14,10 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   List<SingleNode<T, P>> nodeList = [];
   Map<T, SingleNode<T, P>> nodeMap = {};
 
+  SingleNode<T, P>? findNodeByData(T? data) {
+    return nodeMap[data];
+  }
+
   @nonVirtual
   @override
   void onLayout(List<P> data, LayoutType type) {
@@ -84,13 +88,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     onLayoutEnd(this.nodeList, this.nodeMap, List.from(newNodeMap.values), newNodeMap, type);
   }
 
-  void onLayoutEnd(
-    List<SingleNode<T, P>> oldNodeList,
-    Map<T, SingleNode<T, P>> oldNodeMap,
-    List<SingleNode<T, P>> newNodeList,
-    Map<T, SingleNode<T, P>> newNodeMap,
-    LayoutType type,
-  ) {
+  void onLayoutEnd(List<SingleNode<T, P>> oldNodeList, Map<T, SingleNode<T, P>> oldNodeMap, List<SingleNode<T, P>> newNodeList,
+      Map<T, SingleNode<T, P>> newNodeMap, LayoutType type) {
     if (series.animation == null) {
       this.nodeList = newNodeList;
       this.nodeMap = newNodeMap;
@@ -101,6 +100,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0, (a, b, c) {
       return onCreateAnimatorObj(a, b, c, type);
     });
+
     Map<SingleNode<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
           key,
           MapNode(value.rect, value.position, value.arc),
@@ -234,12 +234,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   ///更新动画节点
   @nonVirtual
   void onAnimatorUpdate(
-    SingleNode<T, P> node,
-    double t,
-    Map<SingleNode<T, P>, MapNode> startMap,
-    Map<SingleNode<T, P>, MapNode> endMap,
-    LayoutType type,
-  ) {
+      SingleNode<T, P> node, double t, Map<SingleNode<T, P>, MapNode> startMap, Map<SingleNode<T, P>, MapNode> endMap, LayoutType type) {
     if (series.coordSystem == CoordSystem.polar) {
       onAnimatorUpdateForPolar(node, t, startMap, endMap, type);
     } else {
@@ -248,12 +243,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   void onAnimatorUpdateForGrid(
-    SingleNode<T, P> node,
-    double t,
-    Map<SingleNode<T, P>, MapNode> startMap,
-    Map<SingleNode<T, P>, MapNode> endMap,
-    LayoutType type,
-  ) {
+      SingleNode<T, P> node, double t, Map<SingleNode<T, P>, MapNode> startMap, Map<SingleNode<T, P>, MapNode> endMap, LayoutType type) {
     var s = startMap[node]!.rect;
     var e = endMap[node]!.rect;
     Rect r;
@@ -280,6 +270,55 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 
   void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {}
 
+  List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
+    CoordSystem system = CoordSystem.grid;
+    if (series.coordSystem == CoordSystem.polar) {
+      system = CoordSystem.polar;
+    }
+
+    List<DynamicData> dl = [];
+    if (!isXAxis) {
+      for (var d in series.helper.getExtreme(system, axisIndex)) {
+        dl.add(DynamicData(d));
+      }
+      return dl;
+    }
+
+    for (var group in series.data) {
+      if (group.data.isEmpty) {
+        continue;
+      }
+      int xIndex = group.xAxisIndex;
+      if (xIndex < 0) {
+        xIndex = 0;
+      }
+      if (isXAxis && xIndex != axisIndex) {
+        continue;
+      }
+      for (var data in group.data) {
+        if (data != null) {
+          dl.add(data.x);
+        }
+      }
+    }
+    return dl;
+  }
+
+  Offset getTranslation() {
+    if (series.coordSystem == CoordSystem.polar) {
+      return findPolarCoord().getTranslation();
+    }
+    return findGridCoord().getTranslation();
+  }
+
+  void onGridScrollChange(Offset offset){
+
+  }
+  void onGridScrollEnd(Offset offset){}
+
+
+
+  ///=======================
   SingleNode<T, P>? _oldNode;
 
   void handleHoverOrClick(Offset offset, bool click) {
@@ -363,47 +402,6 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     onHandleHoverEnd(_oldNode, null);
   }
 
-  List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
-    CoordSystem system = CoordSystem.grid;
-    if (series.coordSystem == CoordSystem.polar) {
-      system = CoordSystem.polar;
-    }
-
-    List<DynamicData> dl = [];
-    if (!isXAxis) {
-      for (var d in series.helper.getExtreme(system, axisIndex)) {
-        dl.add(DynamicData(d));
-      }
-      return dl;
-    }
-
-    for (var group in series.data) {
-      if (group.data.isEmpty) {
-        continue;
-      }
-      int xIndex = group.xAxisIndex;
-      if (xIndex < 0) {
-        xIndex = 0;
-      }
-      if (isXAxis && xIndex != axisIndex) {
-        continue;
-      }
-      for (var data in group.data) {
-        if (data != null) {
-          dl.add(data.x);
-        }
-      }
-    }
-    return dl;
-  }
-
-  Offset getTranslation() {
-    if (series.coordSystem == CoordSystem.polar) {
-      return findPolarCoord().getTranslation();
-    }
-    return findGridCoord().getTranslation();
-  }
-
   SingleNode<T, P>? findNode(Offset offset) {
     for (var ele in nodeList) {
       if (ele.rect.contains(offset)) {
@@ -416,6 +414,11 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   AreaStyle? buildAreaStyle(SingleNode<T, P> node);
 
   LineStyle? buildLineStyle(SingleNode<T, P> node);
+
+
+
+
+
 }
 
 class MapNode {

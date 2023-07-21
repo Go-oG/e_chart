@@ -63,22 +63,47 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
   }
 
   void drawGroupBk(Canvas canvas) {
+    Set<GroupNode> rectSet = {};
 
-    // final list = helper.groupNodeList;
-    // AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
-    // each(list, (group, p1) {
-    //   if (series.groupStyleFun != null) {
-    //     AreaStyle? s = series.groupStyleFun?.call(group);
-    //     s?.drawRect(canvas, mPaint, group.rect);
-    //   } else if (group.isHover) {
-    //     s2.drawRect(canvas, mPaint, group.rect);
-    //   }
-    // });
+    AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
+    Offset offset = helper.getTranslation();
+
+    each(helper.nodeList, (group, p1) {
+      var node = group.parentNode.parentNode;
+      if (rectSet.contains(node)) {
+        return;
+      }
+      if (!shouldDraw(node.rect, offset)) {
+        return;
+      }
+
+      if (group.data == null) {
+        return;
+      }
+      if (series.groupStyleFun != null) {
+        AreaStyle? s = series.groupStyleFun?.call(group.data!, group.parent);
+        s?.drawRect(canvas, mPaint, group.rect);
+        if (s != null) {
+          rectSet.add(node);
+        }
+      } else if (group.isHover) {
+        s2.drawRect(canvas, mPaint, group.rect);
+        rectSet.add(node);
+      }
+    });
   }
 
   void drawBar(Canvas canvas) {
-    for (var node in helper.nodeList) {
-      if (series.coordSystem == CoordSystem.polar) {
+    bool usePolar = series.coordSystem == CoordSystem.polar;
+    if (!usePolar) {
+      drawBarForGrid(canvas);
+      return;
+    }
+    Offset offset = helper.getTranslation();
+    canvas.save();
+    canvas.translate(offset.dx, 0);
+    each(helper.nodeList, (node, i) {
+      if (usePolar) {
         var as = helper.buildAreaStyle(node);
         node.areaStyle = as;
         Path path = node.arc.toPath(true);
@@ -86,10 +111,45 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
         var ls = helper.buildLineStyle(node);
         node.lineStyle = ls;
         ls?.drawPath(canvas, mPaint, path);
-      } else {
+        return;
+      }
+
+      if (node.data == null) {
+        return;
+      }
+      if (!shouldDraw(node.rect, offset)) {
+        return;
+      }
+
+      Corner corner = series.corner;
+      if (series.cornerFun != null) {
+        corner = series.cornerFun!.call(node.data!, node.parent);
+      }
+      var as = helper.buildAreaStyle(node);
+      node.areaStyle = as;
+      as?.drawRect(canvas, mPaint, node.rect, corner);
+      var ls = helper.buildLineStyle(node);
+      node.lineStyle = ls;
+      ls?.drawRect(canvas, mPaint, node.rect, corner);
+    });
+    canvas.restore();
+  }
+
+  void drawBarForGrid(Canvas canvas) {
+    Offset offset = helper.getTranslation();
+    canvas.save();
+    canvas.translate(offset.dx, 0);
+    for (var group in series.data) {
+      List<int> indexList = computeDrawIndexRange(offset, group);
+      for (int i = indexList[0]; i < indexList[1]; i++) {
+        var data = group.data[i];
+        var node = helper.findNodeByData(data);
+        if (node == null) {
+          return;
+        }
         Corner corner = series.corner;
         if (series.cornerFun != null) {
-          corner = series.cornerFun!.call(node);
+          corner = series.cornerFun!.call(node.data!, node.parent);
         }
         var as = helper.buildAreaStyle(node);
         node.areaStyle = as;
@@ -99,6 +159,51 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
         ls?.drawRect(canvas, mPaint, node.rect, corner);
       }
     }
+    canvas.restore();
+  }
+
+  List<int> computeDrawIndexRange(Offset scroll, BarGroupData group) {
+    bool vertical = series.direction == Direction.vertical;
+    int index = vertical ? group.xAxisIndex : group.yAxisIndex;
+    BaseScale scale = helper.findGridCoord().getScale(index, vertical);
+    num interval = scale.tickInterval;
+    int startIndex, endIndex;
+    if (vertical) {
+      startIndex = scroll.dx.abs() ~/ interval - 2;
+      startIndex = max([startIndex, 0]).toInt();
+      endIndex = (scroll.dx.abs() + width) ~/ interval + 2;
+      endIndex = min([endIndex, group.data.length]).toInt();
+    } else {
+      startIndex = scroll.dy.abs() ~/ interval - 2;
+      startIndex = max([startIndex, 0]).toInt();
+      endIndex = (scroll.dy.abs() + height) ~/ interval + 2;
+      endIndex = min([endIndex, group.data.length]).toInt();
+    }
+    return [startIndex, endIndex];
+  }
+
+  bool shouldDraw(Rect rect, Offset scroll) {
+    if (series.coordSystem == CoordSystem.polar) {
+      return true;
+    }
+
+    if (series.direction == Direction.vertical) {
+      if (rect.right + scroll.dx < 0) {
+        return false;
+      }
+      if (rect.left + scroll.dx > width) {
+        return false;
+      }
+    } else {
+      if (rect.top - scroll.dy < 0) {
+        return false;
+      }
+      if (rect.bottom - scroll.dy > height) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /// 绘制标记点

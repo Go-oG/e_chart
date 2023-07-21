@@ -7,12 +7,12 @@ import '../base_data.dart';
 import 'single_node.dart';
 
 class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
-  final GroupNode<T, P> parent;
+  final GroupNode<T, P> parentNode;
   final List<SingleNode<T, P>> nodeList;
   final bool isStack;
   final StackStrategy strategy;
 
-  ColumnNode(this.parent, this.nodeList, this.isStack, this.strategy);
+  ColumnNode(this.parentNode, this.nodeList, this.isStack, this.strategy);
 
   ///布局过程中使用
   Rect rect = Rect.zero;
