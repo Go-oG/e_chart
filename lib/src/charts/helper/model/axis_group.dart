@@ -1,4 +1,5 @@
-import 'package:e_chart/e_chart.dart';
+import '../base_data.dart';
+import '../node/group_node.dart';
 import 'axis_index.dart';
 
 ///存储数据处理结果
