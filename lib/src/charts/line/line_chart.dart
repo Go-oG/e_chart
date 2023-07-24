@@ -1,65 +1,79 @@
 import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/helper/base_stack_helper.dart';
+import 'package:e_chart/src/charts/line/helper/grid_helper.dart';
+import 'package:e_chart/src/charts/line/helper/polar_helper.dart';
 import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 
-import 'layout_helper.dart';
+import 'helper/line_helper.dart';
 import 'line_node.dart';
 
 class LineView extends CoordChildView<LineSeries> with GridChild {
-  final LineLayoutHelper helper = LineLayoutHelper();
+  late BaseStackLayoutHelper<LineItemData, LineGroupData, LineSeries> layoutHelper;
+  late LineHelper helper;
 
-  LineView(super.series);
+  LineView(super.series) {
+    if (series.coordSystem == CoordSystem.polar) {
+      var h = LinePolarHelper();
+      layoutHelper = h;
+      helper = h;
+    } else {
+      var h = LineGridHelper();
+      layoutHelper = h;
+      helper = h;
+    }
+  }
 
   @override
   void onHoverStart(Offset offset) {
-    helper.handleHoverOrClick(offset, false);
+    layoutHelper.handleHoverOrClick(offset, false);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    helper.handleHoverOrClick(offset, false);
+    layoutHelper.handleHoverOrClick(offset, false);
   }
 
   @override
   void onHoverEnd() {
-    helper.clearHover();
+    layoutHelper.clearHover();
   }
 
   @override
   void onClick(Offset offset) {
-    helper.handleHoverOrClick(offset, true);
+    layoutHelper.handleHoverOrClick(offset, true);
   }
 
   @override
   void onStart() {
     super.onStart();
-    helper.addListener(invalidate);
+    layoutHelper.addListener(invalidate);
   }
 
   @override
   void onStop() {
-    helper.removeListener(invalidate);
+    layoutHelper.removeListener(invalidate);
     super.onStop();
   }
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    helper.doMeasure(context, series, series.data, parentWidth, parentHeight);
+    layoutHelper.doMeasure(context, series, series.data, parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    Offset offset = helper.getTranslation();
+    Offset offset = layoutHelper.getTranslation();
     Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
-    var lineList = helper.lineList;
+    var lineList = helper.getLineNodeList();
     var theme = context.config.theme.lineTheme;
     canvas.save();
     canvas.translate(offset.dx, 0);
@@ -77,7 +91,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
     if (lineNode.borderList.isEmpty) {
       return;
     }
-    var ls = helper.getLineStyle(lineNode.data, lineNode.groupIndex);
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.groupIndex, null);
     if (ls == null) {
       return;
     }
@@ -99,7 +113,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
     if (lineNode.areaList.isEmpty) {
       return;
     }
-    var style = helper.getAreaStyle(lineNode.data, lineNode.groupIndex);
+    var style = layoutHelper.buildAreaStyle(null, lineNode.data, lineNode.groupIndex, null);
     if (style == null) {
       return;
     }
@@ -119,7 +133,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
       if (!clipRect.contains(node.offset)) {
         return;
       }
-      var cl = helper.getLineStyle(node.group, node.groupIndex)?.color;
+      var cl = layoutHelper.buildLineStyle(null, node.group, node.groupIndex, null)?.color;
       if (cl != null) {
         desc.fillColor = [cl];
       }
@@ -155,17 +169,17 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
 
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
-    return helper.getAxisExtreme(series, axisIndex, isXAxis);
+    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
 
   @override
   void onGridScrollChange(Offset scroll) {
-    helper.onGridScrollChange(scroll);
+    layoutHelper.onGridScrollChange(scroll);
   }
 
   @override
   void onGridScrollEnd(Offset scroll) {
     super.onGridScrollEnd(scroll);
-    helper.onGridScrollEnd(scroll);
+    layoutHelper.onGridScrollEnd(scroll);
   }
 }
