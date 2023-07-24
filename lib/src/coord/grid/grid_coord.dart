@@ -176,12 +176,11 @@ class GridCoordImpl extends GridCoord {
         if (c < 0) {
           continue;
         }
-        if (maxWidth / c < 16) {
-          maxWidth = c * 16;
+        if (maxWidth / c < 2) {
+          maxWidth = c * 2;
         }
       }
     }
-    logPrint("maxWidth:$maxWidth W:$w");
     if (maxWidth > w) {
       double k = maxWidth / w;
       for (var axis in [...topList, ...bottomList]) {
@@ -294,6 +293,7 @@ class GridCoordImpl extends GridCoord {
 
     invalidate();
   }
+
   @override
   void onDragEnd() {
     Offset offset = Offset(scrollXOffset, scrollYOffset);
@@ -318,7 +318,9 @@ class GridCoordImpl extends GridCoord {
       return;
     }
     scaleXFactor = sx;
-    xMap.forEach((key, value) {});
+    xMap.forEach((key, value) {
+    });
+
     invalidate();
   }
 

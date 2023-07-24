@@ -109,8 +109,6 @@ class Line implements Shape {
 
   ///返回平滑曲线路径(返回的路径是未封闭的)
   Path _smooth() {
-    num ratioA = Constants.smoothRatio;
-    num ratioB = Constants.smoothRatio;
     Path path = Path();
     Offset firstPoint = _pointList.first;
     path.moveTo(firstPoint.dx, firstPoint.dy);
@@ -121,17 +119,22 @@ class Line implements Shape {
     tmpList.add(_pointList.last);
     tmpList.add(_pointList.last);
     for (int i = 1; i < tmpList.length - 3; i++) {
-      List<Offset> list = _getCtrlPoint(tmpList, i, ratioA: ratioA, ratioB: ratioB);
-      Offset leftPoint = list[0];
-      Offset rightPoint = list[1];
+      Offset pre = tmpList[i - 1];
       Offset p = tmpList[i + 1];
-      path.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+      if (pre.dx == p.dx || pre.dy == p.dy) {
+        path.lineTo(p.dx, p.dy);
+      } else {
+        List<Offset> list = _getCtrlPoint(tmpList, i, ratio: Constants.smoothRatio);
+        Offset leftPoint = list[0];
+        Offset rightPoint = list[1];
+        path.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+      }
     }
     return path;
   }
 
   /// 根据已知点获取第i个控制点的坐标
-  List<Offset> _getCtrlPoint(List<Offset> pointList, int curIndex, {num ratioA = 0.2, num ratioB = 0.2, bool reverse = false}) {
+  List<Offset> _getCtrlPoint(List<Offset> pointList, int curIndex, {num ratio = 0.2, bool reverse = false}) {
     Offset cur = pointList[curIndex];
 
     int li = reverse ? curIndex + 1 : curIndex - 1;
@@ -142,10 +145,10 @@ class Line implements Shape {
     Offset right = pointList[ri];
     Offset right2 = pointList[ri2];
 
-    double ax = cur.dx + (right.dx - left.dx) * ratioA;
-    double ay = cur.dy + (right.dy - left.dy) * ratioA;
-    double bx = right.dx - (right2.dx - cur.dx) * ratioB;
-    double by = right.dy - (right2.dy - cur.dy) * ratioB;
+    double ax = cur.dx + (right.dx - left.dx) * ratio;
+    double ay = cur.dy + (right.dy - left.dy) * ratio;
+    double bx = right.dx - (right2.dx - cur.dx) * ratio;
+    double by = right.dy - (right2.dy - cur.dy) * ratio;
 
     return [Offset(ax, ay), Offset(bx, by)];
   }

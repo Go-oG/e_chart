@@ -26,21 +26,14 @@ class PathNode {
   final List<Offset> offsetList;
   late final Rect rect;
   late final Path path;
-  late final Path smoothPath;
-
   final List<SubPath> subPathList = [];
-  final List<SubPath> subSmoothPathList = [];
 
-  PathNode(this.offsetList) {
-    path = Line(offsetList, smooth: false).toPath(false);
+  PathNode(this.offsetList, bool smooth, List<num> dash) {
+    path = Line(offsetList, smooth: smooth, dashList: dash).toPath(false);
     rect = path.getBounds();
-    smoothPath = Line(offsetList, smooth: true).toPath(false);
     double maxSize = 4000;
     for (var p in path.split(maxSize)) {
       subPathList.add(SubPath(p));
-    }
-    for (var p in smoothPath.split(maxSize)) {
-      subSmoothPathList.add(SubPath(p));
     }
   }
 }
