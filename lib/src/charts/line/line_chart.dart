@@ -90,7 +90,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
         if (!clipRect.overlaps(subPath.bound)) {
           continue;
         }
-        ls.drawPath(canvas, mPaint, subPath.path, needSplit: false);
+        ls.drawPath(canvas, mPaint, subPath.path, needSplit: false, drawDash: false);
       }
     }
   }

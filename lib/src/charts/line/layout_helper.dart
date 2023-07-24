@@ -203,15 +203,17 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       }
     });
 
-    Future(() {
-      for (var result in resultList) {
-        for (var areaNode in result.areaList) {
-          areaNode.preCacheAreaPath(0, 3, width, height);
+    if(series.coordSystem!=CoordSystem.polar){
+      Future(() {
+        for (var result in resultList) {
+          for (var areaNode in result.areaList) {
+            areaNode.preCacheAreaPath(0, 3, width, height);
+          }
         }
-      }
-    }).then((value) {
-      notifyLayoutEnd();
-    });
+      }).then((value) {
+        notifyLayoutEnd();
+      });
+    }
 
     _lineList = resultList;
   }
@@ -387,12 +389,15 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     olList.removeWhere((element) => element.length < 2);
     List<PathNode> borderList = [];
     StepType? stepType = series.stepLineFun?.call(group);
+
     each(olList, (list, p1) {
+      LineStyle? style = getLineStyle(group, p1);
+      bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
       if (stepType == null) {
-        borderList.add(PathNode(list));
+        borderList.add(PathNode(list, smooth, style?.dash ?? []));
       } else {
         Line line = _buildLine(list, stepType, false, []);
-        borderList.add(PathNode(line.pointList));
+        borderList.add(PathNode(line.pointList, smooth, style?.dash ?? []));
       }
     });
     return borderList;
