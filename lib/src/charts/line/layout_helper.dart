@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 
-import '../grid/model/axis_index.dart';
+import '../helper/model/axis_index.dart';
 import 'line_node.dart';
 
 class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> {

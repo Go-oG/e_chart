@@ -9,13 +9,13 @@ export 'funnel/funnel_series.dart';
 export 'funnel/layout.dart' hide FunnelProps;
 export 'funnel/funnel_node.dart';
 
-export 'grid/base_data.dart';
-export 'grid/base_grid_layout_helper.dart';
-export 'grid/base_grid_series.dart';
-export 'grid/node/column_node.dart';
-export 'grid/data_helper.dart' hide InnerData;
-export 'grid/node/group_node.dart';
-export 'grid/node/single_node.dart';
+export 'helper/base_data.dart';
+export 'helper/base_grid_layout_helper.dart';
+export 'helper/base_grid_series.dart';
+export 'helper/node/column_node.dart';
+export 'helper/data_helper.dart' hide InnerData;
+export 'helper/node/group_node.dart';
+export 'helper/node/single_node.dart';
 
 export 'bar/bar_data.dart';
 

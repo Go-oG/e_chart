@@ -5,8 +5,13 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 
+import 'base_data.dart';
+import 'base_grid_series.dart';
 import 'model/axis_group.dart';
 import 'model/axis_index.dart';
+import 'node/column_node.dart';
+import 'node/group_node.dart';
+import 'node/single_node.dart';
 
 ///适用于极坐标系和笛卡尔坐标系的布局器
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>

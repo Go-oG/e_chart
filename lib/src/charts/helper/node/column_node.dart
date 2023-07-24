@@ -1,9 +1,8 @@
 import 'dart:ui';
-
-import 'package:e_chart/src/charts/grid/node/group_node.dart';
 import '../../../model/index.dart';
 import '../../../shape/arc.dart';
 import '../base_data.dart';
+import 'group_node.dart';
 import 'single_node.dart';
 
 class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
