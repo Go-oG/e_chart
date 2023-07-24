@@ -1,50 +1,24 @@
 import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/line/helper/line_helper.dart';
+import 'package:e_chart/src/charts/line/line_node.dart';
 
-import '../helper/model/axis_index.dart';
-import 'line_node.dart';
+import '../../helper/base_polar_layout.dart';
+import '../../helper/model/axis_index.dart';
 
-class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> {
+class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
 
   List<LineNode> get lineList => _lineList;
 
   @override
-  void onLayoutColumnForGrid(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
-    int groupInnerCount = axisGroup.getColumnCount(xIndex);
-    int columnCount = groupInnerCount;
-    if (columnCount <= 1) {
-      columnCount = 0;
-    }
-    final bool vertical = series.direction == Direction.vertical;
-    final Rect groupRect = groupNode.rect;
-    DynamicData tmpData = DynamicData(0);
-    var coord = context.findGridCoord();
-    each(groupNode.nodeList, (node, i) {
-      int yIndex = groupNode.getYAxisIndex();
-      Rect up, down;
-      if (vertical) {
-        up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
-        down = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getDown()));
-      } else {
-        up = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getUp()), yIndex, x);
-        down = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getDown()), yIndex, x);
-      }
-      double h = (up.top - down.top).abs();
-      double w = (up.left - down.left).abs();
-      Rect tmpRect;
-      if (vertical) {
-        tmpRect = Rect.fromLTWH(groupRect.left, groupRect.bottom - h, groupRect.width, h);
-      } else {
-        tmpRect = Rect.fromLTWH(groupRect.left, groupRect.top, w, groupRect.height);
-      }
-      node.rect = tmpRect;
-    });
+  List<LineNode> getLineNodeList() {
+    return _lineList;
   }
 
   @override
-  void onLayoutColumnForPolar(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -81,66 +55,9 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  void onLayoutNodeForGrid(var columnNode, AxisIndex xIndex) {
-    super.onLayoutNodeForGrid(columnNode, xIndex);
-
-    GridAxis xAxis = context.findGridCoord().getAxis(xIndex.axisIndex, true);
-    for (var node in columnNode.nodeList) {
-      if (node.data != null) {
-        if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
-          node.position = node.rect.topLeft;
-        } else {
-          node.position = node.rect.topCenter;
-        }
-      } else {
-        node.position = Offset(node.rect.center.dx, height);
-      }
-    }
-  }
-
-  @override
-  void onLayoutNodeForPolar(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
-    super.onLayoutNodeForPolar(columnNode, xIndex);
-    for (var node in columnNode.nodeList) {
-      var arc = node.arc;
-      node.position = arc.centroid();
-    }
-  }
-
-  @override
   void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
     super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
     _updateLine(nodeList);
-  }
-
-  @override
-  void onAnimatorStart(var result, LayoutType type) {
-    // _updateLine(result.curList);
-    super.onAnimatorStart(result, type);
-  }
-
-  @override
-  void onAnimatorUpdateForGrid(var node, double t, var startMap, var endMap, LayoutType type) {}
-
-  @override
-  void onAnimatorUpdateForPolar(var node, double t, var startMap, var endMap, LayoutType type) {}
-
-  @override
-  void onAnimatorUpdateEnd(var result, double t, LayoutType type) {}
-
-  @override
-  void onAnimatorEnd(var result, LayoutType type) {}
-
-  @override
-  void onGridScrollEnd(Offset offset) {
-    int start = offset.dx.abs() ~/ width;
-    start += 1;
-    int end = start + 2;
-    for (var result in _lineList) {
-      for (var areaNode in result.areaList) {
-        areaNode.preCacheAreaPath(start, end, width, height, false);
-      }
-    }
   }
 
   void _updateLine(List<SingleNode<LineItemData, LineGroupData>> list) {
@@ -203,7 +120,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
       }
     });
 
-    if(series.coordSystem!=CoordSystem.polar){
+    if (series.coordSystem != CoordSystem.polar) {
       Future(() {
         for (var result in resultList) {
           for (var areaNode in result.areaList) {
@@ -242,7 +159,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     var group = curList.first.parent;
     var index = curList.first.groupIndex;
     StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = getLineStyle(group, index);
+    LineStyle? lineStyle = buildLineStyle(null, group, index, null);
     bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
 
     List<List<Offset>> splitResult = _splitList(nodeList);
@@ -299,10 +216,10 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     var index = curList.first.groupIndex;
     var preGroup = resultList[curIndex - 1].data;
     StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = getLineStyle(group, index);
+    LineStyle? lineStyle = buildLineStyle(null, group, index, null);
     bool smooth = (stepType == null) ? (lineStyle?.smooth ?? false) : false;
     StepType? preStepType = series.stepLineFun?.call(preGroup);
-    LineStyle? preLineStyle = getLineStyle(preGroup, resultList[curIndex - 1].groupIndex);
+    LineStyle? preLineStyle = buildLineStyle(null, preGroup, resultList[curIndex - 1].groupIndex, null);
     bool preSmooth = (preStepType == null) ? (preLineStyle?.smooth ?? false) : false;
 
     List<List<List<Offset>>> splitResult = [];
@@ -391,7 +308,7 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
     StepType? stepType = series.stepLineFun?.call(group);
 
     each(olList, (list, p1) {
-      LineStyle? style = getLineStyle(group, p1);
+      LineStyle? style = buildLineStyle(null, group, p1, null);
       bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
       if (stepType == null) {
         borderList.add(PathNode(list, smooth, style?.dash ?? []));
@@ -450,47 +367,26 @@ class LineLayoutHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  AreaStyle? buildAreaStyle(SingleNode<LineItemData, LineGroupData> node) {
+  AreaStyle? buildAreaStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
     if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node.parent, node.groupIndex);
+      return series.areaStyleFun?.call(group, groupIndex);
     }
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
     if (theme.fill) {
-      Color fillColor = chartTheme.getColor(node.groupIndex).withOpacity(theme.opacity);
+      Color fillColor = chartTheme.getColor(groupIndex).withOpacity(theme.opacity);
       return AreaStyle(color: fillColor);
     }
     return null;
   }
 
   @override
-  LineStyle? buildLineStyle(SingleNode<LineItemData, LineGroupData> node) {
-    LineStyle? style = getLineStyle(node.parent, node.groupIndex);
-    if (style == null || series.lineStyleFun != null) {
-      return style;
-    }
-    return style.convert(node.status);
-  }
-
-  AreaStyle? getAreaStyle(LineGroupData group, int index) {
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(group, index);
-    }
-    var chartTheme = context.config.theme;
-    var theme = chartTheme.lineTheme;
-    if (theme.fill) {
-      Color fillColor = chartTheme.getColor(index).withOpacity(theme.opacity);
-      return AreaStyle(color: fillColor);
-    }
-    return null;
-  }
-
-  LineStyle? getLineStyle(LineGroupData group, int index) {
+  LineStyle? buildLineStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
     if (series.lineStyleFun != null) {
-      return series.lineStyleFun?.call(group, index);
+      return series.lineStyleFun?.call(group, groupIndex);
     }
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
-    return theme.getLineStyle(chartTheme, index);
+    return theme.getLineStyle(chartTheme, groupIndex).convert(status);
   }
 }

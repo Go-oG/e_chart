@@ -1,9 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'base_data.dart';
-import 'data_helper.dart';
-
 class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends ChartSeries {
   static const defaultAnimatorAttrs = AnimatorAttrs(
     curve: Curves.linear,

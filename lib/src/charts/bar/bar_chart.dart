@@ -1,14 +1,23 @@
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/bar/helper/grid_helper.dart';
+import 'package:e_chart/src/charts/bar/helper/polar_helper.dart';
 import 'package:flutter/material.dart';
-import 'layout_helper.dart';
+
+import '../helper/base_stack_helper.dart';
 
 ///BarView
 class BarView extends CoordChildView<BarSeries> with GridChild {
-  final BarLayoutHelper helper = BarLayoutHelper();
+  late BaseStackLayoutHelper<BarItemData, BarGroupData, BarSeries> helper;
 
   ///用户优化视图绘制
-  BarView(super.series);
+  BarView(super.series) {
+    if (series.coordSystem == CoordSystem.polar) {
+      helper = BarPolarHelper();
+    } else {
+      helper = BarGridHelper();
+    }
+  }
 
   @override
   void onHoverStart(Offset offset) {
@@ -104,11 +113,13 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
     canvas.translate(offset.dx, 0);
     each(helper.nodeList, (node, i) {
       if (usePolar) {
-        var as = helper.buildAreaStyle(node);
+        var as = helper.buildAreaStyle(node.data,node.parent,node.groupIndex,node.status);
         node.areaStyle = as;
         Path path = node.arc.toPath(true);
         as?.drawPath(canvas, mPaint, path);
-        var ls = helper.buildLineStyle(node);
+        logPrint("Rect：${node.rect} ${as==null}");
+
+        var ls = helper.buildLineStyle(node.data,node.parent,node.groupIndex,node.status);
         node.lineStyle = ls;
         ls?.drawPath(canvas, mPaint, path);
         return;
@@ -125,10 +136,10 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
       if (series.cornerFun != null) {
         corner = series.cornerFun!.call(node.data!, node.parent);
       }
-      var as = helper.buildAreaStyle(node);
+      var as = helper.buildAreaStyle(node.data,node.parent,node.groupIndex,node.status);
       node.areaStyle = as;
       as?.drawRect(canvas, mPaint, node.rect, corner);
-      var ls = helper.buildLineStyle(node);
+      var ls = helper.buildLineStyle(node.data,node.parent,node.groupIndex,node.status);
       node.lineStyle = ls;
       ls?.drawRect(canvas, mPaint, node.rect, corner);
     });
@@ -151,10 +162,10 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
         if (series.cornerFun != null) {
           corner = series.cornerFun!.call(node.data!, node.parent);
         }
-        var as = helper.buildAreaStyle(node);
+        var as = helper.buildAreaStyle(node.data,node.parent,node.groupIndex,node.status);
         node.areaStyle = as;
         as?.drawRect(canvas, mPaint, node.rect, corner);
-        var ls = helper.buildLineStyle(node);
+        var ls = helper.buildLineStyle(node.data,node.parent,node.groupIndex,node.status);
         node.lineStyle = ls;
         ls?.drawRect(canvas, mPaint, node.rect, corner);
       }
@@ -186,7 +197,6 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
     if (series.coordSystem == CoordSystem.polar) {
       return true;
     }
-
     if (series.direction == Direction.vertical) {
       if (rect.right + scroll.dx < 0) {
         return false;
@@ -202,7 +212,6 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
         return false;
       }
     }
-
     return true;
   }
 

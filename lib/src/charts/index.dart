@@ -10,7 +10,7 @@ export 'funnel/layout.dart' hide FunnelProps;
 export 'funnel/funnel_node.dart';
 
 export 'helper/base_data.dart';
-export 'helper/base_grid_layout_helper.dart';
+export 'helper/base_grid_layout.dart';
 export 'helper/base_grid_series.dart';
 export 'helper/node/column_node.dart';
 export 'helper/data_helper.dart' hide InnerData;
