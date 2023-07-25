@@ -45,7 +45,7 @@ class CategoryScale extends BaseScale<String, num> {
   @override
   num convertRatio(double ratio) {
     num diff = range.last - range.first;
-    return range.first+ratio*diff;
+    return range.first + ratio * diff;
   }
 
   @override
@@ -79,5 +79,18 @@ class CategoryScale extends BaseScale<String, num> {
     return CategoryScale(domain, range, categoryCenter);
   }
 
-
+  @override
+  List<String> getRangeLabel(int startIndex, int endIndex) {
+    if (startIndex < 0) {
+      startIndex = 0;
+    }
+    if (endIndex > domain.length) {
+      endIndex = domain.length;
+    }
+    List<String> dl = [];
+    for (int i = startIndex; i < endIndex; i++) {
+      dl.add(domain[i]);
+    }
+    return dl;
+  }
 }

@@ -11,6 +11,7 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
   List<P> data;
 
   ///指示图形排列方式
+  ///当为vertical时是柱状图
   Direction direction;
 
   SelectedMode selectedMode;

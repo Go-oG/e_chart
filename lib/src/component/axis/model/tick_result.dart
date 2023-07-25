@@ -3,6 +3,7 @@ import 'dart:ui';
 import '../../../model/index.dart';
 
 class TickResult {
+  final int originIndex;
   final int index;
   final int maxIndex;
   final Offset start;
@@ -10,5 +11,5 @@ class TickResult {
 
   final List<TickResult> minorTickList;
 
-  TickResult(this.index,this.maxIndex,this.start, this.end, [this.minorTickList = const []]);
+  TickResult(this.originIndex,this.index,this.maxIndex,this.start, this.end, [this.minorTickList = const []]);
 }

@@ -20,7 +20,6 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
     } else {
       e = s - maxAngle;
     }
-
     return BaseAxisImpl.toScale(axis, [s, e], dataSet);
   }
 
@@ -68,6 +67,10 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
 
     MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
     MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    int minorSN = minorTick.splitNumber;
+    if (minorSN < 0) {
+      minorSN = 0;
+    }
 
     num r = attrs.radius;
     num minorR = attrs.radius;
@@ -84,7 +87,8 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       Offset so = circlePoint(attrs.radius, angle, attrs.center);
       Offset eo = circlePoint(r, angle, attrs.center);
       List<TickResult> minorList = [];
-      tickList.add(TickResult(i,tickCount,so, eo, minorList));
+      int oi = i * minorSN;
+      tickList.add(TickResult(oi, i, tickCount, so, eo, minorList));
       if (axis.isCategoryAxis || axis.isTimeAxis || i == tickCount - 1) {
         continue;
       }
@@ -100,7 +104,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       for (int j = 1; j < minorTick.splitNumber; j++) {
         Offset minorSo = circlePoint(attrs.radius, angle + minorInterval * j, attrs.center);
         Offset minorEo = circlePoint(minorR, angle + minorInterval * j, attrs.center);
-        minorList.add(TickResult(i,tickCount,minorSo, minorEo));
+        minorList.add(TickResult(oi + j, i, tickCount, minorSo, minorEo));
       }
     }
     return tickList;
@@ -115,6 +119,8 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
     }
     final num angleInterval = dir * maxAngle / count;
     MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+
     AxisLabel axisLabel = axis.axisStyle.axisLabel;
     num r = attrs.radius;
     if (tick.inside == axisLabel.inside) {
@@ -138,11 +144,27 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       num angle = attrs.angleOffset + angleInterval * d;
       Offset offset = circlePoint(r, angle, attrs.center);
       TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle, axisLabel.inside));
-      resultList.add(LabelResult(i,labels.length,config, text));
+      var result = LabelResult(i, i, labels.length, config, text, []);
+      resultList.add(result);
       if (axis.isCategoryAxis || axis.isTimeAxis) {
         continue;
       }
-      //TODO minorTick label
+
+      int minorCount = minorTick.splitNumber;
+      if (minorCount <= 0 || scale.isCategory || scale.isTime) {
+        continue;
+      }
+
+      ///构建minorLabel
+      double minorInterval = angleInterval / (minorCount + 1);
+      for (int j = 1; j <= minorTick.splitNumber; j++) {
+        num childAngle = angle + minorInterval * j;
+        final labelOffset = circlePoint(r, childAngle, attrs.center);
+        TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(childAngle, axisLabel.inside));
+        dynamic data = scale.toData(childAngle);
+        DynamicText? text = axisLabel.formatter?.call(data);
+        result.minorLabel.add(LabelResult(i + j, i, labels.length, minorConfig, text));
+      }
     }
 
     return resultList;
@@ -208,9 +230,6 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
   @override
   void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     var axisLine = axisStyle.axisLine;
     if (!axisLine.show) {
       return;
@@ -223,7 +242,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       int maxCount = layoutResult.splitList.length;
       each(layoutResult.splitList, (arc, index) {
         var s = axisLine.getAxisLineStyle(index, maxCount, theme);
-        s?.drawPath(canvas, paint, arc.arcOpen(),drawDash: true);
+        s?.drawPath(canvas, paint, arc.arcOpen(), drawDash: true);
       });
     }
   }
@@ -231,9 +250,6 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
     var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     var theme = getAxisTheme();
     var axisTick = axisStyle.axisTick;
     if (!axisTick.show) {
@@ -246,10 +262,18 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       bool b1 = (tick != null && tick.show);
       bool b2 = (minorTick != null && minorTick.show);
       if (b1) {
-        tick.lineStyle.drawPolygon(canvas, paint, [result.start, result.end]);
+        int interval = tick.interval;
+        if (!(interval > 0 && result.originIndex != 0 && (result.originIndex % interval) == 0)) {
+          tick.lineStyle.drawPolygon(canvas, paint, [result.start, result.end]);
+        }
       }
+
       if (b2) {
+        int interval = minorTick.interval;
         each(result.minorTickList, (mr, j) {
+          if (interval > 0 && mr.originIndex != 0 && (mr.originIndex % interval) == 0) {
+            return;
+          }
           minorTick.lineStyle.drawPolygon(canvas, paint, [mr.start, mr.end]);
         });
       }

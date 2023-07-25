@@ -78,17 +78,13 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     if (!axisStyle.show) {
       return;
     }
-    Offset offset = splitScrollOffset(this.coord.getTranslation());
+    Offset offset = this.coord.getTranslation();
     onDrawAxisSplitArea(canvas, paint, offset);
     onDrawAxisSplitLine(canvas, paint, offset);
     onDrawAxisTick(canvas, paint, offset);
     onDrawAxisLabel(canvas, paint, offset);
     onDrawAxisLine(canvas, paint, offset);
     onDrawAxisName(canvas, paint);
-  }
-
-  Offset splitScrollOffset(Offset scroll) {
-    return scroll;
   }
 
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {}
@@ -134,6 +130,41 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       }));
     }
     return labels;
+  }
+
+  List<DynamicText> obtainLabel2(int startIndex, int endIndex) {
+    List<DynamicText> rl = [];
+    List<dynamic> dl = scale.getRangeLabel(startIndex, endIndex);
+    var formatter = axis.axisStyle.axisLabel.formatter;
+    for (var data in dl) {
+      if (data is DynamicText) {
+        rl.add(data);
+        continue;
+      }
+      if (data is DynamicData) {
+        data = data.data;
+      }
+      if (data is String) {
+        rl.add(DynamicText(data));
+        continue;
+      }
+      if (data is DateTime) {
+        if (formatter != null) {
+          rl.add(formatter.call(data.millisecondsSinceEpoch));
+        } else {
+          rl.add(DynamicText.fromString(defaultTimeFormat(axis.timeType, data)));
+        }
+        continue;
+      }
+      if (data is num) {
+        if (formatter != null) {
+          rl.add(formatter.call(data));
+        } else {
+          rl.add(DynamicText.fromString(formatNumber(data)));
+        }
+      }
+    }
+    return rl;
   }
 
   AxisTheme getAxisTheme() {

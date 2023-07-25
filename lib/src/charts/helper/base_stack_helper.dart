@@ -13,6 +13,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
   List<SingleNode<T, P>> nodeList = [];
   Map<T, SingleNode<T, P>> nodeMap = {};
 
+
   @override
   void onLayout(List<P> data, LayoutType type) {
     AxisGroup<T, P> axisGroup = series.helper.result;

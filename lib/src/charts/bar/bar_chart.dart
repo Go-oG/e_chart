@@ -103,73 +103,59 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
   }
 
   void drawBar(Canvas canvas) {
-    bool usePolar = series.coordSystem == CoordSystem.polar;
-    if (!usePolar) {
+    if (series.coordSystem != CoordSystem.polar) {
       drawBarForGrid(canvas);
       return;
     }
+
     Offset offset = helper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, 0);
     each(helper.nodeList, (node, i) {
-      if (usePolar) {
-        var as = helper.buildAreaStyle(node.data,node.parent,node.groupIndex,node.status);
-        node.areaStyle = as;
-        Path path = node.arc.toPath(true);
-        as?.drawPath(canvas, mPaint, path);
-        logPrint("Rect：${node.rect} ${as==null}");
-
-        var ls = helper.buildLineStyle(node.data,node.parent,node.groupIndex,node.status);
-        node.lineStyle = ls;
-        ls?.drawPath(canvas, mPaint, path);
-        return;
-      }
-
-      if (node.data == null) {
-        return;
-      }
-      if (!shouldDraw(node.rect, offset)) {
-        return;
-      }
-
-      Corner corner = series.corner;
-      if (series.cornerFun != null) {
-        corner = series.cornerFun!.call(node.data!, node.parent);
-      }
-      var as = helper.buildAreaStyle(node.data,node.parent,node.groupIndex,node.status);
+      var as = helper.buildAreaStyle(node.data, node.parent, node.groupIndex, node.status);
       node.areaStyle = as;
-      as?.drawRect(canvas, mPaint, node.rect, corner);
-      var ls = helper.buildLineStyle(node.data,node.parent,node.groupIndex,node.status);
+      Path path = node.arc.toPath(true);
+      as?.drawPath(canvas, mPaint, path);
+      var ls = helper.buildLineStyle(node.data, node.parent, node.groupIndex, node.status);
       node.lineStyle = ls;
-      ls?.drawRect(canvas, mPaint, node.rect, corner);
+      ls?.drawPath(canvas, mPaint, path);
+      return;
     });
     canvas.restore();
   }
 
   void drawBarForGrid(Canvas canvas) {
     Offset offset = helper.getTranslation();
+    int startIndex, endIndex;
+    bool vertical = series.direction == Direction.vertical;
+    double size = vertical ? width : height;
+    double scroll = vertical ? offset.dx : offset.dy;
+    scroll = scroll.abs();
+    startIndex = scroll ~/ size;
+    endIndex = (scroll + size) ~/ size;
+    endIndex += 1;
+    List<int> pages = List.generate(endIndex - startIndex, (index) => index + startIndex);
+    var list = (helper as BarGridHelper).getPageData(pages);
     canvas.save();
     canvas.translate(offset.dx, 0);
-    for (var group in series.data) {
-      List<int> indexList = computeDrawIndexRange(offset, group);
-      for (int i = indexList[0]; i < indexList[1]; i++) {
-        var data = group.data[i];
-        var node = helper.findNodeByData(data);
-        if (node == null) {
-          return;
-        }
-        Corner corner = series.corner;
-        if (series.cornerFun != null) {
-          corner = series.cornerFun!.call(node.data!, node.parent);
-        }
-        var as = helper.buildAreaStyle(node.data,node.parent,node.groupIndex,node.status);
-        node.areaStyle = as;
-        as?.drawRect(canvas, mPaint, node.rect, corner);
-        var ls = helper.buildLineStyle(node.data,node.parent,node.groupIndex,node.status);
-        node.lineStyle = ls;
-        ls?.drawRect(canvas, mPaint, node.rect, corner);
+    each(list, (node, p1) {
+      if (node.data == null || node.rect.width == 0 || node.rect.height == 0) {
+        return;
       }
-    }
+      var data = node.data!;
+      var group = node.parent;
+      Corner corner = series.corner;
+      if (series.cornerFun != null) {
+        corner = series.cornerFun!.call(data, group);
+      }
+      var as = helper.buildAreaStyle(data, group, node.groupIndex, node.status);
+      node.areaStyle = as;
+      as?.drawRect(canvas, mPaint, node.rect, corner);
+      var ls = helper.buildLineStyle(data, group, node.groupIndex, node.status);
+      node.lineStyle = ls;
+      ls?.drawRect(canvas, mPaint, node.rect, corner);
+    });
+
     canvas.restore();
   }
 

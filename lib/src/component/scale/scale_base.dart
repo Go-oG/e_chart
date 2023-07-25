@@ -35,6 +35,7 @@ abstract class BaseScale<D, R extends num> {
   int get tickCount;
 
   List<D> get labels;
+  List<D> getRangeLabel(int startIndex,int endIndex);
 
   ///Tick之间的距离间距
   num get tickInterval {

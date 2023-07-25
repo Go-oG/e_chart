@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
@@ -6,6 +5,22 @@ import 'package:flutter/cupertino.dart';
 import '../../helper/model/axis_index.dart';
 
 class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
+  ///根据给定的页码编号，返回对应的数据
+  Map<int, List<SingleNode<BarItemData, BarGroupData>>> _pageMap = {};
+
+  List<SingleNode<BarItemData, BarGroupData>> getPageData(List<int> pages) {
+    List<SingleNode<BarItemData, BarGroupData>> list = [];
+    final map = _pageMap;
+    for (int page in pages) {
+      var tmp = map[page];
+      if (tmp == null || tmp.isEmpty) {
+        continue;
+      }
+      list.addAll(tmp);
+    }
+    return list;
+  }
+
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
@@ -94,6 +109,73 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
       }
       node.rect = tmpRect;
     });
+  }
+
+  @override
+  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
+    if (newNodeList.length <= thresholdSize) {
+      _pageMap = splitDataByPage(newNodeList, 0, newNodeList.length);
+    } else {
+      _splitData(newNodeList);
+    }
+    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+  }
+
+  final int thresholdSize = 2000;
+
+  void _splitData(List<SingleNode<BarItemData, BarGroupData>> list) async {
+    Map<int, List<SingleNode<BarItemData, BarGroupData>>> pageMap = {};
+    int l = list.length;
+    int c = l ~/ thresholdSize;
+    if (c % thresholdSize != 0) {
+      c++;
+    }
+    List<Future<Map<int, List<SingleNode<BarItemData, BarGroupData>>>>> futureList = [];
+    for (int i = 0; i < c; i++) {
+      int s = i * thresholdSize;
+      int e = (i + 1) * thresholdSize;
+      if (e > l) {
+        e = l;
+      }
+      futureList.add(Future(() {
+        return splitDataByPage(list, s, e);
+      }));
+    }
+    for (var fu in futureList) {
+      var map = await fu;
+      map.forEach((key, value) {
+        if (!pageMap.containsKey(key)) {
+          pageMap[key] = value;
+        } else {
+          List<SingleNode<BarItemData, BarGroupData>> tmpList = pageMap[key]!;
+          tmpList.addAll(value);
+        }
+      });
+    }
+    _pageMap = pageMap;
+    notifyLayoutUpdate();
+  }
+
+  Map<int, List<SingleNode<BarItemData, BarGroupData>>> splitDataByPage(
+    List<SingleNode<BarItemData, BarGroupData>> list,
+    int start,
+    int end,
+  ) {
+    Map<int, List<SingleNode<BarItemData, BarGroupData>>> resultMap = {};
+    double w = width;
+    double h = height;
+    bool vertical = series.direction == Direction.vertical;
+    double size = vertical ? w : h;
+    for (int i = start; i < end; i++) {
+      var node = list[i];
+      Rect rect = node.rect;
+      double s = vertical ? rect.left : rect.top;
+      int index = s ~/ size;
+      List<SingleNode<BarItemData, BarGroupData>> tmpList = resultMap[index] ?? [];
+      resultMap[index] = tmpList;
+      tmpList.add(node);
+    }
+    return resultMap;
   }
 
   @override

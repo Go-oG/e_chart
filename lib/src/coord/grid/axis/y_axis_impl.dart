@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class YAxisImpl extends XAxisImpl {
-  YAxisImpl(super.context, super.coord, super.axis, {super.axisIndex});
+  YAxisImpl(super.direction,super.context, super.coord, super.axis, {super.axisIndex});
 
   @override
   void doMeasure(double parentWidth, double parentHeight) {
@@ -45,18 +45,6 @@ class YAxisImpl extends XAxisImpl {
   }
 
   @override
-  LineAxisLayoutResult onLayout(LineAxisAttrs attrs, BaseScale<dynamic, num> scale) {
-    Rect rect = coord.contentBox;
-    Offset offset = splitScrollOffset(coord.getTranslation());
-    if (offset.dy.abs() != 0) {
-      clipRect = Rect.fromLTWH(0, rect.top, rect.width, rect.height);
-    } else {
-      clipRect = null;
-    }
-    return super.onLayout(attrs, scale);
-  }
-
-  @override
   List<Offset> dataToPoint(DynamicData data) {
     List<num> nl = scale.toRange(data.data);
     List<Offset> ol = [];
@@ -88,8 +76,4 @@ class YAxisImpl extends XAxisImpl {
     return [startIndex, endIndex];
   }
 
-  @override
-  Offset splitScrollOffset(Offset scroll) {
-    return Offset(0, scroll.dy);
-  }
 }

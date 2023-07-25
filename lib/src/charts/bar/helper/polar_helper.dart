@@ -6,6 +6,14 @@ import '../../helper/base_polar_layout.dart';
 import '../../helper/model/axis_index.dart';
 
 class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, BarSeries> {
+
+
+  ///根据给定的页码编号，返回对应的数据
+  List<SingleNode<BarItemData, BarGroupData>> getPageData(List<int> pages){
+    return [];
+  }
+
+
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
