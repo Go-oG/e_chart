@@ -325,11 +325,11 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onScaleUpdate(Offset offset, double rotation, double scale, double hScale, double vScale, bool doubleClick) {
+  void onScaleUpdate(Offset offset, double rotation, double scale, bool doubleClick) {
     if (!contentBox.contains(offset)) {
       return;
     }
-    var sx = scaleXFactor + hScale;
+    var sx = scaleXFactor + scale;
     if (sx < 0.001) {
       sx = 0.001;
     }

@@ -1,8 +1,9 @@
-import 'dart:math';
 import 'package:flutter/gestures.dart';
-import '../model/enums/direction.dart';
+import 'package:gesture_x_detector/gesture_x_detector.dart';
+import 'package:gesture_x_detector/gesture_x_detector.dart' as x;
 import 'chart_gesture.dart';
 import 'gesture_event.dart';
+import 'gesture_event.dart' as ge;
 
 ///手势分发器
 ///用于处理相关的手势分发
@@ -21,8 +22,6 @@ class GestureDispatcher {
 
   void dispose() {
     _hoverNodeSet.clear();
-    _tapNodeSet.clear();
-    _doubleTapNodeSet.clear();
     _longPressNodeSet.clear();
     _dragNodeList.clear();
     _scaleNodeList.clear();
@@ -36,7 +35,6 @@ class GestureDispatcher {
   final Set<ChartGesture> _hoverNodeSet = {};
 
   void onHoverStart(PointerEnterEvent event) {
-    // debugPrint('onHoverStart');
     _hoverNodeSet.clear();
     NormalEvent motionEvent = NormalEvent(event.localPosition);
     for (var ele in _gestureNodeSet) {
@@ -78,92 +76,37 @@ class GestureDispatcher {
   }
 
   ///=========点击事件==========================
-  final Set<ChartGesture> _tapNodeSet = {};
-
-  void onTapDown(TapDownDetails details) {
-    _tapNodeSet.clear();
-    NormalEvent motionEvent = NormalEvent(details.localPosition);
+  void onTap(TapEvent event) {
+    NormalEvent motionEvent = NormalEvent(event.localPos);
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
         continue;
       }
-      _tapNodeSet.add(ele);
-      ele.clickDown?.call(motionEvent);
-    }
-  }
-
-  void onTapUp(TapUpDetails details) {
-    Set<ChartGesture> removeSet = {};
-    NormalEvent motionEvent = NormalEvent(details.localPosition);
-    for (var ele in _tapNodeSet) {
-      if (!ele.isInArea(motionEvent.globalPosition)) {
-        removeSet.add(ele);
-        continue;
-      }
-
-      ele.clickUp?.call(motionEvent);
       ele.click?.call(motionEvent);
     }
-    _tapNodeSet.removeAll(removeSet);
-    for (var element in removeSet) {
-      element.clickCancel?.call();
-    }
-    _tapNodeSet.clear();
-  }
-
-  void onTapCancel() {
-    for (var element in _tapNodeSet) {
-      element.clickCancel?.call();
-    }
-    _tapNodeSet.clear();
   }
 
   ///=========双击事件==========================
-  final Set<ChartGesture> _doubleTapNodeSet = {};
 
-  void onDoubleTapDown(TapDownDetails details) {
-    _doubleTapNodeSet.clear();
-    NormalEvent motionEvent = NormalEvent(details.localPosition);
+  void onDoubleTap(TapEvent event) {
+    NormalEvent motionEvent = NormalEvent(event.localPos);
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(motionEvent.globalPosition)) {
         continue;
       }
-      _doubleTapNodeSet.add(ele);
-      ele.doubleClickDown?.call(motionEvent);
-    }
-  }
-
-  void onDoubleTapUp(TapUpDetails details) {
-    NormalEvent motionEvent = NormalEvent(details.localPosition);
-    Set<ChartGesture> removeSet = {};
-    for (var ele in _doubleTapNodeSet) {
-      if (!ele.isInArea(motionEvent.globalPosition)) {
-        removeSet.add(ele);
-        continue;
-      }
-      ele.doubleClickUp?.call(motionEvent);
       ele.doubleClick?.call(motionEvent);
-    }
-    _doubleTapNodeSet.removeAll(removeSet);
-    for (var element in removeSet) {
-      element.doubleClickCancel?.call();
-    }
-  }
-
-  void onDoubleTapCancel() {
-    for (var element in _doubleTapNodeSet) {
-      element.doubleClickCancel?.call();
     }
   }
 
   ///=========长按事件==========================
+
   final Set<ChartGesture> _longPressNodeSet = {};
 
-  void onLongPressStart(LongPressStartDetails details) {
+  void onLongPressStart(TapEvent event) {
     _longPressNodeSet.clear();
-    NormalEvent motionEvent = NormalEvent(details.localPosition);
+    NormalEvent motionEvent = NormalEvent(event.localPos);
     for (var ele in _gestureNodeSet) {
-      if (!ele.isInArea(details.localPosition)) {
+      if (!ele.isInArea(event.localPos)) {
         continue;
       }
       _longPressNodeSet.add(ele);
@@ -171,83 +114,74 @@ class GestureDispatcher {
     }
   }
 
-  void onLongPressMove(LongPressMoveUpdateDetails details) {
-    // debugPrint('onLongPressMove');
-    LongPressMoveEvent event = LongPressMoveEvent(
-      details.localPosition,
-      details.localOffsetFromOrigin,
-      details.offsetFromOrigin,
-    );
+  void onLongPressMove(MoveEvent event) {
+    LongPressMoveEvent le = LongPressMoveEvent(event.localPos, event.localDelta, event.delta);
     Set<ChartGesture> removeSet = {};
     for (var ele in _longPressNodeSet) {
-      if (!ele.isInArea(event.globalPosition)) {
+      if (!ele.isInArea(le.globalPosition)) {
         removeSet.add(ele);
         continue;
       }
       if (ele.longPressMove == null) {
         continue;
       }
-      ele.longPressMove?.call(event);
+      ele.longPressMove?.call(le);
     }
     _longPressNodeSet.removeAll(removeSet);
     for (var element in removeSet) {
-      element.longPressCancel?.call();
+      element.longPressEnd?.call();
     }
   }
 
-  void onLongPressEnd(LongPressEndDetails details) {
-    NormalEvent event = NormalEvent(details.localPosition);
-    Set<ChartGesture> removeSet = {};
+  void onLongPressEnd() {
     for (var ele in _longPressNodeSet) {
-      if (!ele.isInArea(event.globalPosition)) {
-        removeSet.add(ele);
-        continue;
-      }
-      if (ele.longPressEnd == null) {
-        continue;
-      }
-      ele.longPressEnd?.call(event);
-    }
-    _longPressNodeSet.removeAll(removeSet);
-    for (var element in removeSet) {
-      element.longPressCancel?.call();
-    }
-  }
-
-  void onLongPressCancel() {
-    // debugPrint('onLongPressCancel');
-    for (var element in _longPressNodeSet) {
-      element.longPressCancel?.call();
+      ele.longPressEnd?.call();
     }
     _longPressNodeSet.clear();
   }
 
-  ///=========缩放or 拖拽(需要自行判断)==========================
+  ///=========拖拽==========================
   final Set<ChartGesture> _dragNodeList = {};
-  ScaleStartDetails? _dragDetails;
-  Direction _dragDirection = Direction.horizontal;
-  bool _dragFirst = true;
 
-  final Set<ChartGesture> _scaleNodeList = {};
-  bool _isScale = false;
-
-  void onScaleStart(ScaleStartDetails details) {
-    NormalEvent event = NormalEvent(details.localFocalPoint);
-    if (details.pointerCount < 2) {
-      _dragDetails = details;
-
-      /// 滑动
-      for (var ele in _gestureNodeSet) {
-        if (!ele.isInArea(details.focalPoint)) {
-          continue;
-        }
-        _dragNodeList.add(ele);
+  void onMoveStart(MoveEvent event) {
+    NormalEvent ne = NormalEvent(event.localPos);
+    for (var ele in _gestureNodeSet) {
+      if (!ele.isInArea(event.localPos)) {
+        continue;
       }
-      return;
+      _dragNodeList.add(ele);
+      ele.dragStart?.call(ne);
     }
+  }
 
-    ///缩放
-    _isScale = true;
+  void onMoveUpdate(MoveEvent event) {
+    NormalEvent ne = NormalEvent(event.localPos);
+    Set<ChartGesture> removeList = {};
+    for (var ele in _dragNodeList) {
+      if (!ele.isInArea(event.localPos)) {
+        removeList.add(ele);
+        ele.dragEnd?.call();
+      } else {
+        ele.dragMove?.call(ne);
+      }
+    }
+    if (removeList.isNotEmpty) {
+      _dragNodeList.removeAll(removeList);
+    }
+  }
+
+  void onMoveEnd(MoveEvent event) {
+    for (var ele in _dragNodeList) {
+      ele.dragEnd?.call();
+    }
+    _dragNodeList.clear();
+  }
+
+  ///=========缩放============================
+  final Set<ChartGesture> _scaleNodeList = {};
+
+  void onScaleStart(Offset offset) {
+    NormalEvent event = NormalEvent(offset);
     for (var ele in _gestureNodeSet) {
       if (!ele.isInArea(event.globalPosition)) {
         continue;
@@ -257,73 +191,15 @@ class GestureDispatcher {
     }
   }
 
-  void onScaleUpdate(ScaleUpdateDetails details) {
-    if (details.pointerCount < 2 || details.rotation == 0) {
-      //滑动
-      if (_dragFirst) {
-        if(_dragDetails==null){
-          return;
-        }
-        _dragFirst = false;
-        ScaleStartDetails fd = _dragDetails!;
-        double dx = details.focalPoint.dx - fd.focalPoint.dx;
-        double dy = details.focalPoint.dy - fd.focalPoint.dy;
-        double at = (atan2(dy, dx) * 180 / pi).abs();
-        NormalEvent eventH = NormalEvent(details.localFocalPoint);
-        NormalEvent eventV = NormalEvent(details.localFocalPoint);
-        _dragDirection = at < 45 ? Direction.horizontal : Direction.vertical;
-        Set<ChartGesture> removeList = {};
-        for (var ele in _dragNodeList) {
-          if (!ele.isInArea(details.focalPoint)) {
-            removeList.add(ele);
-          } else {
-            if (_dragDirection == Direction.horizontal) {
-              ele.horizontalDragStart?.call(eventH);
-            } else {
-              ele.verticalDragStart?.call(eventV);
-            }
-          }
-        }
-        if (removeList.isNotEmpty) {
-          _dragNodeList.removeAll(removeList);
-        }
-      } else {
-        NormalEvent eventH = NormalEvent(details.localFocalPoint);
-        NormalEvent eventV = NormalEvent(details.localFocalPoint,);
-        Set<ChartGesture> removeList = {};
-        for (var ele in _dragNodeList) {
-          if (!ele.isInArea(details.focalPoint)) {
-            removeList.add(ele);
-            if (_dragDirection == Direction.horizontal) {
-              ele.horizontalDragCancel?.call();
-            } else {
-              ele.verticalDragCancel?.call();
-            }
-          } else {
-            if (_dragDirection == Direction.horizontal) {
-              ele.horizontalDragMove?.call(eventH);
-            } else {
-              ele.verticalDragMove?.call(eventV);
-            }
-          }
-        }
-        if (removeList.isNotEmpty) {
-          _dragNodeList.removeAll(removeList);
-        }
-      }
-      return;
-    }
-
-    ///缩放
+  void onScaleUpdate(x.ScaleEvent event) {
     Set<ChartGesture> removeSet = {};
-    ScaleEvent motionEvent =
-        ScaleEvent(details.scale, details.horizontalScale, details.verticalScale, details.rotation, details.localFocalPoint);
+    ge.ScaleEvent se = ge.ScaleEvent(event.focalPoint, event.scale, event.rotationAngle);
     for (var ele in _scaleNodeList) {
-      if (!ele.isInArea(motionEvent.globalPosition)) {
+      if (!ele.isInArea(event.focalPoint)) {
         removeSet.add(ele);
-        ele.scaleCancel?.call();
+        ele.scaleEnd?.call();
       } else {
-        ele.scaleUpdate?.call(motionEvent);
+        ele.scaleUpdate?.call(se);
       }
     }
     if (removeSet.isNotEmpty) {
@@ -331,29 +207,9 @@ class GestureDispatcher {
     }
   }
 
-  void onScaleEnd(ScaleEndDetails details) {
-    if (!_isScale) {
-      for (var ele in _dragNodeList) {
-        if (_dragDirection == Direction.horizontal) {
-          ele.horizontalDragEnd?.call(VelocityEvent(details.velocity, 1));
-        } else {
-          ele.verticalDragEnd?.call(VelocityEvent(details.velocity, 1));
-        }
-      }
-      _dragNodeList.clear();
-      _dragFirst = true;
-      _dragDetails = null;
-      _isScale = false;
-      return;
-    }
-
-    VelocityEvent motionEvent = VelocityEvent(details.velocity, details.pointerCount);
+  void onScaleEnd() {
     for (var ele in _scaleNodeList) {
-      ele.scaleEnd?.call(motionEvent);
+      ele.scaleEnd?.call();
     }
-    _scaleNodeList.clear();
-    _dragFirst = true;
-    _dragDetails = null;
-    _isScale = false;
   }
 }

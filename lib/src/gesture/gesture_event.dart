@@ -4,6 +4,7 @@ class MotionEvent {}
 
 class NormalEvent extends MotionEvent {
   final Offset globalPosition;
+
   NormalEvent(this.globalPosition);
 }
 
@@ -19,24 +20,10 @@ class LongPressMoveEvent extends MotionEvent {
   );
 }
 
-class ScaleEvent extends NormalEvent {
+class ScaleEvent extends MotionEvent {
+  final Offset focalPoint;
   final double scale;
-  final double horizontalScale;
-  final double verticalScale;
   final double rotation;
 
-  ScaleEvent(
-    this.scale,
-    this.horizontalScale,
-    this.verticalScale,
-    this.rotation,
-    super.globalPosition,
-  );
-}
-
-class VelocityEvent extends MotionEvent {
-  final Velocity velocity;
-  final int pointCount;
-
-  VelocityEvent(this.velocity, this.pointCount);
+  ScaleEvent(this.focalPoint, this.scale, this.rotation);
 }

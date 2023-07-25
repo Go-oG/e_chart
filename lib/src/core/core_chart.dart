@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:gesture_x_detector/gesture_x_detector.dart';
+import 'package:gesture_x_detector/gesture_x_detector.dart' as x;
 import 'render/base_render.dart';
 import 'render/default_render.dart';
 
@@ -71,51 +73,68 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   Widget _buildPainter(ChartConfig config) {
     GestureDispatcher dispatcher = render.context.gestureDispatcher;
-    void Function(LongPressStartDetails)? lps;
-    void Function(LongPressMoveUpdateDetails)? lpm;
-    void Function(LongPressEndDetails)? lpe;
-    VoidCallback? lpc;
+
+    void Function(TapEvent)? lps;
+    void Function(MoveEvent)? lpm;
+    VoidCallback? lpe;
     if (config.dragType == DragType.longPress) {
       lps = dispatcher.onLongPressStart;
       lpm = dispatcher.onLongPressMove;
-      lpe = dispatcher.onLongPressEnd;
-      lpc = dispatcher.onLongPressCancel;
+      lpe=dispatcher.onLongPressEnd;
     }
-    void Function(TapDownDetails)? dtd;
-    VoidCallback? dtc;
+
+    void Function(MoveEvent)? moveStart;
+    void Function(MoveEvent)? moveEnd;
+    void Function(MoveEvent)? moveUpdate;
+    if (config.dragType == DragType.drag) {
+      moveStart=dispatcher.onMoveStart;
+      moveUpdate=dispatcher.onMoveUpdate;
+      moveEnd=dispatcher.onMoveEnd;
+    }
+
+    ///doubleTap
+    void Function(TapEvent)? dt;
     if (config.scaleType == ScaleType.doubleTap) {
-      dtd = dispatcher.onDoubleTapDown;
-      dtc = dispatcher.onDoubleTapCancel;
+      dt = dispatcher.onDoubleTap;
     }
-    void Function(ScaleStartDetails)? ss;
-    void Function(ScaleUpdateDetails)? su;
-    void Function(ScaleEndDetails)? se;
-    if (config.dragType == DragType.drag || config.scaleType == ScaleType.scale) {
-      ss = dispatcher.onScaleStart;
-      su = dispatcher.onScaleUpdate;
-      se = dispatcher.onScaleEnd;
+    void Function(Offset)? scaleStart;
+    void Function(x.ScaleEvent)? scaleUpdate;
+    VoidCallback? scaleEnd;
+    if(config.scaleType==ScaleType.scale){
+      scaleStart=dispatcher.onScaleStart;
+      scaleUpdate=dispatcher.onScaleUpdate;
+      scaleEnd=dispatcher.onScaleEnd;
     }
+
     MediaQueryData data = MediaQuery.of(context);
     render.context.devicePixelRatio = data.devicePixelRatio;
-    Widget ges = GestureDetector(
+    Widget ges = XGestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTapDown: dispatcher.onTapDown,
-      onTapUp: dispatcher.onTapUp,
-      onTapCancel: dispatcher.onTapCancel,
-      onDoubleTapDown: dtd,
-      onDoubleTapCancel: dtc,
-      onLongPressStart: lps,
-      onLongPressMoveUpdate: lpm,
+      bypassMoveEventAfterLongPress: lps!=null,
+      doubleTapTimeConsider: 280,
+      longPressTimeConsider: 300,
+      onTap: dispatcher.onTap,
+      onDoubleTap: dt,
+      onLongPress: lps,
+      onLongPressMove:lpm ,
       onLongPressEnd: lpe,
-      onLongPressCancel: lpc,
-      onScaleStart: ss,
-      onScaleUpdate: su,
-      onScaleEnd: se,
+
+      onMoveStart: moveStart,
+      onMoveUpdate: moveUpdate,
+      onMoveEnd: moveEnd,
+
+      onScaleStart:scaleStart ,
+      onScaleUpdate:scaleUpdate ,
+      onScaleEnd:scaleEnd,
+
+      // onScrollEvent: ,
+
       child: CustomPaint(
         painter: render,
         child: Container(),
       ),
     );
+
     bool isPhone = Platform.isIOS || Platform.isAndroid;
 
     if (isPhone) {
