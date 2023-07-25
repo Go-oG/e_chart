@@ -9,38 +9,24 @@ typedef EventCallback<T> = void Function(T);
 
 abstract class ChartGesture {
   EventCallback<NormalEvent>? click;
-  EventCallback<NormalEvent>? clickDown;
-  EventCallback<NormalEvent>? clickUp;
-  VoidCallback? clickCancel;
 
   EventCallback<NormalEvent>? doubleClick;
-  EventCallback<NormalEvent>? doubleClickDown;
-  EventCallback<NormalEvent>? doubleClickUp;
-  VoidCallback? doubleClickCancel;
 
   EventCallback<NormalEvent>? longPressStart;
   EventCallback<LongPressMoveEvent>? longPressMove;
-  EventCallback<NormalEvent>? longPressEnd;
-  VoidCallback? longPressCancel;
+  VoidCallback? longPressEnd;
 
   EventCallback<NormalEvent>? hoverStart;
   EventCallback<NormalEvent>? hoverMove;
   EventCallback<NormalEvent>? hoverEnd;
 
-  EventCallback<NormalEvent>? verticalDragStart;
-  EventCallback<NormalEvent>? verticalDragMove;
-  EventCallback<VelocityEvent>? verticalDragEnd;
-  VoidCallback? verticalDragCancel;
-
-  EventCallback<NormalEvent>? horizontalDragStart;
-  EventCallback<NormalEvent>? horizontalDragMove;
-  EventCallback<VelocityEvent>? horizontalDragEnd;
-  VoidCallback? horizontalDragCancel;
+  EventCallback<NormalEvent>? dragStart;
+  EventCallback<NormalEvent>? dragMove;
+  VoidCallback? dragEnd;
 
   EventCallback<NormalEvent>? scaleStart;
   EventCallback<ScaleEvent>? scaleUpdate;
-  EventCallback<VelocityEvent>? scaleEnd;
-  VoidCallback? scaleCancel;
+  VoidCallback? scaleEnd;
 
   Fun2<Offset, bool>? edgeFun;
 
@@ -48,33 +34,19 @@ abstract class ChartGesture {
 
   void clear() {
     click = null;
-    clickDown = null;
-    clickUp = null;
-    clickCancel = null;
-
     doubleClick = null;
-    doubleClickDown = null;
-    doubleClickUp = null;
-    doubleClickCancel = null;
 
     longPressStart = null;
     longPressMove = null;
 
     longPressEnd = null;
-    longPressCancel = null;
 
     hoverStart = null;
     hoverMove = null;
     hoverEnd = null;
-
-    verticalDragStart = null;
-    verticalDragMove = null;
-    verticalDragEnd = null;
-
-    horizontalDragStart = null;
-    horizontalDragMove = null;
-    horizontalDragEnd = null;
-
+    dragEnd = null;
+    dragMove = null;
+    dragStart = null;
     scaleStart = null;
     scaleUpdate = null;
     scaleEnd = null;
@@ -98,8 +70,7 @@ class ArcGesture extends ChartGesture {
   num outerRadius = 0;
   num startAngle = 0;
   num sweepAngle = 0;
-  Offset center=Offset.zero;
-
+  Offset center = Offset.zero;
 
   @override
   bool isInArea(Offset globalOffset) {

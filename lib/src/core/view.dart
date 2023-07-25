@@ -498,6 +498,7 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
     _gesture.clear();
     context.removeGesture(_gesture);
     context.addGesture(_gesture);
+
     if (series is SeriesGesture && (series as SeriesGesture).enableSeriesGesture) {
       (series as SeriesGesture).bindGesture(this, _gesture);
       return;
@@ -547,58 +548,36 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
         _gesture.longPressMove = (e) {
           dragMove(toLocalOffset(e.globalPosition));
         };
-        _gesture.longPressEnd = (e) {
-          dragCancel();
-        };
-        _gesture.longPressCancel = () {
+        _gesture.longPressEnd = () {
           dragCancel();
         };
       } else {
-        _gesture.horizontalDragStart = (e) {
+        _gesture.dragStart = (e) {
           dragStart(toLocalOffset(e.globalPosition));
         };
-        _gesture.horizontalDragMove = (e) {
+        _gesture.dragMove = (e) {
           dragMove(toLocalOffset(e.globalPosition));
         };
-        _gesture.horizontalDragEnd = (e) {
+        _gesture.dragEnd = () {
           dragCancel();
         };
-        _gesture.horizontalDragCancel = dragCancel;
-        _gesture.verticalDragStart = (e) {
-          dragStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.verticalDragMove = (e) {
-          dragMove(toLocalOffset(e.globalPosition));
-        };
-        _gesture.verticalDragEnd = (e) {
-          dragCancel();
-        };
-        _gesture.verticalDragCancel = dragCancel;
       }
     }
     if (enableScale) {
       if (context.config.scaleType == ScaleType.doubleTap) {
-        _gesture.doubleClickDown = (e) {
-          onScaleStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.doubleClickCancel = () {
-          onScaleEnd();
-        };
         _gesture.doubleClick = (e) {
+          onScaleStart(toLocalOffset(e.globalPosition));
           ///双击放大的递增量(0.25)
-          onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, 0.25, 0.25, true);
+          onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, true);
         };
       } else {
         _gesture.scaleStart = (e) {
           onScaleStart(toLocalOffset(e.globalPosition));
         };
         _gesture.scaleUpdate = (e) {
-          onScaleUpdate(toLocalOffset(e.globalPosition), e.rotation, e.scale, e.horizontalScale, e.verticalScale, false);
+          onScaleUpdate(toLocalOffset(e.focalPoint), e.rotation, e.scale, false);
         };
-        _gesture.scaleEnd = (e) {
-          onScaleEnd();
-        };
-        _gesture.scaleCancel = () {
+        _gesture.scaleEnd = () {
           onScaleEnd();
         };
       }
@@ -629,7 +608,7 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
 
   void onScaleStart(Offset offset) {}
 
-  void onScaleUpdate(Offset offset, double rotation, double scale, double hScale, double vScale, bool doubleClick) {}
+  void onScaleUpdate(Offset offset, double rotation, double scale, bool doubleClick) {}
 
   void onScaleEnd() {}
 }
