@@ -12,6 +12,16 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   List<LineNode> get lineList => _lineList;
 
   @override
+  List<SingleNode<LineItemData, LineGroupData>> getPageData(List<int> pages) {
+    return [];
+  }
+
+  @override
+  List<SingleNode<LineItemData, LineGroupData>> getNeedShowData() {
+    return [];
+  }
+
+  @override
   List<LineNode> getLineNodeList() {
     return _lineList;
   }
@@ -52,7 +62,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   @override
   void onLayoutNode(var columnNode, AxisIndex xIndex) {
     super.onLayoutNode(columnNode, xIndex);
-    GridAxis xAxis = context.findGridCoord().getAxis(xIndex.axisIndex, true);
+    GridAxis xAxis = findGridCoord().getAxis(xIndex.axisIndex, true);
     for (var node in columnNode.nodeList) {
       if (node.data != null) {
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
@@ -67,9 +77,14 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   }
 
   @override
-  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
-    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    _updateLine(nodeList);
+  Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
+    await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    await _layoutLineNode(nodeList);
+  }
+
+  @override
+  Future<void> splitData(List<SingleNode<LineItemData, LineGroupData>> list) async {
+    ///Line 不需要按页进行划分
   }
 
   @override
@@ -84,7 +99,8 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     }
   }
 
-  void _updateLine(List<SingleNode<LineItemData, LineGroupData>> list) {
+  ///布局直线使用的数据
+  Future<void> _layoutLineNode(List<SingleNode<LineItemData, LineGroupData>> list) async {
     Map<LineGroupData, int> groupSortMap = {};
     Map<String, int> sortMap = {};
     Map<String, Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>>> stackMap = {};
@@ -113,24 +129,28 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
       }
     });
 
-    List<LineNode> resultList = [];
+    List<Future<LineNode>> futureList = [];
 
     ///先处理普通的
     normalMap.forEach((key, value) {
       if (value.isEmpty) {
         return;
       }
-      var group = list.first.parent;
-      var index = list.first.groupIndex;
-      resultList.add(buildNormalResult(index, group, list));
+      var f = Future(() {
+        var group = list.first.parent;
+        var index = list.first.groupIndex;
+        return buildNormalResult(index, group, list);
+      });
+      futureList.add(f);
     });
+
+    List<LineNode> resultList = [];
 
     ///处理堆叠数据
     List<String> keyList = List.from(stackMap.keys);
     keyList.sort((a, b) {
       return sortMap[a]!.compareTo(sortMap[b]!);
     });
-
     each(keyList, (key, p1) {
       Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> map = stackMap[key]!;
       List<LineGroupData> keyList2 = List.from(map.keys);
@@ -144,16 +164,24 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
       }
     });
 
+    for (var f in futureList) {
+      resultList.add(await f);
+    }
+
+    futureList = [];
     if (series.coordSystem != CoordSystem.polar) {
-      Future(() {
-        for (var result in resultList) {
-          for (var areaNode in result.areaList) {
+      List<Future> fl2 = [];
+      for (var result in resultList) {
+        for (var areaNode in result.areaList) {
+          fl2.add(Future(() {
             areaNode.preCacheAreaPath(0, 3, width, height);
-          }
+          }));
         }
-      }).then((value) {
-        notifyLayoutEnd();
-      });
+      }
+      for (var f in fl2) {
+        await f;
+      }
+      notifyLayoutEnd();
     }
 
     _lineList = resultList;
@@ -183,7 +211,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     var group = curList.first.parent;
     var index = curList.first.groupIndex;
     StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = buildLineStyle(null,group, index, null);
+    LineStyle? lineStyle = buildLineStyle(null, group, index, null);
     bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
 
     List<List<Offset>> splitResult = _splitList(nodeList);
@@ -240,10 +268,10 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     var index = curList.first.groupIndex;
     var preGroup = resultList[curIndex - 1].data;
     StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = buildLineStyle(null,group, index, null);
+    LineStyle? lineStyle = buildLineStyle(null, group, index, null);
     bool smooth = (stepType == null) ? (lineStyle?.smooth ?? false) : false;
     StepType? preStepType = series.stepLineFun?.call(preGroup);
-    LineStyle? preLineStyle = buildLineStyle(null,preGroup, resultList[curIndex - 1].groupIndex, null);
+    LineStyle? preLineStyle = buildLineStyle(null, preGroup, resultList[curIndex - 1].groupIndex, null);
     bool preSmooth = (preStepType == null) ? (preLineStyle?.smooth ?? false) : false;
 
     List<List<List<Offset>>> splitResult = [];
@@ -332,7 +360,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     StepType? stepType = series.stepLineFun?.call(group);
 
     each(olList, (list, p1) {
-      LineStyle? style = buildLineStyle(null,group, p1, null);
+      LineStyle? style = buildLineStyle(null, group, p1, null);
       bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
       if (stepType == null) {
         borderList.add(PathNode(list, smooth, style?.dash ?? []));

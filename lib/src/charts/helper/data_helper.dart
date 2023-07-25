@@ -117,6 +117,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
   ///处理单根坐标轴
   List<GroupNode<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list, OriginInfo<T, P> originInfo) {
     int barGroupCount = _computeBarCount(list);
+
     ///存放分组数据
     List<List<InnerData<T, P>>> groupDataSetList = List.generate(barGroupCount, (index) => []);
     for (int i = 0; i < barGroupCount; i++) {
@@ -128,6 +129,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
       }
     }
     List<GroupNode<T, P>> groupNodeList = List.generate(barGroupCount, (index) => GroupNode(axisIndex, []));
+
     ///合并数据
     each(groupDataSetList, (group, index) {
       GroupNode<T, P> groupNode = groupNodeList[index];
@@ -164,6 +166,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
         groupNode.nodeList.add(column);
       });
     });
+
     ///排序
     for (GroupNode group in groupNodeList) {
       //排序孩子

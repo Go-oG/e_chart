@@ -8,6 +8,8 @@ import 'parallel_coord.dart';
 class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, ParallelAxisAttrs, ParallelCoord> {
   final Direction direction;
 
+  bool expand=true;
+
   ParallelAxisImpl(super.context, super.coord, super.axis, this.direction, {super.axisIndex});
 
   @override

@@ -11,6 +11,37 @@ import 'model/map_node.dart';
 ///适用于Grid布局器
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends BaseStackLayoutHelper<T, P, S> {
+  ///根据给定的页码编号，返回对应的数据
+  Map<int, List<SingleNode<T, P>>> _pageMap = {};
+
+  List<SingleNode<T, P>> getPageData(List<int> pages) {
+    List<SingleNode<T, P>> list = [];
+    final map = _pageMap;
+    for (int page in pages) {
+      var tmp = map[page];
+      if (tmp == null || tmp.isEmpty) {
+        continue;
+      }
+      list.addAll(tmp);
+    }
+    return list;
+  }
+
+  ///获取要显示的数据
+  List<SingleNode<T, P>> getNeedShowData() {
+    Offset offset = getTranslation();
+    int startIndex, endIndex;
+    bool vertical = series.direction == Direction.vertical;
+    double size = vertical ? width : height;
+    double scroll = vertical ? offset.dx : offset.dy;
+    scroll = scroll.abs();
+    startIndex = scroll ~/ size;
+    endIndex = (scroll + size) ~/ size;
+    endIndex += 1;
+
+    List<int> pages = List.generate(endIndex - startIndex, (index) => index + startIndex);
+    return getPageData(pages);
+  }
 
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
@@ -27,19 +58,38 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     }
   }
 
+  final int thresholdSize = 2000;
+
   @override
-  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
-
-
-
+  Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
+    nodeList = newNodeList;
+    nodeMap = newNodeMap;
+    if (newNodeList.length <= thresholdSize) {
+      _pageMap = splitDataByPage(newNodeList, 0, newNodeList.length);
+    } else {
+      await splitData(newNodeList);
+    }
     if (series.animation == null) {
-      nodeList = newNodeList;
-      nodeMap = newNodeMap;
+      drawNodeList = getNeedShowData();
       return;
     }
 
+    List<SingleNode<T, P>> showData = getNeedShowData();
+    if (showData.isEmpty) {
+      drawNodeList = getNeedShowData();
+      return;
+    }
+
+    List<SingleNode<T, P>> oldList = [];
+    for (var node in showData) {
+      var d = oldNodeMap[node.data];
+      if (d != null) {
+        oldList.add(d);
+      }
+    }
+
     ///动画
-    DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0, (a, b, c) {
+    DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldList, showData, (p0) => p0, (a, b, c) {
       return onCreateAnimatorObj(a, b, c, type);
     });
 
@@ -51,15 +101,14 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
           key,
           MapNode(value.rect, value.position, value.arc),
         ));
-
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
       onAnimatorStart(diffResult, type);
-      nodeList = diffResult.curList;
+      drawNodeList = diffResult.curList;
     };
     doubleTween.endListener = () {
       onAnimatorEnd(diffResult, type);
-      nodeList = diffResult.finalList;
+      drawNodeList = diffResult.finalList;
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
@@ -71,7 +120,57 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       notifyLayoutUpdate();
     });
     doubleTween.start(context, type == LayoutType.update);
-    nodeMap = newNodeMap;
+  }
+
+  ///按页拆分数据
+  Future<void> splitData(List<SingleNode<T, P>> list) async {
+    Map<int, List<SingleNode<T, P>>> pageMap = {};
+    int l = list.length;
+    int c = l ~/ thresholdSize;
+    if (c % thresholdSize != 0) {
+      c++;
+    }
+    List<Future<Map<int, List<SingleNode<T, P>>>>> futureList = [];
+    for (int i = 0; i < c; i++) {
+      int s = i * thresholdSize;
+      int e = (i + 1) * thresholdSize;
+      if (e > l) {
+        e = l;
+      }
+      futureList.add(Future(() {
+        return splitDataByPage(list, s, e);
+      }));
+    }
+    for (var fu in futureList) {
+      var map = await fu;
+      map.forEach((key, value) {
+        if (!pageMap.containsKey(key)) {
+          pageMap[key] = value;
+        } else {
+          List<SingleNode<T, P>> tmpList = pageMap[key]!;
+          tmpList.addAll(value);
+        }
+      });
+    }
+    _pageMap = pageMap;
+  }
+
+  Map<int, List<SingleNode<T, P>>> splitDataByPage(List<SingleNode<T, P>> list, int start, int end) {
+    Map<int, List<SingleNode<T, P>>> resultMap = {};
+    double w = width;
+    double h = height;
+    bool vertical = series.direction == Direction.vertical;
+    double size = vertical ? w : h;
+    for (int i = start; i < end; i++) {
+      var node = list[i];
+      Rect rect = node.rect;
+      double s = vertical ? rect.left : rect.top;
+      int index = s ~/ size;
+      List<SingleNode<T, P>> tmpList = resultMap[index] ?? [];
+      resultMap[index] = tmpList;
+      tmpList.add(node);
+    }
+    return resultMap;
   }
 
   @override
@@ -163,5 +262,4 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   Offset getTranslation() {
     return findGridCoord().getTranslation();
   }
-
 }

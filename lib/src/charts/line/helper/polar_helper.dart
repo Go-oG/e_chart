@@ -55,8 +55,8 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
-    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+  Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
+    await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
     _updateLine(nodeList);
   }
 
