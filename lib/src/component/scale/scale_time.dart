@@ -29,7 +29,7 @@ class TimeScale extends BaseScale<DateTime, num> {
   List<double> toRangeRatio(DateTime data) {
     int diff = _convert(domain.first, domain.last, splitType);
     int diff2 = _convert(domain.first, data, splitType);
-    if(diff2.abs()==0){
+    if (diff2.abs() == 0) {
       return [0];
     }
     return [diff / diff2];
@@ -55,6 +55,22 @@ class TimeScale extends BaseScale<DateTime, num> {
     List<DateTime> tl = [];
     int count = tickCount;
     for (int i = 0; i <= count; i++) {
+      tl.add(_convertValue(domain.first, i, splitType));
+    }
+    return tl;
+  }
+
+  @override
+  List<DateTime> getRangeLabel(int startIndex, int endIndex) {
+    List<DateTime> tl = [];
+    int count = tickCount;
+    if (startIndex < 0) {
+      startIndex = 0;
+    }
+    if (endIndex > count) {
+      endIndex = count;
+    }
+    for (int i = startIndex; i <= endIndex; i++) {
       tl.add(_convertValue(domain.first, i, splitType));
     }
     return tl;

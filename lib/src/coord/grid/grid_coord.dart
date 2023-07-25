@@ -13,6 +13,14 @@ abstract class GridCoord extends Coord<GridConfig> {
 
   GridAxis getAxis(int axisIndex, bool isXAxis);
 
+  double getLeftFirstAxisWidth();
+
+  double getRightFirstAxisWidth();
+
+  double getTopFirstAxisHeight();
+
+  double getBottomFirstAxisHeight();
+
   ///获取比例尺
   BaseScale getScale(int axisIndex, bool isXAxis);
 
@@ -34,10 +42,10 @@ class GridCoordImpl extends GridCoord {
     xMap.clear();
     yMap.clear();
     each(props.xAxisList, (ele, p1) {
-      xMap[ele] = XAxisImpl(context, this, ele, axisIndex: p1);
+      xMap[ele] = XAxisImpl(Direction.horizontal, context, this, ele, axisIndex: p1);
     });
     each(props.yAxisList, (axis, p1) {
-      yMap[axis] = YAxisImpl(context, this, axis, axisIndex: p1);
+      yMap[axis] = YAxisImpl(Direction.vertical, context, this, axis, axisIndex: p1);
     });
   }
 
@@ -113,37 +121,79 @@ class GridCoordImpl extends GridCoord {
   void layoutXAxis(List<GridChild> childList, Rect contentBox) {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
+
+    ///收集数据信息
+    Map<XAxisImpl, List<DynamicData>> extremeMap = {};
     for (var ele in props.xAxisList) {
+      var axis = xMap[ele]!;
       if (ele.position == Align2.start) {
         topList.add(xMap[ele]!);
       } else {
         bottomList.add(xMap[ele]!);
       }
+
+      List<DynamicData> dl = [];
+      for (var child in childList) {
+        dl.addAll(child.getAxisExtreme(axis.axisIndex, true));
+      }
+      extremeMap[axis] = dl;
     }
+
+    ///确定宽度
+    final w = contentBox.width;
+    double maxWidth = w;
+    for (var ele in props.xAxisList) {
+      var axis = xMap[ele]!;
+      var dl = extremeMap[axis] ?? [];
+      var tmpScale = BaseAxisImpl.toScale(axis.axis, [0, 100], dl);
+      if (tmpScale.isCategory) {
+        int c = tmpScale.domain.length;
+        if (maxWidth / c < 40) {
+          maxWidth = c * 40;
+        }
+      } else if (tmpScale.isTime) {
+        int c = tmpScale.tickCount - 1;
+        if (c <= 0) {
+          continue;
+        }
+        if (maxWidth / c < 8) {
+          maxWidth = c * 8;
+        }
+      } else {
+        var scale = tmpScale as LinearScale;
+        num c = (scale.domain[0] - scale.domain[1]).abs();
+        if (c <= 0) {
+          continue;
+        }
+        if (maxWidth / c < 2) {
+          maxWidth = c * 2;
+        }
+      }
+    }
+    double scale = 1;
+    if (maxWidth > w) {
+      scale = maxWidth / w;
+    }
+
+    scaleXFactor = scale;
     double topOffset = contentBox.top;
     for (var value in topList) {
       var axisInfo = value.axisInfo;
-      List<DynamicData> dl = [];
-      for (var child in childList) {
-        dl.addAll(child.getAxisExtreme(value.axisIndex, true));
-      }
+      List<DynamicData> dl = extremeMap[value] ?? [];
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var layoutAttrs = LineAxisAttrs(scaleXFactor, scrollXOffset, rect, rect.bottomLeft, rect.bottomRight);
+      var layoutAttrs = LineAxisAttrs(scale, scrollXOffset, rect, rect.bottomLeft, rect.bottomRight);
       topOffset -= (h + value.axis.offset);
       value.doLayout(layoutAttrs, dl);
     }
     double bottomOffset = contentBox.bottom;
     for (var value in bottomList) {
       var axisInfo = value.axisInfo;
-      List<DynamicData> dl = [];
-      for (var child in childList) {
-        dl.addAll(child.getAxisExtreme(value.axisIndex, true));
-      }
+      List<DynamicData> dl = extremeMap[value] ?? [];
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
       var layoutAttrs = LineAxisAttrs(
-        scaleXFactor,
+        scale,
         scrollXOffset,
         rect,
         rect.topLeft.translate(0, -1),
@@ -153,58 +203,33 @@ class GridCoordImpl extends GridCoord {
       value.doLayout(layoutAttrs, dl);
     }
 
-    final w = contentBox.width;
-    double maxWidth = w;
-    for (var axis in [...topList, ...bottomList]) {
-      if (axis.scale.isCategory) {
-        int c = axis.scale.domain.length;
-        num diff = maxWidth / c;
-        if (diff < 48) {
-          maxWidth = c * 48;
-        }
-      } else if (axis.scale.isTime) {
-        int c = axis.scale.tickCount;
-        if (c < 0) {
-          continue;
-        }
-        if (maxWidth / c < 16) {
-          maxWidth = c * 16;
-        }
-      } else {
-        var scale = axis.scale as LinearScale;
-        int c = (scale.step * scale.tickCount).toInt();
-        if (c < 0) {
-          continue;
-        }
-        if (maxWidth / c < 2) {
-          maxWidth = c * 2;
-        }
-      }
-    }
-    if (maxWidth > w) {
-      double k = maxWidth / w;
-      for (var axis in [...topList, ...bottomList]) {
-        axis.onAttrsChange(axis.attrs.copyWith(scaleRatio: k));
-      }
-    }
   }
+
+
+
 
   void layoutYAxis(List<GridChild> childList, Rect contentBox) {
     List<YAxisImpl> leftList = [];
     List<YAxisImpl> rightList = [];
+    Map<YAxisImpl, List<DynamicData>> extremeMap = {};
+
     for (var ele in props.yAxisList) {
+      var axis = yMap[ele]!;
       if (ele.position == Align2.start) {
-        leftList.add(yMap[ele]!);
+        leftList.add(axis);
       } else {
-        rightList.add(yMap[ele]!);
+        rightList.add(axis);
       }
+      List<DynamicData> dl = [];
+      for (var child in childList) {
+        dl.addAll(child.getAxisExtreme(axis.axisIndex, false));
+      }
+      extremeMap[axis] = dl;
     }
+
     double rightOffset = contentBox.left;
     each(leftList, (value, i) {
-      List<DynamicData> dl = [];
-      for (var ele in childList) {
-        dl.addAll(ele.getAxisExtreme(value.axisIndex, false));
-      }
+      List<DynamicData> dl = extremeMap[value] ?? [];
       LineAxisAttrs layoutProps;
       if (i != 0) {
         rightOffset -= value.axis.offset;
@@ -218,10 +243,7 @@ class GridCoordImpl extends GridCoord {
 
     double leftOffset = contentBox.right;
     each(rightList, (value, i) {
-      List<DynamicData> dl = [];
-      for (var ele in childList) {
-        dl.addAll(ele.getAxisExtreme(value.axisIndex, false));
-      }
+      List<DynamicData> dl = extremeMap[value] ?? [];
       LineAxisAttrs layoutProps;
       double w = value.axisInfo.bound.width;
       if (i != 0) {
@@ -318,8 +340,7 @@ class GridCoordImpl extends GridCoord {
       return;
     }
     scaleXFactor = sx;
-    xMap.forEach((key, value) {
-    });
+    xMap.forEach((key, value) {});
 
     invalidate();
   }
@@ -417,5 +438,66 @@ class GridCoordImpl extends GridCoord {
       yAxisIndex = 0;
     }
     return yMap[props.yAxisList[yAxisIndex]]!;
+  }
+
+  @override
+  double getBottomFirstAxisHeight() {
+    XAxis? xAxis;
+    for (var axis in props.xAxisList) {
+      if (axis.position != Align2.start) {
+        xAxis = axis;
+        break;
+      }
+    }
+    if (xAxis == null) {
+      return 0;
+    }
+
+    return xMap[xAxis]!.attrs.rect.height;
+  }
+
+  @override
+  double getTopFirstAxisHeight() {
+    XAxis? xAxis;
+    for (var axis in props.xAxisList) {
+      if (axis.position == Align2.start) {
+        xAxis = axis;
+        break;
+      }
+    }
+    if (xAxis == null) {
+      return 0;
+    }
+    return xMap[xAxis]!.attrs.rect.height;
+  }
+
+  @override
+  double getLeftFirstAxisWidth() {
+    YAxis? yAxis;
+    for (var axis in props.yAxisList) {
+      if (axis.position != Align2.end) {
+        yAxis = axis;
+        break;
+      }
+    }
+    if (yAxis == null) {
+      return 0;
+    }
+    return yMap[yAxis]!.attrs.rect.width;
+  }
+
+  @override
+  double getRightFirstAxisWidth() {
+    YAxis? yAxis;
+    for (var axis in props.yAxisList) {
+      if (axis.position == Align2.end) {
+        yAxis = axis;
+        break;
+      }
+    }
+    if (yAxis == null) {
+      return 0;
+    }
+    return yMap[yAxis]!.attrs.rect.width;
   }
 }

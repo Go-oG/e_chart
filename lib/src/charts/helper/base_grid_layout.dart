@@ -11,6 +11,7 @@ import 'model/map_node.dart';
 ///适用于Grid布局器
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends BaseStackLayoutHelper<T, P, S> {
+
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
     bool vertical = series.direction == Direction.vertical;
@@ -28,6 +29,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 
   @override
   void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
+
+
+
     if (series.animation == null) {
       nodeList = newNodeList;
       nodeMap = newNodeMap;

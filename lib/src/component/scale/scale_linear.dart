@@ -71,4 +71,22 @@ class LinearScale extends BaseScale<num, num> {
     }
     return tl;
   }
+
+  @override
+  List<num> getRangeLabel(int startIndex, int endIndex) {
+    int count = tickCount;
+    if (startIndex < 0) {
+      startIndex = 0;
+    }
+    if (endIndex > count) {
+      endIndex = count;
+    }
+
+    num interval = (domain[1] - domain[0]) / (count - 1);
+    List<num> tl = [];
+    for (int i = startIndex; i < endIndex; i++) {
+      tl.add(domain[0] + interval * i);
+    }
+    return tl;
+  }
 }

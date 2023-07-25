@@ -72,14 +72,16 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
     MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
     final double tickOffset = (tick.inside ? -tick.length : tick.length).toDouble();
     final double minorOffset = (tick.inside ? -minorTick.length : minorTick.length).toDouble();
+    int minorSN=minorTick.splitNumber;
+    if(minorSN<0){minorSN=0;}
 
     List<TickResult> resultList = [];
     for (int i = 0; i < tickCount; i++) {
       Offset offset = center.translate(interval * i, 0);
-
       Offset start = offset.rotateOffset(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotateOffset(angle, center: center);
-      TickResult result = TickResult(i, tickCount, start, end, []);
+      int oi=i*minorSN;
+      TickResult result = TickResult(oi,i, tickCount, start, end, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -93,7 +95,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
 
         ms = ms.rotateOffset(angle, center: center);
         me = me.rotateOffset(angle, center: center);
-        result.minorTickList.add(TickResult(i, tickCount, ms, me));
+        result.minorTickList.add(TickResult(oi+j,i, tickCount, ms, me));
       }
     }
     return resultList;
@@ -117,11 +119,11 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
       tickCount = 1;
     }
     final double interval = distance / (tickCount - 1);
-
     MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
     MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
 
     AxisLabel axisLabel = axis.axisStyle.axisLabel;
+
     List<DynamicText> labels = obtainLabel();
 
     double labelOffset = axisLabel.padding + axisLabel.margin + 0;
@@ -129,7 +131,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
       labelOffset += tick.length;
     }
     labelOffset *= axisLabel.inside ? -1 : 1;
-
     List<LabelResult> resultList = [];
     for (int i = 0; i < tickCount; i++) {
       double d = i.toDouble();
@@ -147,7 +148,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
         text = labels[i];
       }
 
-      LabelResult result = LabelResult(i, tickCount, config, text, []);
+      LabelResult result = LabelResult(i,i, tickCount, config, text, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -163,7 +164,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
         TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
         dynamic data = scale.toData(dis);
         DynamicText? text = axisLabel.formatter?.call(data);
-        result.minorLabel.add(LabelResult(i, tickCount, minorConfig, text));
+        result.minorLabel.add(LabelResult(i+j,i, tickCount, minorConfig, text));
       }
     }
     return resultList;
@@ -188,85 +189,6 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
     double r = center.distance2(p);
     r += axis.nameGap;
     return TextDrawConfig(circlePoint(r, a, center), align: toAlignment(a));
-  }
-
-  @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
-    Offset start = attrs.start;
-    Offset end = attrs.end;
-
-    ///只实现垂直和水平方向
-    if (!(start.dx == end.dx || start.dy == end.dy)) {
-      return;
-    }
-    bool vertical = start.dy == end.dy;
-    AxisTheme theme = getAxisTheme();
-    AxisStyle axisLine = axis.axisStyle;
-    int count = layoutResult.split.length;
-    canvas.save();
-    canvas.translate(scroll.dx, scroll.dy);
-    each(layoutResult.split, (split, i) {
-      AreaStyle? style = axisLine.getSplitAreaStyle(i, count, theme);
-      if (style == null) {
-        return;
-      }
-      Rect rect;
-      if (vertical) {
-        rect = Rect.fromLTRB(split.start.dx, coord.top, split.end.dx, coord.bottom);
-      } else {
-        var dis = split.start.distance2(split.end);
-        if (start.dy <= end.dy) {
-          rect = Rect.fromLTWH(split.start.dx, split.start.dy, coord.width, dis);
-        } else {
-          rect = Rect.fromLTWH(split.end.dx, split.end.dy, coord.width, dis);
-        }
-      }
-      style.drawRect(canvas, paint, rect);
-    });
-    canvas.restore();
-  }
-
-  @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
-    Offset start = attrs.start;
-    Offset end = attrs.end;
-
-    ///只实现垂直和水平方向
-    if (!(start.dx == end.dx || start.dy == end.dy)) {
-      return;
-    }
-    bool vertical = start.dx == end.dx;
-    AxisStyle axisStyle = axis.axisStyle;
-    AxisTheme theme = getAxisTheme();
-    int count = layoutResult.split.length;
-
-    canvas.save();
-    canvas.translate(scroll.dx, scroll.dy);
-    each(layoutResult.split, (split, i) {
-      LineStyle? style = axisStyle.getSplitLineStyle(i, count, theme);
-      if (style != null) {
-        List<Offset> ol = [];
-        if (vertical) {
-          if (start.dx <= end.dx) {
-            ol.add(split.start);
-            ol.add(split.start.translate(coord.width, 0));
-          } else {
-            ol.add(split.end);
-            ol.add(split.end.translate(-coord.width, 0));
-          }
-        } else {
-          if (start.dy < end.dy) {
-            ol.add(split.start);
-            ol.add(split.start.translate(0, coord.height));
-          } else {
-            ol.add(split.end);
-            ol.add(split.end.translate(0, -coord.height));
-          }
-        }
-        style.drawPolygon(canvas, paint, ol);
-      }
-    });
-    canvas.restore();
   }
 
   @override

@@ -37,7 +37,7 @@ class DynamicData {
       return '$data';
     }
     if (isNum) {
-      return formatNumber(data as num,1);
+      return formatNumber(data as num, 1);
     }
 
     var time = data as DateTime;
@@ -59,5 +59,15 @@ class DynamicData {
     var time = data as DateTime;
     return 'Time:${time.year}-${padLeft(time.month, 2, '0')}-${padLeft(time.day, 2, '0')} '
         '${padLeft(time.hour, 2, '0')}:${padLeft(time.minute, 2, '0')}:${padLeft(time.second, 2, '0')}';
+  }
+
+  @override
+  int get hashCode {
+    return data.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DynamicData && other.data == data;
   }
 }
