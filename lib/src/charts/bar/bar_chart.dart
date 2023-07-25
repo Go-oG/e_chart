@@ -126,16 +126,10 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
 
   void drawBarForGrid(Canvas canvas) {
     Offset offset = helper.getTranslation();
-    int startIndex, endIndex;
     bool vertical = series.direction == Direction.vertical;
-    double size = vertical ? width : height;
     double scroll = vertical ? offset.dx : offset.dy;
     scroll = scroll.abs();
-    startIndex = scroll ~/ size;
-    endIndex = (scroll + size) ~/ size;
-    endIndex += 1;
-    List<int> pages = List.generate(endIndex - startIndex, (index) => index + startIndex);
-    var list = (helper as BarGridHelper).getPageData(pages);
+    var list = (helper as BarGridHelper).getNeedShowData();
     canvas.save();
     canvas.translate(offset.dx, 0);
     each(list, (node, p1) {
@@ -155,7 +149,6 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
       node.lineStyle = ls;
       ls?.drawRect(canvas, mPaint, node.rect, corner);
     });
-
     canvas.restore();
   }
 

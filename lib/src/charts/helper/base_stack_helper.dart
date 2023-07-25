@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/utils/normal_list.dart';
 import 'package:flutter/animation.dart';
 
 import 'model/axis_group.dart';
@@ -13,9 +14,10 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
   List<SingleNode<T, P>> nodeList = [];
   Map<T, SingleNode<T, P>> nodeMap = {};
 
+  List<SingleNode<T, P>> drawNodeList = [];
 
   @override
-  void onLayout(List<P> data, LayoutType type) {
+  void onLayout(List<P> data, LayoutType type) async {
     AxisGroup<T, P> axisGroup = series.helper.result;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
     List<GroupNode<T, P>> newNodeList = [];
@@ -34,37 +36,52 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     });
 
     ///开始布局
+    var sw = Stopwatch();
+    sw.start();
+    List<Future> futureList = [];
     axisMap.forEach((key, value) {
       ///布局Group
-      for (var groupNode in value) {
-        var xIndex = key;
-        if (groupNode.nodeList.isEmpty) {
-          continue;
-        }
-        var x = groupNode.getX();
+      List<List<GroupNode<T, P>>> spList = splitList(value, 500);
+      for (var gl in spList) {
+        var f = Future(() async {
+          for (var groupNode in gl) {
+            var xIndex = key;
+            if (groupNode.nodeList.isEmpty) {
+              return;
+            }
+            var x = groupNode.getX();
 
-        ///布局当前组的位置
-        onLayoutGroup(groupNode, xIndex, x);
+            ///布局当前组的位置
+            onLayoutGroup(groupNode, xIndex, x);
 
-        ///布局组里面的列
-        onLayoutColumn(axisGroup, groupNode, xIndex, x);
+            ///布局组里面的列
+            onLayoutColumn(axisGroup, groupNode, xIndex, x);
 
-        ///布局列里面的节点
-        each(groupNode.nodeList, (node, i) {
-          onLayoutNode(node, xIndex);
+            ///布局列里面的节点
+            for (var nl in groupNode.nodeList) {
+              onLayoutNode(nl, xIndex);
+            }
+          }
         });
+        futureList.add(f);
       }
     });
-    onLayoutEnd(nodeList, nodeMap, List.from(newNodeMap.values), newNodeMap, type);
+
+    for (var f in futureList) {
+      await f;
+    }
+
+    sw.stop();
+    logPrint("$runtimeType onLayout() 耗时:${sw.elapsedMilliseconds}ms");
+    sw.start();
+    await onLayoutEnd(nodeList, nodeMap, List.from(newNodeMap.values), newNodeMap, type);
+    sw.stop();
+    logPrint("$runtimeType onLayout() execute onLayoutEnd 耗时:${sw.elapsedMilliseconds}ms");
+    notifyLayoutUpdate();
   }
 
-  void onLayoutEnd(
-    List<SingleNode<T, P>> oldNodeList,
-    Map<T, SingleNode<T, P>> oldNodeMap,
-    List<SingleNode<T, P>> newNodeList,
-    Map<T, SingleNode<T, P>> newNodeMap,
-    LayoutType type,
-  ) {
+  Future<void> onLayoutEnd(List<SingleNode<T, P>> oldNodeList, Map<T, SingleNode<T, P>> oldNodeMap, List<SingleNode<T, P>> newNodeList,
+      Map<T, SingleNode<T, P>> newNodeMap, LayoutType type) async {
     if (series.animation == null) {
       nodeList = newNodeList;
       nodeMap = newNodeMap;

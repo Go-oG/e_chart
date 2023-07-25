@@ -6,13 +6,10 @@ import '../../helper/base_polar_layout.dart';
 import '../../helper/model/axis_index.dart';
 
 class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, BarSeries> {
-
-
   ///根据给定的页码编号，返回对应的数据
-  List<SingleNode<BarItemData, BarGroupData>> getPageData(List<int> pages){
+  List<SingleNode<BarItemData, BarGroupData>> getPageData(List<int> pages) {
     return [];
   }
-
 
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
@@ -21,17 +18,13 @@ class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, Ba
     if (colGapCount <= 1) {
       colGapCount = 0;
     }
-
     final bool vertical = series.direction == Direction.vertical;
     final Arc groupArc = groupNode.arc;
     final num groupSize = vertical ? (groupArc.outRadius - groupArc.innerRadius).abs() : groupArc.sweepAngle.abs();
     final int dir = groupArc.sweepAngle >= 0 ? 1 : -1;
-
     num groupGap = series.groupGap.convert(groupSize);
     num columnGap = series.columnGap.convert(groupSize);
-
     num allGap = groupGap * 2 + colGapCount * columnGap;
-
     num canUseSize = groupSize - allGap;
     if (canUseSize <= 0) {
       canUseSize = groupSize;

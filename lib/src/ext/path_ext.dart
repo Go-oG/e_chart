@@ -74,7 +74,7 @@ extension PathExt on Path {
       if (metric.length <= 0) {
         continue;
       }
-      var result = metric.getTangentForOffset(metric.length);
+      var result = metric.getTangentForOffset(metric.length * percent);
       if (result == null) {
         continue;
       }
@@ -83,6 +83,41 @@ extension PathExt on Path {
     }
     return null;
   }
+
+  Offset? firstOffset() {
+    PathMetrics metrics = computeMetrics();
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(1);
+      if (result == null) {
+        continue;
+      }
+      return result.position;
+    }
+    return null;
+  }
+
+  Offset? lastOffset() {
+    PathMetrics metrics = computeMetrics();
+    List<Offset> ol = [];
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(metric.length);
+      if (result == null) {
+        continue;
+      }
+      ol.add(result.position);
+    }
+    if (ol.isEmpty) {
+      return null;
+    }
+    return ol[ol.length - 1];
+  }
+
 
   ///将当前Path进行拆分
   List<Path> split([double maxLength = 300]) {
@@ -111,7 +146,7 @@ extension PathExt on Path {
         start += maxLength;
       }
     }
-     return pathList;
+    return pathList;
   }
 
   ///合并两个Path,并将其头相连，尾相连

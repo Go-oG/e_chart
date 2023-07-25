@@ -49,6 +49,7 @@ class BaseGridSeries<T extends BaseItemData, P extends BaseGroupData<T>> extends
 
   DataHelper<T, P, BaseGridSeries>? _helper;
 
+
   DataHelper<T, P, BaseGridSeries> get helper {
     _helper ??= DataHelper(this, data, direction);
     return _helper!;

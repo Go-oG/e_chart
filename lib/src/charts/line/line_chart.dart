@@ -71,6 +71,14 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
 
   @override
   void onDraw(Canvas canvas) {
+    if(series.coordSystem==CoordSystem.polar){
+      drawForPolar(canvas);
+    }else{
+      drawForGrid(canvas);
+    }
+  }
+
+  void drawForGrid(Canvas canvas){
     Offset offset = layoutHelper.getTranslation();
     Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
     var lineList = helper.getLineNodeList();
@@ -86,6 +94,11 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
     });
     canvas.restore();
   }
+
+  void drawForPolar(Canvas canvas){
+    ///TODO 待实现
+  }
+
 
   void drawLine(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
     if (lineNode.borderList.isEmpty) {

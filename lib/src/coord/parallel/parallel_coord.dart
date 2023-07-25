@@ -15,27 +15,11 @@ import 'parallel_child.dart';
 ///平行坐标系
 class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
-  int _expandLeftIndex = -1;
-  int _expandRightIndex = -1;
 
   ParallelCoordImpl(super.props);
 
   void initAxis() {
     axisMap.clear();
-    _expandLeftIndex = -1;
-    _expandRightIndex = -1;
-    if (props.expandable && props.expandStartIndex >= 0 && props.expandStartIndex < props.axisList.length) {
-      _expandLeftIndex = props.expandStartIndex - props.expandCount ~/ 2;
-      _expandRightIndex = props.expandStartIndex + props.expandCount ~/ 2;
-      if (props.expandCount % 2 != 0) {
-        if (props.expandStartIndex >= props.axisList.length / 2) {
-          _expandRightIndex += 1;
-        } else {
-          _expandLeftIndex -= 1;
-        }
-      }
-    }
-
     Direction direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
@@ -48,6 +32,9 @@ class ParallelCoordImpl extends ParallelCoord {
     super.onCreate();
     initAxis();
   }
+
+  @override
+  bool get enableScale => false;
 
   ///找到离点击点最近的轴
   ParallelAxisImpl? findMinDistanceAxis(Offset offset) {
@@ -117,12 +104,13 @@ class ParallelCoordImpl extends ParallelCoord {
     int expandCount = 0;
     int unExpandCount = 0;
     axisMap.forEach((key, value) {
-      if (value.attrs.expand) {
+      if (value.expand) {
         expandCount += 1;
       } else {
         unExpandCount += 1;
       }
     });
+
     num unExpandAllSize = props.expandWidth * unExpandCount;
     num remainSize = size - unExpandAllSize;
     double interval;
@@ -144,7 +132,7 @@ class ParallelCoordImpl extends ParallelCoord {
       double tmpBottom;
       if (horizontal) {
         tmpLeft = offsetP;
-        tmpRight = tmpLeft + (node.attrs.expand ? interval : props.expandWidth);
+        tmpRight = tmpLeft + (node.expand ? interval : props.expandWidth);
         tmpTop = topOffset;
         tmpBottom = h;
         offsetP += (tmpRight - tmpLeft);
@@ -152,8 +140,8 @@ class ParallelCoordImpl extends ParallelCoord {
         tmpLeft = leftOffset;
         tmpTop = offsetP;
         tmpRight = width - rightOffset;
-        tmpBottom = tmpTop + (node.attrs.expand ? interval : props.expandWidth);
-        offsetP += (node.attrs.expand ? interval : props.expandWidth);
+        tmpBottom = tmpTop + (node.expand ? interval : props.expandWidth);
+        offsetP += (node.expand ? interval : props.expandWidth);
       }
 
       ///处理轴内部
@@ -176,7 +164,7 @@ class ParallelCoordImpl extends ParallelCoord {
       }
 
       var attrs = ParallelAxisAttrs(
-        scaleYFactor,
+        1,
         scrollXOffset,
         rect,
         start,
