@@ -174,7 +174,6 @@ class GridCoordImpl extends GridCoord {
     if (maxWidth > w) {
       scale = maxWidth / w;
     }
-
     scaleXFactor = scale;
     double topOffset = contentBox.top;
     for (var value in topList) {

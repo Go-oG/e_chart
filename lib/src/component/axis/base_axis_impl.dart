@@ -189,7 +189,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   }
 
   ///将指定的参数转换为标度尺
-  static BaseScale toScale(BaseAxis axis, List<num> range, List<DynamicData> dataSet) {
+  static BaseScale toScale(BaseAxis axis, List<num> range, List<DynamicData> dataSet, [double scaleFactor = 1]) {
     if (axis.isCategoryAxis) {
       List<String> sl = List.from(axis.categoryList);
       if (axis.categoryList.isEmpty) {
@@ -269,16 +269,26 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       List<num> logV = [log(v[0]) / base, log(v[1]) / base];
       v = logV;
     }
+    if (scaleFactor < 1) {
+      scaleFactor = 1;
+    }
+
+    int spn = axis.splitNumber;
+    if (spn < 2) {
+      spn = 2;
+    }
+    spn = (spn * scaleFactor).round();
     NiceScale step = NiceScale.nice(
       v[0],
       v[1],
-      axis.splitNumber,
+      spn,
       minInterval: axis.minInterval,
       maxInterval: axis.maxInterval,
       interval: axis.interval,
       start0: axis.start0,
       type: axis.niceType,
     );
+
     List<num> resultList = [step.start, step.end];
     if (axis.inverse) {
       resultList = List.from(resultList.reversed);
