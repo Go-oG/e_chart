@@ -43,7 +43,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord>
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
-    return BaseAxisImpl.toScale(axis, [0, distance], dataSet);
+    return BaseAxisImpl.toScale(axis, [0, distance], dataSet,attrs.scaleRatio);
   }
 
   @override
