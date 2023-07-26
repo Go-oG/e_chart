@@ -119,19 +119,6 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
         resultList.add(buildStackResult(cur.first.groupIndex, group, cur, resultList, i));
       }
     });
-
-    if (series.coordSystem != CoordSystem.polar) {
-      Future(() {
-        for (var result in resultList) {
-          for (var areaNode in result.areaList) {
-            areaNode.preCacheAreaPath(0, 3, width, height);
-          }
-        }
-      }).then((value) {
-        notifyLayoutEnd();
-      });
-    }
-
     _lineList = resultList;
   }
 

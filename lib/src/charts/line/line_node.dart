@@ -31,13 +31,14 @@ class PathNode {
   PathNode(this.offsetList, bool smooth, List<num> dash) {
     path = Line(offsetList, smooth: smooth, dashList: dash).toPath(false);
     rect = path.getBounds();
-    double maxSize = 4000;
+    double maxSize = 10000;
     for (var p in path.split(maxSize)) {
       subPathList.add(SubPath(p));
     }
   }
 }
 
+///TODO 超大数据量时需要优化
 class AreaNode {
   final Area area;
   late final Rect rect;
@@ -46,80 +47,6 @@ class AreaNode {
   AreaNode(this.area) {
     originPath = area.toPath(true);
     rect = originPath.getBounds();
-  }
-
-  final Map<int, Path> _areaMap = {};
-
-  List<Path> getAreaPath(double w, double h, Offset scroll) {
-    if (rect.width <= w) {
-      return [area.toPath(true)];
-    }
-    int start = (scroll.dx.abs()) ~/ w;
-    int end = (scroll.dx.abs() + w) ~/ w;
-    if ((scroll.dx.abs() + w) % w != 0) {
-      end += 1;
-    }
-    List<Path> pathList = [];
-    Path clipPath = Path();
-    for (int i = start; i < end; i++) {
-      Path? path = _areaMap[i];
-      if (path != null) {
-        pathList.add(path);
-        continue;
-      }
-      clipPath.reset();
-      double s = i * w;
-      double e = (i + 1) * w;
-      clipPath.moveTo(s, 0);
-      clipPath.lineTo(e, 0);
-      clipPath.lineTo(e, h);
-      clipPath.lineTo(s, h);
-      clipPath.close();
-      path = Path.combine(PathOperation.intersect, clipPath, originPath);
-      _areaMap[i] = path;
-      pathList.add(path);
-    }
-    return pathList;
-  }
-
-  void preCacheAreaPath(int start, int end, double w, double h, [bool sync = true]) {
-    if (rect.width <= w) {
-      return;
-    }
-    List<int> intList = [];
-    for (int i = start; i < end; i++) {
-      Path? path = _areaMap[i];
-      if (path != null) {
-        continue;
-      }
-      intList.add(i);
-    }
-    if (sync) {
-      _areaMap.addAll(_buildAreaPath(intList, w, h));
-    } else {
-      Future<Map<int, Path>>(() {
-        return _buildAreaPath(intList, w, h);
-      }).then((value) {
-        _areaMap.addAll(value);
-      });
-    }
-  }
-
-  Map<int, Path> _buildAreaPath(List<int> list, double w, double h) {
-    Map<int, Path> map = {};
-    Path clipPath = Path();
-    for (var i in list) {
-      clipPath.reset();
-      double s = i * w;
-      double e = (i + 1) * w;
-      clipPath.moveTo(s, 0);
-      clipPath.lineTo(e, 0);
-      clipPath.lineTo(e, h);
-      clipPath.lineTo(s, h);
-      clipPath.close();
-      map[i] = Path.combine(PathOperation.intersect, clipPath, originPath);
-    }
-    return map;
   }
 }
 
