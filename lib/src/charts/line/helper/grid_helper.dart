@@ -79,7 +79,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
     await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    await _layoutLineNode(nodeList);
+    _layoutLineNode(nodeList);
   }
 
   @override
@@ -89,18 +89,12 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
 
   @override
   void onGridScrollEnd(Offset offset) {
-    int start = offset.dx.abs() ~/ width;
-    start += 1;
-    int end = start + 2;
-    for (var result in _lineList) {
-      for (var areaNode in result.areaList) {
-        areaNode.preCacheAreaPath(start, end, width, height, false);
-      }
-    }
+
   }
 
   ///布局直线使用的数据
   Future<void> _layoutLineNode(List<SingleNode<LineItemData, LineGroupData>> list) async {
+
     Map<LineGroupData, int> groupSortMap = {};
     Map<String, int> sortMap = {};
     Map<String, Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>>> stackMap = {};
@@ -163,26 +157,10 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
         resultList.add(buildStackResult(cur.first.groupIndex, group, cur, resultList, i));
       }
     });
-
     for (var f in futureList) {
       resultList.add(await f);
     }
-
     futureList = [];
-    if (series.coordSystem != CoordSystem.polar) {
-      List<Future> fl2 = [];
-      for (var result in resultList) {
-        for (var areaNode in result.areaList) {
-          fl2.add(Future(() {
-            areaNode.preCacheAreaPath(0, 3, width, height);
-          }));
-        }
-      }
-      for (var f in fl2) {
-        await f;
-      }
-      notifyLayoutEnd();
-    }
 
     _lineList = resultList;
   }
@@ -190,7 +168,6 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
     List<PathNode> borderList = _buildBorderPath(list);
     List<AreaNode> areaList = buildAreaPathForNormal(list);
-
     List<Offset?> ol = _collectOffset(list);
     Map<LineItemData, SymbolNode> nodeMap = {};
     each(ol, (off, i) {
@@ -200,7 +177,6 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
       }
       nodeMap[data] = SymbolNode(off, data, group, groupIndex);
     });
-
     return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap);
   }
 
@@ -314,9 +290,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
         preList = [];
       }
     }
-
     List<AreaNode> areaList = [];
-
     for (var list in splitResult) {
       var topList = list[0];
       if (stepType != null) {
@@ -358,12 +332,15 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     olList.removeWhere((element) => element.length < 2);
     List<PathNode> borderList = [];
     StepType? stepType = series.stepLineFun?.call(group);
-
+    var sw = Stopwatch();
     each(olList, (list, p1) {
       LineStyle? style = buildLineStyle(null, group, p1, null);
       bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
       if (stepType == null) {
+        sw.start();
         borderList.add(PathNode(list, smooth, style?.dash ?? []));
+        sw.stop();
+        logPrint("$runtimeType 耗时22:${sw.elapsedMilliseconds}");
       } else {
         Line line = _buildLine(list, stepType, false, []);
         borderList.add(PathNode(line.pointList, smooth, style?.dash ?? []));

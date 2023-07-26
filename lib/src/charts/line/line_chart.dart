@@ -71,20 +71,21 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
 
   @override
   void onDraw(Canvas canvas) {
-    if(series.coordSystem==CoordSystem.polar){
+    if (series.coordSystem == CoordSystem.polar) {
       drawForPolar(canvas);
-    }else{
+    } else {
       drawForGrid(canvas);
     }
   }
 
-  void drawForGrid(Canvas canvas){
+  void drawForGrid(Canvas canvas) {
     Offset offset = layoutHelper.getTranslation();
     Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
     var lineList = helper.getLineNodeList();
     var theme = context.config.theme.lineTheme;
     canvas.save();
     canvas.translate(offset.dx, 0);
+    canvas.clipRect(clipRect);
     each(lineList, (lineNode, p1) {
       drawArea(canvas, lineNode, clipRect, offset, theme);
       drawLine(canvas, lineNode, clipRect, theme);
@@ -95,10 +96,9 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
     canvas.restore();
   }
 
-  void drawForPolar(Canvas canvas){
+  void drawForPolar(Canvas canvas) {
     ///TODO 待实现
   }
-
 
   void drawLine(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
     if (lineNode.borderList.isEmpty) {
@@ -133,10 +133,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
     lineNode.areaStyle = style;
 
     for (var area in lineNode.areaList) {
-      List<Path> cl = area.getAreaPath(width, height, scroll);
-      for (var p in cl) {
-        style.drawPath(canvas, mPaint, p);
-      }
+      style.drawPath(canvas, mPaint, area.originPath);
     }
   }
 
