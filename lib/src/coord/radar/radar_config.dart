@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-//雷达坐标系
+///雷达图坐标系
 class RadarConfig extends CircleCoordConfig {
   List<RadarIndicator> indicator;
   num offsetAngle;
@@ -8,7 +8,9 @@ class RadarConfig extends CircleCoordConfig {
   bool silent;
   bool clockwise;
   RadarShape shape;
-  AxisStyle? axisStyle;
+
+  ///雷达图将忽略掉label 和Tick
+  AxisStyle axisStyle = AxisStyle();
 
   Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
   Fun3<int, int, AreaStyle?>? splitAreaStyleFun;
@@ -18,7 +20,7 @@ class RadarConfig extends CircleCoordConfig {
     required this.indicator,
     this.offsetAngle = 0,
     this.splitNumber = 5,
-    this.axisStyle,
+    AxisStyle? axisStyle,
     this.shape = RadarShape.polygon,
     this.silent = false,
     this.clockwise = true,
@@ -34,7 +36,16 @@ class RadarConfig extends CircleCoordConfig {
     super.backgroundColor,
     super.id,
     super.show,
-  });
+  }) {
+    if (axisStyle != null) {
+      this.axisStyle = axisStyle;
+    } else {
+      var style = this.axisStyle;
+      style.minorTick = null;
+      style.axisTick.show = false;
+      style.axisLabel.show = false;
+    }
+  }
 
   @override
   CoordSystem get coordSystem => CoordSystem.radar;

@@ -12,40 +12,12 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
   @override
   void onUpdateDataCommand(covariant Command c) {
     radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
-    _initAnimator();
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
     radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
-    _initAnimator();
-  }
-
-  void _initAnimator() {
-    AnimatorAttrs? info = series.animation;
-    List<RadarGroupNode> nodeList = radarLayout.groupNodeList;
-    if (info != null) {
-      for (var group in nodeList) {
-        for (var node in group.nodeList) {
-          node.start = radarLayout.center;
-          node.end = node.cur;
-          node.cur = Offset.zero;
-        }
-      }
-      OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
-      ChartDoubleTween tween = ChartDoubleTween(props: series.animatorProps);
-      tween.addListener(() {
-        for (var group in nodeList) {
-          for (var node in group.nodeList) {
-            offsetTween.changeValue(node.start, node.end);
-            node.cur = offsetTween.safeGetValue(tween.value);
-          }
-        }
-        invalidate();
-      });
-      tween.start(context);
-    }
   }
 
   @override
@@ -57,24 +29,20 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
       if (!group.data.show) {
         return;
       }
-
       AreaStyle? areaStyle = getAreaStyle(group, i);
       LineStyle? lineStyle = getLineStyle(group, i);
       bool drawSymbol = series.symbolFun != null || theme.showSymbol;
       if (areaStyle == null && lineStyle == null && !drawSymbol) {
         return;
       }
-      List<Offset> ol = group.getPathOffset();
-      areaStyle?.drawPolygonArea(canvas, mPaint, ol);
-      lineStyle?.drawPolygon(canvas, mPaint, ol, true);
-
+      areaStyle?.drawPath(canvas, mPaint, group.path);
+      lineStyle?.drawPath(canvas, mPaint, group.path, drawDash: true, needSplit: false);
       if (!drawSymbol) {
         return;
       }
-
       SymbolDesc desc = SymbolDesc();
-      for (int i = 0; i < ol.length; i++) {
-        desc.center = ol[i];
+      for (int i = 0; i < group.nodeList.length; i++) {
+        desc.center = group.nodeList[i].offset;
         ChartSymbol? symbol;
         if (series.symbolFun != null) {
           symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
@@ -84,34 +52,7 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
           symbol?.draw(canvas, mPaint, desc);
         }
       }
-
     });
-  }
-
-  AreaStyle? getAreaStyle(RadarGroupNode group, int index) {
-    var theme = context.config.theme.radarTheme;
-    var chartTheme = context.config.theme;
-
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(group.data);
-    } else if (theme.fill) {
-      Color fillColor = chartTheme.getColor(index);
-      return AreaStyle(color: fillColor);
-    }
-    return null;
-  }
-
-  LineStyle? getLineStyle(RadarGroupNode group, int index) {
-    var theme = context.config.theme.radarTheme;
-    var chartTheme = context.config.theme;
-    LineStyle? lineStyle;
-    if (series.lineStyleFun != null) {
-      lineStyle = series.lineStyleFun?.call(group.data);
-    } else if (theme.lineWidth > 0) {
-      Color lineColor = chartTheme.getColor(index);
-      lineStyle = LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList);
-    }
-    return lineStyle;
   }
 
   @override
@@ -127,4 +68,30 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
 
   @override
   int get radarIndex => series.radarIndex;
+
+  AreaStyle? getAreaStyle(RadarGroupNode group, int index) {
+    var theme = context.config.theme.radarTheme;
+    var chartTheme = context.config.theme;
+    if (series.areaStyleFun != null) {
+      return series.areaStyleFun?.call(group.data);
+    } else if (theme.fill) {
+      Color fillColor = chartTheme.getColor(index);
+      return AreaStyle(color: fillColor);
+    }
+    return null;
+  }
+
+  LineStyle? getLineStyle(RadarGroupNode group, int index) {
+    var chartTheme = context.config.theme;
+    var theme = chartTheme.radarTheme;
+    LineStyle? lineStyle;
+    if (series.lineStyleFun != null) {
+      lineStyle = series.lineStyleFun?.call(group.data);
+    } else if (theme.lineWidth > 0) {
+      Color lineColor = chartTheme.getColor(index);
+      lineStyle = LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList);
+    }
+    return lineStyle;
+  }
+
 }

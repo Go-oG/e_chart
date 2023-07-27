@@ -18,7 +18,7 @@ class RadarSeries extends RectSeries {
   RadarSeries(
     this.data, {
     required this.splitNumber,
-    required this.areaStyleFun,
+    this.areaStyleFun,
     this.symbolFun,
     this.labelStyleFun,
     this.nameGap = 0,
