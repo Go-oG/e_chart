@@ -16,9 +16,8 @@ class MarkLine {
   LineStyle lineStyle;
   int precision; //精度
   MarkType startMarkType;
-
   // 如果endMakeType 为null 那么绘制时则是一条水平直线
-  final MarkType? endMarkType;
+  MarkType? endMarkType;
 
   MarkLine({
     this.startSymbol,
@@ -34,7 +33,7 @@ class MarkLine {
   void draw(Canvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end], false);
     startSymbol?.draw(canvas, paint, SymbolDesc(center: start));
-    endSymbol?.draw(canvas, paint,  SymbolDesc(center: end));
+    endSymbol?.draw(canvas, paint, SymbolDesc(center: end));
     if (startText != null && startText.isNotEmpty) {
       TextDrawConfig config = TextDrawConfig(start);
       labelStyle?.call(0).draw(canvas, paint, startText, config);

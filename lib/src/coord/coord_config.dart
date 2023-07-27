@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/brush/brush.dart';
 import 'package:flutter/rendering.dart';
 
 ///坐标系
@@ -7,9 +8,10 @@ abstract class CoordConfig extends ChartNotifier<Command> {
   bool show;
   Color? backgroundColor;
 
+  ///数据框选配置
+  Brush? brush;
   SNumber? width;
   SNumber? height;
-
   EdgeInsets margin = const EdgeInsets.all(0);
   EdgeInsets padding = const EdgeInsets.all(16);
 
@@ -26,6 +28,7 @@ abstract class CoordConfig extends ChartNotifier<Command> {
     EdgeInsets? padding,
     SNumber? width,
     SNumber? height,
+    this.brush,
     this.backgroundColor,
     this.enableClick = true,
     this.enableHover = true,
