@@ -1,35 +1,25 @@
 import 'dart:io';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../functions.dart';
-import '../model/chart_error.dart';
-import '../utils/uuid_util.dart';
-import 'command.dart';
-import 'series.dart';
-import '../component/tooltip/context_menu.dart';
-import '../component/tooltip/context_menu_builder.dart';
-import '../gesture/chart_gesture.dart';
-import '../gesture/series_gesture.dart';
-import '../model/enums/drag_type.dart';
-import '../model/enums/scale_type.dart';
-import '../model/string_number.dart';
-import '../utils/log_util.dart';
-import 'context.dart';
-import 'view_group.dart';
-import 'view_state.dart';
+
+import '../component/brush/brush_area.dart';
 
 abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   Context? _context;
+
+  Context get context => _context!;
+
   LayoutParams layoutParams = LayoutParams.match();
 
   ///存储当前视图在父视图中的位置属性
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
 
-  //记录旧的边界位置，可用于动画相关的计算
+  ///记录旧的边界位置，可用于动画相关的计算
   Rect oldBoundRect = const Rect.fromLTRB(0, 0, 0, 0);
+
+  ///记录其全局位置
   Rect _globalBoundRect = Rect.zero;
 
   ViewParent? _parent;
@@ -50,13 +40,12 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   @protected
   bool forceMeasure = false;
 
-  late final String id;
+  final String id = randomId();
 
-  ChartView() {
-    id = randomId();
-  }
+  ChartView();
 
-  Context get context => _context!;
+  ///当框选选择事件触发时会回调该方法
+  void onBrushSelectChange(List<BrushArea> brushList) {}
 
   //=========生命周期回调方法开始==================
   ///由Context负责回调
@@ -332,7 +321,6 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   }
 
   ///绑定Series 主要是将Series相关的命令传递到当前View
-
   VoidCallback? _defaultCommandCallback;
 
   void bindSeries(covariant ChartSeries series) {

@@ -1,4 +1,5 @@
-//表格的通用配置
+import 'package:e_chart/src/component/brush/brush.dart';
+
 import 'animation/animator_attrs.dart';
 import 'coord/index.dart';
 import 'core/series.dart';
@@ -10,6 +11,7 @@ import 'model/enums/drag_type.dart';
 import 'model/enums/scale_type.dart';
 import 'component/theme/theme.dart';
 
+///表格的通用配置
 class ChartConfig {
   ChartTitle? title;
   Legend? legend;
@@ -23,6 +25,7 @@ class ChartConfig {
   ScaleType scaleType;
   DragType dragType;
   ToolTip? toolTip;
+  Brush? brush;
   ChartTheme theme = ChartTheme();
 
   ChartConfig(
@@ -39,6 +42,7 @@ class ChartConfig {
       this.scaleType = ScaleType.scale,
       this.dragType = DragType.longPress,
       this.toolTip,
+      this.brush,
       ChartTheme? theme}) {
     if (theme != null) {
       this.theme = theme;

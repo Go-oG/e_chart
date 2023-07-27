@@ -24,9 +24,8 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
   Fun2<BarItemData, Position2>? labelAlignFun;
 
   /// 标记点、线相关的
-  Fun2<BarGroupData, MarkPoint>? markPointFun;
-
-  Fun2<BarGroupData, MarkLine>? markLineFun;
+  Fun2<BarGroupData, List<MarkPoint>>? markPointFun;
+  Fun2<BarGroupData, List<MarkLine>>? markLineFun;
 
   LineSeries(
     super.data, {

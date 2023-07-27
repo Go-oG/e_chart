@@ -1,3 +1,4 @@
+import 'package:e_chart/src/component/brush/brush_view.dart';
 import 'package:e_chart/src/component/title/title_view.dart';
 import 'package:e_chart/src/core/index.dart';
 import 'package:flutter/widgets.dart';
@@ -69,6 +70,11 @@ class Context {
 
   ToolTipView? get toolTip => _toolTip;
 
+  ///数据框选
+  BrushView? _brush;
+
+  BrushView? get brush => _brush;
+
   /// 创建Chart组件
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
@@ -84,6 +90,12 @@ class Context {
       _title = TitleView(config.title!);
       _title?.create(this, root);
       //TODO 这里不知道是否需要回调[bindSeriesCommand]
+    }
+
+    ///Brush
+    if (config.brush != null) {
+      _brush = BrushView(config.brush!);
+      _brush?.create(this, root);
     }
 
     ///Coord
@@ -178,10 +190,10 @@ class Context {
     _gestureDispatcher.dispose();
     _animationManager.dispose();
     _destroyView();
+    _seriesViewMap.clear();
     _axisMap.clear();
     _coordMap.clear();
     _coordList.clear();
-    _seriesViewMap.clear();
   }
 
   void _destroyView() {
@@ -195,6 +207,8 @@ class Context {
     _title = null;
     _toolTip?.destroy();
     _toolTip = null;
+    _brush?.destroy();
+    _brush = null;
   }
 
   Coord? _findCoord(ChartView view, ChartSeries series) {
