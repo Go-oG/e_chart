@@ -119,4 +119,10 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
     var theme = context.config.theme.barTheme;
     return theme.getBorderStyle()?.convert(status);
   }
+
+  @override
+  void onGridScrollChange(Offset offset) {
+    super.onGridScrollChange(offset);
+    drawNodeList=getNeedShowData();
+  }
 }

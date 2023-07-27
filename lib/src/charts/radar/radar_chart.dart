@@ -10,6 +10,18 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
   RadarView(super.series);
 
   @override
+  void onStart() {
+    super.onStart();
+    radarLayout.addListener(invalidate);
+  }
+
+  @override
+  void onStop() {
+    radarLayout.removeListener(invalidate);
+    super.onStop();
+  }
+
+  @override
   void onUpdateDataCommand(covariant Command c) {
     radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
   }
@@ -29,17 +41,19 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
       if (!group.data.show) {
         return;
       }
-      AreaStyle? areaStyle = getAreaStyle(group, i);
-      LineStyle? lineStyle = getLineStyle(group, i);
-      bool drawSymbol = series.symbolFun != null || theme.showSymbol;
-      if (areaStyle == null && lineStyle == null && !drawSymbol) {
+
+      Path? path = group.pathOrNull;
+      if (path != null) {
+        AreaStyle? areaStyle = getAreaStyle(group, group.groupIndex);
+        areaStyle?.drawPath(canvas, mPaint, path);
+        LineStyle? lineStyle = getLineStyle(group, group.groupIndex);
+        lineStyle?.drawPath(canvas, mPaint, path, drawDash: true, needSplit: false);
+      }
+
+      if (series.symbolFun == null || !theme.showSymbol) {
         return;
       }
-      areaStyle?.drawPath(canvas, mPaint, group.path);
-      lineStyle?.drawPath(canvas, mPaint, group.path, drawDash: true, needSplit: false);
-      if (!drawSymbol) {
-        return;
-      }
+
       SymbolDesc desc = SymbolDesc();
       for (int i = 0; i < group.nodeList.length; i++) {
         desc.center = group.nodeList[i].offset;
@@ -93,5 +107,4 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
     }
     return lineStyle;
   }
-
 }

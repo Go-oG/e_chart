@@ -64,35 +64,18 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
     nodeList = newNodeList;
     nodeMap = newNodeMap;
+    List<SingleNode<T, P>> oldList = drawNodeList;
+    drawNodeList = [];
     if (newNodeList.length <= thresholdSize) {
       _pageMap = splitDataByPage(newNodeList, 0, newNodeList.length);
     } else {
       await splitData(newNodeList);
     }
-    if (series.animation == null) {
-      drawNodeList = getNeedShowData();
-      return;
-    }
-
-    List<SingleNode<T, P>> showData = getNeedShowData();
-    if (showData.isEmpty) {
-      drawNodeList = getNeedShowData();
-      return;
-    }
-
-    List<SingleNode<T, P>> oldList = [];
-    for (var node in showData) {
-      var d = oldNodeMap[node.data];
-      if (d != null) {
-        oldList.add(d);
-      }
-    }
-
+    List<SingleNode<T,P>> showData=getNeedShowData();
     ///动画
     DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldList, showData, (p0) => p0, (a, b, c) {
       return onCreateAnimatorObj(a, b, c, type);
     });
-
     Map<SingleNode<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
           key,
           MapNode(value.rect, value.position, value.arc),
@@ -107,8 +90,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       drawNodeList = diffResult.curList;
     };
     doubleTween.endListener = () {
-      onAnimatorEnd(diffResult, type);
       drawNodeList = diffResult.finalList;
+      onAnimatorEnd(diffResult, type);
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
