@@ -2,41 +2,11 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class PolarCoord extends CircleCoord<PolarConfig> {
-  PolarCoord(super.props);
-
-  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
-
-  Offset getCenter();
-
-  num getStartAngle();
-
-  BaseScale getScale(bool angleAxis);
-}
-
-class PolarPosition {
-  final Offset center;
-
-  ///当radius是一个范围时起长度为2 否则为1
-  final List<num> radius;
-
-  ///当angle是一个范围时起长度为2 否则为1
-  final List<num> angle;
-
-  PolarPosition(this.center, this.radius, this.angle);
-
-  @override
-  String toString() {
-    return "$runtimeType $center radius:$radius angle:$angle";
-  }
-}
-
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
-  late final AngleAxisImpl<PolarCoord> _angleAxis;
-  late final RadiusAxisImpl _radiusAxis;
-
+  late AngleAxisImpl<PolarCoord> _angleAxis;
+  late RadiusAxisImpl _radiusAxis;
   Offset center = Offset.zero;
 
   PolarCoordImpl(super.props);
@@ -54,37 +24,42 @@ class PolarCoordImpl extends PolarCoord {
   @override
   void onHoverMove(Offset offset, Offset last) {}
 
+  Size measureSize = Size.zero;
+
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     double size = m.min(parentWidth, parentHeight);
-    size = props.radius.convert(size) * 2;
+    measureSize = Size(parentWidth, parentHeight);
+    size = props.radius.last.convert(size) * 2;
+    _angleAxis.doMeasure(size, size);
+    _radiusAxis.doMeasure(size, size);
     return Size.square(size);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     center = Offset(props.center[0].convert(width), props.center[1].convert(height));
+    contentBox = Rect.fromCircle(center: center, radius: width / 2);
+    double size = m.min(measureSize.width, measureSize.height);
+    double ir = props.radius.length > 1 ? props.radius.first.convert(size) : 0;
+    double or = width / 2;
 
-    double r = width / 2;
     AngleAxis angleAxis = props.angleAxis;
     var angleAttrs = AngleAxisAttrs(
       center,
       angleAxis.offsetAngle.toDouble(),
-      r + angleAxis.radiusOffset,
+      [ir, or],
       scaleYFactor,
       scrollYOffset,
       clockwise: angleAxis.clockwise,
     );
-    var radiusAttrs = RadiusAxisAttrs(
-      center,
-      angleAxis.offsetAngle,
-      scaleXFactor,
-      scrollXOffset,
-      boxBounds,
-      center,
-      circlePoint(r, props.radiusAxis.offsetAngle, center),
-    );
     _angleAxis.doLayout(angleAttrs, _getAngleDataSet());
+
+    num angle = props.radiusAxis.offsetAngle;
+    Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
+    Offset eo = circlePoint(or, angle, center);
+
+    var radiusAttrs = RadiusAxisAttrs(center, angle, 1, 1, contentBox, so, eo);
     _radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
 
     for (var c in children) {
@@ -126,6 +101,13 @@ class PolarCoordImpl extends PolarCoord {
   PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData) {
     List<num> angles = _angleAxis.dataToAngle(angleData);
     List<num> r = _radiusAxis.dataToRadius(radiusData);
+    if (props.radius.length > 1) {
+      double ir = _radiusAxis.attrs.start.distance2(_radiusAxis.attrs.center);
+      for (int i = 0; i < r.length; i++) {
+        r[i] = r[i] + ir;
+      }
+    }
+
     return PolarPosition(center, r, angles);
   }
 
@@ -144,4 +126,33 @@ class PolarCoordImpl extends PolarCoord {
   num getStartAngle() {
     return _angleAxis.axis.offsetAngle;
   }
+}
+
+class PolarPosition {
+  final Offset center;
+
+  ///当radius是一个范围时起长度为2 否则为1
+  final List<num> radius;
+
+  ///当angle是一个范围时起长度为2 否则为1
+  final List<num> angle;
+
+  const PolarPosition(this.center, this.radius, this.angle);
+
+  @override
+  String toString() {
+    return "$runtimeType $center radius:$radius angle:$angle";
+  }
+}
+
+abstract class PolarCoord extends CircleCoord<PolarConfig> {
+  PolarCoord(super.props);
+
+  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
+
+  Offset getCenter();
+
+  num getStartAngle();
+
+  BaseScale getScale(bool angleAxis);
 }

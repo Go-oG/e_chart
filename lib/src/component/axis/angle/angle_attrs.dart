@@ -4,7 +4,7 @@ import '../axis_attrs.dart';
 
 class AngleAxisAttrs extends AxisAttrs {
   final Offset center;
-  final double radius;
+  final List<double> radius;
   final double angleOffset;
   final bool clockwise;
 
@@ -13,7 +13,7 @@ class AngleAxisAttrs extends AxisAttrs {
   AngleAxisAttrs copyWith({
     Offset? center,
     double? angleOffset,
-    double? radius,
+    List<double>? radius,
     double? scaleRatio,
     double? scroll,
     bool? clockwise,

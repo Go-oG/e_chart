@@ -28,7 +28,7 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
 
   @override
   void onHoverEnd() {
-    _layout.clearHover();
+    _layout.onHoverEnd();
   }
 
   @override

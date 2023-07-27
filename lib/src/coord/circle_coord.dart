@@ -12,7 +12,7 @@ abstract class CircleCoord<T extends CircleCoordConfig> extends Coord<T> {
   Size onMeasure(double parentWidth, double parentHeight) {
     double w = parentWidth;
     double h = parentHeight;
-    double d = props.radius.convert(min(w, h));
+    double d = props.radius.last.convert(min(w, h));
     return Size(d, d);
   }
 
@@ -26,10 +26,10 @@ abstract class CircleCoord<T extends CircleCoordConfig> extends Coord<T> {
 
 abstract class CircleCoordConfig extends CoordConfig {
   List<SNumber> center;
-  SNumber radius;
+  List<SNumber> radius;
 
   CircleCoordConfig({
-    this.radius = const SNumber.percent(50),
+    this.radius = const [SNumber.zero, SNumber.percent(40)],
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
     super.enableClick,
     super.enableDrag,

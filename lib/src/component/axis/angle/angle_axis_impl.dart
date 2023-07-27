@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
-///不会绘制最后一个label和tick
+///TODO 后面优化
 class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult, C> {
   static const int maxAngle = 360;
   final tmpTick = MainTick();
@@ -25,10 +25,12 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
 
   @override
   AngleAxisLayoutResult onLayout(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
+    double or = attrs.radius.last;
     Arc arc = Arc(
       center: attrs.center,
-      outRadius: attrs.radius,
-      innerRadius: 0,
+      outRadius: or,
+      innerRadius: ir,
       startAngle: attrs.angleOffset,
       sweepAngle: attrs.clockwise ? maxAngle : -maxAngle,
     );
@@ -44,13 +46,16 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / count;
     List<Arc> list = [];
+    double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
+    double or = attrs.radius.last;
+
     for (int i = 0; i < count; i++) {
       num sa = attrs.angleOffset + angleInterval * i;
       Arc arc = Arc(
         startAngle: sa,
         sweepAngle: angleInterval,
-        outRadius: attrs.radius,
-        innerRadius: 0,
+        outRadius: or,
+        innerRadius: ir,
         center: attrs.center,
       );
       list.add(arc);
@@ -71,9 +76,8 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
     if (minorSN < 0) {
       minorSN = 0;
     }
-
-    num r = attrs.radius;
-    num minorR = attrs.radius;
+    num r = attrs.radius.last;
+    num minorR = attrs.radius.last;
     if (tick.inside) {
       r -= tick.length;
       minorR -= minorTick.length;
@@ -84,7 +88,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
 
     for (int i = 0; i < tickCount; i++) {
       num angle = attrs.angleOffset + angleInterval * i;
-      Offset so = circlePoint(attrs.radius, angle, attrs.center);
+      Offset so = circlePoint(attrs.radius.last, angle, attrs.center);
       Offset eo = circlePoint(r, angle, attrs.center);
       List<TickResult> minorList = [];
       int oi = i * minorSN;
@@ -102,7 +106,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       }
 
       for (int j = 1; j < minorTick.splitNumber; j++) {
-        Offset minorSo = circlePoint(attrs.radius, angle + minorInterval * j, attrs.center);
+        Offset minorSo = circlePoint(attrs.radius.last, angle + minorInterval * j, attrs.center);
         Offset minorEo = circlePoint(minorR, angle + minorInterval * j, attrs.center);
         minorList.add(TickResult(oi + j, i, tickCount, minorSo, minorEo));
       }
@@ -122,7 +126,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
     MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
 
     AxisLabel axisLabel = axis.axisStyle.axisLabel;
-    num r = attrs.radius;
+    num r = attrs.radius.last;
     if (tick.inside == axisLabel.inside) {
       r += axisLabel.margin + axisLabel.padding;
     } else {
@@ -174,7 +178,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
   TextDrawConfig onLayoutAxisName() {
     DynamicText? label = titleNode.label;
     Offset start = attrs.center;
-    Offset end = circlePoint(attrs.radius, attrs.angleOffset, attrs.center);
+    Offset end = circlePoint(attrs.radius.last, attrs.angleOffset, attrs.center);
     if (axis.nameAlign == Align2.center || (label == null || label.isEmpty)) {
       return TextDrawConfig(Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
     }
@@ -222,7 +226,8 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       LineStyle? style = axisStyle.getSplitLineStyle(i, maxCount, theme);
       if (style != null) {
         Offset end = circlePoint(arc.outRadius, arc.startAngle, arc.center);
-        style.drawPolygon(canvas, paint, [attrs.center, end]);
+        Offset start = arc.innerRadius <= 0 ? attrs.center : circlePoint(arc.innerRadius, arc.startAngle, arc.center);
+        style.drawPolygon(canvas, paint, [start, end]);
       }
     });
   }
@@ -294,7 +299,7 @@ class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAt
       each(layoutResult.label, (label, i) {
         var labelStyle = axisStyle.getLabelStyle(i, maxCount, theme);
         var minorStyle = axisStyle.getMinorLabelStyle(i, maxCount, theme);
-        bool b1 = (labelStyle != null && labelStyle.show && (i != maxCount - 1));
+        bool b1 = (labelStyle != null && labelStyle.show);
         bool b2 = (minorStyle != null && minorStyle.show);
         if (b1 && label.text != null && label.text!.isNotEmpty) {
           if (axis.isCategoryAxis || i != maxCount - 1) {

@@ -21,7 +21,9 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     titleNode = AxisTitleNode(axis.name);
   }
 
-  void doMeasure(double parentWidth, double parentHeight) {}
+  void doMeasure(double parentWidth, double parentHeight) {
+
+  }
 
   void doLayout(L attrs, List<DynamicData> dataSet) {
     this.attrs = attrs;

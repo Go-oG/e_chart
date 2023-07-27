@@ -28,7 +28,7 @@ class CandleStickView extends CoordChildView<CandleStickSeries> with GridChild {
 
   @override
   void onHoverEnd() {
-    _layout.clearHover();
+    _layout.onHoverEnd();
   }
 
   @override
