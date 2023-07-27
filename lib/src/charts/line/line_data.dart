@@ -16,4 +16,9 @@ class LineGroupData extends BaseGroupData<LineItemData> {
 
 class LineItemData extends BaseItemData {
   LineItemData(DynamicData x, num value, {super.id}) : super(x, value, 0);
+
+  @override
+  String toString() {
+    return "X:${x} v:${up.toStringAsFixed(2)}";
+  }
 }

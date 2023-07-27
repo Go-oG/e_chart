@@ -126,6 +126,11 @@ class PolarCoordImpl extends PolarCoord {
   num getStartAngle() {
     return _angleAxis.axis.offsetAngle;
   }
+
+  @override
+  List<double> getRadius() {
+    return _angleAxis.attrs.radius;
+  }
 }
 
 class PolarPosition {
@@ -143,6 +148,10 @@ class PolarPosition {
   String toString() {
     return "$runtimeType $center radius:$radius angle:$angle";
   }
+
+  Offset get position{
+    return circlePoint(radius.last, angle.last,center);
+  }
 }
 
 abstract class PolarCoord extends CircleCoord<PolarConfig> {
@@ -151,6 +160,8 @@ abstract class PolarCoord extends CircleCoord<PolarConfig> {
   PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
 
   Offset getCenter();
+
+  List<double> getRadius();
 
   num getStartAngle();
 

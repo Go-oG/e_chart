@@ -73,7 +73,23 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
   }
 
   void drawForPolar(Canvas canvas) {
-    ///TODO 待实现
+    double t = helper.getAnimatorPercent();
+    if (t == 0) {
+      return;
+    }
+    Offset offset = layoutHelper.getTranslation();
+    var lineList = helper.getLineNodeList();
+    var theme = context.config.theme.lineTheme;
+    canvas.save();
+    canvas.translate(offset.dx, 0);
+    each(lineList, (lineNode, p1) {
+      bool needSymbol = series.symbolFun != null || theme.showSymbol;
+      List<SymbolNode> symbolList = drawLineForPolar(canvas, lineNode, theme, t, needSymbol);
+      if (needSymbol && symbolList.isNotEmpty) {
+        drawSymbolForPolar(canvas, symbolList, theme);
+      }
+    });
+    canvas.restore();
   }
 
   void drawLine(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
@@ -98,6 +114,30 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
     }
   }
 
+  List<SymbolNode> drawLineForPolar(Canvas canvas, LineNode lineNode, LineTheme theme, double percent, bool needSymbol) {
+    if (lineNode.borderList.isEmpty) {
+      return [];
+    }
+
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.groupIndex, null);
+    lineNode.lineStyle = ls;
+    Set<SymbolNode> symbolSet = {};
+    for (var border in lineNode.borderList) {
+      var path = border.path.percentPath(percent);
+      drawAreaForPolar(canvas, lineNode, path, theme);
+      ls?.drawPath(canvas, mPaint, path, needSplit: false);
+      if (!needSymbol) {
+        continue;
+      }
+      for (var symbol in lineNode.symbolMap.values) {
+        if (path.contains(symbol.offset)) {
+          symbolSet.add(symbol);
+        }
+      }
+    }
+    return List.from(symbolSet);
+  }
+
   void drawArea(Canvas canvas, LineNode lineNode, Rect clipRect, Offset scroll, LineTheme theme) {
     if (lineNode.areaList.isEmpty) {
       return;
@@ -111,6 +151,18 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
     for (var area in lineNode.areaList) {
       style.drawPath(canvas, mPaint, area.originPath);
     }
+  }
+
+  void drawAreaForPolar(Canvas canvas, LineNode node, Path path, LineTheme theme) {
+    var style = layoutHelper.buildAreaStyle(null, node.data, node.groupIndex, null);
+    node.areaStyle = style;
+    if (style == null) {
+      return;
+    }
+    Offset center = layoutHelper.findPolarCoord().getCenter();
+    path.lineTo(center.dx, center.dy);
+    path.close();
+    style.drawPath(canvas, mPaint, path);
   }
 
   void drawSymbol(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
@@ -133,8 +185,22 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
     });
   }
 
-  /// 绘制柱状图
-  void drawBarElement(Canvas canvas) {}
+  void drawSymbolForPolar(Canvas canvas, List<SymbolNode> symbolList, LineTheme theme) {
+    SymbolDesc desc = SymbolDesc();
+    each(symbolList, (symbol, p1) {
+      var cl = layoutHelper.buildLineStyle(null, symbol.group, symbol.groupIndex, null)?.color;
+      if (cl != null) {
+        desc.fillColor = [cl];
+      }
+      desc.center = symbol.offset;
+      if (series.symbolFun != null) {
+        ChartSymbol? cs = series.symbolFun?.call(symbol.data, symbol.group);
+        cs?.draw(canvas, mPaint, desc);
+      } else if (theme.showSymbol) {
+        theme.symbol.draw(canvas, mPaint, desc);
+      }
+    });
+  }
 
   /// 绘制标记点
   void drawMakePoint(Canvas canvas) {}
