@@ -61,9 +61,6 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     List<TickResult> resultList = [];
     for (int i = indexList[0]; i < indexList[1]; i++) {
       double t = i.toDouble();
-      if (axis.isCategoryAxis && axis.categoryCenter) {
-        t += 0.5;
-      }
       Offset offset = center.translate(interval * t, 0);
       Offset start = offset.rotateOffset(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotateOffset(angle, center: center);
@@ -93,6 +90,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     if (tickCount <= 0) {
       tickCount = 1;
     }
+
     final double interval = distance / (tickCount - 1);
 
     ///计算索引

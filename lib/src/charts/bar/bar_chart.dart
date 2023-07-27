@@ -111,7 +111,7 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
     Offset offset = helper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, 0);
-    each(helper.nodeList, (node, i) {
+    each(helper.drawNodeList, (node, i) {
       var as = helper.buildAreaStyle(node.data, node.parent, node.groupIndex, node.status);
       node.areaStyle = as;
       Path path = node.arc.toPath(true);
@@ -129,7 +129,7 @@ class BarView extends CoordChildView<BarSeries> with GridChild {
     bool vertical = series.direction == Direction.vertical;
     double scroll = vertical ? offset.dx : offset.dy;
     scroll = scroll.abs();
-    var list = (helper as BarGridHelper).getNeedShowData();
+    var list = (helper as BarGridHelper).drawNodeList;
     canvas.save();
     canvas.translate(offset.dx, 0);
     each(list, (node, p1) {

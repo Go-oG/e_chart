@@ -13,7 +13,6 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     extends ChartLayout<S, List<P>> {
   List<SingleNode<T, P>> nodeList = [];
   Map<T, SingleNode<T, P>> nodeMap = {};
-
   List<SingleNode<T, P>> drawNodeList = [];
 
   @override

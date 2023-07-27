@@ -6,8 +6,10 @@ import 'package:flutter/widgets.dart';
 /// 雷达图布局
 class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
   List<RadarGroupNode> _groupNodeList = [];
+
   List<RadarGroupNode> get groupNodeList => _groupNodeList;
-  List<RadarNode> nodeList = [];
+
+  List<RadarNode> _nodeList = [];
   Offset center = Offset.zero;
   double radius = 0;
 
@@ -20,7 +22,7 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
     List<RadarNode> nodeList = [];
     List<RadarGroupNode> gl = [];
     each(data, (data, p1) {
-      var groupNode = RadarGroupNode(p1,data, []);
+      var groupNode = RadarGroupNode(p1, data, []);
       gl.add(groupNode);
       int i = 0;
       for (var c in data.childData) {
@@ -31,37 +33,37 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
       }
       nodeList.addAll(groupNode.nodeList);
     });
-    _groupNodeList = gl;
 
-    DiffResult<RadarNode, ItemData> result = DiffUtil.diff(this.nodeList, nodeList, (p0) => p0.data, (p0, p1, newData) {
+    DiffResult<RadarNode, ItemData> result = DiffUtil.diff(_nodeList, nodeList, (p0) => p0.data, (p0, p1, newData) {
       return RadarNode(p0, center);
     });
     Map<ItemData, Offset> startMap = result.startMap.map((key, value) => MapEntry(key, value.offset));
     Map<ItemData, Offset> endMap = result.endMap.map((key, value) => MapEntry(key, value.offset));
 
+    _groupNodeList = gl;
     OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
     ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
-    doubleTween.startListener = () {
-      this.nodeList = result.curList;
-    };
+    doubleTween.startListener = () {};
     doubleTween.endListener = () {
-      this.nodeList = result.finalList;
+      _nodeList = result.finalList;
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
       var v = doubleTween.value;
       each(result.curList, (p0, p1) {
-        offsetTween.changeValue(startMap[p0.data]!, endMap[p0.data]!);
+        var s = startMap[p0.data] ?? center;
+        var e = endMap[p0.data] ?? center;
+        offsetTween.changeValue(s, e);
         p0.offset = offsetTween.safeGetValue(v);
       });
-      each(gl, (group, p1) {
-        group.updatePath();
-      });
-
+      for (var e in _groupNodeList) {
+        e.updatePath();
+      }
       notifyLayoutUpdate();
     });
     doubleTween.start(context, type == LayoutType.update);
   }
+
 }
 
 class RadarGroupNode {
@@ -69,9 +71,11 @@ class RadarGroupNode {
   final GroupData data;
   final List<RadarNode> nodeList;
 
-  RadarGroupNode(this.groupIndex,this.data, this.nodeList);
+  RadarGroupNode(this.groupIndex, this.data, this.nodeList);
 
   Path? _path;
+
+  Path? get pathOrNull => _path;
 
   Path get path {
     _path ??= buildPath();
@@ -95,7 +99,6 @@ class RadarGroupNode {
     path.close();
     return path;
   }
-
 }
 
 class RadarNode {
