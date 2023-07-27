@@ -6,15 +6,14 @@ import 'package:flutter/animation.dart';
 import 'base_stack_helper.dart';
 import 'model/axis_index.dart';
 
-///适用于极坐标系和笛卡尔坐标系的布局器
+///适用于极坐标系的布局帮助者
 abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends BaseStackLayoutHelper<T, P, S> {
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
-    int polarIndex = series.polarIndex;
     bool vertical = series.direction == Direction.vertical;
     final DynamicData tmpData = DynamicData(1000000);
-    var coord = context.findPolarCoord(polarIndex);
+    var coord = findPolarCoord();
     PolarPosition position;
     if (vertical) {
       position = coord.dataToPosition(x, tmpData.change(groupNode.nodeList.first.getUp()));

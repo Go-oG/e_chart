@@ -12,6 +12,8 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
 
   List<LineNode> get lineList => _lineList;
 
+  double _animatorPercent = 1;
+
   @override
   List<LineNode> getLineNodeList() {
     return _lineList;
@@ -28,17 +30,16 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     final Arc arc = groupNode.arc;
 
     DynamicData tmpData = DynamicData(0);
-    each(groupNode.nodeList, (node, i) {
-      int polarIndex = series.polarIndex;
-      var coord = context.findPolarCoord(polarIndex);
+    each(groupNode.nodeList, (colNode, i) {
+      var coord = findPolarCoord();
 
       PolarPosition up, down;
       if (vertical) {
-        up = coord.dataToPosition(x, tmpData.change(node.getUp()));
-        down = coord.dataToPosition(x, tmpData.change(node.getDown()));
+        up = coord.dataToPosition(x, tmpData.change(colNode.getUp()));
+        down = coord.dataToPosition(x, tmpData.change(colNode.getDown()));
       } else {
-        up = coord.dataToPosition(tmpData.change(node.getUp()), x);
-        down = coord.dataToPosition(tmpData.change(node.getDown()), x);
+        up = coord.dataToPosition(tmpData.change(colNode.getUp()), x);
+        down = coord.dataToPosition(tmpData.change(colNode.getDown()), x);
       }
 
       num dx = (up.radius[0] - down.radius[0]).abs();
@@ -50,120 +51,110 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
       } else {
         tmpArc = arc.copy(outRadius: dx);
       }
-      node.arc = tmpArc;
+      colNode.arc = tmpArc;
+    });
+  }
+
+  @override
+  void onLayoutNode(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
+    final bool vertical = series.direction == Direction.vertical;
+    var coord = findPolarCoord();
+    each(columnNode.nodeList, (node, i) {
+      var data = node.data;
+      if (data == null) {
+        return;
+      }
+      PolarPosition p;
+      if (vertical) {
+        p = coord.dataToPosition(data.x, DynamicData(node.up));
+      } else {
+        p = coord.dataToPosition(DynamicData(node.up), data.x);
+      }
+      if(vertical){
+        num r=(p.radius.first+p.radius.last)/2;
+        node.position=circlePoint(r, p.angle.last,p.center);
+      }else{
+        num a=(p.angle.first+p.angle.last)/2;
+        node.position=circlePoint(p.radius.last, a,p.center);
+      }
     });
   }
 
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
+    _animatorPercent = 0;
     await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    _updateLine(List.from(nodeMap.values));
+    await _updateLine(newNodeList);
   }
 
-  void _updateLine(List<SingleNode<LineItemData, LineGroupData>> list) {
-    Map<LineGroupData, int> groupSortMap = {};
-    Map<String, int> sortMap = {};
-    Map<String, Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>>> stackMap = {};
-    Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> normalMap = {};
-    each(list, (ele, p1) {
-      groupSortMap[ele.parent] = ele.groupIndex;
-      if (ele.parent.isStack) {
-        var stackId = ele.parent.stackId!;
-        Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> map = stackMap[stackId] ?? {};
-        stackMap[stackId] = map;
-        List<SingleNode<LineItemData, LineGroupData>> tmpList = map[ele.parent] ?? [];
-        map[ele.parent] = tmpList;
-        tmpList.add(ele);
-        int? sort = sortMap[stackId];
-        if (sort == null) {
-          sortMap[stackId] = ele.groupIndex;
-        } else {
-          if (sort > ele.groupIndex) {
-            sortMap[stackId] = ele.groupIndex;
-          }
-        }
-      } else {
-        List<SingleNode<LineItemData, LineGroupData>> tmpList = normalMap[ele.parent] ?? [];
-        normalMap[ele.parent] = tmpList;
-        tmpList.add(ele);
-      }
-    });
+  @override
+  void onAnimatorStart(var result, LayoutType type) {
+    super.onAnimatorStart(result, type);
+    _animatorPercent = 0;
+  }
+
+  @override
+  void onAnimatorUpdateEnd(var result, double t, LayoutType type) {
+    super.onAnimatorUpdateEnd(result, t, type);
+    _animatorPercent = t;
+  }
+
+  @override
+  void onAnimatorEnd(var result, LayoutType type) {
+    super.onAnimatorEnd(result, type);
+    _animatorPercent = 1;
+  }
+
+  Future<void> _updateLine(List<SingleNode<LineItemData, LineGroupData>> list) async {
+    Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> tmpNodeMap = {};
+    for (var node in list) {
+      List<SingleNode<LineItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];
+      tmpNodeMap[node.parent] = tmpList;
+      tmpList.add(node);
+    }
+    tmpNodeMap.removeWhere((key, value) => value.isEmpty);
 
     List<LineNode> resultList = [];
+    Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> stackMap = {};
 
-    ///先处理普通的
-    normalMap.forEach((key, value) {
-      if (value.isEmpty) {
-        return;
+    tmpNodeMap.forEach((key, value) {
+      if (key.isNotStack) {
+        var index = value.first.groupIndex;
+        resultList.add(buildNormalResult(index, key, value));
+      } else {
+        stackMap[key] = value;
       }
-      var group = list.first.parent;
-      var index = list.first.groupIndex;
-      resultList.add(buildNormalResult(index, group, list));
     });
 
     ///处理堆叠数据
-    List<String> keyList = List.from(stackMap.keys);
+    List<LineGroupData> keyList = List.from(stackMap.keys);
     keyList.sort((a, b) {
-      return sortMap[a]!.compareTo(sortMap[b]!);
+      var ai = stackMap[a]!.first.groupIndex;
+      var bi = stackMap[b]!.first.groupIndex;
+      return ai.compareTo(bi);
     });
-
-    each(keyList, (key, p1) {
-      Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> map = stackMap[key]!;
-      List<LineGroupData> keyList2 = List.from(map.keys);
-      keyList2.sort((a, b) {
-        return groupSortMap[a]!.compareTo(groupSortMap[b]!);
-      });
-      for (int i = 0; i < keyList2.length; i++) {
-        var group = keyList2[i];
-        var cur = map[group]!;
-        resultList.add(buildStackResult(cur.first.groupIndex, group, cur, resultList, i));
-      }
+    each(keyList, (key, list) {
+      var nl = stackMap[key]!;
+      resultList.add(buildStackResult(nl.first.groupIndex, key, nl, resultList, list));
     });
     _lineList = resultList;
   }
 
   LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
     List<PathNode> borderList = _buildBorderPath(list);
-    List<AreaNode> areaList = buildAreaPathForNormal(list);
-
     List<Offset?> ol = _collectOffset(list);
     Map<LineItemData, SymbolNode> nodeMap = {};
     each(ol, (off, i) {
+      if (i >= group.data.length) {
+        return;
+      }
       var data = group.data[i];
       if (data == null || off == null) {
         return;
       }
       nodeMap[data] = SymbolNode(off, data, group, groupIndex);
     });
-
-    return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap);
-  }
-
-  List<AreaNode> buildAreaPathForNormal(List<SingleNode<LineItemData, LineGroupData>> curList) {
-    if (curList.length < 2) {
-      return [];
-    }
-    var group = curList.first.parent;
-    var index = curList.first.groupIndex;
-    StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = buildLineStyle(null, group, index, null);
-    bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
-
-    List<List<Offset>> splitResult = _splitList(nodeMap.values);
-    splitResult.removeWhere((element) => element.length < 2);
-    List<AreaNode> areaList = [];
-    for (var itemList in splitResult) {
-      Area area;
-      var downList = [Offset(itemList.first.dx, height), Offset(itemList.last.dx, height)];
-      if (stepType == null) {
-        area = Area(itemList, downList, upSmooth: smooth, downSmooth: false);
-      } else {
-        Line line = _buildLine(itemList, stepType, false, []);
-        area = Area(line.pointList, downList, upSmooth: smooth, downSmooth: false);
-      }
-      areaList.add(AreaNode(area));
-    }
-    return areaList;
+    return LineNode(groupIndex, group, ol, borderList, [], nodeMap);
   }
 
   LineNode buildStackResult(
@@ -177,7 +168,6 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
       return LineNode(groupIndex, group, [], [], [], {});
     }
     List<PathNode> borderList = _buildBorderPath(nodeList);
-    List<AreaNode> areaList = buildAreaPathForStack(nodeList, resultList, curIndex);
 
     List<Offset?> ol = _collectOffset(nodeList);
     Map<LineItemData, SymbolNode> nodeMap = {};
@@ -189,97 +179,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
       nodeMap[data] = SymbolNode(off, data, group, groupIndex);
     });
 
-    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap);
-  }
-
-  List<AreaNode> buildAreaPathForStack(List<SingleNode<LineItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
-    if (curList.length < 2) {
-      return [];
-    }
-    if (curIndex <= 0) {
-      return buildAreaPathForNormal(curList);
-    }
-    var group = curList.first.parent;
-    var index = curList.first.groupIndex;
-    var preGroup = resultList[curIndex - 1].data;
-    StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = buildLineStyle(null, group, index, null);
-    bool smooth = (stepType == null) ? (lineStyle?.smooth ?? false) : false;
-    StepType? preStepType = series.stepLineFun?.call(preGroup);
-    LineStyle? preLineStyle = buildLineStyle(null, preGroup, resultList[curIndex - 1].groupIndex, null);
-    bool preSmooth = (preStepType == null) ? (preLineStyle?.smooth ?? false) : false;
-
-    List<List<List<Offset>>> splitResult = [];
-    if (series.connectNulls) {
-      List<Offset> topList = [];
-      List<Offset> preList = [];
-      each(curList, (p0, i) {
-        if (p0.data != null) {
-          Offset offset = p0.position;
-          topList.add(offset);
-          Offset? preOffset = findBottomOffset(curIndex, resultList, i);
-          preOffset ??= Offset(offset.dx, height);
-          preList.add(preOffset);
-        }
-      });
-      if (topList.length >= 2) {
-        splitResult.add([topList, preList]);
-      }
-    } else {
-      List<Offset> topList = [];
-      List<Offset> preList = [];
-      each(curList, (p0, i) {
-        if (p0.data == null) {
-          if (topList.length >= 2) {
-            splitResult.add([topList, preList]);
-            topList = [];
-            preList = [];
-          }
-          return;
-        }
-        Offset offset = p0.position;
-        topList.add(offset);
-        Offset? preOffset = findBottomOffset(curIndex, resultList, i);
-        preOffset ??= Offset(offset.dx, height);
-        preList.add(preOffset);
-      });
-      if (topList.length >= 2) {
-        splitResult.add([topList, preList]);
-        topList = [];
-        preList = [];
-      }
-    }
-
-    List<AreaNode> areaList = [];
-
-    for (var list in splitResult) {
-      var topList = list[0];
-      if (stepType != null) {
-        topList = _buildLine(topList, stepType, false, []).pointList;
-      }
-      var preList = list[1];
-      if (preStepType != null) {
-        preList = _buildLine(preList, preStepType, false, []).pointList;
-      }
-      var area = Area(topList, preList, upSmooth: smooth, downSmooth: preSmooth);
-      areaList.add(AreaNode(area));
-    }
-    return areaList;
-  }
-
-  Offset? findBottomOffset(int curIndex, List<LineNode> resultList, int arrayIndex) {
-    int i = curIndex - 1;
-    while (i >= 0) {
-      var result = resultList[i];
-      if (result.offsetList.length > arrayIndex) {
-        var offset = result.offsetList[arrayIndex];
-        if (offset != null) {
-          return offset;
-        }
-      }
-      i--;
-    }
-    return null;
+    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, [], nodeMap);
   }
 
   ///公用部分
@@ -288,7 +188,6 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
       return [];
     }
     var group = nodeList.first.parent;
-
     List<List<Offset>> olList = _splitList(nodeList);
     olList.removeWhere((element) => element.length < 2);
     List<PathNode> borderList = [];
@@ -379,6 +278,6 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
 
   @override
   double getAnimatorPercent() {
-    return 1;
+    return _animatorPercent;
   }
 }
