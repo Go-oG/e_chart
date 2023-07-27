@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 
 ///雷达图坐标系
 class RadarCoordImpl extends RadarCoord {
-  final Map<int, RadarAxisImpl> axisMap = {};
-
+  final Map<RadarIndicator, RadarAxisImpl> axisMap = {};
   final List<RadarSplit> splitList = [];
 
   Offset center = Offset.zero;
@@ -26,7 +25,7 @@ class RadarCoordImpl extends RadarCoord {
           nameGap: indicator.nameGap,
           nameStyle: indicator.nameStyle,
           splitNumber: 5);
-      axisMap[i] = RadarAxisImpl(context, this, axis, axisIndex: i);
+      axisMap[indicator] = RadarAxisImpl(context, this, axis, axisIndex: i);
     }
   }
 
@@ -46,27 +45,30 @@ class RadarCoordImpl extends RadarCoord {
       itemAngle *= -1;
     }
     radius = width / 2;
+
+    ///布局Axis
     num oa = props.offsetAngle;
-    axisMap.forEach((key, value) {
-      double angle = oa + value.axisIndex * itemAngle;
+    each(props.indicator, (p0, i) {
+      var axis = axisMap[p0]!;
+      double angle = oa + i * itemAngle;
       Offset o = circlePoint(radius, angle, center);
       var attrs = LineAxisAttrs(scaleXFactor, scrollXOffset, Rect.zero, center, o);
-      value.doLayout(attrs, collectChildData(value.axisIndex));
+      axis.doLayout(attrs, collectChildData(i));
     });
 
-    double radiusItem = radius / props.splitNumber;
+    double rInterval = radius / props.splitNumber;
     int axisCount = props.indicator.length;
 
     ///Shape Path
     splitList.clear();
     Path? lastPath;
     for (int i = 0; i < props.splitNumber; i++) {
-      double r = radiusItem * (i + 1);
+      double r = rInterval * (i + 1);
       Path path;
       if (props.shape == RadarShape.circle) {
         path = Circle(r: r, center: center).toPath(false);
       } else {
-        path = PositiveShape(r: r, count: axisCount, center: center).toPath(false);
+        path = PositiveShape(r: r, count: axisCount, center: center, angleOffset: props.offsetAngle).toPath(false);
       }
       if (lastPath == null) {
         lastPath = path;
@@ -129,23 +131,6 @@ class RadarCoordImpl extends RadarCoord {
     axisMap.forEach((key, value) {
       value.draw(canvas, mPaint, boxBounds);
     });
-
-    ///绘制标签
-    int i = 0;
-    for (var indicator in props.indicator) {
-      LabelStyle style =
-          props.labelStyleFun?.call(indicator) ?? const LabelStyle(textStyle: TextStyle(color: Colors.black87, fontSize: 14));
-      if (!style.show) {
-        i++;
-        continue;
-      }
-      RadarAxisImpl node = axisMap[i]!;
-      Offset offset = node.attrs.end;
-      double angle = offset.offsetAngle();
-      TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle));
-      style.draw(canvas, mPaint, indicator.name, config);
-      i++;
-    }
   }
 
   ///给定一个数据返回其对应数据在坐标系中的位置(视图位置为中心点)
@@ -154,11 +139,10 @@ class RadarCoordImpl extends RadarCoord {
     if (axisIndex < 0) {
       axisIndex = 0;
     }
-    RadarAxisImpl? node = axisMap[axisIndex];
+    RadarAxisImpl? node = axisMap[props.indicator[axisIndex]];
     if (node == null) {
       throw ChartError("无法找到节点");
     }
-
     double angle = node.attrs.end.offsetAngle(node.attrs.start);
     double r = node.dataToRadius(data);
     return RadarPosition(center, r, angle);
@@ -201,6 +185,5 @@ class RadarPosition {
 class RadarSplit {
   final int index;
   final Path splitPath;
-
   RadarSplit(this.index, this.splitPath);
 }

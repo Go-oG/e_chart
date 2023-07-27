@@ -4,12 +4,13 @@ import '../../../model/chart_error.dart';
 import '../../../style/area_style.dart';
 import '../../../style/line_style.dart';
 import '../../../symbol/index.dart';
+
 ///Radar主题
 class RadarTheme {
   num lineWidth = 2;
   List<num> dashList = [];
   bool showSymbol = true;
-  ChartSymbol symbol = EmptySymbol();
+  ChartSymbol symbol = CircleSymbol(outerRadius: 4);
   bool fill = false;
 
   ///用于坐标轴相关的
