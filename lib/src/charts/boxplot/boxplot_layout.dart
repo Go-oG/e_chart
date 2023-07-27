@@ -134,7 +134,7 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
     return curNode;
   }
 
-  void clearHover() {
+  void onHoverEnd() {
     if (oldNode != null) {
       oldNode?.removeStates([ViewState.hover, ViewState.focused]);
       oldNode = null;

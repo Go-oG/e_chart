@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -567,6 +568,7 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
       if (context.config.scaleType == ScaleType.doubleTap) {
         _gesture.doubleClick = (e) {
           onScaleStart(toLocalOffset(e.globalPosition));
+
           ///双击放大的递增量(0.25)
           onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, true);
         };
@@ -592,13 +594,21 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
 
   bool get enableScale => series.enableScale ?? false;
 
-  void onClick(Offset offset) {}
+  void onClick(Offset offset) {
+    getLayoutHelper()?.onClick(offset);
+  }
 
-  void onHoverStart(Offset offset) {}
+  void onHoverStart(Offset offset) {
+    getLayoutHelper()?.onHoverStart(offset);
+  }
 
-  void onHoverMove(Offset offset, Offset last) {}
+  void onHoverMove(Offset offset, Offset last) {
+    getLayoutHelper()?.onHoverMove(offset);
+  }
 
-  void onHoverEnd() {}
+  void onHoverEnd() {
+    getLayoutHelper()?.onHoverEnd();
+  }
 
   void onDragStart(Offset offset) {}
 
@@ -611,6 +621,26 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   void onScaleUpdate(Offset offset, double rotation, double scale, bool doubleClick) {}
 
   void onScaleEnd() {}
+
+  ChartLayout? _layoutHelper;
+
+  @override
+  void onStart() {
+    super.onStart();
+    _layoutHelper?.removeListener(invalidate);
+    _layoutHelper = getLayoutHelper();
+    _layoutHelper?.addListener(invalidate);
+  }
+
+  @override
+  void onStop() {
+    _layoutHelper?.removeListener(invalidate);
+    super.onStop();
+  }
+
+  ChartLayout? getLayoutHelper() {
+    return null;
+  }
 }
 
 abstract class CoordChildView<T extends ChartSeries> extends SeriesView<T> {

@@ -115,7 +115,7 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickG
     return curNode;
   }
 
-  void clearHover() {
+  void onHoverEnd() {
     if (oldNode != null) {
       oldNode?.removeStates([ViewState.hover, ViewState.focused]);
       oldNode = null;

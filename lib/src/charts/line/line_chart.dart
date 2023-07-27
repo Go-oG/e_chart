@@ -9,7 +9,7 @@ import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 import 'helper/line_helper.dart';
 import 'line_node.dart';
 
-class LineView extends CoordChildView<LineSeries> with GridChild {
+class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
   late BaseStackLayoutHelper<LineItemData, LineGroupData, LineSeries> layoutHelper;
   late LineHelper helper;
 
@@ -26,36 +26,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
   }
 
   @override
-  void onHoverStart(Offset offset) {
-    layoutHelper.handleHoverOrClick(offset, false);
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    layoutHelper.handleHoverOrClick(offset, false);
-  }
-
-  @override
-  void onHoverEnd() {
-    layoutHelper.clearHover();
-  }
-
-  @override
-  void onClick(Offset offset) {
-    layoutHelper.handleHoverOrClick(offset, true);
-  }
-
-  @override
-  void onStart() {
-    super.onStart();
-    layoutHelper.addListener(invalidate);
-  }
-
-  @override
-  void onStop() {
-    layoutHelper.removeListener(invalidate);
-    super.onStop();
-  }
+  ChartLayout<ChartSeries, dynamic>? getLayoutHelper() => layoutHelper;
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
@@ -81,6 +52,11 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
   void drawForGrid(Canvas canvas) {
     Offset offset = layoutHelper.getTranslation();
     Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
+    double t = helper.getAnimatorPercent();
+    if (t != 1) {
+      clipRect = Rect.fromLTWH(clipRect.left, clipRect.top, clipRect.width * t, clipRect.height);
+    }
+
     var lineList = helper.getLineNodeList();
     var theme = context.config.theme.lineTheme;
     canvas.save();
@@ -191,5 +167,15 @@ class LineView extends CoordChildView<LineSeries> with GridChild {
   void onGridScrollEnd(Offset scroll) {
     super.onGridScrollEnd(scroll);
     layoutHelper.onGridScrollEnd(scroll);
+  }
+
+  @override
+  List<DynamicData> getAngleDataSet() {
+    return getAxisExtreme(0, false);
+  }
+
+  @override
+  List<DynamicData> getRadiusDataSet() {
+    return getAxisExtreme(0, true);
   }
 }

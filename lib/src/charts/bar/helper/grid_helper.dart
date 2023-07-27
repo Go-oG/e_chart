@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import '../../helper/model/axis_index.dart';
 
 class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
-
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
@@ -123,6 +122,14 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
   @override
   void onGridScrollChange(Offset offset) {
     super.onGridScrollChange(offset);
-    drawNodeList=getNeedShowData();
+    var list = getNeedShowData();
+
+    Map<BarItemData, SingleNode<BarItemData, BarGroupData>> map = {};
+    for (var node in list) {
+      if (node.data != null) {
+        map[node.data!] = node;
+      }
+    }
+    showNodeMap = map;
   }
 }

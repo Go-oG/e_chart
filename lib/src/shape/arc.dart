@@ -77,6 +77,10 @@ class Arc implements Shape {
     return circlePoint(r, a, center);
   }
 
+  bool get isEmpty{
+    return (sweepAngle.abs())==0||(outRadius-innerRadius).abs()==0;
+  }
+
   Path? _closePath;
   Path? _openPath;
 

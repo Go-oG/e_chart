@@ -62,18 +62,15 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
 
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
-    nodeList = newNodeList;
-    nodeMap = newNodeMap;
-    List<SingleNode<T, P>> oldList = drawNodeList;
-    drawNodeList = [];
+    List<SingleNode<T, P>> oldShowData = getNeedShowData();
     if (newNodeList.length <= thresholdSize) {
       _pageMap = splitDataByPage(newNodeList, 0, newNodeList.length);
     } else {
       await splitData(newNodeList);
     }
-    List<SingleNode<T,P>> showData=getNeedShowData();
-    ///动画
-    DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldList, showData, (p0) => p0, (a, b, c) {
+    List<SingleNode<T, P>> showData = getNeedShowData();
+
+    DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldShowData, showData, (p0) => p0, (a, b, c) {
       return onCreateAnimatorObj(a, b, c, type);
     });
     Map<SingleNode<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
@@ -87,10 +84,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
       onAnimatorStart(diffResult, type);
-      drawNodeList = diffResult.curList;
     };
     doubleTween.endListener = () {
-      drawNodeList = diffResult.finalList;
       onAnimatorEnd(diffResult, type);
       notifyLayoutEnd();
     };
@@ -205,9 +200,6 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   @override
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {}
-
-  @override
   void onAnimatorUpdate(
       SingleNode<T, P> node, double t, Map<SingleNode<T, P>, MapNode> startMap, Map<SingleNode<T, P>, MapNode> endMap, LayoutType type) {
     var s = startMap[node]!.rect;
@@ -229,11 +221,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, double t, LayoutType type) {}
 
   @override
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {}
-
-  @override
   SingleNode<T, P>? findNode(Offset offset) {
-    for (var ele in nodeList) {
+    for (var ele in getNeedShowData()) {
       if (ele.rect.contains(offset)) {
         return ele;
       }

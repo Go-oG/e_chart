@@ -57,7 +57,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
     await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    _updateLine(nodeList);
+    _updateLine(List.from(nodeMap.values));
   }
 
   void _updateLine(List<SingleNode<LineItemData, LineGroupData>> list) {
@@ -149,7 +149,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     LineStyle? lineStyle = buildLineStyle(null, group, index, null);
     bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
 
-    List<List<Offset>> splitResult = _splitList(nodeList);
+    List<List<Offset>> splitResult = _splitList(nodeMap.values);
     splitResult.removeWhere((element) => element.length < 2);
     List<AreaNode> areaList = [];
     for (var itemList in splitResult) {
@@ -321,7 +321,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     return line;
   }
 
-  List<List<Offset>> _splitList(List<SingleNode<LineItemData, LineGroupData>> nodeList) {
+  List<List<Offset>> _splitList(Iterable<SingleNode<LineItemData, LineGroupData>> nodeList) {
     List<List<Offset>> olList = [];
     List<Offset> tmpList = [];
     for (var node in nodeList) {
@@ -375,5 +375,10 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
     return theme.getLineStyle(chartTheme, groupIndex).convert(status);
+  }
+
+  @override
+  double getAnimatorPercent() {
+    return 1;
   }
 }

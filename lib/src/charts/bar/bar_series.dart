@@ -27,7 +27,7 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
   Fun3<BarItemData, BarGroupData, Align2>? alignFun;
 
   /// 背景样式
-  Fun3<BarItemData, BarGroupData, AreaStyle?>? groupStyleFun;
+  Fun3<BarItemData?, BarGroupData, AreaStyle?>? groupStyleFun;
 
   /// 标签转换
   Fun3<BarItemData, BarGroupData, String>? labelFun;

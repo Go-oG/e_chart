@@ -285,7 +285,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
     }
   }
 
-  void clearHover() {
+  void onHoverEnd() {
     if (_hoverNode == null) {
       return;
     }

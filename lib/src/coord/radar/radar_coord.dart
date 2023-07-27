@@ -29,10 +29,12 @@ class RadarCoordImpl extends RadarCoord {
     }
   }
 
+  Size measureSize=Size.zero;
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
+    measureSize=Size(parentWidth, parentHeight);
     num minValue = min([parentWidth, parentHeight]);
-    double cv = props.radius.convert(minValue);
+    double cv = props.radius.last.convert(minValue);
     cv = min([cv, minValue]) * 2;
     return Size(cv, cv);
   }
@@ -44,6 +46,7 @@ class RadarCoordImpl extends RadarCoord {
     if (!props.clockwise) {
       itemAngle *= -1;
     }
+
     radius = width / 2;
 
     ///布局Axis

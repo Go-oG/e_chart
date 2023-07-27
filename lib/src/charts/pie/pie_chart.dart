@@ -30,7 +30,7 @@ class PieView extends SeriesView<PieSeries> {
 
   @override
   void onHoverEnd() {
-    pieLayer.clearHover();
+    pieLayer.onHoverEnd();
   }
 
   @override

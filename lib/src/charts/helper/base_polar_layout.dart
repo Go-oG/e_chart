@@ -34,16 +34,16 @@ abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroup
     final num down = columnNode.nodeList.first.down;
     final num diff = up - down;
     final bool vertical = series.direction == Direction.vertical;
-    final Arc arc = columnNode.arc;
-    final num arcSize = vertical ? arc.sweepAngle : (arc.outRadius - arc.innerRadius).abs();
-    num offset = vertical ? arc.startAngle : arc.innerRadius;
+    final colArc = columnNode.arc;
+    final num arcSize = vertical ? colArc.sweepAngle : (colArc.outRadius - colArc.innerRadius).abs();
+    num offset = vertical ? colArc.startAngle : colArc.innerRadius;
     each(columnNode.nodeList, (node, i) {
       num percent = (node.up - node.down) / diff;
       num length = percent * arcSize;
       if (vertical) {
-        node.arc = arc.copy(startAngle: offset, sweepAngle: length);
+        node.arc = colArc.copy(startAngle: offset, sweepAngle: length);
       } else {
-        node.arc = arc.copy(innerRadius: offset, outRadius: offset + length);
+        node.arc = colArc.copy(innerRadius: offset, outRadius: offset + length);
       }
       offset += length;
       node.position = node.arc.centroid();
@@ -65,24 +65,59 @@ abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroup
   }
 
   @override
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {}
+  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+    Map<T, SingleNode<T, P>> map = {};
+    for (var ele in result.curList) {
+      if (ele.data != null) {
+        map[ele.data!] = ele;
+      }
+    }
+    showNodeMap = map;
+  }
 
   @override
   void onAnimatorUpdate(SingleNode<T, P> node, double t, var startMap, var endMap, LayoutType type) {
-    var s = startMap[node]!.arc;
     var e = endMap[node]!.arc;
-    node.arc = Arc.lerp(s, e, t);
+    if (series.direction == Direction.vertical) {
+      ///角度增加
+      double sweepAngle = e.sweepAngle * t;
+      node.arc = Arc(
+        innerRadius: e.innerRadius,
+        outRadius: e.outRadius,
+        sweepAngle: sweepAngle,
+        startAngle: e.startAngle,
+        center: e.center,
+      );
+    } else {
+      ///半径增加
+      double outerRadius = e.innerRadius + (e.outRadius - e.innerRadius) * t;
+      node.arc = Arc(
+        innerRadius: e.innerRadius,
+        outRadius: outerRadius,
+        sweepAngle: e.sweepAngle,
+        startAngle: e.startAngle,
+        center: e.center,
+      );
+    }
   }
 
   @override
   void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, double t, LayoutType type) {}
 
   @override
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {}
+  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+    Map<T, SingleNode<T, P>> map = {};
+    for (var ele in result.finalList) {
+      if (ele.data != null) {
+        map[ele.data!] = ele;
+      }
+    }
+    showNodeMap = map;
+  }
 
   @override
   SingleNode<T, P>? findNode(Offset offset) {
-    for (var ele in nodeList) {
+    for (var ele in nodeMap.values) {
       if (offset.inArc(ele.arc)) {
         return ele;
       }

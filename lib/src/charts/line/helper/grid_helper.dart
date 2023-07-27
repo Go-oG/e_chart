@@ -11,6 +11,8 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
 
   List<LineNode> get lineList => _lineList;
 
+  double _animatorPercent = 1;
+
   @override
   List<SingleNode<LineItemData, LineGroupData>> getPageData(List<int> pages) {
     return [];
@@ -78,8 +80,8 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
 
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
-    await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    _layoutLineNode(nodeList);
+    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    _lineList = await _layoutLineNode(newNodeList);
   }
 
   @override
@@ -88,13 +90,35 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   }
 
   @override
-  void onGridScrollEnd(Offset offset) {
-
+  SingleNode<LineItemData, LineGroupData> onCreateAnimatorObj(var data, var node, bool newData, LayoutType type) {
+    return node;
   }
 
-  ///布局直线使用的数据
-  Future<void> _layoutLineNode(List<SingleNode<LineItemData, LineGroupData>> list) async {
+  @override
+  void onAnimatorStart(var result, LayoutType type) {
+    _animatorPercent = 0;
+  }
 
+  @override
+  void onAnimatorUpdate(var node, double t, var startMap, var endMap, LayoutType type) {
+    _animatorPercent = t;
+  }
+
+  @override
+  void onAnimatorUpdateEnd(var result, double t, LayoutType type) {
+    _animatorPercent = t;
+  }
+
+  @override
+  void onAnimatorEnd(var result, LayoutType type) {
+    _animatorPercent = 1;
+  }
+
+  @override
+  void onGridScrollEnd(Offset offset) {}
+
+  ///布局直线使用的数据
+  Future<List<LineNode>> _layoutLineNode(List<SingleNode<LineItemData, LineGroupData>> list) async {
     Map<LineGroupData, int> groupSortMap = {};
     Map<String, int> sortMap = {};
     Map<String, Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>>> stackMap = {};
@@ -161,8 +185,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
       resultList.add(await f);
     }
     futureList = [];
-
-    _lineList = resultList;
+    return resultList;
   }
 
   LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
@@ -189,6 +212,8 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     StepType? stepType = series.stepLineFun?.call(group);
     LineStyle? lineStyle = buildLineStyle(null, group, index, null);
     bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
+
+    List<SingleNode<LineItemData, LineGroupData>> nodeList = List.from(nodeMap.values);
 
     List<List<Offset>> splitResult = _splitList(nodeList);
     splitResult.removeWhere((element) => element.length < 2);
@@ -417,5 +442,10 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     var chartTheme = context.config.theme;
     var theme = chartTheme.lineTheme;
     return theme.getLineStyle(chartTheme, groupIndex).convert(status);
+  }
+
+  @override
+  double getAnimatorPercent() {
+    return _animatorPercent;
   }
 }

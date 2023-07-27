@@ -9,11 +9,19 @@ import 'model/axis_group.dart';
 import 'model/axis_index.dart';
 import 'model/map_node.dart';
 
+///用于处理堆叠数据的布局帮助者
+
 abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends ChartLayout<S, List<P>> {
-  List<SingleNode<T, P>> nodeList = [];
-  Map<T, SingleNode<T, P>> nodeMap = {};
-  List<SingleNode<T, P>> drawNodeList = [];
+  ///该map存储当前给定数据的映射
+  ///如果给定的数据为空则不会存在
+  Map<T, SingleNode<T, P>> _nodeMap = {};
+
+  Map<T, SingleNode<T, P>> get nodeMap => _nodeMap;
+
+  ///存储当前屏幕上要显示的节点的数据
+  ///其大小不一定等于 [_nodeMap]的大小
+  Map<T, SingleNode<T, P>> showNodeMap = {};
 
   @override
   void onLayout(List<P> data, LayoutType type) async {
@@ -35,8 +43,6 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     });
 
     ///开始布局
-    var sw = Stopwatch();
-    sw.start();
     List<Future> futureList = [];
     axisMap.forEach((key, value) {
       ///布局Group
@@ -65,25 +71,35 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
         futureList.add(f);
       }
     });
-
     for (var f in futureList) {
       await f;
     }
-
-    sw.stop();
-    logPrint("$runtimeType onLayout() 耗时:${sw.elapsedMilliseconds}ms");
-    sw.start();
-    await onLayoutEnd(nodeList, nodeMap, List.from(newNodeMap.values), newNodeMap, type);
-    sw.stop();
-    logPrint("$runtimeType onLayout() execute onLayoutEnd 耗时:${sw.elapsedMilliseconds}ms");
+    List<SingleNode<T, P>> oldNodeList = List.from(_nodeMap.values);
+    var oldNodeMap = _nodeMap;
+    _nodeMap = newNodeMap;
+    await onLayoutEnd(oldNodeList, oldNodeMap, List.from(newNodeMap.values), newNodeMap, type);
     notifyLayoutUpdate();
   }
 
-  Future<void> onLayoutEnd(List<SingleNode<T, P>> oldNodeList, Map<T, SingleNode<T, P>> oldNodeMap, List<SingleNode<T, P>> newNodeList,
-      Map<T, SingleNode<T, P>> newNodeMap, LayoutType type) async {
+  ///实现该方法从而布局单个Group(不需要布局其孩子)
+  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
+
+  ///布局GroupNode的孩子(ColumnNode)位置
+  void onLayoutColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
+
+  ///布局ColumnNode的孩子的位置
+  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex);
+
+  ///由[onLayout]最后回调
+  ///可以在这里进行动画相关的处理
+  Future<void> onLayoutEnd(
+    List<SingleNode<T, P>> oldNodeList,
+    Map<T, SingleNode<T, P>> oldNodeMap,
+    List<SingleNode<T, P>> newNodeList,
+    Map<T, SingleNode<T, P>> newNodeMap,
+    LayoutType type,
+  ) async {
     if (series.animation == null) {
-      nodeList = newNodeList;
-      nodeMap = newNodeMap;
       return;
     }
 
@@ -91,7 +107,6 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0, (a, b, c) {
       return onCreateAnimatorObj(a, b, c, type);
     });
-
     Map<SingleNode<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
           key,
           MapNode(value.rect, value.position, value.arc),
@@ -100,16 +115,13 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
           key,
           MapNode(value.rect, value.position, value.arc),
         ));
-
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
       onAnimatorStart(diffResult, type);
-      nodeList = diffResult.curList;
     };
     doubleTween.endListener = () {
       onAnimatorEnd(diffResult, type);
       notifyLayoutEnd();
-      nodeList = diffResult.finalList;
     };
     doubleTween.addListener(() {
       double t = doubleTween.value;
@@ -120,18 +132,20 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
       notifyLayoutUpdate();
     });
     doubleTween.start(context, type == LayoutType.update);
-    nodeMap = newNodeMap;
   }
 
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
-
-  void onLayoutColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
-
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex);
-
+  ///创建动画的映射对象
   SingleNode<T, P> onCreateAnimatorObj(SingleNode<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type);
 
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type);
+  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+    Map<T, SingleNode<T, P>> map = {};
+    for (var ele in result.curList) {
+      if (ele.data != null) {
+        map[ele.data!] = ele;
+      }
+    }
+    showNodeMap = map;
+  }
 
   void onAnimatorUpdate(
     SingleNode<T, P> node,
@@ -143,7 +157,15 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
 
   void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, double t, LayoutType type);
 
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type);
+  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+    Map<T, SingleNode<T, P>> map = {};
+    for (var ele in result.finalList) {
+      if (ele.data != null) {
+        map[ele.data!] = ele;
+      }
+    }
+    showNodeMap = map;
+  }
 
   List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
     CoordSystem system = CoordSystem.grid;
@@ -185,7 +207,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
 
   void onGridScrollEnd(Offset offset) {}
 
-  ///=======================
+  ///==========用户相关操作的处理=============
   SingleNode<T, P>? oldHoverNode;
 
   void handleHoverOrClick(Offset offset, bool click) {
@@ -204,17 +226,15 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
   void onHandleHoverEnd(SingleNode<T, P>? oldNode, SingleNode<T, P>? newNode) {
     var states = [ViewState.focused, ViewState.hover, ViewState.disabled];
     var states2 = [ViewState.focused, ViewState.hover];
-    each(nodeList, (group, i) {
-      for (var ele in group.parentNode.nodeList) {
-        nodeMap[ele]?.removeStates(states);
-        if (newNode == null) {
-          continue;
-        }
-        if (ele.data == newNode.data || (group.parent == newNode.parent && series.selectedMode == SelectedMode.group)) {
-          nodeMap[ele]?.addStates(states2);
-        } else {
-          nodeMap[ele]?.addState(ViewState.disabled);
-        }
+    nodeMap.forEach((key, ele) {
+      nodeMap[ele]?.removeStates(states);
+      if (newNode == null) {
+        return;
+      }
+      if (ele.data == newNode.data || (ele.parent == newNode.parent && series.selectedMode == SelectedMode.group)) {
+        nodeMap[ele]?.addStates(states2);
+      } else {
+        nodeMap[ele]?.addState(ViewState.disabled);
       }
     });
 
@@ -224,7 +244,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     Map<SingleNode<T, P>, AreaStyle?> newAreStyleMap = {};
     Map<SingleNode<T, P>, LineStyle?> newLineStyleMap = {};
 
-    each(nodeList, (node, p1) {
+    nodeMap.forEach((key, node) {
       oldAreStyleMap[node] = node.areaStyle;
       oldLineStyleMap[node] = node.lineStyle;
       newAreStyleMap[node] = buildAreaStyle(node.data, node.parent, node.groupIndex, node.status);
@@ -238,7 +258,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     LineStyleTween lineTween = LineStyleTween(const LineStyle(), const LineStyle());
     doubleTween.addListener(() {
       double t = doubleTween.value;
-      each(nodeList, (node, p1) {
+      nodeMap.forEach((key, node) {
         var oa = oldAreStyleMap[node];
         var ol = oldLineStyleMap[node];
         var na = newAreStyleMap[node];
@@ -262,7 +282,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     doubleTween.start(context, true);
   }
 
-  void clearHover() {
+  void onHoverEnd() {
     if (oldHoverNode == null) {
       return;
     }
@@ -274,7 +294,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
   }
 
   SingleNode<T, P>? findNode(Offset offset) {
-    for (var ele in nodeList) {
+    for (var ele in nodeMap.values) {
       if (ele.rect.contains(offset)) {
         return ele;
       }

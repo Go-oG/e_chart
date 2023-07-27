@@ -7,34 +7,31 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, PolarCoor
   RadiusAxisImpl(super.context, super.coord, super.axis);
 
   @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint,  Offset scroll) {
-    AxisTheme theme = getAxisTheme();
-    AxisStyle axisLine = axis.axisStyle;
-    int c = layoutResult.split.length;
+  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
+    var theme = getAxisTheme();
+    var axisStyle = axis.axisStyle;
     each(layoutResult.split, (split, i) {
-      LineStyle? style = axisLine.getSplitLineStyle(i, c, theme);
+      LineStyle? style = axisStyle.getSplitLineStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
       }
-
       Arc arc = Arc(
         innerRadius: 0,
-        outRadius: split.start.distance2(split.center),
+        outRadius: split.start.distance2(attrs.center),
         startAngle: attrs.offsetAngle,
         sweepAngle: 360,
         center: attrs.center,
       );
-      style.drawPath(canvas, paint, arc.toPath(true));
+      style.drawPath(canvas, paint, arc.toPath(false));
     });
   }
 
   @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint,  Offset scroll) {
-    AxisTheme theme = getAxisTheme();
-    AxisStyle axisLine = axis.axisStyle;
-    int c = layoutResult.split.length;
+  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
+    var theme = getAxisTheme();
+    var axisStyle = axis.axisStyle;
     each(layoutResult.split, (split, i) {
-      AreaStyle? style = axisLine.getSplitAreaStyle(i, c, theme);
+      AreaStyle? style = axisStyle.getSplitAreaStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
       }

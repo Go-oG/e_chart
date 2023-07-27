@@ -44,6 +44,20 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
 
   double get height => rect.height;
 
+  void onClick(Offset localOffset){}
+
+  void onHoverStart(Offset localOffset){}
+
+  void onHoverMove(Offset localOffset){}
+
+  void handleHoverOrClick(Offset offset, bool click) {
+
+  }
+
+  void onHoverEnd() {
+
+  }
+
   GridCoord findGridCoord() {
     return context.findGridCoord(series.gridIndex);
   }
@@ -67,6 +81,13 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
   RadarCoord findRadarCoord() {
     return context.findRadarCoord(series.radarIndex);
   }
+
+
+
+
+
+
+
 }
 
 enum LayoutType { none, layout, update }

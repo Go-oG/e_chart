@@ -27,7 +27,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
 
   @override
   void onHoverEnd() {
-    helper.clearHover();
+    helper.onHoverEnd();
   }
 
   @override

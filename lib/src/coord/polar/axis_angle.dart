@@ -2,12 +2,10 @@
 import '../../component/axis/style/axis_pointer.dart';
 import '../../component/axis/base_axis.dart';
 
-
 ///极坐标-角度轴
 class AngleAxis extends BaseAxis {
   /// 起始刻度的角度，默认为90度(圆心的正上方为0度)
   num offsetAngle;
-  num radiusOffset;
 
   ///是否顺时针
   bool clockwise;
@@ -15,7 +13,6 @@ class AngleAxis extends BaseAxis {
 
   AngleAxis({
     this.offsetAngle = 0,
-    this.radiusOffset = 0,
     this.clockwise = true,
     this.axisPointer,
     super.show,

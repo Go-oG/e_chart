@@ -158,7 +158,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
     }
   }
 
-  void clearHover() {
+  void onHoverEnd() {
     if (hoverNode == null) {
       return;
     }
