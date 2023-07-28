@@ -63,7 +63,7 @@ abstract class BaseAxis {
     this.silent = false,
     AxisStyle? axisStyle,
     this.timeRange,
-    this.nameGap = 3,
+    this.nameGap = 8,
     this.nameStyle = const LabelStyle(),
     this.nameAlign = Align2.end,
     this.niceType = NiceType.n1,

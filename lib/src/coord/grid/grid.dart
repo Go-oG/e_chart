@@ -18,7 +18,7 @@ class Grid extends Coord {
     List<YAxis>? yAxisList,
     this.containLabel = false,
     this.toolTip,
-    super.padding=const EdgeInsets.only(left: 24,right: 24,bottom: 16,top: 16),
+    super.padding=const EdgeInsets.all(48),
     super.margin,
     super.width,
     super.height,

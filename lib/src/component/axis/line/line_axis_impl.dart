@@ -185,6 +185,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       center = attrs.start;
       p = Offset((attrs.start.dx + attrs.end.dx) / 2, (attrs.start.dy + attrs.end.dy) / 2);
     }
+
     num a = p.offsetAngle(center);
     double r = center.distance2(p);
     r += axis.nameGap;

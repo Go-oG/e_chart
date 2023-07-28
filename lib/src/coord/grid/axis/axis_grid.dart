@@ -10,7 +10,7 @@ class GridAxis extends BaseAxis {
   GridAxis({
     this.alignTicks = false,
     this.position = Align2.end,
-    this.offset = 0,
+    this.offset = 8,
     this.axisPointer,
     super.show,
     super.name,

@@ -3,7 +3,6 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
-///TODO 后面优化
 class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult, C> {
   static const int maxAngle = 360;
   final tmpTick = MainTick();
@@ -240,16 +239,12 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       return;
     }
     var theme = getAxisTheme();
-    LineStyle? style = axisLine.getAxisLineStyleNotFun(theme);
-    if (style != null) {
-      style.drawPath(canvas, paint, layoutResult.arc.toPath(true));
-    } else {
-      int maxCount = layoutResult.splitList.length;
-      each(layoutResult.splitList, (arc, index) {
-        var s = axisLine.getAxisLineStyle(index, maxCount, theme);
-        s?.drawPath(canvas, paint, arc.arcOpen(), drawDash: true);
-      });
-    }
+    int maxCount = layoutResult.splitList.length;
+    each(layoutResult.splitList, (arc, index) {
+      var s = axisLine.getAxisLineStyle(index, maxCount, theme);
+      s?.drawPath(canvas, paint, arc.arcOpen(), drawDash: true,needSplit: false);
+    });
+
   }
 
   @override
