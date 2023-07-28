@@ -53,5 +53,10 @@ abstract class BaseScale<D, R extends num> {
   bool get isTime => false;
 
   bool get isLog => false;
+  @override
+  String toString() {
+
+    return "domain:$domain range:$range";
+  }
 
 }

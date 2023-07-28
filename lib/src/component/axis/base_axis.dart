@@ -34,7 +34,10 @@ abstract class BaseAxis {
   num? maxInterval;
   num? interval;
   num logBase;
-  NiceType niceType;
+
+  ///在多个轴为数值轴的时候，可以开启该配置项自动对齐刻度。
+  ///只对'value'和'log'类型的轴有效。
+  bool alignTicks;
 
   //是否翻转坐标轴数据
   bool inverse;
@@ -49,6 +52,7 @@ abstract class BaseAxis {
     this.type = AxisType.value,
     this.categoryList = const [],
     this.categoryCenter = true,
+    this.alignTicks = true,
     this.timeType = TimeType.day,
     this.timeFormatFun,
     this.inverse = false,
@@ -66,14 +70,11 @@ abstract class BaseAxis {
     this.nameGap = 8,
     this.nameStyle = const LabelStyle(),
     this.nameAlign = Align2.end,
-    this.niceType = NiceType.n1,
   }) {
     if (axisStyle != null) {
       this.axisStyle = axisStyle;
     }
   }
-
-
 
   bool get isCategoryAxis => categoryList.isNotEmpty || type == AxisType.category;
 
@@ -128,4 +129,3 @@ enum TimeType {
   sec,
   week,
 }
-

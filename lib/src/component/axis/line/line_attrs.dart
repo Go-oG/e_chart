@@ -11,7 +11,7 @@ class LineAxisAttrs extends AxisAttrs {
   final Offset start;
   final Offset end;
 
-  LineAxisAttrs(super.scaleRatio, super.scroll, this.rect, this.start, this.end);
+  LineAxisAttrs(super.scaleRatio, super.scroll, this.rect, this.start, this.end,{super.splitCount});
 
   LineAxisAttrs copyWith({
     double? scaleRatio,
@@ -19,6 +19,7 @@ class LineAxisAttrs extends AxisAttrs {
     Rect? rect,
     Offset? start,
     Offset? end,
+    int? splitCount,
   }) {
     return LineAxisAttrs(
       scaleRatio ?? this.scaleRatio,
@@ -26,6 +27,7 @@ class LineAxisAttrs extends AxisAttrs {
       rect ?? this.rect,
       start ?? this.start,
       end ?? this.end,
+      splitCount: splitCount
     );
   }
 

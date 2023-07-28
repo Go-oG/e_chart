@@ -8,7 +8,7 @@ import 'parallel_coord.dart';
 class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, ParallelAxisAttrs, ParallelCoord> {
   final Direction direction;
 
-  bool expand=true;
+  bool expand = true;
 
   ParallelAxisImpl(super.context, super.coord, super.axis, this.direction, {super.axisIndex});
 
@@ -33,19 +33,20 @@ class ParallelAxisAttrs extends LineAxisAttrs {
     this.expand = true,
     this.textStartSize = Size.zero,
     this.textEndSize = Size.zero,
+    super.splitCount,
   });
 
   @override
-  ParallelAxisAttrs copyWith({
-    double? scaleRatio,
-    double? scroll,
-    Rect? rect,
-    Offset? start,
-    Offset? end,
-    Size? textStartSize,
-    Size? textEndSize,
-    bool? expand,
-  }) {
+  ParallelAxisAttrs copyWith(
+      {double? scaleRatio,
+      double? scroll,
+      Rect? rect,
+      Offset? start,
+      Offset? end,
+      Size? textStartSize,
+      Size? textEndSize,
+      bool? expand,
+      int? splitCount}) {
     return ParallelAxisAttrs(
       scaleRatio ?? this.scaleRatio,
       scroll ?? this.scroll,
@@ -54,6 +55,7 @@ class ParallelAxisAttrs extends LineAxisAttrs {
       end ?? this.end,
       textStartSize: textStartSize ?? this.textStartSize,
       textEndSize: textEndSize ?? this.textEndSize,
+      splitCount: splitCount,
     );
   }
 }

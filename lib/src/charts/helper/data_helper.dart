@@ -79,7 +79,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return OriginInfo(sortMap, dataMap);
   }
 
-  ///将给定的数据按照其使用的X 坐标轴进行分割
+  ///将给定的数据按照其使用的X坐标轴进行分割
   Map<AxisIndex, List<GroupNode<T, P>>> _splitDataByAxis(OriginInfo<T, P> originInfo, List<P> dataList) {
     Map<AxisIndex, List<P>> axisGroupMap = {};
     for (var group in dataList) {
@@ -191,31 +191,48 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return groupNodeList;
   }
 
-  ///收集极值信息
+  ///收集极值信息(其应该是Y轴)
   Map<AxisIndex, List<num>> _collectExtreme(AxisGroup<T, P> axisGroup) {
-    Map<AxisIndex, List<num>> map = {};
-    axisGroup.groupMap.forEach((key, value) {
-      List<num> list = [];
-      map[key] = list;
+    CoordSystem system = _series.coordSystem ?? CoordSystem.grid;
+    bool polar = system == CoordSystem.polar;
+    bool vertical = direction == Direction.vertical;
 
-      num minValue = double.infinity;
-      num maxValue = double.negativeInfinity;
+    Map<int, num> minMap = {};
+    Map<int, num> maxMap = {};
+
+    axisGroup.groupMap.forEach((key, value) {
       for (var group in value) {
         for (var column in group.nodeList) {
           for (var data in column.nodeList) {
             var up = data.up;
             var down = data.down;
+            var group = data.parent;
+            int index;
+            if (polar) {
+              index = _series.polarIndex;
+            } else {
+              index = vertical ? group.yAxisIndex : group.xAxisIndex;
+            }
+            num minValue = minMap[index] ?? double.infinity;
+            num maxValue = maxMap[index] ?? double.negativeInfinity;
             minValue = min([minValue, down]);
             maxValue = max([maxValue, up]);
+            minMap[index] = minValue;
+            maxMap[index] = maxValue;
           }
         }
       }
-      if (minValue.isFinite) {
-        list.add(minValue);
-      }
-      if (maxValue.isFinite) {
-        list.add(maxValue);
-      }
+    });
+    Map<AxisIndex, List<num>> map = {};
+    minMap.forEach((key, value) {
+      map[AxisIndex(system, key)] = [value];
+    });
+
+    maxMap.forEach((key, value) {
+      var axis = AxisIndex(system, key);
+      List<num> list = map[axis] ?? [];
+      map[axis] = list;
+      list.add(value);
     });
     return map;
   }

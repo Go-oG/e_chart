@@ -221,7 +221,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
 
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
-    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
+   return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
 
   @override
