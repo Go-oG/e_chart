@@ -43,7 +43,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
-    return BaseAxisImpl.toScale(axis, [0, distance], dataSet,attrs.scaleRatio);
+    return BaseAxisImpl.toScale(axis, [0, distance], dataSet, attrs.splitCount, attrs.scaleRatio);
   }
 
   @override
@@ -72,16 +72,18 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
     final double tickOffset = (tick.inside ? -tick.length : tick.length).toDouble();
     final double minorOffset = (tick.inside ? -minorTick.length : minorTick.length).toDouble();
-    int minorSN=minorTick.splitNumber;
-    if(minorSN<0){minorSN=0;}
+    int minorSN = minorTick.splitNumber;
+    if (minorSN < 0) {
+      minorSN = 0;
+    }
 
     List<TickResult> resultList = [];
     for (int i = 0; i < tickCount; i++) {
       Offset offset = center.translate(interval * i, 0);
       Offset start = offset.rotateOffset(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotateOffset(angle, center: center);
-      int oi=i*minorSN;
-      TickResult result = TickResult(oi,i, tickCount, start, end, []);
+      int oi = i * minorSN;
+      TickResult result = TickResult(oi, i, tickCount, start, end, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -95,7 +97,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
         ms = ms.rotateOffset(angle, center: center);
         me = me.rotateOffset(angle, center: center);
-        result.minorTickList.add(TickResult(oi+j,i, tickCount, ms, me));
+        result.minorTickList.add(TickResult(oi + j, i, tickCount, ms, me));
       }
     }
     return resultList;
@@ -148,7 +150,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
         text = labels[i];
       }
 
-      LabelResult result = LabelResult(i,i, tickCount, config, text, []);
+      LabelResult result = LabelResult(i, i, tickCount, config, text, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -164,7 +166,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
         TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
         dynamic data = scale.toData(dis);
         DynamicText? text = axisLabel.formatter?.call(data);
-        result.minorLabel.add(LabelResult(i+j,i, tickCount, minorConfig, text));
+        result.minorLabel.add(LabelResult(i + j, i, tickCount, minorConfig, text));
       }
     }
     return resultList;

@@ -62,8 +62,9 @@ class RadiusAxisAttrs extends LineAxisAttrs {
     super.scroll,
     super.rect,
     super.start,
-    super.end,
-  );
+    super.end, {
+    super.splitCount,
+  });
 
   @override
   RadiusAxisAttrs copyWith({
@@ -74,6 +75,7 @@ class RadiusAxisAttrs extends LineAxisAttrs {
     Offset? end,
     Offset? center,
     num? offsetAngle,
+    int? splitCount,
   }) {
     return RadiusAxisAttrs(
       center ?? this.center,
@@ -83,6 +85,7 @@ class RadiusAxisAttrs extends LineAxisAttrs {
       rect ?? this.rect,
       start ?? this.start,
       end ?? this.end,
+      splitCount: splitCount,
     );
   }
 }

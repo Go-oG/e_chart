@@ -87,10 +87,10 @@ class GridCoordImpl extends GridCoord {
     layoutYAxis(childList, contentBox);
 
     ///修正由于坐标系线条宽度导致的遮挡
-    topOffset = topList.isEmpty ? 0 : topList.first.axis.axisStyle.axisLine.width/2;
-    bottomOffset = bottomList.isEmpty ? 0 : bottomList.first.axis.axisStyle.axisLine.width/2 ;
-    leftOffset = leftList.isEmpty ? 0 : leftList.first.axis.axisStyle.axisLine.width/2;
-    rightOffset = rightList.isEmpty ? 0 : rightList.first.axis.axisStyle.axisLine.width/2;
+    topOffset = topList.isEmpty ? 0 : topList.first.axis.axisStyle.axisLine.width / 2;
+    bottomOffset = bottomList.isEmpty ? 0 : bottomList.first.axis.axisStyle.axisLine.width / 2;
+    leftOffset = leftList.isEmpty ? 0 : leftList.first.axis.axisStyle.axisLine.width / 2;
+    rightOffset = rightList.isEmpty ? 0 : rightList.first.axis.axisStyle.axisLine.width / 2;
 
     for (var view in children) {
       view.layout(
@@ -106,6 +106,8 @@ class GridCoordImpl extends GridCoord {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
 
+    bool needAlignTick = false;
+
     ///收集数据信息
     Map<XAxisImpl, List<DynamicData>> extremeMap = {};
     for (var ele in props.xAxisList) {
@@ -115,7 +117,9 @@ class GridCoordImpl extends GridCoord {
       } else {
         bottomList.add(xMap[ele]!);
       }
-
+      if (axis.axis.alignTicks) {
+        needAlignTick = true;
+      }
       List<DynamicData> dl = [];
       for (var child in childList) {
         dl.addAll(child.getAxisExtreme(axis.axisIndex, true));
@@ -129,7 +133,7 @@ class GridCoordImpl extends GridCoord {
     for (var ele in props.xAxisList) {
       var axis = xMap[ele]!;
       var dl = extremeMap[axis] ?? [];
-      var tmpScale = BaseAxisImpl.toScale(axis.axis, [0, 100], dl);
+      var tmpScale = BaseAxisImpl.toScale(axis.axis, [0, 100], dl, null);
       if (tmpScale.isCategory) {
         int c = tmpScale.domain.length;
         if (maxWidth / c < 40) {
@@ -159,32 +163,43 @@ class GridCoordImpl extends GridCoord {
       scale = maxWidth / w;
     }
     scaleXFactor = scale;
+
+    int? splitCount;
     double topOffset = contentBox.top;
-    for (var value in topList) {
+    each(topList, (value, i) {
       var axisInfo = value.axisInfo;
       List<DynamicData> dl = extremeMap[value] ?? [];
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var layoutAttrs = LineAxisAttrs(scale, scrollXOffset, rect, rect.bottomLeft, rect.bottomRight);
+      var attrs = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
       topOffset -= (h + value.axis.offset);
-      value.doLayout(layoutAttrs, dl);
-    }
+      value.doLayout(attrs, dl);
+      if (needAlignTick && i == 0) {
+        splitCount = value.scale.tickCount - 1;
+      }
+    });
+
     double bottomOffset = contentBox.bottom;
-    for (var value in bottomList) {
+    each(bottomList, (value, i) {
       var axisInfo = value.axisInfo;
       List<DynamicData> dl = extremeMap[value] ?? [];
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
-      var layoutAttrs = LineAxisAttrs(
+      var attrs = LineAxisAttrs(
         scale,
         scrollXOffset,
         rect,
         rect.topLeft.translate(0, -1),
         rect.topRight.translate(0, -1),
+        splitCount: splitCount,
       );
       bottomOffset += (h + value.axis.offset);
-      value.doLayout(layoutAttrs, dl);
-    }
+      value.doLayout(attrs, dl);
+
+      if (needAlignTick && splitCount == null && i == 0) {
+        splitCount = value.scale.tickCount - 1;
+      }
+    });
   }
 
   void layoutYAxis(List<GridChild> childList, Rect contentBox) {
@@ -192,6 +207,7 @@ class GridCoordImpl extends GridCoord {
     List<YAxisImpl> rightList = [];
     Map<YAxisImpl, List<DynamicData>> extremeMap = {};
 
+    bool needAlignTick = false;
     for (var ele in props.yAxisList) {
       var axis = yMap[ele]!;
       if (ele.position == Align2.end) {
@@ -199,55 +215,51 @@ class GridCoordImpl extends GridCoord {
       } else {
         leftList.add(axis);
       }
+      if (axis.axis.alignTicks) {
+        needAlignTick = true;
+      }
       List<DynamicData> dl = [];
       for (var child in childList) {
-        dl.addAll(child.getAxisExtreme(axis.axisIndex, false));
+        var da=child.getAxisExtreme(axis.axisIndex, false);
+        dl.addAll(da);
       }
       extremeMap[axis] = dl;
     }
+
+    int? splitCount;
     double rightOffset = contentBox.left;
     each(leftList, (value, i) {
       List<DynamicData> dl = extremeMap[value] ?? [];
-      LineAxisAttrs layoutProps;
       if (i != 0) {
         rightOffset -= value.axis.offset;
       }
       double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
-      layoutProps = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight);
+      var attrs = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
       rightOffset -= w;
-      value.doLayout(layoutProps, dl);
+      value.doLayout(attrs, dl);
+      if (needAlignTick && i == 0) {
+        splitCount = value.scale.tickCount - 1;
+      }
     });
 
     double leftOffset = contentBox.right;
     each(rightList, (value, i) {
       List<DynamicData> dl = extremeMap[value] ?? [];
-      LineAxisAttrs layoutProps;
       if (i != 0) {
         leftOffset += value.axis.offset;
       }
-
       double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
-      layoutProps = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft);
-      leftOffset += w;
-      value.doLayout(layoutProps, dl);
-    });
-  }
+      var attrs = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
 
-  double computeSize(List<BaseGridAxisImpl> axisList, bool computeWidth) {
-    double size = 0;
-    each(axisList, (axis, i) {
-      if (computeWidth) {
-        size += axis.axisInfo.bound.width;
-      } else {
-        size += axis.axisInfo.bound.height;
-      }
-      if (i != 0) {
-        size += axis.axis.offset;
+      leftOffset += w;
+      value.doLayout(attrs, dl);
+      logPrint("$runtimeType ${value.axis.name} SC:$splitCount scale:${value.scale}" );
+      if (needAlignTick && splitCount == null && i == 0) {
+        splitCount = value.scale.tickCount - 1;
       }
     });
-    return size;
   }
 
   @override
@@ -420,20 +432,6 @@ class GridCoordImpl extends GridCoord {
     return Offset(dx, dy);
   }
 
-  XAxisImpl getXAxis(int xAxisIndex) {
-    if (xAxisIndex < 0) {
-      xAxisIndex = 0;
-    }
-    return xMap[props.xAxisList[xAxisIndex]]!;
-  }
-
-  YAxisImpl getYAxis(int yAxisIndex) {
-    if (yAxisIndex < 0) {
-      yAxisIndex = 0;
-    }
-    return yMap[props.yAxisList[yAxisIndex]]!;
-  }
-
   @override
   double getBottomFirstAxisHeight() {
     XAxis? xAxis;
@@ -493,6 +491,35 @@ class GridCoordImpl extends GridCoord {
       return 0;
     }
     return yMap[yAxis]!.attrs.rect.width;
+  }
+
+  XAxisImpl getXAxis(int xAxisIndex) {
+    if (xAxisIndex < 0) {
+      xAxisIndex = 0;
+    }
+    return xMap[props.xAxisList[xAxisIndex]]!;
+  }
+
+  YAxisImpl getYAxis(int yAxisIndex) {
+    if (yAxisIndex < 0) {
+      yAxisIndex = 0;
+    }
+    return yMap[props.yAxisList[yAxisIndex]]!;
+  }
+
+  double computeSize(List<BaseGridAxisImpl> axisList, bool computeWidth) {
+    double size = 0;
+    each(axisList, (axis, i) {
+      if (computeWidth) {
+        size += axis.axisInfo.bound.width;
+      } else {
+        size += axis.axisInfo.bound.height;
+      }
+      if (i != 0) {
+        size += axis.axis.offset;
+      }
+    });
+    return size;
   }
 }
 

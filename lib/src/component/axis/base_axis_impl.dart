@@ -21,9 +21,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     titleNode = AxisTitleNode(axis.name);
   }
 
-  void doMeasure(double parentWidth, double parentHeight) {
-
-  }
+  void doMeasure(double parentWidth, double parentHeight) {}
 
   void doLayout(L attrs, List<DynamicData> dataSet) {
     this.attrs = attrs;
@@ -191,7 +189,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   }
 
   ///将指定的参数转换为标度尺
-  static BaseScale toScale(BaseAxis axis, List<num> range, List<DynamicData> dataSet, [double scaleFactor = 1]) {
+  static BaseScale toScale(BaseAxis axis, List<num> range, List<DynamicData> dataSet, int? splitCount, [double scaleFactor = 1]) {
     if (axis.isCategoryAxis) {
       List<String> sl = List.from(axis.categoryList);
       if (axis.categoryList.isEmpty) {
@@ -280,6 +278,10 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       spn = 2;
     }
     spn = (spn * scaleFactor).round();
+    if (splitCount != null) {
+      spn = splitCount;
+    }
+
     NiceScale step = NiceScale.nice(
       v[0],
       v[1],
@@ -288,7 +290,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       maxInterval: axis.maxInterval,
       interval: axis.interval,
       start0: axis.start0,
-      type: axis.niceType,
+      forceSplitNumber: splitCount != null,
     );
 
     List<num> resultList = [step.start, step.end];

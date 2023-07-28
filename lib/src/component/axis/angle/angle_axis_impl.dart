@@ -19,7 +19,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     } else {
       e = s - maxAngle;
     }
-    return BaseAxisImpl.toScale(axis, [s, e], dataSet);
+    return BaseAxisImpl.toScale(axis, [s, e], dataSet,attrs.splitCount);
   }
 
   @override
