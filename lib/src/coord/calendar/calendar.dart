@@ -5,10 +5,10 @@ import '../../functions.dart';
 import '../../model/enums/direction.dart';
 import '../../model/range.dart';
 import '../../style/index.dart';
-import '../coord_config.dart';
+import '../coord.dart';
 
 ///日历坐标系
-class CalendarConfig extends CoordConfig {
+class Calendar extends Coord {
   Pair<DateTime> range;
   bool sunFirst;
 
@@ -24,7 +24,7 @@ class CalendarConfig extends CoordConfig {
   LineStyle? borderStyle;
   LineStyle? gridLineStyle;
 
-  CalendarConfig({
+  Calendar({
     required this.range,
     this.sunFirst = true,
     this.cellSize = const [20, 20],

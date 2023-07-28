@@ -154,7 +154,7 @@ class PolarPosition {
   }
 }
 
-abstract class PolarCoord extends CircleCoord<PolarConfig> {
+abstract class PolarCoord extends CircleCoordLayout<Polar> {
   PolarCoord(super.props);
 
   PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);

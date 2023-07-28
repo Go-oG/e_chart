@@ -1,13 +1,13 @@
 import '../../model/enums/coordinate.dart';
+import '../coord_impl.dart';
 import '../coord.dart';
-import '../coord_config.dart';
 
 ///用于包装child
-class SingleCoordImpl extends Coord {
+class SingleCoordImpl extends CoordLayout {
   SingleCoordImpl() : super(SingleConfig());
 }
 
-class SingleConfig extends CoordConfig {
+class SingleConfig extends Coord {
   SingleConfig({
     super.enableClick,
     super.enableDrag,
@@ -22,7 +22,7 @@ class SingleConfig extends CoordConfig {
   CoordSystem get coordSystem => CoordSystem.single;
 }
 
-class SingleCoordConfig extends CoordConfig {
+class SingleCoordConfig extends Coord {
   SingleCoordConfig({super.show, super.id});
 
   @override

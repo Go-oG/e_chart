@@ -1,197 +1,77 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/brush/brush.dart';
+import 'package:flutter/rendering.dart';
 
-abstract class Coord<T extends CoordConfig> extends ChartViewGroup {
-  final T props;
+///坐标系
+abstract class Coord extends ChartNotifier<Command> {
+  late final String id;
+  bool show;
+  Color? backgroundColor;
 
-  double scaleXFactor = 1;
-  double scaleYFactor = 1;
-  double scrollXOffset = 0;
-  double scrollYOffset = 0;
+  ///数据框选配置
+  Brush? brush;
+  SNumber? width;
+  SNumber? height;
+  EdgeInsets margin = const EdgeInsets.all(0);
+  EdgeInsets padding = const EdgeInsets.all(16);
 
-  ///存储内容的边界
-  Rect contentBox = Rect.zero;
+  ///手势相关
+  bool enableClick;
+  bool enableHover;
+  bool enableDrag;
+  bool enableScale;
 
-  Coord(this.props);
-
-  final RectGesture _gesture = RectGesture();
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    _initGesture();
-  }
-
-  @override
-  void onStart() {
-    super.onStart();
-    registerCommandHandler();
-    props.addListener(_handleCommand);
-  }
-
-  void _handleCommand() {
-    onReceiveCommand(props.value);
-  }
-
-  @override
-  void onStop() {
-    props.removeListener(_handleCommand);
-    unregisterCommandHandler();
-    super.onStop();
-  }
-
-  @override
-  void onUpdateDataCommand(covariant Command c) {
-    forceLayout = true;
-    layout(left, top, right, bottom);
-  }
-
-  @override
-  void onLayoutEnd() {
-    super.onLayoutEnd();
-    _gesture.rect = globalBoxBound;
-  }
-
-  @override
-  void onDrawBackground(Canvas canvas) {
-    Color? color = props.backgroundColor;
-    if (color == null) {
-      return;
+  Coord({
+    this.show = true,
+    String? id,
+    EdgeInsets? margin,
+    EdgeInsets? padding,
+    SNumber? width,
+    SNumber? height,
+    this.brush,
+    this.backgroundColor,
+    this.enableClick = true,
+    this.enableHover = true,
+    this.enableDrag = true,
+    this.enableScale = false,
+  }) : super(Command.none) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
     }
-    mPaint.reset();
-    mPaint.color = color;
-    mPaint.style = PaintingStyle.fill;
-    canvas.drawRect(selfBoxBound, mPaint);
-  }
-
-  Offset _lastHover = Offset.zero;
-
-  Offset _lastDrag = Offset.zero;
-
-  void _initGesture() {
-    _gesture.clear();
-    context.removeGesture(_gesture);
-    context.addGesture(_gesture);
-
-    if (enableClick) {
-      _gesture.click = (e) {
-        onClick(toLocalOffset(e.globalPosition));
-      };
+    if (margin != null) {
+      this.margin = margin;
     }
-    if (enableHover) {
-      _gesture.hoverStart = (e) {
-        _lastHover = toLocalOffset(e.globalPosition);
-        onHoverStart(_lastHover);
-      };
-      _gesture.hoverMove = (e) {
-        Offset of = toLocalOffset(e.globalPosition);
-        onHoverMove(of, _lastHover);
-        _lastHover = of;
-      };
-      _gesture.hoverEnd = (e) {
-        _lastHover = Offset.zero;
-        onHoverEnd();
-      };
+    if (padding != null) {
+      this.padding = padding;
     }
-    if (enableDrag) {
-      dragStart(Offset offset) {
-        _lastDrag = offset;
-        onDragStart(offset);
-      }
-
-      dragMove(Offset offset) {
-        var dx = offset.dx - _lastDrag.dx;
-        var dy = offset.dy - _lastDrag.dy;
-        _lastDrag = offset;
-        onDragMove(offset, Offset(dx, dy));
-      }
-
-      dragCancel() {
-        _lastDrag = Offset.zero;
-        onDragEnd();
-      }
-
-      if (context.config.dragType == DragType.longPress) {
-        _gesture.longPressStart = (e) {
-          dragStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.longPressMove = (e) {
-          dragMove(toLocalOffset(e.globalPosition));
-        };
-        _gesture.longPressEnd = () {
-          dragCancel();
-        };
-      } else {
-        _gesture.dragStart = (e) {
-          dragStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.dragMove = (e) {
-          dragMove(toLocalOffset(e.globalPosition));
-        };
-        _gesture.dragEnd = () {
-          dragCancel();
-        };
-      }
+    if (width != null) {
+      this.width = width;
     }
-    if (enableScale) {
-      if (context.config.scaleType == ScaleType.doubleTap) {
-        _gesture.doubleClick = (e) {
-          onScaleStart(toLocalOffset(e.globalPosition));
-          onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, true);
-        };
-      } else {
-        _gesture.scaleStart = (e) {
-          onScaleStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.scaleUpdate = (e) {
-          onScaleUpdate(toLocalOffset(e.focalPoint), e.rotation, e.scale, false);
-        };
-        _gesture.scaleEnd = () {
-          onScaleEnd();
-        };
-      }
+    if (height != null) {
+      this.height = height;
     }
   }
 
-  bool get enableHover => props.enableHover;
+  CoordSystem get coordSystem;
 
-  bool get enableDrag => props.enableDrag;
-
-  bool get enableClick => props.enableClick;
-
-  bool get enableScale => props.enableScale;
-
-  void onClick(Offset offset) {}
-
-  void onHoverStart(Offset offset) {}
-
-  void onHoverMove(Offset offset, Offset last) {}
-
-  void onHoverEnd() {}
-
-  void onDragStart(Offset offset) {}
-
-  void onDragMove(Offset offset, Offset diff) {}
-
-  void onDragEnd() {}
-
-  void onScaleStart(Offset offset) {}
-
-  void onScaleUpdate(Offset offset, double rotation, double scale, bool doubleClick) {}
-
-  void onScaleEnd() {}
-
-  Offset getScaleFactor() {
-    return Offset(scaleXFactor, scaleYFactor);
+  LayoutParams toLayoutParams() {
+    return LayoutParams(
+      width ?? const SNumber(LayoutParams.matchParent, false),
+      height ?? const SNumber(LayoutParams.matchParent, false),
+      padding: padding,
+      margin: margin,
+    );
   }
 
-  Offset getTranslation() {
-    return Offset(scrollXOffset, scrollYOffset);
+  ///通知数据更新
+  void notifyUpdateData() {
+    value = Command.updateData;
   }
 
-  ///获取最大能够平移的值
-  Offset getMaxTranslation() {
-    return Offset.zero;
+  ///通知视图当前Series 配置发生了变化
+  void notifyCoordConfigChange() {
+    value = Command.configChange;
   }
 }

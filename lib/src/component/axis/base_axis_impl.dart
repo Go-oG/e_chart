@@ -5,7 +5,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult, C extends Coord>
+abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult, C extends CoordLayout>
     extends ChartNotifier<Command> {
   final int axisIndex;
   final C coord;

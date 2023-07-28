@@ -45,15 +45,15 @@ class Context {
   final Map<BaseAxis, ChartView> _axisMap = {};
 
   ///坐标系
-  final Map<CoordConfig, Coord> _coordMap = {};
+  final Map<Coord, CoordLayout> _coordMap = {};
 
   ///存放普通的渲染组件
   final Map<ChartSeries, ChartView> _seriesViewMap = {};
 
   ///存放坐标系组件
-  final List<Coord> _coordList = [];
+  final List<CoordLayout> _coordList = [];
 
-  List<Coord> get coordList => _coordList;
+  List<CoordLayout> get coordList => _coordList;
 
   ///Title(全局只会存在一个)
   TitleView? _title;
@@ -100,7 +100,7 @@ class Context {
 
     ///Coord
     ///转换CoordConfig 到Coord
-    List<CoordConfig> coordConfigList = [
+    List<Coord> coordConfigList = [
       ...config.gridList,
       ...config.polarList,
       ...config.radarList,
@@ -132,7 +132,7 @@ class Context {
 
     ///将指定了坐标系的View和坐标系绑定
     _seriesViewMap.forEach((key, view) {
-      Coord? layout = _findCoord(view, key);
+      CoordLayout? layout = _findCoord(view, key);
       if (layout == null) {
         layout = SingleCoordImpl();
         layout.create(this, root);
@@ -211,7 +211,7 @@ class Context {
     _brush = null;
   }
 
-  Coord? _findCoord(ChartView view, ChartSeries series) {
+  CoordLayout? _findCoord(ChartView view, ChartSeries series) {
     if (series.coordSystem != null) {
       var coord = series.coordSystem!;
       if (coord == CoordSystem.grid) {
@@ -294,7 +294,7 @@ class Context {
     if (config.parallelList.isEmpty) {
       throw FlutterError('当前未配置Parallel 坐标系无法查找');
     }
-    ParallelConfig parallel = config.parallelList[index];
+    Parallel parallel = config.parallelList[index];
     return _coordMap[parallel]! as ParallelCoord;
   }
 
@@ -306,7 +306,7 @@ class Context {
     if (config.calendarList.isEmpty) {
       throw FlutterError('当前未配置Calendar 坐标系无法查找');
     }
-    CalendarConfig calendar = config.calendarList[index];
+    Calendar calendar = config.calendarList[index];
     return _coordMap[calendar]! as CalendarCoord;
   }
 

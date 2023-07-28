@@ -161,7 +161,7 @@ class RadarCoordImpl extends RadarCoord {
   double getRadius() => radius;
 }
 
-abstract class RadarCoord extends CircleCoord<RadarConfig> {
+abstract class RadarCoord extends CircleCoordLayout<Radar> {
   RadarCoord(super.props);
 
   RadarPosition dataToPoint(int axisIndex, num data);

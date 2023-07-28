@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///雷达图坐标系
-class RadarConfig extends CircleCoordConfig {
+class Radar extends CircleCoord {
   List<RadarIndicator> indicator;
   num offsetAngle;
   int splitNumber;
@@ -16,7 +16,7 @@ class RadarConfig extends CircleCoordConfig {
   Fun3<int, int, AreaStyle?>? splitAreaStyleFun;
   Fun3<int, int, LineStyle?>? splitLineStyleFun;
 
-  RadarConfig({
+  Radar({
     required this.indicator,
     this.offsetAngle = 0,
     this.splitNumber = 5,
