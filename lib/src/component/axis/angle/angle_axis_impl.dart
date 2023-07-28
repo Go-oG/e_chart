@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
 ///TODO 后面优化
-class AngleAxisImpl<C extends Coord> extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult, C> {
+class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult, C> {
   static const int maxAngle = 360;
   final tmpTick = MainTick();
   final MinorTick tmpMinorTick = MinorTick();

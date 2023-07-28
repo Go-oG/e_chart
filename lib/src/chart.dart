@@ -15,11 +15,11 @@ import 'component/theme/theme.dart';
 class ChartConfig {
   ChartTitle? title;
   Legend? legend;
-  List<GridConfig> gridList;
-  List<PolarConfig> polarList;
-  List<RadarConfig> radarList;
-  List<ParallelConfig> parallelList;
-  List<CalendarConfig> calendarList;
+  List<Grid> gridList;
+  List<Polar> polarList;
+  List<Radar> radarList;
+  List<Parallel> parallelList;
+  List<Calendar> calendarList;
   List<ChartSeries> series;
   AnimatorAttrs animation;
   ScaleType scaleType;
@@ -38,7 +38,7 @@ class ChartConfig {
       this.parallelList = const [],
       this.calendarList = const [],
       this.animation = const AnimatorAttrs(),
-      GridConfig? grid,
+      Grid? grid,
       this.scaleType = ScaleType.scale,
       this.dragType = DragType.longPress,
       this.toolTip,

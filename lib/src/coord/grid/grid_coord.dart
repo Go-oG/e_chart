@@ -2,7 +2,7 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class GridCoord extends Coord<GridConfig> {
+abstract class GridCoord extends CoordLayout<Grid> {
   GridCoord(super.props);
 
   ///该方法适用于Bar

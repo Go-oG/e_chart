@@ -2,18 +2,18 @@ import 'package:e_chart/src/model/enums/coordinate.dart';
 import 'package:flutter/painting.dart';
 
 import '../../component/tooltip/tool_tip.dart';
-import '../coord_config.dart';
+import '../coord.dart';
 import 'axis/axis_x.dart';
 import 'axis/axis_y.dart';
 
-class GridConfig extends CoordConfig {
+class Grid extends Coord {
   ///grid区域是否包含坐标轴的刻度标签
   bool containLabel;
   ToolTip? toolTip;
   List<XAxis> xAxisList = [XAxis()];
   List<YAxis> yAxisList = [YAxis()];
 
-  GridConfig({
+  Grid({
     List<XAxis>? xAxisList,
     List<YAxis>? yAxisList,
     this.containLabel = false,

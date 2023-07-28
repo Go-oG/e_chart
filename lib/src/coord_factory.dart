@@ -31,9 +31,9 @@ class CoordFactory {
     _convertList.add(_defaultConvert);
   }
 
-  Coord? convert(CoordConfig c) {
+  CoordLayout? convert(Coord c) {
     for (var sc in _convertList) {
-      Coord? v = sc.convert(c);
+      CoordLayout? v = sc.convert(c);
       if (v != null) {
         return v;
       }
@@ -44,27 +44,27 @@ class CoordFactory {
 
 class DefaultCoordConvert extends CoordConvert {
   @override
-  Coord? convert(CoordConfig config) {
+  CoordLayout? convert(Coord config) {
     CoordSystem coord = config.coordSystem;
     if (coord == CoordSystem.grid) {
-      return GridCoordImpl(config as GridConfig);
+      return GridCoordImpl(config as Grid);
     }
     if (coord == CoordSystem.calendar) {
-      return CalendarCoordImpl(config as CalendarConfig);
+      return CalendarCoordImpl(config as Calendar);
     }
     if (coord == CoordSystem.parallel) {
-      return ParallelCoordImpl(config as ParallelConfig);
+      return ParallelCoordImpl(config as Parallel);
     }
     if (coord == CoordSystem.polar) {
-      return PolarCoordImpl(config as PolarConfig);
+      return PolarCoordImpl(config as Polar);
     }
     if (coord == CoordSystem.radar) {
-      return RadarCoordImpl(config as RadarConfig);
+      return RadarCoordImpl(config as Radar);
     }
     return null;
   }
 }
 
 abstract class CoordConvert {
-  Coord? convert(CoordConfig config);
+  CoordLayout? convert(Coord config);
 }

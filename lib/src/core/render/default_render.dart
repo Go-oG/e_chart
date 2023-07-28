@@ -45,7 +45,7 @@ class DefaultRender extends BaseRender {
 
     Rect rect = layoutTitleAndLegend(width, height);
     for (var v in context.coordList) {
-      if (v is CircleCoord) {
+      if (v is CircleCoordLayout) {
         double dx = v.props.center[0].convert(rect.width);
         double dy = v.props.center[1].convert(rect.height);
         double s = v.props.radius.last.convert(min(rect.width, rect.height)) * 2;

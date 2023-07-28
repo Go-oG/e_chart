@@ -7,13 +7,13 @@ import 'axis_radius.dart';
 
 ///极坐标系
 ///一个极坐标系只能包含一个径向轴和一个角度轴
-class PolarConfig extends CircleCoordConfig {
+class Polar extends CircleCoord {
   AngleAxis angleAxis = AngleAxis();
   RadiusAxis radiusAxis = RadiusAxis();
   bool silent;
   ToolTip? toolTip;
 
-  PolarConfig({
+  Polar({
     super.radius,
     super.center,
     RadiusAxis? radiusAxis,

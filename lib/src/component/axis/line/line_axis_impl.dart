@@ -3,13 +3,13 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/material.dart';
 
-import '../../../coord/coord.dart';
+import '../../../coord/coord_impl.dart';
 import '../../../model/index.dart';
 import '../../../style/index.dart';
 import '../../../utils/index.dart';
 import '../../index.dart';
 
-class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends Coord> extends BaseAxisImpl<T, P, LineAxisLayoutResult, C> {
+class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordLayout> extends BaseAxisImpl<T, P, LineAxisLayoutResult, C> {
   final tmpTick = MainTick();
   final MinorTick tmpMinorTick = MinorTick();
 

@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import '../../component/index.dart';
 import '../../model/dynamic_data.dart';
 import '../../model/enums/direction.dart';
-import '../coord.dart';
+import '../coord_impl.dart';
 import 'parallel_axis_impl.dart';
-import 'parallel_config.dart';
+import 'parallel.dart';
 import 'parallel_axis.dart';
 import 'parallel_child.dart';
 
@@ -212,7 +212,7 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 }
 
-abstract class ParallelCoord extends Coord<ParallelConfig> {
+abstract class ParallelCoord extends CoordLayout<Parallel> {
   ParallelCoord(super.props);
 
   ParallelPosition dataToPosition(int dimIndex, DynamicData data);
