@@ -55,9 +55,10 @@ class DynamicText {
 
   final TextStyle _textStyle = const TextStyle(fontSize: 15);
 
-  Size getTextSize() {
+  Size getTextSize([TextStyle? style]) {
+    var ts=style??_textStyle;
     if (isString) {
-      TextPainter painter = _textStyle.toPainter(text as String);
+      TextPainter painter = ts.toPainter(text as String);
       painter.layout(maxWidth: double.infinity);
       return painter.size;
     }
@@ -67,7 +68,7 @@ class DynamicText {
       return painter.size;
     }
     if (isString || isTextSpan) {
-      TextPainter painter = _textStyle.toPainter(text as String);
+      TextPainter painter = ts.toPainter(text as String);
       painter.layout(maxWidth: double.infinity);
       return painter.size;
     }

@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class YAxisImpl extends XAxisImpl {
-  YAxisImpl(super.direction,super.context, super.coord, super.axis, {super.axisIndex});
+  YAxisImpl(super.direction, super.context, super.coord, super.axis, {super.axisIndex});
 
   @override
   void doMeasure(double parentWidth, double parentHeight) {
@@ -33,6 +33,7 @@ class YAxisImpl extends XAxisImpl {
         width += tmp;
       }
     }
+
     Rect rect = Rect.fromLTWH(0, 0, width, length);
     axisInfo.bound = rect;
     if (axis.position == Align2.end) {
@@ -75,5 +76,4 @@ class YAxisImpl extends XAxisImpl {
     }
     return [startIndex, endIndex];
   }
-
 }

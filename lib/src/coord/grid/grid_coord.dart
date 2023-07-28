@@ -2,32 +2,7 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class GridCoord extends CoordLayout<Grid> {
-  GridCoord(super.props);
-
-  ///该方法适用于Bar
-  Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
-
-  ///该方法适用于Line
-  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
-
-  GridAxis getAxis(int axisIndex, bool isXAxis);
-
-  double getLeftFirstAxisWidth();
-
-  double getRightFirstAxisWidth();
-
-  double getTopFirstAxisHeight();
-
-  double getBottomFirstAxisHeight();
-
-  ///获取比例尺
-  BaseScale getScale(int axisIndex, bool isXAxis);
-
-  double getAxisLength(int axisIndex, bool isXAxis);
-
-  List<GridChild> getGridChildList();
-}
+import 'axis/base_grid_axis_impl.dart';
 
 ///实现二维坐标系
 class GridCoordImpl extends GridCoord {
@@ -54,7 +29,6 @@ class GridCoordImpl extends GridCoord {
     Size size = Size(parentWidth, parentHeight);
     double w = parentWidth - props.padding.horizontal;
     double h = parentHeight - props.padding.vertical;
-
     xMap.forEach((key, value) {
       value.doMeasure(w, h);
     });
@@ -74,34 +48,32 @@ class GridCoordImpl extends GridCoord {
     double leftOffset = props.padding.left;
     double rightOffset = props.padding.right;
 
-    num topEnd = 0;
-    num bottomEnd = 0;
-    xMap.forEach((key, value) {
-      if (Align2.start == value.axis.position) {
-        topOffset += value.axisInfo.bound.height + value.axis.offset;
-        topEnd = value.axis.offset;
+    ///计算所有X轴在竖直方向上的占用的高度
+    List<XAxisImpl> topList = [];
+    List<XAxisImpl> bottomList = [];
+    for (var ele in props.xAxisList) {
+      if (ele.position == Align2.start) {
+        topList.add(xMap[ele]!);
       } else {
-        bottomOffset += value.axisInfo.bound.height + value.axis.offset;
-        bottomEnd = value.axis.offset;
+        bottomList.add(xMap[ele]!);
       }
-    });
-    topOffset -= topEnd;
-    bottomOffset -= bottomEnd;
+    }
+    topOffset += computeSize(topList, false);
+    bottomOffset += computeSize(bottomList, false);
 
-    num leftEnd = 0;
-    num rightEnd = 0;
-    yMap.forEach((key, value) {
-      var v = value.axisInfo.bound.width + value.axis.offset;
-      if (Align2.end == value.axis.position) {
-        rightOffset += v;
-        rightEnd += value.axis.offset;
+    ///计算所有Y轴在横向方向上的占用的宽度
+    List<YAxisImpl> leftList = [];
+    List<YAxisImpl> rightList = [];
+    for (var ele in props.yAxisList) {
+      var axis = yMap[ele]!;
+      if (ele.position == Align2.end) {
+        rightList.add(axis);
       } else {
-        leftOffset += v;
-        leftEnd += value.axis.offset;
+        leftList.add(axis);
       }
-    });
-    rightOffset -= rightEnd;
-    leftOffset -= leftEnd;
+    }
+    leftOffset += computeSize(leftList, true);
+    rightOffset += computeSize(rightList, true);
 
     double axisWith = width - (rightOffset + leftOffset);
     double axisHeight = height - (topOffset + bottomOffset);
@@ -113,8 +85,20 @@ class GridCoordImpl extends GridCoord {
 
     ///布局Y轴
     layoutYAxis(childList, contentBox);
+
+    ///修正由于坐标系线条宽度导致的遮挡
+    topOffset = topList.isEmpty ? 0 : topList.first.axis.axisStyle.axisLine.width/2;
+    bottomOffset = bottomList.isEmpty ? 0 : bottomList.first.axis.axisStyle.axisLine.width/2 ;
+    leftOffset = leftList.isEmpty ? 0 : leftList.first.axis.axisStyle.axisLine.width/2;
+    rightOffset = rightList.isEmpty ? 0 : rightList.first.axis.axisStyle.axisLine.width/2;
+
     for (var view in children) {
-      view.layout(contentBox.left, contentBox.top, contentBox.right, contentBox.bottom);
+      view.layout(
+        contentBox.left + leftOffset,
+        contentBox.top + topOffset,
+        contentBox.right - rightOffset,
+        contentBox.bottom - bottomOffset,
+      );
     }
   }
 
@@ -201,11 +185,7 @@ class GridCoordImpl extends GridCoord {
       bottomOffset += (h + value.axis.offset);
       value.doLayout(layoutAttrs, dl);
     }
-
   }
-
-
-
 
   void layoutYAxis(List<GridChild> childList, Rect contentBox) {
     List<YAxisImpl> leftList = [];
@@ -214,10 +194,10 @@ class GridCoordImpl extends GridCoord {
 
     for (var ele in props.yAxisList) {
       var axis = yMap[ele]!;
-      if (ele.position == Align2.start) {
-        leftList.add(axis);
-      } else {
+      if (ele.position == Align2.end) {
         rightList.add(axis);
+      } else {
+        leftList.add(axis);
       }
       List<DynamicData> dl = [];
       for (var child in childList) {
@@ -225,7 +205,6 @@ class GridCoordImpl extends GridCoord {
       }
       extremeMap[axis] = dl;
     }
-
     double rightOffset = contentBox.left;
     each(leftList, (value, i) {
       List<DynamicData> dl = extremeMap[value] ?? [];
@@ -244,15 +223,31 @@ class GridCoordImpl extends GridCoord {
     each(rightList, (value, i) {
       List<DynamicData> dl = extremeMap[value] ?? [];
       LineAxisAttrs layoutProps;
-      double w = value.axisInfo.bound.width;
       if (i != 0) {
         leftOffset += value.axis.offset;
       }
+
+      double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
       layoutProps = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft);
       leftOffset += w;
       value.doLayout(layoutProps, dl);
     });
+  }
+
+  double computeSize(List<BaseGridAxisImpl> axisList, bool computeWidth) {
+    double size = 0;
+    each(axisList, (axis, i) {
+      if (computeWidth) {
+        size += axis.axisInfo.bound.width;
+      } else {
+        size += axis.axisInfo.bound.height;
+      }
+      if (i != 0) {
+        size += axis.axis.offset;
+      }
+    });
+    return size;
   }
 
   @override
@@ -499,4 +494,31 @@ class GridCoordImpl extends GridCoord {
     }
     return yMap[yAxis]!.attrs.rect.width;
   }
+}
+
+abstract class GridCoord extends CoordLayout<Grid> {
+  GridCoord(super.props);
+
+  ///该方法适用于Bar
+  Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+
+  ///该方法适用于Line
+  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+
+  GridAxis getAxis(int axisIndex, bool isXAxis);
+
+  double getLeftFirstAxisWidth();
+
+  double getRightFirstAxisWidth();
+
+  double getTopFirstAxisHeight();
+
+  double getBottomFirstAxisHeight();
+
+  ///获取比例尺
+  BaseScale getScale(int axisIndex, bool isXAxis);
+
+  double getAxisLength(int axisIndex, bool isXAxis);
+
+  List<GridChild> getGridChildList();
 }

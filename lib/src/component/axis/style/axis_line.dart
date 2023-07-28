@@ -7,23 +7,30 @@ import 'axis_symbol.dart';
 
 class AxisLine {
   bool show;
-  LineStyle? lineStyle;
+  double width;
+  Color? color;
+  List<num> dash;
+  List<BoxShadow> shadow;
+
   AxisSymbol symbol; //控制是否显示箭头
   Size symbolSize;
   Offset symbolOffset;
 
-  Fun3<int, int, LineStyle?>? styleFun;
+  Fun3<int, int, Color?>? styleFun;
 
   AxisLine({
+    this.width = 2,
+    this.dash = const [],
+    this.shadow = const [],
     this.show = true,
     this.symbol = AxisSymbol.none,
     this.symbolSize = const Size.square(16),
     this.symbolOffset = Offset.zero,
-    LineStyle? lineStyle,
+    Color? color,
     this.styleFun,
   }) {
-    if (lineStyle != null) {
-      this.lineStyle = lineStyle;
+    if (color != null) {
+      this.color = color;
     }
   }
 
@@ -31,33 +38,19 @@ class AxisLine {
     if (!show) {
       return null;
     }
-    LineStyle? style;
+    Color? color;
     if (styleFun != null) {
-      style = styleFun?.call(index, maxIndex);
+      color = styleFun?.call(index, maxIndex);
     } else {
-      if (lineStyle != null) {
-        style = lineStyle;
+      if (this.color != null) {
+        color = this.color;
       } else {
-        style = theme.getAxisLineStyle(index);
+        color = theme.getAxisLineColor(index);
       }
     }
-    return style;
-  }
-
-  LineStyle? getAxisLineStyleNotFun(AxisTheme theme) {
-    if (!show) {
+    if (color == null) {
       return null;
     }
-    if (styleFun != null) {
-      return null;
-    }
-    LineStyle? style;
-    if (lineStyle != null) {
-      style = lineStyle;
-    } else {
-      style = theme.getAxisLineStyle(0);
-    }
-
-    return style;
+    return LineStyle(color: color, dash: dash, shadow: shadow, smooth: false);
   }
 }

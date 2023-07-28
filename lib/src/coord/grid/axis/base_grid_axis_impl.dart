@@ -224,6 +224,9 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     canvas.clipRect(getAxisClipRect(scroll));
     each(layoutResult.split, (split, i) {
       LineStyle? style = axisStyle.getAxisLineStyle(i, split.maxIndex, theme);
+      if(style==null){
+        logPrint("$runtimeType 坐标轴axisLine样式为空 不绘制");
+      }
       style?.drawPolygon(canvas, paint, [split.start, split.end]);
     });
     canvas.restore();
@@ -354,7 +357,6 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         });
       }
     });
-
     canvas.restore();
   }
 
@@ -366,6 +368,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   Rect getAxisClipRect(Offset scroll) {
     var box = coord.contentBox;
     Rect clipRect;
+    double w=axis.axisStyle.axisLine.width;
     if (direction == Direction.horizontal) {
       //X轴
       double left = scroll.dx.abs() + box.left;
@@ -378,9 +381,9 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       //Y轴
       double top = box.top + scroll.dy;
       if (axis.position == Align2.end) {
-        clipRect = Rect.fromLTWH(box.right, top, coord.width, box.height);
+        clipRect = Rect.fromLTWH(box.right - w, top, coord.width + w, box.height);
       } else {
-        clipRect = Rect.fromLTWH(0, top, coord.width, box.height);
+        clipRect = Rect.fromLTWH(0, top, coord.width + 1, box.height);
       }
     }
     return clipRect;

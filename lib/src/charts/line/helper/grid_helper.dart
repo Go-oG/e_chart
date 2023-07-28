@@ -357,15 +357,11 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     olList.removeWhere((element) => element.length < 2);
     List<PathNode> borderList = [];
     StepType? stepType = series.stepLineFun?.call(group);
-    var sw = Stopwatch();
     each(olList, (list, p1) {
       LineStyle? style = buildLineStyle(null, group, p1, null);
       bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
       if (stepType == null) {
-        sw.start();
         borderList.add(PathNode(list, smooth, style?.dash ?? []));
-        sw.stop();
-        logPrint("$runtimeType 耗时22:${sw.elapsedMilliseconds}");
       } else {
         Line line = _buildLine(list, stepType, false, []);
         borderList.add(PathNode(line.pointList, smooth, style?.dash ?? []));
