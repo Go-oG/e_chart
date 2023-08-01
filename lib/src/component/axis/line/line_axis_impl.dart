@@ -68,8 +68,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
     final double interval = distance / (tickCount - 1);
 
-    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
     final double tickOffset = (tick.inside ? -tick.length : tick.length).toDouble();
     final double minorOffset = (tick.inside ? -minorTick.length : minorTick.length).toDouble();
     int minorSN = minorTick.splitNumber;
@@ -121,10 +121,10 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       tickCount = 1;
     }
     final double interval = distance / (tickCount - 1);
-    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
 
-    AxisLabel axisLabel = axis.axisStyle.axisLabel;
+    AxisLabel axisLabel = axis.axisLabel;
 
     List<DynamicText> labels = obtainLabel();
 
@@ -196,13 +196,12 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
   @override
   void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
     AxisTheme theme = getAxisTheme();
     int c = layoutResult.split.length;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.split, (split, i) {
-      LineStyle? style = axisStyle.getAxisLineStyle(i, c, theme);
+      LineStyle? style = axis.getAxisLineStyle(i, c, theme);
       style?.drawPolygon(canvas, paint, [split.start, split.end]);
     });
     canvas.restore();
@@ -210,15 +209,14 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
     var theme = getAxisTheme();
     int maxCount = layoutResult.tick.length;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.tick, (line, i) {
-      MainTick? tick = axisStyle.getMainTick(i, maxCount, theme);
+      MainTick? tick = axis.getMainTick(i, maxCount, theme);
       bool b1 = (tick != null && tick.show);
-      var minorTick = axisStyle.getMinorTick(i, maxCount, theme);
+      var minorTick = axis.getMinorTick(i, maxCount, theme);
       bool b2 = (minorTick != null && minorTick.show);
       if (b1) {
         tick.lineStyle.drawPolygon(canvas, paint, [line.start, line.end]);
@@ -234,14 +232,13 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
   @override
   void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
     var theme = getAxisTheme();
     int maxCount = layoutResult.label.length;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.label, (label, i) {
-      var labelStyle = axisStyle.getLabelStyle(i, maxCount, theme);
-      var minorStyle = axisStyle.getMinorLabelStyle(i, maxCount, theme);
+      var labelStyle = axis.getLabelStyle(i, maxCount, theme);
+      var minorStyle = axis.getMinorLabelStyle(i, maxCount, theme);
       bool b1 = (labelStyle != null && labelStyle.show);
       bool b2 = (minorStyle != null && minorStyle.show);
       if (b1 && label.text != null) {

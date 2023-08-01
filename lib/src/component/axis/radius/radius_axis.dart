@@ -1,17 +1,12 @@
-import '../../component/axis/base_axis.dart';
-import '../../model/enums/align2.dart';
+import '../base_axis.dart';
+
 ///极坐标-径向轴
 class RadiusAxis extends BaseAxis {
-  Align2 nameLocation;
   num offsetAngle;
-  num nameRotate;
 
   RadiusAxis({
-    this.nameLocation = Align2.end,
     this.offsetAngle = 0,
-    this.nameRotate = 0,
     super.show,
-    super.axisName,
     super.type = AxisType.value,
     super.min,
     super.max,
@@ -26,8 +21,15 @@ class RadiusAxis extends BaseAxis {
     super.categoryCenter,
     super.timeRange,
     super.timeType,
-    super.silent,
-    super.axisStyle,
     super.timeFormatFun,
+    super.axisName,
+    super.axisLine,
+    super.axisLabel,
+    super.splitLine,
+    super.minorSplitLine,
+    super.splitArea,
+    super.axisTick,
+    super.minorTick,
+    super.axisPointer,
   });
 }

@@ -1,9 +1,10 @@
-import '../../component/axis/base_axis.dart';
+import '../base_axis.dart';
 
 ///极坐标-角度轴
 class AngleAxis extends BaseAxis {
   /// 起始刻度的角度，默认为90度(圆心的正上方为0度)
   num offsetAngle;
+
   ///是否顺时针
   bool clockwise;
 
@@ -11,7 +12,6 @@ class AngleAxis extends BaseAxis {
     this.offsetAngle = 0,
     this.clockwise = true,
     super.show,
-    super.axisName,
     super.type = AxisType.value,
     super.min,
     super.max,
@@ -24,8 +24,18 @@ class AngleAxis extends BaseAxis {
     super.categoryList,
     super.timeRange,
     super.timeType,
-    super.silent,
-    super.axisStyle,
     super.timeFormatFun,
+
+    super.axisName,
+    super.axisLine,
+    super.axisLabel,
+    super.splitLine,
+    super.minorSplitLine,
+    super.splitArea,
+    super.axisTick,
+    super.minorTick,
+    super.axisPointer,
+    super.alignTicks,
+    super.categoryCenter,
   }) : super(inverse: false);
 }

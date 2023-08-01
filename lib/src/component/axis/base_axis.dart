@@ -29,21 +29,28 @@ abstract class BaseAxis {
   num? interval;
   num logBase;
 
-  ///在多个轴为数值轴的时候，可以开启该配置项自动对齐刻度。
-  ///只对'value'和'log'类型的轴有效。
-  bool alignTicks;
-
   ///是否翻转坐标轴数据
   bool inverse;
 
-  ///样式、交互相关
-  bool silent;
-  AxisStyle axisStyle = AxisStyle();
+  ///================样式相关-=================
+
+  ///在多个轴为数值轴的时候，可以开启该配置项自动对齐刻度。
+  ///只对'value'和'log'类型的轴有效。
+  bool alignTicks;
   AxisName? axisName;
+  AxisLine axisLine = AxisLine();
+  AxisLabel axisLabel = AxisLabel();
+  SplitLine splitLine = SplitLine();
+  MinorSplitLine? minorSplitLine;
+  SplitArea? splitArea;
+  AxisTick axisTick = AxisTick();
+  AxisMinorTick? minorTick;
+
+  ///坐标轴指示器
+  AxisPointer? axisPointer;
 
   BaseAxis({
     this.show = true,
-    this.axisName,
     this.type = AxisType.value,
     this.categoryList = const [],
     this.categoryCenter = true,
@@ -59,12 +66,28 @@ abstract class BaseAxis {
     this.maxInterval,
     this.interval,
     this.logBase = 10,
-    this.silent = false,
-    AxisStyle? axisStyle,
     this.timeRange,
+    this.axisName,
+    AxisLine? axisLine,
+    AxisLabel? axisLabel,
+    SplitLine? splitLine,
+    this.minorSplitLine,
+    this.splitArea,
+    AxisTick? axisTick,
+    this.minorTick,
+    this.axisPointer,
   }) {
-    if (axisStyle != null) {
-      this.axisStyle = axisStyle;
+    if (axisLine != null) {
+      this.axisLine = axisLine;
+    }
+    if (axisLabel != null) {
+      this.axisLabel = axisLabel;
+    }
+    if (splitLine != null) {
+      this.splitLine = splitLine;
+    }
+    if (axisTick != null) {
+      this.axisTick = axisTick;
     }
   }
 
@@ -73,6 +96,37 @@ abstract class BaseAxis {
   bool get isTimeAxis => timeRange != null || type == AxisType.time;
 
   bool get isLogAxis => type == AxisType.log;
+
+  LineStyle? getAxisLineStyle(int index, int maxIndex, AxisTheme theme) {
+    return axisLine.getAxisLineStyle(index, maxIndex, theme);
+  }
+
+  LineStyle? getSplitLineStyle(int index, int maxIndex, AxisTheme theme) {
+    return splitLine.getSplitLineStyle(index, maxIndex, theme);
+  }
+
+  AreaStyle? getSplitAreaStyle(int index, int maxIndex, AxisTheme theme) {
+    if (splitArea != null) {
+      return splitArea?.getSplitAreaStyle(index, maxIndex, theme);
+    }
+    return theme.getSplitAreaStyle(index);
+  }
+
+  MainTick? getMainTick(int index, int maxIndex, AxisTheme theme) {
+    return axisTick.getTick(index, maxIndex, theme);
+  }
+
+  MinorTick? getMinorTick(int index, int maxIndex, AxisTheme theme) {
+    return minorTick?.getTick(index, maxIndex, theme);
+  }
+
+  LabelStyle? getLabelStyle(int index, int maxIndex, AxisTheme theme) {
+    return axisLabel.getLabelStyle(index, maxIndex, theme);
+  }
+
+  LabelStyle? getMinorLabelStyle(int index, int maxIndex, AxisTheme theme) {
+    return axisLabel.getMinorLabelStyle(index, maxIndex, theme);
+  }
 }
 
 ///给定坐标轴集和方向

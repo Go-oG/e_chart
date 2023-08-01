@@ -69,8 +69,8 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     final num angleInterval = dir * maxAngle / tickCount;
     List<TickResult> tickList = [];
 
-    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
     int minorSN = minorTick.splitNumber;
     if (minorSN < 0) {
       minorSN = 0;
@@ -121,10 +121,10 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       return [];
     }
     final num angleInterval = dir * maxAngle / count;
-    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
 
-    AxisLabel axisLabel = axis.axisStyle.axisLabel;
+    AxisLabel axisLabel = axis.axisLabel;
     num r = attrs.radius.last;
     if (tick.inside == axisLabel.inside) {
       r += axisLabel.margin + axisLabel.padding;
@@ -191,11 +191,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   @override
   void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
-    var splitArea = axisStyle.splitArea;
+    var splitArea = axis.splitArea;
     if (splitArea != null && !splitArea.show) {
       return;
     }
@@ -206,25 +202,21 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
     int maxCount = layoutResult.splitList.length;
     each(layoutResult.splitList, (split, i) {
-      AreaStyle? style = axisStyle.getSplitAreaStyle(i, maxCount, theme);
+      AreaStyle? style = axis.getSplitAreaStyle(i, maxCount, theme);
       style?.drawPath(canvas, paint, split.toPath(true));
     });
   }
 
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     var theme = getAxisTheme();
-    var splitLine = axisStyle.splitLine;
+    var splitLine = axis.splitLine;
     if (!splitLine.show) {
       return;
     }
     int maxCount = layoutResult.splitList.length;
     each(layoutResult.splitList, (arc, i) {
-      LineStyle? style = axisStyle.getSplitLineStyle(i, maxCount, theme);
+      LineStyle? style = axis.getSplitLineStyle(i, maxCount, theme);
       if (style != null) {
         Offset end = circlePoint(arc.outRadius, arc.startAngle, arc.center);
         Offset start = arc.innerRadius <= 0 ? attrs.center : circlePoint(arc.innerRadius, arc.startAngle, arc.center);
@@ -235,8 +227,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   @override
   void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
-    var axisLine = axisStyle.axisLine;
+    var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return;
     }
@@ -250,16 +241,15 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
     var theme = getAxisTheme();
-    var axisTick = axisStyle.axisTick;
+    var axisTick = axis.axisTick;
     if (!axisTick.show) {
       return;
     }
     int maxCount = layoutResult.tick.length;
     each(layoutResult.tick, (result, i) {
-      MainTick? tick = axisStyle.getMainTick(i, maxCount, theme);
-      var minorTick = axisStyle.getMinorTick(i, maxCount, theme);
+      MainTick? tick = axis.getMainTick(i, maxCount, theme);
+      var minorTick = axis.getMinorTick(i, maxCount, theme);
       bool b1 = (tick != null && tick.show);
       bool b2 = (minorTick != null && minorTick.show);
       if (b1) {
@@ -283,18 +273,14 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   @override
   void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     var theme = getAxisTheme();
 
-    var axisLabel = axisStyle.axisLabel;
+    var axisLabel = axis.axisLabel;
     if (axisLabel.show) {
       int maxCount = layoutResult.label.length;
       each(layoutResult.label, (label, i) {
-        var labelStyle = axisStyle.getLabelStyle(i, maxCount, theme);
-        var minorStyle = axisStyle.getMinorLabelStyle(i, maxCount, theme);
+        var labelStyle = axis.getLabelStyle(i, maxCount, theme);
+        var minorStyle = axis.getMinorLabelStyle(i, maxCount, theme);
         bool b1 = (labelStyle != null && labelStyle.show);
         bool b2 = (minorStyle != null && minorStyle.show);
         if (b1 && label.text != null && label.text!.isNotEmpty) {
@@ -316,7 +302,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   @override
   void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
-    var axisPointer = axis.axisStyle.axisPointer;
+    var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;
     }
@@ -348,7 +334,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       if (axis.isCategoryAxis && axis.categoryCenter) {
         dis = (c + 0.5) * interval;
       } else {
-        dis = c * interval * 1;
+        dis = c * interval;
       }
       final angle = offset.offsetAngle(attrs.center);
       ol = [attrs.center, circlePoint(dis, angle, attrs.center)];
@@ -362,7 +348,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     DynamicText dt = formatData(scale.toData(dis));
     num angle = offset.offsetAngle(attrs.center);
     Offset o = circlePoint(attrs.radius.last, angle, attrs.center);
-    TextDrawConfig config = TextDrawConfig(o, align: toAlignment(angle, axis.axisStyle.axisLabel.inside));
+    TextDrawConfig config = TextDrawConfig(o, align: toAlignment(angle, axis.axisLabel.inside));
     axisPointer.labelStyle.draw(canvas, paint, dt, config);
   }
 

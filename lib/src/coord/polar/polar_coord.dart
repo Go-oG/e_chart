@@ -1,12 +1,14 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/axis/radius/radius_attrs.dart';
+import 'package:e_chart/src/component/axis/radius/radius_axis_impl.dart';
 import 'package:flutter/material.dart';
 
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
   late AngleAxisImpl<PolarCoord> _angleAxis;
-  late RadiusAxisImpl _radiusAxis;
+  late RadiusAxisImpl<PolarCoord> _radiusAxis;
   Offset center = Offset.zero;
 
   PolarCoordImpl(super.props);

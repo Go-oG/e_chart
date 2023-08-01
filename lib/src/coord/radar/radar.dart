@@ -10,7 +10,14 @@ class Radar extends CircleCoord {
   RadarShape shape;
 
   ///雷达图将忽略掉label 和Tick
-  AxisStyle axisStyle = AxisStyle();
+  AxisName? axisName;
+  AxisLine axisLine = AxisLine();
+  SplitLine splitLine = SplitLine();
+  MinorSplitLine? minorSplitLine;
+  SplitArea? splitArea;
+
+  ///坐标轴指示器
+  AxisPointer? axisPointer;
 
   Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
   Fun3<int, int, AreaStyle?>? splitAreaStyleFun;
@@ -20,7 +27,6 @@ class Radar extends CircleCoord {
     required this.indicator,
     this.offsetAngle = 0,
     this.splitNumber = 5,
-    AxisStyle? axisStyle,
     this.shape = RadarShape.polygon,
     this.silent = false,
     this.clockwise = true,
@@ -36,14 +42,18 @@ class Radar extends CircleCoord {
     super.backgroundColor,
     super.id,
     super.show,
+    this.axisName,
+    AxisLine? axisLine,
+    SplitLine? splitLine,
+    this.minorSplitLine,
+    this.splitArea,
+    this.axisPointer,
   }) {
-    if (axisStyle != null) {
-      this.axisStyle = axisStyle;
-    } else {
-      var style = this.axisStyle;
-      style.minorTick = null;
-      style.axisTick.show = false;
-      style.axisLabel.show = false;
+    if (axisLine != null) {
+      this.axisLine = axisLine;
+    }
+    if (splitLine != null) {
+      this.splitLine = splitLine;
     }
   }
 

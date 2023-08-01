@@ -10,21 +10,20 @@ class YAxisImpl extends XAxisImpl {
   void doMeasure(double parentWidth, double parentHeight) {
     double length = parentHeight;
     double width = 0;
-    AxisStyle axisStyle = axis.axisStyle;
-    if (axisStyle.show) {
-      var lineStyle = axisStyle.getAxisLineStyle(0, 1, getAxisTheme());
+    if (axis.show) {
+      var lineStyle = axis.getAxisLineStyle(0, 1, getAxisTheme());
       width += (lineStyle?.width) ?? 0;
       num tickLength = 0;
-      MainTick? tick = axisStyle.getMainTick(0, 1, getAxisTheme());
+      MainTick? tick = axis.getMainTick(0, 1, getAxisTheme());
       if (tick != null && tick.show) {
         tickLength = tick.length;
       }
-      MinorTick? minorTick = axisStyle.getMinorTick(0, 1, getAxisTheme());
+      MinorTick? minorTick = axis.getMinorTick(0, 1, getAxisTheme());
       if (minorTick != null && minorTick.show) {
         tickLength = max([tickLength, minorTick.length]);
       }
       width += tickLength;
-      var axisLabel = axisStyle.axisLabel;
+      var axisLabel = axis.axisLabel;
       if (axisLabel.show) {
         double tmp = axisLabel.margin + axisLabel.padding + 0;
         var maxStr = getMaxStr(Direction.vertical);

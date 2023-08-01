@@ -10,27 +10,27 @@ class XAxisImpl extends BaseGridAxisImpl {
 
   @override
   void doMeasure(double parentWidth, double parentHeight) {
-    AxisStyle axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
+
+    if (!axis.show) {
       axisInfo.start = axis.position == Align2.start ? const Offset(0, 0) : Offset(0, parentHeight);
       axisInfo.end = Offset(parentWidth, 0);
       axisInfo.bound = Rect.fromLTWH(0, 0, parentWidth, 0);
       return;
     }
     double width = parentWidth;
-    double height = (axisStyle.getAxisLineStyle(0, 1, getAxisTheme())?.width.toDouble()) ?? 0;
-    MainTick? tick = axisStyle.getMainTick(0, 1, getAxisTheme());
+    double height = (axis.getAxisLineStyle(0, 1, getAxisTheme())?.width.toDouble()) ?? 0;
+    MainTick? tick = axis.getMainTick(0, 1, getAxisTheme());
     num tickHeight = 0;
     if (tick != null && tick.show) {
       tickHeight = tick.length;
     }
-    MinorTick? minorTick = axisStyle.getMinorTick(0, 1, getAxisTheme());
+    MinorTick? minorTick = axis.getMinorTick(0, 1, getAxisTheme());
     if (minorTick != null && minorTick.show) {
       tickHeight = max([tickHeight, minorTick.length]);
     }
     height += tickHeight;
 
-    AxisLabel axisLabel = axisStyle.axisLabel;
+    AxisLabel axisLabel = axis.axisLabel;
     if (axisLabel.show) {
       height += axisLabel.margin + axisLabel.padding;
       var maxStr = getMaxStr(Direction.horizontal);

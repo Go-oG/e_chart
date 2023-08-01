@@ -87,10 +87,10 @@ class GridCoordImpl extends GridCoord {
     layoutYAxis(childList, contentBox);
 
     ///修正由于坐标系线条宽度导致的遮挡
-    topOffset = topList.isEmpty ? 0 : topList.first.axis.axisStyle.axisLine.width / 2;
-    bottomOffset = bottomList.isEmpty ? 0 : bottomList.first.axis.axisStyle.axisLine.width / 2;
-    leftOffset = leftList.isEmpty ? 0 : leftList.first.axis.axisStyle.axisLine.width / 2;
-    rightOffset = rightList.isEmpty ? 0 : rightList.first.axis.axisStyle.axisLine.width / 2;
+    topOffset = topList.isEmpty ? 0 : topList.first.axis.axisLine.width / 2;
+    bottomOffset = bottomList.isEmpty ? 0 : bottomList.first.axis.axisLine.width / 2;
+    leftOffset = leftList.isEmpty ? 0 : leftList.first.axis.axisLine.width / 2;
+    rightOffset = rightList.isEmpty ? 0 : rightList.first.axis.axisLine.width / 2;
 
     for (var view in children) {
       view.layout(

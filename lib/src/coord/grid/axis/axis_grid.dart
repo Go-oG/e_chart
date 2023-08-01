@@ -4,15 +4,11 @@ import 'package:e_chart/e_chart.dart';
 class GridAxis extends BaseAxis {
   Align2 position;
   double offset;
-  AxisPointer? axisPointer;
 
-  GridAxis({
-    this.position = Align2.end,
+  GridAxis({this.position = Align2.end,
     this.offset = 8,
-    this.axisPointer,
     super.alignTicks,
     super.show,
-    super.axisName,
     super.type,
     super.min,
     super.max,
@@ -27,8 +23,15 @@ class GridAxis extends BaseAxis {
     super.categoryCenter,
     super.timeRange,
     super.timeType,
-    super.silent,
-    super.axisStyle,
-    super.timeFormatFun
+    super.timeFormatFun,
+    super.axisName,
+    super.axisLine,
+    super.axisLabel,
+    super.splitLine,
+    super.minorSplitLine,
+    super.splitArea,
+    super.axisTick,
+    super.minorTick,
+    super.axisPointer,
   });
 }

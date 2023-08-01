@@ -1,17 +1,20 @@
+import 'dart:ui';
+
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
+
+import 'radius_attrs.dart';
+import 'radius_axis.dart';
 
 ///半径轴
-class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, PolarCoord> {
+class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, C> {
   RadiusAxisImpl(super.context, super.coord, super.axis);
 
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
-    var axisStyle = axis.axisStyle;
     each(layoutResult.split, (split, i) {
-      LineStyle? style = axisStyle.getSplitLineStyle(split.index, split.maxIndex, theme);
+      LineStyle? style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
       }
@@ -29,9 +32,8 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, PolarCoor
   @override
   void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
-    var axisStyle = axis.axisStyle;
     each(layoutResult.split, (split, i) {
-      AreaStyle? style = axisStyle.getSplitAreaStyle(split.index, split.maxIndex, theme);
+      AreaStyle? style = axis.getSplitAreaStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
       }
@@ -48,7 +50,7 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, PolarCoor
 
   @override
   void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
-    var axisPointer = axis.axisStyle.axisPointer;
+    var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;
     }
@@ -103,44 +105,5 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, PolarCoor
 
   List<num> dataToRadius(DynamicData data) {
     return scale.toRange(data.data);
-  }
-}
-
-class RadiusAxisAttrs extends LineAxisAttrs {
-  final Offset center;
-  final num offsetAngle;
-
-  RadiusAxisAttrs(
-    this.center,
-    this.offsetAngle,
-    super.scaleRatio,
-    super.scroll,
-    super.rect,
-    super.start,
-    super.end, {
-    super.splitCount,
-  });
-
-  @override
-  RadiusAxisAttrs copyWith({
-    double? scaleRatio,
-    double? scroll,
-    Rect? rect,
-    Offset? start,
-    Offset? end,
-    Offset? center,
-    num? offsetAngle,
-    int? splitCount,
-  }) {
-    return RadiusAxisAttrs(
-      center ?? this.center,
-      offsetAngle ?? this.offsetAngle,
-      scaleRatio ?? this.scaleRatio,
-      scroll ?? this.scroll,
-      rect ?? this.rect,
-      start ?? this.start,
-      end ?? this.end,
-      splitCount: splitCount,
-    );
   }
 }
