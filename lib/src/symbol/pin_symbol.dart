@@ -1,28 +1,26 @@
 import 'dart:math';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../style/area_style.dart';
-import 'chart_symbol.dart';
 
 ///类似地图当前位置的形状
 ///TODO 后面贝塞尔曲线拟合
 class PinSymbol extends ChartSymbol {
-  AreaStyle style;
-  double r;
-  num rotate;
+  final LineStyle? border;
+  final AreaStyle? style;
+  final double r;
+  final num rotate;
+  late final Path path;
 
   PinSymbol({
     this.r = 8,
     this.rotate = 0,
     this.style = const AreaStyle(color: Colors.blue),
-    super.center,
+    this.border,
   }) {
-    buildPath();
-  }
+    if (style == null && border == null) {
+      throw ChartError("style 和border不能同时为空");
+    }
 
-  late Path path;
-
-  void buildPath() {
     Path p1 = Path();
     p1.moveTo(-r, 0);
     p1.arcToPoint(Offset(r, 0), radius: Radius.circular(r), largeArc: true);
@@ -40,26 +38,13 @@ class PinSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
-    if (info.center != null && center != info.center) {
-      center = info.center!;
-    }
-    if (info.size != null) {
-      r = info.size!.shortestSide*0.5;
-      buildPath();
-    }
-
-    AreaStyle style = this.style;
-    AreaStyle? s = info.toAreaStyle();
-    if (s != null) {
-      style = s;
-    }
-
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    center = offset;
     canvas.save();
     canvas.translate(center.dx, center.dy);
     canvas.rotate(rotate * pi / 180);
-    canvas.translate(-center.dx, -center.dy);
-    style.drawPath(canvas, paint, path);
+    style?.drawPath(canvas, paint, path);
+    border?.drawPath(canvas, paint, path, needSplit: false, drawDash: true);
     canvas.restore();
   }
 
@@ -68,8 +53,6 @@ class PinSymbol extends ChartSymbol {
 
   @override
   bool internal(Offset point) {
-    return path.contains(point);
+    return path.contains(point.translate(center.dx, center.dy));
   }
-
-
 }

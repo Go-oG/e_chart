@@ -7,4 +7,5 @@ export 'series.dart';
 export 'view.dart';
 export 'view_group.dart';
 export 'view_state.dart';
-
+export 'factory/coord_factory.dart';
+export 'factory/series_factory.dart';

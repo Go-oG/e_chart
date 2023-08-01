@@ -1,22 +1,19 @@
 import 'dart:math';
 import 'dart:ui';
 
-import '../style/area_style.dart';
-import 'chart_symbol.dart';
+import 'package:e_chart/e_chart.dart';
+
 
 ///小飞机图标(等边三角形实现)
 class ArrowSymbol extends ChartSymbol {
-  AreaStyle style;
-  num sideLength;
-  double ratio;
-  num rotate;
-  late Path path;
+  final LineStyle? border;
+  final AreaStyle style;
+  final num sideLength;
+  final double ratio;
+  final num rotate;
+  late final Path path;
 
-  ArrowSymbol(this.style, {this.sideLength = 16, this.rotate = 0, this.ratio = 0.8, super.center}) {
-    updatePath();
-  }
-
-  void updatePath() {
+  ArrowSymbol(this.style, {this.border, this.sideLength = 16, this.rotate = 0, this.ratio = 0.8}) {
     path = Path();
     double c = sideLength / 2;
     double tt = sideLength * sqrt(3) / 3;
@@ -30,19 +27,11 @@ class ArrowSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, SymbolDesc info) {
-    if (info.center != null && center != info.center) {
-      center = info.center!;
-    }
-    if (info.size != null) {
-      sideLength = info.size!.longestSide;
-    }
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    center = offset;
     AreaStyle style = this.style;
-    AreaStyle? s = info.toAreaStyle();
-    if (s != null) {
-      style = s;
-    }
     canvas.save();
+    canvas.translate(center.dx, center.dy);
     canvas.rotate(rotate * pi / 180);
     style.drawPath(canvas, paint, path);
     canvas.restore();

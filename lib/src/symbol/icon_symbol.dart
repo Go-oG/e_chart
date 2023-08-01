@@ -6,8 +6,8 @@ import '../style/label.dart';
 import 'chart_symbol.dart';
 
 class IconSymbol extends ChartSymbol {
-  Icon icon;
-  late LabelStyle style;
+  final Icon icon;
+  late final LabelStyle style;
 
   IconSymbol(this.icon, {super.center}) {
     IconData data = icon.icon!;
@@ -35,11 +35,8 @@ class IconSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, SymbolDesc info) {
-    if (info.center != null && center != info.center) {
-      center = info.center!;
-    }
-
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    center = offset;
     TextDrawConfig config = TextDrawConfig(center, align: Alignment.center);
     style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
   }

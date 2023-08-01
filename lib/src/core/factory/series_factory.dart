@@ -1,28 +1,28 @@
 
-import 'charts/bar/bar_chart.dart';
-import 'charts/bar/bar_series.dart';
-import 'charts/boxplot/boxplot_chart.dart';
-import 'charts/boxplot/boxplot_series.dart';
-import 'charts/calendar/calendar_chart.dart';
-import 'charts/calendar/calendar_series.dart';
-import 'charts/candlestick/candlestick_chart.dart';
-import 'charts/candlestick/candlestick_series.dart';
-import 'charts/funnel/funnel_chart.dart';
-import 'charts/funnel/funnel_series.dart';
-import 'charts/heatmap/heat_map_chart.dart';
-import 'charts/heatmap/heat_map_series.dart';
-import 'charts/line/line_chart.dart';
-import 'charts/line/line_series.dart';
-import 'charts/parallel/parallel_chart.dart';
-import 'charts/parallel/parallel_series.dart';
-import 'charts/pie/pie_chart.dart';
-import 'charts/pie/pie_series.dart';
-import 'charts/point/point_chart.dart';
-import 'charts/point/point_series.dart';
-import 'charts/radar/radar_chart.dart';
-import 'charts/radar/radar_series.dart';
-import 'core/series.dart';
-import 'core/view.dart';
+import '../../charts/bar/bar_chart.dart';
+import '../../charts/bar/bar_series.dart';
+import '../../charts/boxplot/boxplot_chart.dart';
+import '../../charts/boxplot/boxplot_series.dart';
+import '../../charts/calendar/calendar_chart.dart';
+import '../../charts/calendar/calendar_series.dart';
+import '../../charts/candlestick/candlestick_chart.dart';
+import '../../charts/candlestick/candlestick_series.dart';
+import '../../charts/funnel/funnel_chart.dart';
+import '../../charts/funnel/funnel_series.dart';
+import '../../charts/heatmap/heat_map_chart.dart';
+import '../../charts/heatmap/heat_map_series.dart';
+import '../../charts/line/line_chart.dart';
+import '../../charts/line/line_series.dart';
+import '../../charts/parallel/parallel_chart.dart';
+import '../../charts/parallel/parallel_series.dart';
+import '../../charts/pie/pie_chart.dart';
+import '../../charts/pie/pie_series.dart';
+import '../../charts/point/point_chart.dart';
+import '../../charts/point/point_series.dart';
+import '../../charts/radar/radar_chart.dart';
+import '../../charts/radar/radar_series.dart';
+import '../series.dart';
+import '../view.dart';
 
 class SeriesFactory {
   static final SeriesFactory _instance = SeriesFactory._();
@@ -48,7 +48,7 @@ class SeriesFactory {
     _convertList.remove(convert);
   }
 
-  void clearConvert(SeriesConvert convert) {
+  void clearConvert() {
     _convertList.clear();
     _convertList.add(_defaultConvert);
   }

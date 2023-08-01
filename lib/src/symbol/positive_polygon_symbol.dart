@@ -1,52 +1,36 @@
 import 'dart:ui';
-import '../model/shape/index.dart';
-import '../style/area_style.dart';
-import 'chart_symbol.dart';
+import 'package:e_chart/e_chart.dart';
+
 
 ///正多边形
 class PositivePolygonSymbol extends ChartSymbol {
-  AreaStyle style;
-  num r;
-  int count;
-  num rotate;
+  final LineStyle? border;
+  final AreaStyle? style;
+  final num r;
+  final int count;
+  final num rotate;
 
-  PositivePolygonSymbol(
-    this.style, {
+  late final Path path;
+
+  PositivePolygonSymbol({
+    this.style,
+    this.border,
     this.count = 3,
     this.r = 8,
     this.rotate = 0,
-    super.center,
   }) {
-    buildPath();
-  }
-
-  late Path path;
-
-  void buildPath() {
+    if (style == null && border == null) {
+      throw ChartError("style 和border不能同时为空");
+    }
     PositiveShape shape = PositiveShape(center: center, r: r, count: count, angleOffset: rotate);
     path = shape.toPath(true);
   }
 
   @override
-  set center(Offset o) {
-    super.center = o;
-    buildPath();
-  }
-
-  @override
-  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
-    if (info.center != null && center != info.center) {
-      center = info.center!;
-    }
-    if (info.size != null) {
-      r = info.size!.shortestSide*0.5;
-    }
-    AreaStyle style = this.style;
-    AreaStyle? s = info.toAreaStyle();
-    if (s != null) {
-      style = s;
-    }
-    style.drawPath(canvas, paint, path);
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    center=offset;
+    style?.drawPath(canvas, paint, path);
+    border?.drawPath(canvas, paint, path,drawDash: true,needSplit: false);
   }
 
   @override
@@ -54,6 +38,6 @@ class PositivePolygonSymbol extends ChartSymbol {
 
   @override
   bool internal(Offset point) {
-    return path.contains(point);
+    return path.contains(point.translate(-center.dx,-center.dy));
   }
 }

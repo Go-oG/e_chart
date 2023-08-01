@@ -2,9 +2,6 @@ export 'src/chart.dart';
 
 export 'src/functions.dart';
 
-export 'src/series_factory.dart';
-export 'src/coord_factory.dart';
-
 export 'src/animation/index.dart';
 
 export 'src/charts/index.dart';

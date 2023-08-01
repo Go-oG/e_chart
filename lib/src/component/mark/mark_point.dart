@@ -27,7 +27,7 @@ class MarkPoint {
   }
 
   void draw(Canvas canvas, Paint paint, Offset offset, [DynamicText? text]) {
-    symbol.draw(canvas, paint, SymbolDesc(center: offset));
+    symbol.draw(canvas, paint,offset);
     if (text != null && text.isNotEmpty) {
       labelStyle?.draw(canvas, paint, text, TextDrawConfig(offset));
     }

@@ -1,5 +1,4 @@
 export 'enums/align2.dart';
-export 'enums/chart_type.dart';
 export 'enums/circle_align.dart';
 export 'enums/coordinate.dart';
 export 'enums/direction.dart';
