@@ -74,10 +74,6 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   final stopWatch = Stopwatch();
 
   void draw(Canvas canvas, Paint paint, Rect coord) {
-    var axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     Offset offset = this.coord.getTranslation();
     onDrawAxisSplitArea(canvas, paint, offset);
     onDrawAxisSplitLine(canvas, paint, offset);
@@ -112,7 +108,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     if (scale is CategoryScale) {
       return List.from(scale.labels.map((e) => DynamicText(e)));
     }
-    var formatter = axis.axisStyle.axisLabel.formatter;
+    var formatter = axis.axisLabel.formatter;
     List<DynamicText> labels = [];
     if (scale is TimeScale) {
       for (var ele in scale.labels) {
@@ -176,7 +172,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     if (data is String) {
       return DynamicText(data);
     }
-    var formatter = axis.axisStyle.axisLabel.formatter;
+    var formatter = axis.axisLabel.formatter;
     if (data is DateTime) {
       if (formatter != null) {
         return formatter.call(data);

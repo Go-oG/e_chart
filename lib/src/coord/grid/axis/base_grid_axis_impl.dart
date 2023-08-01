@@ -48,8 +48,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     final double interval = distance / (tickCount - 1);
     List<int> indexList = computeIndex(distance, tickCount, interval);
-    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
     int minorSN = minorTick.splitNumber;
     if (minorSN < 0) {
       minorSN = 0;
@@ -95,13 +95,13 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     ///计算索引
     List<int> indexList = computeIndex(distance, tickCount, interval);
 
-    MainTick tick = axis.axisStyle.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.axisStyle.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
     int sn = minorTick.splitNumber;
     if (sn < 0) {
       sn = 0;
     }
-    AxisLabel axisLabel = axis.axisStyle.axisLabel;
+    AxisLabel axisLabel = axis.axisLabel;
     List<DynamicText> labels = obtainLabel2(indexList[0], indexList[1]);
     double labelOffset = axisLabel.padding + axisLabel.margin + 0;
     if (axisLabel.inside == tick.inside) {
@@ -149,17 +149,13 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   @override
   void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
-    AxisStyle axisStyle = axis.axisStyle;
-    if (!axisStyle.show) {
-      return;
-    }
     AxisTheme theme = getAxisTheme();
     var box = coord.contentBox;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
     canvas.clipRect(getClipRect(scroll));
     each(layoutResult.split, (split, p1) {
-      AreaStyle? style = axisStyle.getSplitAreaStyle(split.index, split.maxIndex, theme);
+      AreaStyle? style = axis.getSplitAreaStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
       }
@@ -178,7 +174,6 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
-    AxisStyle axisStyle = axis.axisStyle;
     bool vertical = direction != Direction.vertical;
     double w = coord.contentBox.width;
     double h = coord.contentBox.height;
@@ -193,7 +188,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     canvas.translate(scroll.dx, scroll.dy);
     canvas.clipRect(getClipRect(scroll));
     each(layoutResult.split, (split, p1) {
-      LineStyle? style = axisStyle.getSplitLineStyle(split.index, split.maxIndex, theme);
+      LineStyle? style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
       }
@@ -212,7 +207,6 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   @override
   void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
-    AxisStyle axisStyle = axis.axisStyle;
     AxisTheme theme = getAxisTheme();
     canvas.save();
     if (direction == Direction.horizontal) {
@@ -222,7 +216,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     canvas.clipRect(getAxisClipRect(scroll));
     each(layoutResult.split, (split, i) {
-      LineStyle? style = axisStyle.getAxisLineStyle(i, split.maxIndex, theme);
+      LineStyle? style = axis.getAxisLineStyle(i, split.maxIndex, theme);
       if (style == null) {
         logPrint("$runtimeType 坐标轴axisLine样式为空 不绘制");
       }
@@ -233,7 +227,6 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   @override
   void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
     var theme = getAxisTheme();
     canvas.save();
     if (direction == Direction.horizontal) {
@@ -243,7 +236,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     canvas.clipRect(getAxisClipRect(scroll));
     each(layoutResult.tick, (line, p1) {
-      MainTick? tick = axisStyle.getMainTick(line.index, line.maxIndex, theme);
+      MainTick? tick = axis.getMainTick(line.index, line.maxIndex, theme);
       bool b1 = (tick != null && tick.show);
 
       if (b1) {
@@ -259,7 +252,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
           tick.lineStyle.drawPolygon(canvas, paint, [line.start, line.end]);
         }
       }
-      var minorTick = axisStyle.getMinorTick(line.index, line.maxIndex, theme);
+      var minorTick = axis.getMinorTick(line.index, line.maxIndex, theme);
       bool b2 = (minorTick != null && minorTick.show);
       if (b2) {
         int interval = minorTick.interval;
@@ -282,8 +275,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   @override
   void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
-    var axisStyle = axis.axisStyle;
-    var axisLabel = axisStyle.axisLabel;
+    var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
       return;
     }
@@ -447,7 +439,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   Rect getAxisClipRect(Offset scroll) {
     var box = coord.contentBox;
     Rect clipRect;
-    double w = axis.axisStyle.axisLine.width;
+    double w = axis.axisLine.width;
     if (direction == Direction.horizontal) {
       //X轴
       double left = scroll.dx.abs() + box.left;

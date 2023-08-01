@@ -12,16 +12,12 @@ export 'grid/grid_child.dart';
 export 'grid/grid_coord.dart';
 export 'grid/grid.dart';
 
-
 export 'parallel/parallel.dart';
 export 'parallel/parallel_axis.dart';
 export 'parallel/parallel_axis_impl.dart';
 export 'parallel/parallel_child.dart';
 export 'parallel/parallel_coord.dart';
 
-export 'polar/axis_angle.dart';
-export 'polar/axis_radius.dart';
-export 'polar/axis_radius_impl.dart';
 export 'polar/polar.dart';
 export 'polar/polar_child.dart';
 export 'polar/polar_coord.dart';

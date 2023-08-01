@@ -1,6 +1,19 @@
-export 'axis/angle/angle_axis_impl.dart';
 export 'axis/angle/angle_attrs.dart';
+export 'axis/angle/angle_axis.dart';
+export 'axis/angle/angle_axis_impl.dart';
 export 'axis/angle/angle_layout_result.dart';
+
+
+export 'axis/decor/axis_label.dart';
+export 'axis/decor/axis_line.dart';
+export 'axis/decor/axis_minor_tick.dart';
+export 'axis/decor/axis_name.dart';
+export 'axis/decor/axis_pointer.dart';
+export 'axis/decor/axis_symbol.dart';
+export 'axis/decor/axis_tick.dart';
+export 'axis/decor/minor_split_line.dart';
+export 'axis/decor/split_area.dart';
+export 'axis/decor/split_line.dart';
 
 export 'axis/line/line_attrs.dart';
 export 'axis/line/line_axis_impl.dart';
@@ -12,21 +25,12 @@ export 'axis/model/axis_tile_node.dart';
 export 'axis/model/label_result.dart';
 export 'axis/model/tick_result.dart';
 
+export 'axis/radius/radius_attrs.dart';
+export 'axis/radius/radius_axis.dart';
+export 'axis/radius/radius_axis_impl.dart';
 
-export 'axis/attr/axis_label.dart';
-export 'axis/attr/axis_line.dart';
-export 'axis/attr/axis_minor_tick.dart';
-export 'axis/attr/axis_name.dart';
-export 'axis/attr/axis_pointer.dart';
-export 'axis/attr/axis_style.dart';
-export 'axis/attr/axis_symbol.dart';
-export 'axis/attr/axis_tick.dart';
-export 'axis/attr/minor_split_line.dart';
-export 'axis/attr/split_area.dart';
-export 'axis/attr/split_line.dart';
-
-export 'axis/base_axis.dart';
 export 'axis/axis_attrs.dart';
+export 'axis/base_axis.dart';
 export 'axis/base_axis_impl.dart';
 
 
