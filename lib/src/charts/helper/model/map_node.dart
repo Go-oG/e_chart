@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../../../shape/arc.dart';
+import 'package:e_chart/e_chart.dart';
 
 class MapNode {
   final Rect rect;

@@ -105,6 +105,10 @@ abstract class BaseAxis {
     return splitLine.getSplitLineStyle(index, maxIndex, theme);
   }
 
+  LineStyle? getMinorSplitLineStyle(int index, int maxIndex, AxisTheme theme) {
+    return minorSplitLine?.getSplitLineStyle(index, maxIndex, theme);
+  }
+
   AreaStyle? getSplitAreaStyle(int index, int maxIndex, AxisTheme theme) {
     if (splitArea != null) {
       return splitArea?.getSplitAreaStyle(index, maxIndex, theme);
@@ -127,6 +131,8 @@ abstract class BaseAxis {
   LabelStyle? getMinorLabelStyle(int index, int maxIndex, AxisTheme theme) {
     return axisLabel.getMinorLabelStyle(index, maxIndex, theme);
   }
+
+
 }
 
 ///给定坐标轴集和方向

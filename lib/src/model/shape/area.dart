@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../model/constans.dart';
+import '../constans.dart';
 import 'chart_shape.dart';
 
 ///代表一个封闭的图形

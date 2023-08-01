@@ -21,8 +21,6 @@ export 'src/gesture/index.dart';
 
 export 'src/model/index.dart';
 
-export 'src/shape/index.dart';
-
 export 'src/style/index.dart';
 
 export 'src/symbol/index.dart';

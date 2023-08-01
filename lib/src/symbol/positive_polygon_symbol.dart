@@ -1,5 +1,5 @@
 import 'dart:ui';
-import '../shape/positive.dart';
+import '../model/shape/index.dart';
 import '../style/area_style.dart';
 import 'chart_symbol.dart';
 

@@ -1,8 +1,6 @@
 import 'dart:ui';
 
-import '../../animation/chart_tween.dart';
-import '../../shape/arc.dart';
-import 'layout.dart';
+import 'package:e_chart/e_chart.dart';
 
 class PieTween extends ChartTween<Arc> {
   PieTween(super.begin, super.end,{super.allowCross,super.props});

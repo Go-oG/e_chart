@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/src/ext/index.dart';
-import '../model/constans.dart';
+import '../constans.dart';
 import 'chart_shape.dart';
 
 class Line implements Shape {

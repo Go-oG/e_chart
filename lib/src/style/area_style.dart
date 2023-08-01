@@ -2,12 +2,12 @@ import 'dart:ui';
 import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:e_chart/src/ext/path_ext.dart';
 import 'package:e_chart/src/model/corner.dart';
-import 'package:e_chart/src/shape/area.dart';
+
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 
 import '../core/view_state.dart';
-import '../shape/line.dart';
+import '../model/shape/index.dart';
 
 /// 区域样式
 class AreaStyle {

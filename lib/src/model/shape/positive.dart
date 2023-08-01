@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../ext/offset_ext.dart';
+import '../../ext/offset_ext.dart';
 import 'chart_shape.dart';
 
 ///正多边形
