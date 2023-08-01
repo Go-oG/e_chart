@@ -8,10 +8,10 @@ import '../animation/animator_attrs.dart';
 import '../chart.dart';
 import '../component/index.dart';
 import '../coord/index.dart';
-import '../coord_factory.dart';
+import 'factory/coord_factory.dart';
 import '../gesture/index.dart';
 import '../model/index.dart';
-import '../series_factory.dart';
+import 'factory/series_factory.dart';
 import '../utils/log_util.dart';
 
 ///存放整个图表的配置.包含所有的图形实例和动画、手势

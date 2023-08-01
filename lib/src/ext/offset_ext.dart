@@ -189,6 +189,14 @@ extension OffsetExt on Offset {
     double y = (dx - center.dx) * m.sin(t) + (dy - center.dy) * m.cos(t) + center.dy;
     return Offset(x, y);
   }
+
+  Offset translate2(Offset other) {
+    return translate(other.dx, other.dy);
+  }
+
+  Offset get invert {
+    return Offset(-dx, -dy);
+  }
 }
 
 ///给定一个半径和圆心计算给定角度对应的位置坐标

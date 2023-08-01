@@ -46,7 +46,7 @@ class ToolTipItemView extends ChartView {
     double left = 0;
     if (item.symbol != null) {
       Size s = item.symbol!.size;
-      item.symbol?.draw(canvas, mPaint, SymbolDesc(center: Offset(s.width / 2, c)));
+      item.symbol?.draw(canvas, mPaint, Offset(s.width / 2, c));
       left += s.width + 8;
     }
     item.textStyle.draw(canvas, mPaint, item.text, TextDrawConfig(Offset(left, c), align: Alignment.centerLeft));

@@ -54,16 +54,15 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
         return;
       }
 
-      SymbolDesc desc = SymbolDesc();
       for (int i = 0; i < group.nodeList.length; i++) {
-        desc.center = group.nodeList[i].offset;
+        var center = group.nodeList[i].offset;
         ChartSymbol? symbol;
         if (series.symbolFun != null) {
           symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
-          symbol?.draw(canvas, mPaint, desc);
+          symbol?.draw(canvas, mPaint, center);
         } else {
           symbol = theme.showSymbol ? theme.symbol : null;
-          symbol?.draw(canvas, mPaint, desc);
+          symbol?.draw(canvas, mPaint, center);
         }
       }
     });

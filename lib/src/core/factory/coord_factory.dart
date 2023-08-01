@@ -1,5 +1,5 @@
-import 'coord/index.dart';
-import 'model/enums/coordinate.dart';
+import '../../coord/index.dart';
+import '../../model/enums/coordinate.dart';
 
 class CoordFactory {
   static final CoordFactory _instance = CoordFactory._();
@@ -26,7 +26,7 @@ class CoordFactory {
     _convertList.remove(convert);
   }
 
-  void clearConvert(CoordConvert convert) {
+  void clearConvert() {
     _convertList.clear();
     _convertList.add(_defaultConvert);
   }

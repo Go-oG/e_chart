@@ -5,10 +5,7 @@ class EmptySymbol extends ChartSymbol {
   EmptySymbol();
 
   @override
-  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
-    if (info.center != null && center != info.center) {
-      center = info.center!;
-    }
+  void draw(Canvas canvas, Paint paint,Offset offset) {
   }
 
   @override

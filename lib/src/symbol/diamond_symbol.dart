@@ -1,64 +1,39 @@
-import 'package:e_chart/src/ext/paint_ext.dart';
-
-import '../style/area_style.dart';
-import 'chart_symbol.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///棱形
 class DiamondSymbol extends ChartSymbol {
-  num shortSide;
-  num loneSide;
-  num rotate;
-  AreaStyle style;
+  final num shortSide;
+  final num loneSide;
+  final num rotate;
+  final AreaStyle? style;
+  final LineStyle? border;
+  late final Path path;
 
-  late Path path;
-
-  DiamondSymbol(
-    this.style, {
+  DiamondSymbol({
+    this.style,
+    this.border,
     this.shortSide = 8,
     this.loneSide = 8,
     this.rotate = 0,
   }) {
-    buildPath();
-  }
-
-  void buildPath() {
+    if (style == null || border == null) {
+      throw ChartError("Style 和border 不能同时为空");
+    }
     path = Path();
     path.moveTo(0, -shortSide / 2);
     path.lineTo(loneSide / 2, 0);
     path.lineTo(0, center.dy + shortSide / 2);
     path.lineTo(-loneSide / 2, 0);
     path.close();
-    path = path.shift(center);
   }
 
   @override
-  set center(Offset o) {
-    super.center = o;
-    buildPath();
-  }
-
-  @override
-  void draw(Canvas canvas, Paint paint,SymbolDesc info) {
-    if (info.center != null && center != info.center) {
-      center = info.center!;
-    }
-    if (info.size != null) {
-      if(info.size!.longestSide!=loneSide){
-        loneSide=info.size!.longestSide;
-      }
-      if(info.size!.shortestSide!=shortSide){
-        shortSide=info.size!.shortestSide;
-      }
-      buildPath();
-    }
-    AreaStyle style = this.style;
-    AreaStyle? s = info.toAreaStyle();
-    if (s != null) {
-      style = s;
-    }
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    center = offset;
     paint.reset();
-    style.drawPath(canvas, paint, path);
+    style?.drawPath(canvas, paint, path);
+    border?.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
   }
 
   @override
@@ -66,6 +41,6 @@ class DiamondSymbol extends ChartSymbol {
 
   @override
   bool internal(Offset point) {
-    return path.contains(point);
+    return path.contains(point.translate(-center.dx, -center.dy));
   }
 }

@@ -166,38 +166,26 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
   }
 
   void drawSymbol(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
-    SymbolDesc desc = SymbolDesc();
     lineNode.symbolMap.forEach((key, node) {
       if (!clipRect.contains(node.offset)) {
         return;
       }
-      var cl = layoutHelper.buildLineStyle(null, node.group, node.groupIndex, null)?.color;
-      if (cl != null) {
-        desc.fillColor = [cl];
-      }
-      desc.center = node.offset;
       if (series.symbolFun != null) {
         ChartSymbol? symbol = series.symbolFun?.call(node.data, node.group);
-        symbol?.draw(canvas, mPaint, desc);
+        symbol?.draw(canvas, mPaint, node.offset);
       } else if (theme.showSymbol) {
-        theme.symbol.draw(canvas, mPaint, desc);
+        theme.symbol.draw(canvas, mPaint, node.offset);
       }
     });
   }
 
   void drawSymbolForPolar(Canvas canvas, List<SymbolNode> symbolList, LineTheme theme) {
-    SymbolDesc desc = SymbolDesc();
     each(symbolList, (symbol, p1) {
-      var cl = layoutHelper.buildLineStyle(null, symbol.group, symbol.groupIndex, null)?.color;
-      if (cl != null) {
-        desc.fillColor = [cl];
-      }
-      desc.center = symbol.offset;
       if (series.symbolFun != null) {
         ChartSymbol? cs = series.symbolFun?.call(symbol.data, symbol.group);
-        cs?.draw(canvas, mPaint, desc);
+        cs?.draw(canvas, mPaint, symbol.offset);
       } else if (theme.showSymbol) {
-        theme.symbol.draw(canvas, mPaint, desc);
+        theme.symbol.draw(canvas, mPaint, symbol.offset);
       }
     });
   }
@@ -221,7 +209,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
 
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
-   return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
+    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
 
   @override

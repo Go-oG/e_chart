@@ -2,7 +2,6 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-
 class LegendViewGroup extends FlexLayout {
   final Legend legend;
 
@@ -52,23 +51,23 @@ class LegendItemView extends ChartView {
       Offset o = Offset(0, height / 2);
       Size s = item.textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.centerLeft));
       o = Offset(s.width + item.gap + symbolSize.width / 2, height / 2);
-      item.symbol.draw(canvas, mPaint, SymbolDesc(center: o));
+      item.symbol.draw(canvas, mPaint, o);
     } else if (p == Position.right) {
-      item.symbol.draw(canvas, mPaint, SymbolDesc(center: Offset(symbolSize.width / 2, height / 2)));
+      item.symbol.draw(canvas, mPaint, Offset(symbolSize.width / 2, height / 2));
       Offset o = Offset(symbolSize.width + item.gap, height / 2);
       textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.centerLeft));
     } else if (p == Position.top) {
       Offset o = Offset(width / 2, 0);
       Size s = textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.topCenter));
       o = Offset(width / 2, s.height + item.gap + symbolSize.height / 2);
-      item.symbol.draw(canvas, mPaint, SymbolDesc(center: o));
+      item.symbol.draw(canvas, mPaint, o);
     } else if (p == Position.bottom) {
-      item.symbol.draw(canvas, mPaint, SymbolDesc(center: Offset(width / 2, height - symbolSize.height / 2)));
+      item.symbol.draw(canvas, mPaint, Offset(width / 2, height - symbolSize.height / 2));
       Offset o = Offset(width / 2, height - symbolSize.height);
       textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.bottomCenter));
     } else {
       Offset o = Offset(width / 2, height / 2);
-      item.symbol.draw(canvas, mPaint, SymbolDesc(center: o));
+      item.symbol.draw(canvas, mPaint, o);
       textStyle.draw(canvas, mPaint, item.name, TextDrawConfig(o, align: Alignment.center));
     }
     canvas.restore();
