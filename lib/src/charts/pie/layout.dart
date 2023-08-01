@@ -1,19 +1,8 @@
 import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/pie/pie_tween.dart';
 
-import 'package:e_chart/src/utils/diff.dart';
 import 'package:flutter/material.dart';
-
-import '../../animation/index.dart';
-import '../../core/layout.dart';
-import '../../core/view_state.dart';
-import '../../ext/offset_ext.dart';
-
-import '../../model/index.dart';
-import '../../shape/arc.dart';
-import '../../style/label.dart';
-import '../../utils/align_util.dart';
-import 'pie_series.dart';
 
 ///饼图布局
 class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {

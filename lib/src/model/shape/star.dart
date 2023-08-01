@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/widgets.dart';
-import '../ext/offset_ext.dart';
-import '../model/constans.dart';
+import '../../ext/offset_ext.dart';
+import '../constans.dart';
 import 'chart_shape.dart';
 
 ///N角星形图案

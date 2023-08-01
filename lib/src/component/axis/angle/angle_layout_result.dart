@@ -1,5 +1,5 @@
-import '../../../shape/arc.dart';
-import '../model/axis_layout_result.dart';
+import 'package:e_chart/e_chart.dart';
+
 
 class AngleAxisLayoutResult extends AxisLayoutResult {
   final Arc arc;

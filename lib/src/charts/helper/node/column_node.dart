@@ -1,6 +1,5 @@
 import 'dart:ui';
 import '../../../model/index.dart';
-import '../../../shape/arc.dart';
 import '../base_data.dart';
 import 'group_node.dart';
 import 'single_node.dart';

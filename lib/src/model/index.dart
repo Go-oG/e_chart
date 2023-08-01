@@ -14,8 +14,9 @@ export 'enums/step_type.dart';
 export 'enums/trigger.dart';
 export 'enums/trigger_on.dart';
 
+export 'shape/index.dart';
+
 export 'corner.dart';
-export '../charts/bar/bar_data.dart';
 export 'chart_error.dart';
 export 'chart_offset.dart';
 export 'constans.dart';
@@ -26,5 +27,3 @@ export 'point_data.dart';
 export 'range.dart';
 export 'string_number.dart';
 export 'text_position.dart';
-
-export '../component/theme/theme.dart';
