@@ -18,7 +18,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   late final AxisTitleNode titleNode;
 
   BaseAxisImpl(this.context, this.coord, this.axis, {this.axisIndex = 0}) : super(Command.none) {
-    titleNode = AxisTitleNode(axis.name);
+    titleNode = AxisTitleNode(axis.axisName);
   }
 
   void doMeasure(double parentWidth, double parentHeight) {}
@@ -92,10 +92,11 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {}
 
   void onDrawAxisName(Canvas canvas, Paint paint) {
-    if (titleNode.label == null || titleNode.label!.isEmpty) {
+    var name = titleNode.name?.name;
+    if (name == null || name.isEmpty) {
       return;
     }
-    axis.nameStyle.draw(canvas, paint, titleNode.label!, titleNode.config);
+    axis.axisName?.labelStyle.draw(canvas, paint, name, titleNode.config);
   }
 
   void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {}
@@ -103,6 +104,9 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {}
 
   void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {}
+
+  ///绘制坐标轴指示器，该方法在[draw]之后调用
+  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {}
 
   List<DynamicText> obtainLabel() {
     if (scale is CategoryScale) {
@@ -135,34 +139,8 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   List<DynamicText> obtainLabel2(int startIndex, int endIndex) {
     List<DynamicText> rl = [];
     List<dynamic> dl = scale.getRangeLabel(startIndex, endIndex);
-    var formatter = axis.axisStyle.axisLabel.formatter;
     for (var data in dl) {
-      if (data is DynamicText) {
-        rl.add(data);
-        continue;
-      }
-      if (data is DynamicData) {
-        data = data.data;
-      }
-      if (data is String) {
-        rl.add(DynamicText(data));
-        continue;
-      }
-      if (data is DateTime) {
-        if (formatter != null) {
-          rl.add(formatter.call(data.millisecondsSinceEpoch));
-        } else {
-          rl.add(DynamicText.fromString(defaultTimeFormat(axis.timeType, data)));
-        }
-        continue;
-      }
-      if (data is num) {
-        if (formatter != null) {
-          rl.add(formatter.call(data));
-        } else {
-          rl.add(DynamicText.fromString(formatNumber(data)));
-        }
-      }
+      rl.add(formatData(data));
     }
     return rl;
   }
@@ -186,6 +164,35 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   void notifyLayoutEnd() {
     value = Command.layoutEnd;
+  }
+
+  DynamicText formatData(dynamic data) {
+    if (data is DynamicData) {
+      data = data.data;
+    }
+    if (data is DynamicText) {
+      return data;
+    }
+    if (data is String) {
+      return DynamicText(data);
+    }
+    var formatter = axis.axisStyle.axisLabel.formatter;
+    if (data is DateTime) {
+      if (formatter != null) {
+        return formatter.call(data);
+      } else {
+        return defaultTimeFormat(axis.timeType, data).toText();
+      }
+    }
+    if (data is num) {
+      if (formatter != null) {
+        return formatter.call(data);
+      } else {
+        return DynamicText.fromString(formatNumber(data));
+      }
+    }
+
+    throw ChartError("暂不支持 $runtimeType 进行格式化");
   }
 
   ///将指定的参数转换为标度尺

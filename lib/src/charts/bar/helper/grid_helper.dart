@@ -9,7 +9,7 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int colGapCount = groupInnerCount - 1;
-    if (colGapCount <= 1) {
+    if (colGapCount <1) {
       colGapCount = 0;
     }
     final bool vertical = series.direction == Direction.vertical;
@@ -22,7 +22,7 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
 
     double canUseSize = groupSize - allGap;
     if (canUseSize < 0) {
-      canUseSize = groupSize * 0.5;
+      canUseSize = groupSize.toDouble();
     }
     double allBarSize = 0;
 
@@ -86,11 +86,10 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
       Rect tmpRect;
       if (vertical) {
         tmpRect = Rect.fromLTWH(offset, groupRect.bottom - h, sizeList[i], h);
-        offset += columnGap + sizeList[i];
       } else {
         tmpRect = Rect.fromLTWH(groupRect.left, offset, w, sizeList[i]);
-        offset += columnGap + sizeList[i];
       }
+      offset += columnGap + sizeList[i];
       node.rect = tmpRect;
     });
   }

@@ -12,7 +12,7 @@ class GridAxis extends BaseAxis {
     this.axisPointer,
     super.alignTicks,
     super.show,
-    super.name,
+    super.axisName,
     super.type,
     super.min,
     super.max,
@@ -29,9 +29,6 @@ class GridAxis extends BaseAxis {
     super.timeType,
     super.silent,
     super.axisStyle,
-    super.nameAlign,
-    super.nameGap,
-    super.nameStyle,
     super.timeFormatFun
   });
 }

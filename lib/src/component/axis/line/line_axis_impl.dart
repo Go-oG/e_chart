@@ -176,11 +176,11 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   TextDrawConfig onLayoutAxisName() {
     Offset center;
     Offset p;
-
-    if (axis.nameAlign == Align2.end) {
+    var align = axis.axisName?.align ?? Align2.end;
+    if (align == Align2.end) {
       center = attrs.start;
       p = attrs.end;
-    } else if (axis.nameAlign == Align2.start) {
+    } else if (align == Align2.start) {
       center = attrs.end;
       p = attrs.start;
     } else {
@@ -190,7 +190,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
     num a = p.offsetAngle(center);
     double r = center.distance2(p);
-    r += axis.nameGap;
+    r += axis.axisName?.nameGap ?? 0;
     return TextDrawConfig(circlePoint(r, a, center), align: toAlignment(a));
   }
 

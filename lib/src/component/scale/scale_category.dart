@@ -66,6 +66,16 @@ class CategoryScale extends BaseScale<String, num> {
   }
 
   @override
+  num get tickInterval {
+    var dis = (range[1] - range[0]).abs();
+    int c = domain.length;
+    if (!categoryCenter) {
+      c -= 1;
+    }
+    return dis / c;
+  }
+
+  @override
   int get tickCount => categoryCenter ? domain.length + 1 : domain.length;
 
   @override

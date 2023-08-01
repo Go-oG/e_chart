@@ -9,11 +9,8 @@ class ParallelAxis extends BaseAxis {
   ParallelAxis({
     this.parallelIndex = 0,
     this.realTime = true,
-    super.nameAlign,
-    super.nameStyle,
-    super.nameGap,
     super.show,
-    super.name,
+    super.axisName,
     super.type = AxisType.value,
     super.min,
     super.max,

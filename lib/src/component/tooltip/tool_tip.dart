@@ -5,7 +5,6 @@ import '../../model/enums/trigger_on.dart';
 import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';
-import '../axis/style/axis_pointer.dart';
 
 enum ToolTipOrder {
   seriesAsc,
@@ -18,7 +17,6 @@ enum ToolTipOrder {
 class ToolTip {
    bool show;
    Trigger trigger;
-   AxisPointer? axisPointer;
    bool showContent;
    bool alwaysShowContent;
    TriggerOn triggerOn;
@@ -42,7 +40,6 @@ class ToolTip {
    ToolTip({
     this.show = true,
     this.trigger = Trigger.item,
-    this.axisPointer ,
     this.showContent = true,
     this.alwaysShowContent = false,
     this.triggerOn = TriggerOn.moveAndClick,
