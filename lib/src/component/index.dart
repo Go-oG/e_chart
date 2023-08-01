@@ -12,16 +12,18 @@ export 'axis/model/axis_tile_node.dart';
 export 'axis/model/label_result.dart';
 export 'axis/model/tick_result.dart';
 
-export 'axis/style/axis_label.dart';
-export 'axis/style/axis_line.dart';
-export 'axis/style/axis_minor_tick.dart';
-export 'axis/style/axis_pointer.dart';
-export 'axis/style/axis_style.dart';
-export 'axis/style/axis_symbol.dart';
-export 'axis/style/axis_tick.dart';
-export 'axis/style/minor_split_line.dart';
-export 'axis/style/split_area.dart';
-export 'axis/style/split_line.dart';
+
+export 'axis/attr/axis_label.dart';
+export 'axis/attr/axis_line.dart';
+export 'axis/attr/axis_minor_tick.dart';
+export 'axis/attr/axis_name.dart';
+export 'axis/attr/axis_pointer.dart';
+export 'axis/attr/axis_style.dart';
+export 'axis/attr/axis_symbol.dart';
+export 'axis/attr/axis_tick.dart';
+export 'axis/attr/minor_split_line.dart';
+export 'axis/attr/split_area.dart';
+export 'axis/attr/split_line.dart';
 
 export 'axis/base_axis.dart';
 export 'axis/axis_attrs.dart';

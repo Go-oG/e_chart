@@ -28,7 +28,6 @@ abstract class BaseScale<D, R extends num> {
 
   R convertRatio(double ratio);
 
-
   D toData(covariant num range);
 
   ///返回Tick的个数
@@ -53,6 +52,7 @@ abstract class BaseScale<D, R extends num> {
   bool get isTime => false;
 
   bool get isLog => false;
+
   @override
   String toString() {
 

@@ -1,7 +1,6 @@
-import 'dart:ui';
-
 import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 
 abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, GridCoord> {
   final Direction direction;
@@ -224,7 +223,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     canvas.clipRect(getAxisClipRect(scroll));
     each(layoutResult.split, (split, i) {
       LineStyle? style = axisStyle.getAxisLineStyle(i, split.maxIndex, theme);
-      if(style==null){
+      if (style == null) {
         logPrint("$runtimeType 坐标轴axisLine样式为空 不绘制");
       }
       style?.drawPolygon(canvas, paint, [split.start, split.end]);
@@ -360,6 +359,86 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     canvas.restore();
   }
 
+  @override
+  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
+    var axisPointer = axis.axisPointer;
+    if (axisPointer == null || !axisPointer.show) {
+      return;
+    }
+    final bool vertical = direction == Direction.horizontal;
+    Rect rect = coord.contentBox;
+    Offset scroll = coord.getTranslation();
+    final pointerDis = computeAxisPointerDis(axisPointer, offset);
+    final double paintOffset = axisPointer.lineStyle.width * 0.5;
+
+    canvas.save();
+    if (vertical) {
+      canvas.translate(scroll.dx, 0);
+    } else {
+      canvas.translate(0, scroll.dy);
+    }
+    List<Offset> ol = [];
+    if (vertical) {
+      var x = pointerDis + paintOffset + rect.left;
+      ol.add(Offset(x, rect.top));
+      ol.add(Offset(x, rect.bottom));
+    } else {
+      var y = attrs.start.dy - pointerDis - paintOffset;
+      ol.add(Offset(rect.left, y));
+      ol.add(Offset(rect.right, y));
+    }
+    axisPointer.lineStyle.drawPolygon(canvas, paint, ol);
+
+    ///绘制指示点
+    Offset tmp = ol.first;
+    if (vertical) {
+      tmp = Offset(tmp.dx, attrs.start.dy);
+    } else {
+      tmp = Offset(attrs.start.dx, tmp.dy);
+    }
+
+    DynamicText dt = formatData(scale.toData(pointerDis));
+    Alignment alignment;
+    if (vertical) {
+      alignment = axis.position == Align2.start ? Alignment.bottomCenter : Alignment.topCenter;
+    } else {
+      alignment = axis.position == Align2.end ? Alignment.centerLeft : Alignment.centerRight;
+    }
+    TextDrawConfig config = TextDrawConfig(tmp, align: alignment);
+    axisPointer.labelStyle.draw(canvas, paint, dt, config);
+    canvas.restore();
+  }
+
+  ///计算AxisPointer的距离
+  double computeAxisPointerDis(AxisPointer axisPointer, Offset offset) {
+    Offset scroll = coord.getTranslation();
+    offset = offset.translate(-scroll.dx, -scroll.dy);
+
+    bool vertical = direction == Direction.horizontal;
+    double dis = vertical ? (offset.dx - attrs.start.dx).abs() : (offset.dy - attrs.start.dy).abs();
+    bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
+    if (!snap) {
+      return dis;
+    }
+    final interval = scale.tickInterval.toDouble();
+    int c = dis ~/ interval;
+    if (!axis.isCategoryAxis) {
+      int next = c + 1;
+      num diff1 = (c * interval - dis).abs();
+      num diff2 = (next * interval - dis).abs();
+      if (diff1 > diff2) {
+        c = next;
+      }
+    }
+
+    if (axis.isCategoryAxis && axis.categoryCenter) {
+      dis = (c + 0.5) * interval;
+    } else {
+      dis = c * interval;
+    }
+    return dis;
+  }
+
   Rect getClipRect(Offset scroll) {
     var box = coord.contentBox;
     return Rect.fromLTWH(scroll.dx.abs() + box.left, box.top - scroll.dy, box.width, box.height);
@@ -368,7 +447,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   Rect getAxisClipRect(Offset scroll) {
     var box = coord.contentBox;
     Rect clipRect;
-    double w=axis.axisStyle.axisLine.width;
+    double w = axis.axisStyle.axisLine.width;
     if (direction == Direction.horizontal) {
       //X轴
       double left = scroll.dx.abs() + box.left;

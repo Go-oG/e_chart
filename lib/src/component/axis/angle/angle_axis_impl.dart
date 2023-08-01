@@ -19,7 +19,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     } else {
       e = s - maxAngle;
     }
-    return BaseAxisImpl.toScale(axis, [s, e], dataSet,attrs.splitCount);
+    return BaseAxisImpl.toScale(axis, [s, e], dataSet, attrs.splitCount);
   }
 
   @override
@@ -175,13 +175,15 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   @override
   TextDrawConfig onLayoutAxisName() {
-    DynamicText? label = titleNode.label;
+    DynamicText? label = titleNode.name?.name;
     Offset start = attrs.center;
     Offset end = circlePoint(attrs.radius.last, attrs.angleOffset, attrs.center);
-    if (axis.nameAlign == Align2.center || (label == null || label.isEmpty)) {
+    var axisName = axis.axisName;
+    var align = axisName?.align ?? Align2.end;
+    if (align == Align2.center || (label == null || label.isEmpty)) {
       return TextDrawConfig(Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
     }
-    if (axis.nameAlign == Align2.start) {
+    if (align == Align2.start) {
       return TextDrawConfig(start, align: Alignment.centerLeft);
     }
     return TextDrawConfig(end, align: toAlignment(end.offsetAngle(start)));
@@ -242,9 +244,8 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     int maxCount = layoutResult.splitList.length;
     each(layoutResult.splitList, (arc, index) {
       var s = axisLine.getAxisLineStyle(index, maxCount, theme);
-      s?.drawPath(canvas, paint, arc.arcOpen(), drawDash: true,needSplit: false);
+      s?.drawPath(canvas, paint, arc.arcOpen(), drawDash: true, needSplit: false);
     });
-
   }
 
   @override
@@ -311,6 +312,58 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
         }
       });
     }
+  }
+
+  @override
+  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
+    var axisPointer = axis.axisStyle.axisPointer;
+    if (axisPointer == null || !axisPointer.show) {
+      return;
+    }
+    num dis = offset.distance2(attrs.center);
+    var ir = attrs.radius.length > 1 ? attrs.radius[0] : 0;
+    var or = attrs.radius.last;
+    if (dis <= ir || dis >= or) {
+      return;
+    }
+    if (dis <= 0 || dis > attrs.radius.last) {
+      return;
+    }
+    bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
+    List<Offset> ol;
+    if (snap) {
+      double interval = scale.tickInterval.toDouble();
+      int c = dis ~/ interval;
+      if (axis.isCategoryAxis) {
+        c -= 1;
+      }
+      if (!axis.isCategoryAxis) {
+        int next = c + 1;
+        num diff1 = (c * interval - dis).abs();
+        num diff2 = (next * interval - dis).abs();
+        if (diff1 > diff2) {
+          c = next;
+        }
+      }
+      if (axis.isCategoryAxis && axis.categoryCenter) {
+        dis = (c + 0.5) * interval;
+      } else {
+        dis = c * interval * 1;
+      }
+      final angle = offset.offsetAngle(attrs.center);
+      ol = [attrs.center, circlePoint(dis, angle, attrs.center)];
+    } else {
+      ol = [attrs.center, offset];
+    }
+    axisPointer.lineStyle.drawPolygon(canvas, paint, ol);
+
+    ///绘制 数据
+    dis = ol.last.distance2(ol.first);
+    DynamicText dt = formatData(scale.toData(dis));
+    num angle = offset.offsetAngle(attrs.center);
+    Offset o = circlePoint(attrs.radius.last, angle, attrs.center);
+    TextDrawConfig config = TextDrawConfig(o, align: toAlignment(angle, axis.axisStyle.axisLabel.inside));
+    axisPointer.labelStyle.draw(canvas, paint, dt, config);
   }
 
   ///将一个"Y轴数据" 转换到角度范围

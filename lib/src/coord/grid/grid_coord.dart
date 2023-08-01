@@ -220,7 +220,7 @@ class GridCoordImpl extends GridCoord {
       }
       List<DynamicData> dl = [];
       for (var child in childList) {
-        var da=child.getAxisExtreme(axis.axisIndex, false);
+        var da = child.getAxisExtreme(axis.axisIndex, false);
         dl.addAll(da);
       }
       extremeMap[axis] = dl;
@@ -255,7 +255,6 @@ class GridCoordImpl extends GridCoord {
 
       leftOffset += w;
       value.doLayout(attrs, dl);
-      logPrint("$runtimeType ${value.axis.name} SC:$splitCount scale:${value.scale}" );
       if (needAlignTick && splitCount == null && i == 0) {
         splitCount = value.scale.tickCount - 1;
       }
@@ -269,6 +268,21 @@ class GridCoordImpl extends GridCoord {
     });
     yMap.forEach((key, value) {
       value.draw(canvas, mPaint, contentBox);
+    });
+  }
+
+  @override
+  void onDrawEnd(Canvas canvas) {
+    super.onDrawEnd(canvas);
+    var offset = _axisPointerOffset;
+    if (offset == null) {
+      return;
+    }
+    xMap.forEach((key, value) {
+      value.onDrawAxisPointer(canvas, mPaint, offset);
+    });
+    yMap.forEach((key, value) {
+      value.onDrawAxisPointer(canvas, mPaint, offset);
     });
   }
 
@@ -349,6 +363,83 @@ class GridCoordImpl extends GridCoord {
     xMap.forEach((key, value) {});
 
     invalidate();
+  }
+
+  Offset? _axisPointerOffset;
+
+  @override
+  void onHoverStart(Offset offset) {
+    _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+    if (needInvalidateAxisPointer(false)) {
+      invalidate();
+    }
+  }
+
+  @override
+  void onHoverEnd() {
+    if (_axisPointerOffset != null) {
+      _axisPointerOffset = null;
+      invalidate();
+    }
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+    if (needInvalidateAxisPointer(false)) {
+      invalidate();
+    }
+  }
+
+  @override
+  void onClick(Offset offset) {
+    _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+    if (!contentBox.contains(offset)) {
+      _axisPointerOffset = null;
+    }
+    if (needInvalidateAxisPointer(true)) {
+      invalidate();
+    }
+  }
+
+  bool needInvalidateAxisPointer(bool click) {
+    for (var entry in xMap.entries) {
+      var axisPointer = entry.value.axis.axisPointer;
+      if (axisPointer == null || !axisPointer.show) {
+        continue;
+      }
+      if (axisPointer.triggerOn == TriggerOn.none) {
+        continue;
+      }
+      if (axisPointer.triggerOn == TriggerOn.moveAndClick) {
+        return true;
+      }
+      if (click && axisPointer.triggerOn == TriggerOn.click) {
+        return true;
+      }
+      if (!click && axisPointer.triggerOn == TriggerOn.mouseMove) {
+        return true;
+      }
+    }
+    for (var entry in yMap.entries) {
+      var axisPointer = entry.value.axis.axisPointer;
+      if (axisPointer == null || !axisPointer.show) {
+        continue;
+      }
+      if (axisPointer.triggerOn == TriggerOn.none) {
+        continue;
+      }
+      if (axisPointer.triggerOn == TriggerOn.moveAndClick) {
+        return true;
+      }
+      if (click && axisPointer.triggerOn == TriggerOn.click) {
+        return true;
+      }
+      if (!click && axisPointer.triggerOn == TriggerOn.mouseMove) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @override

@@ -18,21 +18,21 @@ class RadarCoordImpl extends RadarCoord {
     axisMap.clear();
     for (int i = 0; i < props.indicator.length; i++) {
       var indicator = props.indicator[i];
-      RadarAxis axis = RadarAxis(
-          name: indicator.name,
-          min: indicator.min,
-          max: indicator.max,
-          nameGap: indicator.nameGap,
-          nameStyle: indicator.nameStyle,
-          splitNumber: 5);
+      AxisName axisName = AxisName(
+        indicator.name,
+        nameGap: indicator.nameGap,
+        labelStyle: indicator.nameStyle,
+      );
+      RadarAxis axis = RadarAxis(axisName: axisName, min: indicator.min, max: indicator.max, splitNumber: 5);
       axisMap[indicator] = RadarAxisImpl(context, this, axis, axisIndex: i);
     }
   }
 
-  Size measureSize=Size.zero;
+  Size measureSize = Size.zero;
+
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    measureSize=Size(parentWidth, parentHeight);
+    measureSize = Size(parentWidth, parentHeight);
     num minValue = min([parentWidth, parentHeight]);
     double cv = props.radius.last.convert(minValue);
     cv = min([cv, minValue]) * 2;
@@ -188,5 +188,6 @@ class RadarPosition {
 class RadarSplit {
   final int index;
   final Path splitPath;
+
   RadarSplit(this.index, this.splitPath);
 }

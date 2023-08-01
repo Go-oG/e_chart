@@ -1,26 +1,20 @@
 import 'dart:math' as math;
-import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:chart_xutil/chart_xutil.dart';
 
 abstract class BaseAxis {
   bool show;
   AxisType type;
 
-  DynamicText? name;
-  Align2 nameAlign;
-  num nameGap;
-  LabelStyle nameStyle;
-
-  ///类目数据
-  List<String> categoryList;
-
-  ///当坐标轴为类目轴时，类别是否对齐中间
-  ///如果为false 则对齐开始 默认为true
+  ///类目轴相关配置
+  ///当坐标轴为类目轴时，标签是否对齐中间 如果为false 则对齐开始位置，默认为true
   bool categoryCenter;
 
-  //只在时间轴下使用
+  ///类目数据如果为空，则从给定的坐标中获取
+  List<String> categoryList;
+
+  ///只在时间轴下使用
   TimeType timeType;
   Pair<DateTime>? timeRange;
   Fun2<DateTime, DynamicText>? timeFormatFun;
@@ -39,16 +33,17 @@ abstract class BaseAxis {
   ///只对'value'和'log'类型的轴有效。
   bool alignTicks;
 
-  //是否翻转坐标轴数据
+  ///是否翻转坐标轴数据
   bool inverse;
 
   ///样式、交互相关
   bool silent;
   AxisStyle axisStyle = AxisStyle();
+  AxisName? axisName;
 
   BaseAxis({
     this.show = true,
-    this.name,
+    this.axisName,
     this.type = AxisType.value,
     this.categoryList = const [],
     this.categoryCenter = true,
@@ -67,9 +62,6 @@ abstract class BaseAxis {
     this.silent = false,
     AxisStyle? axisStyle,
     this.timeRange,
-    this.nameGap = 8,
-    this.nameStyle = const LabelStyle(),
-    this.nameAlign = Align2.end,
   }) {
     if (axisStyle != null) {
       this.axisStyle = axisStyle;
@@ -90,20 +82,27 @@ List<Size> measureAxisNameTextMaxSize(Iterable<BaseAxis> axisList, Direction dir
   Size firstSize = Size.zero;
   Size lastSize = Size.zero;
   for (var axis in axisList) {
-    if (axis.nameAlign == Align2.center) {
+    final axisName = axis.axisName;
+    if (axisName == null) {
       continue;
     }
-    Size size = axis.name == null ? Size.zero : axis.nameStyle.measure(axis.name!, maxWidth: maxWidth.toDouble());
+    var align = axisName.align;
+    var name = axisName.name;
+    var nameGap = axisName.nameGap;
+    if (align == Align2.center) {
+      continue;
+    }
+    Size size = axisName.labelStyle.measure(name, maxWidth: maxWidth.toDouble());
     double mw;
     double mh;
     if (direction == Direction.horizontal) {
       mw = math.max(firstSize.width, size.width);
-      mh = math.max(firstSize.height, size.height + axis.nameGap);
+      mh = math.max(firstSize.height, size.height + nameGap);
     } else {
-      mw = math.max(firstSize.width, size.width + axis.nameGap);
+      mw = math.max(firstSize.width, size.width + nameGap);
       mh = math.max(firstSize.height, size.height);
     }
-    if (axis.nameAlign == Align2.start) {
+    if (align == Align2.start) {
       firstSize = Size(mw, mh);
     } else {
       lastSize = Size(mw, mh);

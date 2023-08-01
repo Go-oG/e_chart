@@ -46,6 +46,61 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, PolarCoor
     });
   }
 
+  @override
+  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
+    var axisPointer = axis.axisStyle.axisPointer;
+    if (axisPointer == null || !axisPointer.show) {
+      return;
+    }
+    var ir = attrs.start.distance2(attrs.center);
+    var or = attrs.end.distance2(attrs.center);
+    var dis = offset.distance2(attrs.center);
+    if (dis <= ir || dis >= or) {
+      return;
+    }
+
+    bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
+    Arc arc;
+    if (snap) {
+      var interval = scale.tickInterval;
+      var diff = dis - ir;
+      int c = diff ~/ interval;
+      if (axis.isCategoryAxis) {
+        c -= 1;
+      }
+      if (!axis.isCategoryAxis) {
+        int next = c + 1;
+        num diff1 = (c * interval - dis).abs();
+        num diff2 = (next * interval - dis).abs();
+        if (diff1 > diff2) {
+          c = next;
+        }
+      }
+
+      if (axis.isCategoryAxis && axis.categoryCenter) {
+        dis = (c + 0.5) * interval;
+      } else {
+        dis = c * interval * 1;
+      }
+      arc = Arc(
+        innerRadius: 0,
+        outRadius: dis,
+        startAngle: attrs.offsetAngle,
+        sweepAngle: 360,
+        center: attrs.center,
+      );
+    } else {
+      arc = Arc(
+        innerRadius: 0,
+        outRadius: offset.distance2(attrs.center),
+        startAngle: attrs.offsetAngle,
+        sweepAngle: 360,
+        center: attrs.center,
+      );
+    }
+    axisPointer.lineStyle.drawPath(canvas, paint, arc.toPath(true), drawDash: true, needSplit: false);
+  }
+
   List<num> dataToRadius(DynamicData data) {
     return scale.toRange(data.data);
   }

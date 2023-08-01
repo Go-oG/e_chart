@@ -1,16 +1,6 @@
-import '../../../style/index.dart';
-import '../../theme/axis_theme.dart';
-import '../../tick/main_tick.dart';
-import '../../tick/minor_tick.dart';
-import 'axis_label.dart';
-import 'axis_line.dart';
-import 'axis_minor_tick.dart';
-import 'axis_tick.dart';
-import 'minor_split_line.dart';
-import 'split_line.dart';
-import 'split_area.dart';
+import 'package:e_chart/e_chart.dart';
 
-//坐标轴样式相关的配置
+///坐标轴样式相关的配置
 class AxisStyle {
   bool show;
   AxisLine axisLine = AxisLine();
@@ -18,6 +8,8 @@ class AxisStyle {
   SplitLine splitLine = SplitLine();
   AxisTick axisTick = AxisTick();
 
+  ///坐标轴指示器
+  AxisPointer? axisPointer;
   AxisMinorTick? minorTick;
   MinorSplitLine? minorSplitLine;
   SplitArea? splitArea;
@@ -28,6 +20,7 @@ class AxisStyle {
     AxisLabel? label,
     AxisTick? tick,
     SplitLine? splitLine,
+    this.axisPointer,
     this.minorTick,
     this.minorSplitLine,
     this.splitArea,

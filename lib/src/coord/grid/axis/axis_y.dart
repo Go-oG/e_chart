@@ -1,6 +1,5 @@
-import '../../../component/axis/style/axis_style.dart';
-import '../../../model/enums/align2.dart';
-import 'axis_grid.dart';
+
+import 'package:e_chart/e_chart.dart';
 
 class YAxis extends GridAxis {
   YAxis({
@@ -8,9 +7,6 @@ class YAxis extends GridAxis {
     super.position = Align2.start,
     super.type,
     super.offset,
-    super.nameAlign,
-    super.nameStyle,
-    super.nameGap,
     super.inverse,
     super.min,
     super.max,
@@ -25,7 +21,7 @@ class YAxis extends GridAxis {
     super.categoryList,
     super.categoryCenter,
     super.axisPointer,
-    super.name,
+    super.axisName,
     super.show,
     super.timeRange,
     super.timeType,
