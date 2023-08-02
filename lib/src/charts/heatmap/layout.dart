@@ -24,15 +24,15 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
     ChartRectTween rectTween = ChartRectTween(Rect.zero, Rect.zero);
     ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
     doubleTween.startListener = () {
-      _nodeList = result.curList;
+      _nodeList = result.startList;
     };
     doubleTween.endListener=(){
-      _nodeList=result.finalList;
+      _nodeList=result.endList;
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
       var v = doubleTween.value;
-      each(result.curList, (p0, p1) {
+      each(result.startList, (p0, p1) {
         rectTween.changeValue(startMap[p0.data]!, endMap[p0.data]!);
         Rect rect = rectTween.safeGetValue(v);
         p0.rect = rect;

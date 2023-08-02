@@ -66,7 +66,7 @@ abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroup
   @override
   void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
     Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.curList) {
+    for (var ele in result.startList) {
       if (ele.data != null) {
         map[ele.data!] = ele;
       }
@@ -106,7 +106,7 @@ abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroup
   @override
   void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
     Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.finalList) {
+    for (var ele in result.endList) {
       if (ele.data != null) {
         map[ele.data!] = ele;
       }

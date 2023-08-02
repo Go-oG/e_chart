@@ -35,14 +35,14 @@ class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
     OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
 
     doubleTween.startListener = () {
-      nodeList = result.curList;
+      nodeList = result.startList;
     };
     doubleTween.endListener = () {
-      nodeList = result.finalList;
+      nodeList = result.endList;
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
-      each(result.curList, (p0, p1) {
+      each(result.startList, (p0, p1) {
         List<Offset?> sl = startMap[p0.data]!;
         List<Offset?> el = endMap[p0.data]!;
         double t = doubleTween.value;

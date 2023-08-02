@@ -91,7 +91,7 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
     };
     doubleTween.addListener(() {
       double t = doubleTween.value;
-      each(diffResult.curList, (node, p1) {
+      each(diffResult.startList, (node, p1) {
         onAnimatorUpdate(node, t, startMap, endMap, type);
       });
       onAnimatorUpdateEnd(diffResult, t, type);
