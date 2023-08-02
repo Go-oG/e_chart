@@ -1,48 +1,31 @@
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
-class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
+class HeatMapLayout extends ChartLayout<HeatMapSeries, List<HeatMapData>> {
   List<HeatMapNode> _nodeList = [];
 
   List<HeatMapNode> get nodeList => _nodeList;
 
   @override
   void onLayout(List<HeatMapData> data, LayoutType type) {
-    List<HeatMapNode> oldList=_nodeList;
-    List<HeatMapNode> newList=convertData(data);
+    List<HeatMapNode> oldList = _nodeList;
+    List<HeatMapNode> newList = convertData(data);
     layoutNode(newList);
-    DiffResult<HeatMapNode,HeatMapData> result=DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData){
-      HeatMapNode node=HeatMapNode(p0);
-      node.rect=Rect.fromCenter(center: p1.rect.center, width: 0, height: 0);
-      return node;
-    });
-
-    Map<HeatMapData,Rect> startMap=result.startMap.map((key, value) => MapEntry(key, value.rect));
-    Map<HeatMapData,Rect> endMap=result.endMap.map((key, value) => MapEntry(key, value.rect));
-
-    ChartRectTween rectTween = ChartRectTween(Rect.zero, Rect.zero);
-    ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
-    doubleTween.startListener = () {
-      _nodeList = result.startList;
-    };
-    doubleTween.endListener=(){
-      _nodeList=result.endList;
-      notifyLayoutEnd();
-    };
-    doubleTween.addListener(() {
-      var v = doubleTween.value;
-      each(result.startList, (p0, p1) {
-        rectTween.changeValue(startMap[p0.data]!, endMap[p0.data]!);
-        Rect rect = rectTween.safeGetValue(v);
-        p0.rect = rect;
-      });
-      notifyLayoutUpdate();
-    });
-    doubleTween.start(context,type==LayoutType.update);
+    DiffUtil.diff2<Rect, HeatMapData, HeatMapNode>(
+      context,
+      series.animatorProps,
+      oldList,
+      newList,
+      (data, node, add) => Rect.fromCenter(center: node.attr.center, width: 0, height: 0),
+      (s, e, t) => Rect.lerp(s, e, t)!,
+      (resultList) {
+        _nodeList = resultList;
+        notifyLayoutUpdate();
+      },
+    );
   }
 
-  List<HeatMapNode> convertData(List<HeatMapData> dataList){
+  List<HeatMapNode> convertData(List<HeatMapData> dataList) {
     return List.from(dataList.map((e) => HeatMapNode(e)));
   }
 
@@ -54,20 +37,18 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries,List<HeatMapData>> {
     } else {
       calendarLayout = findCalendarCoord();
     }
-    for(var node in nodeList){
-      var data=node.data;
+    for (var node in nodeList) {
+      var data = node.data;
       Rect? rect;
       if (gridLayout != null) {
-        rect = gridLayout.dataToRect(0, data.x,0, data.y);
+        rect = gridLayout.dataToRect(0, data.x, 0, data.y);
       } else if (calendarLayout != null) {
         rect = calendarLayout.dataToPosition(data.x.data);
       }
       if (rect == null) {
         throw ChartError('无法布局 $gridLayout  $calendarLayout');
       }
-      node.rect = rect;
+      node.attr = rect;
     }
   }
-
-
 }

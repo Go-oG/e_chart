@@ -77,9 +77,9 @@ class DiffUtil {
     AnimatorAttrs attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
-    P Function(D, N, bool add) builder,
-    Fun4<P, P, double, P> lerpFun,
-    VoidFun1<List<N>> resultCall,
+    P Function(D data, N node, bool add) builder,
+    P Function(P s, P e, double t) lerpFun,
+    void Function(List<N> resultList) resultCall,
   ) {
     Map<D, N> oldMap = {};
     for (var n in oldList) {
@@ -169,22 +169,35 @@ class DiffUtil {
       tweenList.add(TweenWrap(removeTween, TweenWrap.removeStatus));
     }
     if (updateSet.isNotEmpty) {
-      ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-      updateTween.endListener = () {
-        resultCall.call(nodeList);
-      };
-      updateTween.addListener(() {
-        double t = updateTween.value;
-        for (var d in updateSet) {
-          N node = (oldMap[d] ?? newMap[d])!;
-          P s = startMap[d] as P;
-          P e = endMap[d] as P;
-          node.setP(lerpFun.call(s, e, t));
+      ///优化不需要更新的节点
+      final List<N> needUpdateList = [];
+      for (var d in updateSet) {
+        N node = (oldMap[d] ?? newMap[d])!;
+        P s = startMap[d] as P;
+        P e = endMap[d] as P;
+        if (s != e) {
+          needUpdateList.add(node);
         }
-        resultCall.call(nodeList);
-      });
-      tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
+      }
+
+      if (needUpdateList.isNotEmpty) {
+        ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+        updateTween.endListener = () {
+          resultCall.call(nodeList);
+        };
+        updateTween.addListener(() {
+          double t = updateTween.value;
+          for (var n in needUpdateList) {
+            P s = startMap[n.d] as P;
+            P e = endMap[n.d] as P;
+            n.setP(lerpFun.call(s, e, t));
+          }
+          resultCall.call(nodeList);
+        });
+        tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
+      }
     }
+
     for (var tween in tweenList) {
       tween.tween.start(context, tween.status == TweenWrap.updateStatus);
     }
@@ -213,14 +226,14 @@ class DiffResult<N, D> {
   final Set<D> updateSet;
 
   DiffResult(
-      this.startMap,
-      this.endMap,
-      this.startList,
-      this.endList,
-      this.removeSet,
-      this.addSet,
-      this.updateSet,
-      );
+    this.startMap,
+    this.endMap,
+    this.startList,
+    this.endList,
+    this.removeSet,
+    this.addSet,
+    this.updateSet,
+  );
 }
 
 class TweenWrap {

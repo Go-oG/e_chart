@@ -9,13 +9,12 @@ class CandlestickGroupNode{
 }
 
 
-class CandlestickNode with ViewStateProvider{
+class CandlestickNode extends DataNode<List<Path>,CandleStickData>{
   final CandleStickGroup parent;
-  final CandleStickData data;
 
   late Path path;
   late Path areaPath;
 
-  CandlestickNode(this.parent,this.data);
+  CandlestickNode(this.parent,CandleStickData data):super(data,[]);
 
 }

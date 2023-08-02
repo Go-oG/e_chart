@@ -18,13 +18,7 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
         groupNode.nodeList.add(BoxplotNode(p0, item));
       });
     });
-
     GridCoord coord = context.findGridCoord();
-    if (list.isEmpty) {
-      nodeList = list;
-      return;
-    }
-
     each(list, (group, p1) {
       int xAxisIndex = group.data.xAxisIndex;
       int yAxisIndex = group.data.yAxisIndex;
@@ -53,7 +47,6 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
         _layoutSingleNode(coord, p0, boxWidth, xAxisIndex, yAxisIndex);
       });
     });
-
     nodeList = list;
   }
 
@@ -134,6 +127,7 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
     return curNode;
   }
 
+  @override
   void onHoverEnd() {
     if (oldNode != null) {
       oldNode?.removeStates([ViewState.hover, ViewState.focused]);

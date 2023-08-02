@@ -2,6 +2,7 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'layout.dart';
+import 'radar_node.dart';
 
 /// 雷达图
 class RadarView extends SeriesView<RadarSeries> implements RadarChild {
@@ -55,7 +56,7 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
       }
 
       for (int i = 0; i < group.nodeList.length; i++) {
-        var center = group.nodeList[i].offset;
+        var center = group.nodeList[i].attr;
         ChartSymbol? symbol;
         if (series.symbolFun != null) {
           symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
