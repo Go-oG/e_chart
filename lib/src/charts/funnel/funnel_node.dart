@@ -2,16 +2,15 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class FunnelNode with ViewStateProvider {
+class FunnelNode extends DataNode<List<Offset>,ItemData> {
   final int index;
   final ItemData? preData;
-  final ItemData data;
 
   ///标识顶点坐标
   ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
   List<Offset> pointList = [];
 
-  FunnelNode(this.index, this.preData, this.data);
+  FunnelNode(this.index, this.preData, ItemData data):super(data,[]);
 
   TextDrawConfig? textConfig;
   List<Offset>? labelLine;
@@ -22,7 +21,7 @@ class FunnelNode with ViewStateProvider {
   void update(Context context, FunnelSeries series) {
     ChartTheme chartTheme = context.config.theme;
     FunnelTheme theme = chartTheme.funnelTheme;
-    AreaStyle? areaStyle =FunnelLayout.getAreaStyle(context, series, this);
+    AreaStyle? areaStyle = FunnelLayout.getAreaStyle(context, series, this);
     this.areaStyle = areaStyle;
 
     LabelStyle? labelStyle = series.labelStyleFun?.call(this);
@@ -36,11 +35,11 @@ class FunnelNode with ViewStateProvider {
   }
 
   void updatePoint(Context context, FunnelSeries series, List<Offset> pl) {
-    pointList.clear();
-    pointList.addAll(pl);
+    pointList=pl;
     _path = null;
     update(context, series);
   }
+
 
   Path? _path;
 
@@ -134,4 +133,16 @@ class FunnelNode with ViewStateProvider {
     }
     return [Offset(x1, y1), Offset(x2, y2)];
   }
+
+
+  @override
+  void setP(List<Offset> po) {
+    pointList=po;
+  }
+
+  @override
+  List<Offset> getP() {
+    return List.from(pointList);
+  }
+
 }

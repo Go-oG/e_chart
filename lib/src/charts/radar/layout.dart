@@ -45,12 +45,12 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
     ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
     doubleTween.startListener = () {};
     doubleTween.endListener = () {
-      _nodeList = result.finalList;
+      _nodeList = result.endList;
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
       var v = doubleTween.value;
-      each(result.curList, (p0, p1) {
+      each(result.startList, (p0, p1) {
         var s = startMap[p0.data] ?? center;
         var e = endMap[p0.data] ?? center;
         offsetTween.changeValue(s, e);

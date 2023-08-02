@@ -1,5 +1,4 @@
 //漏斗图布局计算相关
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -17,41 +16,24 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
     List<FunnelNode> newList = convertData(data);
     layoutNode(newList);
 
-    DiffResult<FunnelNode, ItemData> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
-      FunnelNode node = FunnelNode(p1.index, p1.preData, p0);
-      List<Offset> pl = p1.pointList;
+    DiffUtil.diff2<List<Offset>, ItemData, FunnelNode>(context, series.animatorProps, oldList, newList, (data, node, add) {
+      List<Offset> pl = node.pointList;
       Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
-      node.pointList.addAll([o0, o0, o0, o0]);
-      return node;
-    });
-    Map<ItemData, List<Offset>> startMap = result.startMap.map((key, value) => MapEntry(key, List.from(value.pointList)));
-    Map<ItemData, List<Offset>> endMap = result.endMap.map((key, value) => MapEntry(key, List.from(value.pointList)));
-
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
-    OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
-
-    doubleTween.startListener = () {
-      nodeList = result.curList;
-    };
-    doubleTween.endListener = () {
-      nodeList = result.finalList;
-      notifyLayoutEnd();
-    };
-    doubleTween.addListener(() {
-      each(result.curList, (p0, p1) {
-        List<Offset> sl = startMap[p0.data]!;
-        List<Offset> el = endMap[p0.data]!;
-        double t = doubleTween.value;
-        List<Offset> pl = [];
-        for (int i = 0; i < 4; i++) {
-          offsetTween.changeValue(sl[i], el[i]);
-          pl.add(offsetTween.safeGetValue(t));
-        }
-        p0.updatePoint(context, series, pl);
-      });
+      return [o0, o0, o0, o0];
+    }, (s, e, t) {
+      List<Offset> pl = [];
+      for (int i = 0; i < 4; i++) {
+        pl.add(Offset.lerp(s[i], e[i], t)!);
+      }
+      return pl;
+    }, (result) {
+      for (var n in result) {
+        List<Offset> ol = List.from(n.pointList);
+        n.updatePoint(context, series, ol);
+      }
+      nodeList = List.from(result);
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, type == LayoutType.update);
   }
 
   List<FunnelNode> convertData(List<ItemData> list) {
@@ -285,6 +267,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
     }
   }
 
+  @override
   void onHoverEnd() {
     if (_hoverNode == null) {
       return;

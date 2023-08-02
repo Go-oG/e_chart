@@ -4,5 +4,5 @@ export 'log_util.dart';
 export 'dynamic_data_util.dart';
 export 'dynamic_text_util.dart';
 export 'color_util.dart';
-export 'diff.dart';
+export 'diff.dart' hide TweenWrap;
 export 'uuid_util.dart';

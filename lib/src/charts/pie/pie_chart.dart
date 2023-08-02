@@ -68,7 +68,7 @@ class PieView extends SeriesView<PieSeries> {
   void onDraw(Canvas canvas) {
     List<PieNode> nodeList = pieLayer.nodeList;
     each(nodeList, (node, i) {
-      Path path=node.arc.toPath(true);
+      Path path=node.attr.toPath(true);
       getAreaStyle(node, i)?.drawPath(canvas, mPaint, path);
       getBorderStyle(node, i)?.drawPath(canvas, mPaint, path);
     });
@@ -103,7 +103,7 @@ class PieView extends SeriesView<PieSeries> {
 
     if (series.labelAlign == CircleAlign.outside) {
       Offset center = pieLayer.center;
-      Arc arc = node.arc;
+      Arc arc = node.attr;
       Offset tmpOffset = circlePoint(arc.outRadius, arc.startAngle + (arc.sweepAngle / 2), center);
       Offset tmpOffset2 = circlePoint(
         arc.outRadius + (labelStyle.guideLine?.length ?? 0),

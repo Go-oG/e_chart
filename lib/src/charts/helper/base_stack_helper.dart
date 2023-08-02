@@ -125,7 +125,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     };
     doubleTween.addListener(() {
       double t = doubleTween.value;
-      each(diffResult.curList, (node, p1) {
+      each(diffResult.startList, (node, p1) {
         onAnimatorUpdate(node, t, startMap, endMap, type);
       });
       onAnimatorUpdateEnd(diffResult, t, type);
@@ -139,7 +139,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
 
   void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
     Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.curList) {
+    for (var ele in result.startList) {
       if (ele.data != null) {
         map[ele.data!] = ele;
       }
@@ -159,7 +159,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
 
   void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
     Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.finalList) {
+    for (var ele in result.endList) {
       if (ele.data != null) {
         map[ele.data!] = ele;
       }

@@ -29,51 +29,39 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
     List<PieNode> oldList = _nodeList;
     List<PieNode> newList = _preHandleData(data);
     layoutNode(newList);
-    DiffResult<PieNode, ItemData> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
-      PieAnimatorStyle style = series.animatorStyle;
-      PieNode node = PieNode(p0);
-      Arc arc = p1.arc;
-      if (newData) {
-        if (style == PieAnimatorStyle.expandScale || style == PieAnimatorStyle.originExpandScale) {
-          arc = arc.copy(outRadius: arc.innerRadius);
-        }
-        if (style == PieAnimatorStyle.expand || style == PieAnimatorStyle.expandScale) {
-          arc = arc.copy(startAngle: series.offsetAngle);
-        }
-        arc = arc.copy(sweepAngle: 0);
-        node.arc = arc;
-      } else {
-        node.arc = arc.copy(sweepAngle: 0, outRadius: arc.innerRadius);
-      }
-      return node;
-    });
 
     PieTween arcTween = PieTween(Arc(), Arc(), props: series.animatorProps);
-
-    ChartDoubleTween tween = ChartDoubleTween(props: series.animatorProps);
-
-    Map<ItemData, Arc> startMap = result.startMap.map((key, value) => MapEntry(key, value.arc));
-    Map<ItemData, Arc> endMap = result.endMap.map((key, value) => MapEntry(key, value.arc));
-
-    tween.startListener = () {
-      _nodeList = result.curList;
-    };
-    tween.endListener = () {
-      _nodeList = result.finalList;
-      notifyLayoutEnd();
-    };
-
-    tween.addListener(() {
-      double v = tween.value;
-      for (var node in result.curList) {
-        var s = startMap[node.data]!;
-        var e = endMap[node.data]!;
+    DiffUtil.diff2<Arc, ItemData, PieNode>(
+      context,
+      series.animatorProps,
+      oldList,
+      newList,
+      (data, node, add){
+        PieAnimatorStyle style = series.animatorStyle;
+        Arc arc = node.attr;
+        if (add) {
+          if (style == PieAnimatorStyle.expandScale || style == PieAnimatorStyle.originExpandScale) {
+            arc = arc.copy(outRadius: arc.innerRadius);
+          }
+          if (style == PieAnimatorStyle.expand || style == PieAnimatorStyle.expandScale) {
+            arc = arc.copy(startAngle: series.offsetAngle);
+          }
+          arc = arc.copy(sweepAngle: 0);
+        } else {
+          arc = arc.copy(sweepAngle: 0, outRadius: arc.innerRadius);
+        }
+        return arc;
+      },
+      (s, e, t){
         arcTween.changeValue(s, e);
-        node.arc = arcTween.safeGetValue(v);
-      }
-      notifyLayoutUpdate();
-    });
-    tween.start(context, type==LayoutType.update);
+        return arcTween.safeGetValue(t);
+      },
+      (p0) {
+        _nodeList=p0;
+        notifyLayoutUpdate();
+      },
+    );
+
   }
 
   void layoutNode(List<PieNode> nodeList) {
@@ -111,16 +99,16 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
 
     Map<PieNode, Arc> oldMap = {};
     each(nodeList, (node, p1) {
-      oldMap[node] = node.arc;
+      oldMap[node] = node.attr;
     });
 
     layoutNode(nodeList);
     List<PieTween> tweenList = [];
     each(nodeList, (node, p1) {
       if (oldHoverNode != null && node.data == oldHoverNode.data) {
-        PieTween tween = PieTween(oldMap[node]!, node.arc, props: series.animatorProps);
+        PieTween tween = PieTween(oldMap[node]!, node.attr, props: series.animatorProps);
         tween.addListener(() {
-          oldHoverNode.arc = tween.value;
+          oldHoverNode.attr = tween.value;
           notifyLayoutUpdate();
         });
         tweenList.add(tween);
@@ -129,14 +117,14 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
       if (node == clickNode) {
         Arc p;
         if (series.scaleExtend.percent) {
-          var or = node.arc.outRadius * (1 + series.scaleExtend.percentRatio());
-          p = node.arc.copy(outRadius: or);
+          var or = node.attr.outRadius * (1 + series.scaleExtend.percentRatio());
+          p = node.attr.copy(outRadius: or);
         } else {
-          p = node.arc.copy(outRadius: node.arc.outRadius + series.scaleExtend.number);
+          p = node.attr.copy(outRadius: node.attr.outRadius + series.scaleExtend.number);
         }
         PieTween tween = PieTween(oldMap[node]!, p, props: series.animatorProps);
         tween.addListener(() {
-          clickNode!.arc = tween.value;
+          clickNode!.attr = tween.value;
           notifyLayoutUpdate();
         });
         tweenList.add(tween);
@@ -147,6 +135,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
     }
   }
 
+  @override
   void onHoverEnd() {
     if (hoverNode == null) {
       return;
@@ -155,13 +144,13 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
     hoverNode = null;
     num or;
     if (series.scaleExtend.percent) {
-      or = node.arc.outRadius / (1 + series.scaleExtend.percentRatio());
+      or = node.attr.outRadius / (1 + series.scaleExtend.percentRatio());
     } else {
-      or = node.arc.outRadius - series.scaleExtend.number;
+      or = node.attr.outRadius - series.scaleExtend.number;
     }
-    PieTween tween = PieTween(node.arc, node.arc.copy(outRadius: or), props: series.animatorProps);
+    PieTween tween = PieTween(node.attr, node.attr.copy(outRadius: or), props: series.animatorProps);
     tween.addListener(() {
-      node.arc = tween.value;
+      node.attr = tween.value;
       notifyLayoutUpdate();
     });
     tween.start(context, true);
@@ -217,7 +206,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
     each(nodeList, (node, i) {
       var pieData = node.data;
       num sw = remainAngle * pieData.value / allData;
-      node.arc = Arc(
+      node.attr = Arc(
         center: center,
         innerRadius: minRadius,
         outRadius: maxRadius,
@@ -250,7 +239,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
       each(nodeList, (node, i) {
         var pieData = node.data;
         double percent = pieData.value / maxData;
-        node.arc = Arc(
+        node.attr = Arc(
           center: center,
           innerRadius: minRadius,
           outRadius: maxRadius * percent,
@@ -267,7 +256,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
         ItemData pieData = node.data;
         num or = maxRadius * pieData.value / maxData;
         double sweepAngle = direction * remainAngle * pieData.value / allData;
-        node.arc = Arc(
+        node.attr = Arc(
           center: center,
           innerRadius: minRadius,
           cornerRadius: series.corner,
@@ -300,7 +289,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
   PieNode? findNode(Offset offset) {
     PieNode? node;
     for (var ele in nodeList) {
-      if (offset.inArc(ele.arc)) {
+      if (offset.inArc(ele.attr)) {
         node = ele;
         break;
       }
@@ -309,13 +298,8 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
   }
 }
 
-class PieNode with ViewStateProvider {
-  final ItemData data;
-  bool select = false;
-
-  Arc arc = Arc();
-
-  PieNode(this.data);
+class PieNode extends DataNode<Arc, ItemData> {
+  PieNode(ItemData data) : super(data, Arc());
 
   ///计算文字的位置
   TextDrawConfig? textDrawConfig;
@@ -333,20 +317,20 @@ class PieNode with ViewStateProvider {
       return;
     }
     if (series.labelAlign == CircleAlign.center) {
-      textDrawConfig = TextDrawConfig(arc.center, align: Alignment.center);
+      textDrawConfig = TextDrawConfig(attr.center, align: Alignment.center);
       return;
     }
     if (series.labelAlign == CircleAlign.inside) {
-      double radius = (arc.innerRadius + arc.outRadius) / 2;
-      double angle = arc.startAngle + arc.sweepAngle / 2;
-      Offset offset = circlePoint(radius, angle).translate(arc.center.dx, arc.center.dy);
+      double radius = (attr.innerRadius + attr.outRadius) / 2;
+      double angle = attr.startAngle + attr.sweepAngle / 2;
+      Offset offset = circlePoint(radius, angle).translate(attr.center.dx, attr.center.dy);
       textDrawConfig = TextDrawConfig(offset, align: Alignment.center);
       return;
     }
     if (series.labelAlign == CircleAlign.outside) {
-      num expand = labelStyle!.guideLine?.length??0;
-      double centerAngle = arc.startAngle + arc.sweepAngle / 2;
-      Offset offset = circlePoint(arc.outRadius + expand, centerAngle, arc.center);
+      num expand = labelStyle!.guideLine?.length ?? 0;
+      double centerAngle = attr.startAngle + attr.sweepAngle / 2;
+      Offset offset = circlePoint(attr.outRadius + expand, centerAngle, attr.center);
       Alignment align = toAlignment(centerAngle, false);
       if (centerAngle >= 90 && centerAngle <= 270) {
         align = Alignment.centerRight;
