@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

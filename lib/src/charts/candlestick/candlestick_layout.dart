@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 
 import 'candlestick_node.dart';
@@ -12,10 +11,10 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickG
   @override
   void onLayout(List<CandleStickGroup> data, LayoutType type) {
     List<CandlestickGroupNode> list = [];
-    each(data, (group, p1) {
+    each(data, (group, gi) {
       var groupNode = CandlestickGroupNode(group, []);
-      each(group.data, (p0, p1) {
-        groupNode.nodeList.add(CandlestickNode(group, p0));
+      each(group.data, (p0, ci) {
+        groupNode.nodeList.add(CandlestickNode(group, p0,ci,gi));
       });
     });
     GridCoord coord = findGridCoord();
@@ -128,4 +127,8 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickG
     }
     return null;
   }
+
+  @override
+
+  SeriesType get seriesType => SeriesType.candlestick;
 }

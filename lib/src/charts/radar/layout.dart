@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
@@ -23,11 +22,11 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
 
     List<RadarNode> oldList = _nodeList;
     List<RadarNode> newList = [];
-    each(data, (data, p1) {
-      var groupNode = RadarGroupNode(p1, data, []);
+    each(data, (data, gi) {
+      var groupNode = RadarGroupNode(gi, data, []);
       int i = 0;
       for (var c in data.childData) {
-        RadarNode radarNode = RadarNode(groupNode, c);
+        RadarNode radarNode = RadarNode(groupNode, c, i, gi);
         radarNode.attr = layout.dataToPoint(i, c.value).point;
         groupNode.nodeList.add(radarNode);
         i++;
@@ -63,4 +62,7 @@ class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
     }
     return resultMap;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.radar;
 }

@@ -1,8 +1,5 @@
 import 'dart:ui';
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/cupertino.dart';
-import '../../helper/model/axis_index.dart';
 
 class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
   @override
@@ -131,4 +128,8 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
     }
     showNodeMap = map;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.bar;
+
 }

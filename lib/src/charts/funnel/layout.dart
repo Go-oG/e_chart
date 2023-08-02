@@ -46,7 +46,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
     for (int i = 0; i < list.length; i++) {
       var data = list[i];
       ItemData? preData = i == 0 ? null : list[i - 1];
-      nodeList.add(FunnelNode(i, preData, data));
+      nodeList.add(FunnelNode(i, preData, data,i));
     }
 
     ///直接降序处理
@@ -327,6 +327,9 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
     }
     return null;
   }
+
+  @override
+  SeriesType get seriesType =>SeriesType.funnel;
 }
 
 class FunnelProps {

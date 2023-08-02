@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 
@@ -61,11 +60,12 @@ class ItemData {
 }
 
 class DataNode<P, D> with ViewStateProvider implements NodeAccessor<P, D> {
+  final int dataIndex;
+  final int? groupIndex;
   final D data;
-
   P attr;
 
-  DataNode(this.data, this.attr);
+  DataNode(this.data, this.dataIndex, this.groupIndex, this.attr);
 
   @override
   bool operator ==(Object other) {
@@ -135,7 +135,7 @@ class DynamicData {
     if (timeFormatter != null) {
       return timeFormatter.call(time);
     }
-    return '${padLeft(time.month, 2, '0')}-${padLeft(time.day, 2, '0')}';
+    return '${time.month.padLeft(2, '0')}-${time.day.padLeft(2, '0')}';
   }
 
   @override
@@ -148,8 +148,8 @@ class DynamicData {
     }
 
     var time = data as DateTime;
-    return 'Time:${time.year}-${padLeft(time.month, 2, '0')}-${padLeft(time.day, 2, '0')} '
-        '${padLeft(time.hour, 2, '0')}:${padLeft(time.minute, 2, '0')}:${padLeft(time.second, 2, '0')}';
+    return 'Time:${time.year}-${time.month.padLeft(2, '0')}-${time.day.padLeft(2, '0')} '
+        '${time.hour.padLeft(2, '0')}:${time.minute.padLeft(2, '0')}:${time.second.padLeft(2, '0')}';
   }
 
   @override

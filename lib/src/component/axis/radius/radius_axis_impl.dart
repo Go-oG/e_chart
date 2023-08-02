@@ -1,10 +1,7 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 
-import 'radius_attrs.dart';
-import 'radius_axis.dart';
 
 ///半径轴
 class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, C> {

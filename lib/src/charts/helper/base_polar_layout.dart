@@ -1,10 +1,7 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
-import 'base_stack_helper.dart';
-import 'model/axis_index.dart';
 
 ///适用于极坐标系的布局帮助者
 abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>

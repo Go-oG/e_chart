@@ -1,11 +1,8 @@
 import 'dart:ui';
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/line/helper/line_helper.dart';
 import 'package:e_chart/src/charts/line/line_node.dart';
 
-import '../../helper/base_polar_layout.dart';
-import '../../helper/model/axis_index.dart';
 
 class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
@@ -280,4 +277,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
   double getAnimatorPercent() {
     return _animatorPercent;
   }
+  @override
+  SeriesType get seriesType => SeriesType.line;
+
 }

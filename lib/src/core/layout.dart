@@ -44,19 +44,15 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
 
   double get height => rect.height;
 
-  void onClick(Offset localOffset){}
+  void onClick(Offset localOffset) {}
 
-  void onHoverStart(Offset localOffset){}
+  void onHoverStart(Offset localOffset) {}
 
-  void onHoverMove(Offset localOffset){}
+  void onHoverMove(Offset localOffset) {}
 
-  void handleHoverOrClick(Offset offset, bool click) {
+  void handleHoverOrClick(Offset offset, bool click) {}
 
-  }
-
-  void onHoverEnd() {
-
-  }
+  void onHoverEnd() {}
 
   GridCoord findGridCoord() {
     return context.findGridCoord(series.gridIndex);
@@ -82,12 +78,38 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
     return context.findRadarCoord(series.radarIndex);
   }
 
+  SeriesType get seriesType;
 
+  void sendClickEvent(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    context.dispatchEvent(ClickEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
+  }
 
+  void sendHoverInEvent(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    context.dispatchEvent(HoverInEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
+  }
 
+  void sendHoverOutEvent(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    context.dispatchEvent(HoverOutEvent(buildEventParams(
+      offset,
+      data,
+      dataType: dataType,
+      dataIndex: dataIndex,
+      groupIndex: groupIndex,
+    )));
+  }
 
-
-
+  EventParams buildEventParams(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    return EventParams(
+      offset: offset,
+      componentType: ComponentType.series,
+      data: data,
+      dataIndex: dataIndex,
+      dataType: dataType,
+      groupIndex: groupIndex,
+      seriesType: seriesType,
+      seriesIndex: series.seriesIndex,
+    );
+  }
 }
 
 enum LayoutType { none, layout, update }

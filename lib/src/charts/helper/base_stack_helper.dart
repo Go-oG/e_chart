@@ -1,13 +1,8 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/utils/normal_list.dart';
 import 'package:flutter/animation.dart';
 
-import 'model/axis_group.dart';
-import 'model/axis_index.dart';
-import 'model/map_node.dart';
 
 ///用于处理堆叠数据的布局帮助者
 
@@ -210,6 +205,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
   ///==========用户相关操作的处理=============
   SingleNode<T, P>? oldHoverNode;
 
+  @override
   void handleHoverOrClick(Offset offset, bool click) {
     Offset tr = getTranslation();
     offset = offset.translate(tr.dx, tr.dy);
@@ -220,6 +216,17 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     if (series.selectedMode == SelectedMode.group && node?.parentNode == oldHoverNode?.parentNode) {
       return;
     }
+    if (node != null) {
+      if (click) {
+        sendClickEvent(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+      } else {
+        sendHoverInEvent(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+      }
+    }
+    if (oldHoverNode != null && !click) {
+      sendHoverInEvent(offset, oldHoverNode!.data, dataIndex: oldHoverNode!.dataIndex, groupIndex: oldHoverNode!.groupIndex);
+    }
+
     onHandleHoverEnd(oldHoverNode, node);
   }
 
@@ -282,6 +289,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     doubleTween.start(context, true);
   }
 
+  @override
   void onHoverEnd() {
     if (oldHoverNode == null) {
       return;

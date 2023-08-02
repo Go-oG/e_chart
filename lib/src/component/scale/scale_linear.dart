@@ -17,9 +17,9 @@ class LinearScale extends BaseScale<num, num> {
   @override
   List<num> toRange(num data) {
     num diff = domain.last - domain.first;
-    num diff2 = range.last - range.first;
+    num diff2 = this.range.last - this.range.first;
     double p = diff2 * (data - domain.first) / diff;
-    return [range.first + p];
+    return [this.range.first + p];
   }
 
   @override
@@ -33,8 +33,8 @@ class LinearScale extends BaseScale<num, num> {
 
   @override
   num convertRatio(double ratio) {
-    num diff2 = range.last - range.first;
-    return ratio * diff2 + range.first;
+    num diff2 = this.range.last - this.range.first;
+    return ratio * diff2 + this.range.first;
   }
 
   @override

@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/coord/grid/axis/base_grid_axis_impl.dart';
 import 'package:flutter/material.dart';

@@ -1,9 +1,7 @@
 import 'dart:ui';
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/line/helper/line_helper.dart';
 
-import '../../helper/model/axis_index.dart';
 import '../line_node.dart';
 
 class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> implements LineHelper {
@@ -444,4 +442,8 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   double getAnimatorPercent() {
     return _animatorPercent;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.line;
+
 }

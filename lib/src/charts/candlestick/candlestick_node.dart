@@ -11,10 +11,9 @@ class CandlestickGroupNode{
 
 class CandlestickNode extends DataNode<List<Path>,CandleStickData>{
   final CandleStickGroup parent;
-
   late Path path;
   late Path areaPath;
 
-  CandlestickNode(this.parent,CandleStickData data):super(data,[]);
+  CandlestickNode(this.parent,CandleStickData data,int dataIndex,int groupIndex):super(data,dataIndex,groupIndex,[]);
 
 }

@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/boxplot/boxplot_layout.dart';
 import 'package:e_chart/src/charts/boxplot/boxplot_node.dart';

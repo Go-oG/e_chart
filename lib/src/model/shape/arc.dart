@@ -1,6 +1,9 @@
 import 'dart:math';
-import 'package:e_chart/e_chart.dart';
+
 import 'package:flutter/material.dart';
+
+import '../../ext/offset_ext.dart';
+import '../constans.dart';
 import 'chart_shape.dart';
 
 class Arc implements Shape {

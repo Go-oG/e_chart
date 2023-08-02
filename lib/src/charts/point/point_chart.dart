@@ -37,7 +37,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
         clickNode = node;
         break;
       }
-      if (node.rect.contains(offset)) {
+      if (node.internal(offset)) {
         clickNode = node;
         break;
       }
@@ -80,8 +80,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
   @override
   void onDraw(Canvas canvas) {
     for (var node in _layout.nodeList) {
-      ChartSymbol symbol = series.symbolStyle.call(node);
-      symbol.draw(canvas, mPaint, node.rect.center);
+      node.symbol?.draw(canvas, mPaint, node.attr);
     }
   }
 
