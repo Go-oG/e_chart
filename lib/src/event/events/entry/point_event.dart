@@ -20,9 +20,9 @@ class HoverInEvent extends ChartEvent {
 
 class HoverOutEvent extends ChartEvent {
   final EventParams event;
-
   HoverOutEvent(this.event);
 }
+
 
 class HoverStartEvent extends ChartEvent {
   HoverStartEvent();

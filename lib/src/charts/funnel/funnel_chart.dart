@@ -15,17 +15,17 @@ class FunnelView extends SeriesView<FunnelSeries> {
 
   @override
   void onClick(Offset offset) {
-    helper.hoverEnter(offset);
+    helper.handleHoverOrClick(offset,true);
   }
 
   @override
   void onHoverStart(Offset offset) {
-    helper.hoverEnter(offset);
+    helper.handleHoverOrClick(offset,false);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    helper.hoverEnter(offset);
+    helper.handleHoverOrClick(offset,false);
   }
 
   @override

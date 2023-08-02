@@ -46,7 +46,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
     for (int i = 0; i < list.length; i++) {
       var data = list[i];
       ItemData? preData = i == 0 ? null : list[i - 1];
-      nodeList.add(FunnelNode(i, preData, data,i));
+      nodeList.add(FunnelNode(i, preData, data, i));
     }
 
     ///直接降序处理
@@ -197,7 +197,8 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
 
   FunnelNode? _hoverNode;
 
-  void hoverEnter(Offset local) {
+  @override
+  void handleHoverOrClick(Offset local, bool click) {
     bool result = false;
     Map<FunnelNode, AreaStyle> oldMap = {};
     Map<FunnelNode, LabelStyle> oldMap2 = {};
@@ -218,11 +219,24 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
         }
       }
     }
+
     if (!result) {
       return;
     }
+
     final old = _hoverNode;
     _hoverNode = hoverNode;
+    if (old != null && !click) {
+      sendHoverOutEvent(local, old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
+    }
+    if (hoverNode != null) {
+      if (click) {
+        sendClickEvent(local, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
+      } else {
+        sendHoverInEvent(local, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
+      }
+    }
+
     List<ChartTween> tl = [];
     if (old != null && oldMap.containsKey(old)) {
       AreaStyle style = getAreaStyle(context, series, old);
@@ -271,9 +285,12 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
 
   @override
   void onHoverEnd() {
-    if (_hoverNode == null) {
+    var nd = _hoverNode;
+    if (nd == null) {
       return;
     }
+    sendHoverOutEvent(null, nd.data, dataIndex: nd.dataIndex, groupIndex: nd.groupIndex);
+
     List<ChartTween> tl = [];
     var old = _hoverNode!;
     _hoverNode = null;
@@ -329,7 +346,7 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
   }
 
   @override
-  SeriesType get seriesType =>SeriesType.funnel;
+  SeriesType get seriesType => SeriesType.funnel;
 }
 
 class FunnelProps {
