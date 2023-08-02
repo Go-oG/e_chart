@@ -2,6 +2,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'funnel_node.dart';
+
 class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
   FunnelLayout() : super();
   List<FunnelNode> nodeList = [];

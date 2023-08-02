@@ -5,10 +5,10 @@ import 'package:flutter/painting.dart';
 ///可以在日历坐标系和笛卡尔坐标系中使用
 class HeatMapSeries extends RectSeries {
   List<HeatMapData> data;
-  Fun2<HeatMapNode, LabelStyle>? labelFun;
-  Fun2<HeatMapNode, Alignment>? labelAlignFun;
-  Fun2<HeatMapNode, AreaStyle?>? areaStyleFun;
-  Fun2<HeatMapNode, LineStyle?>? borderStyleFun;
+  Fun2<HeatMapData, LabelStyle>? labelFun;
+  Fun2<HeatMapData, Alignment>? labelAlignFun;
+  Fun2<HeatMapData, AreaStyle?>? areaStyleFun;
+  Fun2<HeatMapData, LineStyle?>? borderStyleFun;
 
   HeatMapSeries(
     this.data, {

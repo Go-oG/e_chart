@@ -1,6 +1,9 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'funnel_node.dart';
+import 'layout.dart';
+
 /// 漏斗图
 class FunnelView extends SeriesView<FunnelSeries> {
   final FunnelLayout helper = FunnelLayout();
@@ -69,7 +72,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
   }
 
   void _drawText(Canvas canvas, FunnelNode node) {
-    TextDrawConfig? config = node.textConfig;
+    TextDrawInfo? config = node.textConfig;
     DynamicText? label = node.data.label;
     if (label == null || label.isEmpty || config == null) {
       return;

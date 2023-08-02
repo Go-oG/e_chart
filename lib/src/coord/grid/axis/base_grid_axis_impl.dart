@@ -118,7 +118,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       Offset offset = center.translate(parenDis, 0);
       Offset textOffset = offset.translate(0, labelOffset);
       textOffset = textOffset.rotateOffset(angle, center: center);
-      TextDrawConfig config = TextDrawConfig(textOffset, align: toAlignment(angle + 90, axisLabel.inside));
+      TextDrawInfo config = TextDrawInfo(textOffset, align: toAlignment(angle + 90, axisLabel.inside));
       DynamicText? text;
       int t = i - indexList[0];
       if (labels.length > t) {
@@ -138,7 +138,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         num dis = parenDis + minorInterval * j;
         final labelOffset = circlePoint(dis, angle, center);
-        TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+        TextDrawInfo minorConfig = TextDrawInfo(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
         dynamic data = scale.toData(dis);
         DynamicText? text = axisLabel.formatter?.call(data);
         result.minorLabel.add(LabelResult(oi + j, i, tickCount, minorConfig, text));
@@ -396,7 +396,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     } else {
       alignment = axis.position == Align2.end ? Alignment.centerLeft : Alignment.centerRight;
     }
-    TextDrawConfig config = TextDrawConfig(tmp, align: alignment);
+    TextDrawInfo config = TextDrawInfo(tmp, align: alignment);
     axisPointer.labelStyle.draw(canvas, paint, dt, config);
     canvas.restore();
   }

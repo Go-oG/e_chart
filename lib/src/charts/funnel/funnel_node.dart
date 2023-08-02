@@ -2,6 +2,8 @@ import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'layout.dart';
+
 class FunnelNode extends DataNode<List<Offset>,ItemData> {
   final int index;
   final ItemData? preData;
@@ -12,7 +14,7 @@ class FunnelNode extends DataNode<List<Offset>,ItemData> {
 
   FunnelNode(this.index, this.preData, ItemData data):super(data,[]);
 
-  TextDrawConfig? textConfig;
+  TextDrawInfo? textConfig;
   List<Offset>? labelLine;
 
   LabelStyle? labelStyle;
@@ -68,7 +70,7 @@ class FunnelNode extends DataNode<List<Offset>,ItemData> {
     return s;
   }
 
-  TextDrawConfig? computeTextPosition(FunnelSeries series) {
+  TextDrawInfo? computeTextPosition(FunnelSeries series) {
     LabelStyle? style = labelStyle;
     if (style == null || !style.show) {
       return null;
@@ -99,7 +101,7 @@ class FunnelNode extends DataNode<List<Offset>,ItemData> {
     if (!series.labelAlign.inside) {
       textAlign = Alignment(-textAlign.x, -textAlign.y);
     }
-    return TextDrawConfig(offset, align: textAlign);
+    return TextDrawInfo(offset, align: textAlign);
   }
 
   List<Offset>? computeLabelLineOffset(FunnelSeries series, Offset? textOffset) {

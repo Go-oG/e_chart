@@ -302,7 +302,7 @@ class PieNode extends DataNode<Arc, ItemData> {
   PieNode(ItemData data) : super(data, Arc());
 
   ///计算文字的位置
-  TextDrawConfig? textDrawConfig;
+  TextDrawInfo? textDrawConfig;
   LabelStyle? labelStyle;
 
   void updateTextPosition(PieSeries series) {
@@ -317,14 +317,14 @@ class PieNode extends DataNode<Arc, ItemData> {
       return;
     }
     if (series.labelAlign == CircleAlign.center) {
-      textDrawConfig = TextDrawConfig(attr.center, align: Alignment.center);
+      textDrawConfig = TextDrawInfo(attr.center, align: Alignment.center);
       return;
     }
     if (series.labelAlign == CircleAlign.inside) {
       double radius = (attr.innerRadius + attr.outRadius) / 2;
       double angle = attr.startAngle + attr.sweepAngle / 2;
       Offset offset = circlePoint(radius, angle).translate(attr.center.dx, attr.center.dy);
-      textDrawConfig = TextDrawConfig(offset, align: Alignment.center);
+      textDrawConfig = TextDrawInfo(offset, align: Alignment.center);
       return;
     }
     if (series.labelAlign == CircleAlign.outside) {
@@ -337,7 +337,7 @@ class PieNode extends DataNode<Arc, ItemData> {
       } else {
         align = Alignment.centerLeft;
       }
-      textDrawConfig = TextDrawConfig(offset, align: align);
+      textDrawConfig = TextDrawInfo(offset, align: align);
       return;
     }
   }

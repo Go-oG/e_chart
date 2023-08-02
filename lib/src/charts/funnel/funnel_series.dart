@@ -4,7 +4,7 @@ import '../../functions.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../model/enums/sort.dart';
-import '../../model/group_data.dart';
+import '../../model/data.dart';
 import '../../model/string_number.dart';
 import '../../style/area_style.dart';
 import '../../style/label.dart';

@@ -1,5 +1,5 @@
 
-import '../model/dynamic_text.dart';
+import '../model/index.dart';
 
 class Intl {
   final Map<String, DynamicText> _source = {};

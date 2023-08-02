@@ -3,6 +3,8 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/heatmap/layout.dart';
 import 'package:flutter/material.dart';
 
+import 'heat_map_node.dart';
+
 /// 热力图
 class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChild {
   final HeatMapLayout helper = HeatMapLayout();
@@ -51,15 +53,15 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
       var label = node.data.label!;
       LabelStyle? style;
       if (series.labelFun != null) {
-        style = series.labelFun?.call(node);
+        style = series.labelFun?.call(node.d);
       } else {
         style = theme.labelStyle.convert(node.status);
       }
       if (style == null || !style.show) {
         return;
       }
-      Alignment align = series.labelAlignFun?.call(node) ?? Alignment.center;
-      style.draw(canvas, mPaint, label, TextDrawConfig.fromRect(node.attr, align));
+      Alignment align = series.labelAlignFun?.call(node.d) ?? Alignment.center;
+      style.draw(canvas, mPaint, label, TextDrawInfo.fromRect(node.attr, align));
     });
   }
 
@@ -83,7 +85,7 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
 
   AreaStyle? getAreaStyle(HeatMapNode node, int index) {
     if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node);
+      return series.areaStyleFun?.call(node.data);
     }
     var chartTheme = context.config.theme;
     Color fillColor = chartTheme.getColor(index);
@@ -92,7 +94,7 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
 
   LineStyle? getBorderStyle(HeatMapNode node, int index) {
     if (series.borderStyleFun != null) {
-      return series.borderStyleFun?.call(node);
+      return series.borderStyleFun?.call(node.data);
     }
     var theme = context.config.theme.headMapTheme;
     return theme.getBorderStyle()?.convert(node.status);

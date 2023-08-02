@@ -49,7 +49,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   BaseScale onBuildScale(L attrs, List<DynamicData> dataSet);
 
-  TextDrawConfig onLayoutAxisName();
+  TextDrawInfo onLayoutAxisName();
 
   void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
     if (!kDebugMode) {

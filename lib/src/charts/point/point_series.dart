@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
-import '../../model/point_data.dart';
+import 'point_data.dart';
 import '../../core/series.dart';
 import '../../symbol/chart_symbol.dart';
 import 'point_node.dart';

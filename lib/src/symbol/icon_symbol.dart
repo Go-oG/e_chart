@@ -37,7 +37,7 @@ class IconSymbol extends ChartSymbol {
   @override
   void draw(Canvas canvas, Paint paint, Offset offset) {
     center = offset;
-    TextDrawConfig config = TextDrawConfig(center, align: Alignment.center);
+    TextDrawInfo config = TextDrawInfo(center, align: Alignment.center);
     style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
   }
 

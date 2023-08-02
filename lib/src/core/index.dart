@@ -2,7 +2,6 @@ export 'chart_notifier.dart';
 export 'command.dart';
 export 'context.dart';
 export 'core_chart.dart';
-export 'data_node.dart';
 export 'layout.dart';
 export 'series.dart';
 export 'view.dart';

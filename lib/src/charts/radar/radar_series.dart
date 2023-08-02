@@ -1,7 +1,7 @@
 //雷达图
 import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
-import '../../model/group_data.dart';
+import '../../model/data.dart';
 import '../../style/index.dart';
 import '../../core/series.dart';
 import '../../symbol/chart_symbol.dart';
