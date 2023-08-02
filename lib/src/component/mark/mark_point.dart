@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import '../../model/dynamic_text.dart';
-import '../../model/text_position.dart';
+import '../../model/data.dart';
+import '../../model/text_info.dart';
 import '../../style/label.dart';
 
 import '../../symbol/index.dart';
@@ -29,7 +29,7 @@ class MarkPoint {
   void draw(Canvas canvas, Paint paint, Offset offset, [DynamicText? text]) {
     symbol.draw(canvas, paint,offset);
     if (text != null && text.isNotEmpty) {
-      labelStyle?.draw(canvas, paint, text, TextDrawConfig(offset));
+      labelStyle?.draw(canvas, paint, text, TextDrawInfo(offset));
     }
   }
 }

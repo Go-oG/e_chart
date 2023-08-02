@@ -1,5 +1,4 @@
-import 'package:e_chart/src/model/group_data.dart';
-import 'dynamic_data.dart';
+import 'package:e_chart/src/model/data.dart';
 
 class PointData extends ItemData{
    DynamicData x;

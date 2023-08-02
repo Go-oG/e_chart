@@ -1,5 +1,5 @@
 import '../../functions.dart';
-import '../../model/dynamic_data.dart';
+import '../../model/data.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/line_style.dart';
 import '../../core/series.dart';

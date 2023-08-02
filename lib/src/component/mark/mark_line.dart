@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../functions.dart';
-import '../../model/dynamic_text.dart';
-import '../../model/text_position.dart';
+import '../../model/data.dart';
+import '../../model/text_info.dart';
 import '../../style/label.dart';
 import '../../style/line_style.dart';
 import '../../symbol/chart_symbol.dart';
@@ -35,11 +35,11 @@ class MarkLine {
     startSymbol?.draw(canvas, paint,start);
     endSymbol?.draw(canvas, paint, end);
     if (startText != null && startText.isNotEmpty) {
-      TextDrawConfig config = TextDrawConfig(start);
+      TextDrawInfo config = TextDrawInfo(start);
       labelStyle?.call(0).draw(canvas, paint, startText, config);
     }
     if (endText != null && endText.isNotEmpty) {
-      TextDrawConfig config = TextDrawConfig(end);
+      TextDrawInfo config = TextDrawInfo(end);
       labelStyle?.call(1).draw(canvas, paint, endText, config);
     }
   }

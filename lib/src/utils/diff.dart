@@ -226,14 +226,14 @@ class DiffResult<N, D> {
   final Set<D> updateSet;
 
   DiffResult(
-    this.startMap,
-    this.endMap,
-    this.startList,
-    this.endList,
-    this.removeSet,
-    this.addSet,
-    this.updateSet,
-  );
+      this.startMap,
+      this.endMap,
+      this.startList,
+      this.endList,
+      this.removeSet,
+      this.addSet,
+      this.updateSet,
+      );
 }
 
 class TweenWrap {

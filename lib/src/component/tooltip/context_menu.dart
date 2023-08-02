@@ -1,6 +1,6 @@
 import 'package:e_chart/src/style/index.dart';
 
-import '../../model/dynamic_text.dart';
+import '../../model/data.dart';
 import '../../symbol/chart_symbol.dart';
 
 class ContextMenu {

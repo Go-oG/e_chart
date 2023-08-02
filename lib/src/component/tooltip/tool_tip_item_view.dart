@@ -49,11 +49,11 @@ class ToolTipItemView extends ChartView {
       item.symbol?.draw(canvas, mPaint, Offset(s.width / 2, c));
       left += s.width + 8;
     }
-    item.textStyle.draw(canvas, mPaint, item.text, TextDrawConfig(Offset(left, c), align: Alignment.centerLeft));
+    item.textStyle.draw(canvas, mPaint, item.text, TextDrawInfo(Offset(left, c), align: Alignment.centerLeft));
 
     if (_subSize != null && item.subText != null && item.subText!.isNotEmpty) {
       (item.subTextStyle ?? _defaultSubStyle)
-          .draw(canvas, mPaint, item.subText!, TextDrawConfig(Offset(width, c), align: Alignment.centerRight));
+          .draw(canvas, mPaint, item.subText!, TextDrawInfo(Offset(width, c), align: Alignment.centerRight));
     }
   }
 }

@@ -7,7 +7,7 @@ import '../core/view_state.dart';
 import '../utils/index.dart';
 
 ///文本绘制参数
-class TextDrawConfig {
+class TextDrawInfo {
   final Offset offset;
   final Alignment align; //用于感知文本绘制位置
   final num maxWidth;
@@ -21,7 +21,7 @@ class TextDrawConfig {
   final String? ellipsis;
   final bool ignoreOverText; //是否忽略绘制越界的文本
 
-  TextDrawConfig(
+  TextDrawInfo(
     this.offset, {
     this.align = Alignment.center,
     this.scaleFactor = 1,
@@ -36,7 +36,7 @@ class TextDrawConfig {
     this.ignoreOverText = false,
   });
 
-  TextDrawConfig copyWith({
+  TextDrawInfo copyWith({
     Offset? offset,
     Alignment? align,
     double? scaleFactor,
@@ -50,7 +50,7 @@ class TextDrawConfig {
     String? ellipsis,
     bool? ignoreOverText,
   }) {
-    return TextDrawConfig(
+    return TextDrawInfo(
       offset ?? this.offset,
       align: align ?? this.align,
       scaleFactor: scaleFactor ?? this.scaleFactor,
@@ -99,11 +99,11 @@ class TextDrawConfig {
         ellipsis: ellipsis);
   }
 
-  static TextDrawConfig fromRect(Rect rect, Alignment align,[bool inside=true]) {
+  static TextDrawInfo fromRect(Rect rect, Alignment align,[bool inside=true]) {
     return fromAlign(rect.topLeft, rect.topRight, rect.bottomLeft, rect.bottomRight, align);
   }
 
-  static TextDrawConfig fromAlign(Offset lt, Offset rt, Offset lb, Offset rb, Alignment align,[bool inside=true]) {
+  static TextDrawInfo fromAlign(Offset lt, Offset rt, Offset lb, Offset rb, Alignment align,[bool inside=true]) {
     Offset p0 = lt;
     Offset p1 = rt;
     Offset p2 = rb;
@@ -118,6 +118,6 @@ class TextDrawConfig {
     if (!inside) {
       textAlign = Alignment(-textAlign.x, -textAlign.y);
     }
-    return TextDrawConfig(offset, align: textAlign);
+    return TextDrawInfo(offset, align: textAlign);
   }
 }

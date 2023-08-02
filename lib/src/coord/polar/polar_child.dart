@@ -1,5 +1,4 @@
-
-import '../../model/dynamic_data.dart';
+import '../../model/data.dart';
 
 abstract class PolarChild {
 

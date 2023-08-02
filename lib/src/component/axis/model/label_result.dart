@@ -1,11 +1,11 @@
-import '../../../model/dynamic_text.dart';
-import '../../../model/text_position.dart';
+import '../../../model/data.dart';
+import '../../../model/text_info.dart';
 
 class LabelResult {
   final int originIndex;
   final int index;
   final int maxIndex;
-  final TextDrawConfig textConfig;
+  final TextDrawInfo textConfig;
   final DynamicText? text;
   final List<LabelResult> minorLabel;
 

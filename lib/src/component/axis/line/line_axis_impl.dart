@@ -144,7 +144,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       Offset offset = center.translate(parenDis, 0);
       Offset textOffset = offset.translate(0, labelOffset);
       textOffset = textOffset.rotateOffset(angle, center: center);
-      TextDrawConfig config = TextDrawConfig(textOffset, align: toAlignment(angle + 90, axisLabel.inside));
+      TextDrawInfo config = TextDrawInfo(textOffset, align: toAlignment(angle + 90, axisLabel.inside));
       DynamicText? text;
       if (labels.length > i) {
         text = labels[i];
@@ -163,7 +163,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         num dis = parenDis + minorInterval * j;
         final labelOffset = circlePoint(dis, angle, center);
-        TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+        TextDrawInfo minorConfig = TextDrawInfo(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
         dynamic data = scale.toData(dis);
         DynamicText? text = axisLabel.formatter?.call(data);
         result.minorLabel.add(LabelResult(i + j, i, tickCount, minorConfig, text));
@@ -173,7 +173,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   }
 
   @override
-  TextDrawConfig onLayoutAxisName() {
+  TextDrawInfo onLayoutAxisName() {
     Offset center;
     Offset p;
     var align = axis.axisName?.align ?? Align2.end;
@@ -191,7 +191,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     num a = p.offsetAngle(center);
     double r = center.distance2(p);
     r += axis.axisName?.nameGap ?? 0;
-    return TextDrawConfig(circlePoint(r, a, center), align: toAlignment(a));
+    return TextDrawInfo(circlePoint(r, a, center), align: toAlignment(a));
   }
 
   @override

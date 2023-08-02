@@ -146,7 +146,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       }
       num angle = attrs.angleOffset + angleInterval * d;
       Offset offset = circlePoint(r, angle, attrs.center);
-      TextDrawConfig config = TextDrawConfig(offset, align: toAlignment(angle, axisLabel.inside));
+      TextDrawInfo config = TextDrawInfo(offset, align: toAlignment(angle, axisLabel.inside));
       var result = LabelResult(i, i, labels.length, config, text, []);
       resultList.add(result);
       if (axis.isCategoryAxis || axis.isTimeAxis) {
@@ -163,7 +163,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         num childAngle = angle + minorInterval * j;
         final labelOffset = circlePoint(r, childAngle, attrs.center);
-        TextDrawConfig minorConfig = TextDrawConfig(labelOffset, align: toAlignment(childAngle, axisLabel.inside));
+        TextDrawInfo minorConfig = TextDrawInfo(labelOffset, align: toAlignment(childAngle, axisLabel.inside));
         dynamic data = scale.toData(childAngle);
         DynamicText? text = axisLabel.formatter?.call(data);
         result.minorLabel.add(LabelResult(i + j, i, labels.length, minorConfig, text));
@@ -174,19 +174,19 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  TextDrawConfig onLayoutAxisName() {
+  TextDrawInfo onLayoutAxisName() {
     DynamicText? label = titleNode.name?.name;
     Offset start = attrs.center;
     Offset end = circlePoint(attrs.radius.last, attrs.angleOffset, attrs.center);
     var axisName = axis.axisName;
     var align = axisName?.align ?? Align2.end;
     if (align == Align2.center || (label == null || label.isEmpty)) {
-      return TextDrawConfig(Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
+      return TextDrawInfo(Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
     }
     if (align == Align2.start) {
-      return TextDrawConfig(start, align: Alignment.centerLeft);
+      return TextDrawInfo(start, align: Alignment.centerLeft);
     }
-    return TextDrawConfig(end, align: toAlignment(end.offsetAngle(start)));
+    return TextDrawInfo(end, align: toAlignment(end.offsetAngle(start)));
   }
 
   @override
@@ -348,7 +348,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     DynamicText dt = formatData(scale.toData(dis));
     num angle = offset.offsetAngle(attrs.center);
     Offset o = circlePoint(attrs.radius.last, angle, attrs.center);
-    TextDrawConfig config = TextDrawConfig(o, align: toAlignment(angle, axis.axisLabel.inside));
+    TextDrawInfo config = TextDrawInfo(o, align: toAlignment(angle, axis.axisLabel.inside));
     axisPointer.labelStyle.draw(canvas, paint, dt, config);
   }
 

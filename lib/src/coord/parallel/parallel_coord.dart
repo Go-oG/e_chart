@@ -4,7 +4,7 @@ import 'package:e_chart/src/ext/offset_ext.dart';
 import 'package:flutter/material.dart';
 
 import '../../component/index.dart';
-import '../../model/dynamic_data.dart';
+import '../../model/data.dart';
 import '../../model/enums/direction.dart';
 import '../coord_impl.dart';
 import 'parallel_axis_impl.dart';

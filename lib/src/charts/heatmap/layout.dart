@@ -1,6 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
+import 'heat_map_node.dart';
+
 class HeatMapLayout extends ChartLayout<HeatMapSeries, List<HeatMapData>> {
   List<HeatMapNode> _nodeList = [];
 

@@ -1,6 +1,11 @@
+export 'datetime_ext.dart';
 export 'int_ext.dart';
+export 'num_ext.dart';
 export 'offset_ext.dart';
 export 'paint_ext.dart';
+export 'paragraph_ext.dart';
 export 'path_ext.dart';
+export 'string_ext.dart';
+export 'text_span_ext.dart';
 export 'text_style_ext.dart';
 export 'tree_node_ext.dart';
