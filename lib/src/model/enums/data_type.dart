@@ -1,0 +1,4 @@
+enum DataType{
+  nodeData,
+  edgeData
+}

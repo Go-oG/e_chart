@@ -1,15 +1,4 @@
-import 'package:e_chart/src/component/brush/brush.dart';
-
-import 'animation/animator_attrs.dart';
-import 'coord/index.dart';
-import 'core/series.dart';
-import 'component/legend/legend.dart';
-import 'component/title/title.dart';
-import 'component/tooltip/tool_tip.dart';
-
-import 'model/enums/drag_type.dart';
-import 'model/enums/scale_type.dart';
-import 'component/theme/theme.dart';
+import 'package:e_chart/e_chart.dart';
 
 ///表格的通用配置
 class ChartConfig {
@@ -28,22 +17,26 @@ class ChartConfig {
   Brush? brush;
   ChartTheme theme = ChartTheme();
 
-  ChartConfig(
-      {required this.series,
-      this.title,
-      this.legend,
-      this.gridList = const [],
-      this.polarList = const [],
-      this.radarList = const [],
-      this.parallelList = const [],
-      this.calendarList = const [],
-      this.animation = const AnimatorAttrs(),
-      Grid? grid,
-      this.scaleType = ScaleType.scale,
-      this.dragType = DragType.longPress,
-      this.toolTip,
-      this.brush,
-      ChartTheme? theme}) {
+  VoidFun1<ChartEvent>? eventCall;
+
+  ChartConfig({
+    required this.series,
+    this.title,
+    this.legend,
+    this.gridList = const [],
+    this.polarList = const [],
+    this.radarList = const [],
+    this.parallelList = const [],
+    this.calendarList = const [],
+    this.animation = const AnimatorAttrs(),
+    Grid? grid,
+    this.scaleType = ScaleType.scale,
+    this.dragType = DragType.longPress,
+    this.toolTip,
+    this.brush,
+    ChartTheme? theme,
+    this.eventCall,
+  }) {
     if (theme != null) {
       this.theme = theme;
     }

@@ -3,7 +3,6 @@ export 'axis/angle/angle_axis.dart';
 export 'axis/angle/angle_axis_impl.dart';
 export 'axis/angle/angle_layout_result.dart';
 
-
 export 'axis/decor/axis_label.dart';
 export 'axis/decor/axis_line.dart';
 export 'axis/decor/axis_minor_tick.dart';
@@ -33,6 +32,9 @@ export 'axis/axis_attrs.dart';
 export 'axis/base_axis.dart';
 export 'axis/base_axis_impl.dart';
 
+export 'brush/brush.dart';
+export 'brush/brush_area.dart';
+export 'brush/brush_view.dart';
 
 export 'group/flex_layout_group.dart';
 export 'group/linear_layout_group.dart';
