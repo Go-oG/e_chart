@@ -1,4 +1,3 @@
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,7 @@ class FunnelNode extends DataNode<List<Offset>,ItemData> {
   ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
   List<Offset> pointList = [];
 
-  FunnelNode(this.index, this.preData, ItemData data):super(data,[]);
+  FunnelNode(this.index, this.preData, ItemData data,int dataIndex):super(data,dataIndex,-1,[]);
 
   TextDrawInfo? textConfig;
   List<Offset>? labelLine;

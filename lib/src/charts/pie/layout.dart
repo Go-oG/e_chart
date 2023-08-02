@@ -1,4 +1,3 @@
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/pie/pie_tween.dart';
 
@@ -36,7 +35,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
       series.animatorProps,
       oldList,
       newList,
-      (data, node, add){
+      (data, node, add) {
         PieAnimatorStyle style = series.animatorStyle;
         Arc arc = node.attr;
         if (add) {
@@ -52,16 +51,15 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
         }
         return arc;
       },
-      (s, e, t){
+      (s, e, t) {
         arcTween.changeValue(s, e);
         return arcTween.safeGetValue(t);
       },
       (p0) {
-        _nodeList=p0;
+        _nodeList = p0;
         notifyLayoutUpdate();
       },
     );
-
   }
 
   void layoutNode(List<PieNode> nodeList) {
@@ -77,7 +75,8 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
 
   PieNode? hoverNode;
 
-  void layoutUserClickWithHover(Offset offset) {
+  @override
+  void handleHoverOrClick(Offset offset, bool click) {
     List<PieNode> nodeList = _nodeList;
     if (nodeList.isEmpty) {
       return;
@@ -87,9 +86,21 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
     if (hasSame) {
       return;
     }
-
     if (clickNode == null && hoverNode == null) {
       return;
+    }
+
+    if (click) {
+      if (clickNode != null) {
+        sendClickEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+      }
+    } else {
+      if (hoverNode != null) {
+        sendHoverOutEvent(offset, hoverNode!.data, dataIndex: hoverNode!.dataIndex, groupIndex: hoverNode!.groupIndex);
+      }
+      if (clickNode != null) {
+        sendHoverInEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+      }
     }
 
     PieNode? oldHoverNode = hoverNode;
@@ -175,7 +186,7 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
 
     List<PieNode> nodeList = [];
     each(list, (data, i) {
-      nodeList.add(PieNode(data));
+      nodeList.add(PieNode(data, i, -1));
       maxData = max([data.value, maxData]);
       minData = min([data.value, minData]);
       allData += data.value;
@@ -296,10 +307,13 @@ class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
     }
     return node;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.pie;
 }
 
 class PieNode extends DataNode<Arc, ItemData> {
-  PieNode(ItemData data) : super(data, Arc());
+  PieNode(ItemData data, int dataIndex, int groupIndex) : super(data, dataIndex, groupIndex, Arc());
 
   ///计算文字的位置
   TextDrawInfo? textDrawConfig;

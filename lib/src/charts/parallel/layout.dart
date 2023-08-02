@@ -1,4 +1,3 @@
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -74,9 +73,9 @@ class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
     }
   }
 
-  ParallelCoord findCoord() {
-    return context.findParallelCoord(series.parallelIndex);
-  }
+
+  @override
+  SeriesType get seriesType => SeriesType.parallel;
 
   static List<ParallelNode> convertData(List<ParallelGroup> list) {
     List<ParallelNode> nodeList = [];

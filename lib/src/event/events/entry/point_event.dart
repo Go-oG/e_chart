@@ -12,27 +12,34 @@ class DoubleClickEvent extends ChartEvent {
   DoubleClickEvent(this.event);
 }
 
-class HoverStartEvent extends ChartEvent {
+class HoverInEvent extends ChartEvent {
   final EventParams event;
 
-  HoverStartEvent(this.event);
+  HoverInEvent(this.event);
+}
+
+class HoverOutEvent extends ChartEvent {
+  final EventParams event;
+
+  HoverOutEvent(this.event);
+}
+
+class HoverStartEvent extends ChartEvent {
+  HoverStartEvent();
 }
 
 class HoverUpdateEvent extends ChartEvent {
-  final EventParams event;
-
-  HoverUpdateEvent(this.event);
+  HoverUpdateEvent();
 }
 
 class HoverEndEvent extends ChartEvent {
-  final EventParams event;
-
-  HoverEndEvent(this.event);
+  HoverEndEvent();
 }
 
 class LongPressEvent extends ChartEvent {
   final EventParams event;
+
   LongPressEvent(this.event);
 }
 
-class ScrollEvent extends ChartEvent{}
+class ScrollEvent extends ChartEvent {}

@@ -1,6 +1,6 @@
-import 'package:chart_xutil/chart_xutil.dart';
 
 import '../model/enums/select_mode.dart';
+import '../model/tree_node.dart';
 
 extension TreeNodeExt<T extends TreeNode<T>> on TreeNode<T> {
   void updateSelectStatus(bool status, {SelectedMode mode = SelectedMode.single}) {

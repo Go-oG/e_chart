@@ -1,12 +1,7 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
-
-import 'base_stack_helper.dart';
-import 'model/axis_index.dart';
-import 'model/map_node.dart';
 
 ///适用于Grid布局器
 abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>

@@ -28,7 +28,12 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries, List<HeatMapData>> {
   }
 
   List<HeatMapNode> convertData(List<HeatMapData> dataList) {
-    return List.from(dataList.map((e) => HeatMapNode(e)));
+    List<HeatMapNode> rl = [];
+    each(dataList, (e, i) {
+      rl.add(HeatMapNode(e, i));
+    });
+
+    return rl;
   }
 
   void layoutNode(List<HeatMapNode> nodeList) {
@@ -53,4 +58,7 @@ class HeatMapLayout extends ChartLayout<HeatMapSeries, List<HeatMapData>> {
       node.attr = rect;
     }
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.heatmap;
 }

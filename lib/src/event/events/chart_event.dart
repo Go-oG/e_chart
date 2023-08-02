@@ -2,9 +2,10 @@ import 'dart:ui';
 
 import '../../model/index.dart';
 
-abstract class ChartEvent{}
+abstract class ChartEvent {}
 
 class EventParams {
+  Offset offset;
   ///当前图形元素所属的组件名称，
   ComponentType componentType;
 
@@ -14,12 +15,10 @@ class EventParams {
 
   ///系列在传入的 option.series 中的 index。当 componentType 为 'series' 时有意义。
   int? seriesIndex;
-
-  ///系列名称。当 componentType 为 'series' 时有意义。
-  DynamicText? seriesName;
+  int? groupIndex;
 
   ///数据索引
-  int dataIndex;
+  int? dataIndex;
 
   ///传入的原始数据项
   dynamic data;
@@ -29,17 +28,14 @@ class EventParams {
   /// 其他大部分图表中只有一种 data，dataType 无意义。
   DataType dataType;
 
-  ///数据图形的颜色。当 componentType 为 'series' 时有意义。
-  Color? color;
-
   EventParams({
+    required this.offset,
     required this.componentType,
     required this.data,
     required this.dataIndex,
     required this.dataType,
+    this.groupIndex,
     this.seriesType,
     this.seriesIndex,
-    this.seriesName,
-    this.color,
   });
 }

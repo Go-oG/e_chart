@@ -1,11 +1,6 @@
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 
-import '../../helper/base_polar_layout.dart';
-import '../../helper/model/axis_index.dart';
-
 class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, BarSeries> {
-
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
@@ -123,4 +118,7 @@ class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, Ba
     var theme = context.config.theme.barTheme;
     return theme.getBorderStyle()?.convert(status);
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.bar;
 }

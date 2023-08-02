@@ -2,9 +2,11 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class PointNode with ViewStateProvider {
-  final PointData data;
-  Rect rect = Rect.zero;
+class PointNode extends DataNode<Offset, PointData> {
+  ChartSymbol? symbol;
+  PointNode(super.data, super.dataIndex, super.groupIndex, super.attr);
 
-  PointNode(this.data);
+  bool internal(Offset offset){
+    return symbol?.internal(offset)??false;
+  }
 }

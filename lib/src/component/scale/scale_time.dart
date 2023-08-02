@@ -1,4 +1,4 @@
-import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/src/ext/date_time_ext.dart';
 
 import '../../model/chart_error.dart';
 import '../axis/base_axis.dart';

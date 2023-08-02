@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 
 import 'boxplot_node.dart';
@@ -149,4 +148,7 @@ class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
 
     return null;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.boxplot;
 }

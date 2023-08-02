@@ -1,13 +1,4 @@
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
-
-import 'base_data.dart';
-import 'model/axis_group.dart';
-import 'model/axis_index.dart';
-import 'model/wrap_data.dart';
-import 'node/column_node.dart';
-import 'node/group_node.dart';
-import 'node/single_node.dart';
 
 ///处理二维坐标系下堆叠数据
 ///只针对数字类型处理

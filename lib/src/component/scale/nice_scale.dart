@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:chart_xutil/chart_xutil.dart';
+import '../../utils/math_util.dart';
 
 ///将给定的数据范围格式化成美观的数据
 ///如果[interval]不为空且大于0，那么将强制按照指定的interval进行分割

@@ -40,5 +40,15 @@ class RadarGroupNode {
 class RadarNode extends DataNode<Offset, ItemData> {
   final RadarGroupNode parent;
 
-  RadarNode(this.parent,ItemData data) : super(data, Offset.zero);
+  RadarNode(
+    this.parent,
+    ItemData data,
+    int dataIndex,
+    int groupIndex,
+  ) : super(
+          data,
+          dataIndex,
+          groupIndex,
+          Offset.zero,
+        );
 }

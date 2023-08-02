@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:chart_xutil/chart_xutil.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'layout.dart';
@@ -15,17 +14,17 @@ class PieView extends SeriesView<PieSeries> {
 
   @override
   void onClick(Offset offset) {
-    pieLayer.layoutUserClickWithHover(offset);
+    pieLayer.handleHoverOrClick(offset, true);
   }
 
   @override
   void onHoverStart(Offset offset) {
-    pieLayer.layoutUserClickWithHover(offset);
+    pieLayer.handleHoverOrClick(offset, false);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    pieLayer.layoutUserClickWithHover(offset);
+    pieLayer.handleHoverOrClick(offset, false);
   }
 
   @override
@@ -68,7 +67,7 @@ class PieView extends SeriesView<PieSeries> {
   void onDraw(Canvas canvas) {
     List<PieNode> nodeList = pieLayer.nodeList;
     each(nodeList, (node, i) {
-      Path path=node.attr.toPath(true);
+      Path path = node.attr.toPath(true);
       getAreaStyle(node, i)?.drawPath(canvas, mPaint, path);
       getBorderStyle(node, i)?.drawPath(canvas, mPaint, path);
     });

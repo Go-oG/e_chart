@@ -10,7 +10,11 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
   @override
   void onLayout(List<PointData> data, LayoutType type) {
     List<PointNode> oldList = nodeList;
-    List<PointNode> newList = List.from(data.map((e) => PointNode(e)));
+    List<PointNode> newList =[];
+    each(data, (e, i) {
+      newList.add(PointNode(e, i, -1, Offset.zero));
+    });
+
     layoutNode(newList);
     nodeList = newList;
   }
@@ -40,22 +44,24 @@ class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
       } else {
         throw ChartError('x 或y 必须有一个是DateTime');
       }
-      node.rect = coord.dataToPosition(t);
+      node.attr = coord.dataToPosition(t).center;
     }
   }
 
   void _layoutForPolar(List<PointNode> nodeList, PolarCoord coord) {
     for (var node in nodeList) {
       PolarPosition position = coord.dataToPosition(node.data.x, node.data.y);
-      Offset point = circlePoint(position.radius[0], position.angle[0], position.center);
-      node.rect = Rect.fromCircle(center: point, radius: 1);
+      node.attr= circlePoint(position.radius[0], position.angle[0], position.center);
     }
   }
 
   void _layoutForGrid(List<PointNode> nodeList, GridCoord coord) {
     for (var node in nodeList) {
       //TODO 轴
-      node.rect = coord.dataToRect(0, node.data.x, 0, node.data.y);
+      node.attr = coord.dataToRect(0, node.data.x, 0, node.data.y).center;
     }
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.point;
 }

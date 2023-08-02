@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 /// 建议所有的属性都应该为公共且可以更改的
 abstract class ChartSeries extends ChartNotifier<Command> {
   late final String id;
+  int seriesIndex = -1;
 
   ///坐标系系统
   CoordSystem? coordSystem;

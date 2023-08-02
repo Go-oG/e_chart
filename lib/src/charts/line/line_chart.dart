@@ -1,7 +1,6 @@
 import 'dart:ui';
-import 'package:chart_xutil/chart_xutil.dart';
+
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/helper/base_stack_helper.dart';
 import 'package:e_chart/src/charts/line/helper/grid_helper.dart';
 import 'package:e_chart/src/charts/line/helper/polar_helper.dart';
 import 'package:e_chart/src/component/theme/chart/line_theme.dart';

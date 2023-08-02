@@ -1,10 +1,12 @@
-import 'package:chart_xutil/chart_xutil.dart';
+import 'dart:math' as m;
+
 import 'package:flutter/material.dart';
 
 import '../../core/view.dart';
 import '../../core/view_group.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
+import '../../utils/math_util.dart';
 
 class FlexLayout extends ChartViewGroup {
   Direction direction;
@@ -22,7 +24,7 @@ class FlexLayout extends ChartViewGroup {
     for (var c in children) {
       c.measure(parentWidth, parentHeight);
     }
-    List<List< ChartView>> vl = splitView(parentWidth, parentHeight);
+    List<List<ChartView>> vl = splitView(parentWidth, parentHeight);
     num w = 0;
     num h = 0;
     for (var list in vl) {
@@ -30,21 +32,21 @@ class FlexLayout extends ChartViewGroup {
       num maxH = 0;
       if (direction == Direction.vertical) {
         for (var c in list) {
-          maxW = max([c.width, maxW]);
+          maxW = m.max(c.width, maxW);
           maxH += c.height;
         }
       } else {
         for (var c in list) {
-          maxH = max([c.height, maxH]);
+          maxH = m.max(c.height, maxH);
           maxW += c.width;
         }
       }
       if (direction == Direction.vertical) {
         w += maxW;
-        h = max([maxH, h]);
+        h = m.max(maxH, h);
       } else {
         h += maxH;
-        w = max([maxW, w]);
+        w = m.max(maxW, w);
       }
     }
     return Size(w.toDouble(), h.toDouble());
@@ -52,12 +54,12 @@ class FlexLayout extends ChartViewGroup {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    List<List< ChartView>> vl = splitView(width, height);
+    List<List<ChartView>> vl = splitView(width, height);
     double l = 0;
     double y = direction == Direction.vertical ? height : 0;
     for (var list in vl) {
-      num maxW = maxBy< ChartView>(list, (p0) => p0.width).width;
-      num maxH = maxBy< ChartView>(list, (p0) => p0.height).height;
+      num maxW = maxBy<ChartView>(list, (p0) => p0.width).width;
+      num maxH = maxBy<ChartView>(list, (p0) => p0.height).height;
 
       for (var c in list) {
         if (crossDirection == VerticalDirection.down) {
@@ -101,11 +103,11 @@ class FlexLayout extends ChartViewGroup {
     }
   }
 
-  List<List< ChartView>> splitView(double pw, double ph) {
+  List<List<ChartView>> splitView(double pw, double ph) {
     num w = 0;
     num h = 0;
-    List<List< ChartView>> vl = [];
-    List< ChartView> tmpList = [];
+    List<List<ChartView>> vl = [];
+    List<ChartView> tmpList = [];
     for (var c in children) {
       if (direction == Direction.vertical) {
         if (h < ph) {

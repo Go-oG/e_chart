@@ -18,6 +18,13 @@ export 'enums/trigger_on.dart';
 
 export 'shape/index.dart';
 
+export 'quadtree/quad_node.dart';
+export 'quadtree/quadtree.dart' hide InnerQuad;
+export 'array.dart';
+export 'link.dart';
+export 'mixin_props.dart';
+export 'tree_node.dart';
+
 export 'corner.dart';
 export 'chart_error.dart';
 export 'chart_offset.dart';
