@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/src/ext/offset_ext.dart';
 
-import '../functions.dart';
+import '../../functions.dart';
 import 'gesture_event.dart';
 
 typedef EventCallback<T> = void Function(T);

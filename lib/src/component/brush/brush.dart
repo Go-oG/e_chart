@@ -5,7 +5,7 @@ class Brush extends ChartNotifier<Command> {
   static final Command clearCommand = Command(2, runAnimation: false);
   late final String id;
   bool enable = false;
-  BrushMode mode;
+  BrushType mode;
   SelectedMode selectedMode;
   bool supportMulti;
 
@@ -26,7 +26,7 @@ class Brush extends ChartNotifier<Command> {
   Brush({
     String? id,
     this.enable = false,
-    this.mode = BrushMode.rect,
+    this.mode = BrushType.rect,
     this.supportMulti = true,
     this.selectedMode = SelectedMode.group,
     this.allowMove = true,
@@ -48,7 +48,7 @@ class Brush extends ChartNotifier<Command> {
   }
 }
 
-enum BrushMode {
+enum BrushType {
   rect,
   polygon,
   vertical,

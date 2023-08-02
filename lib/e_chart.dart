@@ -14,7 +14,7 @@ export 'src/core/index.dart';
 
 export 'src/ext/index.dart';
 
-export 'src/gesture/index.dart';
+export 'src/event/index.dart';
 
 export 'src/model/index.dart';
 

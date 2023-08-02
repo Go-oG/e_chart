@@ -1,21 +1,12 @@
-import 'package:e_chart/src/component/brush/brush_view.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/title/title_view.dart';
-import 'package:e_chart/src/core/index.dart';
 import 'package:flutter/widgets.dart';
-
-import '../animation/animation_manager.dart';
-import '../animation/animator_attrs.dart';
-import '../chart.dart';
-import '../component/index.dart';
-import '../coord/index.dart';
-import 'factory/coord_factory.dart';
-import '../gesture/index.dart';
-import '../model/index.dart';
-import 'factory/series_factory.dart';
-import '../utils/log_util.dart';
+import 'package:e_chart/e_chart.dart' as ec;
 
 ///存放整个图表的配置.包含所有的图形实例和动画、手势
-///一个Context 对应一个 GestureDispatcher和一个AnimationManager
+///一个Context 对应一个图表实例
+///每个Context各包含一个 TickerProvider
+/// GestureDispatcher、AnimationManager、EventDispatcher、ActionDispatcher
 class Context {
   final ViewParent root;
   final ChartConfig config;
@@ -23,10 +14,13 @@ class Context {
   ///这里不将其暴露出去是为了能更好的管理动画的生命周期
   late TickerProvider _provider;
   final GestureDispatcher _gestureDispatcher = GestureDispatcher();
-  final AnimationManager _animationManager = AnimationManager();
-  double devicePixelRatio;
 
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
+
+  final AnimationManager _animationManager = AnimationManager();
+  final EventDispatcher _eventDispatcher = EventDispatcher();
+  final ec.ActionDispatcher _actionDispatcher = ec.ActionDispatcher();
+  double devicePixelRatio;
 
   Context(this.root, this.config, TickerProvider provider, [this.devicePixelRatio = 1]) {
     _provider = provider;
@@ -158,6 +152,11 @@ class Context {
 
     ///创建渲染视图
     _createRenderView();
+
+    ///绑定事件
+    if (config.eventCall != null) {
+      _eventDispatcher.addCall(config.eventCall!);
+    }
   }
 
   void onStart() {
@@ -187,6 +186,8 @@ class Context {
   }
 
   void destroy() {
+    _eventDispatcher.dispose();
+    _actionDispatcher.dispose();
     _gestureDispatcher.dispose();
     _animationManager.dispose();
     _destroyView();
@@ -323,6 +324,7 @@ class Context {
     _toolTip = null;
   }
 
+  ///=======手势监听处理===============
   void addGesture(ChartGesture gesture) {
     _gestureDispatcher.addGesture(gesture);
   }
@@ -331,6 +333,7 @@ class Context {
     _gestureDispatcher.removeGesture(gesture);
   }
 
+  ///=========动画管理==================
   AnimationController boundedAnimation(AnimatorAttrs props, [bool useUpdate = false]) {
     return _animationManager.bounded(_provider, props, useUpdate: useUpdate);
   }
@@ -344,5 +347,33 @@ class Context {
       return;
     }
     _animationManager.remove(c, cancel);
+  }
+
+  ///========Action分发监听============
+
+  void addActionCall(Fun2<ChartAction, bool> call) {
+    _actionDispatcher.addCall(call);
+  }
+
+  void removeActionCall(Fun2<ChartAction, bool> call) {
+    _actionDispatcher.removeCall(call);
+  }
+
+  void dispatchAction(ChartAction action) {
+    _actionDispatcher.dispatch(action);
+  }
+
+  ///=======Event分发和监听
+
+  void addEventCall(VoidFun1<ChartEvent> call) {
+    _eventDispatcher.addCall(call);
+  }
+
+  void removeEventCall(VoidFun1<ChartEvent> call) {
+    _eventDispatcher.removeCall(call);
+  }
+
+  void dispatchEvent(ChartEvent event) {
+    _eventDispatcher.dispatch(event);
   }
 }

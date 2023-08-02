@@ -1,6 +1,6 @@
-import '../core/series.dart';
-import '../core/view.dart';
-import '../functions.dart';
+
+import '../../core/index.dart';
+import '../../functions.dart';
 import 'chart_gesture.dart';
 import 'gesture_event.dart';
 
