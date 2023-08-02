@@ -5,32 +5,24 @@ import 'package:e_chart/e_chart.dart';
 
 import 'candlestick_node.dart';
 
+//K线图
 class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickGroup>> {
   List<CandlestickGroupNode> nodeList = [];
 
   @override
   void onLayout(List<CandleStickGroup> data, LayoutType type) {
     List<CandlestickGroupNode> list = [];
-
     each(data, (group, p1) {
       var groupNode = CandlestickGroupNode(group, []);
       each(group.data, (p0, p1) {
         groupNode.nodeList.add(CandlestickNode(group, p0));
       });
     });
-
-    if (list.isEmpty) {
-      nodeList = list;
-      return;
-    }
-
     GridCoord coord = findGridCoord();
-
     each(list, (group, p1) {
       if (group.nodeList.isEmpty) {
         return;
       }
-
       int xIndex = group.data.xAxisIndex;
       int yIndex = group.data.yAxisIndex;
       Rect rect = coord.dataToRect(
@@ -59,8 +51,8 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickG
         _layoutSingleNode(coord, p0, boxWidth, xIndex, yIndex);
       });
     });
-
     nodeList = list;
+
   }
 
   void _layoutSingleNode(GridCoord coord, CandlestickNode node, num boxWidth, int xIndex, int yIndex) {
@@ -115,6 +107,7 @@ class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickG
     return curNode;
   }
 
+  @override
   void onHoverEnd() {
     if (oldNode != null) {
       oldNode?.removeStates([ViewState.hover, ViewState.focused]);

@@ -42,8 +42,8 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
     ChartTheme chartTheme = context.config.theme;
     HeadMapTheme theme = chartTheme.headMapTheme;
     each(helper.nodeList, (node, index) {
-      getAreaStyle(node, index)?.drawRect(canvas, mPaint, node.rect);
-      getBorderStyle(node, index)?.drawRect(canvas, mPaint, node.rect);
+      getAreaStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
+      getBorderStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
 
       if (node.data.label == null || node.data.label!.isEmpty) {
         return;
@@ -59,7 +59,7 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
         return;
       }
       Alignment align = series.labelAlignFun?.call(node) ?? Alignment.center;
-      style.draw(canvas, mPaint, label, TextDrawConfig.fromRect(node.rect, align));
+      style.draw(canvas, mPaint, label, TextDrawConfig.fromRect(node.attr, align));
     });
   }
 

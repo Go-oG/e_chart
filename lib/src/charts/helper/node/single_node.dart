@@ -1,9 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../base_data.dart';
 import '../model/wrap_data.dart';
-import 'column_node.dart';
 
 /// 不可再分的最小绘制单元
 /// 其用于极坐标系和二维坐标系下的节点位置表示
