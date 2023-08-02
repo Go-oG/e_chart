@@ -5,7 +5,7 @@ import '../../model/index.dart';
 abstract class ChartEvent {}
 
 class EventParams {
-  Offset offset;
+  Offset? offset;
   ///当前图形元素所属的组件名称，
   ComponentType componentType;
 
