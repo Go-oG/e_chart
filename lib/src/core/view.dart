@@ -530,7 +530,7 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
         onDragEnd();
       }
 
-      if (context.config.dragType == DragType.longPress) {
+      if (context.option.dragType == DragType.longPress) {
         _gesture.longPressStart = (e) {
           dragStart(toLocalOffset(e.globalPosition));
         };
@@ -553,7 +553,7 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
       }
     }
     if (enableScale) {
-      if (context.config.scaleType == ScaleType.doubleTap) {
+      if (context.option.scaleType == ScaleType.doubleTap) {
         _gesture.doubleClick = (e) {
           onScaleStart(toLocalOffset(e.globalPosition));
 

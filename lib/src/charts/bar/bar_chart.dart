@@ -3,8 +3,6 @@ import 'package:e_chart/src/charts/bar/helper/grid_helper.dart';
 import 'package:e_chart/src/charts/bar/helper/polar_helper.dart';
 import 'package:flutter/material.dart';
 
-import '../helper/base_stack_helper.dart';
-
 ///BarView
 class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
   late BaseStackLayoutHelper<BarItemData, BarGroupData, BarSeries> helper;
@@ -47,7 +45,8 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
     Offset offset = helper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, 0);
-    helper.showNodeMap.forEach((key, node) {
+    var nodeMap = helper.showNodeMap;
+    nodeMap.forEach((key, node) {
       var group = node.parentNode.parentNode;
       if (rectSet.contains(group)) {
         return;
@@ -67,6 +66,7 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
       }
       rectSet.add(group);
     });
+
     canvas.restore();
     return;
   }
@@ -109,7 +109,37 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
         ls?.drawRect(canvas, mPaint, node.rect, corner);
       }
     });
+
+    ///这里分开是为了避免遮挡
+    map.forEach((key, node) {
+      if (node.data == null) {
+        return;
+      }
+      if (!usePolar && node.rect.isEmpty) {
+        return;
+      }
+      if (usePolar && node.arc.isEmpty) {
+        return;
+      }
+      drawBarLabel(canvas, node);
+    });
     canvas.restore();
+  }
+
+  void drawBarLabel(Canvas canvas, SingleNode<BarItemData, BarGroupData> node) {
+    var data = node.data!;
+    var group = node.parent;
+    LabelStyle? style = series.getLabelStyle(context, data, group);
+    if (style == null || !style.show) {
+      return;
+    }
+    DynamicText? text = series.formatData(context, data, group);
+    if (text == null || text.isEmpty) {
+      return;
+    }
+    ChartAlign align = series.getLabelAlign(context, data, group);
+    TextDrawInfo drawInfo = align.convert(node.rect, style, series.direction);
+    style.draw(canvas, mPaint, text, drawInfo);
   }
 
   /// 绘制标记点

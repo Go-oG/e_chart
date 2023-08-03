@@ -8,7 +8,7 @@ import 'render/base_render.dart';
 import 'render/default_render.dart';
 
 class Chart extends StatefulWidget {
-  final ChartConfig config;
+  final ChartOption config;
 
   const Chart(this.config, {Key? key}) : super(key: key);
 
@@ -34,7 +34,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
       _render = DefaultRender(widget.config, this);
       _render?.onStart();
     } else {
-      var oldConfig = _render!.context.config;
+      var oldConfig = _render!.context.option;
       if (oldConfig == widget.config) {
         _render!.onStop();
         _render!.context.tickerProvider = this;
@@ -63,7 +63,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    ChartConfig config = widget.config;
+    ChartOption config = widget.config;
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
@@ -71,7 +71,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildPainter(ChartConfig config) {
+  Widget _buildPainter(ChartOption config) {
     GestureDispatcher dispatcher = render.context.gestureDispatcher;
 
     void Function(TapEvent)? lps;

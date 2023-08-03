@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///表格的通用配置
-class ChartConfig {
+class ChartOption {
   ChartTitle? title;
   Legend? legend;
   List<Grid> gridList;
@@ -19,7 +19,7 @@ class ChartConfig {
 
   VoidFun1<ChartEvent>? eventCall;
 
-  ChartConfig({
+  ChartOption({
     required this.series,
     this.title,
     this.legend,

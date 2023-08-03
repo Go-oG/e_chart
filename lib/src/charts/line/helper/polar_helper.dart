@@ -254,7 +254,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     if (series.areaStyleFun != null) {
       return series.areaStyleFun?.call(group, groupIndex);
     }
-    var chartTheme = context.config.theme;
+    var chartTheme = context.option.theme;
     var theme = chartTheme.lineTheme;
     if (theme.fill) {
       Color fillColor = chartTheme.getColor(groupIndex).withOpacity(theme.opacity);
@@ -268,7 +268,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     if (series.lineStyleFun != null) {
       return series.lineStyleFun?.call(group, groupIndex);
     }
-    var chartTheme = context.config.theme;
+    var chartTheme = context.option.theme;
     var theme = chartTheme.lineTheme;
     return theme.getLineStyle(chartTheme, groupIndex).convert(status);
   }

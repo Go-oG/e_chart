@@ -92,7 +92,7 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
     if (series.areaStyleFun != null) {
       return series.areaStyleFun?.call(node.data, group.data);
     }
-    var chartTheme = context.config.theme;
+    var chartTheme = context.option.theme;
     Color fillColor = chartTheme.getColor(index);
     return AreaStyle(color: fillColor).convert(node.status);
   }
@@ -101,7 +101,7 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
     if (series.borderStyleFun != null) {
       return series.borderStyleFun!.call(node.data, group.data);
     }
-    var theme = context.config.theme.boxplotTheme;
-    return theme.getBorderStyle(context.config.theme, index).convert(node.status);
+    var theme = context.option.theme.boxplotTheme;
+    return theme.getBorderStyle(context.option.theme, index).convert(node.status);
   }
 }

@@ -69,26 +69,9 @@ class CandleStickView extends CoordChildView<CandleStickSeries> with GridChild {
   }
 
   void drawNode(Canvas canvas, CandlestickNode node) {
-    var theme = context.config.theme.kLineTheme;
-    AreaStyle? areaStyle;
-    var data = node.data;
-    if (series.styleFun != null) {
-      areaStyle = series.styleFun?.call(node.data);
-    } else {
-      if (theme.fill) {
-        Color color = data.isUp ? theme.upColor : theme.downColor;
-        areaStyle = AreaStyle(color: color).convert(node.status);
-      }
-    }
+    AreaStyle? areaStyle=series.getAreaStyle(context, node.data, node.parent, node.groupIndex!);
     areaStyle?.drawPath(canvas, mPaint, node.areaPath);
-
-    LineStyle? style;
-    if (series.lineStyleFun != null) {
-      style = series.lineStyleFun?.call(node.data);
-    } else {
-      Color color = data.isUp ? theme.upBorderColor : theme.downBorderColor;
-      style = LineStyle(color: color, width: theme.borderWidth).convert(node.status);
-    }
+    LineStyle? style=series.getBorderStyle(context, node.data, node.parent, node.groupIndex!);
     style?.drawPath(canvas, mPaint, node.path);
   }
 

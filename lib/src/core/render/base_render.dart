@@ -19,7 +19,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
   Size get size => _boundRect.size;
 
   BaseRender(
-    ChartConfig config,
+    ChartOption config,
     TickerProvider tickerProvider, [
     double devicePixelRatio = 1,
   ]) {

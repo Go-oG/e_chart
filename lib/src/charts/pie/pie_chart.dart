@@ -121,7 +121,7 @@ class PieView extends SeriesView<PieSeries> {
     if (series.areaStyleFun != null) {
       return series.areaStyleFun?.call(node.data);
     }
-    var chartTheme = context.config.theme;
+    var chartTheme = context.option.theme;
     Color fillColor = chartTheme.getColor(index);
     return AreaStyle(color: fillColor);
   }
@@ -130,7 +130,7 @@ class PieView extends SeriesView<PieSeries> {
     if (series.borderFun != null) {
       return series.borderFun?.call(node.data);
     }
-    var theme = context.config.theme.pieTheme;
+    var theme = context.option.theme.pieTheme;
     return theme.getBorderStyle();
   }
 }

@@ -103,7 +103,7 @@ class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, Ba
       }
       return series.areaStyleFun?.call(data, group);
     }
-    var chartTheme = context.config.theme;
+    var chartTheme = context.option.theme;
     return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
   }
 
@@ -115,7 +115,7 @@ class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, Ba
       }
       return series.borderStyleFun?.call(data, group);
     }
-    var theme = context.config.theme.barTheme;
+    var theme = context.option.theme.barTheme;
     return theme.getBorderStyle()?.convert(status);
   }
 

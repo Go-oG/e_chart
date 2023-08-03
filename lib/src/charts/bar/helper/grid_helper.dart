@@ -6,7 +6,7 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int colGapCount = groupInnerCount - 1;
-    if (colGapCount <1) {
+    if (colGapCount < 1) {
       colGapCount = 0;
     }
     final bool vertical = series.direction == Direction.vertical;
@@ -93,26 +93,18 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
 
   @override
   AreaStyle? buildAreaStyle(BarItemData? data, BarGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.areaStyleFun != null) {
-      if (data == null) {
-        return null;
-      }
-      return series.areaStyleFun?.call(data, group);
+    if (data == null) {
+      return null;
     }
-    var chartTheme = context.config.theme;
-    return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
+    return series.getAreaStyle(context, data, group, groupIndex);
   }
 
   @override
   LineStyle? buildLineStyle(BarItemData? data, BarGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.borderStyleFun != null) {
-      if (data == null) {
-        return null;
-      }
-      return series.borderStyleFun?.call(data, group);
+    if (data == null) {
+      return null;
     }
-    var theme = context.config.theme.barTheme;
-    return theme.getBorderStyle()?.convert(status);
+    return series.getBorderStyle(context, data, group, groupIndex);
   }
 
   @override
@@ -131,5 +123,4 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
 
   @override
   SeriesType get seriesType => SeriesType.bar;
-
 }

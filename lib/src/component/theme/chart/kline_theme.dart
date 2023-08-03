@@ -11,4 +11,5 @@ class KLineTheme {
   Color downBorderColor = const Color(0xFF47b262);
   num borderWidth = 1;
   bool fill = true;
+
 }

@@ -50,6 +50,10 @@ class BaseItemData {
   num down = 0;
   DynamicData x;
 
+  num stackUp=0;
+  num stackDown=0;
+
+
   BaseItemData(this.x, this.up, this.down, {String? id}) {
     if (id != null && id.isNotEmpty) {
       this.id = id;
@@ -61,6 +65,9 @@ class BaseItemData {
       up = down;
       down = d;
     }
+    stackUp=up;
+    stackDown=down;
+
   }
 
   BaseItemData.number(this.x, this.up, {String? id}) {
@@ -75,6 +82,8 @@ class BaseItemData {
     } else {
       this.id = randomId();
     }
+    stackUp=up;
+    stackDown=down;
   }
 
   @override
