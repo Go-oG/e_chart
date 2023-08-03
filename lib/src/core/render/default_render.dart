@@ -154,18 +154,6 @@ class DefaultRender extends BaseRender {
       v.draw(canvas);
       canvas.restore();
     }
-    renderToolTip(canvas);
-  }
-
-  void renderToolTip(Canvas canvas) {
-    if (context.toolTip == null) {
-      return;
-    }
-    ToolTipView tipView = context.toolTip!;
-    Offset p = tipView.builder.onMenuPosition();
-    tipView.measure(size.width, size.height);
-    tipView.layout(p.dx, p.dy, p.dx + tipView.width, p.dy + tipView.height);
-    tipView.draw(canvas);
   }
 
 }

@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
+abstract class ChartView with ViewStateProvider {
   Context? _context;
 
   Context get context => _context!;
@@ -285,18 +285,6 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
 
   void clearDirty() {
     _dirty = false;
-  }
-
-  ///======================处理ToolTip========================
-
-  @override
-  ContextMenu? onCreatedContextMenu() {
-    return null;
-  }
-
-  @override
-  Offset onMenuPosition() {
-    return Offset.zero;
   }
 
   ///=============处理Series和其绑定时相关的操作=============

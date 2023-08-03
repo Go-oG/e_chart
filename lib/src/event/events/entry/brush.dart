@@ -5,14 +5,14 @@ class BrushEvent extends ChartEvent {
   final String brushId;
   final int? xAxisIndex;
   final int? yAxisIndex;
-  final List<BrushArea> brushData;
+  final List<BrushArea> data;
 
   BrushEvent(
     this.coord,
     this.brushId, {
     this.xAxisIndex,
     this.yAxisIndex,
-    this.brushData = const [],
+    this.data = const [],
   });
 }
 

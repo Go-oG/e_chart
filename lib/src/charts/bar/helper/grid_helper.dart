@@ -96,7 +96,7 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
     if (data == null) {
       return null;
     }
-    return series.getAreaStyle(context, data, group, groupIndex);
+    return series.getAreaStyle(context, data, group, groupIndex, status);
   }
 
   @override
@@ -104,7 +104,7 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
     if (data == null) {
       return null;
     }
-    return series.getBorderStyle(context, data, group, groupIndex);
+    return series.getBorderStyle(context, data, group, groupIndex, status);
   }
 
   @override
@@ -123,4 +123,5 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
 
   @override
   SeriesType get seriesType => SeriesType.bar;
+
 }

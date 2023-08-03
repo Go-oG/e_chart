@@ -4,6 +4,7 @@ import 'package:flutter/painting.dart';
 enum ViewState {
   enabled,
   disabled,
+  selected,
   hover,
   focused,
   activated,
@@ -79,14 +80,13 @@ class ColorResolver extends ViewStateResolver<Color> {
   @override
   Color? resolve(Set<ViewState>? states) {
     states ??= {};
+    if (states.isEmpty) {
+      return overlay;
+    }
+
     if (states.contains(ViewState.disabled)) {
       HSVColor hsv = HSVColor.fromColor(overlay);
-      double v = hsv.value;
-      v -= 0.35;
-      if (v < 0) {
-        v = 0;
-      }
-      return hsv.withValue(v).toColor();
+      return hsv.withSaturation(0).withValue(0.5).toColor();
     }
 
     if (states.contains(ViewState.hover)) {

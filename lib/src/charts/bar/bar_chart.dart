@@ -90,6 +90,7 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
       var data = node.data!;
       var group = node.parent;
       var as = helper.buildAreaStyle(data, group, node.groupIndex, node.status);
+
       var ls = helper.buildLineStyle(data, group, node.groupIndex, node.status);
       node.areaStyle = as;
       node.lineStyle = ls;

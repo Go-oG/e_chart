@@ -125,4 +125,8 @@ abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroup
   Offset getTranslation() {
     return findPolarCoord().getTranslation();
   }
+
+  @override
+  CoordSystem get coordSystem=>CoordSystem.polar;
+
 }

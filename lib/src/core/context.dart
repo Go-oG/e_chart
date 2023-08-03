@@ -59,10 +59,6 @@ class Context {
 
   LegendViewGroup? get legend => _legend;
 
-  ///整个图表只有一个
-  ToolTipView? _toolTip;
-
-  ToolTipView? get toolTip => _toolTip;
 
   /// 创建Chart组件
   /// 组件是除了渲染视图之外的全部控件
@@ -151,7 +147,6 @@ class Context {
   void onStart() {
     _legend?.onStart();
     _title?.onStart();
-    _toolTip?.onStart();
     for (var coord in coordList) {
       try {
         coord.onStart();
@@ -164,7 +159,6 @@ class Context {
   void onStop() {
     _legend?.onStop();
     _title?.onStop();
-    _toolTip?.onStop();
     for (var coord in coordList) {
       try {
         coord.onStop();
@@ -195,8 +189,6 @@ class Context {
     _legend = null;
     _title?.destroy();
     _title = null;
-    _toolTip?.destroy();
-    _toolTip = null;
   }
 
   CoordLayout? _findCoord(ChartView view, ChartSeries series) {
@@ -298,18 +290,6 @@ class Context {
     return _coordMap[calendar]! as CalendarCoord;
   }
 
-  void setToolTip(ToolTipBuilder builder) {
-    _toolTip?.onStop();
-    _toolTip?.destroy();
-    _toolTip = ToolTipView(builder);
-    _toolTip?.create(this, root);
-  }
-
-  void unRegisterToolTip() {
-    _toolTip?.onStop();
-    _toolTip?.destroy();
-    _toolTip = null;
-  }
 
   ///=======手势监听处理===============
   void addGesture(ChartGesture gesture) {

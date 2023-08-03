@@ -5,14 +5,6 @@ import 'package:e_chart/e_chart.dart';
 abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Command> {
   ChartLayout({bool equalsObject = false}) : super(Command.none, equalsObject);
 
-  void notifyLayoutUpdate() {
-    value = Command.layoutUpdate;
-  }
-
-  void notifyLayoutEnd() {
-    value = Command.layoutEnd;
-  }
-
   late Context context;
   late S series;
 
@@ -54,43 +46,20 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
 
   void onHoverEnd() {}
 
-  ///=======Brush事件通知=======
-  void onBrushEvent(BrushEvent event){}
+  ///=======事件通知=======
+  ///Brush
+  void onBrushEvent(BrushEvent event) {}
+  void onBrushEndEvent(BrushEndEvent event) {}
+  void onBrushClearEvent(BrushClearEvent event) {}
 
-  void onBrushEndEvent(BrushEndEvent event){}
+  ///Legend
+  void onLegendSelectedEvent(LegendSelectedEvent event){}
+  void onLegendUnSelectedEvent(LegendUnSelectedEvent event){}
+  void onLegendSelectChangeEvent(LegendSelectChangeEvent event){}
+  void onLegendScrollEvent(LegendScrollEvent event){}
 
-  void onBrushClearEvent(BrushClearEvent event){}
-
-
-
-
-
-
-  GridCoord findGridCoord() {
-    return context.findGridCoord(series.gridIndex);
-  }
-
-  GridAxis findGridAxis(int index, bool isXAxis) {
-    return findGridCoord().getAxis(index, isXAxis);
-  }
-
-  PolarCoord findPolarCoord() {
-    return context.findPolarCoord(series.polarIndex);
-  }
-
-  CalendarCoord findCalendarCoord() {
-    return context.findCalendarCoord(series.calendarIndex);
-  }
-
-  ParallelCoord findParallelCoord() {
-    return context.findParallelCoord(series.parallelIndex);
-  }
-
-  RadarCoord findRadarCoord() {
-    return context.findRadarCoord(series.radarIndex);
-  }
-
-  SeriesType get seriesType;
+  ///dataZoom
+  void onDataZoom(DataZoomEvent event){}
 
   void sendClickEvent(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     context.dispatchEvent(ClickEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
@@ -121,6 +90,41 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
       seriesType: seriesType,
       seriesIndex: series.seriesIndex,
     );
+  }
+
+  //========其它函数=======================
+  GridCoord findGridCoord() {
+    return context.findGridCoord(series.gridIndex);
+  }
+
+  GridAxis findGridAxis(int index, bool isXAxis) {
+    return findGridCoord().getAxis(index, isXAxis);
+  }
+
+  PolarCoord findPolarCoord() {
+    return context.findPolarCoord(series.polarIndex);
+  }
+
+  CalendarCoord findCalendarCoord() {
+    return context.findCalendarCoord(series.calendarIndex);
+  }
+
+  ParallelCoord findParallelCoord() {
+    return context.findParallelCoord(series.parallelIndex);
+  }
+
+  RadarCoord findRadarCoord() {
+    return context.findRadarCoord(series.radarIndex);
+  }
+
+  SeriesType get seriesType;
+
+  void notifyLayoutUpdate() {
+    value = Command.layoutUpdate;
+  }
+
+  void notifyLayoutEnd() {
+    value = Command.layoutEnd;
   }
 }
 

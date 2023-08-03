@@ -97,7 +97,7 @@ class BrushView extends ChartView {
     if (redraw) {
       invalidate();
     }
-    BrushEvent event = BrushEvent(coord.props.coordSystem, brush.id, brushData: brushList);
+    BrushEvent event = BrushEvent(coord.props.coordSystem, brush.id, data: brushList);
     context.dispatchEvent(event);
   }
 

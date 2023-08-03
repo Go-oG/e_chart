@@ -23,7 +23,6 @@ class HoverOutEvent extends ChartEvent {
   HoverOutEvent(this.event);
 }
 
-
 class HoverStartEvent extends ChartEvent {
   HoverStartEvent();
 }
