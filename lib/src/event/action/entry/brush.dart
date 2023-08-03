@@ -14,22 +14,24 @@ class BrushEndAction extends ChartAction {
   BrushEndAction(this.actionList);
 }
 
-class BrushClearAction extends ChartAction {}
+class BrushClearAction extends ChartAction {
+  final String brushId;
+  BrushClearAction(this.brushId);
+}
 
 class BrushActionData {
-  final CoordSystem coord;
+  final String brushId;
   final int? xAxisIndex;
   final int? yAxisIndex;
   final BrushType brushType;
-  final List<num> range;
-  final List<Offset> coordRange;
+  ///存储选框的范围点
+  final List<Offset> range;
 
   BrushActionData(
-    this.coord, {
+    this.brushId, {
     this.xAxisIndex,
     this.yAxisIndex,
     this.brushType = BrushType.rect,
     this.range = const [],
-    this.coordRange = const [],
   });
 }

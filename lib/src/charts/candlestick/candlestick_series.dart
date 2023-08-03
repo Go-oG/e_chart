@@ -28,10 +28,6 @@ class CandleStickSeries extends ChartSeries {
     super.tooltip,
     super.backgroundColor,
     super.id,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale,
     super.clip,
     super.z,
   }) : super(

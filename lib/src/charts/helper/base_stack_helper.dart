@@ -5,7 +5,6 @@ import 'package:flutter/animation.dart';
 
 
 ///用于处理堆叠数据的布局帮助者
-
 abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends ChartLayout<S, List<P>> {
   ///该map存储当前给定数据的映射

@@ -1,3 +1,5 @@
+import '../../component/brush/brush.dart';
+import '../../component/brush/brush_view.dart';
 import '../../model/enums/coordinate.dart';
 import '../coord_impl.dart';
 import '../coord.dart';
@@ -5,6 +7,11 @@ import '../coord.dart';
 ///用于包装child
 class SingleCoordImpl extends CoordLayout {
   SingleCoordImpl() : super(SingleConfig());
+
+  @override
+  BrushView? onCreateBrushView(Brush brush) {
+    return null;
+  }
 }
 
 class SingleConfig extends Coord {

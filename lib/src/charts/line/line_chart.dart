@@ -212,13 +212,12 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
   }
 
   @override
-  void onGridScrollChange(Offset scroll) {
+  void onContentScrollUpdate(Offset scroll) {
     layoutHelper.onGridScrollChange(scroll);
   }
 
   @override
-  void onGridScrollEnd(Offset scroll) {
-    super.onGridScrollEnd(scroll);
+  void onContentScrollEnd(Offset scroll) {
     layoutHelper.onGridScrollEnd(scroll);
   }
 

@@ -1,25 +1,32 @@
 import 'package:e_chart/e_chart.dart';
 
-import '../chart_event.dart';
-
 class BrushEvent extends ChartEvent {
-  final List<BrushActionData> action;
+  final CoordSystem coord;
+  final String brushId;
+  final int? xAxisIndex;
+  final int? yAxisIndex;
+  final List<BrushArea> brushData;
 
-  BrushEvent(this.action);
+  BrushEvent(
+    this.coord,
+    this.brushId, {
+    this.xAxisIndex,
+    this.yAxisIndex,
+    this.brushData = const [],
+  });
 }
 
 class BrushEndEvent extends ChartEvent {
-  final List<BrushActionData> action;
+  final CoordSystem coord;
+  final String brushId;
+  final List<BrushArea> data;
 
-  BrushEndEvent(this.action);
+  BrushEndEvent(this.coord, this.brushId, this.data);
 }
 
-class BrushSelectedEvent extends ChartEvent {
-  final List<BrushSelectData> data;
+class BrushClearEvent extends ChartEvent {
+  final String brushId;
+  final CoordSystem coord;
 
-  BrushSelectedEvent(this.data);
-}
-
-class BrushSelectData {
-  //TODO
+  BrushClearEvent(this.brushId, this.coord);
 }

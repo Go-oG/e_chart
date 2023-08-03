@@ -54,6 +54,18 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
 
   void onHoverEnd() {}
 
+  ///=======Brush事件通知=======
+  void onBrushEvent(BrushEvent event){}
+
+  void onBrushEndEvent(BrushEndEvent event){}
+
+  void onBrushClearEvent(BrushClearEvent event){}
+
+
+
+
+
+
   GridCoord findGridCoord() {
     return context.findGridCoord(series.gridIndex);
   }

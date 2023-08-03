@@ -64,11 +64,6 @@ class Context {
 
   ToolTipView? get toolTip => _toolTip;
 
-  ///数据框选
-  BrushView? _brush;
-
-  BrushView? get brush => _brush;
-
   /// 创建Chart组件
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
@@ -84,12 +79,6 @@ class Context {
       _title = TitleView(option.title!);
       _title?.create(this, root);
       //TODO 这里不知道是否需要回调[bindSeriesCommand]
-    }
-
-    ///Brush
-    if (option.brush != null) {
-      _brush = BrushView(option.brush!);
-      _brush?.create(this, root);
     }
 
     ///Coord
@@ -208,8 +197,6 @@ class Context {
     _title = null;
     _toolTip?.destroy();
     _toolTip = null;
-    _brush?.destroy();
-    _brush = null;
   }
 
   CoordLayout? _findCoord(ChartView view, ChartSeries series) {

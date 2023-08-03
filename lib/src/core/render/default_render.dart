@@ -15,10 +15,6 @@ class DefaultRender extends BaseRender {
   void onMeasure(double parentWidth, double parentHeight) {
     double w = parentWidth;
     double h = parentHeight;
-    var brush = context.brush;
-    if (brush != null) {
-      brush.measure(w, h);
-    }
     if (context.title != null) {
       TitleView titleView = context.title!;
       titleView.measure(w, h);
@@ -38,11 +34,6 @@ class DefaultRender extends BaseRender {
 
   @override
   void onLayout(double width, double height) {
-    var brush = context.brush;
-    if (brush != null) {
-      brush.measure(width, height);
-    }
-
     Rect rect = layoutTitleAndLegend(width, height);
     for (var v in context.coordList) {
       if (v is CircleCoordLayout) {
@@ -177,8 +168,4 @@ class DefaultRender extends BaseRender {
     tipView.draw(canvas);
   }
 
-  void renderBrush(Canvas canvas) {
-    var brush = context.brush;
-    brush?.draw(canvas);
-  }
 }

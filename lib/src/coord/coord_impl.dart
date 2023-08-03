@@ -1,7 +1,8 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 
+///负责处理和布局所有的子View
+///包括了Brush相关的
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
 
@@ -13,9 +14,22 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   ///存储内容的边界
   Rect contentBox = Rect.zero;
 
-  CoordLayout(this.props);
+  BrushView? _brushView;
+
+  CoordLayout(this.props) {
+    if (props.brush != null) {
+      _brushView = onCreateBrushView(props.brush!);
+      if (_brushView != null) {
+        addView(_brushView!);
+      }
+    }
+  }
 
   final RectGesture _gesture = RectGesture();
+
+  BrushView? onCreateBrushView(Brush brush) {
+    return BrushView(this, props.brush!);
+  }
 
   @override
   void onCreate() {
@@ -26,6 +40,8 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   @override
   void onStart() {
     super.onStart();
+    context.addEventCall(dispatchEvent);
+    context.addActionCall(dispatchAction);
     registerCommandHandler();
     props.addListener(_handleCommand);
   }
@@ -36,6 +52,8 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   @override
   void onStop() {
+    context.removeEventCall(dispatchEvent);
+    context.removeActionCall(dispatchAction);
     props.removeListener(_handleCommand);
     unregisterCommandHandler();
     super.onStop();
@@ -47,10 +65,34 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     layout(left, top, right, bottom);
   }
 
+  @mustCallSuper
   @override
   void onLayoutEnd() {
     super.onLayoutEnd();
     _gesture.rect = globalBoxBound;
+  }
+
+  @override
+  void dispatchDraw(Canvas canvas) {
+    List<ChartView> vl = [];
+    for (var child in children) {
+      int count = canvas.getSaveCount();
+      if (child is BrushView) {
+        vl.add(child);
+      } else {
+        drawChild(child, canvas);
+      }
+      if (canvas.getSaveCount() != count) {
+        throw FlutterError('you should call canvas.restore when after call canvas.save');
+      }
+    }
+    for (var child in vl) {
+      int count = canvas.getSaveCount();
+      drawChild(child, canvas);
+      if (canvas.getSaveCount() != count) {
+        throw FlutterError('you should call canvas.restore when after call canvas.save');
+      }
+    }
   }
 
   @override
@@ -63,6 +105,30 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     mPaint.color = color;
     mPaint.style = PaintingStyle.fill;
     canvas.drawRect(selfBoxBound, mPaint);
+  }
+
+  @override
+  void onBrushEvent(BrushEvent event) {
+    if (_brushView == null || event.brushId != _brushView?.brush.id || event.coord != props.coordSystem) {
+      return;
+    }
+    super.onBrushEvent(event);
+  }
+
+  @override
+  void onBrushEndEvent(BrushEndEvent event) {
+    if (_brushView == null || event.brushId != _brushView?.brush.id || event.coord != props.coordSystem) {
+      return;
+    }
+    super.onBrushEndEvent(event);
+  }
+
+  @override
+  void onBrushClearEvent(BrushClearEvent event) {
+    if (_brushView == null || event.brushId != _brushView?.brush.id || event.coord != props.coordSystem) {
+      return;
+    }
+    super.onBrushClearEvent(event);
   }
 
   Offset _lastHover = Offset.zero;
@@ -193,5 +259,16 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   ///获取最大能够平移的值
   Offset getMaxTranslation() {
     return Offset.zero;
+  }
+
+  ///返回不包含BrushView的子视图列表
+  List<ChartView> getChildNotBrush() {
+    List<ChartView> vl = [];
+    for (var v in children) {
+      if (v is! BrushView) {
+        vl.add(v);
+      }
+    }
+    return vl;
   }
 }

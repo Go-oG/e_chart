@@ -21,12 +21,6 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   AnimatorAttrs? animation; //动画
   ToolTip? tooltip;
 
-  ///手势相关
-  bool? enableClick;
-  bool? enableHover;
-  bool? enableDrag;
-  bool? enableScale;
-
   bool clip; // 是否裁剪
   int z; //z轴索引
 
@@ -39,10 +33,6 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       this.animation = const AnimatorAttrs(),
       this.coordSystem,
       this.tooltip,
-      this.enableClick,
-      this.enableHover,
-      this.enableDrag,
-      this.enableScale = false,
       this.z = 0,
       this.clip = true,
       this.backgroundColor,
@@ -99,10 +89,6 @@ abstract class RectSeries extends ChartSeries {
     super.animation,
     super.backgroundColor,
     super.tooltip,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale,
     super.clip,
     super.z,
     super.id,
