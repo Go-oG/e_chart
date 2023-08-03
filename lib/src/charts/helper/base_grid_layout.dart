@@ -229,4 +229,9 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   Offset getTranslation() {
     return findGridCoord().getTranslation();
   }
+
+  @override
+  CoordSystem get coordSystem=>CoordSystem.grid;
+
+
 }

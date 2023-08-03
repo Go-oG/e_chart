@@ -1,8 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/animation.dart';
-
 
 ///用于处理堆叠数据的布局帮助者
 abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
@@ -295,6 +293,86 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     }
     onHandleHoverEnd(oldHoverNode, null);
   }
+
+  @override
+  void onBrushEvent(BrushEvent event) {
+    nodeMap.forEach((key, node) {
+      bool has = false;
+      for (var area in event.data) {
+        if (coordSystem == CoordSystem.grid && rectInPath(area.path, node.rect)) {
+          has = true;
+          break;
+        }
+        if (coordSystem == CoordSystem.polar && arcInPath(area.path, node.arc)) {
+          has = true;
+          break;
+        }
+      }
+      if (has) {
+        node.addState(ViewState.selected);
+        node.removeState(ViewState.disabled);
+      } else {
+        node.removeState(ViewState.selected);
+        node.addState(ViewState.disabled);
+      }
+    });
+    notifyLayoutUpdate();
+  }
+
+  @override
+  void onBrushEndEvent(BrushEndEvent event) {
+    nodeMap.forEach((key, node) {
+      bool has = false;
+      for (var area in event.data) {
+        if (coordSystem == CoordSystem.grid && rectInPath(area.path, node.rect)) {
+          has = true;
+          break;
+        }
+        if (coordSystem == CoordSystem.polar && arcInPath(area.path, node.arc)) {
+          has = true;
+          break;
+        }
+      }
+      if (has) {
+        node.addState(ViewState.selected);
+      } else {
+        node.removeState(ViewState.selected);
+      }
+    });
+    notifyLayoutUpdate();
+  }
+
+  @override
+  void onBrushClearEvent(BrushClearEvent event) {
+    nodeMap.forEach((key, node) {
+      node.removeState(ViewState.disabled);
+      node.removeState(ViewState.selected);
+    });
+    notifyLayoutUpdate();
+  }
+
+  bool arcInPath(Path path, Arc arc) {
+    Rect rect=path.getBounds();
+    return rectInPath(arc.toPath(true), rect);
+  }
+
+  bool rectInPath(Path path, Rect rect) {
+    if (path.contains(rect.topLeft)) {
+      return true;
+    }
+    if (path.contains(rect.topRight)) {
+      return true;
+    }
+    if (path.contains(rect.bottomLeft)) {
+      return true;
+    }
+    if (path.contains(rect.bottomRight)) {
+      return true;
+    }
+    return false;
+  }
+
+  CoordSystem get coordSystem;
 
   SingleNode<T, P>? findNodeByData(T? data) {
     return nodeMap[data];

@@ -20,7 +20,7 @@ class Brush {
   int throttleDelay;
 
   LineStyle? borderStyle;
-  AreaStyle areaStyle;
+  AreaStyle areaStyle = AreaStyle(color: Colors.blue.withOpacity(0.3));
 
   Brush({
     String? id,
@@ -32,12 +32,15 @@ class Brush {
     this.throttleDebounce = false,
     this.throttleDelay = 0,
     this.removeOnClick = true,
-    this.areaStyle = const AreaStyle(color: Colors.blue),
-  })  {
+    AreaStyle? areaStyle,
+  }) {
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {
       this.id = id;
+    }
+    if (areaStyle != null) {
+      this.areaStyle = areaStyle;
     }
   }
 }
