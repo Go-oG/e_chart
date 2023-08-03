@@ -29,6 +29,9 @@ class ChartTheme {
   num borderWidth = 0;
   Color legendTextColor = const Color(0xFF333333);
 
+  Color labelTextColor = const Color(0xFFFFFFFF);
+  double labelTextSize=13;
+
   ///通用组件主题
   TooltipTheme tooltipTheme = TooltipTheme();
   MarkPointTheme markPointTheme = MarkPointTheme();
@@ -52,7 +55,6 @@ class ChartTheme {
   ParallelTheme parallelTheme = ParallelTheme();
   SankeyTheme sankeyTheme = SankeyTheme();
   FunnelTheme funnelTheme = FunnelTheme();
-  CandlestickTheme candlestickTheme = CandlestickTheme();
   HeadMapTheme headMapTheme = HeadMapTheme();
   GraphTheme graphTheme = GraphTheme();
 

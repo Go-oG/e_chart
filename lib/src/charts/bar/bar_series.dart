@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -14,29 +12,27 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
 
   // Column组里面的间隔
   num innerGap;
-
   Color groupHoverColor = const Color(0xFFE3F2FD);
 
-  LinkageStyle linkageStyle;
+  LabelStyle? labelStyle;
+
+  ChartAlign? labelAlign;
 
   Fun3<BarItemData, BarGroupData, AreaStyle?>? areaStyleFun;
   Fun3<BarItemData, BarGroupData, LineStyle?>? borderStyleFun;
   Fun3<BarItemData, BarGroupData, Corner>? cornerFun;
 
-  ///绘制对齐
-  Fun3<BarItemData, BarGroupData, Align2>? alignFun;
-
   /// 背景样式
   Fun3<BarItemData?, BarGroupData, AreaStyle?>? groupStyleFun;
 
   /// 标签转换
-  Fun3<BarItemData, BarGroupData, String>? labelFun;
+  Fun3<BarItemData, BarGroupData, DynamicText?>? labelFormat;
 
   /// 标签样式
-  Fun3<BarItemData, BarGroupData, LabelStyle>? labelStyleFun;
+  Fun3<BarItemData, BarGroupData, LabelStyle?>? labelStyleFun;
 
   /// 标签对齐
-  Fun3<BarItemData, BarGroupData, Position2>? labelAlignFun;
+  Fun3<BarItemData, BarGroupData, ChartAlign>? labelAlignFun;
 
   /// 标记点、线相关的
   Fun2<BarGroupData, MarkPoint>? markPointFun;
@@ -49,11 +45,9 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
     this.columnGap = const SNumber.number(4),
     this.groupGap = const SNumber.number(4),
     this.innerGap = 0,
-    this.linkageStyle = LinkageStyle.group,
     this.areaStyleFun,
     this.borderStyleFun,
-    this.alignFun,
-    this.labelFun,
+    this.labelFormat,
     this.labelStyleFun,
     this.labelAlignFun,
     this.groupStyleFun,
@@ -78,11 +72,53 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
     super.z,
     super.tooltip,
   });
-}
 
-/// 标识一个Group的手势联动策略
-enum LinkageStyle {
-  none,
-  single, // 只有自身变化
-  group, // 联动Group
+  LabelStyle? getLabelStyle(Context context, BarItemData data, BarGroupData group) {
+    if (labelStyleFun != null) {
+      return labelStyleFun?.call(data, group);
+    }
+    if (labelStyle != null) {
+      return labelStyle;
+    }
+    var theme = context.option.theme;
+    return LabelStyle(textStyle: TextStyle(color: theme.labelTextColor, fontSize: theme.labelTextSize));
+  }
+
+  ChartAlign getLabelAlign(Context context, BarItemData data, BarGroupData group) {
+    if (labelAlignFun != null) {
+      return labelAlignFun!.call(data, group);
+    }
+    if (labelAlign != null) {
+      return labelAlign!;
+    }
+    if (direction == Direction.vertical) {
+      return const ChartAlign(align: Alignment.topCenter, inside: false);
+    } else {
+      return const ChartAlign(align: Alignment.centerRight, inside: false);
+    }
+  }
+
+  DynamicText? formatData(Context context,BarItemData data, BarGroupData group){
+    if(labelFormat!=null){
+      return labelFormat?.call(data,group);
+    }
+    return formatNumber(data.stackUp).toText();
+  }
+
+  AreaStyle? getAreaStyle(Context context, BarItemData data, BarGroupData group, int groupIndex, [Set<ViewState>? status]) {
+    if (areaStyleFun != null) {
+      return areaStyleFun?.call(data, group);
+    }
+    var chartTheme = context.option.theme;
+    return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
+  }
+
+  LineStyle? getBorderStyle(Context context,BarItemData data, BarGroupData group, int groupIndex, [Set<ViewState>? status]) {
+    if (borderStyleFun != null) {
+      return borderStyleFun!.call(data, group);
+    }
+    var theme = context.option.theme.barTheme;
+    return theme.getBorderStyle()?.convert(status);
+  }
+
 }

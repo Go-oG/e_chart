@@ -152,7 +152,7 @@ class LabelStyle {
   }
 
   //TODO 待实现
-  LabelStyle convert(Set<ViewState> set){
+  LabelStyle convert(Set<ViewState>? set){
     return this;
   }
 

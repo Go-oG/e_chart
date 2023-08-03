@@ -40,22 +40,14 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
 
   @override
   void onDraw(Canvas canvas) {
-    ChartTheme chartTheme = context.config.theme;
-    HeadMapTheme theme = chartTheme.headMapTheme;
     each(helper.nodeList, (node, index) {
       getAreaStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
       getBorderStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
-
       if (node.data.label == null || node.data.label!.isEmpty) {
         return;
       }
       var label = node.data.label!;
-      LabelStyle? style;
-      if (series.labelFun != null) {
-        style = series.labelFun?.call(node.d);
-      } else {
-        style = theme.labelStyle.convert(node.status);
-      }
+      LabelStyle? style = series.getLabelStyle(context, node.data, node.status);
       if (style == null || !style.show) {
         return;
       }
@@ -83,19 +75,10 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
   }
 
   AreaStyle? getAreaStyle(HeatMapNode node, int index) {
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node.data);
-    }
-    var chartTheme = context.config.theme;
-    Color fillColor = chartTheme.getColor(index);
-    return AreaStyle(color: fillColor).convert(node.status);
+    return series.getAreaStyle(context, node.data, index, node.status);
   }
 
   LineStyle? getBorderStyle(HeatMapNode node, int index) {
-    if (series.borderStyleFun != null) {
-      return series.borderStyleFun?.call(node.data);
-    }
-    var theme = context.config.theme.headMapTheme;
-    return theme.getBorderStyle()?.convert(node.status);
+    return series.getBorderStyle(context, node.data, index, node.status);
   }
 }

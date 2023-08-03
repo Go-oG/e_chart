@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../model/wrap_data.dart';
 
 /// 不可再分的最小绘制单元
 /// 其用于极坐标系和二维坐标系下的节点位置表示
@@ -14,8 +13,23 @@ class SingleNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewSt
   SingleNode(this.parentNode, this._wrap, this.stack);
 
   ///布局过程中使用的临时变量
-  num up = 0;
-  num down = 0;
+  num _up = 0;
+
+  num get up => _up;
+
+  set up(num u) {
+    _up = u;
+    data?.stackUp = u;
+  }
+
+  num _down = 0;
+
+  num get down => _down;
+
+  set down(num d) {
+    _down = d;
+    data?.stackDown = d;
+  }
 
   ///只在二维坐标系下使用
   Rect rect = Rect.zero;

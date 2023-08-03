@@ -318,31 +318,11 @@ class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
   }
 
   static AreaStyle getAreaStyle(Context context, FunnelSeries series, FunnelNode node) {
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun!.call(node);
-    }
-    ChartTheme chartTheme = context.config.theme;
-    FunnelTheme theme = chartTheme.funnelTheme;
-    int index = node.index;
-    Color color;
-    if (theme.colors.isNotEmpty) {
-      color = theme.colors[index % theme.colors.length];
-    } else {
-      color = chartTheme.getColor(index);
-    }
-    return AreaStyle(color: color);
+    return series.getAreaStyle(context, node.data, node.dataIndex);
   }
 
   static LineStyle? getBorderStyle(Context context, FunnelSeries series, FunnelNode node) {
-    ChartTheme chartTheme = context.config.theme;
-    FunnelTheme theme = chartTheme.funnelTheme;
-    if (series.borderStyleFun != null) {
-      return series.borderStyleFun?.call(node);
-    }
-    if (theme.borderWidth > 0) {
-      return LineStyle(color: theme.borderColor, width: theme.borderWidth, dash: theme.borderDash);
-    }
-    return null;
+    return series.getBorderStyle(context, node.data, node.dataIndex);
   }
 
   @override

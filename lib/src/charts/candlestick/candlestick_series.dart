@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 
 class CandleStickSeries extends ChartSeries {
@@ -9,8 +11,8 @@ class CandleStickSeries extends ChartSeries {
 
   bool hoverAnimation;
 
-  Fun2<CandleStickData, AreaStyle>? styleFun;
-  Fun2<CandleStickData, LineStyle>? lineStyleFun;
+  Fun3<CandleStickData, CandleStickGroup, AreaStyle>? areaStyleFun;
+  Fun3<CandleStickData, CandleStickGroup, LineStyle>? borderStyleFun;
 
   CandleStickSeries(
     this.data, {
@@ -20,8 +22,8 @@ class CandleStickSeries extends ChartSeries {
     this.boxWidth,
     this.name = '',
     this.hoverAnimation = true,
-    this.styleFun,
-    this.lineStyleFun,
+    this.areaStyleFun,
+    this.borderStyleFun,
     super.animation,
     super.tooltip,
     super.backgroundColor,
@@ -39,6 +41,27 @@ class CandleStickSeries extends ChartSeries {
           radarIndex: -1,
           calendarIndex: -1,
         );
+
+  AreaStyle? getAreaStyle(Context context, CandleStickData data, CandleStickGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (areaStyleFun != null) {
+      return areaStyleFun?.call(data, group);
+    }
+    var theme = context.option.theme.kLineTheme;
+    if (theme.fill) {
+      Color color = data.isUp ? theme.upColor : theme.downColor;
+      return AreaStyle(color: color).convert(status);
+    }
+    return null;
+  }
+
+  LineStyle? getBorderStyle(Context context, CandleStickData data, CandleStickGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (borderStyleFun != null) {
+      return borderStyleFun!.call(data, group);
+    }
+    var theme = context.option.theme.kLineTheme;
+    Color color = data.isUp ? theme.upColor : theme.downColor;
+    return LineStyle(color: color,width: theme.borderWidth).convert(status);
+  }
 }
 
 class CandleStickGroup {

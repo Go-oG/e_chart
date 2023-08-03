@@ -112,7 +112,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
         onDragEnd();
       }
 
-      if (context.config.dragType == DragType.longPress) {
+      if (context.option.dragType == DragType.longPress) {
         _gesture.longPressStart = (e) {
           dragStart(toLocalOffset(e.globalPosition));
         };
@@ -135,7 +135,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
       }
     }
     if (enableScale) {
-      if (context.config.scaleType == ScaleType.doubleTap) {
+      if (context.option.scaleType == ScaleType.doubleTap) {
         _gesture.doubleClick = (e) {
           onScaleStart(toLocalOffset(e.globalPosition));
           onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, true);

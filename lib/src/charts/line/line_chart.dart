@@ -57,7 +57,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
     }
 
     var lineList = helper.getLineNodeList();
-    var theme = context.config.theme.lineTheme;
+    var theme = context.option.theme.lineTheme;
     canvas.save();
     canvas.translate(offset.dx, 0);
     canvas.clipRect(clipRect);
@@ -78,7 +78,7 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
     }
     Offset offset = layoutHelper.getTranslation();
     var lineList = helper.getLineNodeList();
-    var theme = context.config.theme.lineTheme;
+    var theme = context.option.theme.lineTheme;
     canvas.save();
     canvas.translate(offset.dx, 0);
     each(lineList, (lineNode, p1) {

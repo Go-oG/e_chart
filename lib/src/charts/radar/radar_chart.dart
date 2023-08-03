@@ -34,7 +34,7 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
 
   @override
   void onDraw(Canvas canvas) {
-    ChartTheme chartTheme = context.config.theme;
+    ChartTheme chartTheme = context.option.theme;
     RadarTheme theme = chartTheme.radarTheme;
     var nodeList = radarLayout.groupNodeList;
     each(nodeList, (group, i) {
@@ -83,8 +83,8 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
   int get radarIndex => series.radarIndex;
 
   AreaStyle? getAreaStyle(RadarGroupNode group, int index) {
-    var theme = context.config.theme.radarTheme;
-    var chartTheme = context.config.theme;
+    var theme = context.option.theme.radarTheme;
+    var chartTheme = context.option.theme;
     if (series.areaStyleFun != null) {
       return series.areaStyleFun?.call(group.data);
     } else if (theme.fill) {
@@ -95,7 +95,7 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
   }
 
   LineStyle? getLineStyle(RadarGroupNode group, int index) {
-    var chartTheme = context.config.theme;
+    var chartTheme = context.option.theme;
     var theme = chartTheme.radarTheme;
     LineStyle? lineStyle;
     if (series.lineStyleFun != null) {

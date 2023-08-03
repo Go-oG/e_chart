@@ -154,7 +154,7 @@ class DefaultRender extends BaseRender {
   @override
   void onDraw(Canvas canvas) {
     Paint mPaint = Paint();
-    mPaint.color = context.config.theme.backgroundColor;
+    mPaint.color = context.option.theme.backgroundColor;
     mPaint.style = PaintingStyle.fill;
     canvas.drawRect(getGlobalAreaBounds(), mPaint);
     for (var v in context.coordList) {

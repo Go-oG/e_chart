@@ -64,7 +64,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
     }
     for (var node in nodeList) {
       node.areaStyle.drawPath(canvas, mPaint, node.path);
-      FunnelLayout.getBorderStyle(context, series, node)?.drawPath(canvas, mPaint, node.path);
+      series.getBorderStyle(context, node.data, node.dataIndex)?.drawPath(canvas, mPaint, node.path);
     }
     for (var node in nodeList) {
       _drawText(canvas, node);
@@ -77,7 +77,7 @@ class FunnelView extends SeriesView<FunnelSeries> {
     if (label == null || label.isEmpty || config == null) {
       return;
     }
-    LabelStyle? style = series.labelStyleFun?.call(node);
+    LabelStyle? style = series.getLabelStyle(context, node.data);
     if (style == null || !style.show) {
       return;
     }

@@ -20,7 +20,9 @@ export 'shape/index.dart';
 
 export 'quadtree/quad_node.dart';
 export 'quadtree/quadtree.dart' hide InnerQuad;
+
 export 'array.dart';
+export 'chart_align.dart';
 export 'link.dart';
 export 'mixin_props.dart';
 export 'tree_node.dart';

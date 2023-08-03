@@ -108,7 +108,7 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   void _drawShape(Canvas canvas) {
-    var theme = context.config.theme.radarTheme;
+    var theme = context.option.theme.radarTheme;
     each(splitList, (sp, i) {
       AreaStyle? style;
       if (props.splitAreaStyleFun != null) {

@@ -9,7 +9,7 @@ import 'package:e_chart/e_chart.dart' as ec;
 /// GestureDispatcher、AnimationManager、EventDispatcher、ActionDispatcher
 class Context {
   final ViewParent root;
-  final ChartConfig config;
+  final ChartOption option;
 
   ///这里不将其暴露出去是为了能更好的管理动画的生命周期
   late TickerProvider _provider;
@@ -22,7 +22,7 @@ class Context {
   final ec.ActionDispatcher _actionDispatcher = ec.ActionDispatcher();
   double devicePixelRatio;
 
-  Context(this.root, this.config, TickerProvider provider, [this.devicePixelRatio = 1]) {
+  Context(this.root, this.option, TickerProvider provider, [this.devicePixelRatio = 1]) {
     _provider = provider;
   }
 
@@ -73,33 +73,33 @@ class Context {
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
     ///图例
-    if (config.legend != null) {
-      _legend = LegendViewGroup(config.legend!);
+    if (option.legend != null) {
+      _legend = LegendViewGroup(option.legend!);
       _legend?.create(this, root);
       //TODO 这里不知道是否需要回调[bindSeriesCommand]
     }
 
     ///title
-    if (config.title != null) {
-      _title = TitleView(config.title!);
+    if (option.title != null) {
+      _title = TitleView(option.title!);
       _title?.create(this, root);
       //TODO 这里不知道是否需要回调[bindSeriesCommand]
     }
 
     ///Brush
-    if (config.brush != null) {
-      _brush = BrushView(config.brush!);
+    if (option.brush != null) {
+      _brush = BrushView(option.brush!);
       _brush?.create(this, root);
     }
 
     ///Coord
     ///转换CoordConfig 到Coord
     List<Coord> coordConfigList = [
-      ...config.gridList,
-      ...config.polarList,
-      ...config.radarList,
-      ...config.calendarList,
-      ...config.parallelList,
+      ...option.gridList,
+      ...option.polarList,
+      ...option.radarList,
+      ...option.calendarList,
+      ...option.parallelList,
     ];
 
     for (var ele in coordConfigList) {
@@ -116,7 +116,7 @@ class Context {
   ///创建渲染视图
   void _createRenderView() {
     ///转换Series到View
-    for (var series in config.series) {
+    for (var series in option.series) {
       ChartView? view = SeriesFactory.instance.convert(series);
       if (view == null) {
         throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
@@ -154,8 +154,8 @@ class Context {
     _createRenderView();
 
     ///绑定事件
-    if (config.eventCall != null) {
-      _eventDispatcher.addCall(config.eventCall!);
+    if (option.eventCall != null) {
+      _eventDispatcher.addCall(option.eventCall!);
     }
   }
 
@@ -252,62 +252,62 @@ class Context {
 
   /// 坐标系查找相关函数
   GridCoord findGridCoord([int gridIndex = 0]) {
-    if (config.gridList.isEmpty) {
+    if (option.gridList.isEmpty) {
       throw FlutterError('暂无Grid坐标系');
     }
     if (gridIndex < 0) {
       gridIndex = 0;
     }
-    if (gridIndex > config.polarList.length) {
-      gridIndex = config.polarList.length - 1;
+    if (gridIndex > option.polarList.length) {
+      gridIndex = option.polarList.length - 1;
     }
-    return _coordMap[config.gridList[gridIndex]]! as GridCoord;
+    return _coordMap[option.gridList[gridIndex]]! as GridCoord;
   }
 
   PolarCoord findPolarCoord([int polarIndex = 0]) {
-    if (config.polarList.isEmpty) {
+    if (option.polarList.isEmpty) {
       throw FlutterError('暂无Polar坐标系');
     }
     if (polarIndex < 0) {
       polarIndex = 0;
     }
-    if (polarIndex > config.polarList.length) {
+    if (polarIndex > option.polarList.length) {
       polarIndex = 0;
     }
-    return _coordMap[config.polarList[polarIndex]]! as PolarCoord;
+    return _coordMap[option.polarList[polarIndex]]! as PolarCoord;
   }
 
   RadarCoord findRadarCoord([int radarIndex = 0]) {
-    if (radarIndex > config.radarList.length) {
+    if (radarIndex > option.radarList.length) {
       radarIndex = 0;
     }
-    if (config.radarList.isEmpty) {
+    if (option.radarList.isEmpty) {
       throw FlutterError('暂无Radar坐标系');
     }
-    return _coordMap[config.radarList[radarIndex]]! as RadarCoord;
+    return _coordMap[option.radarList[radarIndex]]! as RadarCoord;
   }
 
   ParallelCoord findParallelCoord([int parallelIndex = 0]) {
     int index = parallelIndex;
-    if (index > config.parallelList.length) {
+    if (index > option.parallelList.length) {
       index = 0;
     }
-    if (config.parallelList.isEmpty) {
+    if (option.parallelList.isEmpty) {
       throw FlutterError('当前未配置Parallel 坐标系无法查找');
     }
-    Parallel parallel = config.parallelList[index];
+    Parallel parallel = option.parallelList[index];
     return _coordMap[parallel]! as ParallelCoord;
   }
 
   CalendarCoord findCalendarCoord([int calendarIndex = 0]) {
     int index = calendarIndex;
-    if (index > config.calendarList.length) {
+    if (index > option.calendarList.length) {
       index = 0;
     }
-    if (config.calendarList.isEmpty) {
+    if (option.calendarList.isEmpty) {
       throw FlutterError('当前未配置Calendar 坐标系无法查找');
     }
-    Calendar calendar = config.calendarList[index];
+    Calendar calendar = option.calendarList[index];
     return _coordMap[calendar]! as CalendarCoord;
   }
 

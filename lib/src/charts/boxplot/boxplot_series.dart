@@ -32,6 +32,24 @@ class BoxplotSeries extends ChartSeries {
     super.z,
     super.clip,
   }) : super(coordSystem: CoordSystem.grid, calendarIndex: -1, parallelIndex: -1, radarIndex: -1);
+
+
+  AreaStyle? getAreaStyle(Context context, BoxplotData data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (areaStyleFun != null) {
+      return areaStyleFun?.call(data, group);
+    }
+    var chartTheme = context.option.theme;
+    return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
+  }
+
+  LineStyle getBorderStyle(Context context,BoxplotData data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (borderStyleFun != null) {
+      return borderStyleFun!.call(data, group);
+    }
+    var theme = context.option.theme.boxplotTheme;
+    return theme.getBorderStyle(context.option.theme,groupIndex).convert(status);
+  }
+
 }
 
 class BoxplotGroup {

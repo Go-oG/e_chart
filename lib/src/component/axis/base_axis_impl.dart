@@ -142,15 +142,15 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   AxisTheme getAxisTheme() {
     if (axis.isCategoryAxis) {
-      return context.config.theme.categoryAxisTheme;
+      return context.option.theme.categoryAxisTheme;
     }
     if (axis.isTimeAxis) {
-      return context.config.theme.timeAxisTheme;
+      return context.option.theme.timeAxisTheme;
     }
     if (axis.isLogAxis) {
-      return context.config.theme.logAxisTheme;
+      return context.option.theme.logAxisTheme;
     }
-    return context.config.theme.valueAxisTheme;
+    return context.option.theme.valueAxisTheme;
   }
 
   void notifyLayoutUpdate() {

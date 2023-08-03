@@ -21,4 +21,11 @@ class FunnelTheme {
     const Color(0xFF9a60b4),
     const Color(0xFFea7ccc),
   ];
+
+  LineStyle? getBorderStyle(){
+    if(borderWidth<=0){return null;}
+    return LineStyle(width: borderWidth,dash: borderDash,color: borderColor);
+  }
+
+
 }
