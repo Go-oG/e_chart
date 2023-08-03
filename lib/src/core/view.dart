@@ -4,8 +4,6 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../component/brush/brush_area.dart';
-
 abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   Context? _context;
 
@@ -44,9 +42,6 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
 
   ChartView();
 
-  ///当框选选择事件触发时会回调该方法
-  void onBrushSelectChange(List<BrushArea> brushList) {}
-
   //=========生命周期回调方法开始==================
   ///由Context负责回调
   ///该回调只会发生在视图创建后，且只会回调一次
@@ -77,8 +72,14 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
 
   void onDestroy() {}
 
-  //=========生命周期回调方法结束==================
+  ///=======Brush事件通知=======
+  void onBrushEvent(BrushEvent event) {}
 
+  void onBrushEndEvent(BrushEndEvent event) {}
+
+  void onBrushClearEvent(BrushClearEvent event) {}
+
+  //=======布局测量相关方法==============
   void measure(double parentWidth, double parentHeight) {
     bool force = forceMeasure || forceLayout;
     bool minDiff = (boundRect.width - parentWidth).abs() <= 0.00001 && (boundRect.height - parentHeight).abs() <= 0.00001;
@@ -438,26 +439,15 @@ abstract class ChartView with ViewStateProvider implements ToolTipBuilder {
   void computeScroll() {}
 }
 
-///强制要求提供一个Series;
-///并简单实现了相关的手势操作
-abstract class SeriesView<T extends ChartSeries> extends ChartView {
-  final T series;
-  final RectGesture _gesture = RectGesture();
-
-  SeriesView(this.series);
-
-  @override
-  void bindSeries(covariant T series) {
-    if (series != this.series) {
-      throw FlutterError('Not allow binding different series ');
-    }
-    super.bindSeries(series);
-  }
+///实现了一个简易的手势识别器
+abstract class GestureView extends ChartView {
+  late ChartGesture _gesture;
 
   @mustCallSuper
   @override
   void onCreate() {
     super.onCreate();
+    _gesture = gestureArea;
     _initGesture();
   }
 
@@ -465,31 +455,27 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _gesture.rect = boxBounds;
+    onGestureAreaInit(_gesture);
   }
 
-  @override
-  void onDrawBackground(Canvas canvas) {
-    Color? color = series.backgroundColor;
-    if (color != null) {
-      mPaint.reset();
-      mPaint.color = color;
-      mPaint.style = PaintingStyle.fill;
-      canvas.drawRect(selfBoxBound, mPaint);
+  ChartGesture get gestureArea {
+    return RectGesture();
+  }
+
+  void onGestureAreaInit(ChartGesture gesture) {
+    if (gesture is RectGesture) {
+      (gesture).rect = boxBounds;
     }
   }
 
   Offset _lastHover = Offset.zero;
-
   Offset _lastDrag = Offset.zero;
 
   void _initGesture() {
     _gesture.clear();
     context.removeGesture(_gesture);
     context.addGesture(_gesture);
-
-    if (series is SeriesGesture && (series as SeriesGesture).enableSeriesGesture) {
-      (series as SeriesGesture).bindGesture(this, _gesture);
+    if (onInitGestureHook()) {
       return;
     }
     if (enableClick) {
@@ -574,29 +560,25 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
     }
   }
 
-  bool get enableHover => series.enableHover ?? !(Platform.isAndroid || Platform.isIOS);
-
-  bool get enableDrag => series.enableDrag ?? true;
-
-  bool get enableClick => series.enableClick ?? true;
-
-  bool get enableScale => series.enableScale ?? false;
-
-  void onClick(Offset offset) {
-    getLayoutHelper()?.onClick(offset);
+  bool onInitGestureHook() {
+    return false;
   }
 
-  void onHoverStart(Offset offset) {
-    getLayoutHelper()?.onHoverStart(offset);
-  }
+  bool get enableHover => !(Platform.isAndroid || Platform.isIOS);
 
-  void onHoverMove(Offset offset, Offset last) {
-    getLayoutHelper()?.onHoverMove(offset);
-  }
+  bool get enableDrag => true;
 
-  void onHoverEnd() {
-    getLayoutHelper()?.onHoverEnd();
-  }
+  bool get enableClick => true;
+
+  bool get enableScale => false;
+
+  void onClick(Offset offset) {}
+
+  void onHoverStart(Offset offset) {}
+
+  void onHoverMove(Offset offset, Offset last) {}
+
+  void onHoverEnd() {}
 
   void onDragStart(Offset offset) {}
 
@@ -609,25 +591,97 @@ abstract class SeriesView<T extends ChartSeries> extends ChartView {
   void onScaleUpdate(Offset offset, double rotation, double scale, bool doubleClick) {}
 
   void onScaleEnd() {}
+}
 
-  ChartLayout? _layoutHelper;
+///强制要求提供一个Series;
+///并简单实现了相关的手势操作
+abstract class SeriesView<T extends ChartSeries> extends GestureView {
+  final T series;
+
+  SeriesView(this.series);
+
+  @override
+  void bindSeries(covariant T series) {
+    if (series != this.series) {
+      throw FlutterError('Not allow binding different series ');
+    }
+    super.bindSeries(series);
+  }
+
+  @override
+  void onDrawBackground(Canvas canvas) {
+    Color? color = series.backgroundColor;
+    if (color != null) {
+      mPaint.reset();
+      mPaint.color = color;
+      mPaint.style = PaintingStyle.fill;
+      canvas.drawRect(selfBoxBound, mPaint);
+    }
+  }
+
+  @override
+  bool onInitGestureHook() {
+    if (series is SeriesGesture && (series as SeriesGesture).enableSeriesGesture) {
+      (series as SeriesGesture).bindGesture(this, _gesture);
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void onClick(Offset offset) {
+    getLayoutHelper()?.onClick(offset);
+  }
+
+  @override
+  void onHoverStart(Offset offset) {
+    getLayoutHelper()?.onHoverStart(offset);
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    getLayoutHelper()?.onHoverMove(offset);
+  }
+
+  @override
+  void onHoverEnd() {
+    getLayoutHelper()?.onHoverEnd();
+  }
 
   @override
   void onStart() {
     super.onStart();
-    _layoutHelper?.removeListener(invalidate);
-    _layoutHelper = getLayoutHelper();
-    _layoutHelper?.addListener(invalidate);
+    var helper = getLayoutHelper();
+    if (helper != null) {
+      helper.removeListener(invalidate);
+      helper.addListener(invalidate);
+    }
   }
 
   @override
   void onStop() {
-    _layoutHelper?.removeListener(invalidate);
+    getLayoutHelper()?.removeListener(invalidate);
     super.onStop();
   }
 
   ChartLayout? getLayoutHelper() {
     return null;
+  }
+
+  ///事件转发
+  @override
+  void onBrushEvent(BrushEvent event) {
+    getLayoutHelper()?.onBrushEvent(event);
+  }
+
+  @override
+  void onBrushClearEvent(BrushClearEvent event) {
+    getLayoutHelper()?.onBrushClearEvent(event);
+  }
+
+  @override
+  void onBrushEndEvent(BrushEndEvent event) {
+    getLayoutHelper()?.onBrushEndEvent(event);
   }
 }
 
@@ -639,6 +693,12 @@ abstract class CoordChildView<T extends ChartSeries> extends SeriesView<T> {
 
   @override
   bool get enableScale => false;
+
+  void onContentScrollStart(Offset scroll) {}
+
+  void onContentScrollUpdate(Offset scroll) {}
+
+  void onContentScrollEnd(Offset scroll) {}
 }
 
 class LayoutParams {

@@ -327,8 +327,10 @@ class GridCoordImpl extends GridCoord {
 
     if (hasChange) {
       Offset offset = Offset(scrollXOffset, scrollYOffset);
-      each(getGridChildList(), (p0, p1) {
-        p0.onGridScrollChange(offset);
+      each(children, (p0, p1) {
+        if (p0 is CoordChildView) {
+          p0.onContentScrollUpdate(offset);
+        }
       });
     }
 
@@ -338,9 +340,11 @@ class GridCoordImpl extends GridCoord {
   @override
   void onDragEnd() {
     Offset offset = Offset(scrollXOffset, scrollYOffset);
-    each(getGridChildList(), (p0, p1) {
-      p0.onGridScrollEnd(offset);
-    });
+    for (var child in children) {
+      if (child is CoordChildView) {
+        child.onContentScrollEnd(offset);
+      }
+    }
   }
 
   @override

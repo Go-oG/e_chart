@@ -177,4 +177,19 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
   List<DynamicData> getRadiusDataSet() {
     return getAxisExtreme(0, true);
   }
+
+  @override
+  void onBrushEvent(BrushEvent event) {
+    helper.onBrushEvent(event);
+  }
+
+  @override
+  void onBrushEndEvent(BrushEndEvent event) {
+    helper.onBrushEndEvent(event);
+  }
+
+  @override
+  void onBrushClearEvent(BrushClearEvent event) {
+    helper.onBrushClearEvent(event);
+  }
 }

@@ -129,10 +129,6 @@ class CalenderSeries extends ChartSeries {
     super.backgroundColor,
     super.id,
     super.animation,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale,
     super.clip,
     super.z,
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1);

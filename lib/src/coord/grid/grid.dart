@@ -18,6 +18,7 @@ class Grid extends Coord {
     List<YAxis>? yAxisList,
     this.containLabel = false,
     this.toolTip,
+    super.brush,
     super.padding=const EdgeInsets.all(48),
     super.margin,
     super.width,
@@ -29,6 +30,7 @@ class Grid extends Coord {
     super.backgroundColor,
     super.id,
     super.show,
+
   }) {
     if (xAxisList != null) {
       this.xAxisList = xAxisList;

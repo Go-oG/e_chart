@@ -14,7 +14,6 @@ class ChartOption {
   ScaleType scaleType;
   DragType dragType;
   ToolTip? toolTip;
-  Brush? brush;
   ChartTheme theme = ChartTheme();
 
   VoidFun1<ChartEvent>? eventCall;
@@ -33,7 +32,6 @@ class ChartOption {
     this.scaleType = ScaleType.scale,
     this.dragType = DragType.longPress,
     this.toolTip,
-    this.brush,
     ChartTheme? theme,
     this.eventCall,
   }) {

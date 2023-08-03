@@ -1,12 +1,11 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 
 ///框选配置
-class Brush extends ChartNotifier<Command> {
-  static final Command clearCommand = Command(2, runAnimation: false);
+class Brush {
   late final String id;
   bool enable = false;
-  BrushType mode;
-  SelectedMode selectedMode;
+  BrushType type;
   bool supportMulti;
 
   ///supportMulti 为 false 的情况下，是否支持『单击清除所有选框』。
@@ -26,25 +25,20 @@ class Brush extends ChartNotifier<Command> {
   Brush({
     String? id,
     this.enable = false,
-    this.mode = BrushType.rect,
+    this.type = BrushType.rect,
     this.supportMulti = true,
-    this.selectedMode = SelectedMode.group,
     this.allowMove = true,
     this.borderStyle,
     this.throttleDebounce = false,
     this.throttleDelay = 0,
     this.removeOnClick = true,
-    this.areaStyle = const AreaStyle(),
-  }) : super(Command.none) {
+    this.areaStyle = const AreaStyle(color: Colors.blue),
+  })  {
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {
       this.id = id;
     }
-  }
-
-  void clear() {
-    value = clearCommand;
   }
 }
 

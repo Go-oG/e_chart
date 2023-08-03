@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../event/index.dart';
 import '../utils/log_util.dart';
 import 'context.dart';
 import 'view.dart';
@@ -61,6 +62,51 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     requestLayout();
   }
 
+  ///=========Event和Action分发处理==================
+  void dispatchEvent(ChartEvent event) {
+    if (event is BrushEvent) {
+      onBrushEvent(event);
+      return;
+    }
+    if (event is BrushEndEvent) {
+      onBrushEndEvent(event);
+      return;
+    }
+    if (event is BrushClearEvent) {
+      onBrushClearEvent(event);
+      return;
+    }
+  }
+
+  bool dispatchAction(ChartAction action) {
+    return false;
+  }
+
+  @override
+  void onBrushEvent(BrushEvent event) {
+    for (var v in children) {
+      v.onBrushEvent(event);
+    }
+    invalidate();
+  }
+
+  @override
+  void onBrushEndEvent(BrushEndEvent event) {
+    for (var v in children) {
+      v.onBrushEndEvent(event);
+    }
+    invalidate();
+  }
+
+  @override
+  void onBrushClearEvent(BrushClearEvent event) {
+    for (var v in children) {
+      v.onBrushClearEvent(event);
+    }
+    invalidate();
+  }
+
+  ///=========布局测量相关============
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     double maxHeight = 0;
