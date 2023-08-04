@@ -52,7 +52,7 @@ class AnimationManager {
     try {
       _map.removeWhere((key, value) => value.isCompleted);
     } catch (e) {
-      logPrint('$e');
+      Logger.e(e);
     }
   }
 
@@ -88,7 +88,7 @@ class AnimationManager {
       try {
         value.dispose();
       } catch (e) {
-        logPrint("Animator dispose: $e");
+        Logger.e("Animator dispose: $e");
       }
     });
     _map.clear();

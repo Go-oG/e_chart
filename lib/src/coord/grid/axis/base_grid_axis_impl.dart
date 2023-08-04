@@ -217,7 +217,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     each(layoutResult.split, (split, i) {
       LineStyle? style = axis.getAxisLineStyle(i, split.maxIndex, theme);
       if (style == null) {
-        logPrint("$runtimeType 坐标轴axisLine样式为空 不绘制");
+        Logger.i("$runtimeType 坐标轴axisLine样式为空 不绘制");
       }
       style?.drawPolygon(canvas, paint, [split.start, split.end]);
     });

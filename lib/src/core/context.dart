@@ -151,7 +151,7 @@ class Context {
       try {
         coord.onStart();
       } catch (e) {
-        logPrint('$e');
+        Logger.e(e);
       }
     }
   }
@@ -163,7 +163,7 @@ class Context {
       try {
         coord.onStop();
       } catch (e) {
-        logPrint('$e');
+        Logger.e(e);
       }
     }
   }

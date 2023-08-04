@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:e_chart/e_chart.dart';
 
 ///事件分发器
@@ -22,7 +20,7 @@ class EventDispatcher {
       try {
         call.call(event);
       } catch (e) {
-        logPrint("$e");
+        Logger.e(e);
       }
     }
   }

@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///负责处理和布局所有的子View
-///包括了Brush相关的
+///包括了Brush、ToolTip相关组件
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
 
@@ -271,4 +271,5 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     }
     return vl;
   }
+
 }

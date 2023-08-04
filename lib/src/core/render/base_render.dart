@@ -64,7 +64,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
         _inLayout = false;
       }
       _stopwatch.stop();
-      logPrint('$runtimeType Layout总耗时:${_stopwatch.elapsedMilliseconds}ms');
+      Logger.i('$runtimeType Layout总耗时:${_stopwatch.elapsedMilliseconds}ms');
     }
     if (_inDrawing) {
       return;
