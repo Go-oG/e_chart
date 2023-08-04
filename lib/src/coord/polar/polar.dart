@@ -1,7 +1,6 @@
 import 'package:e_chart/src/component/axis/radius/radius_axis.dart';
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
-import '../../component/tooltip/tool_tip.dart';
 import '../circle_coord.dart';
 import '../../component/axis/angle/angle_axis.dart';
 
@@ -11,19 +10,15 @@ class Polar extends CircleCoord {
   AngleAxis angleAxis = AngleAxis();
   RadiusAxis radiusAxis = RadiusAxis();
   bool silent;
-  ToolTip? toolTip;
 
   Polar({
     super.radius,
     super.center,
     RadiusAxis? radiusAxis,
     AngleAxis? angleAxis,
-    this.toolTip,
     this.silent = true,
-    super.enableClick,
-    super.enableDrag,
-    super.enableHover,
-    super.enableScale,
+    super.toolTip,
+    super.layoutParams,
     super.backgroundColor,
     super.id,
     super.show,

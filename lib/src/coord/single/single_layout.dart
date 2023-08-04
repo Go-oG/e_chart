@@ -16,10 +16,8 @@ class SingleCoordImpl extends CoordLayout {
 
 class SingleConfig extends Coord {
   SingleConfig({
-    super.enableClick,
-    super.enableDrag,
-    super.enableHover,
-    super.enableScale,
+    super.toolTip,
+    super.layoutParams,
     super.backgroundColor,
     super.id,
     super.show,

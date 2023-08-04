@@ -11,6 +11,7 @@ class BrushView extends ChartView {
 
   BrushView(this.coord, this.brush) {
     layoutParams = const LayoutParams.matchAll();
+    zLevel = 100;
   }
 
   @override
@@ -35,7 +36,6 @@ class BrushView extends ChartView {
     _gesture.clear();
     context.removeGesture(_gesture);
     context.addGesture(_gesture);
-
     _gesture.longPressStart = (e) {
       var offset = toLocalOffset(e.globalPosition);
       _lastDrag = offset;
@@ -52,7 +52,6 @@ class BrushView extends ChartView {
       _lastDrag = Offset.zero;
       onDragEnd();
     };
-
     _gesture.click = (e) {
       onClick(toLocalOffset(e.globalPosition));
     };

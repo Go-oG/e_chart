@@ -18,6 +18,9 @@ abstract class ChartView with ViewStateProvider {
     _layoutParams = p;
   }
 
+  ///索引层次
+  int zLevel = -1;
+
   ///存储当前视图在父视图中的位置属性
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
 
@@ -48,6 +51,27 @@ abstract class ChartView with ViewStateProvider {
   final String id = randomId();
 
   ChartView();
+
+  bool _show = true;
+
+  bool get isShow => _show;
+
+  bool get notShow => !_show;
+
+  void show() {
+    if (_show) {
+      return;
+    }
+    _show = true;
+    invalidate();
+  }
+
+  void hide() {
+    if (!_show) {
+      _show = false;
+      invalidate();
+    }
+  }
 
   //=========生命周期回调方法开始==================
   ///由Context负责回调
@@ -204,6 +228,10 @@ abstract class ChartView with ViewStateProvider {
   @mustCallSuper
   void draw(Canvas canvas) {
     inDrawing = true;
+    if (notShow) {
+      inDrawing = false;
+      return;
+    }
     onDrawPre();
     onDrawBackground(canvas);
     onDraw(canvas);
@@ -216,7 +244,9 @@ abstract class ChartView with ViewStateProvider {
 
   @protected
   bool drawSelf(Canvas canvas, ChartViewGroup parent) {
-    computeScroll();
+    if (notShow) {
+      return false;
+    }
     canvas.save();
     canvas.translate(left, top);
     bool? clip = clipChild;
@@ -425,8 +455,6 @@ abstract class ChartView with ViewStateProvider {
   bool get isDirty {
     return _dirty;
   }
-
-  void computeScroll() {}
 }
 
 ///实现了一个简易的手势识别器

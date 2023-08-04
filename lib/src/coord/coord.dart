@@ -9,24 +9,19 @@ abstract class Coord extends ChartNotifier<Command> {
 
   ///数据框选配置
   Brush? brush;
-  LayoutParams layoutParams;
 
-  ///手势相关
-  bool enableClick;
-  bool enableHover;
-  bool enableDrag;
-  bool enableScale;
+  ///ToolTip
+  ToolTip? toolTip;
+
+  LayoutParams layoutParams;
 
   Coord({
     this.show = true,
     String? id,
     this.layoutParams = const LayoutParams.matchAll(padding: EdgeInsets.all(32)),
     this.brush,
+    this.toolTip,
     this.backgroundColor,
-    this.enableClick = true,
-    this.enableHover = true,
-    this.enableDrag = true,
-    this.enableScale = false,
   }) : super(Command.none) {
     if (id == null || id.isEmpty) {
       this.id = randomId();

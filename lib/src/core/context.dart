@@ -101,13 +101,14 @@ class Context {
   ///创建渲染视图
   void _createRenderView() {
     ///转换Series到View
-    for (var series in option.series) {
+    each(option.series, (series, i) {
+      series.seriesIndex=i;
       ChartView? view = SeriesFactory.instance.convert(series);
       if (view == null) {
         throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
       }
       _seriesViewMap[series] = view;
-    }
+    });
 
     ///将指定了坐标系的View和坐标系绑定
     _seriesViewMap.forEach((key, view) {
