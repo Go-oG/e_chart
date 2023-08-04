@@ -9,7 +9,17 @@ class BrushView extends ChartView {
   final Brush brush;
   final List<BrushArea> brushList = [];
 
-  BrushView(this.coord, this.brush);
+  BrushView(this.coord, this.brush) {
+    layoutParams = const LayoutParams.matchAll();
+  }
+
+  @override
+  set layoutParams(LayoutParams p) {
+    if (!p.width.isMatch || !p.height.isMatch) {
+      throw ChartError("BrushView only support match all");
+    }
+    super.layoutParams = p;
+  }
 
   final RectGesture _gesture = RectGesture();
 
@@ -158,8 +168,8 @@ class BrushView extends ChartView {
     if (!brush.enable) {
       return;
     }
-    var scroll=coord.getTranslation();
-    offset=offset.translate(scroll.dx.abs(), scroll.dy);
+    var scroll = coord.getTranslation();
+    offset = offset.translate(scroll.dx.abs(), scroll.dy);
     if (brush.removeOnClick && !brush.supportMulti && brushList.isNotEmpty) {
       var first = brushList.first;
       if (!first.path.contains(offset)) {
@@ -171,8 +181,8 @@ class BrushView extends ChartView {
   }
 
   void onDragStart(Offset offset) {
-    var scroll=coord.getTranslation();
-    offset=offset.translate(scroll.dx.abs(), scroll.dy);
+    var scroll = coord.getTranslation();
+    offset = offset.translate(scroll.dx.abs(), scroll.dy);
     _ol.clear();
     _first = null;
     if (!brush.enable) {
@@ -187,8 +197,8 @@ class BrushView extends ChartView {
       _first = null;
       return;
     }
-    var scroll=coord.getTranslation();
-    offset=offset.translate(scroll.dx.abs(), scroll.dy);
+    var scroll = coord.getTranslation();
+    offset = offset.translate(scroll.dx.abs(), scroll.dy);
 
     var first = _first;
     if (first == null) {

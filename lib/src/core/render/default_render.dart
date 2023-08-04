@@ -43,9 +43,9 @@ class DefaultRender extends BaseRender {
         Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: s, height: s);
         v.layout(r2.left, r2.top, r2.right, r2.bottom);
       } else {
-        var props = v.props;
-        double lm = props.margin.left;
-        double tm = props.margin.top;
+        var lp = v.props.layoutParams;
+        double lm = lp.margin.left;
+        double tm = lp.margin.top;
         v.layout(rect.left + lm, rect.top + tm, rect.left + lm + v.width, rect.top + tm + v.height);
       }
     }
@@ -57,35 +57,35 @@ class DefaultRender extends BaseRender {
     double titleBottomUsed = 0;
 
     if (context.title != null) {
-      TitleView titleView = context.title!;
-      ChartTitle title = titleView.title;
-
-      Align2 position = title.position;
-      if (position == Align2.center) {
-        position = Align2.start;
-      }
-
-      int dx = -1;
-      int dy = position == Align2.start ? -1 : 1;
-      if (title.align == Align2.start) {
-        dx = -1;
-      } else if (title.align == Align2.center) {
-        dx = 0;
-      } else {
-        dx = 1;
-      }
-
-      double left = (width / 2 + dx * width / 2) + title.offset.dx;
-      double top = (height / 2 + dy * height / 2) + title.offset.dy;
-      if (position == Align2.end) {
-        top = height - top;
-      }
-      titleView.layout(left, top, left + titleView.width, top + titleView.bottom);
-      if (position == Align2.start) {
-        titleTopUsed = titleView.height + title.offset.dy;
-      } else {
-        titleBottomUsed = titleView.height + title.offset.dy;
-      }
+      // TitleView titleView = context.title!;
+      // ChartTitle title = titleView.title;
+      //
+      // Align2 position = title.position;
+      // if (position == Align2.center) {
+      //   position = Align2.start;
+      // }
+      //
+      // int dx = -1;
+      // int dy = position == Align2.start ? -1 : 1;
+      // if (title.align == Align2.start) {
+      //   dx = -1;
+      // } else if (title.align == Align2.center) {
+      //   dx = 0;
+      // } else {
+      //   dx = 1;
+      // }
+      //
+      // double left = (width / 2 + dx * width / 2) + title.offset.dx;
+      // double top = (height / 2 + dy * height / 2) + title.offset.dy;
+      // if (position == Align2.end) {
+      //   top = height - top;
+      // }
+      // titleView.layout(left, top, left + titleView.width, top + titleView.bottom);
+      // if (position == Align2.start) {
+      //   titleTopUsed = titleView.height + title.offset.dy;
+      // } else {
+      //   titleBottomUsed = titleView.height + title.offset.dy;
+      // }
     }
 
     if (context.legend != null) {
@@ -155,5 +155,4 @@ class DefaultRender extends BaseRender {
       canvas.restore();
     }
   }
-
 }

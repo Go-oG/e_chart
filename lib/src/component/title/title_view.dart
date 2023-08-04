@@ -1,22 +1,24 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/view.dart';
-import 'title.dart';
+class TitleView extends ChartView {
+  DynamicText title;
+  LabelStyle style;
 
-class TitleView extends  ChartView {
-  final ChartTitle title;
-
-  TitleView(this.title);
+  TitleView(this.title, this.style);
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-
-    return super.onMeasure(parentWidth, parentHeight);
+    if (title.isEmpty) {
+      return Size.zero;
+    }
+    Size size= title.getTextSize(style.textStyle);
+    return size;
   }
+
   @override
   void onDraw(Canvas canvas) {
-
-
+    var option = TextDrawInfo(Offset.zero, align: Alignment.topLeft);
+    style.draw(canvas, mPaint, title, option);
   }
-
 }

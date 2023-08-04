@@ -72,8 +72,8 @@ class Context {
 
     ///title
     if (option.title != null) {
-      _title = TitleView(option.title!);
-      _title?.create(this, root);
+      // _title = TitleView(option.title!);
+      // _title?.create(this, root);
       //TODO 这里不知道是否需要回调[bindSeriesCommand]
     }
 

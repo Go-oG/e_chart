@@ -8,7 +8,7 @@ import 'context.dart';
 import 'view.dart';
 
 /// ViewGroup
-abstract class ChartViewGroup extends ChartView implements ViewParent {
+abstract class ChartViewGroup extends GestureView implements ViewParent {
   final List<ChartView> _children = [];
 
   ChartViewGroup();
@@ -127,27 +127,24 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     maxHeight += pvp;
     maxWidth = min(maxWidth, parentWidth);
     maxHeight = min(maxHeight, parentHeight);
-
     php = layoutParams.padding.horizontal;
     pvp = layoutParams.padding.vertical;
     pw = maxWidth - php;
     ph = maxHeight - pvp;
-
     for (var child in children) {
       final LayoutParams lp = child.layoutParams;
       num hm = lp.margin.horizontal;
       num vm = lp.margin.vertical;
       double childWidth = child.width;
-      if (lp.width.number == LayoutParams.matchParent) {
+      if (lp.width.isMatch) {
         childWidth = max(0, pw - hm);
       }
       double childHeight = child.height;
-      if (lp.height.number == LayoutParams.matchParent) {
+      if (lp.height.isMatch) {
         childHeight = max(0, ph - vm);
       }
       child.measure(childWidth, childHeight);
     }
-
     return Size(maxWidth, maxHeight);
   }
 
@@ -245,6 +242,18 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     double t = parentRect.top + boundRect.top;
     return Rect.fromLTWH(l, t, boundRect.width, boundRect.height);
   }
+
+  @override
+  bool get enableClick => false;
+
+  @override
+  bool get enableDrag => false;
+
+  @override
+  bool get enableHover => false;
+
+  @override
+  bool get enableScale => false;
 }
 
 abstract class ViewParent {
