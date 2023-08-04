@@ -351,13 +351,13 @@ abstract class ChartView with ViewStateProvider {
 
     var op = _commandMap[c];
     if (op == null) {
-      logPrint('$c 无法找到能出来该命令相关的回调');
+      Logger.w('$c 无法找到能出来该命令相关的回调');
       return;
     }
     try {
       op.call(c);
     } catch (e) {
-      logPrint('$e');
+      Logger.e(e);
     }
   }
 

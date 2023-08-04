@@ -91,7 +91,7 @@ class AxisTheme {
       throw ChartError('Index 必须大于0');
     }
     if (!showAxisLine) {
-      logPrint("不显示该轴");
+      Logger.i("不显示该轴");
       return null;
     }
     return axisLineColor;

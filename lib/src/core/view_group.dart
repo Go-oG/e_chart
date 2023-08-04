@@ -28,7 +28,7 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
       try {
         c.onStart();
       } catch (e) {
-        logPrint('$e');
+        Logger.e(e);
       }
     }
   }
@@ -39,7 +39,7 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
       try {
         c.onStop();
       } catch (e) {
-        logPrint('$e');
+        Logger.e(e);
       }
     }
     super.onStop();
