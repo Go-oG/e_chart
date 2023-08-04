@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 ///包括了Brush、ToolTip相关组件
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
-  final RectGesture _gesture = RectGesture();
+
   double scaleXFactor = 1;
   double scaleYFactor = 1;
   double scrollXOffset = 0;
@@ -17,34 +17,34 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   BrushView? _brushView;
   ToolTipView? _tipView;
 
-  CoordLayout(this.props) {
+  CoordLayout(this.props);
+
+  @override
+  void onCreate() {
+    super.onCreate();
     if (props.brush != null) {
       _brushView = onCreateBrushView(props.brush!);
       if (_brushView != null) {
         addView(_brushView!);
       }
     }
-    testTip();
+    var tooltip = findToolTip();
+    if (tooltip != null) {
+      ToolTip toolTip = ToolTip(show: false);
+      _tipView = ToolTipView(toolTip);
+      addView(_tipView!);
+    }
+  }
+
+  ToolTip? findToolTip() {
+    if (props.toolTip != null) {
+      return props.toolTip;
+    }
+    return context.option.toolTip;
   }
 
   BrushView? onCreateBrushView(Brush brush) {
     return BrushView(this, props.brush!);
-  }
-
-  void testTip() {
-    ToolTip toolTip = ToolTip(show: true);
-    _tipView = ToolTipView(toolTip);
-    var menu = ToolTipMenu([], title: "Test".toText());
-    for (int i = 0; i < 50; i++) {
-      menu.itemList.add(MenuItem(
-        "Item$i".toText(),
-        LabelStyle(),
-        symbol: CircleSymbol.normal(outerRadius: 8, color: randomColor()),
-        desc: "Desc:$i".toText(),
-      ));
-    }
-    _tipView?.updateView(menu);
-    addView(_tipView!);
   }
 
   @override
@@ -73,13 +73,6 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   void onUpdateDataCommand(covariant Command c) {
     forceLayout = true;
     layout(left, top, right, bottom);
-  }
-
-  @mustCallSuper
-  @override
-  void onLayoutEnd() {
-    super.onLayoutEnd();
-    _gesture.rect = globalBoxBound;
   }
 
   @override
@@ -142,16 +135,16 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   @override
-  bool get enableHover => props.enableHover;
+  bool get enableHover => true;
 
   @override
-  bool get enableDrag => props.enableDrag;
+  bool get enableDrag => true;
 
   @override
-  bool get enableClick => props.enableClick;
+  bool get enableClick => true;
 
   @override
-  bool get enableScale => props.enableScale;
+  bool get enableScale => true;
 
   Offset getScaleFactor() {
     return Offset(scaleXFactor, scaleYFactor);

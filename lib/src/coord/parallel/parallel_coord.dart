@@ -89,10 +89,11 @@ class ParallelCoordImpl extends ParallelCoord {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    final double leftOffset = props.leftPadding.convert(width);
-    final double topOffset = props.topPadding.convert(height);
-    final double rightOffset = props.rightPadding.convert(height);
-    final double bottomOffset = props.bottomPadding.convert(height);
+    var lp = props.layoutParams.padding;
+    final double leftOffset = lp.left;
+    final double topOffset = lp.top;
+    final double rightOffset = lp.right;
+    final double bottomOffset = lp.bottom;
 
     double w = width - leftOffset - rightOffset;
     double h = height - topOffset - bottomOffset;

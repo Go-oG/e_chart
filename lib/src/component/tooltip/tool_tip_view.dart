@@ -15,6 +15,7 @@ class ToolTipView extends LinearLayout {
 
   ToolTipView(this.toolTip) : super(direction: Direction.vertical) {
     layoutParams = const LayoutParams.wrapAll();
+    zLevel=1000;
   }
 
   TitleView? titleView;
@@ -105,6 +106,9 @@ class ToolTipView extends LinearLayout {
 
   @override
   void onDrawBackground(Canvas canvas) {
+    if (!toolTip.show) {
+      return;
+    }
     var tr = selfBoxBound;
     Rect rect = Rect.fromLTRB(tr.left + 4, tr.top + 4, tr.right - 4, tr.bottom - 4);
     toolTip.backgroundStyle.drawRect(canvas, mPaint, rect, toolTip.corner);

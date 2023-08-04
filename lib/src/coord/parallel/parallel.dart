@@ -13,10 +13,7 @@ class Parallel extends Coord {
   num expandWidth;
 
   List<ParallelAxis> axisList;
-  SNumber leftPadding;
-  SNumber topPadding;
-  SNumber rightPadding;
-  SNumber bottomPadding;
+
 
   Parallel({
     this.direction = Direction.horizontal,
@@ -25,18 +22,11 @@ class Parallel extends Coord {
     this.expandCount = 0,
     this.expandWidth = 30,
     this.axisList = const [],
-    this.leftPadding = const SNumber.percent(5),
-    this.topPadding = const SNumber.percent(5),
-    this.rightPadding = const SNumber.percent(5),
-    this.bottomPadding = const SNumber.percent(2),
     super.id,
     super.show,
-    super.enableClick,
-    super.enableDrag,
-    super.enableHover,
-    super.enableScale,
-    super.backgroundColor,
+    super.toolTip,
     super.layoutParams,
+    super.backgroundColor,
   });
 
   @override

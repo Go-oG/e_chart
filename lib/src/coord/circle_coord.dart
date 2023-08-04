@@ -31,10 +31,9 @@ abstract class CircleCoord extends Coord {
   CircleCoord({
     this.radius = const [SNumber.zero, SNumber.percent(40)],
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
-    super.enableClick,
-    super.enableDrag,
-    super.enableHover,
-    super.enableScale,
+    super.brush,
+    super.toolTip,
+    super.layoutParams,
     super.backgroundColor,
     super.id,
     super.show,

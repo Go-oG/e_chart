@@ -189,11 +189,16 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   ///========================管理子View相关方法=======================
   void addView(ChartView view, {int index = -1}) {
     _addViewInner(view, index);
-    requestLayout();
+    if (!inLayout) {
+      requestLayout();
+    }
   }
 
   void removeView(ChartView view) {
     children.remove(view);
+    if (!inLayout) {
+      requestLayout();
+    }
   }
 
   ChartView getChildAt(int index) {
@@ -226,6 +231,9 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
       return;
     }
     children.insert(index, child);
+    children.sort((a, b) {
+      return a.zLevel.compareTo(b.zLevel);
+    });
   }
 
   void clearChildren() {
