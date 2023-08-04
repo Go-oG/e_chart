@@ -29,8 +29,6 @@ class Parallel extends Coord {
     this.topPadding = const SNumber.percent(5),
     this.rightPadding = const SNumber.percent(5),
     this.bottomPadding = const SNumber.percent(2),
-    super.width,
-    super.height,
     super.id,
     super.show,
     super.enableClick,
@@ -38,8 +36,7 @@ class Parallel extends Coord {
     super.enableHover,
     super.enableScale,
     super.backgroundColor,
-    super.margin,
-    super.padding,
+    super.layoutParams,
   });
 
   @override

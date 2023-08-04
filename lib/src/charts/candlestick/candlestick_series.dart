@@ -4,7 +4,6 @@ import 'package:e_chart/e_chart.dart';
 
 class CandleStickSeries extends ChartSeries {
   List<CandleStickGroup> data;
-  String name;
   SNumber boxMinWidth;
   SNumber boxMaxWidth;
   SNumber? boxWidth;
@@ -20,10 +19,10 @@ class CandleStickSeries extends ChartSeries {
     this.boxMinWidth = const SNumber.number(24),
     this.boxMaxWidth = const SNumber.number(48),
     this.boxWidth,
-    this.name = '',
     this.hoverAnimation = true,
     this.areaStyleFun,
     this.borderStyleFun,
+    super.name = '',
     super.animation,
     super.tooltip,
     super.backgroundColor,
@@ -56,7 +55,7 @@ class CandleStickSeries extends ChartSeries {
     }
     var theme = context.option.theme.kLineTheme;
     Color color = data.isUp ? theme.upColor : theme.downColor;
-    return LineStyle(color: color,width: theme.borderWidth).convert(status);
+    return LineStyle(color: color, width: theme.borderWidth).convert(status);
   }
 }
 

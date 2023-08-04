@@ -63,11 +63,10 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    ChartOption config = widget.config;
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child: _buildPainter(config),
+      child: _buildPainter(widget.config),
     );
   }
 

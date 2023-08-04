@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 abstract class ChartSeries extends ChartNotifier<Command> {
   late final String id;
   int seriesIndex = -1;
+  String name;
 
   ///坐标系系统
   CoordSystem? coordSystem;
@@ -36,6 +37,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       this.z = 0,
       this.clip = true,
       this.backgroundColor,
+      this.name='',
       String? id})
       : super(Command.none) {
     if (id == null || id.isEmpty) {

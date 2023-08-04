@@ -26,8 +26,9 @@ class GridCoordImpl extends GridCoord {
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     Size size = Size(parentWidth, parentHeight);
-    double w = parentWidth - props.padding.horizontal;
-    double h = parentHeight - props.padding.vertical;
+    var lp = layoutParams.padding;
+    double w = parentWidth - lp.horizontal;
+    double h = parentHeight - lp.vertical;
     xMap.forEach((key, value) {
       value.doMeasure(w, h);
     });
@@ -42,10 +43,11 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    double topOffset = props.padding.top;
-    double bottomOffset = props.padding.bottom;
-    double leftOffset = props.padding.left;
-    double rightOffset = props.padding.right;
+    var lp = layoutParams.padding;
+    double topOffset = lp.top;
+    double bottomOffset = lp.bottom;
+    double leftOffset = lp.left;
+    double rightOffset = lp.right;
 
     ///计算所有X轴在竖直方向上的占用的高度
     List<XAxisImpl> topList = [];
@@ -90,14 +92,22 @@ class GridCoordImpl extends GridCoord {
     bottomOffset = bottomList.isEmpty ? 0 : bottomList.first.axis.axisLine.width / 2;
     leftOffset = leftList.isEmpty ? 0 : leftList.first.axis.axisLine.width / 2;
     rightOffset = rightList.isEmpty ? 0 : rightList.first.axis.axisLine.width / 2;
-
     for (var view in children) {
-      view.layout(
-        contentBox.left + leftOffset,
-        contentBox.top + topOffset,
-        contentBox.right - rightOffset,
-        contentBox.bottom - bottomOffset,
-      );
+      double ll = contentBox.left + leftOffset;
+      double tt = contentBox.top + topOffset;
+      double rr, bb;
+      if (view.layoutParams.width.isMatch) {
+        rr = contentBox.right - rightOffset;
+      } else {
+        rr = ll + view.width;
+      }
+
+      if (view.layoutParams.height.isMatch) {
+        bb = contentBox.bottom - bottomOffset;
+      } else {
+        bb = tt + view.height;
+      }
+      view.layout(ll, tt, rr, bb);
     }
   }
 
@@ -284,6 +294,9 @@ class GridCoordImpl extends GridCoord {
       value.onDrawAxisPointer(canvas, mPaint, offset);
     });
   }
+
+  @override
+  DragType get dragType => DragType.drag;
 
   @override
   void onDragMove(Offset offset, Offset diff) {

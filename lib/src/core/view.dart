@@ -9,7 +9,14 @@ abstract class ChartView with ViewStateProvider {
 
   Context get context => _context!;
 
-  LayoutParams layoutParams = LayoutParams.match();
+  ///存储当前节点的布局方式
+  LayoutParams _layoutParams = const LayoutParams.matchAll();
+
+  LayoutParams get layoutParams => _layoutParams;
+
+  set layoutParams(LayoutParams p) {
+    _layoutParams = p;
+  }
 
   ///存储当前视图在父视图中的位置属性
   Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
@@ -96,25 +103,20 @@ abstract class ChartView with ViewStateProvider {
     double w = 0;
     double h = 0;
     LayoutParams lp = layoutParams;
-    num wn = lp.width.number;
-    if (wn == LayoutParams.matchParent) {
+
+    if (lp.width.isMatch) {
       w = parentWidth;
-    } else if (wn == LayoutParams.wrapContent) {
+    } else if (lp.width.isWrap) {
       w = 0;
-    } else if (wn >= 0) {
+    } else {
       w = lp.width.convert(parentWidth);
-    } else {
-      w = parentWidth;
     }
-    num hn = lp.height.number;
-    if (hn == LayoutParams.matchParent) {
+    if (lp.height.isMatch) {
       h = parentHeight;
-    } else if (hn == LayoutParams.wrapContent) {
+    } else if (lp.height.isWrap) {
       h = 0;
-    } else if (hn >= 0) {
-      h = lp.height.convert(parentHeight);
     } else {
-      h = parentHeight;
+      h = lp.height.convert(parentHeight);
     }
     w += lp.padding.horizontal;
     h += lp.padding.vertical;
@@ -441,8 +443,8 @@ abstract class GestureView extends ChartView {
 
   @mustCallSuper
   @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
+  void onLayoutEnd() {
+    super.onLayoutEnd();
     onGestureAreaInit(_gesture);
   }
 
@@ -504,7 +506,7 @@ abstract class GestureView extends ChartView {
         onDragEnd();
       }
 
-      if (context.option.dragType == DragType.longPress) {
+      if (dragType == DragType.longPress) {
         _gesture.longPressStart = (e) {
           dragStart(toLocalOffset(e.globalPosition));
         };
@@ -527,7 +529,7 @@ abstract class GestureView extends ChartView {
       }
     }
     if (enableScale) {
-      if (context.option.scaleType == ScaleType.doubleTap) {
+      if (scaleType == ScaleType.doubleTap) {
         _gesture.doubleClick = (e) {
           onScaleStart(toLocalOffset(e.globalPosition));
 
@@ -551,6 +553,10 @@ abstract class GestureView extends ChartView {
   bool onInitGestureHook() {
     return false;
   }
+
+  DragType get dragType => context.option.dragType;
+
+  ScaleType get scaleType => context.option.scaleType;
 
   bool get enableHover => !(Platform.isAndroid || Platform.isIOS);
 
@@ -690,29 +696,62 @@ abstract class CoordChildView<T extends ChartSeries> extends SeriesView<T> {
 }
 
 class LayoutParams {
-  static const int matchParent = -1;
-  static const int wrapContent = -2;
-
-  final SNumber width;
-  final SNumber height;
+  final SizeParams width;
+  final SizeParams height;
 
   final EdgeInsets margin;
   final EdgeInsets padding;
 
-  LayoutParams(
+  const LayoutParams(
     this.width,
     this.height, {
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
   });
 
-  LayoutParams.match({this.margin = EdgeInsets.zero, this.padding = EdgeInsets.zero})
-      : width = const SNumber.number(matchParent),
-        height = const SNumber.number(matchParent);
-
-  LayoutParams.wrap({
+  const LayoutParams.matchAll({
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
-  })  : width = const SNumber.number(wrapContent),
-        height = const SNumber.number(wrapContent);
+  })  : width = const SizeParams.match(),
+        height = const SizeParams.match();
+
+  const LayoutParams.wrapAll({
+    this.margin = EdgeInsets.zero,
+    this.padding = EdgeInsets.zero,
+  })  : width = const SizeParams.wrap(),
+        height = const SizeParams.wrap();
+}
+
+class SizeParams {
+  static const _wrapType = -2;
+  static const _matchType = -1;
+  static const _normal = 0;
+  final SNumber size;
+  final int _type;
+
+  const SizeParams(this.size) : _type = _normal;
+
+  const SizeParams.wrap()
+      : _type = _wrapType,
+        size = SNumber.zero;
+
+  const SizeParams.match()
+      : _type = _matchType,
+        size = SNumber.zero;
+
+  bool get isWrap {
+    return _type == _wrapType;
+  }
+
+  bool get isMatch {
+    return _type == _matchType;
+  }
+
+  bool get isNormal {
+    return _type == _normal;
+  }
+
+  double convert(num n) {
+    return size.convert(n);
+  }
 }

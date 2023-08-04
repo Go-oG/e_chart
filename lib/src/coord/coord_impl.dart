@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 ///包括了Brush、ToolTip相关组件
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
-
+  final RectGesture _gesture = RectGesture();
   double scaleXFactor = 1;
   double scaleYFactor = 1;
   double scrollXOffset = 0;
@@ -15,6 +15,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   Rect contentBox = Rect.zero;
 
   BrushView? _brushView;
+  ToolTipView? _tipView;
 
   CoordLayout(this.props) {
     if (props.brush != null) {
@@ -23,18 +24,27 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
         addView(_brushView!);
       }
     }
+    testTip();
   }
-
-  final RectGesture _gesture = RectGesture();
 
   BrushView? onCreateBrushView(Brush brush) {
     return BrushView(this, props.brush!);
   }
 
-  @override
-  void onCreate() {
-    super.onCreate();
-    _initGesture();
+  void testTip() {
+    ToolTip toolTip = ToolTip(show: true);
+    _tipView = ToolTipView(toolTip);
+    var menu = ToolTipMenu([], title: "Test".toText());
+    for (int i = 0; i < 50; i++) {
+      menu.itemList.add(MenuItem(
+        "Item$i".toText(),
+        LabelStyle(),
+        symbol: CircleSymbol.normal(outerRadius: 8, color: randomColor()),
+        desc: "Desc:$i".toText(),
+      ));
+    }
+    _tipView?.updateView(menu);
+    addView(_tipView!);
   }
 
   @override
@@ -77,7 +87,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     List<ChartView> vl = [];
     for (var child in children) {
       int count = canvas.getSaveCount();
-      if (child is BrushView) {
+      if (child is BrushView || child is ToolTipView) {
         vl.add(child);
       } else {
         drawChild(child, canvas);
@@ -131,122 +141,17 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     super.onBrushClearEvent(event);
   }
 
-  Offset _lastHover = Offset.zero;
-
-  Offset _lastDrag = Offset.zero;
-
-  void _initGesture() {
-    _gesture.clear();
-    context.removeGesture(_gesture);
-    context.addGesture(_gesture);
-
-    if (enableClick) {
-      _gesture.click = (e) {
-        onClick(toLocalOffset(e.globalPosition));
-      };
-    }
-    if (enableHover) {
-      _gesture.hoverStart = (e) {
-        _lastHover = toLocalOffset(e.globalPosition);
-        onHoverStart(_lastHover);
-      };
-      _gesture.hoverMove = (e) {
-        Offset of = toLocalOffset(e.globalPosition);
-        onHoverMove(of, _lastHover);
-        _lastHover = of;
-      };
-      _gesture.hoverEnd = (e) {
-        _lastHover = Offset.zero;
-        onHoverEnd();
-      };
-    }
-    if (enableDrag) {
-      dragStart(Offset offset) {
-        _lastDrag = offset;
-        onDragStart(offset);
-      }
-
-      dragMove(Offset offset) {
-        var dx = offset.dx - _lastDrag.dx;
-        var dy = offset.dy - _lastDrag.dy;
-        _lastDrag = offset;
-        onDragMove(offset, Offset(dx, dy));
-      }
-
-      dragCancel() {
-        _lastDrag = Offset.zero;
-        onDragEnd();
-      }
-
-      if (context.option.dragType == DragType.longPress) {
-        _gesture.longPressStart = (e) {
-          dragStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.longPressMove = (e) {
-          dragMove(toLocalOffset(e.globalPosition));
-        };
-        _gesture.longPressEnd = () {
-          dragCancel();
-        };
-      } else {
-        _gesture.dragStart = (e) {
-          dragStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.dragMove = (e) {
-          dragMove(toLocalOffset(e.globalPosition));
-        };
-        _gesture.dragEnd = () {
-          dragCancel();
-        };
-      }
-    }
-    if (enableScale) {
-      if (context.option.scaleType == ScaleType.doubleTap) {
-        _gesture.doubleClick = (e) {
-          onScaleStart(toLocalOffset(e.globalPosition));
-          onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, true);
-        };
-      } else {
-        _gesture.scaleStart = (e) {
-          onScaleStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.scaleUpdate = (e) {
-          onScaleUpdate(toLocalOffset(e.focalPoint), e.rotation, e.scale, false);
-        };
-        _gesture.scaleEnd = () {
-          onScaleEnd();
-        };
-      }
-    }
-  }
-
+  @override
   bool get enableHover => props.enableHover;
 
+  @override
   bool get enableDrag => props.enableDrag;
 
+  @override
   bool get enableClick => props.enableClick;
 
+  @override
   bool get enableScale => props.enableScale;
-
-  void onClick(Offset offset) {}
-
-  void onHoverStart(Offset offset) {}
-
-  void onHoverMove(Offset offset, Offset last) {}
-
-  void onHoverEnd() {}
-
-  void onDragStart(Offset offset) {}
-
-  void onDragMove(Offset offset, Offset diff) {}
-
-  void onDragEnd() {}
-
-  void onScaleStart(Offset offset) {}
-
-  void onScaleUpdate(Offset offset, double rotation, double scale, bool doubleClick) {}
-
-  void onScaleEnd() {}
 
   Offset getScaleFactor() {
     return Offset(scaleXFactor, scaleYFactor);
@@ -262,14 +167,23 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   ///返回不包含BrushView的子视图列表
-  List<ChartView> getChildNotBrush() {
+  List<ChartView> getChildNotComponent() {
     List<ChartView> vl = [];
     for (var v in children) {
-      if (v is! BrushView) {
+      if (v is! BrushView || v is! ToolTipView) {
         vl.add(v);
       }
     }
     return vl;
   }
 
+  List<ChartView> getComponentChild() {
+    List<ChartView> vl = [];
+    for (var v in children) {
+      if (v is BrushView || v is ToolTipView) {
+        vl.add(v);
+      }
+    }
+    return vl;
+  }
 }
