@@ -33,13 +33,25 @@ class GroupData {
   }
 }
 
-class ItemData {
+class ItemData extends BaseItemData<num> {
+  ItemData({num value = 0, super.label, super.id}) : super(value);
+}
+
+class BaseItemData<T> {
   late final String id;
-  num value;
+  late T value;
   DynamicText? label;
   bool show = true;
 
-  ItemData({this.value = 0, this.label, String? id}) {
+  BaseItemData(this.value, {this.label, String? id}) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+  }
+
+  BaseItemData.lazy( {this.label, String? id}){
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {
@@ -54,7 +66,7 @@ class ItemData {
 
   @override
   bool operator ==(Object other) {
-    return other is ItemData && other.id == id;
+    return other is BaseItemData && other.id == id;
   }
 }
 

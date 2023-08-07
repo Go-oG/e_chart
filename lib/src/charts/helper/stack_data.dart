@@ -44,15 +44,36 @@ class StackGroupData<T> {
   }
 }
 
-class StackItemData extends ItemData {
+class StackItemData {
+  late final String id;
   DynamicData x;
-
+  DynamicData y;
+  DynamicText? label;
   num stackUp = 0;
   num stackDown = 0;
 
-  StackItemData(this.x, num value, {super.id, super.label}) : super(value: value) {
-    stackUp = value;
+  StackItemData(this.x, this.y, {String? id, this.label}) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+    if (!x.isNum && !y.isNum) {
+      throw ChartError('x 和 y 必须有一个是num类型的数据');
+    }
+    if (y.isNum) {
+      stackUp = y.data;
+    } else {
+      stackUp = x.data;
+    }
     stackDown = 0;
+  }
+
+  num get value {
+    if (y.isNum) {
+      return y.data;
+    }
+    return x.data;
   }
 
   @override
