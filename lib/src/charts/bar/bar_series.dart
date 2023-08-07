@@ -18,21 +18,21 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
 
   ChartAlign? labelAlign;
 
-  Fun3<BarItemData, BarGroupData, AreaStyle?>? areaStyleFun;
-  Fun3<BarItemData, BarGroupData, LineStyle?>? borderStyleFun;
-  Fun3<BarItemData, BarGroupData, Corner>? cornerFun;
+  Fun4<BarItemData, BarGroupData, Set<ViewState>, AreaStyle?>? areaStyleFun;
+  Fun4<BarItemData, BarGroupData, Set<ViewState>, LineStyle?>? borderStyleFun;
+  Fun4<BarItemData, BarGroupData, Set<ViewState>, Corner>? cornerFun;
 
   /// 背景样式
-  Fun3<BarItemData?, BarGroupData, AreaStyle?>? groupStyleFun;
+  Fun4<BarItemData?, BarGroupData, Set<ViewState>, AreaStyle?>? groupStyleFun;
 
   /// 标签转换
-  Fun3<BarItemData, BarGroupData, DynamicText?>? labelFormat;
+  Fun4<BarItemData, BarGroupData, Set<ViewState>, DynamicText?>? labelFormat;
 
   /// 标签样式
-  Fun3<BarItemData, BarGroupData, LabelStyle?>? labelStyleFun;
+  Fun4<BarItemData, BarGroupData, Set<ViewState>, LabelStyle?>? labelStyleFun;
 
   /// 标签对齐
-  Fun3<BarItemData, BarGroupData, ChartAlign>? labelAlignFun;
+  Fun4<BarItemData, BarGroupData, Set<ViewState>, ChartAlign>? labelAlignFun;
 
   /// 标记点、线相关的
   Fun2<BarGroupData, MarkPoint>? markPointFun;
@@ -69,9 +69,9 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
     super.tooltip,
   });
 
-  LabelStyle? getLabelStyle(Context context, BarItemData data, BarGroupData group) {
+  LabelStyle? getLabelStyle(Context context, BarItemData data, BarGroupData group, [Set<ViewState>? status]) {
     if (labelStyleFun != null) {
-      return labelStyleFun?.call(data, group);
+      return labelStyleFun?.call(data, group, status ?? {});
     }
     if (labelStyle != null) {
       return labelStyle;
@@ -80,9 +80,9 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
     return LabelStyle(textStyle: TextStyle(color: theme.labelTextColor, fontSize: theme.labelTextSize));
   }
 
-  ChartAlign getLabelAlign(Context context, BarItemData data, BarGroupData group) {
+  ChartAlign getLabelAlign(Context context, BarItemData data, BarGroupData group, [Set<ViewState>? status]) {
     if (labelAlignFun != null) {
-      return labelAlignFun!.call(data, group);
+      return labelAlignFun!.call(data, group, status ?? {});
     }
     if (labelAlign != null) {
       return labelAlign!;
@@ -94,27 +94,26 @@ class BarSeries extends BaseGridSeries<BarItemData, BarGroupData> {
     }
   }
 
-  DynamicText? formatData(Context context,BarItemData data, BarGroupData group){
-    if(labelFormat!=null){
-      return labelFormat?.call(data,group);
+  DynamicText? formatData(Context context, BarItemData data, BarGroupData group, [Set<ViewState>? status]) {
+    if (labelFormat != null) {
+      return labelFormat?.call(data, group, status ?? {});
     }
     return formatNumber(data.stackUp).toText();
   }
 
   AreaStyle? getAreaStyle(Context context, BarItemData data, BarGroupData group, int groupIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group);
+      return areaStyleFun?.call(data, group, status ?? {});
     }
     var chartTheme = context.option.theme;
     return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
   }
 
-  LineStyle? getBorderStyle(Context context,BarItemData data, BarGroupData group, int groupIndex, [Set<ViewState>? status]) {
+  LineStyle? getBorderStyle(Context context, BarItemData data, BarGroupData group, int groupIndex, [Set<ViewState>? status]) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, group);
+      return borderStyleFun!.call(data, group, status ?? {});
     }
     var theme = context.option.theme.barTheme;
     return theme.getBorderStyle()?.convert(status);
   }
-
 }

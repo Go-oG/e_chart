@@ -198,7 +198,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
       if (data == null || off == null) {
         return;
       }
-      nodeMap[data] = SymbolNode(off, data, group, groupIndex);
+      nodeMap[data] = SymbolNode(data, i, groupIndex, off, group);
     });
     return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap);
   }
@@ -252,7 +252,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
       if (data == null || off == null) {
         return;
       }
-      nodeMap[data] = SymbolNode(off, data, group, groupIndex);
+      nodeMap[data] = SymbolNode(data, i, groupIndex, off, group);
     });
 
     return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap);
@@ -419,7 +419,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   @override
   AreaStyle? buildAreaStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
     if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(group, groupIndex);
+      return series.areaStyleFun?.call(group, groupIndex,status??{});
     }
     var chartTheme = context.option.theme;
     var theme = chartTheme.lineTheme;
@@ -433,7 +433,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   @override
   LineStyle? buildLineStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
     if (series.lineStyleFun != null) {
-      return series.lineStyleFun?.call(group, groupIndex);
+      return series.lineStyleFun?.call(group, groupIndex,status??{});
     }
     var chartTheme = context.option.theme;
     var theme = chartTheme.lineTheme;
@@ -447,5 +447,4 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
 
   @override
   SeriesType get seriesType => SeriesType.line;
-
 }

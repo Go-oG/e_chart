@@ -23,27 +23,27 @@ class Logger {
     _config = config;
   }
 
-  static Future<void> v(dynamic content, [String? tag]) {
-    return _printLog(Level.V, _config.getVerbaseColor(), tag, content, StackTrace.current);
+  static void v(dynamic content, [String? tag]) {
+    _printLog(Level.V, _config.getVerbaseColor(), tag, content, StackTrace.current);
   }
 
-  static Future<void> d(dynamic content, [String? tag]) {
-    return _printLog(Level.D, _config.getDebugColor(), tag, content, StackTrace.current);
+  static void d(dynamic content, [String? tag]) {
+    _printLog(Level.D, _config.getDebugColor(), tag, content, StackTrace.current);
   }
 
-  static Future<void> i(dynamic content, [String? tag]) {
-    return _printLog(Level.I, _config.getInfoColor(), tag, content, StackTrace.current);
+  static void i(dynamic content, [String? tag]) {
+    _printLog(Level.I, _config.getInfoColor(), tag, content, StackTrace.current);
   }
 
-  static Future<void> w(dynamic content, [String? tag]) {
-    return _printLog(Level.W, _config.getWarningColor(), tag, content, StackTrace.current);
+  static void w(dynamic content, [String? tag]) {
+    _printLog(Level.W, _config.getWarningColor(), tag, content, StackTrace.current);
   }
 
-  static Future<void> e(dynamic content, [String? tag]) {
-    return _printLog(Level.E, _config.getErrorColor(), tag, content, StackTrace.current);
+  static void e(dynamic content, [String? tag]) {
+    _printLog(Level.E, _config.getErrorColor(), tag, content, StackTrace.current);
   }
 
-  static Future<void> _printLog(Level level, LogColor color, String? tag, dynamic content, StackTrace stackTrace) async {
+  static void _printLog(Level level, LogColor color, String? tag, dynamic content, StackTrace stackTrace) {
     if (!_config.enablePrint) {
       return;
     }
@@ -413,7 +413,10 @@ class LogColor {
     b = color.blue;
   }
 
+  String? _pre;
+
   String getStrPre() {
-    return "$ansiEsc$r;$g;${b}m";
+    _pre ??= "$ansiEsc$r;$g;${b}m";
+    return _pre!;
   }
 }
