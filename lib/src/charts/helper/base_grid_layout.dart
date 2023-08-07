@@ -235,5 +235,4 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   @override
   CoordSystem get coordSystem=>CoordSystem.grid;
 
-
 }
