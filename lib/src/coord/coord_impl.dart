@@ -23,10 +23,8 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   void onCreate() {
     super.onCreate();
     if (props.brush != null) {
-      _brushView = onCreateBrushView(props.brush!);
-      if (_brushView != null) {
-        addView(_brushView!);
-      }
+      _brushView = BrushView(this, props.brush!);
+      addView(_brushView!);
     }
     var tooltip = findToolTip();
     if (tooltip != null) {
@@ -41,10 +39,6 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
       return props.toolTip;
     }
     return context.option.toolTip;
-  }
-
-  BrushView? onCreateBrushView(Brush brush) {
-    return BrushView(this, props.brush!);
   }
 
   @override
@@ -145,6 +139,9 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   @override
   bool get enableScale => true;
+
+  @override
+  bool get enableLongPress => true;
 
   Offset getScaleFactor() {
     return Offset(scaleXFactor, scaleYFactor);

@@ -116,7 +116,7 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItem
         continue;
       }
       for (var symbol in lineNode.symbolMap.values) {
-        if (path.contains(symbol.offset)) {
+        if (path.contains(symbol.attr)) {
           symbolSet.add(symbol);
         }
       }
@@ -153,14 +153,14 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItem
 
   void drawSymbol(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
     lineNode.symbolMap.forEach((key, node) {
-      if (!clipRect.contains(node.offset)) {
+      if (!clipRect.contains(node.attr)) {
         return;
       }
       if (series.symbolFun != null) {
-        ChartSymbol? symbol = series.symbolFun?.call(node.data, node.group);
-        symbol?.draw(canvas, mPaint, node.offset);
+        ChartSymbol? symbol = series.symbolFun?.call(node.data, node.group, node.status);
+        symbol?.draw(canvas, mPaint, node.attr);
       } else if (theme.showSymbol) {
-        theme.symbol.draw(canvas, mPaint, node.offset);
+        theme.symbol.draw(canvas, mPaint, node.attr);
       }
     });
   }
@@ -168,10 +168,10 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItem
   void drawSymbolForPolar(Canvas canvas, List<SymbolNode> symbolList, LineTheme theme) {
     each(symbolList, (symbol, p1) {
       if (series.symbolFun != null) {
-        ChartSymbol? cs = series.symbolFun?.call(symbol.data, symbol.group);
-        cs?.draw(canvas, mPaint, symbol.offset);
+        ChartSymbol? cs = series.symbolFun?.call(symbol.data, symbol.group, symbol.status);
+        cs?.draw(canvas, mPaint, symbol.attr);
       } else if (theme.showSymbol) {
-        theme.symbol.draw(canvas, mPaint, symbol.offset);
+        theme.symbol.draw(canvas, mPaint, symbol.attr);
       }
     });
   }

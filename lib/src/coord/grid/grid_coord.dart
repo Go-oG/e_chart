@@ -296,9 +296,6 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  DragType get dragType => DragType.drag;
-
-  @override
   void onDragMove(Offset offset, Offset diff) {
     if (!contentBox.contains(offset)) {
       return;
@@ -385,35 +382,39 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onHoverStart(Offset offset) {
-    _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+    super.onHoverStart(offset);
     if (needInvalidateAxisPointer(false)) {
-      invalidate();
-    }
-  }
-
-  @override
-  void onHoverEnd() {
-    if (_axisPointerOffset != null) {
-      _axisPointerOffset = null;
+      _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
       invalidate();
     }
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+    super.onHoverMove(offset, last);
     if (needInvalidateAxisPointer(false)) {
+      _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+      invalidate();
+    }
+  }
+
+  @override
+  void onHoverEnd() {
+    super.onHoverEnd();
+    if (needInvalidateAxisPointer(false)) {
+      _axisPointerOffset = null;
       invalidate();
     }
   }
 
   @override
   void onClick(Offset offset) {
-    _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
-    if (!contentBox.contains(offset)) {
-      _axisPointerOffset = null;
-    }
+    super.onClick(offset);
     if (needInvalidateAxisPointer(true)) {
+      _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+      if (!contentBox.contains(offset)) {
+        _axisPointerOffset = null;
+      }
       invalidate();
     }
   }

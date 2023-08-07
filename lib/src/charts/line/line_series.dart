@@ -6,20 +6,20 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
 
   LabelStyle? labelStyle;
 
-  Fun3<LineGroupData, int, LineStyle?>? lineStyleFun;
-  Fun3<LineGroupData, int, AreaStyle?>? areaStyleFun;
+  Fun4<LineGroupData, int, Set<ViewState>, LineStyle?>? lineStyleFun;
+  Fun4<LineGroupData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
 
   /// 符号样式
-  Fun3<LineItemData, LineGroupData, ChartSymbol?>? symbolFun;
+  Fun4<LineItemData, LineGroupData, Set<ViewState>, ChartSymbol?>? symbolFun;
 
   ///返回非空值表示是阶梯折线图
   Fun2<LineGroupData, StepType?>? stepLineFun;
 
   /// 标签转换
-  Fun3<LineItemData, LineGroupData, DynamicText?>? labelFormatFun;
+  Fun4<LineItemData, LineGroupData, Set<ViewState>, DynamicText?>? labelFormatFun;
 
   /// 标签样式
-  Fun3<LineItemData, LineGroupData, LabelStyle>? labelStyleFun;
+  Fun4<LineItemData, LineGroupData, Set<ViewState>, LabelStyle>? labelStyleFun;
 
   /// 标记点、线相关的
   Fun2<LineGroupData, List<MarkPoint>>? markPointFun;
@@ -53,9 +53,9 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
     super.tooltip,
   });
 
-  LabelStyle? getLabelStyle(Context context, LineItemData data, LineGroupData group) {
+  LabelStyle? getLabelStyle(Context context, LineItemData data, LineGroupData group, [Set<ViewState>? status]) {
     if (labelStyleFun != null) {
-      return labelStyleFun?.call(data, group);
+      return labelStyleFun?.call(data, group, status ?? {});
     }
     if (labelStyle != null) {
       return labelStyle;
@@ -64,16 +64,16 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
     return LabelStyle(textStyle: TextStyle(color: theme.labelTextColor, fontSize: theme.labelTextSize));
   }
 
-  DynamicText? formatData(Context context, LineItemData data, LineGroupData group) {
+  DynamicText? formatData(Context context, LineItemData data, LineGroupData group, [Set<ViewState>? status]) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data, group);
+      return labelFormatFun?.call(data, group, status ?? {});
     }
     return formatNumber(data.stackUp).toText();
   }
 
   AreaStyle? getAreaStyle(Context context, LineGroupData group, int groupIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(group, groupIndex);
+      return areaStyleFun?.call(group, groupIndex, status ?? {});
     }
     var chartTheme = context.option.theme;
     var theme = chartTheme.lineTheme;
@@ -86,7 +86,7 @@ class LineSeries extends BaseGridSeries<LineItemData, LineGroupData> {
 
   LineStyle? getBorderStyle(Context context, LineItemData data, LineGroupData group, int groupIndex, [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
-      return lineStyleFun?.call(group, groupIndex);
+      return lineStyleFun?.call(group, groupIndex, status ?? {});
     }
     var chartTheme = context.option.theme;
     var theme = chartTheme.lineTheme;

@@ -50,13 +50,16 @@ class AreaNode {
   }
 }
 
-class SymbolNode {
-  final Offset offset;
-  final LineItemData data;
+class SymbolNode extends DataNode<Offset, LineItemData> {
   final LineGroupData group;
-  final int groupIndex;
 
-  const SymbolNode(this.offset, this.data, this.group, this.groupIndex);
+  SymbolNode(
+    super.data,
+    super.dataIndex,
+    super.groupIndex,
+    super.attr,
+    this.group,
+  );
 }
 
 class SubPath {

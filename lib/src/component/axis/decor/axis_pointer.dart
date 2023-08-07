@@ -14,7 +14,7 @@ class AxisPointer {
   LabelStyle labelStyle;
 
   AxisPointer({
-    this.show = false,
+    this.show = true,
     this.snap,
     this.triggerOn = TriggerOn.moveAndClick,
     this.lineStyle = const LineStyle(),

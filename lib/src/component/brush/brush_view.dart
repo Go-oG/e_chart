@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///框选
 ///BrushView 只能在坐标系中出现
-///覆盖在单个坐标系的最顶层
+///覆盖在单个坐标系的最顶层(比TooltipView 低)
 class BrushView extends ChartView {
   final CoordLayout coord;
   final Brush brush;
@@ -11,7 +11,7 @@ class BrushView extends ChartView {
 
   BrushView(this.coord, this.brush) {
     layoutParams = const LayoutParams.matchAll();
-    zLevel = 100;
+    zLevel = 1000;
   }
 
   @override

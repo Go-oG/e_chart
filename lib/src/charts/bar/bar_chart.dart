@@ -42,7 +42,7 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
       }
       AreaStyle? style;
       if (series.groupStyleFun != null) {
-        style = series.groupStyleFun?.call(node.data, node.parent);
+        style = series.groupStyleFun?.call(node.data, node.parent,node.status);
       } else if (group.isHover) {
         style = s2;
       }
@@ -93,7 +93,7 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
       } else {
         Corner corner = series.corner;
         if (series.cornerFun != null) {
-          corner = series.cornerFun!.call(data, group);
+          corner = series.cornerFun!.call(data, group,node.status);
         }
         as?.drawRect(canvas, mPaint, node.rect, corner);
         ls?.drawRect(canvas, mPaint, node.rect, corner);
