@@ -58,17 +58,11 @@ abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData
   @override
   MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
     var valueType = markPoint.data.valueType;
-    if (markPoint.data.data != null) {
-      int index = markPoint.data.valueDimIndex!;
-      var node = MarkPointNode(markPoint, markPoint.data.data!);
-      node.offset = findGridCoord().dataToPointSingle(markPoint.data.data!, index, markPoint.data.xAxis!);
-      return node;
-    }
-    bool vertical = series.direction == Direction.vertical;
-    if (valueType != null) {
+    if (valueType != null || markPoint.data.data != null) {
       return super.onLayoutMarkPoint(markPoint, group, newNodeMap);
     }
     var gridCoord = findGridCoord();
+    bool vertical = series.direction == Direction.vertical;
     if (markPoint.data.coord != null) {
       var coord = markPoint.data.coord!;
       var x = coord[0].convert(gridCoord.getAxisLength(group.xAxisIndex, true));

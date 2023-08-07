@@ -32,4 +32,5 @@ class LineAxisAttrs extends AxisAttrs {
   }
 
   double get distance => start.distance2(end) * scaleRatio;
+  double get distanceOrigin => start.distance2(end);
 }
