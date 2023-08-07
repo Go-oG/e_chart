@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'axis/base_grid_axis_impl.dart';
+import 'axis/grid_axis_impl.dart';
 
 ///实现二维坐标系
 class GridCoordImpl extends GridCoord {
@@ -482,19 +482,9 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
-    List<Offset> dx = getXAxis(xAxisIndex).dataToPoint(x);
-    List<Offset> dy = getYAxis(yAxisIndex).dataToPoint(y);
-    return Offset(dx[0].dx, dy[0].dy);
-  }
-
-  @override
-  Offset dataToPointSingle(DynamicData data, int axisIndex, bool xAxis) {
-    if(xAxis){
-      return getXAxis(axisIndex).dataToPoint(data)[0];
-    }else{
-      return getYAxis(axisIndex).dataToPoint(data)[0];
-    }
+  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool xAxis) {
+    var axis=xAxis?getXAxis(axisIndex):getYAxis(axisIndex);
+    return axis.dataToPoint(data);
   }
 
   @override
@@ -638,8 +628,6 @@ class GridCoordImpl extends GridCoord {
     });
     return size;
   }
-
-
 }
 
 abstract class GridCoord extends CoordLayout<Grid> {
@@ -649,10 +637,7 @@ abstract class GridCoord extends CoordLayout<Grid> {
   Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
 
   ///该方法适用于Line
-  Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
-
-  Offset dataToPointSingle(DynamicData data,int axisIndex,bool xAxis);
-
+  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool xAxis);
 
   GridAxis getAxis(int axisIndex, bool isXAxis);
 

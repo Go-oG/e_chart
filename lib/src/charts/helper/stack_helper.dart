@@ -135,6 +135,47 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
 
   MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
     var valueType = markPoint.data.valueType;
+    if (markPoint.data.data != null) {
+      var dl = markPoint.data.data!;
+      if (dl.length < 2) {
+        throw ChartError("in GridCoord or PolarCoord ,markPoint.data must is null or length >2");
+      }
+      var node = MarkPointNode(markPoint, dl[1]);
+      if (coordSystem == CoordSystem.polar) {
+        var position = findPolarCoord().dataToPosition(dl[0], dl[1]);
+        var angle = (position.angle.first + position.angle.last) / 2;
+        var radius = (position.radius.first + position.radius.last) / 2;
+        node.offset = circlePoint(radius, angle, position.center);
+      } else {
+        var gridCoord = findGridCoord();
+        List<Offset> xl = gridCoord.dataToPoint(group.xAxisIndex, dl[0], true);
+        List<Offset> yl = gridCoord.dataToPoint(group.yAxisIndex, dl[1], false);
+        double dx, dy;
+        if (xl.length == 1) {
+          dx = xl[0].dx;
+        } else {
+          var xAxis = gridCoord.getAxis(group.xAxisIndex, true);
+          if (xAxis.isCategoryAxis && xAxis.categoryCenter) {
+            dx = (xl[0].dx + xl[1].dx) / 2;
+          } else {
+            dx = xl[0].dx;
+          }
+        }
+        if (yl.length == 1) {
+          dy = yl[0].dy;
+        } else {
+          var yAxis = gridCoord.getAxis(group.yAxisIndex, false);
+          if (yAxis.isCategoryAxis && yAxis.categoryCenter) {
+            dy = (yl[0].dy + yl[1].dy) / 2;
+          } else {
+            dy = yl[0].dy;
+          }
+        }
+        node.offset = Offset(dx, dy);
+      }
+      return node;
+    }
+
     if (valueType != null) {
       var info = series.helper.getValueInfo(group);
       if (info == null) {
@@ -155,8 +196,8 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
 
       var node = MarkPointNode(markPoint, data.value.toData());
       if (coordSystem == CoordSystem.polar) {
-        var arc=snode.arc;
-        node.offset=circlePoint(arc.outRadius, arc.centerAngle(),arc.center);
+        var arc = snode.arc;
+        node.offset = circlePoint(arc.outRadius, arc.centerAngle(), arc.center);
       } else {
         if (data.stackUp >= 0) {
           node.offset = snode.rect.topCenter;

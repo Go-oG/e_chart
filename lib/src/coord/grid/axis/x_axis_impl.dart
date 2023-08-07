@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/coord/grid/axis/base_grid_axis_impl.dart';
+import 'package:e_chart/src/coord/grid/axis/grid_axis_impl.dart';
 import 'package:flutter/material.dart';
 
 ///横向轴
@@ -9,7 +9,6 @@ class XAxisImpl extends BaseGridAxisImpl {
 
   @override
   void doMeasure(double parentWidth, double parentHeight) {
-
     if (!axis.show) {
       axisInfo.start = axis.position == Align2.start ? const Offset(0, 0) : Offset(0, parentHeight);
       axisInfo.end = Offset(parentWidth, 0);
@@ -51,5 +50,4 @@ class XAxisImpl extends BaseGridAxisImpl {
     }
     return ol;
   }
-
 }

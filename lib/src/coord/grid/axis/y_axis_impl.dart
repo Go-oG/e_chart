@@ -49,7 +49,7 @@ class YAxisImpl extends XAxisImpl {
     List<Offset> ol = [];
     for (var d in nl) {
       double y = d.toDouble();
-      ol.add(Offset(attrs.start.dx, y));
+      ol.add(Offset(attrs.start.dx, attrs.distanceOrigin - y));
     }
     return ol;
   }

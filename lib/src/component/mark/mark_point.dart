@@ -30,15 +30,14 @@ class MarkPoint {
 }
 
 class MarkPointData {
-  final DynamicData? data;
-  final bool? xAxis;
+  final List<DynamicData>? data;
 
   final ValueType? valueType;
   final int? valueDimIndex;
 
   final List<SNumber>? coord;
 
-  MarkPointData._({this.data, this.xAxis, this.valueType, this.valueDimIndex, this.coord}) {
+  MarkPointData._({this.data, this.valueType, this.valueDimIndex, this.coord}) {
     if (valueType == null && coord == null && data == null) {
       throw ChartError("valueType and coord not all be null ");
     }
@@ -50,7 +49,7 @@ class MarkPointData {
     }
   }
 
-  MarkPointData.data(DynamicData data, int dimIndex, bool xAxis) : this._(data: data, valueDimIndex: dimIndex, xAxis: xAxis);
+  MarkPointData.data(List<DynamicData> data) : this._(data: data);
 
   MarkPointData.type(ValueType type, int dimIndex) : this._(valueType: type, valueDimIndex: dimIndex);
 

@@ -6,22 +6,21 @@ import 'chart/line_theme.dart';
 ///全局的主题配置
 class ChartTheme {
   ///该列表必须至少有一个
-  List<Color> colors = [
-    const Color(0xFF5C6BC0),
-    const Color(0xFFF98000),
-    const Color(0xFFee6666),
-    const Color.fromARGB(255, 105, 189, 67),
-    const Color(0xFF9a60b4),
-    const Color(0xFFfac858),
-    const Color(0xFFea7ccc),
-    const Color(0xFF73c0de),
+  List<Color> colors = const [
+    Color(0xFF63B0F2),
+    Color(0xFF07F29C),
+    Color(0xFF7F6CC4),
+    Color(0xFF4BA47E),
+    Color(0xFFF25C05),
+    Color(0xFFF3BA17),
+    Color(0xFFF36261),
   ];
 
   Color getColor(int index) {
     return colors[index % colors.length];
   }
 
-  Color backgroundColor = const Color(0xFFFFFFFF);
+  Color backgroundColor = const Color(0xFFFDFDFD);
   Color titleTextColor = const Color(0xFF464646);
   Color titleSubTextColor = const Color(0xFF6E7079);
   Color markTextColor = const Color(0xFFEEEEEE);
@@ -30,7 +29,7 @@ class ChartTheme {
   Color legendTextColor = const Color(0xFF333333);
 
   Color labelTextColor = const Color(0xFFFFFFFF);
-  double labelTextSize=13;
+  double labelTextSize = 13;
 
   ///通用组件主题
   TooltipTheme tooltipTheme = TooltipTheme();
