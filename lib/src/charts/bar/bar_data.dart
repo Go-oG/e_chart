@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class BarGroupData extends BaseGroupData<BarItemData> {
+class BarGroupData extends StackGroupData<StackItemData> {
   ///控制柱状图的大小（具体的含义取决于布局的方向）
   SNumber? barSize;
   SNumber? barMaxSize;
@@ -17,8 +17,4 @@ class BarGroupData extends BaseGroupData<BarItemData> {
     super.stackId,
     super.strategy,
   });
-}
-
-class BarItemData extends BaseItemData {
-  BarItemData(super.x, super.up, super.down, {super.id});
 }

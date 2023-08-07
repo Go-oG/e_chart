@@ -4,12 +4,12 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///适用于Grid布局器
-abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
+abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends BaseStackLayoutHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
   Map<int, List<SingleNode<T, P>>> _pageMap = {};
 
-  BaseGridLayoutHelper(super.context, super.series);
+  StackGridHelper(super.context, super.series);
 
   List<SingleNode<T, P>> getPageData(List<int> pages) {
     List<SingleNode<T, P>> list = [];
@@ -53,6 +53,36 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
       var rect = coord.dataToRect(xIndex.axisIndex, tmpData.change(groupNode.nodeList.first.getUp()), yIndex, x);
       groupNode.rect = Rect.fromLTWH(0, rect.top, width, rect.height);
     }
+  }
+
+  @override
+  MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
+    var valueType = markPoint.data.valueType;
+    if (markPoint.data.data != null) {
+      int index = markPoint.data.valueDimIndex!;
+      var node = MarkPointNode(markPoint, markPoint.data.data!);
+      node.offset = findGridCoord().dataToPointSingle(markPoint.data.data!, index, markPoint.data.xAxis!);
+      return node;
+    }
+    bool vertical = series.direction == Direction.vertical;
+    if (valueType != null) {
+      return super.onLayoutMarkPoint(markPoint, group, newNodeMap);
+    }
+    var gridCoord = findGridCoord();
+    if (markPoint.data.coord != null) {
+      var coord = markPoint.data.coord!;
+      var x = coord[0].convert(gridCoord.getAxisLength(group.xAxisIndex, true));
+      var xr = x / gridCoord.getAxisLength(group.xAxisIndex, true);
+      var y = coord[1].convert(gridCoord.getAxisLength(group.yAxisIndex, false));
+      var yr = y / gridCoord.getAxisLength(group.yAxisIndex, false);
+      var dd = vertical
+          ? gridCoord.getScale(group.yAxisIndex, false).convertRatio(yr)
+          : gridCoord.getScale(group.xAxisIndex, true).convertRatio(xr);
+      var node = MarkPointNode(markPoint, dd.toData());
+      node.offset = Offset(x, y);
+      return node;
+    }
+    return null;
   }
 
   final int thresholdSize = 2000;
@@ -233,6 +263,5 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   }
 
   @override
-  CoordSystem get coordSystem=>CoordSystem.grid;
-
+  CoordSystem get coordSystem => CoordSystem.grid;
 }

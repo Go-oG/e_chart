@@ -1,10 +1,10 @@
 import 'dart:ui';
 import '../../../model/index.dart';
-import '../base_data.dart';
+import '../stack_data.dart';
 import 'group_node.dart';
 import 'single_node.dart';
 
-class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
+class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   final GroupNode<T, P> parentNode;
   final List<SingleNode<T, P>> nodeList;
   final bool isStack;
@@ -42,19 +42,19 @@ class ColumnNode<T extends BaseItemData, P extends BaseGroupData<T>> {
       if (i == 0) {
         if (strategy == StackStrategy.all ||
             strategy == StackStrategy.samesign ||
-            (strategy == StackStrategy.positive && itemData.up > 0 && isStack) ||
-            (strategy == StackStrategy.negative && itemData.up < 0 && isStack)) {
-          up = itemData.up;
-          cd.up = itemData.up;
-          cd.down = itemData.down;
+            (strategy == StackStrategy.positive && itemData.value > 0 && isStack) ||
+            (strategy == StackStrategy.negative && itemData.value < 0 && isStack)) {
+          up = itemData.value;
+          cd.up = itemData.value;
+          cd.down = 0;
         }
       } else {
         if (strategy == StackStrategy.all ||
-            (strategy == StackStrategy.samesign && (itemData.up <= 0 && up <= 0 || (itemData.up >= 0 && up >= 0))) ||
-            (strategy == StackStrategy.positive && itemData.up > 0) ||
-            (strategy == StackStrategy.negative && itemData.up < 0)) {
+            (strategy == StackStrategy.samesign && (itemData.value <= 0 && up <= 0 || (itemData.value >= 0 && up >= 0))) ||
+            (strategy == StackStrategy.positive && itemData.value > 0) ||
+            (strategy == StackStrategy.negative && itemData.value < 0)) {
           cd.down = up;
-          cd.up = up + (itemData.up - itemData.down);
+          cd.up = up + itemData.value;
           up = cd.up;
         }
       }

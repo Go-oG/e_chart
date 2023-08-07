@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/line/helper/line_helper.dart';
 
 import '../line_node.dart';
 
-class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> implements LineHelper {
+class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
 
   LineGridHelper(super.context, super.series);
@@ -14,12 +14,12 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   double _animatorPercent = 1;
 
   @override
-  List<SingleNode<LineItemData, LineGroupData>> getPageData(List<int> pages) {
+  List<SingleNode<StackItemData, LineGroupData>> getPageData(List<int> pages) {
     return [];
   }
 
   @override
-  List<SingleNode<LineItemData, LineGroupData>> getNeedShowData() {
+  List<SingleNode<StackItemData, LineGroupData>> getNeedShowData() {
     return [];
   }
 
@@ -85,12 +85,12 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   }
 
   @override
-  Future<void> splitData(List<SingleNode<LineItemData, LineGroupData>> list) async {
+  Future<void> splitData(List<SingleNode<StackItemData, LineGroupData>> list) async {
     ///Line 不需要按页进行划分
   }
 
   @override
-  SingleNode<LineItemData, LineGroupData> onCreateAnimatorObj(var data, var node, bool newData, LayoutType type) {
+  SingleNode<StackItemData, LineGroupData> onCreateAnimatorObj(var data, var node, bool newData, LayoutType type) {
     return node;
   }
 
@@ -118,18 +118,18 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   void onGridScrollEnd(Offset offset) {}
 
   ///布局直线使用的数据
-  Future<List<LineNode>> _layoutLineNode(List<SingleNode<LineItemData, LineGroupData>> list) async {
+  Future<List<LineNode>> _layoutLineNode(List<SingleNode<StackItemData, LineGroupData>> list) async {
     Map<LineGroupData, int> groupSortMap = {};
     Map<String, int> sortMap = {};
-    Map<String, Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>>> stackMap = {};
-    Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> normalMap = {};
+    Map<String, Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>>> stackMap = {};
+    Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> normalMap = {};
     each(list, (ele, p1) {
       groupSortMap[ele.parent] = ele.groupIndex;
       if (ele.parent.isStack) {
         var stackId = ele.parent.stackId!;
-        Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> map = stackMap[stackId] ?? {};
+        Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> map = stackMap[stackId] ?? {};
         stackMap[stackId] = map;
-        List<SingleNode<LineItemData, LineGroupData>> tmpList = map[ele.parent] ?? [];
+        List<SingleNode<StackItemData, LineGroupData>> tmpList = map[ele.parent] ?? [];
         map[ele.parent] = tmpList;
         tmpList.add(ele);
         int? sort = sortMap[stackId];
@@ -141,7 +141,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
           }
         }
       } else {
-        List<SingleNode<LineItemData, LineGroupData>> tmpList = normalMap[ele.parent] ?? [];
+        List<SingleNode<StackItemData, LineGroupData>> tmpList = normalMap[ele.parent] ?? [];
         normalMap[ele.parent] = tmpList;
         tmpList.add(ele);
       }
@@ -170,7 +170,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
       return sortMap[a]!.compareTo(sortMap[b]!);
     });
     each(keyList, (key, p1) {
-      Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> map = stackMap[key]!;
+      Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> map = stackMap[key]!;
       List<LineGroupData> keyList2 = List.from(map.keys);
       keyList2.sort((a, b) {
         return groupSortMap[a]!.compareTo(groupSortMap[b]!);
@@ -188,11 +188,11 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     return resultList;
   }
 
-  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
+  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
     List<PathNode> borderList = _buildBorderPath(list);
     List<AreaNode> areaList = buildAreaPathForNormal(list);
     List<Offset?> ol = _collectOffset(list);
-    Map<LineItemData, SymbolNode> nodeMap = {};
+    Map<StackItemData, SymbolNode> nodeMap = {};
     each(ol, (off, i) {
       var data = group.data[i];
       if (data == null || off == null) {
@@ -203,7 +203,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap);
   }
 
-  List<AreaNode> buildAreaPathForNormal(List<SingleNode<LineItemData, LineGroupData>> curList) {
+  List<AreaNode> buildAreaPathForNormal(List<SingleNode<StackItemData, LineGroupData>> curList) {
     if (curList.length < 2) {
       return [];
     }
@@ -213,7 +213,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     LineStyle? lineStyle = buildLineStyle(null, group, index, null);
     bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
 
-    List<SingleNode<LineItemData, LineGroupData>> nodeList = List.from(nodeMap.values);
+    List<SingleNode<StackItemData, LineGroupData>> nodeList = List.from(nodeMap.values);
 
     List<List<Offset>> splitResult = _splitList(nodeList);
     splitResult.removeWhere((element) => element.length < 2);
@@ -235,7 +235,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   LineNode buildStackResult(
     int groupIndex,
     LineGroupData group,
-    List<SingleNode<LineItemData, LineGroupData>> nodeList,
+    List<SingleNode<StackItemData, LineGroupData>> nodeList,
     List<LineNode> resultList,
     int curIndex,
   ) {
@@ -246,7 +246,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     List<AreaNode> areaList = buildAreaPathForStack(nodeList, resultList, curIndex);
 
     List<Offset?> ol = _collectOffset(nodeList);
-    Map<LineItemData, SymbolNode> nodeMap = {};
+    Map<StackItemData, SymbolNode> nodeMap = {};
     each(ol, (off, i) {
       var data = group.data[i];
       if (data == null || off == null) {
@@ -258,7 +258,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap);
   }
 
-  List<AreaNode> buildAreaPathForStack(List<SingleNode<LineItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
+  List<AreaNode> buildAreaPathForStack(List<SingleNode<StackItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
     if (curList.length < 2) {
       return [];
     }
@@ -347,7 +347,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
   }
 
   ///公用部分
-  List<PathNode> _buildBorderPath(List<SingleNode<LineItemData, LineGroupData>> nodeList) {
+  List<PathNode> _buildBorderPath(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
     if (nodeList.length < 2) {
       return [];
     }
@@ -384,7 +384,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     return line;
   }
 
-  List<List<Offset>> _splitList(List<SingleNode<LineItemData, LineGroupData>> nodeList) {
+  List<List<Offset>> _splitList(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
     List<List<Offset>> olList = [];
     List<Offset> tmpList = [];
     for (var node in nodeList) {
@@ -404,7 +404,7 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     return olList;
   }
 
-  List<Offset?> _collectOffset(List<SingleNode<LineItemData, LineGroupData>> nodeList) {
+  List<Offset?> _collectOffset(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
     List<Offset?> tmpList = [];
     for (var node in nodeList) {
       if (node.data != null) {
@@ -416,29 +416,6 @@ class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, L
     return tmpList;
   }
 
-  @override
-  AreaStyle? buildAreaStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(group, groupIndex,status??{});
-    }
-    var chartTheme = context.option.theme;
-    var theme = chartTheme.lineTheme;
-    if (theme.fill) {
-      Color fillColor = chartTheme.getColor(groupIndex).withOpacity(theme.opacity);
-      return AreaStyle(color: fillColor);
-    }
-    return null;
-  }
-
-  @override
-  LineStyle? buildLineStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.lineStyleFun != null) {
-      return series.lineStyleFun?.call(group, groupIndex,status??{});
-    }
-    var chartTheme = context.option.theme;
-    var theme = chartTheme.lineTheme;
-    return theme.getLineStyle(chartTheme, groupIndex).convert(status);
-  }
 
   @override
   double getAnimatorPercent() {

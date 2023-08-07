@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/line/helper/line_helper.dart';
 import 'package:e_chart/src/charts/line/line_node.dart';
 
-class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData, LineSeries> implements LineHelper {
+class LinePolarHelper extends StackPolarHelper<StackItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
 
   LinePolarHelper(super.context, super.series);
@@ -54,7 +54,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
   }
 
   @override
-  void onLayoutNode(ColumnNode<LineItemData, LineGroupData> columnNode, AxisIndex xIndex) {
+  void onLayoutNode(ColumnNode<StackItemData, LineGroupData> columnNode, AxisIndex xIndex) {
     final bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {
@@ -103,17 +103,17 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     _animatorPercent = 1;
   }
 
-  Future<void> _updateLine(List<SingleNode<LineItemData, LineGroupData>> list) async {
-    Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> tmpNodeMap = {};
+  Future<void> _updateLine(List<SingleNode<StackItemData, LineGroupData>> list) async {
+    Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> tmpNodeMap = {};
     for (var node in list) {
-      List<SingleNode<LineItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];
+      List<SingleNode<StackItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];
       tmpNodeMap[node.parent] = tmpList;
       tmpList.add(node);
     }
     tmpNodeMap.removeWhere((key, value) => value.isEmpty);
 
     List<LineNode> resultList = [];
-    Map<LineGroupData, List<SingleNode<LineItemData, LineGroupData>>> stackMap = {};
+    Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> stackMap = {};
 
     tmpNodeMap.forEach((key, value) {
       if (key.isNotStack) {
@@ -138,10 +138,10 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     _lineList = resultList;
   }
 
-  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<LineItemData, LineGroupData>> list) {
+  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
     List<PathNode> borderList = _buildBorderPath(list);
     List<Offset?> ol = _collectOffset(list);
-    Map<LineItemData, SymbolNode> nodeMap = {};
+    Map<StackItemData, SymbolNode> nodeMap = {};
     each(ol, (off, i) {
       if (i >= group.data.length) {
         return;
@@ -158,7 +158,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
   LineNode buildStackResult(
     int groupIndex,
     LineGroupData group,
-    List<SingleNode<LineItemData, LineGroupData>> nodeList,
+    List<SingleNode<StackItemData, LineGroupData>> nodeList,
     List<LineNode> resultList,
     int curIndex,
   ) {
@@ -168,7 +168,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     List<PathNode> borderList = _buildBorderPath(nodeList);
 
     List<Offset?> ol = _collectOffset(nodeList);
-    Map<LineItemData, SymbolNode> nodeMap = {};
+    Map<StackItemData, SymbolNode> nodeMap = {};
     each(ol, (off, i) {
       var data = group.data[i];
       if (data == null || off == null) {
@@ -181,7 +181,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
   }
 
   ///公用部分
-  List<PathNode> _buildBorderPath(List<SingleNode<LineItemData, LineGroupData>> nodeList) {
+  List<PathNode> _buildBorderPath(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
     if (nodeList.length < 2) {
       return [];
     }
@@ -218,7 +218,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     return line;
   }
 
-  List<List<Offset>> _splitList(Iterable<SingleNode<LineItemData, LineGroupData>> nodeList) {
+  List<List<Offset>> _splitList(Iterable<SingleNode<StackItemData, LineGroupData>> nodeList) {
     List<List<Offset>> olList = [];
     List<Offset> tmpList = [];
     for (var node in nodeList) {
@@ -238,7 +238,7 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
     return olList;
   }
 
-  List<Offset?> _collectOffset(List<SingleNode<LineItemData, LineGroupData>> nodeList) {
+  List<Offset?> _collectOffset(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
     List<Offset?> tmpList = [];
     for (var node in nodeList) {
       if (node.data != null) {
@@ -248,30 +248,6 @@ class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData,
       }
     }
     return tmpList;
-  }
-
-  @override
-  AreaStyle? buildAreaStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(group, groupIndex,status??{});
-    }
-    var chartTheme = context.option.theme;
-    var theme = chartTheme.lineTheme;
-    if (theme.fill) {
-      Color fillColor = chartTheme.getColor(groupIndex).withOpacity(theme.opacity);
-      return AreaStyle(color: fillColor);
-    }
-    return null;
-  }
-
-  @override
-  LineStyle? buildLineStyle(LineItemData? data, LineGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.lineStyleFun != null) {
-      return series.lineStyleFun?.call(group, groupIndex,status??{});
-    }
-    var chartTheme = context.option.theme;
-    var theme = chartTheme.lineTheme;
-    return theme.getLineStyle(chartTheme, groupIndex).convert(status);
   }
 
   @override

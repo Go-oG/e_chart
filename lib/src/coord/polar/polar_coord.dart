@@ -109,7 +109,6 @@ class PolarCoordImpl extends PolarCoord {
         r[i] = r[i] + ir;
       }
     }
-
     return PolarPosition(center, r, angles);
   }
 
@@ -133,6 +132,49 @@ class PolarCoordImpl extends PolarCoord {
   List<double> getRadius() {
     return _angleAxis.attrs.radius;
   }
+
+  @override
+  PolarPosition dataToAnglePosition(DynamicData angleData) {
+    List<num> angles = _angleAxis.dataToAngle(angleData);
+    return PolarPosition(center, [], angles);
+  }
+
+  @override
+  PolarPosition dataToRadiusPosition(DynamicData radiusData) {
+    List<num> r = _radiusAxis.dataToRadius(radiusData);
+    if (props.radius.length > 1) {
+      double ir = _radiusAxis.attrs.start.distance2(_radiusAxis.attrs.center);
+      for (int i = 0; i < r.length; i++) {
+        r[i] = r[i] + ir;
+      }
+    }
+    return PolarPosition(center, r, []);
+  }
+
+  @override
+  num getSweepAngle() {
+    return 360;
+  }
+}
+
+abstract class PolarCoord extends CircleCoordLayout<Polar> {
+  PolarCoord(super.props);
+
+  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
+
+  PolarPosition dataToRadiusPosition(DynamicData radiusData);
+
+  PolarPosition dataToAnglePosition(DynamicData angleData);
+
+  Offset getCenter();
+
+  List<double> getRadius();
+
+  num getSweepAngle();
+
+  num getStartAngle();
+
+  BaseScale getScale(bool angleAxis);
 }
 
 class PolarPosition {
@@ -151,21 +193,7 @@ class PolarPosition {
     return "$runtimeType $center radius:$radius angle:$angle";
   }
 
-  Offset get position{
-    return circlePoint(radius.last, angle.last,center);
+  Offset get position {
+    return circlePoint(radius.last, angle.last, center);
   }
-}
-
-abstract class PolarCoord extends CircleCoordLayout<Polar> {
-  PolarCoord(super.props);
-
-  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
-
-  Offset getCenter();
-
-  List<double> getRadius();
-
-  num getStartAngle();
-
-  BaseScale getScale(bool angleAxis);
 }

@@ -37,7 +37,6 @@ class ItemData {
   late final String id;
   num value;
   DynamicText? label;
-
   bool show = true;
 
   ItemData({this.value = 0, this.label, String? id}) {

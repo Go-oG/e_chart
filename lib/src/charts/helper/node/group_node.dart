@@ -1,12 +1,12 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import '../base_data.dart';
+import '../stack_data.dart';
 import '../model/axis_index.dart';
 import 'column_node.dart';
 
 ///表示为系列数据
-class GroupNode<T extends BaseItemData, P extends BaseGroupData<T>> with ViewStateProvider {
+class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
   final AxisIndex index;
   final List<ColumnNode<T, P>> nodeList;
 

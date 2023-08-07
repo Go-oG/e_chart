@@ -4,9 +4,9 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///适用于极坐标系的布局帮助者
-abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
+abstract class StackPolarHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends BaseStackLayoutHelper<T, P, S> {
-  BasePolarLayoutHelper(super.context, super.series);
+  StackPolarHelper(super.context, super.series);
 
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
@@ -46,6 +46,44 @@ abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroup
       offset += length;
       node.position = node.arc.centroid();
     });
+  }
+
+  @override
+  MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group,Map<T, SingleNode<T, P>> newNodeMap) {
+    var valueType = markPoint.data.valueType;
+    var polarCoord = findPolarCoord();
+    if (markPoint.data.data != null) {
+      int index = markPoint.data.valueDimIndex!;
+      var node = MarkPointNode(markPoint, markPoint.data.data!);
+      var position =
+          index <= 0 ? polarCoord.dataToRadiusPosition(markPoint.data.data!) : polarCoord.dataToAnglePosition(markPoint.data.data!);
+      if (index <= 0) {
+        var r = (position.radius.first + position.radius.last) / 2;
+        node.offset = circlePoint(r, polarCoord.props.radiusAxis.offsetAngle, position.center);
+      } else {
+        var angle = (position.angle.first + position.angle.last) / 2;
+        var radius = polarCoord.getRadius().last;
+        node.offset = circlePoint(radius, angle, position.center);
+      }
+      return node;
+    }
+    if (valueType != null) {
+     return super.onLayoutMarkPoint(markPoint, group, newNodeMap);
+    }
+    if (markPoint.data.coord != null) {
+      bool vertical = series.direction == Direction.vertical;
+      var coord = markPoint.data.coord!;
+      var radius=polarCoord.getRadius();
+      var x = coord[0].convert(radius.last);
+      var xr = x /radius.last;
+      var y = coord[1].convert(polarCoord.getSweepAngle());
+      var yr = y /polarCoord.getSweepAngle();
+      var dd = vertical ? polarCoord.getScale(true).convertRatio(yr) : polarCoord.getScale(false).convertRatio(xr);
+      var node = MarkPointNode(markPoint, dd.toData());
+      node.offset = Offset(x, y);
+      return node;
+    }
+    return null;
   }
 
   @override

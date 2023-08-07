@@ -1,46 +1,32 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../functions.dart';
-import '../../model/data.dart';
-import '../../model/text_info.dart';
-import '../../style/label.dart';
-import '../../style/line_style.dart';
-import '../../symbol/chart_symbol.dart';
-import 'mark_type.dart';
-
 class MarkLine {
-  ChartSymbol? startSymbol;
-  ChartSymbol? endSymbol;
+  MarkPoint start;
+  MarkPoint end;
   bool touch;
-  Fun2<int, LabelStyle>? labelStyle;
   LineStyle lineStyle;
   int precision; //精度
-  MarkType startMarkType;
-  // 如果endMakeType 为null 那么绘制时则是一条水平直线
-  MarkType? endMarkType;
 
-  MarkLine({
-    this.startSymbol,
-    this.endSymbol,
+  MarkLine(
+    this.start,
+    this.end, {
     this.touch = false,
-    this.labelStyle,
-    this.lineStyle = const LineStyle(),
+    this.lineStyle = const LineStyle(dash: [4,8]),
     this.precision = 2,
-    this.startMarkType = MarkType.average,
-    this.endMarkType,
   });
 
   void draw(Canvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end], false);
-    startSymbol?.draw(canvas, paint,start);
-    endSymbol?.draw(canvas, paint, end);
-    if (startText != null && startText.isNotEmpty) {
-      TextDrawInfo config = TextDrawInfo(start);
-      labelStyle?.call(0).draw(canvas, paint, startText, config);
-    }
-    if (endText != null && endText.isNotEmpty) {
-      TextDrawInfo config = TextDrawInfo(end);
-      labelStyle?.call(1).draw(canvas, paint, endText, config);
-    }
+    this.start.draw(canvas, paint, start);
+    this.end.draw(canvas, paint, end);
   }
+}
+
+class MarkLineNode {
+  final MarkLine line;
+  final MarkPointNode start;
+  final MarkPointNode end;
+
+  MarkLineNode(this.line,this.start, this.end);
 }

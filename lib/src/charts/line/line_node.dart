@@ -6,7 +6,7 @@ class LineNode {
   final int groupIndex;
   final LineGroupData data;
   final List<Offset?> offsetList;
-  final Map<LineItemData, SymbolNode> symbolMap;
+  final Map<StackItemData, SymbolNode> symbolMap;
   final List<PathNode> borderList;
   final List<AreaNode> areaList;
   AreaStyle? areaStyle;
@@ -50,7 +50,7 @@ class AreaNode {
   }
 }
 
-class SymbolNode extends DataNode<Offset, LineItemData> {
+class SymbolNode extends DataNode<Offset, StackItemData> {
   final LineGroupData group;
 
   SymbolNode(

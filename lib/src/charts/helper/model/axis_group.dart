@@ -1,9 +1,9 @@
-import '../base_data.dart';
+import '../stack_data.dart';
 import '../node/group_node.dart';
 import 'axis_index.dart';
 
 ///存储数据处理结果
-class AxisGroup<T extends BaseItemData, P extends BaseGroupData<T>> {
+class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
   ///存储不同坐标轴的数据
   final Map<AxisIndex, List<GroupNode<T, P>>> groupMap;
 

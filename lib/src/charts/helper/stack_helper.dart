@@ -3,13 +3,11 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///用于处理堆叠数据的布局帮助者
-abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
+abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends LayoutHelper<S, List<P>> {
   ///该map存储当前给定数据的映射
   ///如果给定的数据为空则不会存在
   Map<T, SingleNode<T, P>> _nodeMap = {};
-
-  BaseStackLayoutHelper(super.context, super.series);
 
   Map<T, SingleNode<T, P>> get nodeMap => _nodeMap;
 
@@ -17,14 +15,18 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
   ///其大小不一定等于 [_nodeMap]的大小
   Map<T, SingleNode<T, P>> showNodeMap = {};
 
+  List<MarkPointNode> markPointList = [];
+
+  List<MarkLineNode> markLineList = [];
+
+  BaseStackLayoutHelper(super.context, super.series);
+
   @override
   void onLayout(List<P> data, LayoutType type) async {
     AxisGroup<T, P> axisGroup = series.helper.result;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
-    List<GroupNode<T, P>> newNodeList = [];
     Map<T, SingleNode<T, P>> newNodeMap = {};
     axisMap.forEach((key, value) {
-      newNodeList.addAll(value);
       for (var cv in value) {
         for (var ele in cv.nodeList) {
           for (var element in ele.nodeList) {
@@ -71,7 +73,9 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     List<SingleNode<T, P>> oldNodeList = List.from(_nodeMap.values);
     var oldNodeMap = _nodeMap;
     _nodeMap = newNodeMap;
-    await onLayoutEnd(oldNodeList, oldNodeMap, List.from(newNodeMap.values), newNodeMap, type);
+    final List<SingleNode<T, P>> newNodeList = List.from(newNodeMap.values, growable: false);
+    _onLayoutMarkPointAndLine(data, newNodeList, newNodeMap);
+    await onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
     notifyLayoutUpdate();
   }
 
@@ -83,6 +87,87 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
 
   ///布局ColumnNode的孩子的位置
   void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex);
+
+  ///布局MarkLine和MarkPoint
+  void _onLayoutMarkPointAndLine(List<P> groupList, List<SingleNode<T, P>> newNodeList, Map<T, SingleNode<T, P>> newNodeMap) {
+    if (series.markPoint == null && series.markLine == null && series.markPointFun == null && series.markLineFun == null) {
+      markLineList = [];
+      markPointList = [];
+      return;
+    }
+    final List<MarkPointNode> mpnl = [];
+    final List<MarkLineNode> mlnl = [];
+    for (var group in groupList) {
+      if (group.data.isEmpty) {
+        continue;
+      }
+      var mpl = series.getMarkPoint(group);
+      var mll = series.getMarkLine(group);
+      if (mpl.isEmpty && mll.isEmpty) {
+        continue;
+      }
+      //markPoint
+      for (var mp in mpl) {
+        var node = onLayoutMarkPoint(mp, group, newNodeMap);
+        if (node != null) {
+          mpnl.add(node);
+        }
+      }
+      //markLine
+      for (var ml in mll) {
+        var s = onLayoutMarkPoint(ml.start, group, newNodeMap);
+        var e = onLayoutMarkPoint(ml.end, group, newNodeMap);
+        if (s != null && e != null) {
+          mlnl.add(MarkLineNode(ml, s, e));
+        } else {
+          if (s != null) {
+            mpnl.add(s);
+          }
+          if (e != null) {
+            mpnl.add(e);
+          }
+        }
+      }
+    }
+    markPointList = mpnl;
+    markLineList = mlnl;
+  }
+
+  MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
+    var valueType = markPoint.data.valueType;
+    if (valueType != null) {
+      var info = series.helper.getValueInfo(group);
+      if (info == null) {
+        return null;
+      }
+      T? data;
+      if (valueType == ValueType.min && info.minData != null) {
+        data = info.minData;
+      } else if (valueType == ValueType.max && info.maxData != null) {
+        data = info.maxData;
+      } else if (valueType == ValueType.ave && info.aveData != null) {
+        data = info.aveData;
+      }
+      SingleNode<T, P>? snode = newNodeMap[data];
+      if (data == null || snode == null) {
+        return null;
+      }
+
+      var node = MarkPointNode(markPoint, data.value.toData());
+      if (coordSystem == CoordSystem.polar) {
+        var arc=snode.arc;
+        node.offset=circlePoint(arc.outRadius, arc.centerAngle(),arc.center);
+      } else {
+        if (data.stackUp >= 0) {
+          node.offset = snode.rect.topCenter;
+        } else {
+          node.offset = snode.rect.bottomCenter;
+        }
+      }
+      return node;
+    }
+    return null;
+  }
 
   ///由[onLayout]最后回调
   ///可以在这里进行动画相关的处理
@@ -354,7 +439,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
   }
 
   bool arcInPath(Path path, Arc arc) {
-    Rect rect=path.getBounds();
+    Rect rect = path.getBounds();
     return rectInPath(arc.toPath(true), rect);
   }
 
@@ -372,7 +457,7 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
       return true;
     }
 
-    Rect bound=path.getBounds();
+    Rect bound = path.getBounds();
     return bound.overlaps(rect);
   }
 
@@ -391,7 +476,11 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     return null;
   }
 
-  AreaStyle? buildAreaStyle(T? data, P group, int groupIndex, Set<ViewState>? status);
+  AreaStyle? buildAreaStyle(T? data, P group, int groupIndex, Set<ViewState>? status) {
+    return series.getAreaStyle(context, data, group, groupIndex, status);
+  }
 
-  LineStyle? buildLineStyle(T? data, P group, int groupIndex, Set<ViewState>? status);
+  LineStyle? buildLineStyle(T? data, P group, int groupIndex, Set<ViewState>? status) {
+    return series.getLineStyle(context, data, group, groupIndex, status);
+  }
 }

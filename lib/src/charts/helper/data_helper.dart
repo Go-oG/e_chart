@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///处理二维坐标系下堆叠数据
 ///只针对数字类型处理
-class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends ChartSeries> {
+class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends ChartSeries> {
   final List<P> _dataList;
   final S _series;
   final Direction direction;
@@ -16,6 +16,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return _result;
   }
 
+  ///存储每个轴上的极值数据
   Map<AxisIndex, List<num>> _extremeMap = {};
 
   List<num> getExtreme(CoordSystem system, int axisIndex) {
@@ -30,12 +31,21 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return dl;
   }
 
+  ///存储每个数据组的数值信息
+  Map<P, ValueInfo<T, P>> _groupValueMap = {};
+
+  ValueInfo<T, P>? getValueInfo(P p) {
+    return _groupValueMap[p];
+  }
+
   OriginInfo<T, P> _originInfo = OriginInfo({}, {});
 
   ///解析数据
   ///将给定数据解析为类似于栈的数据
   ///并保存相关的数据信息
   AxisGroup<T, P> _parse() {
+    _groupValueMap = _collectGroupInfo(_dataList);
+
     ///解析原始数据信息
     _originInfo = _parseOriginInfo(_dataList);
 
@@ -46,6 +56,7 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     AxisGroup<T, P> group = AxisGroup(resultMap);
     group.mergeData();
     _extremeMap = _collectExtreme(group);
+
     return group;
   }
 
@@ -187,10 +198,8 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     CoordSystem system = _series.coordSystem ?? CoordSystem.grid;
     bool polar = system == CoordSystem.polar;
     bool vertical = direction == Direction.vertical;
-
     Map<int, num> minMap = {};
     Map<int, num> maxMap = {};
-
     axisGroup.groupMap.forEach((key, value) {
       for (var group in value) {
         for (var column in group.nodeList) {
@@ -228,6 +237,47 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
     return map;
   }
 
+  Map<P, ValueInfo<T, P>> _collectGroupInfo(List<P> list) {
+    Map<P, ValueInfo<T, P>> map = {};
+    for (var group in list) {
+      if (group.data.isEmpty) {
+        continue;
+      }
+      T? minV;
+      T? maxV;
+      T? aveV;
+      List<T> nl = [];
+      for (var data in group.data) {
+        if (data == null) {
+          continue;
+        }
+        nl.add(data);
+        if (minV == null || data.value < minV.value) {
+          minV = data;
+        }
+        if (maxV == null || data.value > maxV.value) {
+          maxV = data;
+        }
+      }
+      if (nl.isNotEmpty) {
+        num v = sumBy(nl, (p0) => p0.value) / nl.length;
+        nl.sort((a, b) {
+          return a.value.compareTo(b.value);
+        });
+        num diff = double.maxFinite;
+        for (var d in nl) {
+          if ((d.value - v).abs() < diff) {
+            aveV = d;
+            diff = (d.value - v).abs();
+          }
+        }
+      }
+
+      map[group] = ValueInfo(group,minV, maxV, aveV);
+    }
+    return map;
+  }
+
   int _computeBarCount(List<P> list) {
     int max = 0;
     for (P data in list) {
@@ -239,16 +289,25 @@ class DataHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends C
   }
 }
 
-class OriginInfo<T extends BaseItemData, P extends BaseGroupData<T>> {
+class OriginInfo<T extends StackItemData, P extends StackGroupData<T>> {
   final Map<P, int> sortMap;
   final Map<P, Map<int, WrapData<T, P>>> dataMap;
 
   OriginInfo(this.sortMap, this.dataMap);
 }
 
-class InnerData<T extends BaseItemData, P extends BaseGroupData<T>> {
+class InnerData<T extends StackItemData, P extends StackGroupData<T>> {
   final T? data;
   final P parent;
 
   InnerData(this.data, this.parent);
+}
+
+class ValueInfo<T extends StackItemData, P extends StackGroupData<T>> {
+  final P group;
+  T? minData;
+  T? maxData;
+  T? aveData;
+
+  ValueInfo(this.group,this.minData, this.maxData, this.aveData);
 }
