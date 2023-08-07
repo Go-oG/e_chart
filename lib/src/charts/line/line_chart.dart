@@ -8,7 +8,7 @@ import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 import 'helper/line_helper.dart';
 import 'line_node.dart';
 
-class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItemData, LineGroupData, LineSeries>>
+class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<StackItemData, LineGroupData, LineSeries>>
     with GridChild, PolarChild {
   late LineHelper helper;
 
@@ -56,6 +56,7 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItem
       }
     });
     canvas.restore();
+    drawMakeLineAndMarkPoint(canvas, clipRect);
   }
 
   void drawForPolar(Canvas canvas) {
@@ -76,6 +77,7 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItem
       }
     });
     canvas.restore();
+    drawMakeLineAndMarkPoint(canvas, null);
   }
 
   void drawLine(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
@@ -176,11 +178,30 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItem
     });
   }
 
-  /// 绘制标记点
-  void drawMakePoint(Canvas canvas) {}
-
-  /// 绘制标记线
-  void drawMakeLine(Canvas canvas) {}
+  /// 绘制标记线和点
+  void drawMakeLineAndMarkPoint(Canvas canvas, Rect? clipRect) {
+    var markLineFun = series.markLineFun;
+    var markPointFun = series.markPointFun;
+    var markPoint = series.markPoint;
+    var markLine = series.markLine;
+    if (markLineFun == null && markPointFun == null && markPoint == null && markLine == null) {
+      return;
+    }
+    Offset offset = layoutHelper.getTranslation();
+    canvas.save();
+    canvas.translate(offset.dx, offset.dy);
+    if (markLineFun != null || markLine != null) {
+      each(layoutHelper.markLineList, (ml, i) {
+        ml.line.draw(canvas, mPaint, ml.start.offset, ml.end.offset);
+      });
+    }
+    each(layoutHelper.markPointList, (mp, i) {
+      if (clipRect != null && clipRect.contains(mp.offset)) {
+        mp.markPoint.draw(canvas, mPaint, mp.offset);
+      }
+    });
+    canvas.restore();
+  }
 
   @override
   int getAxisDataCount(int axisIndex, bool isXAxis) {
@@ -219,7 +240,7 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItem
   }
 
   @override
-  BaseStackLayoutHelper<LineItemData, LineGroupData, LineSeries> buildLayoutHelper() {
+  BaseStackLayoutHelper<StackItemData, LineGroupData, LineSeries> buildLayoutHelper() {
     if (series.coordSystem == CoordSystem.polar) {
       var h = LinePolarHelper(context, series);
       helper = h;

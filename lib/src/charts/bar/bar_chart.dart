@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/bar/helper/polar_helper.dart';
 import 'package:flutter/material.dart';
 
 ///BarView
-class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemData, BarGroupData, BarSeries>> with GridChild, PolarChild {
+class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<StackItemData, BarGroupData, BarSeries>> with GridChild, PolarChild {
   ///用户优化视图绘制
   BarView(super.series);
 
@@ -24,8 +24,7 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
   void onDraw(Canvas canvas) {
     drawGroupBk(canvas);
     drawBar(canvas);
-    drawMakePoint(canvas);
-    drawMakeLine(canvas);
+    drawMakeLineAndMarkPoint(canvas);
   }
 
   void drawGroupBk(Canvas canvas) {
@@ -42,7 +41,7 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
       }
       AreaStyle? style;
       if (series.groupStyleFun != null) {
-        style = series.groupStyleFun?.call(node.data, node.parent,node.status);
+        style = series.groupStyleFun?.call(node.data, node.parent, node.status);
       } else if (group.isHover) {
         style = s2;
       }
@@ -93,7 +92,7 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
       } else {
         Corner corner = series.corner;
         if (series.cornerFun != null) {
-          corner = series.cornerFun!.call(data, group,node.status);
+          corner = series.cornerFun!.call(data, group, node.status);
         }
         as?.drawRect(canvas, mPaint, node.rect, corner);
         ls?.drawRect(canvas, mPaint, node.rect, corner);
@@ -116,7 +115,7 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
     canvas.restore();
   }
 
-  void drawBarLabel(Canvas canvas, SingleNode<BarItemData, BarGroupData> node) {
+  void drawBarLabel(Canvas canvas, SingleNode<StackItemData, BarGroupData> node) {
     var data = node.data!;
     var group = node.parent;
     LabelStyle? style = series.getLabelStyle(context, data, group);
@@ -132,14 +131,27 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
     style.draw(canvas, mPaint, text, drawInfo);
   }
 
-  /// 绘制标记点
-  void drawMakePoint(Canvas canvas) {
-    ///TODO 待完成
-  }
-
-  /// 绘制标记线
-  void drawMakeLine(Canvas canvas) {
-    ///TODO 待完成
+  /// 绘制标记线和点
+  void drawMakeLineAndMarkPoint(Canvas canvas) {
+    var markLineFun = series.markLineFun;
+    var markPointFun = series.markPointFun;
+    var markPoint = series.markPoint;
+    var markLine = series.markLine;
+    if (markLineFun == null && markPointFun == null && markPoint == null && markLine == null) {
+      return;
+    }
+    Offset offset = layoutHelper.getTranslation();
+    canvas.save();
+    canvas.translate(offset.dx, offset.dy);
+    if (markLineFun != null || markLine != null) {
+      each(layoutHelper.markLineList, (ml, i) {
+        ml.line.draw(canvas, mPaint, ml.start.offset, ml.end.offset);
+      });
+    }
+    each(layoutHelper.markPointList, (mp, i) {
+      mp.markPoint.draw(canvas, mPaint, mp.offset);
+    });
+    canvas.restore();
   }
 
   @override
@@ -169,7 +181,7 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemDat
   }
 
   @override
-  BaseStackLayoutHelper<BarItemData, BarGroupData, BarSeries> buildLayoutHelper() {
+  BaseStackLayoutHelper<StackItemData, BarGroupData, BarSeries> buildLayoutHelper() {
     if (series.coordSystem == CoordSystem.polar) {
       return BarPolarHelper(context, series);
     } else {

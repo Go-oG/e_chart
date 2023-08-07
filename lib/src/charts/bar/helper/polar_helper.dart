@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, BarSeries> {
+class BarPolarHelper extends StackPolarHelper<StackItemData, BarGroupData, BarSeries> {
   BarPolarHelper(super.context, super.series);
 
   @override
@@ -95,30 +95,6 @@ class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, Ba
       }
       colNode.arc = arc;
     });
-  }
-
-  @override
-  AreaStyle? buildAreaStyle(BarItemData? data, BarGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.areaStyleFun != null) {
-      if (data == null) {
-        return null;
-      }
-      return series.areaStyleFun?.call(data, group, status ?? {});
-    }
-    var chartTheme = context.option.theme;
-    return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
-  }
-
-  @override
-  LineStyle? buildLineStyle(BarItemData? data, BarGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (series.borderStyleFun != null) {
-      if (data == null) {
-        return null;
-      }
-      return series.borderStyleFun?.call(data, group, status ?? {});
-    }
-    var theme = context.option.theme.barTheme;
-    return theme.getBorderStyle()?.convert(status);
   }
 
   @override

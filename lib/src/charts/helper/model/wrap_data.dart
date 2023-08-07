@@ -1,6 +1,6 @@
-import '../base_data.dart';
+import '../stack_data.dart';
 
-class WrapData<T extends BaseItemData, P extends BaseGroupData<T>> {
+class WrapData<T extends StackItemData, P extends StackGroupData<T>> {
   final T? data;
   final P parent;
 

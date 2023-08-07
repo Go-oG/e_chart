@@ -12,7 +12,7 @@ class Grid extends Coord {
     List<YAxis>? yAxisList,
     this.containLabel = false,
     super.brush,
-    super.layoutParams = const LayoutParams.matchAll(padding: EdgeInsets.all(48)),
+    super.layoutParams = const LayoutParams.matchAll(padding: EdgeInsets.all(64)),
     super.toolTip,
     super.backgroundColor,
     super.id,

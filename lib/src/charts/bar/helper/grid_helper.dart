@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
+class BarGridHelper extends StackGridHelper<StackItemData, BarGroupData, BarSeries> {
   BarGridHelper(super.context, super.series);
 
   @override
@@ -94,27 +94,11 @@ class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarS
   }
 
   @override
-  AreaStyle? buildAreaStyle(BarItemData? data, BarGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (data == null) {
-      return null;
-    }
-    return series.getAreaStyle(context, data, group, groupIndex, status);
-  }
-
-  @override
-  LineStyle? buildLineStyle(BarItemData? data, BarGroupData group, int groupIndex, Set<ViewState>? status) {
-    if (data == null) {
-      return null;
-    }
-    return series.getBorderStyle(context, data, group, groupIndex, status);
-  }
-
-  @override
   void onGridScrollChange(Offset offset) {
     super.onGridScrollChange(offset);
     var list = getNeedShowData();
 
-    Map<BarItemData, SingleNode<BarItemData, BarGroupData>> map = {};
+    Map<StackItemData, SingleNode<StackItemData, BarGroupData>> map = {};
     for (var node in list) {
       if (node.data != null) {
         map[node.data!] = node;

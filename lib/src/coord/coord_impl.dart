@@ -17,7 +17,9 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   BrushView? _brushView;
   ToolTipView? _tipView;
 
-  CoordLayout(this.props);
+  CoordLayout(this.props){
+    layoutParams=props.layoutParams;
+  }
 
   @override
   void onCreate() {

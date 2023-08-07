@@ -97,13 +97,13 @@ class GridCoordImpl extends GridCoord {
       double tt = contentBox.top + topOffset;
       double rr, bb;
       if (view.layoutParams.width.isMatch) {
-        rr = contentBox.right - rightOffset;
+        rr = contentBox.right;
       } else {
         rr = ll + view.width;
       }
 
       if (view.layoutParams.height.isMatch) {
-        bb = contentBox.bottom - bottomOffset;
+        bb = contentBox.bottom;
       } else {
         bb = tt + view.height;
       }
@@ -489,6 +489,15 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
+  Offset dataToPointSingle(DynamicData data, int axisIndex, bool xAxis) {
+    if(xAxis){
+      return getXAxis(axisIndex).dataToPoint(data)[0];
+    }else{
+      return getYAxis(axisIndex).dataToPoint(data)[0];
+    }
+  }
+
+  @override
   GridAxis getAxis(int axisIndex, bool isXAxis) {
     if (axisIndex < 0) {
       axisIndex = 0;
@@ -629,6 +638,8 @@ class GridCoordImpl extends GridCoord {
     });
     return size;
   }
+
+
 }
 
 abstract class GridCoord extends CoordLayout<Grid> {
@@ -639,6 +650,9 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   ///该方法适用于Line
   Offset dataToPoint(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+
+  Offset dataToPointSingle(DynamicData data,int axisIndex,bool xAxis);
+
 
   GridAxis getAxis(int axisIndex, bool isXAxis);
 
