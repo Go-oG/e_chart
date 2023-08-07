@@ -6,6 +6,8 @@ import 'package:flutter/animation.dart';
 ///适用于极坐标系的布局帮助者
 abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
     extends BaseStackLayoutHelper<T, P, S> {
+  BasePolarLayoutHelper(super.context, super.series);
+
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
     bool vertical = series.direction == Direction.vertical;
@@ -127,6 +129,5 @@ abstract class BasePolarLayoutHelper<T extends BaseItemData, P extends BaseGroup
   }
 
   @override
-  CoordSystem get coordSystem=>CoordSystem.polar;
-
+  CoordSystem get coordSystem => CoordSystem.polar;
 }

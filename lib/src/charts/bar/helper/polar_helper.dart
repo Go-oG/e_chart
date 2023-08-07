@@ -1,6 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 
 class BarPolarHelper extends BasePolarLayoutHelper<BarItemData, BarGroupData, BarSeries> {
+  BarPolarHelper(super.context, super.series);
+
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);

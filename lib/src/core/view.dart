@@ -466,7 +466,7 @@ abstract class GestureView extends ChartView {
   void onCreate() {
     super.onCreate();
     _gesture = gestureArea;
-    _initGesture();
+    onInitGesture(_gesture);
   }
 
   @mustCallSuper
@@ -488,119 +488,120 @@ abstract class GestureView extends ChartView {
 
   Offset _lastHover = Offset.zero;
   Offset _lastDrag = Offset.zero;
+  Offset _lastLongPress = Offset.zero;
 
-  void _initGesture() {
-    _gesture.clear();
-    context.removeGesture(_gesture);
-    context.addGesture(_gesture);
-    if (onInitGestureHook()) {
-      return;
-    }
+  void onInitGesture(ChartGesture gesture) {
+    gesture.clear();
+    context.removeGesture(gesture);
+    context.addGesture(gesture);
     if (enableClick) {
-      _gesture.click = (e) {
+      gesture.click = (e) {
         onClick(toLocalOffset(e.globalPosition));
       };
     }
+    if (enableDoubleClick) {
+      gesture.doubleClick = (e) {
+        onDoubleClick(toLocalOffset(e.globalPosition));
+      };
+    }
+
     if (enableHover) {
-      _gesture.hoverStart = (e) {
+      gesture.hoverStart = (e) {
         _lastHover = toLocalOffset(e.globalPosition);
         onHoverStart(_lastHover);
       };
-      _gesture.hoverMove = (e) {
+      gesture.hoverMove = (e) {
         Offset of = toLocalOffset(e.globalPosition);
         onHoverMove(of, _lastHover);
         _lastHover = of;
       };
-      _gesture.hoverEnd = (e) {
+      gesture.hoverEnd = (e) {
         _lastHover = Offset.zero;
         onHoverEnd();
       };
     }
+
+    if (enableLongPress) {
+      gesture.longPressStart = (e) {
+        _lastLongPress = toLocalOffset(e.globalPosition);
+        onLongPressStart(_lastLongPress);
+      };
+      gesture.longPressMove = (e) {
+        var offset = toLocalOffset(e.globalPosition);
+        var dx = offset.dx - _lastLongPress.dx;
+        var dy = offset.dy - _lastLongPress.dy;
+        _lastLongPress = offset;
+        onLongPressMove(offset, Offset(dx, dy));
+      };
+      gesture.longPressEnd = () {
+        _lastLongPress = Offset.zero;
+        onLongPressEnd();
+      };
+    }
+
     if (enableDrag) {
-      dragStart(Offset offset) {
+      gesture.dragStart = (e) {
+        var offset = toLocalOffset(e.globalPosition);
         _lastDrag = offset;
         onDragStart(offset);
-      }
-
-      dragMove(Offset offset) {
+      };
+      gesture.dragMove = (e) {
+        var offset = toLocalOffset(e.globalPosition);
         var dx = offset.dx - _lastDrag.dx;
         var dy = offset.dy - _lastDrag.dy;
         _lastDrag = offset;
         onDragMove(offset, Offset(dx, dy));
-      }
-
-      dragCancel() {
+      };
+      gesture.dragEnd = () {
         _lastDrag = Offset.zero;
         onDragEnd();
-      }
-
-      if (dragType == DragType.longPress) {
-        _gesture.longPressStart = (e) {
-          dragStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.longPressMove = (e) {
-          dragMove(toLocalOffset(e.globalPosition));
-        };
-        _gesture.longPressEnd = () {
-          dragCancel();
-        };
-      } else {
-        _gesture.dragStart = (e) {
-          dragStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.dragMove = (e) {
-          dragMove(toLocalOffset(e.globalPosition));
-        };
-        _gesture.dragEnd = () {
-          dragCancel();
-        };
-      }
+      };
     }
+
     if (enableScale) {
-      if (scaleType == ScaleType.doubleTap) {
-        _gesture.doubleClick = (e) {
-          onScaleStart(toLocalOffset(e.globalPosition));
-
-          ///双击放大的递增量(0.25)
-          onScaleUpdate(toLocalOffset(e.globalPosition), 0, 0.25, true);
-        };
-      } else {
-        _gesture.scaleStart = (e) {
-          onScaleStart(toLocalOffset(e.globalPosition));
-        };
-        _gesture.scaleUpdate = (e) {
-          onScaleUpdate(toLocalOffset(e.focalPoint), e.rotation, e.scale, false);
-        };
-        _gesture.scaleEnd = () {
-          onScaleEnd();
-        };
-      }
+      gesture.scaleStart = (e) {
+        onScaleStart(toLocalOffset(e.globalPosition));
+      };
+      gesture.scaleUpdate = (e) {
+        onScaleUpdate(toLocalOffset(e.focalPoint), e.rotation, e.scale, false);
+      };
+      gesture.scaleEnd = () {
+        onScaleEnd();
+      };
     }
-  }
-
-  bool onInitGestureHook() {
-    return false;
   }
 
   DragType get dragType => context.option.dragType;
 
   ScaleType get scaleType => context.option.scaleType;
 
+  bool get enableClick => true;
+
+  bool get enableDoubleClick => false;
+
+  bool get enableLongPress => false;
+
   bool get enableHover => !(Platform.isAndroid || Platform.isIOS);
 
-  bool get enableDrag => true;
-
-  bool get enableClick => true;
+  bool get enableDrag => false;
 
   bool get enableScale => false;
 
   void onClick(Offset offset) {}
+
+  void onDoubleClick(Offset offset) {}
 
   void onHoverStart(Offset offset) {}
 
   void onHoverMove(Offset offset, Offset last) {}
 
   void onHoverEnd() {}
+
+  void onLongPressStart(Offset offset) {}
+
+  void onLongPressMove(Offset offset, Offset diff) {}
+
+  void onLongPressEnd() {}
 
   void onDragStart(Offset offset) {}
 
@@ -615,12 +616,21 @@ abstract class GestureView extends ChartView {
   void onScaleEnd() {}
 }
 
-///强制要求提供一个Series;
+///强制要求提供一个Series和Layout;
 ///并简单实现了相关的手势操作
-abstract class SeriesView<T extends ChartSeries> extends GestureView {
+abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends GestureView {
   final T series;
+  late L layoutHelper;
 
   SeriesView(this.series);
+
+  @override
+  void onCreate() {
+    super.onCreate();
+    layoutHelper = buildLayoutHelper();
+  }
+
+  L buildLayoutHelper();
 
   @override
   void bindSeries(covariant T series) {
@@ -642,72 +652,70 @@ abstract class SeriesView<T extends ChartSeries> extends GestureView {
   }
 
   @override
-  bool onInitGestureHook() {
+  void onInitGesture(ChartGesture gesture) {
     if (series is SeriesGesture && (series as SeriesGesture).enableSeriesGesture) {
-      (series as SeriesGesture).bindGesture(this, _gesture);
-      return true;
+      gesture.clear();
+      context.removeGesture(gesture);
+      context.addGesture(gesture);
+      (series as SeriesGesture).bindGesture(this, gesture);
+      return;
     }
-    return false;
+    super.onInitGesture(gesture);
   }
 
   @override
   void onClick(Offset offset) {
-    getLayoutHelper()?.onClick(offset);
+    layoutHelper.onClick(offset);
   }
 
   @override
   void onHoverStart(Offset offset) {
-    getLayoutHelper()?.onHoverStart(offset);
+    layoutHelper.onHoverStart(offset);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
-    getLayoutHelper()?.onHoverMove(offset);
+    layoutHelper.onHoverMove(offset);
   }
 
   @override
   void onHoverEnd() {
-    getLayoutHelper()?.onHoverEnd();
+    layoutHelper.onHoverEnd();
   }
 
+  @mustCallSuper
   @override
   void onStart() {
     super.onStart();
-    var helper = getLayoutHelper();
-    if (helper != null) {
-      helper.removeListener(invalidate);
-      helper.addListener(invalidate);
-    }
+    layoutHelper.removeListener(invalidate);
+    layoutHelper.addListener(invalidate);
   }
 
+  @mustCallSuper
   @override
   void onStop() {
-    getLayoutHelper()?.removeListener(invalidate);
+    layoutHelper.removeListener(invalidate);
     super.onStop();
-  }
-
-  ChartLayout? getLayoutHelper() {
-    return null;
   }
 
   ///事件转发
   @override
   void onBrushEvent(BrushEvent event) {
-    getLayoutHelper()?.onBrushEvent(event);
+    layoutHelper.onBrushEvent(event);
   }
 
   @override
   void onBrushClearEvent(BrushClearEvent event) {
-    getLayoutHelper()?.onBrushClearEvent(event);
+    layoutHelper.onBrushClearEvent(event);
   }
 
   @override
   void onBrushEndEvent(BrushEndEvent event) {
-    getLayoutHelper()?.onBrushEndEvent(event);
+    layoutHelper.onBrushEndEvent(event);
   }
 }
 
-abstract class CoordChildView<T extends ChartSeries> extends SeriesView<T> {
+abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> extends SeriesView<T, L> {
   CoordChildView(super.series);
 
   @override

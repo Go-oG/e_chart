@@ -1,12 +1,10 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/point/point_layout.dart';
+import 'package:e_chart/src/charts/point/point_helper.dart';
 import 'package:flutter/material.dart';
 
 import 'point_node.dart';
 
-class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, GridChild {
-  final PointLayout _layout = PointLayout();
-
+class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild, CalendarChild, GridChild {
   PointView(super.series);
 
   @override
@@ -31,7 +29,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
 
   void handleHover(Offset offset) {
     PointNode? clickNode;
-    var nodeList = _layout.nodeList;
+    var nodeList = layoutHelper.nodeList;
     for (var node in nodeList) {
       if (series.includeFun != null && series.includeFun!.call(node, offset)) {
         clickNode = node;
@@ -61,7 +59,7 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
 
   void handleCancel() {
     bool result = false;
-    for (var node in _layout.nodeList) {
+    for (var node in layoutHelper.nodeList) {
       if (node.removeState(ViewState.hover)) {
         result = true;
       }
@@ -74,12 +72,12 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    for (var node in _layout.nodeList) {
+    for (var node in layoutHelper.nodeList) {
       node.symbol?.draw(canvas, mPaint, node.attr);
     }
   }
@@ -117,5 +115,10 @@ class PointView extends SeriesView<PointSeries> with PolarChild, CalendarChild, 
     } else {
       return List.from(series.data.map((e) => e.y));
     }
+  }
+
+  @override
+  PointHelper buildLayoutHelper() {
+    return PointHelper(context, series);
   }
 }

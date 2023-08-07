@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'layout.dart';
+import 'funnel_helper.dart';
 
 class FunnelNode extends DataNode<List<Offset>, ItemData> {
   final int index;
@@ -22,7 +22,7 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   void update(Context context, FunnelSeries series) {
     ChartTheme chartTheme = context.option.theme;
     FunnelTheme theme = chartTheme.funnelTheme;
-    AreaStyle? areaStyle = FunnelLayout.getAreaStyle(context, series, this);
+    AreaStyle? areaStyle = FunnelHelper.getAreaStyle(context, series, this);
     this.areaStyle = areaStyle;
 
     LabelStyle? labelStyle = series.getLabelStyle(context, data);

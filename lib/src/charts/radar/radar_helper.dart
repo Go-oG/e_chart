@@ -5,8 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'radar_node.dart';
 
 /// 雷达图布局
-class RadarLayout extends ChartLayout<RadarSeries, List<GroupData>> {
+class RadarHelper extends LayoutHelper<RadarSeries, List<GroupData>> {
   List<RadarGroupNode> _groupNodeList = [];
+
+  RadarHelper(super.context, super.series);
 
   List<RadarGroupNode> get groupNodeList => _groupNodeList;
 

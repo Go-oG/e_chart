@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class BarGridHelper extends BaseGridLayoutHelper<BarItemData, BarGroupData, BarSeries> {
+  BarGridHelper(super.context, super.series);
+
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);

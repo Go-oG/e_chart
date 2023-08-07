@@ -7,6 +7,8 @@ import '../line_node.dart';
 class LineGridHelper extends BaseGridLayoutHelper<LineItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
 
+  LineGridHelper(super.context, super.series);
+
   List<LineNode> get lineList => _lineList;
 
   double _animatorPercent = 1;

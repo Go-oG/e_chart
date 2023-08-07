@@ -8,35 +8,22 @@ import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 import 'helper/line_helper.dart';
 import 'line_node.dart';
 
-class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
-  late BaseStackLayoutHelper<LineItemData, LineGroupData, LineSeries> layoutHelper;
+class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<LineItemData, LineGroupData, LineSeries>>
+    with GridChild, PolarChild {
   late LineHelper helper;
 
-  LineView(super.series) {
-    if (series.coordSystem == CoordSystem.polar) {
-      var h = LinePolarHelper();
-      layoutHelper = h;
-      helper = h;
-    } else {
-      var h = LineGridHelper();
-      layoutHelper = h;
-      helper = h;
-    }
-  }
-
-  @override
-  ChartLayout<ChartSeries, dynamic>? getLayoutHelper() => layoutHelper;
+  LineView(super.series);
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    layoutHelper.doMeasure(context, series, series.data, parentWidth, parentHeight);
+    layoutHelper.doMeasure(series.data, parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
@@ -229,5 +216,18 @@ class LineView extends CoordChildView<LineSeries> with GridChild, PolarChild {
   @override
   List<DynamicData> getRadiusDataSet() {
     return getAxisExtreme(0, true);
+  }
+
+  @override
+  BaseStackLayoutHelper<LineItemData, LineGroupData, LineSeries> buildLayoutHelper() {
+    if (series.coordSystem == CoordSystem.polar) {
+      var h = LinePolarHelper(context, series);
+      helper = h;
+      return h;
+    } else {
+      var h = LineGridHelper(context, series);
+      helper = h;
+      return h;
+    }
   }
 }

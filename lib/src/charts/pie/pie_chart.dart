@@ -1,71 +1,29 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import 'layout.dart';
+import 'pie_helper.dart';
 
 /// 饼图
-class PieView extends SeriesView<PieSeries> {
-  final PieLayout pieLayer = PieLayout();
-
+class PieView extends SeriesView<PieSeries, PieHelper> {
   PieView(super.series);
 
   @override
   bool get enableDrag => false;
 
   @override
-  void onClick(Offset offset) {
-    pieLayer.handleHoverOrClick(offset, true);
-  }
-
-  @override
-  void onHoverStart(Offset offset) {
-    pieLayer.handleHoverOrClick(offset, false);
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    pieLayer.handleHoverOrClick(offset, false);
-  }
-
-  @override
-  void onHoverEnd() {
-    pieLayer.onHoverEnd();
-  }
-
-  @override
   void onUpdateDataCommand(Command c) {
-    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onStart() {
-    super.onStart();
-    pieLayer.addListener(() {
-      invalidate();
-    });
-  }
-
-  @override
-  void onStop() {
-    pieLayer.clearListener();
-    super.onStop();
-  }
-
-  @override
-  void onDestroy() {
-    pieLayer.dispose();
-    super.onDestroy();
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    List<PieNode> nodeList = pieLayer.nodeList;
+    List<PieNode> nodeList = layoutHelper.nodeList;
     each(nodeList, (node, i) {
       Path path = node.attr.toPath(true);
       getAreaStyle(node, i)?.drawPath(canvas, mPaint, path);
@@ -89,10 +47,10 @@ class PieView extends SeriesView<PieSeries> {
     }
 
     if (series.labelAlign == CircleAlign.center) {
-      if (pieLayer.hoverNode == null) {
+      if (layoutHelper.hoverNode == null) {
         return;
       }
-      if (node != pieLayer.hoverNode) {
+      if (node != layoutHelper.hoverNode) {
         return;
       }
       labelStyle.draw(canvas, mPaint, node.data.label!, config);
@@ -101,7 +59,7 @@ class PieView extends SeriesView<PieSeries> {
     labelStyle.draw(canvas, mPaint, node.data.label!, config);
 
     if (series.labelAlign == CircleAlign.outside) {
-      Offset center = pieLayer.center;
+      Offset center = layoutHelper.center;
       Arc arc = node.attr;
       Offset tmpOffset = circlePoint(arc.outRadius, arc.startAngle + (arc.sweepAngle / 2), center);
       Offset tmpOffset2 = circlePoint(
@@ -132,5 +90,10 @@ class PieView extends SeriesView<PieSeries> {
     }
     var theme = context.option.theme.pieTheme;
     return theme.getBorderStyle();
+  }
+
+  @override
+  PieHelper buildLayoutHelper() {
+    return PieHelper(context, series);
   }
 }
