@@ -571,10 +571,6 @@ abstract class GestureView extends ChartView {
     }
   }
 
-  DragType get dragType => context.option.dragType;
-
-  ScaleType get scaleType => context.option.scaleType;
-
   bool get enableClick => true;
 
   bool get enableDoubleClick => false;

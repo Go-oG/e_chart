@@ -8,9 +8,9 @@ import 'render/base_render.dart';
 import 'render/default_render.dart';
 
 class Chart extends StatefulWidget {
-  final ChartOption config;
+  final ChartOption option;
 
-  const Chart(this.config, {Key? key}) : super(key: key);
+  const Chart(this.option, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -31,11 +31,11 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   void init() {
     if (_render == null) {
-      _render = DefaultRender(widget.config, this);
+      _render = DefaultRender(widget.option, this);
       _render?.onStart();
     } else {
       var oldConfig = _render!.context.option;
-      if (oldConfig == widget.config) {
+      if (oldConfig == widget.option) {
         _render!.onStop();
         _render!.context.tickerProvider = this;
         _render!.onStart();
@@ -43,7 +43,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         ///先销毁旧的再创建
         _render!.onStop();
         _render!.dispose();
-        _render = DefaultRender(widget.config, this);
+        _render = DefaultRender(widget.option, this);
         _render?.onStart();
       }
     }
@@ -66,65 +66,51 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child: _buildPainter(widget.config),
+      child: _buildPainter(widget.option),
     );
   }
 
   Widget _buildPainter(ChartOption config) {
     GestureDispatcher dispatcher = render.context.gestureDispatcher;
 
-    void Function(TapEvent)? lps;
-    void Function(MoveEvent)? lpm;
-    VoidCallback? lpe;
-    if (config.dragType == DragType.longPress) {
-      lps = dispatcher.onLongPressStart;
-      lpm = dispatcher.onLongPressMove;
-      lpe=dispatcher.onLongPressEnd;
-    }
+    ///LongPress
+    void Function(TapEvent)? lps = dispatcher.onLongPressStart;
+    void Function(MoveEvent)? lpm = dispatcher.onLongPressMove;
+    VoidCallback? lpe = dispatcher.onLongPressEnd;
 
-    void Function(MoveEvent)? moveStart;
-    void Function(MoveEvent)? moveEnd;
-    void Function(MoveEvent)? moveUpdate;
-    if (config.dragType == DragType.drag) {
-      moveStart=dispatcher.onMoveStart;
-      moveUpdate=dispatcher.onMoveUpdate;
-      moveEnd=dispatcher.onMoveEnd;
-    }
+    ///Move
+    void Function(MoveEvent)? moveStart = dispatcher.onMoveStart;
+    void Function(MoveEvent)? moveEnd = dispatcher.onMoveEnd;
+    void Function(MoveEvent)? moveUpdate = dispatcher.onMoveUpdate;
 
     ///doubleTap
-    void Function(TapEvent)? dt;
-    if (config.scaleType == ScaleType.doubleTap) {
-      dt = dispatcher.onDoubleTap;
-    }
-    void Function(Offset)? scaleStart;
-    void Function(x.ScaleEvent)? scaleUpdate;
-    VoidCallback? scaleEnd;
-    if(config.scaleType==ScaleType.scale){
-      scaleStart=dispatcher.onScaleStart;
-      scaleUpdate=dispatcher.onScaleUpdate;
-      scaleEnd=dispatcher.onScaleEnd;
-    }
+    void Function(TapEvent)? dt = dispatcher.onDoubleTap;
+
+    ///Scale
+    void Function(Offset)? scaleStart = dispatcher.onScaleStart;
+    void Function(x.ScaleEvent)? scaleUpdate = dispatcher.onScaleUpdate;
+    VoidCallback? scaleEnd = dispatcher.onScaleEnd;
 
     MediaQueryData data = MediaQuery.of(context);
     render.context.devicePixelRatio = data.devicePixelRatio;
     Widget ges = XGestureDetector(
       behavior: HitTestBehavior.translucent,
-      bypassMoveEventAfterLongPress: lps!=null,
-      doubleTapTimeConsider: 280,
-      longPressTimeConsider: 300,
+      bypassMoveEventAfterLongPress: true,
+      doubleTapTimeConsider:widget.option.doubleClickInterval,
+      longPressTimeConsider:widget.option.longPressTime,
       onTap: dispatcher.onTap,
       onDoubleTap: dt,
       onLongPress: lps,
-      onLongPressMove:lpm ,
+      onLongPressMove: lpm,
       onLongPressEnd: lpe,
 
       onMoveStart: moveStart,
       onMoveUpdate: moveUpdate,
       onMoveEnd: moveEnd,
 
-      onScaleStart:scaleStart ,
-      onScaleUpdate:scaleUpdate ,
-      onScaleEnd:scaleEnd,
+      onScaleStart: scaleStart,
+      onScaleUpdate: scaleUpdate,
+      onScaleEnd: scaleEnd,
 
       // onScrollEvent: ,
 
