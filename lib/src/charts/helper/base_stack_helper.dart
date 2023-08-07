@@ -371,7 +371,9 @@ abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroup
     if (path.contains(rect.bottomRight)) {
       return true;
     }
-    return false;
+
+    Rect bound=path.getBounds();
+    return bound.overlaps(rect);
   }
 
   CoordSystem get coordSystem;
