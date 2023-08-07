@@ -11,12 +11,11 @@ class ChartOption {
   List<Calendar> calendarList;
   List<ChartSeries> series;
   AnimatorAttrs animation;
-  ScaleType scaleType;
-  DragType dragType;
   ToolTip? toolTip;
   ChartTheme theme = ChartTheme();
-
   VoidFun1<ChartEvent>? eventCall;
+  int doubleClickInterval = 220;
+  int longPressTime = 280;
 
   ChartOption({
     required this.series,
@@ -29,8 +28,6 @@ class ChartOption {
     this.calendarList = const [],
     this.animation = const AnimatorAttrs(),
     Grid? grid,
-    this.scaleType = ScaleType.scale,
-    this.dragType = DragType.longPress,
     this.toolTip,
     ChartTheme? theme,
     this.eventCall,
