@@ -1,42 +1,28 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import 'layout.dart';
+import 'radar_helper.dart';
 import 'radar_node.dart';
 
 /// 雷达图
-class RadarView extends SeriesView<RadarSeries> implements RadarChild {
-  final RadarLayout radarLayout = RadarLayout();
-
+class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChild {
   RadarView(super.series);
 
   @override
-  void onStart() {
-    super.onStart();
-    radarLayout.addListener(invalidate);
-  }
-
-  @override
-  void onStop() {
-    radarLayout.removeListener(invalidate);
-    super.onStop();
-  }
-
-  @override
   void onUpdateDataCommand(covariant Command c) {
-    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
     ChartTheme chartTheme = context.option.theme;
     RadarTheme theme = chartTheme.radarTheme;
-    var nodeList = radarLayout.groupNodeList;
+    var nodeList = layoutHelper.groupNodeList;
     each(nodeList, (group, i) {
       if (!group.data.show) {
         return;
@@ -105,5 +91,10 @@ class RadarView extends SeriesView<RadarSeries> implements RadarChild {
       lineStyle = LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList);
     }
     return lineStyle;
+  }
+
+  @override
+  RadarHelper buildLayoutHelper() {
+    return RadarHelper(context, series);
   }
 }

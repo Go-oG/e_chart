@@ -4,8 +4,10 @@ import 'package:e_chart/src/charts/pie/pie_tween.dart';
 import 'package:flutter/material.dart';
 
 ///饼图布局
-class PieLayout extends ChartLayout<PieSeries, List<ItemData>> {
+class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
   List<PieNode> _nodeList = [];
+
+  PieHelper(super.context, super.series);
 
   List<PieNode> get nodeList => _nodeList;
 

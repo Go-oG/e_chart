@@ -2,25 +2,25 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Command> {
-  ChartLayout({bool equalsObject = false}) : super(Command.none, equalsObject);
-
+///用于辅助布局相关的抽象类
+///一般情况下SeriesView 都需要一个Helper来辅助布局
+abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Command> {
   late Context context;
   late S series;
-
   Rect rect = Rect.zero;
   late T data;
 
-  void doMeasure(Context context, S series, T data, double parentWidth, double parentHeight) {
-    this.context = context;
-    this.series = series;
+  LayoutHelper(this.context, this.series, {bool equalsObject = false}) : super(Command.none, equalsObject);
+
+  LayoutHelper.lazy({bool equalsObject = false}) : super(Command.none, equalsObject);
+
+
+  void doMeasure(T data, double parentWidth, double parentHeight) {
     this.rect = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
     onMeasure();
   }
 
-  void doLayout(Context context, S series, T data, Rect rect, LayoutType type) {
-    this.context = context;
-    this.series = series;
+  void doLayout(T data, Rect rect, LayoutType type) {
     this.rect = rect;
     this.data = data;
     onLayout(data, type);
@@ -49,17 +49,22 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
   ///=======事件通知=======
   ///Brush
   void onBrushEvent(BrushEvent event) {}
+
   void onBrushEndEvent(BrushEndEvent event) {}
+
   void onBrushClearEvent(BrushClearEvent event) {}
 
   ///Legend
-  void onLegendSelectedEvent(LegendSelectedEvent event){}
-  void onLegendUnSelectedEvent(LegendUnSelectedEvent event){}
-  void onLegendSelectChangeEvent(LegendSelectChangeEvent event){}
-  void onLegendScrollEvent(LegendScrollEvent event){}
+  void onLegendSelectedEvent(LegendSelectedEvent event) {}
+
+  void onLegendUnSelectedEvent(LegendUnSelectedEvent event) {}
+
+  void onLegendSelectChangeEvent(LegendSelectChangeEvent event) {}
+
+  void onLegendScrollEvent(LegendScrollEvent event) {}
 
   ///dataZoom
-  void onDataZoom(DataZoomEvent event){}
+  void onDataZoom(DataZoomEvent event) {}
 
   void sendClickEvent(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     context.dispatchEvent(ClickEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
@@ -92,7 +97,7 @@ abstract class ChartLayout<S extends ChartSeries, T> extends ChartNotifier<Comma
     );
   }
 
-  //========其它函数=======================
+  ///========其它函数=======================
   GridCoord findGridCoord() {
     return context.findGridCoord(series.gridIndex);
   }

@@ -1,46 +1,31 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/heatmap/layout.dart';
+import 'package:e_chart/src/charts/heatmap/heat_map_helper.dart';
 import 'package:flutter/material.dart';
 
 import 'heat_map_node.dart';
 
 /// 热力图
-class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChild {
-  final HeatMapLayout helper = HeatMapLayout();
-
+class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChild, CalendarChild {
   HeatMapView(super.series);
 
   @override
   int get calendarIndex => series.calendarIndex;
 
-  @override
-  void onStart() {
-    super.onStart();
-    helper.addListener(() {
-      invalidate();
-    });
-  }
-
-  @override
-  void onStop() {
-    helper.clearListener();
-    super.onStop();
-  }
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    each(helper.nodeList, (node, index) {
+    each(layoutHelper.nodeList, (node, index) {
       getAreaStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
       getBorderStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
       if (node.data.label == null || node.data.label!.isEmpty) {
@@ -80,5 +65,10 @@ class HeatMapView extends SeriesView<HeatMapSeries> with GridChild, CalendarChil
 
   LineStyle? getBorderStyle(HeatMapNode node, int index) {
     return series.getBorderStyle(context, node.data, index, node.status);
+  }
+
+  @override
+  HeatMapHelper buildLayoutHelper() {
+    return HeatMapHelper(context, series);
   }
 }

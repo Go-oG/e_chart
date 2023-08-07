@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 
 import 'funnel_node.dart';
 
-class FunnelLayout extends ChartLayout<FunnelSeries, List<ItemData>> {
-  FunnelLayout() : super();
+class FunnelHelper extends LayoutHelper<FunnelSeries, List<ItemData>> {
+
   List<FunnelNode> nodeList = [];
 
   num maxValue = 0;
+
+  FunnelHelper(super.context, super.series);
 
   @override
   void onLayout(List<ItemData> data, LayoutType type) {

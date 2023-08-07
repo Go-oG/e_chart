@@ -4,8 +4,10 @@ import 'package:e_chart/e_chart.dart';
 
 import 'point_node.dart';
 
-class PointLayout extends ChartLayout<PointSeries, List<PointData>> {
+class PointHelper extends LayoutHelper<PointSeries, List<PointData>> {
   List<PointNode> nodeList = [];
+
+  PointHelper(super.context, super.series);
 
   @override
   void onLayout(List<PointData> data, LayoutType type) {

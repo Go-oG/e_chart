@@ -4,8 +4,10 @@ import 'package:e_chart/e_chart.dart';
 
 import 'boxplot_node.dart';
 
-class BoxplotLayout extends ChartLayout<BoxplotSeries, List<BoxplotGroup>> {
+class BoxplotHelper extends LayoutHelper<BoxplotSeries, List<BoxplotGroup>> {
   List<BoxplotGroupNode> nodeList = [];
+
+  BoxplotHelper(super.context, super.series);
 
   @override
   void onLayout(List<BoxplotGroup> data, LayoutType type) {

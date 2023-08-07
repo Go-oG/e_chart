@@ -3,8 +3,10 @@ import 'package:flutter/animation.dart';
 
 import 'heat_map_node.dart';
 
-class HeatMapLayout extends ChartLayout<HeatMapSeries, List<HeatMapData>> {
+class HeatMapHelper extends LayoutHelper<HeatMapSeries, List<HeatMapData>> {
   List<HeatMapNode> _nodeList = [];
+
+  HeatMapHelper(super.context, super.series);
 
   List<HeatMapNode> get nodeList => _nodeList;
 

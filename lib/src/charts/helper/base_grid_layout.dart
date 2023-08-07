@@ -9,6 +9,8 @@ abstract class BaseGridLayoutHelper<T extends BaseItemData, P extends BaseGroupD
   ///根据给定的页码编号，返回对应的数据
   Map<int, List<SingleNode<T, P>>> _pageMap = {};
 
+  BaseGridLayoutHelper(super.context, super.series);
+
   List<SingleNode<T, P>> getPageData(List<int> pages) {
     List<SingleNode<T, P>> list = [];
     final map = _pageMap;

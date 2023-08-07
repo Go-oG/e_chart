@@ -4,31 +4,20 @@ import 'package:e_chart/src/charts/bar/helper/polar_helper.dart';
 import 'package:flutter/material.dart';
 
 ///BarView
-class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
-  late BaseStackLayoutHelper<BarItemData, BarGroupData, BarSeries> helper;
-
+class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<BarItemData, BarGroupData, BarSeries>> with GridChild, PolarChild {
   ///用户优化视图绘制
-  BarView(super.series) {
-    if (series.coordSystem == CoordSystem.polar) {
-      helper = BarPolarHelper();
-    } else {
-      helper = BarGridHelper();
-    }
-  }
-
-  @override
-  ChartLayout<ChartSeries, dynamic>? getLayoutHelper() => helper;
+  BarView(super.series);
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    helper.doMeasure(context, series, series.data, parentWidth, parentHeight);
+    layoutHelper.doMeasure(series.data, parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    helper.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
@@ -42,10 +31,10 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
   void drawGroupBk(Canvas canvas) {
     Set<GroupNode> rectSet = {};
     AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
-    Offset offset = helper.getTranslation();
+    Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, 0);
-    var nodeMap = helper.showNodeMap;
+    var nodeMap = layoutHelper.showNodeMap;
     nodeMap.forEach((key, node) {
       var group = node.parentNode.parentNode;
       if (rectSet.contains(group)) {
@@ -72,8 +61,8 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
   }
 
   void drawBar(Canvas canvas) {
-    Offset offset = helper.getTranslation();
-    final map = helper.showNodeMap;
+    Offset offset = layoutHelper.getTranslation();
+    final map = layoutHelper.showNodeMap;
     final bool usePolar = series.coordSystem == CoordSystem.polar;
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
@@ -89,9 +78,9 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
       }
       var data = node.data!;
       var group = node.parent;
-      var as = helper.buildAreaStyle(data, group, node.groupIndex, node.status);
+      var as = layoutHelper.buildAreaStyle(data, group, node.groupIndex, node.status);
 
-      var ls = helper.buildLineStyle(data, group, node.groupIndex, node.status);
+      var ls = layoutHelper.buildLineStyle(data, group, node.groupIndex, node.status);
       node.areaStyle = as;
       node.lineStyle = ls;
       if (as == null && ls == null) {
@@ -166,7 +155,7 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
 
   @override
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
-    return helper.getAxisExtreme(series, axisIndex, isXAxis);
+    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
 
   @override
@@ -180,17 +169,11 @@ class BarView extends CoordChildView<BarSeries> with GridChild, PolarChild {
   }
 
   @override
-  void onBrushEvent(BrushEvent event) {
-    helper.onBrushEvent(event);
-  }
-
-  @override
-  void onBrushEndEvent(BrushEndEvent event) {
-    helper.onBrushEndEvent(event);
-  }
-
-  @override
-  void onBrushClearEvent(BrushClearEvent event) {
-    helper.onBrushClearEvent(event);
+  BaseStackLayoutHelper<BarItemData, BarGroupData, BarSeries> buildLayoutHelper() {
+    if (series.coordSystem == CoordSystem.polar) {
+      return BarPolarHelper(context, series);
+    } else {
+      return BarGridHelper(context, series);
+    }
   }
 }

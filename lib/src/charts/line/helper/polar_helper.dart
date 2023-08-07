@@ -7,6 +7,8 @@ import 'package:e_chart/src/charts/line/line_node.dart';
 class LinePolarHelper extends BasePolarLayoutHelper<LineItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
 
+  LinePolarHelper(super.context, super.series);
+
   List<LineNode> get lineList => _lineList;
 
   double _animatorPercent = 1;

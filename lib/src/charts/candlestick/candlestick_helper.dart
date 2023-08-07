@@ -5,8 +5,10 @@ import 'package:e_chart/e_chart.dart';
 import 'candlestick_node.dart';
 
 //K线图
-class CandlestickLayout extends ChartLayout<CandleStickSeries, List<CandleStickGroup>> {
+class CandlestickHelper extends LayoutHelper<CandleStickSeries, List<CandleStickGroup>> {
   List<CandlestickGroupNode> nodeList = [];
+
+  CandlestickHelper(super.context, super.series);
 
   @override
   void onLayout(List<CandleStickGroup> data, LayoutType type) {

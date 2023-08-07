@@ -1,56 +1,22 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/boxplot/boxplot_layout.dart';
+import 'package:e_chart/src/charts/boxplot/boxplot_helper.dart';
 import 'package:e_chart/src/charts/boxplot/boxplot_node.dart';
 
 /// 单个盒须图
-class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
-  final BoxplotLayout _layout = BoxplotLayout();
-
+class BoxPlotView extends SeriesView<BoxplotSeries, BoxplotHelper> with GridChild {
   BoxPlotView(super.series);
 
   @override
-  void onClick(Offset offset) {
-    _layout.hoverEnter(offset);
-  }
-
-  @override
-  void onHoverStart(Offset offset) {
-    _layout.hoverEnter(offset);
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    _layout.hoverEnter(offset);
-  }
-
-  @override
-  void onHoverEnd() {
-    _layout.onHoverEnd();
-  }
-
-  @override
   void onUpdateDataCommand(covariant Command c) {
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onStart() {
-    super.onStart();
-    _layout.addListener(invalidate);
-  }
-
-  @override
-  void onStop() {
-    _layout.clearListener();
-    super.onStop();
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
@@ -58,7 +24,7 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
     var of = context.findGridCoord().getTranslation();
     canvas.save();
     canvas.translate(of.dx, of.dy);
-    each(_layout.nodeList, (group, p1) {
+    each(layoutHelper.nodeList, (group, p1) {
       each(group.nodeList, (node, i) {
         getAreaStyle(node, group, p1)?.drawPath(canvas, mPaint, node.areaPath);
         getBorderStyle(node, group, p1).drawPath(canvas, mPaint, node.path);
@@ -103,5 +69,10 @@ class BoxPlotView extends CoordChildView<BoxplotSeries> with GridChild {
     }
     var theme = context.option.theme.boxplotTheme;
     return theme.getBorderStyle(context.option.theme, index).convert(node.status);
+  }
+
+  @override
+  BoxplotHelper buildLayoutHelper() {
+    return BoxplotHelper(context, series);
   }
 }

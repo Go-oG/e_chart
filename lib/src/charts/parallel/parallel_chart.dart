@@ -1,37 +1,23 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'layout.dart';
+import 'parallel_helper.dart';
 
 //平行坐标系
-class ParallelView extends SeriesView<ParallelSeries> implements ParallelChild {
-  final ParallelLayout _layout = ParallelLayout();
-
+class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implements ParallelChild {
   ParallelView(super.series);
 
   @override
   void onUpdateDataCommand(covariant Command c) {
     super.onUpdateDataCommand(c);
-    _layout.findParallelCoord().onReceiveCommand(Command.updateData);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onStart() {
-    super.onStart();
-    _layout.addListener(invalidate);
-  }
-
-  @override
-  void onStop() {
-    _layout.clearListener();
-    super.onStop();
+    layoutHelper.findParallelCoord().onReceiveCommand(Command.updateData);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
@@ -41,7 +27,7 @@ class ParallelView extends SeriesView<ParallelSeries> implements ParallelChild {
 
   void _drawData(Canvas canvas) {
     canvas.save();
-    for (var ele in _layout.nodeList) {
+    for (var ele in layoutHelper.nodeList) {
       List<Offset> ol = [];
       LineStyle style = series.styleFun.call(ele.data);
       for (var offset in ele.offsetList) {
@@ -72,4 +58,9 @@ class ParallelView extends SeriesView<ParallelSeries> implements ParallelChild {
 
   @override
   int get parallelIndex => series.parallelIndex;
+
+  @override
+  ParallelHelper buildLayoutHelper() {
+    return ParallelHelper(context, series);
+  }
 }

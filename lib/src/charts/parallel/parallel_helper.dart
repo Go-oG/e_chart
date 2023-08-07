@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'parallel_node.dart';
 
-class ParallelLayout extends ChartLayout<ParallelSeries, List<ParallelGroup>> {
+class ParallelHelper extends LayoutHelper<ParallelSeries, List<ParallelGroup>> {
   List<ParallelNode> nodeList = [];
+
+  ParallelHelper(super.context, super.series);
 
   @override
   void onLayout(List<ParallelGroup> data, LayoutType type) {

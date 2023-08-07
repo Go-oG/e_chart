@@ -9,7 +9,7 @@ class Command {
   static const Command updateData = Command._(-3, runAnimation: true);
   static const Command configChange = Command._(-4, runAnimation: true);
 
-  ///[ChartLayout]使用
+  ///[LayoutHelper]使用
   static const Command layoutEnd = Command._(-5, runAnimation: false);
   static const Command layoutUpdate = Command._(-6, runAnimation: false);
 

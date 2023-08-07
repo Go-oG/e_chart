@@ -4,10 +4,12 @@ import 'package:e_chart/e_chart.dart';
 
 ///用于处理堆叠数据的布局帮助者
 abstract class BaseStackLayoutHelper<T extends BaseItemData, P extends BaseGroupData<T>, S extends BaseGridSeries<T, P>>
-    extends ChartLayout<S, List<P>> {
+    extends LayoutHelper<S, List<P>> {
   ///该map存储当前给定数据的映射
   ///如果给定的数据为空则不会存在
   Map<T, SingleNode<T, P>> _nodeMap = {};
+
+  BaseStackLayoutHelper(super.context, super.series);
 
   Map<T, SingleNode<T, P>> get nodeMap => _nodeMap;
 
