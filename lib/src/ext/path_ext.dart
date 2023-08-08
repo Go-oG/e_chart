@@ -118,7 +118,6 @@ extension PathExt on Path {
     return ol[ol.length - 1];
   }
 
-
   ///将当前Path进行拆分
   List<Path> split([double maxLength = 300]) {
     List<Path> pathList = [];
@@ -164,6 +163,14 @@ extension PathExt on Path {
     }
     path.close();
     return path;
+  }
+
+  void moveTo2(Offset offset) {
+    moveTo(offset.dx, offset.dy);
+  }
+
+  void lineTo2(Offset offset) {
+    lineTo(offset.dx, offset.dy);
   }
 }
 

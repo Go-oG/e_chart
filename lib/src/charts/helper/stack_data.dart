@@ -7,7 +7,10 @@ class StackGroupData<T> {
   int xAxisIndex;
   int yAxisIndex;
 
-  String? stackId;
+  String? _stackId;
+
+  String? get stackId => _stackId;
+
   StackStrategy strategy;
 
   StackGroupData(
@@ -15,7 +18,7 @@ class StackGroupData<T> {
     this.xAxisIndex = 0,
     this.yAxisIndex = 0,
     String? id,
-    this.stackId,
+    String? stackId,
     this.strategy = StackStrategy.all,
   }) {
     if (id == null || id.isEmpty) {
@@ -23,6 +26,11 @@ class StackGroupData<T> {
     } else {
       this.id = id;
     }
+    this._stackId = stackId;
+  }
+
+  set stackId(String? id) {
+    _stackId = id;
   }
 
   @override

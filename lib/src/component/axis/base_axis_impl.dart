@@ -153,6 +153,19 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     return context.option.theme.valueAxisTheme;
   }
 
+  bool matchType(dynamic data) {
+    if (data is DynamicData) {
+      data = data.data;
+    }
+    if (data is String && scale.isCategory) {
+      return true;
+    }
+    if (data is DateTime && scale.isTime) {
+      return true;
+    }
+    return data is num;
+  }
+
   void notifyLayoutUpdate() {
     value = Command.layoutUpdate;
   }

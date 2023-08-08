@@ -188,4 +188,5 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<StackItemD
       return BarGridHelper(context, series);
     }
   }
+
 }
