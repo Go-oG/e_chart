@@ -86,20 +86,20 @@ class LinePolarHelper extends StackPolarHelper<StackItemData, LineGroupData, Lin
   }
 
   @override
-  void onAnimatorStart(var result, LayoutType type) {
-    super.onAnimatorStart(result, type);
+  void onAnimatorStart(var result) {
+    super.onAnimatorStart(result);
     _animatorPercent = 0;
   }
 
   @override
-  void onAnimatorUpdateEnd(var result, double t, LayoutType type) {
-    super.onAnimatorUpdateEnd(result, t, type);
+  void onAnimatorUpdateEnd(var result, double t) {
+    super.onAnimatorUpdateEnd(result, t);
     _animatorPercent = t;
   }
 
   @override
-  void onAnimatorEnd(var result, LayoutType type) {
-    super.onAnimatorEnd(result, type);
+  void onAnimatorEnd(var result) {
+    super.onAnimatorEnd(result);
     _animatorPercent = 1;
   }
 

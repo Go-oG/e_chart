@@ -72,6 +72,68 @@ class DiffUtil {
     return DiffResult(startMap, endMap, curList, finalList, removeSet, addSet, commonSet);
   }
 
+  static DiffResult2<T, P, K> diff3<T, K, P>(
+      Iterable<T> oldList, Iterable<T> newList, Fun2<T, K> keyFun, P Function(T node, DiffType type) builder) {
+    Map<K, T> oldMap = {};
+    for (var n in oldList) {
+      oldMap[keyFun.call(n)] = n;
+    }
+    Map<K, T> newMap = {};
+    for (var n in newList) {
+      newMap[keyFun.call(n)] = n;
+    }
+
+    Set<K> removeSet = {};
+    Set<K> addSet = {};
+    Set<K> commonSet = {};
+
+    List<T> finalList = [];
+    for (var n in oldList) {
+      K key = keyFun.call(n);
+      if (newMap.containsKey(key)) {
+        commonSet.add(key);
+      } else {
+        removeSet.add(key);
+      }
+    }
+    for (var n in newList) {
+      finalList.add(n);
+      K key = keyFun.call(n);
+      if (oldMap.containsKey(key)) {
+        commonSet.add(key);
+      } else {
+        addSet.add(key);
+      }
+    }
+
+    Set<K> tmpList = {...removeSet, ...addSet, ...commonSet};
+    Map<T, P> startMap = {};
+    oldMap.forEach((key, value) {
+      startMap[value] = builder.call(value, DiffType.accessor);
+    });
+    Map<T, P> endMap = {};
+    newMap.forEach((key, value) {
+      endMap[value] = builder.call(value, DiffType.accessor);
+    });
+    List<T> curList = [];
+    for (var k in tmpList) {
+      T? t = oldMap[k] ?? newMap[k];
+      if (t == null) {
+        throw ChartError('无法找到对应的映射数据');
+      }
+      curList.add(t);
+      if (commonSet.contains(k)) {
+        continue;
+      }
+      if (addSet.contains(k)) {
+        startMap[t] = builder.call(t, DiffType.add);
+      } else {
+        endMap[t] = builder.call(t, DiffType.remove);
+      }
+    }
+    return DiffResult2(startMap, endMap, curList, finalList, removeSet, addSet, commonSet);
+  }
+
   static void diff2<P, D, N extends NodeAccessor<P, D>>(
     Context context,
     AnimatorAttrs attrs,
@@ -202,7 +264,6 @@ class DiffUtil {
       tween.tween.start(context, tween.status == TweenWrap.updateStatus);
     }
   }
-
 }
 
 ///属性访问器
@@ -227,14 +288,36 @@ class DiffResult<N, D> {
   final Set<D> updateSet;
 
   DiffResult(
-      this.startMap,
-      this.endMap,
-      this.startList,
-      this.endList,
-      this.removeSet,
-      this.addSet,
-      this.updateSet,
-      );
+    this.startMap,
+    this.endMap,
+    this.startList,
+    this.endList,
+    this.removeSet,
+    this.addSet,
+    this.updateSet,
+  );
+}
+
+class DiffResult2<N, P, D> {
+  final Map<N, P> startMap;
+  final Map<N, P> endMap;
+
+  final List<N> startList;
+  final List<N> endList;
+
+  final Set<D> removeSet;
+  final Set<D> addSet;
+  final Set<D> updateSet;
+
+  DiffResult2(
+    this.startMap,
+    this.endMap,
+    this.startList,
+    this.endList,
+    this.removeSet,
+    this.addSet,
+    this.updateSet,
+  );
 }
 
 class TweenWrap {
@@ -245,4 +328,10 @@ class TweenWrap {
   final int status;
 
   TweenWrap(this.tween, this.status);
+}
+
+enum DiffType {
+  add,
+  remove,
+  accessor,
 }

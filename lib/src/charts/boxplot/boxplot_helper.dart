@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class BoxplotHelper extends StackGridHelper<BoxplotData, BoxplotGroup, BoxplotSeries> {
-
   BoxplotHelper(super.context, super.series);
 
   @override
@@ -100,7 +99,7 @@ class BoxplotHelper extends StackGridHelper<BoxplotData, BoxplotGroup, BoxplotSe
     final bool vertical = series.direction == Direction.vertical;
     final Rect rect = columnNode.rect;
     for (var node in columnNode.nodeList) {
-      _layoutSingleNode(node, rect,  vertical);
+      _layoutSingleNode(node, rect, vertical);
     }
   }
 
@@ -179,5 +178,26 @@ class BoxplotHelper extends StackGridHelper<BoxplotData, BoxplotGroup, BoxplotSe
   }
 
   @override
+  Map<int, List<SingleNode<BoxplotData, BoxplotGroup>>> splitDataByPage(var list, int start, int end) {
+    Map<int, List<SingleNode<BoxplotData, BoxplotGroup>>> resultMap = {};
+    double w = width;
+    double h = height;
+    bool vertical = series.direction == Direction.vertical;
+    double size = vertical ? w : h;
+    for (int i = start; i < end; i++) {
+      var node = list[i];
+      Path path = node.extGet("path");
+      Rect rect = path.getBounds();
+      double s = vertical ? rect.left : rect.top;
+      int index = s ~/ size;
+      List<SingleNode<BoxplotData, BoxplotGroup>> tmpList = resultMap[index] ?? [];
+      resultMap[index] = tmpList;
+      tmpList.add(node);
+    }
+    return resultMap;
+  }
+
+  @override
   SeriesType get seriesType => SeriesType.boxplot;
+
 }
