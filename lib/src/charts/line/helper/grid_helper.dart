@@ -85,32 +85,32 @@ class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineS
   }
 
   @override
-  Future<void> splitData(List<SingleNode<StackItemData, LineGroupData>> list) async {
-    ///Line 不需要按页进行划分
+  Future<Map<int, List<SingleNode<StackItemData, LineGroupData>>>> splitData(var list) async {
+    return {};
   }
 
   @override
-  SingleNode<StackItemData, LineGroupData> onCreateAnimatorObj(var data, var node, bool newData, LayoutType type) {
-    return node;
+  AnimatorNode onCreateAnimatorNode(var node, DiffType type) {
+    return AnimatorNode.none;
   }
 
   @override
-  void onAnimatorStart(var result, LayoutType type) {
+  void onAnimatorStart(var result) {
     _animatorPercent = 0;
   }
 
   @override
-  void onAnimatorUpdate(var node, double t, var startMap, var endMap, LayoutType type) {
+  void onAnimatorUpdate(var node, double t, var startMap, var endMap) {
     _animatorPercent = t;
   }
 
   @override
-  void onAnimatorUpdateEnd(var result, double t, LayoutType type) {
+  void onAnimatorUpdateEnd(var result, double t) {
     _animatorPercent = t;
   }
 
   @override
-  void onAnimatorEnd(var result, LayoutType type) {
+  void onAnimatorEnd(var result) {
     _animatorPercent = 1;
   }
 
@@ -415,7 +415,6 @@ class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineS
     }
     return tmpList;
   }
-
 
   @override
   double getAnimatorPercent() {

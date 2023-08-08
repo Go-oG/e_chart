@@ -221,44 +221,40 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
     LayoutType type,
   ) async {
     if (series.animation == null) {
+      _nodeMap=newNodeMap;
       return;
     }
 
     ///动画
-    DiffResult<SingleNode<T, P>, SingleNode<T, P>> diffResult = DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0, (a, b, c) {
-      return onCreateAnimatorObj(a, b, c, type);
+    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult = DiffUtil.diff3(oldNodeList, newNodeList, (p0) => p0.data!, (b, c) {
+      return onCreateAnimatorNode(b, c);
     });
-    Map<SingleNode<T, P>, MapNode> startMap = diffResult.startMap.map((key, value) => MapEntry(
-          key,
-          MapNode(value.rect, value.position, value.arc),
-        ));
-    Map<SingleNode<T, P>, MapNode> endMap = diffResult.endMap.map((key, value) => MapEntry(
-          key,
-          MapNode(value.rect, value.position, value.arc),
-        ));
+    final startMap = diffResult.startMap;
+    final endMap = diffResult.endMap;
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
-      onAnimatorStart(diffResult, type);
+      onAnimatorStart(diffResult);
     };
     doubleTween.endListener = () {
-      onAnimatorEnd(diffResult, type);
+      onAnimatorEnd(diffResult);
       notifyLayoutEnd();
     };
     doubleTween.addListener(() {
       double t = doubleTween.value;
       each(diffResult.startList, (node, p1) {
-        onAnimatorUpdate(node, t, startMap, endMap, type);
+        onAnimatorUpdate(node, t, startMap, endMap);
       });
-      onAnimatorUpdateEnd(diffResult, t, type);
+      onAnimatorUpdateEnd(diffResult, t);
       notifyLayoutUpdate();
     });
     doubleTween.start(context, type == LayoutType.update);
   }
 
-  ///创建动画的映射对象
-  SingleNode<T, P> onCreateAnimatorObj(SingleNode<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type);
+  //========动画相关函数
+  ///创建动画节点
+  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type);
 
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+  void onAnimatorStart(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
     Map<T, SingleNode<T, P>> map = {};
     for (var ele in result.startList) {
       if (ele.data != null) {
@@ -271,14 +267,13 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
   void onAnimatorUpdate(
     SingleNode<T, P> node,
     double t,
-    Map<SingleNode<T, P>, MapNode> startMap,
-    Map<SingleNode<T, P>, MapNode> endMap,
-    LayoutType type,
-  );
+    Map<SingleNode<T, P>, AnimatorNode> startMap,
+    Map<SingleNode<T, P>, AnimatorNode> endMap,
+  ) {}
 
-  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, double t, LayoutType type);
+  void onAnimatorUpdateEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result, double t) {}
 
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
     Map<T, SingleNode<T, P>> map = {};
     for (var ele in result.endList) {
       if (ele.data != null) {
@@ -288,6 +283,7 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
     showNodeMap = map;
   }
 
+  ///=======其它函数
   List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
     CoordSystem system = CoordSystem.grid;
     if (series.coordSystem == CoordSystem.polar) {

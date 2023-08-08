@@ -52,7 +52,7 @@ abstract class StackPolarHelper<T extends StackItemData, P extends StackGroupDat
   MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
     var valueType = markPoint.data.valueType;
     var polarCoord = findPolarCoord();
-    if (markPoint.data.data != null||valueType!=null) {
+    if (markPoint.data.data != null || valueType != null) {
       return super.onLayoutMarkPoint(markPoint, group, newNodeMap);
     }
 
@@ -73,21 +73,18 @@ abstract class StackPolarHelper<T extends StackItemData, P extends StackGroupDat
   }
 
   @override
-  SingleNode<T, P> onCreateAnimatorObj(SingleNode<T, P> data, SingleNode<T, P> node, bool newData, LayoutType type) {
-    var rn = SingleNode<T, P>(node.parentNode, node.wrap, node.stack);
+  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
     Arc arc;
     if (series.animatorStyle == GridAnimatorStyle.expand) {
       arc = node.arc.copy(innerRadius: 0, outRadius: 0);
     } else {
       arc = node.arc.copy(outRadius: node.arc.innerRadius);
     }
-    rn.arc = arc;
-    rn.position = arc.centroid();
-    return rn;
+    return AnimatorNode(arc: arc, offset: arc.centroid());
   }
 
   @override
-  void onAnimatorStart(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+  void onAnimatorStart(var result) {
     Map<T, SingleNode<T, P>> map = {};
     for (var ele in result.startList) {
       if (ele.data != null) {
@@ -98,8 +95,11 @@ abstract class StackPolarHelper<T extends StackItemData, P extends StackGroupDat
   }
 
   @override
-  void onAnimatorUpdate(SingleNode<T, P> node, double t, var startMap, var endMap, LayoutType type) {
+  void onAnimatorUpdate(SingleNode<T, P> node, double t, var startMap, var endMap) {
     var e = endMap[node]!.arc;
+    if (e == null) {
+      return;
+    }
     if (series.direction == Direction.vertical) {
       ///角度增加
       double sweepAngle = e.sweepAngle * t;
@@ -110,24 +110,22 @@ abstract class StackPolarHelper<T extends StackItemData, P extends StackGroupDat
         startAngle: e.startAngle,
         center: e.center,
       );
-    } else {
-      ///半径增加
-      double outerRadius = e.innerRadius + (e.outRadius - e.innerRadius) * t;
-      node.arc = Arc(
-        innerRadius: e.innerRadius,
-        outRadius: outerRadius,
-        sweepAngle: e.sweepAngle,
-        startAngle: e.startAngle,
-        center: e.center,
-      );
+      return;
     }
+
+    ///半径增加
+    double outerRadius = e.innerRadius + (e.outRadius - e.innerRadius) * t;
+    node.arc = Arc(
+      innerRadius: e.innerRadius,
+      outRadius: outerRadius,
+      sweepAngle: e.sweepAngle,
+      startAngle: e.startAngle,
+      center: e.center,
+    );
   }
 
   @override
-  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, double t, LayoutType type) {}
-
-  @override
-  void onAnimatorEnd(DiffResult<SingleNode<T, P>, SingleNode<T, P>> result, LayoutType type) {
+  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
     Map<T, SingleNode<T, P>> map = {};
     for (var ele in result.endList) {
       if (ele.data != null) {
