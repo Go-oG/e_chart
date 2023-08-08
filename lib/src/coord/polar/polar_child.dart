@@ -1,11 +1,11 @@
+import '../../model/data.dart';
 
-import '../../model/dynamic_data.dart';
+abstract class PolarChild  {
+  int get polarIndex {
+    return 0;
+  }
 
-abstract class PolarChild {
+  List<DynamicData> getAngleDataSet();
 
-  int get polarIndex{return 0;}
-
-  List<DynamicData> get angleDataSet;
-
-  List<DynamicData> get radiusDataSet;
+  List<DynamicData> getRadiusDataSet();
 }

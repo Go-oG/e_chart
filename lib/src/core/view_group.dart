@@ -2,12 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../event/index.dart';
 import '../utils/log_util.dart';
 import 'context.dart';
 import 'view.dart';
 
 /// ViewGroup
-abstract class ChartViewGroup extends ChartView implements ViewParent {
+abstract class ChartViewGroup extends GestureView implements ViewParent {
   final List<ChartView> _children = [];
 
   ChartViewGroup();
@@ -27,7 +28,7 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
       try {
         c.onStart();
       } catch (e) {
-        logPrint('$e');
+        Logger.e(e);
       }
     }
   }
@@ -38,7 +39,7 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
       try {
         c.onStop();
       } catch (e) {
-        logPrint('$e');
+        Logger.e(e);
       }
     }
     super.onStop();
@@ -61,19 +62,64 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     requestLayout();
   }
 
+  ///=========Event和Action分发处理==================
+  void dispatchEvent(ChartEvent event) {
+    if (event is BrushEvent) {
+      onBrushEvent(event);
+      return;
+    }
+    if (event is BrushEndEvent) {
+      onBrushEndEvent(event);
+      return;
+    }
+    if (event is BrushClearEvent) {
+      onBrushClearEvent(event);
+      return;
+    }
+  }
+
+  bool dispatchAction(ChartAction action) {
+    return false;
+  }
+
+  @override
+  void onBrushEvent(BrushEvent event) {
+    for (var v in children) {
+      v.onBrushEvent(event);
+    }
+    invalidate();
+  }
+
+  @override
+  void onBrushEndEvent(BrushEndEvent event) {
+    for (var v in children) {
+      v.onBrushEndEvent(event);
+    }
+    invalidate();
+  }
+
+  @override
+  void onBrushClearEvent(BrushClearEvent event) {
+    for (var v in children) {
+      v.onBrushClearEvent(event);
+    }
+    invalidate();
+  }
+
+  ///=========布局测量相关============
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     double maxHeight = 0;
     double maxWidth = 0;
-    num php = layoutParams.leftPadding.convert(parentWidth) + layoutParams.rightPadding.convert(parentWidth);
-    num pvp = layoutParams.topPadding.convert(parentHeight) + layoutParams.bottomPadding.convert(parentHeight);
+    num php = layoutParams.padding.horizontal;
+    num pvp = layoutParams.padding.vertical;
     double pw = parentWidth - php;
     double ph = parentHeight - pvp;
     for (var child in children) {
       child.measure(pw, ph);
       final LayoutParams lp = child.layoutParams;
-      num hp = lp.leftMargin.convert(pw) + lp.rightMargin.convert(pw);
-      num vp = lp.topMargin.convert(ph) + lp.bottomMargin.convert(ph);
+      num hp = lp.margin.horizontal;
+      num vp = lp.margin.vertical;
       maxWidth = max(maxWidth, child.width + hp);
       maxHeight = max(maxHeight, child.height + vp);
     }
@@ -81,38 +127,35 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     maxHeight += pvp;
     maxWidth = min(maxWidth, parentWidth);
     maxHeight = min(maxHeight, parentHeight);
-
-    php = layoutParams.leftPadding.convert(maxWidth) + layoutParams.rightPadding.convert(maxWidth);
-    pvp = layoutParams.topPadding.convert(maxHeight) + layoutParams.bottomPadding.convert(maxHeight);
+    php = layoutParams.padding.horizontal;
+    pvp = layoutParams.padding.vertical;
     pw = maxWidth - php;
     ph = maxHeight - pvp;
-
     for (var child in children) {
       final LayoutParams lp = child.layoutParams;
-      num hm = lp.leftMargin.convert(maxWidth) + lp.rightMargin.convert(maxWidth);
-      num vm = lp.topMargin.convert(maxHeight) + lp.bottomMargin.convert(maxHeight);
+      num hm = lp.margin.horizontal;
+      num vm = lp.margin.vertical;
       double childWidth = child.width;
-      if (lp.width.number == LayoutParams.matchParent) {
+      if (lp.width.isMatch) {
         childWidth = max(0, pw - hm);
       }
       double childHeight = child.height;
-      if (lp.height.number == LayoutParams.matchParent) {
+      if (lp.height.isMatch) {
         childHeight = max(0, ph - vm);
       }
       child.measure(childWidth, childHeight);
     }
-
     return Size(maxWidth, maxHeight);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    double parentLeft = layoutParams.leftPadding.convert(width);
-    double parentTop = layoutParams.topPadding.convert(height);
+    double parentLeft = layoutParams.padding.left;
+    double parentTop = layoutParams.padding.top;
     for (var child in children) {
       LayoutParams lp = child.layoutParams;
-      double childLeft = parentLeft + lp.leftMargin.convert(width);
-      double childTop = parentTop + lp.topMargin.convert(height);
+      double childLeft = parentLeft + lp.margin.left;
+      double childTop = parentTop + lp.margin.top;
       child.layout(childLeft, childTop, childLeft + child.width, childTop + child.height);
     }
   }
@@ -146,11 +189,16 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
   ///========================管理子View相关方法=======================
   void addView(ChartView view, {int index = -1}) {
     _addViewInner(view, index);
-    requestLayout();
+    if (!inLayout) {
+      requestLayout();
+    }
   }
 
   void removeView(ChartView view) {
     children.remove(view);
+    if (!inLayout) {
+      requestLayout();
+    }
   }
 
   ChartView getChildAt(int index) {
@@ -183,6 +231,9 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
       return;
     }
     children.insert(index, child);
+    children.sort((a, b) {
+      return a.zLevel.compareTo(b.zLevel);
+    });
   }
 
   void clearChildren() {
@@ -199,6 +250,18 @@ abstract class ChartViewGroup extends ChartView implements ViewParent {
     double t = parentRect.top + boundRect.top;
     return Rect.fromLTWH(l, t, boundRect.width, boundRect.height);
   }
+
+  @override
+  bool get enableClick => false;
+
+  @override
+  bool get enableDrag => false;
+
+  @override
+  bool get enableHover => false;
+
+  @override
+  bool get enableScale => false;
 }
 
 abstract class ViewParent {

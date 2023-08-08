@@ -1,32 +1,43 @@
+import 'package:e_chart/e_chart.dart';
 
-import '../../model/dynamic_data.dart';
 
 ///将给定的domain映射到range
 abstract class BaseScale<D, R extends num> {
-  ///表示域的范围
+  ///表示域的范围(数据)
   late final List<D> domain;
 
   ///映射域的值(比如坐标等)
-  final List<R> range;
+  late final List<R> range;
 
-  final bool inverse;
-
-  ///当inverse为true时我们将反转domain
-  BaseScale(List<D> domain, this.range, this.inverse) {
-    if (inverse) {
-      this.domain = List.from(domain.reversed);
-    } else {
-      this.domain = domain;
+  BaseScale(List<D> domain, List<R> range) {
+    if (range.length < 2) {
+      throw ChartError('Range 必须大于等于2');
     }
+    this.domain = List.from(domain);
+    this.range = List.from(range);
   }
 
-  num rangeValue(DynamicData domainData);
+  BaseScale<D, R> copyWithRange(List<R> range);
 
-  D domainValue(covariant num rangeData);
+  ///将给定的数据映射到range
+  ///返回值可能为一个，也可能是一个范围
+  ///当为范围时至少会返回两个
+  List<R> toRange(D data);
 
+  List<double> toRangeRatio(D data);
+
+  R convertRatio(double ratio);
+
+  D toData(covariant num range);
+
+  ///返回Tick的个数
   int get tickCount;
 
-  num get viewInterval {
+  List<D> get labels;
+  List<D> getRangeLabel(int startIndex,int endIndex);
+
+  ///Tick之间的距离间距
+  num get tickInterval {
     num v = (range[1] - range[0]).abs();
     int c = tickCount;
     if (c <= 1) {
@@ -35,4 +46,17 @@ abstract class BaseScale<D, R extends num> {
     c = c - 1;
     return v / c;
   }
+
+  bool get isCategory => false;
+
+  bool get isTime => false;
+
+  bool get isLog => false;
+
+  @override
+  String toString() {
+
+    return "domain:$domain range:$range";
+  }
+
 }

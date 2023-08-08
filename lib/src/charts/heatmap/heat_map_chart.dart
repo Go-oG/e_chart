@@ -1,84 +1,74 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/heatmap/layout.dart';
+import 'package:e_chart/src/charts/heatmap/heat_map_helper.dart';
 import 'package:flutter/material.dart';
 
-/// 热力图
-class HeatMapView extends SeriesView<HeatMapSeries> implements GridChild, CalendarChild {
-  final HeatMapLayout _layout = HeatMapLayout();
+import 'heat_map_node.dart';
 
+/// 热力图
+class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChild, CalendarChild {
   HeatMapView(super.series);
 
   @override
-  int get xAxisIndex => series.xAxisIndex;
+  int get calendarIndex => series.calendarIndex;
 
-  @override
-  int get yAxisIndex => series.yAxisIndex;
-
-  @override
-  int get xDataSetCount => series.data.length;
-
-  @override
-  int get yDataSetCount => series.data.length;
-
-  @override
-  List<DynamicData> get xDataSet {
-    List<DynamicData> dl = [];
-    for (var element in series.data) {
-      dl.add(element.x);
-    }
-    return dl;
-  }
-
-  @override
-  List<DynamicData> get yDataSet {
-    List<DynamicData> dl = [];
-    for (var element in series.data) {
-      dl.add(element.y);
-    }
-    return dl;
-  }
-
-  @override
-  int get calendarIndex => series.xAxisIndex;
-
-  @override
-  void onStart() {
-    super.onStart();
-    _layout.addListener(() {
-      invalidate();
-    });
-  }
-
-  @override
-  void onStop() {
-    _layout.clearListener();
-    super.onStop();
-  }
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    for (var node in _layout.nodeList) {
-      ChartSymbol symbol = series.symbolFun.call(node, node.rect.size).convert(node.status);
-      symbol.draw(canvas, mPaint, node.rect.center, 1);
-      if (node.data.label != null) {
-        LabelStyle? labelStyle = series.labelFun?.call(node);
-        if (labelStyle == null || !labelStyle.show) {
-          continue;
-        }
-        Alignment align = series.labelAlignFun?.call(node) ?? Alignment.center;
-        labelStyle.draw(canvas, mPaint, node.data.label!, TextDrawConfig.fromRect(node.rect, align));
+    each(layoutHelper.nodeList, (node, index) {
+      getAreaStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
+      getBorderStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
+      if (node.data.label == null || node.data.label!.isEmpty) {
+        return;
+      }
+      var label = node.data.label!;
+      LabelStyle? style = series.getLabelStyle(context, node.data, node.status);
+      if (style == null || !style.show) {
+        return;
+      }
+      Alignment align = series.labelAlignFun?.call(node.d) ?? Alignment.center;
+      style.draw(canvas, mPaint, label, TextDrawInfo.fromRect(node.attr, align));
+    });
+  }
+
+  @override
+  int getAxisDataCount(int axisIndex, bool isXAxis) {
+    return series.data.length;
+  }
+
+  @override
+  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
+    List<DynamicData> dl = [];
+    for (var element in series.data) {
+      if (isXAxis) {
+        dl.add(element.x);
+      } else {
+        dl.add(element.y);
       }
     }
+    return dl;
+  }
+
+  AreaStyle? getAreaStyle(HeatMapNode node, int index) {
+    return series.getAreaStyle(context, node.data, index, node.status);
+  }
+
+  LineStyle? getBorderStyle(HeatMapNode node, int index) {
+    return series.getBorderStyle(context, node.data, index, node.status);
+  }
+
+  @override
+  HeatMapHelper buildLayoutHelper() {
+    return HeatMapHelper(context, series);
   }
 }

@@ -2,13 +2,15 @@ import 'dart:io';
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:gesture_x_detector/gesture_x_detector.dart';
+import 'package:gesture_x_detector/gesture_x_detector.dart' as x;
 import 'render/base_render.dart';
 import 'render/default_render.dart';
 
 class Chart extends StatefulWidget {
-  final ChartConfig config;
+  final ChartOption option;
 
-  const Chart(this.config, {Key? key}) : super(key: key);
+  const Chart(this.option, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -29,11 +31,11 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   void init() {
     if (_render == null) {
-      _render = DefaultRender(widget.config, this);
+      _render = DefaultRender(widget.option, this);
       _render?.onStart();
     } else {
-      var oldConfig = _render!.context.config;
-      if (oldConfig == widget.config) {
+      var oldConfig = _render!.context.option;
+      if (oldConfig == widget.option) {
         _render!.onStop();
         _render!.context.tickerProvider = this;
         _render!.onStart();
@@ -41,7 +43,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         ///先销毁旧的再创建
         _render!.onStop();
         _render!.dispose();
-        _render = DefaultRender(widget.config, this);
+        _render = DefaultRender(widget.option, this);
         _render?.onStart();
       }
     }
@@ -61,61 +63,63 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    ChartConfig config = widget.config;
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child: _buildPainter(config),
+      child: _buildPainter(widget.option),
     );
   }
 
-  Widget _buildPainter(ChartConfig config) {
+  Widget _buildPainter(ChartOption config) {
     GestureDispatcher dispatcher = render.context.gestureDispatcher;
-    void Function(LongPressStartDetails)? lps;
-    void Function(LongPressMoveUpdateDetails)? lpm;
-    void Function(LongPressEndDetails)? lpe;
-    VoidCallback? lpc;
-    if (config.dragType == DragType.longPress) {
-      lps = dispatcher.onLongPressStart;
-      lpm = dispatcher.onLongPressMove;
-      lpe = dispatcher.onLongPressEnd;
-      lpc = dispatcher.onLongPressCancel;
-    }
-    void Function(TapDownDetails)? dtd;
-    VoidCallback? dtc;
-    if (config.scaleType == ScaleType.doubleTap) {
-      dtd = dispatcher.onDoubleTapDown;
-      dtc = dispatcher.onDoubleTapCancel;
-    }
-    void Function(ScaleStartDetails)? ss;
-    void Function(ScaleUpdateDetails)? su;
-    void Function(ScaleEndDetails)? se;
-    if (config.dragType == DragType.drag || config.scaleType == ScaleType.scale) {
-      ss = dispatcher.onScaleStart;
-      su = dispatcher.onScaleUpdate;
-      se = dispatcher.onScaleEnd;
-    }
+
+    ///LongPress
+    void Function(TapEvent)? lps = dispatcher.onLongPressStart;
+    void Function(MoveEvent)? lpm = dispatcher.onLongPressMove;
+    VoidCallback? lpe = dispatcher.onLongPressEnd;
+
+    ///Move
+    void Function(MoveEvent)? moveStart = dispatcher.onMoveStart;
+    void Function(MoveEvent)? moveEnd = dispatcher.onMoveEnd;
+    void Function(MoveEvent)? moveUpdate = dispatcher.onMoveUpdate;
+
+    ///doubleTap
+    void Function(TapEvent)? dt = dispatcher.onDoubleTap;
+
+    ///Scale
+    void Function(Offset)? scaleStart = dispatcher.onScaleStart;
+    void Function(x.ScaleEvent)? scaleUpdate = dispatcher.onScaleUpdate;
+    VoidCallback? scaleEnd = dispatcher.onScaleEnd;
+
     MediaQueryData data = MediaQuery.of(context);
     render.context.devicePixelRatio = data.devicePixelRatio;
-    Widget ges = GestureDetector(
+    Widget ges = XGestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTapDown: dispatcher.onTapDown,
-      onTapUp: dispatcher.onTapUp,
-      onTapCancel: dispatcher.onTapCancel,
-      onDoubleTapDown: dtd,
-      onDoubleTapCancel: dtc,
-      onLongPressStart: lps,
-      onLongPressMoveUpdate: lpm,
+      bypassMoveEventAfterLongPress: true,
+      doubleTapTimeConsider:widget.option.doubleClickInterval,
+      longPressTimeConsider:widget.option.longPressTime,
+      onTap: dispatcher.onTap,
+      onDoubleTap: dt,
+      onLongPress: lps,
+      onLongPressMove: lpm,
       onLongPressEnd: lpe,
-      onLongPressCancel: lpc,
-      onScaleStart: ss,
-      onScaleUpdate: su,
-      onScaleEnd: se,
+
+      onMoveStart: moveStart,
+      onMoveUpdate: moveUpdate,
+      onMoveEnd: moveEnd,
+
+      onScaleStart: scaleStart,
+      onScaleUpdate: scaleUpdate,
+      onScaleEnd: scaleEnd,
+
+      // onScrollEvent: ,
+
       child: CustomPaint(
         painter: render,
         child: Container(),
       ),
     );
+
     bool isPhone = Platform.isIOS || Platform.isAndroid;
 
     if (isPhone) {

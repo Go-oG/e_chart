@@ -1,18 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 
-enum RoseType {
-  normal,
-  radius, //圆心角展现数据百分比，半径展示数据大小
-  area // 圆心角相同 半径展示数据的大小
-}
-
-enum PieAnimatorStyle {
-  expand,
-  expandScale,
-  originExpand,
-  originExpandScale,
-}
-
 /// 饼图系列
 class PieSeries extends RectSeries {
   List<ItemData> data;
@@ -46,8 +33,10 @@ class PieSeries extends RectSeries {
   RoseType roseType;
   CircleAlign labelAlign;
   PieAnimatorStyle animatorStyle;
+
   Fun2<ItemData, LabelStyle?>? labelStyleFun;
-  Fun2<ItemData, AreaStyle> areaStyleFun;
+  Fun2<ItemData, AreaStyle?>? areaStyleFun;
+  Fun2<ItemData, LineStyle?>? borderFun;
 
   PieSeries(
     this.data, {
@@ -64,7 +53,8 @@ class PieSeries extends RectSeries {
     this.clockWise = true,
     this.labelAlign = CircleAlign.inside,
     this.animatorStyle = PieAnimatorStyle.expandScale,
-    required this.areaStyleFun,
+    this.areaStyleFun,
+    this.borderFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -75,25 +65,25 @@ class PieSeries extends RectSeries {
     super.calendarIndex,
     super.tooltip,
     super.animation,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale = false,
     super.clip,
     super.backgroundColor,
     super.id,
     super.z,
-  }) : super(
-          xAxisIndex: -1,
-          yAxisIndex: -1,
-          parallelIndex: -1,
-          radarIndex: -1,
-          polarAxisIndex: -1,
-        );
+  }) : super(gridIndex: -1, parallelIndex: -1, radarIndex: -1, polarIndex: -1);
 
-  @override
-  void dispose() {
-    logPrint('Pie Dispose');
-    super.dispose();
-  }
+
+
+}
+
+enum RoseType {
+  normal,
+  radius, //圆心角展现数据百分比，半径展示数据大小
+  area // 圆心角相同 半径展示数据的大小
+}
+
+enum PieAnimatorStyle {
+  expand,
+  expandScale,
+  originExpand,
+  originExpandScale,
 }

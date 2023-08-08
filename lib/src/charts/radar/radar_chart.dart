@@ -1,77 +1,57 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import 'layout.dart';
-
+import 'radar_helper.dart';
+import 'radar_node.dart';
 
 /// 雷达图
-class RadarView extends ChartView implements RadarChild {
-  final RadarSeries series;
-  final RadarLayout radarLayout = RadarLayout();
-
-  RadarView(this.series);
+class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChild {
+  RadarView(super.series);
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    radarLayout.doLayout(context, series, series.data, selfBoxBound,LayoutAnimatorType.update);
-    _initAnimator();
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    radarLayout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
-    _initAnimator();
-  }
-
-  void _initAnimator() {
-    AnimatorProps? info = series.animation;
-    List<RadarGroupNode> nodeList = radarLayout.groupNodeList;
-    if (info != null) {
-      for (var group in nodeList) {
-        for (var node in group.nodeList) {
-          node.start = Offset.zero;
-          node.end = node.cur;
-          node.cur = Offset.zero;
-        }
-      }
-      OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
-      ChartDoubleTween tween = ChartDoubleTween(props: series.animatorProps);
-      tween.addListener(() {
-        for (var group in nodeList) {
-          for (var node in group.nodeList) {
-            offsetTween.changeValue(node.start, node.end);
-            node.cur = offsetTween.safeGetValue(tween.value);
-          }
-        }
-        invalidate();
-      });
-      tween.start(context);
-    }
+    super.onLayout(left, top, right, bottom);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    canvas.save();
-    canvas.translate(width / 2, height / 2);
-    _drawData(canvas);
-    canvas.restore();
-  }
+    ChartTheme chartTheme = context.option.theme;
+    RadarTheme theme = chartTheme.radarTheme;
+    var nodeList = layoutHelper.groupNodeList;
+    each(nodeList, (group, i) {
+      if (!group.data.show) {
+        return;
+      }
 
-  void _drawData(Canvas canvas) {
-    for (var group in radarLayout.groupNodeList) {
-      if (!group.show) {
-        continue;
+      Path? path = group.pathOrNull;
+      if (path != null) {
+        AreaStyle? areaStyle = getAreaStyle(group, group.groupIndex);
+        areaStyle?.drawPath(canvas, mPaint, path);
+        LineStyle? lineStyle = getLineStyle(group, group.groupIndex);
+        lineStyle?.drawPath(canvas, mPaint, path, drawDash: true, needSplit: false);
       }
-      AreaStyle style = series.areaStyleFun.call(group.data);
-      if (!style.show) {
-        continue;
+
+      if (series.symbolFun == null || !theme.showSymbol) {
+        return;
       }
-      List<Offset> ol = group.getPathOffset();
-      style.drawPolygonArea(canvas, mPaint, ol);
-      for (int i = 0; i < ol.length; i++) {
-        ChartSymbol? symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
-        symbol?.draw(canvas, mPaint, ol[i], 1);
+
+      for (int i = 0; i < group.nodeList.length; i++) {
+        var center = group.nodeList[i].attr;
+        ChartSymbol? symbol;
+        if (series.symbolFun != null) {
+          symbol = series.symbolFun?.call(group.nodeList[i].data, i, group.data);
+          symbol?.draw(canvas, mPaint, center);
+        } else {
+          symbol = theme.showSymbol ? theme.symbol : null;
+          symbol?.draw(canvas, mPaint, center);
+        }
       }
-    }
+    });
   }
 
   @override
@@ -87,4 +67,34 @@ class RadarView extends ChartView implements RadarChild {
 
   @override
   int get radarIndex => series.radarIndex;
+
+  AreaStyle? getAreaStyle(RadarGroupNode group, int index) {
+    var theme = context.option.theme.radarTheme;
+    var chartTheme = context.option.theme;
+    if (series.areaStyleFun != null) {
+      return series.areaStyleFun?.call(group.data);
+    } else if (theme.fill) {
+      Color fillColor = chartTheme.getColor(index);
+      return AreaStyle(color: fillColor);
+    }
+    return null;
+  }
+
+  LineStyle? getLineStyle(RadarGroupNode group, int index) {
+    var chartTheme = context.option.theme;
+    var theme = chartTheme.radarTheme;
+    LineStyle? lineStyle;
+    if (series.lineStyleFun != null) {
+      lineStyle = series.lineStyleFun?.call(group.data);
+    } else if (theme.lineWidth > 0) {
+      Color lineColor = chartTheme.getColor(index);
+      lineStyle = LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList);
+    }
+    return lineStyle;
+  }
+
+  @override
+  RadarHelper buildLayoutHelper() {
+    return RadarHelper(context, series);
+  }
 }

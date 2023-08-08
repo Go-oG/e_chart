@@ -1,106 +1,68 @@
 import 'dart:math' as m;
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/axis/radius/radius_attrs.dart';
+import 'package:e_chart/src/component/axis/radius/radius_axis_impl.dart';
 import 'package:flutter/material.dart';
-
-import '../../component/axis/impl/arc_axis_impl.dart';
-import '../../component/axis/impl/line_axis_impl.dart';
-import '../../ext/offset_ext.dart';
-import '../../gesture/chart_gesture.dart';
-import '../../model/dynamic_data.dart';
-import '../circle_coord.dart';
-import 'axis_radius_node.dart';
-import 'polar_config.dart';
-import 'polar_child.dart';
-
-abstract class PolarCoord extends CircleCoord<PolarConfig>{
-  PolarCoord(super.props);
-
-  Offset dataToPoint(DynamicData angleData, DynamicData radiusData);
-
-}
 
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
-  late final ArcAxisImpl _angleAxis;
-  late final RadiusAxisImpl _radiusAxis;
-  final ArcGesture gesture = ArcGesture();
+  late AngleAxisImpl<PolarCoord> _angleAxis;
+  late RadiusAxisImpl<PolarCoord> _radiusAxis;
+  Offset center = Offset.zero;
 
-  Offset? _clickOffset;
-
-  PolarCoordImpl(super.props) {
-    _angleAxis = ArcAxisImpl(props.angleAxis);
-    _radiusAxis = RadiusAxisImpl(props.radiusAxis);
-  }
+  PolarCoordImpl(super.props);
 
   @override
   void onCreate() {
     super.onCreate();
-    context.addGesture(gesture);
-    gesture.edgeFun = (offset) {
-      return globalBoxBound.contains(offset);
-    };
-    gesture.hoverStart = (e) {
-      _handleHoverWithDrag(e.globalPosition);
-    };
-    gesture.hoverMove = (e) {
-      _handleHoverWithDrag(e.globalPosition);
-    };
-    gesture.hoverEnd = (e) {
-      _handleHoverWithDrag(null);
-    };
-    gesture.longPressStart = (e) {
-      _handleHoverWithDrag(e.globalPosition);
-    };
-    gesture.longPressMove = (e) {
-      _handleHoverWithDrag(e.globalPosition);
-    };
-    gesture.longPressEnd = (e) {
-      _handleHoverWithDrag(null);
-    };
-    gesture.longPressCancel = () {
-      _handleHoverWithDrag(null);
-    };
+    _angleAxis = AngleAxisImpl(context, this, props.angleAxis);
+    _radiusAxis = RadiusAxisImpl(context, this, props.radiusAxis);
   }
 
-  void _handleHoverWithDrag(Offset? globalOffset) {
-    if (globalOffset == null) {
-      if (_clickOffset == null) {
-        return;
-      }
-      _clickOffset = null;
-      invalidate();
-      return;
-    }
-    _clickOffset = null;
-    if (props.silent) {
-      return;
-    }
-    _clickOffset = toLocalOffset(globalOffset);
-    invalidate();
-  }
+  @override
+  void onHoverStart(Offset offset) {}
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {}
+
+  Size measureSize = Size.zero;
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     double size = m.min(parentWidth, parentHeight);
-    size = props.radius.convert(size) * 2;
+    measureSize = Size(parentWidth, parentHeight);
+    size = props.radius.last.convert(size) * 2;
+    _angleAxis.doMeasure(size, size);
+    _radiusAxis.doMeasure(size, size);
     return Size.square(size);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    double r = width / 2;
-    ArcProps angleProps = ArcProps(
-      Offset.zero,
-      props.angleAxis.offsetAngle.toDouble(),
-      r + props.angleAxis.radiusOffset,
+    center = Offset(props.center[0].convert(width), props.center[1].convert(height));
+    contentBox = Rect.fromCircle(center: center, radius: width / 2);
+    double size = m.min(measureSize.width, measureSize.height);
+    double ir = props.radius.length > 1 ? props.radius.first.convert(size) : 0;
+    double or = width / 2;
+
+    AngleAxis angleAxis = props.angleAxis;
+    var angleAttrs = AngleAxisAttrs(
+      center,
+      angleAxis.offsetAngle.toDouble(),
+      [ir, or],
+      scaleYFactor,
+      scrollYOffset,
+      clockwise: angleAxis.clockwise,
     );
-    LineProps radiusProps = LineProps(boxBounds, Offset.zero, circlePoint(r, props.radiusAxis.offsetAngle));
-    _angleAxis.layout(angleProps, _getAngleDataSet());
-    _radiusAxis.layout(radiusProps, _getRadiusDataSet());
-    gesture.startAngle = 0;
-    gesture.sweepAngle = 360;
-    gesture.innerRadius = 0;
-    gesture.outerRadius = r;
+    _angleAxis.doLayout(angleAttrs, _getAngleDataSet());
+
+    num angle = props.radiusAxis.offsetAngle;
+    Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
+    Offset eo = circlePoint(or, angle, center);
+
+    var radiusAttrs = RadiusAxisAttrs(center, angle, 1, 1, contentBox, so, eo);
+    _radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
 
     for (var c in children) {
       c.layout(0, 0, width, height);
@@ -114,7 +76,7 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.angleDataSet);
+      list.addAll(c.getAngleDataSet());
     }
     return list;
   }
@@ -126,48 +88,112 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.radiusDataSet);
+      list.addAll(c.getRadiusDataSet());
     }
     return list;
   }
 
   @override
   void onDraw(Canvas canvas) {
-    canvas.save();
-    canvas.translate(props.center[0].convert(width), props.center[1].convert(height));
-    _angleAxis.draw(canvas, mPaint);
-    _radiusAxis.draw(canvas, mPaint);
-    canvas.restore();
+    _angleAxis.draw(canvas, mPaint, selfBoxBound);
+    _radiusAxis.draw(canvas, mPaint, selfBoxBound);
   }
 
   @override
-  void onDrawEnd(Canvas canvas) {
-    canvas.save();
-    canvas.translate(width / 2, height / 2);
-    drawClickNode(canvas);
-    canvas.restore();
-  }
-
-  void drawClickNode(Canvas canvas) {
-    if (_clickOffset == null) {
-      return;
+  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData) {
+    List<num> angles = _angleAxis.dataToAngle(angleData);
+    List<num> r = _radiusAxis.dataToRadius(radiusData);
+    if (props.radius.length > 1) {
+      double ir = _radiusAxis.attrs.start.distance2(_radiusAxis.attrs.center);
+      for (int i = 0; i < r.length; i++) {
+        r[i] = r[i] + ir;
+      }
     }
-
-    Offset offset = _clickOffset!.translate(-width / 2, -height / 2);
-    double angle = offset.offsetAngle();
-    double r = offset.distance2(Offset.zero);
-    if (r > width / 2) {
-      r = width / 2;
-    }
-    props.angleAxis.tipLineStyle?.drawArc(canvas, mPaint, r, 0, 360);
-    props.radiusAxis.tipLineStyle?.drawPolygon(canvas, mPaint, [Offset.zero, circlePoint(width / 2, angle)]);
+    return PolarPosition(center, r, angles);
   }
 
   @override
-  Offset dataToPoint(DynamicData angleData, DynamicData radiusData) {
-    num angle = _angleAxis.dataToAngle(angleData);
-    num r = _radiusAxis.dataToRadius(radiusData);
-    return circlePoint(r, angle);
+  Offset getCenter() => center;
+
+  @override
+  BaseScale<dynamic, num> getScale(bool angleAxis) {
+    if (angleAxis) {
+      return _angleAxis.scale;
+    }
+    return _radiusAxis.scale;
   }
 
+  @override
+  num getStartAngle() {
+    return _angleAxis.axis.offsetAngle;
+  }
+
+  @override
+  List<double> getRadius() {
+    return _angleAxis.attrs.radius;
+  }
+
+  @override
+  PolarPosition dataToAnglePosition(DynamicData angleData) {
+    List<num> angles = _angleAxis.dataToAngle(angleData);
+    return PolarPosition(center, [], angles);
+  }
+
+  @override
+  PolarPosition dataToRadiusPosition(DynamicData radiusData) {
+    List<num> r = _radiusAxis.dataToRadius(radiusData);
+    if (props.radius.length > 1) {
+      double ir = _radiusAxis.attrs.start.distance2(_radiusAxis.attrs.center);
+      for (int i = 0; i < r.length; i++) {
+        r[i] = r[i] + ir;
+      }
+    }
+    return PolarPosition(center, r, []);
+  }
+
+  @override
+  num getSweepAngle() {
+    return 360;
+  }
+}
+
+abstract class PolarCoord extends CircleCoordLayout<Polar> {
+  PolarCoord(super.props);
+
+  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
+
+  PolarPosition dataToRadiusPosition(DynamicData radiusData);
+
+  PolarPosition dataToAnglePosition(DynamicData angleData);
+
+  Offset getCenter();
+
+  List<double> getRadius();
+
+  num getSweepAngle();
+
+  num getStartAngle();
+
+  BaseScale getScale(bool angleAxis);
+}
+
+class PolarPosition {
+  final Offset center;
+
+  ///当radius是一个范围时起长度为2 否则为1
+  final List<num> radius;
+
+  ///当angle是一个范围时起长度为2 否则为1
+  final List<num> angle;
+
+  const PolarPosition(this.center, this.radius, this.angle);
+
+  @override
+  String toString() {
+    return "$runtimeType $center radius:$radius angle:$angle";
+  }
+
+  Offset get position {
+    return circlePoint(radius.last, angle.last, center);
+  }
 }

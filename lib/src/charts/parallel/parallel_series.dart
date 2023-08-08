@@ -1,5 +1,5 @@
 import '../../functions.dart';
-import '../../model/dynamic_data.dart';
+import '../../model/data.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/line_style.dart';
 import '../../core/series.dart';
@@ -21,19 +21,14 @@ class ParallelSeries extends RectSeries {
     super.parallelIndex,
     super.clip,
     super.tooltip,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale,
     super.backgroundColor,
     super.id,
     super.z,
   }) : super(
           coordSystem: CoordSystem.parallel,
-          xAxisIndex: -1,
-          yAxisIndex: -1,
+          gridIndex: -1,
           calendarIndex: -1,
-          polarAxisIndex: -1,
+          polarIndex: -1,
           radarIndex: -1,
         );
 }

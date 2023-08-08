@@ -2,17 +2,17 @@ import 'dart:math';
 import 'dart:ui';
 
 import '../model/string_number.dart';
+import 'coord_impl.dart';
 import 'coord.dart';
-import 'coord_config.dart';
 
-abstract class CircleCoord<T extends CircleCoordConfig> extends Coord<T> {
-  CircleCoord(super.props);
+abstract class CircleCoordLayout<T extends CircleCoord> extends CoordLayout<T> {
+  CircleCoordLayout(super.props);
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     double w = parentWidth;
     double h = parentHeight;
-    double d = props.radius.convert(min(w, h));
+    double d = props.radius.last.convert(min(w, h));
     return Size(d, d);
   }
 
@@ -24,17 +24,16 @@ abstract class CircleCoord<T extends CircleCoordConfig> extends Coord<T> {
   }
 }
 
-abstract class CircleCoordConfig extends CoordConfig {
+abstract class CircleCoord extends Coord {
   List<SNumber> center;
-  SNumber radius;
+  List<SNumber> radius;
 
-  CircleCoordConfig({
-    this.radius = const SNumber.percent(50),
+  CircleCoord({
+    this.radius = const [SNumber.zero, SNumber.percent(40)],
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
-    super.enableClick,
-    super.enableDrag,
-    super.enableHover,
-    super.enableScale,
+    super.brush,
+    super.toolTip,
+    super.layoutParams,
     super.backgroundColor,
     super.id,
     super.show,

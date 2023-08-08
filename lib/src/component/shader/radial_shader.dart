@@ -6,7 +6,7 @@ import 'dart:ui';
 import '../../core/view_state.dart';
 import 'shader.dart';
 
-class RadialShader extends Shader {
+class RadialShader extends ChartShader {
   List<Color> colors;
   List<double>? colorStops;
   TileMode tileMode; //= TileMode.clamp,
@@ -31,7 +31,7 @@ class RadialShader extends Shader {
   }
 
   @override
-  Shader convert(covariant RadialShader begin, covariant RadialShader end, double animatorPercent) {
+  ChartShader convert(covariant RadialShader begin, covariant RadialShader end, double animatorPercent) {
     List<Color> colorList = [];
     if (begin.colors.length == end.colors.length) {
       for (int i = 0; i < begin.colors.length; i++) {
@@ -74,7 +74,7 @@ class RadialShader extends Shader {
   }
 
   @override
-  Shader convert2(Set<ViewState>? states) {
+  ChartShader convert2(Set<ViewState>? states) {
     if (states == null || states.isEmpty) {
       return this;
     }

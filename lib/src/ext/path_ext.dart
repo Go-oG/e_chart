@@ -22,78 +22,172 @@ extension PathExt on Path {
       }
     }
   }
-}
 
-
-///给定一个Path和dash数据返回一个新的Path
-Path dashPath(Path path, List<double> dash) {
-  if (dash.isEmpty) {
-    return path;
-  }
-  double dashLength = dash[0];
-  double dashGapLength = dashLength >= 2 ? dash[1] : dash[0];
-  DashedPathProperties properties = DashedPathProperties(
-    path: Path(),
-    dashLength: dashLength,
-    dashGapLength: dashGapLength,
-  );
-  final metricsIterator = path.computeMetrics().iterator;
-  while (metricsIterator.moveNext()) {
-    final metric = metricsIterator.current;
-    properties.extractedPathLength = 0.0;
-    while (properties.extractedPathLength < metric.length) {
-      if (properties.addDashNext) {
-        properties.addDash(metric, dashLength);
-      } else {
-        properties.addDashGap(metric, dashGapLength);
+  ///给定一个Path和dash数据返回一个新的Path
+  Path dashPath(List<num> dash) {
+    if (dash.isEmpty) {
+      return this;
+    }
+    num dashLength = dash[0];
+    num dashGapLength = dashLength >= 2 ? dash[1] : dash[0];
+    DashedPathProperties properties = DashedPathProperties(
+      path: Path(),
+      dashLength: dashLength,
+      dashGapLength: dashGapLength,
+    );
+    final metricsIterator = computeMetrics().iterator;
+    while (metricsIterator.moveNext()) {
+      final metric = metricsIterator.current;
+      properties.extractedPathLength = 0.0;
+      while (properties.extractedPathLength < metric.length) {
+        if (properties.addDashNext) {
+          properties.addDash(metric, dashLength);
+        } else {
+          properties.addDashGap(metric, dashGapLength);
+        }
       }
     }
+    return properties.path;
   }
-  return properties.path;
-}
 
-/// 给定一个Path和路径百分比返回给定百分比路径
-Path percentPath(Path path, double percent) {
-  PathMetrics metrics = path.computeMetrics();
-  Path newPath = Path();
-  for (PathMetric metric in metrics) {
-    Path tmp = metric.extractPath(0, metric.length * percent);
-    newPath.addPath(tmp, Offset.zero);
-  }
-  return newPath;
-}
-
-///合并两个Path,并将其头相连，尾相连
-Path mergePath(Path p1, Path p2) {
-  Path path = p1;
-  PathMetric metric = p2.computeMetrics().single;
-  double length = metric.length;
-  while (length >= 0) {
-    Tangent? t = metric.getTangentForOffset(length);
-    if (t != null) {
-      Offset offset = t.position;
-      path.lineTo(offset.dx, offset.dy);
+  /// 给定一个Path和路径百分比返回给定百分比路径
+  Path percentPath(double percent) {
+    if (percent >= 1) {
+      return this;
     }
-    length -= 1;
+    if (percent <= 0) {
+      return Path();
+    }
+    PathMetrics metrics = computeMetrics();
+    Path newPath = Path();
+    for (PathMetric metric in metrics) {
+      Path tmp = metric.extractPath(0, metric.length * percent);
+      newPath.addPath(tmp, Offset.zero);
+    }
+    return newPath;
   }
-  path.close();
-  return path;
+
+  //返回路径百分比上的一点
+  Offset? percentOffset(double percent) {
+    PathMetrics metrics = computeMetrics();
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(metric.length * percent);
+      if (result == null) {
+        continue;
+      }
+
+      return result.position;
+    }
+    return null;
+  }
+
+  Offset? firstOffset() {
+    PathMetrics metrics = computeMetrics();
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(1);
+      if (result == null) {
+        continue;
+      }
+      return result.position;
+    }
+    return null;
+  }
+
+  Offset? lastOffset() {
+    PathMetrics metrics = computeMetrics();
+    List<Offset> ol = [];
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(metric.length);
+      if (result == null) {
+        continue;
+      }
+      ol.add(result.position);
+    }
+    if (ol.isEmpty) {
+      return null;
+    }
+    return ol[ol.length - 1];
+  }
+
+  ///将当前Path进行拆分
+  List<Path> split([double maxLength = 300]) {
+    List<Path> pathList = [];
+
+    PathMetrics metrics = computeMetrics();
+    for (PathMetric metric in metrics) {
+      final double length = metric.length;
+      if (metric.length <= 0) {
+        continue;
+      }
+      if (length <= maxLength) {
+        pathList.add(metric.extractPath(0, length));
+        continue;
+      }
+      double start = 0;
+      while (start < length) {
+        double end = start + maxLength;
+        if (end > length) {
+          end = length;
+        }
+        pathList.add(metric.extractPath(start, end));
+        if (end >= length) {
+          break;
+        }
+        start += maxLength;
+      }
+    }
+    return pathList;
+  }
+
+  ///合并两个Path,并将其头相连，尾相连
+  Path mergePath(Path p2) {
+    Path path = this;
+    PathMetric metric = p2.computeMetrics().single;
+    double length = metric.length;
+    while (length >= 0) {
+      Tangent? t = metric.getTangentForOffset(length);
+      if (t != null) {
+        Offset offset = t.position;
+        path.lineTo(offset.dx, offset.dy);
+      }
+      length -= 1;
+    }
+    path.close();
+    return path;
+  }
+
+  void moveTo2(Offset offset) {
+    moveTo(offset.dx, offset.dy);
+  }
+
+  void lineTo2(Offset offset) {
+    lineTo(offset.dx, offset.dy);
+  }
 }
 
 ///用于实现 path dash
 class DashedPathProperties {
-  double extractedPathLength;
+  num extractedPathLength;
   Path path;
 
-  final double _dashLength;
-  double _remainingDashLength;
-  double _remainingDashGapLength;
+  final num _dashLength;
+  num _remainingDashLength;
+  num _remainingDashGapLength;
   bool _previousWasDash;
 
   DashedPathProperties({
     required this.path,
-    required double dashLength,
-    required double dashGapLength,
+    required num dashLength,
+    required num dashGapLength,
   })  : assert(dashLength > 0.0, 'dashLength must be > 0.0'),
         assert(dashGapLength > 0.0, 'dashGapLength must be > 0.0'),
         _dashLength = dashLength,
@@ -109,10 +203,10 @@ class DashedPathProperties {
     return false;
   }
 
-  void addDash(PathMetric metric, double dashLength) {
-    final end = _calculateLength(metric, _remainingDashLength);
+  void addDash(PathMetric metric, num dashLength) {
+    final end = _calculateLength(metric, _remainingDashLength).toDouble();
     final availableEnd = _calculateLength(metric, dashLength);
-    final pathSegment = metric.extractPath(extractedPathLength, end);
+    final pathSegment = metric.extractPath(extractedPathLength.toDouble(), end);
     path.addPath(pathSegment, Offset.zero);
     final delta = _remainingDashLength - (end - extractedPathLength);
     _remainingDashLength = _updateRemainingLength(
@@ -125,10 +219,10 @@ class DashedPathProperties {
     _previousWasDash = true;
   }
 
-  void addDashGap(PathMetric metric, double dashGapLength) {
+  void addDashGap(PathMetric metric, num dashGapLength) {
     final end = _calculateLength(metric, _remainingDashGapLength);
     final availableEnd = _calculateLength(metric, dashGapLength);
-    Tangent tangent = metric.getTangentForOffset(end)!;
+    Tangent tangent = metric.getTangentForOffset(end.toDouble())!;
     path.moveTo(tangent.position.dx, tangent.position.dy);
     final delta = end - extractedPathLength;
     _remainingDashGapLength = _updateRemainingLength(
@@ -141,15 +235,15 @@ class DashedPathProperties {
     _previousWasDash = false;
   }
 
-  double _calculateLength(PathMetric metric, double addedLength) {
+  num _calculateLength(PathMetric metric, num addedLength) {
     return min(extractedPathLength + addedLength, metric.length);
   }
 
-  double _updateRemainingLength({
-    required double delta,
-    required double end,
-    required double availableEnd,
-    required double initialLength,
+  num _updateRemainingLength({
+    required num delta,
+    required num end,
+    required num availableEnd,
+    required num initialLength,
   }) {
     return (delta > 0 && availableEnd == end) ? delta : initialLength;
   }

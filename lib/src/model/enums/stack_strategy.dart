@@ -1,2 +1,1 @@
-enum StackStrategy {none, all, positive, negative }
-
+enum StackStrategy { samesign, all, positive, negative }

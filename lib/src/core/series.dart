@@ -5,47 +5,39 @@ import 'package:flutter/material.dart';
 /// 建议所有的属性都应该为公共且可以更改的
 abstract class ChartSeries extends ChartNotifier<Command> {
   late final String id;
+  int seriesIndex = -1;
+  String name;
 
   ///坐标系系统
   CoordSystem? coordSystem;
 
   ///坐标轴取值索引(和coordSystem配合实现定位)
-  int xAxisIndex;
-  int yAxisIndex;
-  int polarAxisIndex;
+  int gridIndex;
+  int polarIndex;
   int calendarIndex;
   int radarIndex;
   int parallelIndex;
-  Color? backgroundColor;
-  AnimatorProps? animation; //动画
-  ToolTip? tooltip;
 
-  ///手势相关
-  bool? enableClick;
-  bool? enableHover;
-  bool? enableDrag;
-  bool? enableScale;
+  Color? backgroundColor;
+  AnimatorAttrs? animation; //动画
+  ToolTip? tooltip;
 
   bool clip; // 是否裁剪
   int z; //z轴索引
 
   ChartSeries(
-      {this.xAxisIndex = 0,
-      this.yAxisIndex = 0,
-      this.polarAxisIndex = 0,
+      {this.gridIndex = 0,
+      this.polarIndex = 0,
       this.calendarIndex = 0,
       this.radarIndex = 0,
       this.parallelIndex = 0,
-      this.animation = const AnimatorProps(),
+      this.animation = const AnimatorAttrs(),
       this.coordSystem,
       this.tooltip,
-      this.enableClick,
-      this.enableHover,
-      this.enableDrag,
-      this.enableScale = false,
       this.z = 0,
       this.clip = true,
       this.backgroundColor,
+      this.name='',
       String? id})
       : super(Command.none) {
     if (id == null || id.isEmpty) {
@@ -65,11 +57,11 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     value = Command.configChange;
   }
 
-  AnimatorProps get animatorProps {
+  AnimatorAttrs get animatorProps {
     if (animation != null) {
       return animation!;
     }
-    return const AnimatorProps();
+    return const AnimatorAttrs();
   }
 }
 
@@ -91,19 +83,14 @@ abstract class RectSeries extends ChartSeries {
     this.width,
     this.height,
     super.coordSystem,
-    super.xAxisIndex,
-    super.yAxisIndex,
+    super.gridIndex,
     super.calendarIndex,
     super.parallelIndex,
-    super.polarAxisIndex,
+    super.polarIndex,
     super.radarIndex,
     super.animation,
     super.backgroundColor,
     super.tooltip,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale,
     super.clip,
     super.z,
     super.id,

@@ -6,6 +6,7 @@ enum Position {
   right,
   center,
 }
+
 enum Position2 {
   topLeft,
   topCenter,

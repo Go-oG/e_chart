@@ -2,7 +2,7 @@ import 'package:flutter/animation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../utils/log_util.dart';
-import 'animator_props.dart';
+import 'animator_attrs.dart';
 
 ///全局的动画管理者
 class AnimationManager {
@@ -12,7 +12,7 @@ class AnimationManager {
   ///存储已经创建的控制器
   final Map<String, AnimationController> _map = {};
 
-  AnimationController bounded(TickerProvider provider, AnimatorProps props, {String? key, bool useUpdate = false}) {
+  AnimationController bounded(TickerProvider provider, AnimatorAttrs props, {String? key, bool useUpdate = false}) {
     _collate();
     AnimationController c = AnimationController(
       vsync: provider,
@@ -52,7 +52,7 @@ class AnimationManager {
     try {
       _map.removeWhere((key, value) => value.isCompleted);
     } catch (e) {
-      logPrint('$e');
+      Logger.e(e);
     }
   }
 
@@ -88,7 +88,7 @@ class AnimationManager {
       try {
         value.dispose();
       } catch (e) {
-        logPrint("Animator dispose: $e");
+        Logger.e("Animator dispose: $e");
       }
     });
     _map.clear();

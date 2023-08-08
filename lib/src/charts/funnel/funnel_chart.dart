@@ -1,66 +1,34 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'funnel_node.dart';
+import 'funnel_helper.dart';
+
 /// 漏斗图
-class FunnelView extends SeriesView<FunnelSeries> {
-  final FunnelLayout _layout = FunnelLayout();
+class FunnelView extends SeriesView<FunnelSeries,FunnelHelper> {
 
   FunnelView(super.series);
 
   @override
-  bool get enableDrag => false;
-
-  @override
-  void onClick(Offset offset) {
-    _layout.hoverEnter(offset);
-  }
-
-  @override
-  void onHoverStart(Offset offset) {
-    _layout.hoverEnter(offset);
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    _layout.hoverEnter(offset);
-  }
-
-  @override
-  void onHoverEnd() {
-    _layout.clearHover();
-  }
-
-  @override
   void onUpdateDataCommand(covariant Command c) {
-    _layout.doLayout(context, series, series.dataList, selfBoxBound, LayoutAnimatorType.update);
-  }
-
-  @override
-  void onStart() {
-    super.onStart();
-    _layout.addListener(invalidate);
-  }
-
-  @override
-  void onStop() {
-    _layout.clearListener();
-    super.onStop();
+    layoutHelper.doLayout(series.dataList, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.dataList,selfBoxBound, LayoutAnimatorType.layout);
+    layoutHelper.doLayout(series.dataList, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    List<FunnelNode> nodeList = _layout.nodeList;
+    List<FunnelNode> nodeList = layoutHelper.nodeList;
     if (nodeList.isEmpty) {
       return;
     }
     for (var node in nodeList) {
       node.areaStyle.drawPath(canvas, mPaint, node.path);
+      series.getBorderStyle(context, node.data, node.dataIndex)?.drawPath(canvas, mPaint, node.path);
     }
     for (var node in nodeList) {
       _drawText(canvas, node);
@@ -68,12 +36,12 @@ class FunnelView extends SeriesView<FunnelSeries> {
   }
 
   void _drawText(Canvas canvas, FunnelNode node) {
-    TextDrawConfig? config = node.textConfig;
+    TextDrawInfo? config = node.textConfig;
     DynamicText? label = node.data.label;
     if (label == null || label.isEmpty || config == null) {
       return;
     }
-    LabelStyle? style = series.labelStyleFun?.call(node);
+    LabelStyle? style = series.getLabelStyle(context, node.data);
     if (style == null || !style.show) {
       return;
     }
@@ -82,5 +50,10 @@ class FunnelView extends SeriesView<FunnelSeries> {
       style.guideLine?.style.drawPolygon(canvas, mPaint, ol);
     }
     style.draw(canvas, mPaint, label, config);
+  }
+
+  @override
+  FunnelHelper buildLayoutHelper() {
+    return FunnelHelper(context, series);
   }
 }

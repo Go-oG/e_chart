@@ -25,6 +25,7 @@ class DefaultRender extends BaseRender {
       legendView.measure(w, h);
       h -= legendView.height;
     }
+
     List<ChartView> renderList = context.coordList;
     for (var v in renderList) {
       v.measure(parentWidth, parentHeight);
@@ -35,19 +36,17 @@ class DefaultRender extends BaseRender {
   void onLayout(double width, double height) {
     Rect rect = layoutTitleAndLegend(width, height);
     for (var v in context.coordList) {
-      if (v is CircleCoord) {
+      if (v is CircleCoordLayout) {
         double dx = v.props.center[0].convert(rect.width);
         double dy = v.props.center[1].convert(rect.height);
-        double r = v.props.radius.convert(min(rect.width, rect.height));
-        Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: r * 2, height: r * 2);
+        double s = v.props.radius.last.convert(min(rect.width, rect.height)) * 2;
+        Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: s, height: s);
         v.layout(r2.left, r2.top, r2.right, r2.bottom);
-      } else if (v is RectCoord) {
-        var props = v.props;
-        double lm = props.leftMargin.convert(rect.width);
-        double tm = props.topMargin.convert(rect.height);
-        v.layout(rect.left + lm, rect.top + tm, rect.left + lm + v.width, rect.top + tm + v.height);
       } else {
-        v.layout(rect.left, rect.top, rect.left + v.width, rect.top + v.height);
+        var lp = v.props.layoutParams;
+        double lm = lp.margin.left;
+        double tm = lp.margin.top;
+        v.layout(rect.left + lm, rect.top + tm, rect.left + lm + v.width, rect.top + tm + v.height);
       }
     }
   }
@@ -58,35 +57,35 @@ class DefaultRender extends BaseRender {
     double titleBottomUsed = 0;
 
     if (context.title != null) {
-      TitleView titleView = context.title!;
-      ChartTitle title = titleView.title;
-
-      Align2 position = title.position;
-      if (position == Align2.center) {
-        position = Align2.start;
-      }
-
-      int dx = -1;
-      int dy = position == Align2.start ? -1 : 1;
-      if (title.align == Align2.start) {
-        dx = -1;
-      } else if (title.align == Align2.center) {
-        dx = 0;
-      } else {
-        dx = 1;
-      }
-
-      double left = (width / 2 + dx * width / 2) + title.offset.dx;
-      double top = (height / 2 + dy * height / 2) + title.offset.dy;
-      if (position == Align2.end) {
-        top = height - top;
-      }
-      titleView.layout(left, top, left + titleView.width, top + titleView.bottom);
-      if (position == Align2.start) {
-        titleTopUsed = titleView.height + title.offset.dy;
-      } else {
-        titleBottomUsed = titleView.height + title.offset.dy;
-      }
+      // TitleView titleView = context.title!;
+      // ChartTitle title = titleView.title;
+      //
+      // Align2 position = title.position;
+      // if (position == Align2.center) {
+      //   position = Align2.start;
+      // }
+      //
+      // int dx = -1;
+      // int dy = position == Align2.start ? -1 : 1;
+      // if (title.align == Align2.start) {
+      //   dx = -1;
+      // } else if (title.align == Align2.center) {
+      //   dx = 0;
+      // } else {
+      //   dx = 1;
+      // }
+      //
+      // double left = (width / 2 + dx * width / 2) + title.offset.dx;
+      // double top = (height / 2 + dy * height / 2) + title.offset.dy;
+      // if (position == Align2.end) {
+      //   top = height - top;
+      // }
+      // titleView.layout(left, top, left + titleView.width, top + titleView.bottom);
+      // if (position == Align2.start) {
+      //   titleTopUsed = titleView.height + title.offset.dy;
+      // } else {
+      //   titleBottomUsed = titleView.height + title.offset.dy;
+      // }
     }
 
     if (context.legend != null) {
@@ -145,28 +144,15 @@ class DefaultRender extends BaseRender {
 
   @override
   void onDraw(Canvas canvas) {
-    Paint mPaint =Paint();
-    mPaint.color=context.config.backgroundColor;
-    mPaint.style=PaintingStyle.fill;
+    Paint mPaint = Paint();
+    mPaint.color = context.option.theme.backgroundColor;
+    mPaint.style = PaintingStyle.fill;
     canvas.drawRect(getGlobalAreaBounds(), mPaint);
-
     for (var v in context.coordList) {
       canvas.save();
       canvas.translate(v.left, v.top);
       v.draw(canvas);
       canvas.restore();
     }
-    renderToolTip(canvas);
-  }
-
-  void renderToolTip(Canvas canvas) {
-    if (context.toolTip == null) {
-      return;
-    }
-    ToolTipView tipView = context.toolTip!;
-    Offset p = tipView.builder.onMenuPosition();
-    tipView.measure(size.width, size.height);
-    tipView.layout(p.dx, p.dy, p.dx + tipView.width, p.dy + tipView.height);
-    tipView.draw(canvas);
   }
 }

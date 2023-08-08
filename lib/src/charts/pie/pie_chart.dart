@@ -1,82 +1,37 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import 'layout.dart';
+import 'pie_helper.dart';
 
 /// 饼图
-class PieView extends SeriesView<PieSeries> {
-  final PieLayout pieLayer = PieLayout();
-
+class PieView extends SeriesView<PieSeries, PieHelper> {
   PieView(super.series);
 
   @override
   bool get enableDrag => false;
 
   @override
-  void onClick(Offset offset) {
-    pieLayer.layoutUserClickWithHover(offset);
-  }
-
-  @override
-  void onHoverStart(Offset offset) {
-    pieLayer.layoutUserClickWithHover(offset);
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    pieLayer.layoutUserClickWithHover(offset);
-  }
-
-  @override
-  void onHoverEnd() {
-    pieLayer.clearHover();
-  }
-
-  @override
   void onUpdateDataCommand(Command c) {
-    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.update);
-  }
-
-  @override
-  void onStart() {
-    super.onStart();
-    pieLayer.addListener(() {
-      invalidate();
-    });
-  }
-
-  @override
-  void onStop() {
-    pieLayer.clearListener();
-    super.onStop();
-  }
-
-  @override
-  void onDestroy() {
-    pieLayer.dispose();
-    super.onDestroy();
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    pieLayer.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    List<PieNode> nodeList = pieLayer.nodeList;
-    for (var node in nodeList) {
-      AreaStyle style = series.areaStyleFun.call(node.data);
-      if (!style.show) {
-        continue;
-      }
-      style.drawPath(canvas, mPaint, node.arc.toPath(true));
-    }
-
-    for (var node in nodeList) {
+    List<PieNode> nodeList = layoutHelper.nodeList;
+    each(nodeList, (node, i) {
+      Path path = node.attr.toPath(true);
+      getAreaStyle(node, i)?.drawPath(canvas, mPaint, path);
+      getBorderStyle(node, i)?.drawPath(canvas, mPaint, path);
+    });
+    each(nodeList, (node, i) {
       drawText(canvas, node);
-    }
+    });
   }
 
   void drawText(Canvas canvas, PieNode node) {
@@ -92,10 +47,10 @@ class PieView extends SeriesView<PieSeries> {
     }
 
     if (series.labelAlign == CircleAlign.center) {
-      if (pieLayer.hoverNode == null) {
+      if (layoutHelper.hoverNode == null) {
         return;
       }
-      if (node != pieLayer.hoverNode) {
+      if (node != layoutHelper.hoverNode) {
         return;
       }
       labelStyle.draw(canvas, mPaint, node.data.label!, config);
@@ -104,11 +59,11 @@ class PieView extends SeriesView<PieSeries> {
     labelStyle.draw(canvas, mPaint, node.data.label!, config);
 
     if (series.labelAlign == CircleAlign.outside) {
-      Offset center = pieLayer.center;
-      Arc arc = node.arc;
+      Offset center = layoutHelper.center;
+      Arc arc = node.attr;
       Offset tmpOffset = circlePoint(arc.outRadius, arc.startAngle + (arc.sweepAngle / 2), center);
       Offset tmpOffset2 = circlePoint(
-        arc.outRadius + (labelStyle.guideLine?.length??0),
+        arc.outRadius + (labelStyle.guideLine?.length ?? 0),
         arc.startAngle + (arc.sweepAngle / 2),
         center,
       );
@@ -118,5 +73,27 @@ class PieView extends SeriesView<PieSeries> {
       path.lineTo(config.offset.dx, config.offset.dy);
       labelStyle.guideLine?.style.drawPath(canvas, mPaint, path);
     }
+  }
+
+  AreaStyle? getAreaStyle(PieNode node, int index) {
+    if (series.areaStyleFun != null) {
+      return series.areaStyleFun?.call(node.data);
+    }
+    var chartTheme = context.option.theme;
+    Color fillColor = chartTheme.getColor(index);
+    return AreaStyle(color: fillColor);
+  }
+
+  LineStyle? getBorderStyle(PieNode node, int index) {
+    if (series.borderFun != null) {
+      return series.borderFun?.call(node.data);
+    }
+    var theme = context.option.theme.pieTheme;
+    return theme.getBorderStyle();
+  }
+
+  @override
+  PieHelper buildLayoutHelper() {
+    return PieHelper(context, series);
   }
 }

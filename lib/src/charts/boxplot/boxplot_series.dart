@@ -1,61 +1,98 @@
 //盒须图
-import '../../functions.dart';
-import '../../model/dynamic_data.dart';
-import '../../model/dynamic_text.dart';
-import '../../model/enums/coordinate.dart';
-import '../../style/line_style.dart';
-import '../../core/series.dart';
+import 'package:e_chart/e_chart.dart';
 
-class BoxplotSeries extends RectSeries {
-  List<BoxplotData> data;
-  Fun2<BoxplotData, LineStyle> lineStyleFun;
+class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
+  /// Group组的间隔
+  SNumber groupGap;
 
-  BoxplotSeries({
-    required this.data,
-    required this.lineStyleFun,
+  ///Group组中柱状图之间的间隔
+  SNumber columnGap;
+
+  /// Column组里面的间隔
+  num innerGap;
+
+  BoxplotSeries(
+    super.data, {
+    this.columnGap = const SNumber.number(4),
+    this.groupGap = const SNumber.number(4),
+    this.innerGap = 0,
+    super.direction,
+    super.coordSystem,
+    super.areaStyleFun,
+    super.lineStyleFun,
     super.animation,
-    super.bottomMargin,
-    super.leftMargin,
-    super.polarAxisIndex,
-    super.rightMargin,
-    super.topMargin,
-    super.height,
-    super.width,
-    super.xAxisIndex,
-    super.yAxisIndex,
+    super.polarIndex,
+    super.gridIndex,
     super.tooltip,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale,
     super.backgroundColor,
     super.id,
     super.z,
     super.clip,
-  }) : super(
-          coordSystem: CoordSystem.grid,
-          calendarIndex: -1,
-          parallelIndex: -1,
-          radarIndex: -1,
-        );
+    super.labelFormatFun,
+    super.animatorStyle,
+    super.labelStyle,
+    super.labelStyleFun,
+    super.markLine,
+    super.markLineFun,
+    super.markPoint,
+    super.markPointFun,
+    super.selectedMode,
+  });
+
+  @override
+  AreaStyle? getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (areaStyleFun != null) {
+      return areaStyleFun?.call(data, group, status ?? {});
+    }
+    var chartTheme = context.option.theme;
+    return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
+  }
+
+  @override
+  LineStyle? getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (lineStyleFun != null) {
+      return lineStyleFun?.call(data, group, status ?? {});
+    }
+    var barTheme = context.option.theme.boxplotTheme;
+    return barTheme.getBorderStyle();
+  }
 }
 
-class BoxplotData {
-  DynamicData x;
-  DynamicData max;
-  DynamicData upAve4;
-  DynamicData middle;
-  DynamicData downAve4;
-  DynamicData min;
-  DynamicText? label;
+class BoxplotGroup extends StackGroupData<BoxplotData> {
+  SNumber? boxSize;
+  SNumber? boxMaxSize;
+  SNumber? boxMinSize;
+
+  BoxplotGroup(
+    super.data, {
+    this.boxSize,
+    this.boxMaxSize,
+    this.boxMinSize = const SNumber(1, false),
+    super.xAxisIndex = 0,
+    super.yAxisIndex = 0,
+  });
+
+  @override
+  set stackId(String? id) {
+    throw ChartError("BoxplotGroup not support Stack Layout");
+  }
+}
+
+class BoxplotData extends StackItemData {
+  num max;
+  num upAve4;
+  num middle;
+  num downAve4;
+  num min;
 
   BoxplotData({
-    required this.x,
+    required DynamicData x,
     required this.max,
     required this.upAve4,
     required this.middle,
     required this.downAve4,
     required this.min,
-    this.label,
-  });
+    super.label,
+    super.id,
+  }) : super(x, DynamicData(max));
 }

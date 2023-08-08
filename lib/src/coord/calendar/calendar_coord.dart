@@ -1,15 +1,15 @@
 import 'package:e_chart/src/ext/int_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:chart_xutil/chart_xutil.dart';
 
+import '../../ext/date_time_ext.dart';
 import '../../model/index.dart';
-import '../rect_coord.dart';
-import 'calendar_config.dart';
+import '../coord_impl.dart';
+import 'calendar.dart';
 
-abstract class CalendarCoord extends RectCoord<CalendarConfig> {
+abstract class CalendarCoord extends CoordLayout<Calendar> {
   CalendarCoord(super.props);
 
-  Rect dataToPoint(DateTime date);
+  Rect dataToPosition(DateTime date);
 
   int getRowCount();
 
@@ -146,7 +146,7 @@ class CalendarCoordImpl extends CalendarCoord {
   }
 
   @override
-  Rect dataToPoint(DateTime date) {
+  Rect dataToPosition(DateTime date) {
     date = date.first();
     CalendarNode? node = _nodeMap[key(date)];
     if (node == null) {

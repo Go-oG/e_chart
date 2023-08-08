@@ -1,142 +1,192 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/bar/helper/grid_helper.dart';
+import 'package:e_chart/src/charts/bar/helper/polar_helper.dart';
 import 'package:flutter/material.dart';
-import 'layout_helper.dart';
 
-///用于处理Bar、line、point、 视图绘制相关不会包含坐标轴相关的计算和绘制
-class BarView extends SeriesView<BarSeries> {
-  late LayoutHelper _layout;
-
+///BarView
+class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<StackItemData, BarGroupData, BarSeries>> with GridChild, PolarChild {
   ///用户优化视图绘制
   BarView(super.series);
 
   @override
+  Size onMeasure(double parentWidth, double parentHeight) {
+    layoutHelper.doMeasure(series.data, parentWidth, parentHeight);
+    return super.onMeasure(parentWidth, parentHeight);
+  }
+
+  @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    _layout.doLayout(context, series, series.data, selfBoxBound, LayoutAnimatorType.layout);
+    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override
   void onDraw(Canvas canvas) {
-    drawHoverBk(canvas);
-    drawBarElement(canvas);
-    drawLineElement(canvas);
-    drawOtherElement(canvas);
-    drawMakePoint(canvas);
-    drawMakeLine(canvas);
+    drawGroupBk(canvas);
+    drawBar(canvas);
+    drawMakeLineAndMarkPoint(canvas);
   }
 
-  /// 绘制最后面的Hover移动区域
-  void drawHoverBk(Canvas canvas) {
-    // if (series.actionStyleFun == null) {
-    //   return;
-    // }
-    // Rect? hoverRect = touchHelper.hoverRect;
-    // if (hoverRect == null) {
-    //   return;
-    // }
-    // AreaStyle? style = series.actionStyleFun!.call(const UserAction(maskFlag: 0));
-    // style?.drawRect(canvas, paint, hoverRect);
+  void drawGroupBk(Canvas canvas) {
+    Set<GroupNode> rectSet = {};
+    AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
+    Offset offset = layoutHelper.getTranslation();
+    canvas.save();
+    canvas.translate(offset.dx, 0);
+    var nodeMap = layoutHelper.showNodeMap;
+    nodeMap.forEach((key, node) {
+      var group = node.parentNode.parentNode;
+      if (rectSet.contains(group)) {
+        return;
+      }
+      AreaStyle? style;
+      if (series.groupStyleFun != null) {
+        style = series.groupStyleFun?.call(node.data, node.parent, node.status);
+      } else if (group.isHover) {
+        style = s2;
+      }
+      if (style != null) {
+        if (series.coordSystem == CoordSystem.polar) {
+          style.drawPath(canvas, mPaint, group.arc.toPath(false));
+        } else {
+          style.drawRect(canvas, mPaint, group.rect);
+        }
+      }
+      rectSet.add(group);
+    });
+
+    canvas.restore();
+    return;
   }
 
-  /// 绘制柱状图
-  void drawBarElement(Canvas canvas) {
-    // for (var element in _layout.nodeList) {
-    //   for (var node in element.nodeList) {
-    //     for (var node2 in node.nodeList) {
-    //       node2.draw(canvas, mPaint);
-    //     }
-    //   }
-    // }
+  void drawBar(Canvas canvas) {
+    Offset offset = layoutHelper.getTranslation();
+    final map = layoutHelper.showNodeMap;
+    final bool usePolar = series.coordSystem == CoordSystem.polar;
+    canvas.save();
+    canvas.translate(offset.dx, offset.dy);
+    map.forEach((key, node) {
+      if (node.data == null) {
+        return;
+      }
+      if (!usePolar && node.rect.isEmpty) {
+        return;
+      }
+      if (usePolar && node.arc.isEmpty) {
+        return;
+      }
+      var data = node.data!;
+      var group = node.parent;
+      var as = layoutHelper.buildAreaStyle(data, group, node.groupIndex, node.status);
+
+      var ls = layoutHelper.buildLineStyle(data, group, node.groupIndex, node.status);
+      node.areaStyle = as;
+      node.lineStyle = ls;
+      if (as == null && ls == null) {
+        return;
+      }
+
+      if (usePolar) {
+        as?.drawPath(canvas, mPaint, node.arc.toPath(true));
+        ls?.drawPath(canvas, mPaint, node.arc.toPath(true));
+      } else {
+        Corner corner = series.corner;
+        if (series.cornerFun != null) {
+          corner = series.cornerFun!.call(data, group, node.status);
+        }
+        as?.drawRect(canvas, mPaint, node.rect, corner);
+        ls?.drawRect(canvas, mPaint, node.rect, corner);
+      }
+    });
+
+    ///这里分开是为了避免遮挡
+    map.forEach((key, node) {
+      if (node.data == null) {
+        return;
+      }
+      if (!usePolar && node.rect.isEmpty) {
+        return;
+      }
+      if (usePolar && node.arc.isEmpty) {
+        return;
+      }
+      drawBarLabel(canvas, node);
+    });
+    canvas.restore();
   }
 
-  /// 绘制折线图
-  void drawLineElement(Canvas canvas) {
-    // double animatorPercent = 1;
-    // List<GroupNode> elementList = _layout.lineGroupElementList;
-    // if (elementList.isEmpty) {
-    //   return;
-    // }
-    // canvas.save();
-    // for (var element in elementList) {
-    //   element.draw(canvas, paint, touchHelper);
-    // }
-    // canvas.restore();
+  void drawBarLabel(Canvas canvas, SingleNode<StackItemData, BarGroupData> node) {
+    var data = node.data!;
+    var group = node.parent;
+    LabelStyle? style = series.getLabelStyle(context, data, group);
+    if (style == null || !style.show) {
+      return;
+    }
+    DynamicText? text = series.formatData(context, data, group);
+    if (text == null || text.isEmpty) {
+      return;
+    }
+    ChartAlign align = series.getLabelAlign(context, data, group);
+    TextDrawInfo drawInfo = align.convert(node.rect, style, series.direction);
+    style.draw(canvas, mPaint, text, drawInfo);
   }
 
-  /// 绘制其它图形
-  void drawOtherElement(Canvas canvas) {
-    // List<GroupNode> elementList = _layout.otherGroupElementList;
-    // if (elementList.isEmpty) {
-    //   return;
-    // }
+  /// 绘制标记线和点
+  void drawMakeLineAndMarkPoint(Canvas canvas) {
+    var markLineFun = series.markLineFun;
+    var markPointFun = series.markPointFun;
+    var markPoint = series.markPoint;
+    var markLine = series.markLine;
+    if (markLineFun == null && markPointFun == null && markPoint == null && markLine == null) {
+      return;
+    }
+    Offset offset = layoutHelper.getTranslation();
+    canvas.save();
+    canvas.translate(offset.dx, offset.dy);
+    if (markLineFun != null || markLine != null) {
+      each(layoutHelper.markLineList, (ml, i) {
+        ml.line.draw(canvas, mPaint, ml.start.offset, ml.end.offset);
+      });
+    }
+    each(layoutHelper.markPointList, (mp, i) {
+      mp.markPoint.draw(canvas, mPaint, mp.offset);
+    });
+    canvas.restore();
   }
 
-  /// 绘制标记点
-  void drawMakePoint(Canvas canvas) {
-    // if (series.markPointFun == null) {
-    //   return;
-    // }
-    //
-    // for (var element in series.data) {
-    //   MarkPoint? makePoint = series.markPointFun!.call(element);
-    //   if (makePoint == null) {
-    //     continue;
-    //   }
-    //   GlobalValue valueInfo = _layout.getBarGroupValueInfo(element);
-    //   SingleData? barData = valueInfo.getBarData(makePoint.markType);
-    //   if (barData == null) {
-    //     continue;
-    //   }
-    //   SingleNode? singleElement = _layout.findSingleElement(barData);
-    //   if (singleElement == null || singleElement.data == null) {
-    //     continue;
-    //   }
-    //   String text = formatNumber(singleElement.data.y, makePoint.precision);
-    //   makePoint.draw(canvas, paint, singleElement.positionRect.topCenter, text);
-    // }
+  @override
+  int getAxisDataCount(int axisIndex, bool isXAxis) {
+    int count = 0;
+    for (var data in series.data) {
+      if (data.data.length > count) {
+        count = data.data.length;
+      }
+    }
+    return count;
   }
 
-  /// 绘制标记线
-  void drawMakeLine(Canvas canvas) {
-    // if (series.markLineFun == null) {
-    //   return;
-    // }
-    //
-    // for (var element in series.data) {
-    //   MarkLine? markLine = series.markLineFun!.call(element);
-    //   if (markLine == null) {
-    //     continue;
-    //   }
-    //   GlobalValue valueInfo = _layout.getBarGroupValueInfo(element);
-    //   Offset? startOffset, endOffset;
-    //   String? endText;
-    //   if (markLine.endMarkType != null) {
-    //     SingleData? startBarData = valueInfo.getBarData(markLine.startMarkType);
-    //     SingleData? endBarData = valueInfo.getBarData(markLine.endMarkType!);
-    //     if (startBarData == null || endBarData == null) {
-    //       continue;
-    //     }
-    //     SingleNode? startElement = _layout.findSingleElement(startBarData);
-    //     SingleNode? endElement = _layout.findSingleElement(endBarData);
-    //     if (startElement == null || endElement == null) {
-    //       print('SingleElement为空');
-    //       continue;
-    //     }
-    //     startOffset = startElement.positionRect.topCenter;
-    //     endOffset = endElement.positionRect.topCenter;
-    //   } else {
-    //     double? value = valueInfo.getValue(markLine.startMarkType);
-    //     if (value == null) {
-    //       continue;
-    //     }
-    //     double maxValue = _layout.getAxisMaxValue(element);
-    //     double minValue = _layout.getAxisMinValue(element);
-    //     double startPercent = (value - minValue) / (maxValue - minValue);
-    //     startOffset = Offset(0, (1 - startPercent) * _layout.height);
-    //     endOffset = Offset(width, startOffset.dy);
-    //     endText = formatNumber(value, markLine.precision);
-    //   }
-    //   markLine.draw(canvas, paint, startOffset, endOffset, null, endText);
-    // }
+  @override
+  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
+    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
+
+  @override
+  List<DynamicData> getAngleDataSet() {
+    return getAxisExtreme(0, false);
+  }
+
+  @override
+  List<DynamicData> getRadiusDataSet() {
+    return getAxisExtreme(0, true);
+  }
+
+  @override
+  BaseStackLayoutHelper<StackItemData, BarGroupData, BarSeries> buildLayoutHelper() {
+    if (series.coordSystem == CoordSystem.polar) {
+      return BarPolarHelper(context, series);
+    } else {
+      return BarGridHelper(context, series);
+    }
+  }
+
 }

@@ -1,1 +1,1 @@
-enum MarkType { min, max, average, median }
+enum ValueType { min, max, ave }

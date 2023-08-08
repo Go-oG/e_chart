@@ -1,1 +1,1 @@
-enum SelectedMode { single, child, parent, all }
+enum SelectedMode { single, group }

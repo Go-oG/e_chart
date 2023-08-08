@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
-  final bool _equalsObject;
+  final bool equalsObject;
   final Set<VoidCallback> _listenerSet = {};
 
-  ChartNotifier(this._value, [this._equalsObject = false]);
+  ChartNotifier(this._value, [this.equalsObject = false]);
 
   @override
   T get value => _value;
@@ -12,7 +12,7 @@ class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   T _value;
 
   set value(T newValue) {
-    if (_equalsObject && _value == newValue) {
+    if (equalsObject && _value == newValue) {
       _value = newValue;
       return;
     }

@@ -1,37 +1,29 @@
 import 'dart:ui';
 import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:e_chart/src/ext/path_ext.dart';
-import 'package:e_chart/src/shape/area.dart';
+import 'package:e_chart/src/model/corner.dart';
+
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 
 import '../core/view_state.dart';
-import '../shape/line.dart';
-import 'line_style.dart';
+import '../model/shape/index.dart';
 
 /// 区域样式
 class AreaStyle {
-  final bool show;
-
-  ///控制是否是曲线
-  final bool smooth;
   final Color? color;
-  final sd.Shader? shader;
+  final sd.ChartShader? shader;
   final List<BoxShadow> shadow;
-  final LineStyle? border;
 
   const AreaStyle({
-    this.show = true,
     this.color,
     this.shader,
     this.shadow = const [],
-    this.border,
-    this.smooth = false,
   });
 
   @override
   String toString() {
-    return '[AreaStyle:Color:$color shader:${shader.runtimeType} shadow:$shadow border:$border ]';
+    return '[AreaStyle:Color:$color shader:${shader.runtimeType} shadow:$shadow]';
   }
 
   void fillPaint(Paint paint, Rect? rect) {
@@ -45,7 +37,7 @@ class AreaStyle {
     paint.style = PaintingStyle.fill;
   }
 
-  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points) {
+  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points, [bool smooth = false]) {
     if (_notDraw()) {
       return;
     }
@@ -57,28 +49,39 @@ class AreaStyle {
       canvas.drawPoints(PointMode.points, points, paint);
       return;
     }
-    Line line = Line(points, smoothRatio: smooth ? 0.25 : null);
+    Line line = Line(points, smooth: smooth);
     drawPath(canvas, paint, line.toPath(true));
   }
 
-  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List) {
+  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [bool smooth = false]) {
     if (_notDraw()) {
       return;
     }
-    Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth, ratioA: 0.25, ratioB: 0.25);
+    Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth);
     drawPath(canvas, paint, area.toPath(true));
   }
 
-  void drawRect(Canvas canvas, Paint paint, Rect rect, [double? corner]) {
+  void drawRect(Canvas canvas, Paint paint, Rect rect, [Corner? corner]) {
     if (_notDraw()) {
       return;
     }
     Path path = Path();
-    if (corner == null || corner <= 0) {
+    if (corner == null) {
       path.addRect(rect);
       path.close();
     } else {
-      path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(corner)));
+      var lt = Radius.circular(corner.leftTop);
+      var rt = Radius.circular(corner.rightTop);
+      var lb = Radius.circular(corner.leftBottom);
+      var rb = Radius.circular(corner.rightBottom);
+      var r = RRect.fromRectAndCorners(
+        rect,
+        topLeft: lt,
+        topRight: rt,
+        bottomLeft: lb,
+        bottomRight: rb,
+      );
+      path.addRRect(r);
       path.close();
     }
     drawPath(canvas, paint, path);
@@ -111,7 +114,6 @@ class AreaStyle {
     }
     fillPaint(paint, path.getBounds());
     canvas.drawPath(path, paint);
-    border?.drawPath(canvas, paint, path, true);
   }
 
   AreaStyle convert(Set<ViewState>? states) {
@@ -119,7 +121,7 @@ class AreaStyle {
       return this;
     }
     final Color? color = this.color == null ? null : ColorResolver(this.color!).resolve(states);
-    final sd.Shader? shader = this.shader == null ? null : this.shader!.convert2(states);
+    final sd.ChartShader? shader = this.shader == null ? null : this.shader!.convert2(states);
     final List<BoxShadow> shadow = [];
     for (var bs in this.shadow) {
       shadow.add(BoxShadow(
@@ -130,14 +132,14 @@ class AreaStyle {
         blurStyle: bs.blurStyle,
       ));
     }
-    final LineStyle? border = this.border == null ? null : this.border!.convert(states);
-    return AreaStyle(show: show, smooth: smooth, shader: shader, shadow: shadow, border: border, color: color);
+
+    return AreaStyle(shader: shader, shadow: shadow, color: color);
   }
 
   bool _notDraw() {
-    if (color == null && shader == null && shadow.isEmpty && border == null) {
+    if (color == null && shader == null && shadow.isEmpty) {
       return true;
     }
-    return !show;
+    return false;
   }
 }

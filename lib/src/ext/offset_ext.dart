@@ -1,9 +1,8 @@
 import 'dart:math' as m;
 import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math.dart';
-
 import '../model/constans.dart';
-import '../shape/arc.dart';
+import '../model/shape/index.dart';
 
 extension OffsetExt on Offset {
   ///求两点之间的距离
@@ -189,6 +188,14 @@ extension OffsetExt on Offset {
     double x = (dx - center.dx) * m.cos(t) - (dy - center.dy) * m.sin(t) + center.dx;
     double y = (dx - center.dx) * m.sin(t) + (dy - center.dy) * m.cos(t) + center.dy;
     return Offset(x, y);
+  }
+
+  Offset translate2(Offset other) {
+    return translate(other.dx, other.dy);
+  }
+
+  Offset get invert {
+    return Offset(-dx, -dy);
   }
 }
 

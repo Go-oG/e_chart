@@ -1,48 +1,70 @@
-import '../../functions.dart';
-import '../../model/dynamic_text.dart';
-import '../../model/enums/coordinate.dart';
-import '../../style/area_style.dart';
-import '../../style/line_style.dart';
-import '../../core/series.dart';
+import 'dart:ui';
 
-class CandleStickSeries extends RectSeries {
-  List<CandleStickData> data;
-  String name;
+import 'package:e_chart/e_chart.dart';
+
+class CandleStickSeries extends ChartSeries {
+  List<CandleStickGroup> data;
+  SNumber boxMinWidth;
+  SNumber boxMaxWidth;
+  SNumber? boxWidth;
+
   bool hoverAnimation;
-  Fun2<CandleStickData, AreaStyle> styleFun;
-  Fun2<CandleStickData, LineStyle> lineStyleFun;
+
+  Fun3<CandleStickData, CandleStickGroup, AreaStyle>? areaStyleFun;
+  Fun3<CandleStickData, CandleStickGroup, LineStyle>? borderStyleFun;
 
   CandleStickSeries(
     this.data, {
-    super.xAxisIndex = 0,
-    super.yAxisIndex = 0,
-    this.name = '',
+    super.gridIndex = 0,
+    this.boxMinWidth = const SNumber.number(24),
+    this.boxMaxWidth = const SNumber.number(48),
+    this.boxWidth,
     this.hoverAnimation = true,
-    required this.styleFun,
-    required this.lineStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    this.areaStyleFun,
+    this.borderStyleFun,
+    super.name = '',
     super.animation,
     super.tooltip,
     super.backgroundColor,
     super.id,
-    super.enableClick,
-    super.enableHover,
-    super.enableDrag,
-    super.enableScale,
     super.clip,
     super.z,
   }) : super(
           coordSystem: CoordSystem.grid,
           parallelIndex: -1,
-          polarAxisIndex: -1,
+          polarIndex: -1,
           radarIndex: -1,
           calendarIndex: -1,
         );
+
+  AreaStyle? getAreaStyle(Context context, CandleStickData data, CandleStickGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (areaStyleFun != null) {
+      return areaStyleFun?.call(data, group);
+    }
+    var theme = context.option.theme.kLineTheme;
+    if (theme.fill) {
+      Color color = data.isUp ? theme.upColor : theme.downColor;
+      return AreaStyle(color: color).convert(status);
+    }
+    return null;
+  }
+
+  LineStyle? getBorderStyle(Context context, CandleStickData data, CandleStickGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (borderStyleFun != null) {
+      return borderStyleFun!.call(data, group);
+    }
+    var theme = context.option.theme.kLineTheme;
+    Color color = data.isUp ? theme.upColor : theme.downColor;
+    return LineStyle(color: color, width: theme.borderWidth).convert(status);
+  }
+}
+
+class CandleStickGroup {
+  int xAxisIndex;
+  int yAxisIndex;
+  List<CandleStickData> data;
+
+  CandleStickGroup(this.data, {this.xAxisIndex = 0, this.yAxisIndex = 0});
 }
 
 class CandleStickData {
@@ -51,6 +73,7 @@ class CandleStickData {
   double lowest;
   double open;
   double close;
+  double lastClose;
   DynamicText? label;
 
   CandleStickData({
@@ -59,6 +82,9 @@ class CandleStickData {
     required this.close,
     required this.lowest,
     required this.highest,
+    required this.lastClose,
     this.label,
   });
+
+  bool get isUp => close >= lastClose;
 }

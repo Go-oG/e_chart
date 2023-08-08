@@ -1,42 +1,44 @@
-import 'package:chart_xutil/chart_xutil.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../component/guideline/guide_line.dart';
-import '../../core/view_state.dart';
-import '../../model/index.dart';
-import '../../style/area_style.dart';
-import '../../style/label.dart';
-import '../../utils/align_util.dart';
-import 'funnel_series.dart';
+import 'funnel_helper.dart';
 
-class FunnelNode with ViewStateProvider {
+class FunnelNode extends DataNode<List<Offset>, ItemData> {
+  final int index;
   final ItemData? preData;
-  final ItemData data;
 
   ///标识顶点坐标
   ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
   List<Offset> pointList = [];
 
-  FunnelNode(this.preData, this.data);
+  FunnelNode(this.index, this.preData, ItemData data, int dataIndex) : super(data, dataIndex, -1, []);
 
-  TextDrawConfig? textConfig;
+  TextDrawInfo? textConfig;
   List<Offset>? labelLine;
 
   LabelStyle? labelStyle;
   AreaStyle areaStyle = const AreaStyle();
 
-  void update(FunnelSeries series) {
-    labelStyle = series.labelStyleFun?.call(this);
-    areaStyle = series.areaStyleFun.call(this);
+  void update(Context context, FunnelSeries series) {
+    ChartTheme chartTheme = context.option.theme;
+    FunnelTheme theme = chartTheme.funnelTheme;
+    AreaStyle? areaStyle = FunnelHelper.getAreaStyle(context, series, this);
+    this.areaStyle = areaStyle;
+
+    LabelStyle? labelStyle = series.getLabelStyle(context, data);
+    if (labelStyle == null && series.labelStyleFun != null) {
+      labelStyle = theme.labelStyle;
+    }
+    this.labelStyle = labelStyle;
+
     textConfig = computeTextPosition(series);
-    labelLine = computeLabelLineOffset(series, textConfig?.offset);
+    labelLine = computeLabelLineOffset(context, series, textConfig?.offset);
   }
 
-  void updatePoint(FunnelSeries series, List<Offset> pl) {
-    pointList.clear();
-    pointList.addAll(pl);
+  void updatePoint(Context context, FunnelSeries series, List<Offset> pl) {
+    pointList = pl;
     _path = null;
-    update(series);
+    update(context, series);
   }
 
   Path? _path;
@@ -66,7 +68,7 @@ class FunnelNode with ViewStateProvider {
     return s;
   }
 
-  TextDrawConfig? computeTextPosition(FunnelSeries series) {
+  TextDrawInfo? computeTextPosition(FunnelSeries series) {
     LabelStyle? style = labelStyle;
     if (style == null || !style.show) {
       return null;
@@ -78,10 +80,10 @@ class FunnelNode with ViewStateProvider {
     double centerX = (p0.dx + p1.dx) / 2;
     double centerY = (p0.dy + p3.dy) / 2;
     double topW = (p1.dx - p0.dx).abs();
-    FunnelAlign align = series.labelAlign;
+    ChartAlign align = series.getLabelAlign(data);
     double x = centerX + align.align.x * topW / 2;
     double y = centerY + align.align.y * (p1.dy - p2.dy).abs() / 2;
-    if (!series.labelAlign.inside) {
+    if (!align.inside) {
       double lineWidth = (style.guideLine?.length ?? 0).toDouble();
       List<num> lineGap = (style.guideLine?.gap ?? [0, 0]);
       if (series.direction == Direction.vertical) {
@@ -94,18 +96,19 @@ class FunnelNode with ViewStateProvider {
     }
     Offset offset = Offset(x, y);
     Alignment textAlign = toInnerAlign(align.align);
-    if (!series.labelAlign.inside) {
+    if (!align.inside) {
       textAlign = Alignment(-textAlign.x, -textAlign.y);
     }
-    return TextDrawConfig(offset, align: textAlign);
+    return TextDrawInfo(offset, align: textAlign);
   }
 
-  List<Offset>? computeLabelLineOffset(FunnelSeries series, Offset? textOffset) {
-    if (series.labelAlign.inside || textOffset == null) {
+  List<Offset>? computeLabelLineOffset(Context context, FunnelSeries series, Offset? textOffset) {
+    ChartAlign align = series.getLabelAlign(data);
+    if (align.inside || textOffset == null) {
       return null;
     }
 
-    LabelStyle? style = series.labelStyleFun?.call(this);
+    LabelStyle? style = series.getLabelStyle(context, data);
     if (style == null || !style.show) {
       return null;
     }
@@ -119,16 +122,26 @@ class FunnelNode with ViewStateProvider {
 
     double x1, y1, x2, y2;
     if (series.direction == Direction.vertical) {
-      int dir = series.labelAlign.align.x > 0 ? -1 : 1;
+      int dir = align.align.x > 0 ? -1 : 1;
       x2 = textOffset.dx + dir * gap[0];
       x1 = x2 + dir * lineWidth;
       y1 = y2 = textOffset.dy;
     } else {
       x1 = x2 = textOffset.dx;
-      int dir = series.labelAlign.align.y > 0 ? -1 : 1;
+      int dir = align.align.y > 0 ? -1 : 1;
       y2 = textOffset.dy + dir * gap[1];
       y1 = y2 + dir * lineWidth;
     }
     return [Offset(x1, y1), Offset(x2, y2)];
+  }
+
+  @override
+  void setP(List<Offset> po) {
+    pointList = po;
+  }
+
+  @override
+  List<Offset> getP() {
+    return List.from(pointList);
   }
 }

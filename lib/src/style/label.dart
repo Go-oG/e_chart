@@ -1,12 +1,11 @@
 import 'dart:math';
 import 'dart:ui';
+import 'package:e_chart/src/ext/text_style_ext.dart';
 import 'package:flutter/material.dart';
+
+import '../component/index.dart';
 import '../core/view_state.dart';
-import '../ext/text_style_ext.dart';
-import '../component/guideline/guide_line.dart';
-import '../model/dynamic_text.dart';
-import '../model/enums/over_flow.dart';
-import '../model/text_position.dart';
+import '../model/index.dart';
 import 'area_style.dart';
 
 class LabelStyle {
@@ -32,7 +31,7 @@ class LabelStyle {
     this.minAngle = 0,
   });
 
-  Size draw(Canvas canvas, Paint paint, DynamicText text, TextDrawConfig config, [Set<ViewState>? states]) {
+  Size draw(Canvas canvas, Paint paint, DynamicText text, TextDrawInfo config, [Set<ViewState>? states]) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
@@ -45,7 +44,7 @@ class LabelStyle {
     return drawParagraph(canvas, paint, text.text as Paragraph, config);
   }
 
-  Size drawText(Canvas canvas, Paint paint, String text, TextDrawConfig config, [Set<ViewState>? states]) {
+  Size drawText(Canvas canvas, Paint paint, String text, TextDrawInfo config, [Set<ViewState>? states]) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
@@ -56,7 +55,7 @@ class LabelStyle {
     return drawTextSpan(canvas, paint, TextSpan(text: text, style: style), config);
   }
 
-  Size drawTextSpan(Canvas canvas, Paint paint, TextSpan text, TextDrawConfig config) {
+  Size drawTextSpan(Canvas canvas, Paint paint, TextSpan text, TextDrawInfo config) {
     if (!show || (text.text?.isEmpty ?? true)) {
       return Size.zero;
     }
@@ -92,7 +91,7 @@ class LabelStyle {
     return Size(painter.width, painter.height);
   }
 
-  Size drawParagraph(Canvas canvas, Paint paint, Paragraph paragraph, TextDrawConfig config) {
+  Size drawParagraph(Canvas canvas, Paint paint, Paragraph paragraph, TextDrawInfo config) {
     ParagraphConstraints constraints = ParagraphConstraints(width: config.maxWidth.toDouble());
     paragraph.layout(constraints);
     double w = paragraph.width;
@@ -151,4 +150,10 @@ class LabelStyle {
     y = y - (align.y + 1) * (h / 2);
     return Offset(x, y);
   }
+
+  //TODO 待实现
+  LabelStyle convert(Set<ViewState>? set){
+    return this;
+  }
+
 }
