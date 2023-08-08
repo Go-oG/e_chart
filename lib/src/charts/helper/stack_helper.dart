@@ -73,7 +73,6 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
     }
     List<SingleNode<T, P>> oldNodeList = List.from(_nodeMap.values);
     var oldNodeMap = _nodeMap;
-    _nodeMap = newNodeMap;
     final List<SingleNode<T, P>> newNodeList = List.from(newNodeMap.values, growable: false);
     _onLayoutMarkPointAndLine(data, newNodeList, newNodeMap);
     await onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
@@ -221,7 +220,7 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
     LayoutType type,
   ) async {
     if (series.animation == null) {
-      _nodeMap=newNodeMap;
+      _nodeMap = newNodeMap;
       return;
     }
 
@@ -233,9 +232,17 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
     final endMap = diffResult.endMap;
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
+      Map<T, SingleNode<T, P>> sm = {};
+      startMap.forEach((key, value) {
+        if (key.data != null) {
+          sm[key.data!] = key;
+        }
+      });
+      _nodeMap = sm;
       onAnimatorStart(diffResult);
     };
     doubleTween.endListener = () {
+      _nodeMap = newNodeMap;
       onAnimatorEnd(diffResult);
       notifyLayoutEnd();
     };

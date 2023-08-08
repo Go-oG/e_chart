@@ -28,6 +28,15 @@ class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
     super.id,
     super.z,
     super.clip,
+    super.labelFormatFun,
+    super.animatorStyle,
+    super.labelStyle,
+    super.labelStyleFun,
+    super.markLine,
+    super.markLineFun,
+    super.markPoint,
+    super.markPointFun,
+    super.selectedMode,
   });
 
   @override

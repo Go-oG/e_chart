@@ -24,7 +24,7 @@ class BoxPlotView extends SeriesView<BoxplotSeries, BoxplotHelper> with GridChil
     canvas.save();
     canvas.translate(of.dx, of.dy);
 
-    layoutHelper.nodeMap.forEach((key, node) {
+    layoutHelper.showNodeMap.forEach((key, node) {
       if (node.data == null) {
         return;
       }
@@ -37,10 +37,14 @@ class BoxPlotView extends SeriesView<BoxplotSeries, BoxplotHelper> with GridChil
       if (as == null && ls == null) {
         return;
       }
-      Path area = node.extGet("areaPath");
-      as?.drawPath(canvas, mPaint, area);
-      Path p = node.extGet("path");
-      ls?.drawPath(canvas, mPaint, p);
+      Rect rect = layoutHelper.getAreaRect(node);
+      List<List<Offset>> borderList = layoutHelper.getBorderList(node);
+      as?.drawRect(canvas, mPaint, rect);
+      if (ls != null) {
+        for (var list in borderList) {
+          ls.drawPolygon(canvas, mPaint, list);
+        }
+      }
     });
     canvas.restore();
   }

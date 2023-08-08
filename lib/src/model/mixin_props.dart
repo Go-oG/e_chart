@@ -6,7 +6,25 @@ mixin ExtProps {
     _extendProps[key] = data;
   }
 
+  void extSetAll(Map<String, dynamic> map) {
+    map.forEach((key, value) {
+      _extendProps[key] = value;
+    });
+  }
+
+  void extRemove(String key) {
+    _extendProps.remove(key);
+  }
+
+  void extClear() {
+    _extendProps.clear();
+  }
+
   T extGet<T>(String key) {
     return _extendProps[key];
+  }
+
+  Map<String, dynamic> extGetAll() {
+    return Map.from(_extendProps);
   }
 }
