@@ -1,24 +1,25 @@
 //盒须图
 import 'package:e_chart/e_chart.dart';
 
-class BoxplotSeries extends ChartSeries {
-  List<BoxplotGroup> data;
-  Fun3<BoxplotData, BoxplotGroup, LineStyle>? borderStyleFun;
-  Fun3<BoxplotData, BoxplotGroup, AreaStyle?>? areaStyleFun;
-  Direction direction;
+class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
+  /// Group组的间隔
+  SNumber groupGap;
 
-  SNumber boxMinWidth;
-  SNumber boxMaxWidth;
-  SNumber? boxWidth;
+  ///Group组中柱状图之间的间隔
+  SNumber columnGap;
 
-  BoxplotSeries({
-    required this.data,
-    this.direction = Direction.vertical,
-    this.boxMinWidth = const SNumber.number(24),
-    this.boxMaxWidth = const SNumber.number(48),
-    this.boxWidth,
-    this.borderStyleFun,
-    this.areaStyleFun,
+  /// Column组里面的间隔
+  num innerGap;
+
+  BoxplotSeries(
+    super.data, {
+    this.columnGap = const SNumber.number(4),
+    this.groupGap = const SNumber.number(4),
+    this.innerGap = 0,
+    super.direction,
+    super.coordSystem,
+    super.areaStyleFun,
+    super.lineStyleFun,
     super.animation,
     super.polarIndex,
     super.gridIndex,
@@ -27,59 +28,62 @@ class BoxplotSeries extends ChartSeries {
     super.id,
     super.z,
     super.clip,
-  }) : super(coordSystem: CoordSystem.grid, calendarIndex: -1, parallelIndex: -1, radarIndex: -1);
+  });
 
-
-  AreaStyle? getAreaStyle(Context context, BoxplotData data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+  @override
+  AreaStyle? getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group);
+      return areaStyleFun?.call(data, group, status ?? {});
     }
     var chartTheme = context.option.theme;
     return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
   }
 
-  LineStyle getBorderStyle(Context context,BoxplotData data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
-    if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, group);
+  @override
+  LineStyle? getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+    if (lineStyleFun != null) {
+      return lineStyleFun?.call(data, group, status ?? {});
     }
-    var theme = context.option.theme.boxplotTheme;
-    return theme.getBorderStyle(context.option.theme,groupIndex).convert(status);
+    var barTheme = context.option.theme.boxplotTheme;
+    return barTheme.getBorderStyle();
   }
-
 }
 
-class BoxplotGroup {
-  List<BoxplotData> data;
-  int xAxisIndex;
-  int yAxisIndex;
+class BoxplotGroup extends StackGroupData<BoxplotData> {
+  SNumber? boxSize;
+  SNumber? boxMaxSize;
+  SNumber? boxMinSize;
 
-  BoxplotGroup(this.data, {this.xAxisIndex = 0, this.yAxisIndex = 0});
+  BoxplotGroup(
+    super.data, {
+    this.boxSize,
+    this.boxMaxSize,
+    this.boxMinSize = const SNumber(1, false),
+    super.xAxisIndex = 0,
+    super.yAxisIndex = 0,
+  });
+
+  @override
+  set stackId(String? id) {
+    throw ChartError("BoxplotGroup not support Stack Layout");
+  }
 }
 
-class BoxplotData {
-  late final String id;
-  DynamicData x;
-  DynamicData max;
-  DynamicData upAve4;
-  DynamicData middle;
-  DynamicData downAve4;
-  DynamicData min;
-  DynamicText? label;
+class BoxplotData extends StackItemData {
+  num max;
+  num upAve4;
+  num middle;
+  num downAve4;
+  num min;
 
   BoxplotData({
-    required this.x,
+    required DynamicData x,
     required this.max,
     required this.upAve4,
     required this.middle,
     required this.downAve4,
     required this.min,
-    this.label,
-    String? id,
-  }) {
-    if (id != null && id.isNotEmpty) {
-      this.id = id;
-    } else {
-      this.id = randomId();
-    }
-  }
+    super.label,
+    super.id,
+  }) : super(x, DynamicData(max));
 }

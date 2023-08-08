@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///用于处理堆叠数据的布局帮助者
+///一般用于笛卡尔坐标系和极坐标系的布局
 abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends LayoutHelper<S, List<P>> {
   ///该map存储当前给定数据的映射

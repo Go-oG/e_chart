@@ -47,9 +47,11 @@ class YAxisImpl extends XAxisImpl {
   List<Offset> dataToPoint(DynamicData data) {
     List<num> nl = scale.toRange(data.data);
     List<Offset> ol = [];
+    final double h=coord.contentBox.height;
     for (var d in nl) {
       double y = d.toDouble();
-      ol.add(Offset(attrs.start.dx, attrs.distanceOrigin - y));
+      double x = axis.position == Align2.end ? coord.contentBox.width : 0;
+      ol.add(Offset(x, h - y));
     }
     return ol;
   }

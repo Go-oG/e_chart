@@ -45,12 +45,13 @@ abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData
     bool vertical = series.direction == Direction.vertical;
     var coord = findGridCoord();
     int yIndex = groupNode.getYAxisIndex();
-    final DynamicData tmpData = DynamicData(1000000);
+    int xAxisIndex = xIndex.axisIndex;
+    final up = groupNode.nodeList.first.getUp();
     if (vertical) {
-      var rect = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(groupNode.nodeList.first.getUp()));
+      var rect = coord.dataToRect(xAxisIndex, x, yIndex, up.toData());
       groupNode.rect = Rect.fromLTWH(rect.left, 0, rect.width, height);
     } else {
-      var rect = coord.dataToRect(xIndex.axisIndex, tmpData.change(groupNode.nodeList.first.getUp()), yIndex, x);
+      var rect = coord.dataToRect(xAxisIndex, up.toData(), yIndex, x);
       groupNode.rect = Rect.fromLTWH(0, rect.top, width, rect.height);
     }
   }

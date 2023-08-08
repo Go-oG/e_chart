@@ -18,7 +18,7 @@ class AxisTheme {
   Color minorLabelColor = const Color(0xFF6E7079);
   num minorLabelSize = 13;
 
-  bool showSplitLine = true;
+  bool showSplitLine = false;
   num splitLineWidth = 1;
   List<Color> splitLineColors = [
     const Color(0xFFE0E6F1),

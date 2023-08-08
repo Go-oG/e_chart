@@ -273,7 +273,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         }
       }
 
-      map[group] = ValueInfo(group,minV, maxV, aveV);
+      map[group] = ValueInfo(group, minV, maxV, aveV);
     }
     return map;
   }
@@ -309,5 +309,5 @@ class ValueInfo<T extends StackItemData, P extends StackGroupData<T>> {
   T? maxData;
   T? aveData;
 
-  ValueInfo(this.group,this.minData, this.maxData, this.aveData);
+  ValueInfo(this.group, this.minData, this.maxData, this.aveData);
 }

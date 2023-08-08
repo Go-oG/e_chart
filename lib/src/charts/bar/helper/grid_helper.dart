@@ -66,7 +66,7 @@ class BarGridHelper extends StackGridHelper<StackItemData, BarGroupData, BarSeri
     double offset = vertical ? groupRect.left : groupRect.top;
     offset += groupGap * 0.5;
 
-    DynamicData tmpData = DynamicData(0);
+    final DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (node, i) {
       var parent = node.nodeList.first.parent;
       int yIndex = parent.yAxisIndex;
@@ -109,5 +109,4 @@ class BarGridHelper extends StackGridHelper<StackItemData, BarGroupData, BarSeri
 
   @override
   SeriesType get seriesType => SeriesType.bar;
-
 }

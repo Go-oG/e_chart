@@ -1,13 +1,18 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+
 import '../../../style/line_style.dart';
 import '../theme.dart';
 class BoxplotTheme {
   num borderWidth = 1;
+  Color borderColor=Colors.black45;
 
-  LineStyle getBorderStyle(ChartTheme theme, int index) {
+  LineStyle? getBorderStyle() {
     if (borderWidth <= 0) {
-      borderWidth = 1;
+      return null;
     }
-    return LineStyle(color: theme.getColor(index), width: borderWidth);
+    return LineStyle(color: borderColor, width: borderWidth);
   }
 }
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 /// 不可再分的最小绘制单元
 /// 其用于极坐标系和二维坐标系下的节点位置表示
-class SingleNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
+class SingleNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider,ExtProps {
   final ColumnNode<T, P> parentNode;
   final WrapData<T, P> _wrap;
 
