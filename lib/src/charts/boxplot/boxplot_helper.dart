@@ -15,93 +15,15 @@ class BoxplotHelper extends StackGridHelper<BoxplotData, BoxplotGroup, BoxplotSe
   static const String _maxCK = "maxC";
   static const String _colRectK = "colRect";
 
+
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
-    final int groupInnerCount = axisGroup.getColumnCount(xIndex);
-    int colGapCount = groupInnerCount - 1;
-    if (colGapCount < 1) {
-      colGapCount = 0;
-    }
-    final bool vertical = series.direction == Direction.vertical;
-    final Rect groupRect = groupNode.rect;
-    final num groupSize = vertical ? groupRect.width : groupRect.height;
+  DynamicData getUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
+    return node.data!.max.toData();
+  }
 
-    double groupGap = series.groupGap.convert(groupSize) * 2;
-    double columnGap = series.columnGap.convert(groupSize);
-    double allGap = groupGap + colGapCount * columnGap;
-
-    double canUseSize = groupSize - allGap;
-    if (canUseSize < 0) {
-      canUseSize = groupSize.toDouble();
-    }
-    double allBarSize = 0;
-
-    ///计算Group占用的大小
-    List<double> sizeList = [];
-    each(groupNode.nodeList, (node, i) {
-      var first = node.nodeList.first;
-      var groupData = first.parent;
-      double tmpSize;
-      if (groupData.boxSize != null) {
-        tmpSize = groupData.boxSize!.convert(canUseSize);
-      } else {
-        tmpSize = canUseSize / groupInnerCount;
-        if (groupData.boxMaxSize != null) {
-          var s = groupData.boxMaxSize!.convert(canUseSize);
-          if (tmpSize > s) {
-            tmpSize = s;
-          }
-        }
-        if (groupData.boxMinSize != null) {
-          var size = groupData.boxMinSize!.convert(canUseSize);
-          if (tmpSize < size) {
-            tmpSize = size;
-          }
-        }
-      }
-      allBarSize += tmpSize;
-      sizeList.add(tmpSize);
-    });
-
-    if (allBarSize + allGap > groupSize) {
-      double k = groupSize / (allBarSize + allGap);
-      groupGap *= k;
-      columnGap *= k;
-      allBarSize *= k;
-      allGap *= k;
-      for (int i = 0; i < sizeList.length; i++) {
-        sizeList[i] = sizeList[i] * k;
-      }
-    }
-
-    double offset = vertical ? groupRect.left : groupRect.top;
-    offset += groupGap * 0.5;
-
-    final DynamicData tmpData = DynamicData(0);
-    each(groupNode.nodeList, (node, i) {
-      var parent = node.nodeList.first.parent;
-      int yIndex = parent.yAxisIndex;
-      var coord = findGridCoord();
-      Rect up, down;
-      if (vertical) {
-        up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
-        down = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getDown()));
-      } else {
-        up = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getUp()), yIndex, x);
-        down = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getDown()), yIndex, x);
-      }
-
-      double h = (up.top - down.top).abs();
-      double w = (up.left - down.left).abs();
-      Rect tmpRect;
-      if (vertical) {
-        tmpRect = Rect.fromLTWH(offset, groupRect.bottom - h, sizeList[i], h);
-      } else {
-        tmpRect = Rect.fromLTWH(groupRect.left, offset, w, sizeList[i]);
-      }
-      offset += columnGap + sizeList[i];
-      node.rect = tmpRect;
-    });
+  @override
+  DynamicData getDownValue(SingleNode<BoxplotData, BoxplotGroup> node) {
+    return node.data!.min.toData();
   }
 
   @override
@@ -111,7 +33,7 @@ class BoxplotHelper extends StackGridHelper<BoxplotData, BoxplotGroup, BoxplotSe
     for (var node in columnNode.nodeList) {
       var data = node.data;
       if (data == null) {
-        return;
+        continue;
       }
       var group = node.parent;
       Offset minC = _computeOffset(colRect, data.min, group.xAxisIndex, vertical);

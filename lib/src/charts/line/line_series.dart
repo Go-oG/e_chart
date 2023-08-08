@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class LineSeries extends StackSeries<StackItemData, LineGroupData> {
+class LineSeries extends StackGridBarSeries<StackItemData, LineGroupData> {
   bool connectNulls; // 是否连接空数据
 
   /// 符号样式
@@ -37,5 +37,5 @@ class LineSeries extends StackSeries<StackItemData, LineGroupData> {
     super.clip,
     super.z,
     super.tooltip,
-  });
+  }) : super(groupGap: SNumber.zero, columnGap: SNumber.zero);
 }

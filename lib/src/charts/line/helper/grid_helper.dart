@@ -6,6 +6,7 @@ import '../line_node.dart';
 
 class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
+  List<LineNode>? _cacheLineList;
 
   LineGridHelper(super.context, super.series);
 
@@ -37,43 +38,54 @@ class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineS
     }
     final bool vertical = series.direction == Direction.vertical;
     final Rect groupRect = groupNode.rect;
-    DynamicData tmpData = DynamicData(0);
     var coord = context.findGridCoord();
     each(groupNode.nodeList, (node, i) {
-      int yIndex = groupNode.getYAxisIndex();
-      Rect up, down;
-      if (vertical) {
-        up = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getUp()));
-        down = coord.dataToRect(xIndex.axisIndex, x, yIndex, tmpData.change(node.getDown()));
-      } else {
-        up = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getUp()), yIndex, x);
-        down = coord.dataToRect(xIndex.axisIndex, tmpData.change(node.getDown()), yIndex, x);
+      var upNode = node.getUpNode();
+      var downNode = node.getDownNode();
+      if (upNode == null || downNode == null) {
+        Logger.w("内部状态异常 无法找到 upValue 或者downValue");
+        return;
       }
-      double h = (up.top - down.top).abs();
-      double w = (up.left - down.left).abs();
-      Rect tmpRect;
+      DynamicData upValue = getUpValue(upNode), downValue = getDownValue(downNode);
       if (vertical) {
-        tmpRect = Rect.fromLTWH(groupRect.left, groupRect.bottom - h, groupRect.width, h);
+        int yIndex = upNode.parent.yAxisIndex;
+        var uo = coord.dataToPoint(yIndex, upValue, false).last;
+        var downo = coord.dataToPoint(yIndex, downValue, false).first;
+        node.rect = Rect.fromLTRB(groupRect.left, uo.dy, groupRect.right, downo.dy);
       } else {
-        tmpRect = Rect.fromLTWH(groupRect.left, groupRect.top, w, groupRect.height);
+        var lo = coord.dataToPoint(xIndex.axisIndex, x, true).first;
+        var ro = coord.dataToPoint(xIndex.axisIndex, x, true).last;
+        node.rect = Rect.fromLTRB(lo.dx, groupRect.top, ro.dx, groupRect.bottom);
       }
-      node.rect = tmpRect;
     });
   }
 
   @override
   void onLayoutNode(var columnNode, AxisIndex xIndex) {
-    super.onLayoutNode(columnNode, xIndex);
+    final bool vertical = series.direction == Direction.vertical;
+    final coord = findGridCoord();
+    final colRect = columnNode.rect;
     GridAxis xAxis = findGridCoord().getAxis(xIndex.axisIndex, true);
     for (var node in columnNode.nodeList) {
-      if (node.data != null) {
+      if (node.data == null) {
+        continue;
+      }
+      if (vertical) {
+        var uo = coord.dataToPoint(node.parent.yAxisIndex, getUpValue(node), false).last;
+        node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, uo.dy);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topLeft;
         } else {
           node.position = node.rect.topCenter;
         }
       } else {
-        node.position = Offset(node.rect.center.dx, height);
+        var uo = coord.dataToPoint(node.parent.xAxisIndex, getUpValue(node), true).last;
+        node.rect = Rect.fromLTRB(uo.dx, colRect.top, uo.dx, colRect.height);
+        if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
+          node.position = node.rect.topRight;
+        } else {
+          node.position = node.rect.centerRight;
+        }
       }
     }
   }
@@ -81,7 +93,7 @@ class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineS
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
     super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    _lineList = await _layoutLineNode(newNodeList);
+    _cacheLineList = await _layoutLineNode(newNodeList);
   }
 
   @override
@@ -96,6 +108,10 @@ class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineS
 
   @override
   void onAnimatorStart(var result) {
+    if (_cacheLineList != null) {
+      _lineList = _cacheLineList!;
+      _cacheLineList = null;
+    }
     _animatorPercent = 0;
   }
 
@@ -194,6 +210,9 @@ class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineS
     List<Offset?> ol = _collectOffset(list);
     Map<StackItemData, SymbolNode> nodeMap = {};
     each(ol, (off, i) {
+      if (group.data.length <= i) {
+        return;
+      }
       var data = group.data[i];
       if (data == null || off == null) {
         return;

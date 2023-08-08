@@ -114,7 +114,6 @@ class GridCoordImpl extends GridCoord {
   void layoutXAxis(List<GridChild> childList, Rect contentBox) {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
-
     bool needAlignTick = false;
 
     ///收集数据信息
@@ -122,9 +121,9 @@ class GridCoordImpl extends GridCoord {
     for (var ele in props.xAxisList) {
       var axis = xMap[ele]!;
       if (ele.position == Align2.start) {
-        topList.add(xMap[ele]!);
+        topList.add(axis);
       } else {
-        bottomList.add(xMap[ele]!);
+        bottomList.add(axis);
       }
       if (axis.axis.alignTicks) {
         needAlignTick = true;
@@ -177,12 +176,11 @@ class GridCoordImpl extends GridCoord {
     double topOffset = contentBox.top;
     each(topList, (value, i) {
       var axisInfo = value.axisInfo;
-      List<DynamicData> dl = extremeMap[value] ?? [];
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var attrs = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
+      var attrs = LineAxisAttrs(scale, scrollYOffset, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
       topOffset -= (h + value.axis.offset);
-      value.doLayout(attrs, dl);
+      value.doLayout(attrs, extremeMap[value] ?? []);
       if (needAlignTick && i == 0) {
         splitCount = value.scale.tickCount - 1;
       }
@@ -191,7 +189,6 @@ class GridCoordImpl extends GridCoord {
     double bottomOffset = contentBox.bottom;
     each(bottomList, (value, i) {
       var axisInfo = value.axisInfo;
-      List<DynamicData> dl = extremeMap[value] ?? [];
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
       var attrs = LineAxisAttrs(
@@ -203,7 +200,7 @@ class GridCoordImpl extends GridCoord {
         splitCount: splitCount,
       );
       bottomOffset += (h + value.axis.offset);
-      value.doLayout(attrs, dl);
+      value.doLayout(attrs, extremeMap[value] ?? []);
 
       if (needAlignTick && splitCount == null && i == 0) {
         splitCount = value.scale.tickCount - 1;

@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///适用于GridCoord坐标系的布局帮助者
-abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
+abstract class StackGridHelper<T extends StackItemData, P extends StackGridBarGroupData<T>, S extends StackGridBarSeries<T, P>>
     extends BaseStackLayoutHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
   Map<int, List<SingleNode<T, P>>> _pageMap = {};
@@ -56,28 +56,120 @@ abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData
   }
 
   @override
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
-    final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
-    final num down = columnNode.nodeList.first.down;
-    final num diff = up - down;
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
+    final int groupInnerCount = axisGroup.getColumnCount(xIndex);
+    int colGapCount = groupInnerCount - 1;
+    if (colGapCount < 1) {
+      colGapCount = 0;
+    }
     final bool vertical = series.direction == Direction.vertical;
+    final Rect groupRect = groupNode.rect;
+    final num groupSize = vertical ? groupRect.width : groupRect.height;
 
-    final Rect rect = columnNode.rect;
-    final double size = vertical ? rect.height : rect.width;
-    double bottom = rect.bottom;
-    double left = rect.left;
-    for (var node in columnNode.nodeList) {
-      num percent = (node.up - node.down) / diff;
-      double length = percent * size;
-      if (vertical) {
-        bottom = bottom - length;
-        node.rect = Rect.fromLTWH(rect.left, bottom, rect.width, length);
+    double groupGap = series.groupGap.convert(groupSize) * 2;
+    double columnGap = series.columnGap.convert(groupSize);
+    double allGap = groupGap + colGapCount * columnGap;
+
+    double canUseSize = groupSize - allGap;
+    if (canUseSize < 0) {
+      canUseSize = groupSize.toDouble();
+    }
+    double allBarSize = 0;
+
+    ///计算Group占用的大小
+    List<double> sizeList = [];
+    each(groupNode.nodeList, (node, i) {
+      var first = node.nodeList.first;
+      var groupData = first.parent;
+      double tmpSize;
+      if (groupData.barSize != null) {
+        tmpSize = groupData.barSize!.convert(canUseSize);
       } else {
-        node.rect = Rect.fromLTWH(left, rect.top, length, rect.height);
-        left += length;
+        tmpSize = canUseSize / groupInnerCount;
+        if (groupData.barMaxSize != null) {
+          var s = groupData.barMaxSize!.convert(canUseSize);
+          if (tmpSize > s) {
+            tmpSize = s;
+          }
+        }
+        if (groupData.barMinSize != null) {
+          var size = groupData.barMinSize!.convert(canUseSize);
+          if (tmpSize < size) {
+            tmpSize = size;
+          }
+        }
+      }
+      allBarSize += tmpSize;
+      sizeList.add(tmpSize);
+    });
+
+    if (allBarSize + allGap > groupSize) {
+      double k = groupSize / (allBarSize + allGap);
+      groupGap *= k;
+      columnGap *= k;
+      allBarSize *= k;
+      allGap *= k;
+      for (int i = 0; i < sizeList.length; i++) {
+        sizeList[i] = sizeList[i] * k;
+      }
+    }
+
+    double offset = vertical ? groupRect.left : groupRect.top;
+    offset += groupGap * 0.5;
+
+    each(groupNode.nodeList, (node, i) {
+      if (node.nodeList.isEmpty) {
+        return;
+      }
+      var parent = node.nodeList.first.parent;
+      int yIndex = parent.yAxisIndex;
+      var coord = findGridCoord();
+      var upNode = node.getUpNode();
+      var downNode = node.getDownNode();
+      if (upNode == null || downNode == null) {
+        Logger.w("内部状态异常 无法找到 upValue 或者downValue");
+        return;
+      }
+      DynamicData upValue = getUpValue(upNode), downValue = getDownValue(downNode);
+      if (vertical) {
+        var uo = coord.dataToPoint(yIndex, upValue, false).last;
+        var downo = coord.dataToPoint(yIndex, downValue, false).first;
+        node.rect = Rect.fromLTRB(offset, uo.dy, offset + sizeList[i], downo.dy);
+        offset += sizeList[i] + columnGap;
+      } else {
+        var lo = coord.dataToPoint(xIndex.axisIndex, x, true).first;
+        var ro = coord.dataToPoint(xIndex.axisIndex, x, true).last;
+        node.rect = Rect.fromLTRB(lo.dx, offset, ro.dx, offset + sizeList[i]);
+        offset += sizeList[i] + columnGap;
+      }
+    });
+  }
+
+  @override
+  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
+    final bool vertical = series.direction == Direction.vertical;
+    final coord = findGridCoord();
+    final colRect = columnNode.rect;
+    for (var node in columnNode.nodeList) {
+      if (vertical) {
+        var uo = coord.dataToPoint(node.parent.yAxisIndex, getUpValue(node), false).last;
+        var downo = coord.dataToPoint(node.parent.yAxisIndex, getDownValue(node), false).first;
+        node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, downo.dy);
+      } else {
+        var uo = coord.dataToPoint(node.parent.xAxisIndex, getUpValue(node), true).last;
+        var downo = coord.dataToPoint(node.parent.xAxisIndex, getDownValue(node), true).first;
+        node.rect = Rect.fromLTRB(downo.dx, colRect.top, uo.dx, colRect.height);
       }
       node.position = node.rect.center;
     }
+  }
+
+  DynamicData getUpValue(SingleNode<T, P> node) {
+    return node.up.toData();
+  }
+
+  DynamicData getDownValue(SingleNode<T, P> node) {
+    return node.down.toData();
   }
 
   @override
@@ -86,17 +178,16 @@ abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData
     if (valueType != null || markPoint.data.data != null) {
       return super.onLayoutMarkPoint(markPoint, group, newNodeMap);
     }
-    var gridCoord = findGridCoord();
+    final coord = findGridCoord();
     bool vertical = series.direction == Direction.vertical;
     if (markPoint.data.coord != null) {
-      var coord = markPoint.data.coord!;
-      var x = coord[0].convert(gridCoord.getAxisLength(group.xAxisIndex, true));
-      var xr = x / gridCoord.getAxisLength(group.xAxisIndex, true);
-      var y = coord[1].convert(gridCoord.getAxisLength(group.yAxisIndex, false));
-      var yr = y / gridCoord.getAxisLength(group.yAxisIndex, false);
-      var dd = vertical
-          ? gridCoord.getScale(group.yAxisIndex, false).convertRatio(yr)
-          : gridCoord.getScale(group.xAxisIndex, true).convertRatio(xr);
+      var data = markPoint.data.coord!;
+      var x = data[0].convert(coord.getAxisLength(group.xAxisIndex, true));
+      var xr = x / coord.getAxisLength(group.xAxisIndex, true);
+      var y = data[1].convert(coord.getAxisLength(group.yAxisIndex, false));
+      var yr = y / coord.getAxisLength(group.yAxisIndex, false);
+      var dd =
+          vertical ? coord.getScale(group.yAxisIndex, false).convertRatio(yr) : coord.getScale(group.xAxisIndex, true).convertRatio(xr);
       var node = MarkPointNode(markPoint, dd.toData());
       node.offset = Offset(x, y);
       return node;
@@ -118,9 +209,23 @@ abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData
     final endMap = diffResult.endMap;
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
     doubleTween.startListener = () {
+      Map<T, SingleNode<T, P>> map = {};
+      diffResult.startMap.forEach((key, value) {
+        if (key.data != null) {
+          map[key.data!] = key;
+        }
+      });
+      showNodeMap = map;
       onAnimatorStart(diffResult);
     };
     doubleTween.endListener = () {
+      Map<T, SingleNode<T, P>> map = {};
+      for (var value in diffResult.endList) {
+        if (value.data != null) {
+          map[value.data!] = value;
+        }
+      }
+      showNodeMap = map;
       onAnimatorEnd(diffResult);
       notifyLayoutEnd();
     };
@@ -233,6 +338,19 @@ abstract class StackGridHelper<T extends StackItemData, P extends StackGroupData
       }
     }
     node.rect = r;
+  }
+
+  @override
+  void onGridScrollChange(Offset offset) {
+    super.onGridScrollChange(offset);
+    var list = getNeedShowData();
+    Map<T, SingleNode<T, P>> map = {};
+    for (var node in list) {
+      if (node.data != null) {
+        map[node.data!] = node;
+      }
+    }
+    showNodeMap = map;
   }
 
   @override

@@ -30,6 +30,25 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
     return nodeList[0].down;
   }
 
+  SingleNode<T, P>? getUpNode() {
+    for (int i = nodeList.length - 1; i >= 0; i--) {
+      var cn = nodeList[i];
+      if (cn.data != null) {
+        return cn;
+      }
+    }
+    return null;
+  }
+
+  SingleNode<T, P>? getDownNode() {
+    for (var cn in nodeList) {
+      if (cn.data != null) {
+        return cn;
+      }
+    }
+    return null;
+  }
+
   void mergeData() {
     num up = 0;
     for (int i = 0; i < nodeList.length; i++) {

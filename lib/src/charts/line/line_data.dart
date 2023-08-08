@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class LineGroupData extends StackGroupData<StackItemData> {
+class LineGroupData extends StackGridBarGroupData<StackItemData> {
   bool? smooth;
 
   LineGroupData(
@@ -8,9 +8,11 @@ class LineGroupData extends StackGroupData<StackItemData> {
     this.smooth,
     super.xAxisIndex,
     super.yAxisIndex,
-    String? id,
+    super.id,
     super.stackId,
     super.strategy,
+    super.barMaxSize,
+    super.barMinSize,
+    super.barSize,
   });
 }
-

@@ -14,7 +14,6 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
 
   LayoutHelper.lazy({bool equalsObject = false}) : super(Command.none, equalsObject);
 
-
   void doMeasure(T data, double parentWidth, double parentHeight) {
     this.rect = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
     onMeasure();

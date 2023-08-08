@@ -11,19 +11,7 @@ export 'funnel/funnel_series.dart';
 
 export 'heatmap/heat_map_series.dart';
 
-export 'helper/model/axis_group.dart';
-export 'helper/model/axis_index.dart';
-export 'helper/model/map_node.dart';
-export 'helper/model/wrap_data.dart';
-export 'helper/node/group_node.dart';
-export 'helper/node/column_node.dart';
-export 'helper/node/single_node.dart';
-export 'helper/stack_data.dart';
-export 'helper/stack_grid_helper.dart';
-export 'helper/stack_series.dart';
-export 'helper/stack_polar_helper.dart';
-export 'helper/stack_helper.dart';
-export 'helper/data_helper.dart' hide InnerData;
+export 'helper/index.dart';
 
 export 'line/line_data.dart';
 export 'line/line_series.dart';

@@ -1,21 +1,12 @@
 //盒须图
 import 'package:e_chart/e_chart.dart';
 
-class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
-  /// Group组的间隔
-  SNumber groupGap;
-
-  ///Group组中柱状图之间的间隔
-  SNumber columnGap;
-
-  /// Column组里面的间隔
-  num innerGap;
-
+class BoxplotSeries extends StackGridBarSeries<BoxplotData, BoxplotGroup> {
   BoxplotSeries(
     super.data, {
-    this.columnGap = const SNumber.number(4),
-    this.groupGap = const SNumber.number(4),
-    this.innerGap = 0,
+    super.columnGap,
+    super.groupGap,
+    super.innerGap,
     super.direction,
     super.coordSystem,
     super.areaStyleFun,
@@ -58,18 +49,15 @@ class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
   }
 }
 
-class BoxplotGroup extends StackGroupData<BoxplotData> {
-  SNumber? boxSize;
-  SNumber? boxMaxSize;
-  SNumber? boxMinSize;
-
+class BoxplotGroup extends StackGridBarGroupData<BoxplotData> {
   BoxplotGroup(
     super.data, {
-    this.boxSize,
-    this.boxMaxSize,
-    this.boxMinSize = const SNumber(1, false),
+    super.barMaxSize,
+    super.barMinSize,
+    super.barSize,
     super.xAxisIndex = 0,
     super.yAxisIndex = 0,
+    super.id,
   });
 
   @override
