@@ -76,7 +76,7 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.getAngleDataSet());
+      list.addAll(c.getAngleExtreme());
     }
     return list;
   }
@@ -88,7 +88,7 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.getRadiusDataSet());
+      list.addAll(c.getRadiusExtreme());
     }
     return list;
   }

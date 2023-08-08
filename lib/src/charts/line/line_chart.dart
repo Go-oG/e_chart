@@ -8,7 +8,7 @@ import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 import 'helper/line_helper.dart';
 import 'line_node.dart';
 
-class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<StackItemData, LineGroupData, LineSeries>>
+class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, LineGroupData, LineSeries>>
     with GridChild, PolarChild {
   late LineHelper helper;
 
@@ -230,17 +230,17 @@ class LineView extends CoordChildView<LineSeries, BaseStackLayoutHelper<StackIte
   }
 
   @override
-  List<DynamicData> getAngleDataSet() {
+  List<DynamicData> getAngleExtreme() {
     return getAxisExtreme(0, false);
   }
 
   @override
-  List<DynamicData> getRadiusDataSet() {
+  List<DynamicData> getRadiusExtreme() {
     return getAxisExtreme(0, true);
   }
 
   @override
-  BaseStackLayoutHelper<StackItemData, LineGroupData, LineSeries> buildLayoutHelper() {
+  StackHelper<StackItemData, LineGroupData, LineSeries> buildLayoutHelper() {
     if (series.coordSystem == CoordSystem.polar) {
       var h = LinePolarHelper(context, series);
       helper = h;

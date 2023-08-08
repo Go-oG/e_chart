@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class BarGroupData extends StackGridBarGroupData<StackItemData> {
+class BarGroupData extends StackGroupData<StackItemData> {
   BarGroupData(
     super.data, {
     super.xAxisIndex,

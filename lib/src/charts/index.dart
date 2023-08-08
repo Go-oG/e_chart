@@ -11,7 +11,7 @@ export 'funnel/funnel_series.dart';
 
 export 'heatmap/heat_map_series.dart';
 
-export 'helper/index.dart';
+export 'stack/index.dart';
 
 export 'line/line_data.dart';
 export 'line/line_series.dart';

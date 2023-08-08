@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///用于处理堆叠数据的布局帮助者
 ///一般用于笛卡尔坐标系和极坐标系的布局
-abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
+abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends LayoutHelper<S, List<P>> {
   ///该map存储当前给定数据的映射
   ///如果给定的数据为空则不会存在
@@ -20,7 +20,7 @@ abstract class BaseStackLayoutHelper<T extends StackItemData, P extends StackGro
 
   List<MarkLineNode> markLineList = [];
 
-  BaseStackLayoutHelper(super.context, super.series);
+  StackHelper(super.context, super.series);
 
   @override
   void onLayout(List<P> data, LayoutType type) async {

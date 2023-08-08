@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/line/helper/line_helper.dart';
 import 'package:e_chart/src/charts/line/line_node.dart';
 
-class LinePolarHelper extends StackPolarHelper<StackItemData, LineGroupData, LineSeries> implements LineHelper {
+class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
 
   LinePolarHelper(super.context, super.series);

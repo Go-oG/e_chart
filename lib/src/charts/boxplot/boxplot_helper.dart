@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class BoxplotHelper extends StackGridHelper<BoxplotData, BoxplotGroup, BoxplotSeries> {
+class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries> {
   BoxplotHelper(super.context, super.series);
 
   static const String _borderListK = "borderList";

@@ -6,17 +6,21 @@ class StackGroupData<T> {
   List<T?> data;
   int xAxisIndex;
   int yAxisIndex;
-
   String? _stackId;
-
   String? get stackId => _stackId;
 
   StackStrategy strategy;
+  SNumber? barSize;
+  SNumber? barMaxSize;
+  SNumber? barMinSize;
 
   StackGroupData(
     this.data, {
     this.xAxisIndex = 0,
     this.yAxisIndex = 0,
+    this.barSize,
+    this.barMaxSize,
+    this.barMinSize = const SNumber(1, false),
     String? id,
     String? stackId,
     this.strategy = StackStrategy.all,

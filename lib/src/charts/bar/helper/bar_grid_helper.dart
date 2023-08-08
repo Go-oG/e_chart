@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class BarGridHelper extends StackGridHelper<StackItemData, BarGroupData, BarSeries> {
+class BarGridHelper extends GridHelper<StackItemData, BarGroupData, BarSeries> {
   BarGridHelper(super.context, super.series);
 
   @override

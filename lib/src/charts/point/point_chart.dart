@@ -86,7 +86,7 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   int get calendarIndex => series.calendarIndex;
 
   @override
-  List<DynamicData> getAngleDataSet() {
+  List<DynamicData> getAngleExtreme() {
     List<DynamicData> dl = [];
     for (var ele in series.data) {
       dl.add(ele.y);
@@ -95,7 +95,7 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   }
 
   @override
-  List<DynamicData> getRadiusDataSet() {
+  List<DynamicData> getRadiusExtreme() {
     List<DynamicData> dl = [];
     for (var ele in series.data) {
       dl.add(ele.x);

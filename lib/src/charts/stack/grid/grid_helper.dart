@@ -4,12 +4,11 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///适用于GridCoord坐标系的布局帮助者
-abstract class StackGridHelper<T extends StackItemData, P extends StackGridBarGroupData<T>, S extends StackGridBarSeries<T, P>>
-    extends BaseStackLayoutHelper<T, P, S> {
+abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>> extends StackHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
   Map<int, List<SingleNode<T, P>>> _pageMap = {};
 
-  StackGridHelper(super.context, super.series);
+  GridHelper(super.context, super.series);
 
   List<SingleNode<T, P>> getPageData(List<int> pages) {
     List<SingleNode<T, P>> list = [];

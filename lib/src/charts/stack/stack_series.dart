@@ -1,18 +1,31 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends ChartSeries {
+class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends ChartSeries {
   static const defaultAnimatorAttrs = AnimatorAttrs(
     curve: Curves.linear,
     updateDuration: Duration(milliseconds: 600),
     duration: Duration(milliseconds: 1200),
   );
-  List<P> data;
+  List<G> data;
 
   ///指示图形排列方式
   ///当为vertical时是竖直排列
   Direction direction;
   SelectedMode selectedMode;
+
+  Corner corner;
+
+  /// Group组的间隔
+  SNumber groupGap;
+
+  ///Group组中柱状图之间的间隔
+  SNumber columnGap;
+
+  /// Column组里面的间隔
+  num innerGap;
+  Color groupHoverColor = const Color(0xFFE3F2FD);
+  ChartAlign? labelAlign;
 
   ///该动画样式只在柱状图中使用
   GridAnimatorStyle animatorStyle;
@@ -25,24 +38,32 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
   LabelStyle? labelStyle;
 
   ///在折线图中 area对应分割区域，柱状图中为Bar的区域
-  Fun4<T?, P, Set<ViewState>, AreaStyle?>? areaStyleFun;
+  Fun4<T?, G, Set<ViewState>, AreaStyle?>? areaStyleFun;
 
   ///在折线图中，Line对应线条 柱状图中为border
-  Fun4<T?, P, Set<ViewState>, LineStyle?>? lineStyleFun;
+  Fun4<T?, G, Set<ViewState>, LineStyle?>? lineStyleFun;
 
   /// 标签转换
-  Fun4<T, P, Set<ViewState>, DynamicText?>? labelFormatFun;
+  Fun4<T, G, Set<ViewState>, DynamicText?>? labelFormatFun;
+
+  /// 标签对齐
+  Fun4<T, G, Set<ViewState>, ChartAlign>? labelAlignFun;
 
   /// 标签样式
-  Fun4<T, P, Set<ViewState>, LabelStyle>? labelStyleFun;
+  Fun4<T, G, Set<ViewState>, LabelStyle>? labelStyleFun;
+
+  Fun4<T, G, Set<ViewState>, Corner>? cornerFun;
+
+  /// 背景样式
+  Fun4<T?, G, Set<ViewState>, AreaStyle?>? groupStyleFun;
 
   /// 标记点、线相关的
   /// 标记点、线相关的
   MarkLine? markLine;
   MarkPoint? markPoint;
 
-  Fun2<P, List<MarkPoint>>? markPointFun;
-  Fun2<P, List<MarkLine>>? markLineFun;
+  Fun2<G, List<MarkPoint>>? markPointFun;
+  Fun2<G, List<MarkLine>>? markLineFun;
 
   StackSeries(
     this.data, {
@@ -51,6 +72,12 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
     this.animatorStyle = GridAnimatorStyle.expand,
     this.legendHoverLink = true,
     this.realtimeSort = false,
+    this.corner = Corner.zero,
+    this.columnGap = const SNumber.number(4),
+    this.groupGap = const SNumber.number(4),
+    this.innerGap = 0,
+    this.labelAlignFun,
+    this.groupStyleFun,
     this.labelStyle,
     this.lineStyleFun,
     this.areaStyleFun,
@@ -71,9 +98,9 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
     super.z,
   }) : super(radarIndex: -1, parallelIndex: -1, calendarIndex: -1);
 
-  DataHelper<T, P, StackSeries>? _helper;
+  DataHelper<T, G, StackSeries>? _helper;
 
-  DataHelper<T, P, StackSeries> get helper {
+  DataHelper<T, G, StackSeries> get helper {
     _helper ??= DataHelper(this, data, direction);
     return _helper!;
   }
@@ -90,7 +117,7 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
     super.notifyUpdateData();
   }
 
-  List<MarkPoint> getMarkPoint(P group) {
+  List<MarkPoint> getMarkPoint(G group) {
     if (markPointFun != null) {
       return markPointFun!.call(group);
     }
@@ -100,7 +127,7 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
     return [];
   }
 
-  List<MarkLine> getMarkLine(P group) {
+  List<MarkLine> getMarkLine(G group) {
     if (markLineFun != null) {
       return markLineFun!.call(group);
     }
@@ -110,7 +137,7 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
     return [];
   }
 
-  LabelStyle? getLabelStyle(Context context, T data, P group, [Set<ViewState>? status]) {
+  LabelStyle? getLabelStyle(Context context, T data, G group, [Set<ViewState>? status]) {
     if (labelStyleFun != null) {
       return labelStyleFun?.call(data, group, status ?? {});
     }
@@ -121,14 +148,14 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
     return LabelStyle(textStyle: TextStyle(color: theme.labelTextColor, fontSize: theme.labelTextSize));
   }
 
-  DynamicText? formatData(Context context, T data, P group, [Set<ViewState>? status]) {
+  DynamicText? formatData(Context context, T data, G group, [Set<ViewState>? status]) {
     if (labelFormatFun != null) {
       return labelFormatFun?.call(data, group, status ?? {});
     }
     return formatNumber(data.stackUp).toText();
   }
 
-  AreaStyle? getAreaStyle(Context context, T? data, P group, int groupIndex, [Set<ViewState>? status]) {
+  AreaStyle? getAreaStyle(Context context, T? data, G group, int groupIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
       return areaStyleFun?.call(data, group, status ?? {});
     }
@@ -146,7 +173,7 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
     return null;
   }
 
-  LineStyle? getLineStyle(Context context, T? data, P group, int groupIndex, [Set<ViewState>? status]) {
+  LineStyle? getLineStyle(Context context, T? data, G group, int groupIndex, [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
       return lineStyleFun?.call(data, group, status ?? {});
     }
@@ -159,6 +186,20 @@ class StackSeries<T extends StackItemData, P extends StackGroupData<T>> extends 
       return barTheme.getBorderStyle();
     }
   }
+  ChartAlign getLabelAlign(Context context, T data, G group, [Set<ViewState>? status]) {
+    if (labelAlignFun != null) {
+      return labelAlignFun!.call(data, group, status ?? {});
+    }
+    if (labelAlign != null) {
+      return labelAlign!;
+    }
+    if (direction == Direction.vertical) {
+      return const ChartAlign(align: Alignment.topCenter, inside: false);
+    } else {
+      return const ChartAlign(align: Alignment.centerRight, inside: false);
+    }
+  }
+
 }
 
 ///动画样式

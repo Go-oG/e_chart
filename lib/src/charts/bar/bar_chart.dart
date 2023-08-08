@@ -2,10 +2,10 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/bar/helper/polar_helper.dart';
 import 'package:flutter/material.dart';
 
-import 'helper/bar_grid_helper2.dart';
+import 'helper/bar_grid_helper.dart';
 
 ///BarView
-class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<StackItemData, BarGroupData, BarSeries>> with GridChild, PolarChild {
+class BarView extends CoordChildView<BarSeries, StackHelper<StackItemData, BarGroupData, BarSeries>> with GridChild, PolarChild {
   ///用户优化视图绘制
   BarView(super.series);
 
@@ -172,17 +172,17 @@ class BarView extends CoordChildView<BarSeries, BaseStackLayoutHelper<StackItemD
   }
 
   @override
-  List<DynamicData> getAngleDataSet() {
+  List<DynamicData> getAngleExtreme() {
     return getAxisExtreme(0, false);
   }
 
   @override
-  List<DynamicData> getRadiusDataSet() {
+  List<DynamicData> getRadiusExtreme() {
     return getAxisExtreme(0, true);
   }
 
   @override
-  BaseStackLayoutHelper<StackItemData, BarGroupData, BarSeries> buildLayoutHelper() {
+  StackHelper<StackItemData, BarGroupData, BarSeries> buildLayoutHelper() {
     if (series.coordSystem == CoordSystem.polar) {
       return BarPolarHelper(context, series);
     } else {

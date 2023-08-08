@@ -1,4 +1,7 @@
 
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/bar/BarGridView.dart';
+
 import '../../charts/bar/bar_chart.dart';
 import '../../charts/bar/bar_series.dart';
 import '../../charts/boxplot/boxplot_chart.dart';
@@ -71,6 +74,9 @@ class DefaultSeriesConvert extends SeriesConvert {
       return LineView(series);
     }
     if (series is BarSeries) {
+      if(series.coordSystem!=CoordSystem.polar){
+        return BarGridView(series);
+      }
       return BarView(series);
     }
     if (series is CandleStickSeries) {

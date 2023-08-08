@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/line/helper/line_helper.dart';
 
 import '../line_node.dart';
 
-class LineGridHelper extends StackGridHelper<StackItemData, LineGroupData, LineSeries> implements LineHelper {
+class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries> implements LineHelper {
   List<LineNode> _lineList = [];
   List<LineNode>? _cacheLineList;
 

@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class BarSeries extends StackGridBarSeries<StackItemData, BarGroupData> {
+class BarSeries extends StackSeries<StackItemData, BarGroupData> {
   BarSeries(
     super.data, {
     super.corner,

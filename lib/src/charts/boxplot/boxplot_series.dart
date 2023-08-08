@@ -1,7 +1,7 @@
 //盒须图
 import 'package:e_chart/e_chart.dart';
 
-class BoxplotSeries extends StackGridBarSeries<BoxplotData, BoxplotGroup> {
+class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
   BoxplotSeries(
     super.data, {
     super.columnGap,
@@ -49,7 +49,7 @@ class BoxplotSeries extends StackGridBarSeries<BoxplotData, BoxplotGroup> {
   }
 }
 
-class BoxplotGroup extends StackGridBarGroupData<BoxplotData> {
+class BoxplotGroup extends StackGroupData<BoxplotData> {
   BoxplotGroup(
     super.data, {
     super.barMaxSize,

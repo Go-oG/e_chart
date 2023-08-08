@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class LineSeries extends StackGridBarSeries<StackItemData, LineGroupData> {
+class LineSeries extends StackSeries<StackItemData, LineGroupData> {
   bool connectNulls; // 是否连接空数据
 
   /// 符号样式
