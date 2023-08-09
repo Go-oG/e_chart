@@ -62,6 +62,13 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
 
   void onLegendScrollEvent(LegendScrollEvent event) {}
 
+  void onContentScrollChange(Offset offset) {}
+
+  void onContentScrollEnd(Offset offset) {}
+
+  void onContentScaleUpdate(double sx,double sy){}
+
+
   ///dataZoom
   void onDataZoom(DataZoomEvent event) {}
 

@@ -120,6 +120,12 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     layoutHelper.onGridScrollChange(scroll);
   }
 
+  @override
+  void onContentScaleUpdate(double sx, double sy) {
+    super.onContentScaleUpdate(sx, sy);
+
+  }
+
 // @override
 // bool? get clipSelf {
 //   Offset offset = layoutHelper.getTranslation();

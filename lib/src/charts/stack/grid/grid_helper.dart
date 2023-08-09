@@ -14,12 +14,14 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     var rangeValue = coord.getShowDataRange(index.axisIndex, series.isVertical);
     var startIndex = rangeValue.startIndex;
     var endIndex = rangeValue.endIndex;
-    if(list.length<=startIndex){return [];}
+    if (list.length <= startIndex) {
+      return [];
+    }
     List<GroupNode<T, P>> resultList = [];
-    for(int i=startIndex;i<=endIndex;i++){
-      if(i<list.length){
+    for (int i = startIndex; i <= endIndex; i++) {
+      if (i < list.length) {
         resultList.add(list[i]);
-      }else{
+      } else {
         break;
       }
     }
@@ -209,63 +211,6 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     doubleTween.start(context, type == LayoutType.update);
   }
 
- // final int thresholdSize = 2000;
-
-  // ///按页拆分数据(以便后续优化)
-  // ///该方法由[onLayoutEnd]调用
-  // Future<Map<int, List<SingleNode<T, P>>>> splitData(List<SingleNode<T, P>> list) async {
-  //   if (list.length <= thresholdSize) {
-  //     return splitDataByPage(list, 0, list.length);
-  //   }
-  //   Map<int, List<SingleNode<T, P>>> pageMap = {};
-  //   int l = list.length;
-  //   int c = l ~/ thresholdSize;
-  //   if (c % thresholdSize != 0) {
-  //     c++;
-  //   }
-  //   List<Future<Map<int, List<SingleNode<T, P>>>>> futureList = [];
-  //   for (int i = 0; i < c; i++) {
-  //     int s = i * thresholdSize;
-  //     int e = (i + 1) * thresholdSize;
-  //     if (e > l) {
-  //       e = l;
-  //     }
-  //     futureList.add(Future(() {
-  //       return splitDataByPage(list, s, e);
-  //     }));
-  //   }
-  //   for (var fu in futureList) {
-  //     var map = await fu;
-  //     map.forEach((key, value) {
-  //       if (!pageMap.containsKey(key)) {
-  //         pageMap[key] = value;
-  //       } else {
-  //         List<SingleNode<T, P>> tmpList = pageMap[key]!;
-  //         tmpList.addAll(value);
-  //       }
-  //     });
-  //   }
-  //   return pageMap;
-  // }
-
-  // Map<int, List<SingleNode<T, P>>> splitDataByPage(List<SingleNode<T, P>> list, int start, int end) {
-  //   Map<int, List<SingleNode<T, P>>> resultMap = {};
-  //   double w = width;
-  //   double h = height;
-  //   bool vertical = series.direction == Direction.vertical;
-  //   double size = vertical ? w : h;
-  //   for (int i = start; i < end; i++) {
-  //     var node = list[i];
-  //     Rect rect = node.rect;
-  //     double s = vertical ? rect.left : rect.top;
-  //     int index = s ~/ size;
-  //     List<SingleNode<T, P>> tmpList = resultMap[index] ?? [];
-  //     resultMap[index] = tmpList;
-  //     tmpList.add(node);
-  //   }
-  //   return resultMap;
-  // }
-
   @override
   AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
     final Rect rect = node.rect;
@@ -310,7 +255,12 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onGridScrollChange(Offset offset) {
+  void onContentScrollChange(Offset offset) {
+    onLayout(series.data, LayoutType.none);
+  }
+
+  @override
+  void onContentScaleUpdate(double sx, double sy) {
     onLayout(series.data, LayoutType.none);
   }
 

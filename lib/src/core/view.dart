@@ -11,7 +11,9 @@ abstract class ChartView with ViewStateProvider {
 
   ///存储当前节点的布局方式
   LayoutParams _layoutParams = const LayoutParams.matchAll();
+
   LayoutParams get layoutParams => _layoutParams;
+
   set layoutParams(LayoutParams p) {
     _layoutParams = p;
   }
@@ -309,6 +311,11 @@ abstract class ChartView with ViewStateProvider {
     parent?.requestLayout();
   }
 
+  void layoutSelf() {
+    forceLayout = true;
+    layout(left, top, right, bottom);
+  }
+
   void markDirty() {
     _dirty = true;
   }
@@ -459,10 +466,18 @@ abstract class ChartView with ViewStateProvider {
   int allocateDataIndex(int index) {
     return 0;
   }
-  bool ignoreAllocateDataIndex(){
+
+  bool ignoreAllocateDataIndex() {
     return false;
   }
 
+  void onContentScrollStart(Offset scroll) {}
+
+  void onContentScrollUpdate(Offset scroll) {}
+
+  void onContentScrollEnd(Offset scroll) {}
+
+  void onContentScaleUpdate(double sx, double sy) {}
 }
 
 ///实现了一个简易的手势识别器
@@ -718,6 +733,28 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     layoutHelper.onBrushEndEvent(event);
   }
 
+  @override
+  void onContentScaleUpdate(double sx, double sy) {
+    layoutHelper.onContentScaleUpdate(sx, sy);
+  }
+
+  @override
+  void onContentScrollEnd(Offset scroll) {
+    layoutHelper.onContentScrollEnd(scroll);
+  }
+
+  @override
+  void onContentScrollStart(Offset scroll) {
+    layoutHelper.onContentScrollChange(scroll);
+  }
+
+  @override
+  void onContentScrollUpdate(Offset scroll) {
+    layoutHelper.onContentScrollChange(scroll);
+  }
+
+
+
 }
 
 abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> extends SeriesView<T, L> {
@@ -728,12 +765,6 @@ abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> ext
 
   @override
   bool get enableScale => false;
-
-  void onContentScrollStart(Offset scroll) {}
-
-  void onContentScrollUpdate(Offset scroll) {}
-
-  void onContentScrollEnd(Offset scroll) {}
 }
 
 class LayoutParams {

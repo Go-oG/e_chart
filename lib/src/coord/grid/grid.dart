@@ -8,10 +8,15 @@ class Grid extends Coord {
   List<XAxis> xAxisList = [XAxis()];
   List<YAxis> yAxisList = [YAxis()];
 
+  double baseXScale;
+  double baseYScale;
+
   Grid({
     List<XAxis>? xAxisList,
     List<YAxis>? yAxisList,
     this.containLabel = false,
+    this.baseXScale = 1,
+    this.baseYScale = 1,
     super.brush,
     super.layoutParams = const LayoutParams.matchAll(padding: EdgeInsets.all(64)),
     super.toolTip,

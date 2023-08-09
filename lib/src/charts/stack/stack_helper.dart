@@ -369,9 +369,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   Offset getTranslation();
 
-  void onGridScrollChange(Offset offset) {}
-
-  void onGridScrollEnd(Offset offset) {}
 
   ///==========用户相关操作的处理=============
   SingleNode<T, P>? oldHoverNode;

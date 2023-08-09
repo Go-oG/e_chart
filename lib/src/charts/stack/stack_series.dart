@@ -50,7 +50,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   Fun4<T, G, Set<ViewState>, ChartAlign>? labelAlignFun;
 
   /// 标签样式
-  Fun4<T, G, Set<ViewState>, LabelStyle>? labelStyleFun;
+  Fun4<T, G, Set<ViewState>, LabelStyle?>? labelStyleFun;
 
   Fun4<T, G, Set<ViewState>, Corner>? cornerFun;
 

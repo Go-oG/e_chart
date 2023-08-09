@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -115,6 +117,7 @@ class GridCoordImpl extends GridCoord {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
     bool needAlignTick = false;
+
     ///收集数据信息
     Map<XAxisImpl, List<DynamicData>> extremeMap = {};
     for (var ele in props.xAxisList) {
@@ -133,51 +136,14 @@ class GridCoordImpl extends GridCoord {
       }
       extremeMap[axis] = dl;
     }
-
-    ///确定宽度
-    final w = contentBox.width;
-    double maxWidth = w;
-    for (var ele in props.xAxisList) {
-      var axis = xMap[ele]!;
-      var dl = extremeMap[axis] ?? [];
-      var tmpScale = BaseAxisImpl.toScale(axis.axis, [0, 100], dl, null);
-      if (tmpScale.isCategory) {
-        int c = tmpScale.domain.length;
-        if (maxWidth / c < 40) {
-          maxWidth = c * 40;
-        }
-      } else if (tmpScale.isTime) {
-        int c = tmpScale.tickCount - 1;
-        if (c <= 0) {
-          continue;
-        }
-        if (maxWidth / c < 8) {
-          maxWidth = c * 8;
-        }
-      } else {
-        var scale = tmpScale as LinearScale;
-        num c = (scale.domain[0] - scale.domain[1]).abs();
-        if (c <= 0) {
-          continue;
-        }
-        if (maxWidth / c < 2) {
-          maxWidth = c * 2;
-        }
-      }
-    }
-    double scale = 1;
-    if (maxWidth > w) {
-      scale = maxWidth / w;
-    }
-    scaleXFactor = scale;
-
+    scaleXFactor = props.baseXScale;
     int? splitCount;
     double topOffset = contentBox.top;
     each(topList, (value, i) {
       var axisInfo = value.axisInfo;
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var attrs = LineAxisAttrs(scale, scrollYOffset, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
+      var attrs = LineAxisAttrs(scaleXFactor, scrollYOffset, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
       topOffset -= (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
       if (needAlignTick && i == 0) {
@@ -191,7 +157,7 @@ class GridCoordImpl extends GridCoord {
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
       var attrs = LineAxisAttrs(
-        scale,
+        scaleXFactor,
         scrollXOffset,
         rect,
         rect.topLeft.translate(0, -1),
@@ -230,7 +196,7 @@ class GridCoordImpl extends GridCoord {
       }
       extremeMap[axis] = dl;
     }
-
+    scaleYFactor = props.baseYScale;
     int? splitCount;
     double rightOffset = contentBox.left;
     each(leftList, (value, i) {
@@ -357,20 +323,43 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    var sx = scaleXFactor + scale;
+    var sx = scaleXFactor + scale * cos(rotation);
     if (sx < 0.001) {
       sx = 0.001;
     }
     if (sx > 100) {
       sx = 100;
     }
-    if (sx == scaleXFactor) {
-      return;
+    bool hasChange = false;
+    if (sx != scaleXFactor) {
+      hasChange = true;
+      scaleXFactor = sx;
+      xMap.forEach((key, value) {
+        value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleXFactor));
+      });
     }
-    scaleXFactor = sx;
-    xMap.forEach((key, value) {});
-
-    invalidate();
+    var sy = scaleXFactor + scale * sin(rotation);
+    if (sy < 0.001) {
+      sy = 0.001;
+    }
+    if (sy > 100) {
+      sy = 100;
+    }
+    if (sy != scaleYFactor) {
+      hasChange = true;
+      scaleYFactor = sy;
+      yMap.forEach((key, value) {
+        value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleYFactor));
+      });
+    }
+    if (hasChange) {
+      each(children, (p0, p1) {
+        if (p0 is CoordChildView) {
+          p0.onContentScaleUpdate(scaleXFactor, scaleYFactor);
+        }
+      });
+      invalidate();
+    }
   }
 
   Offset? _axisPointerOffset;
