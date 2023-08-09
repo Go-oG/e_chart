@@ -219,16 +219,6 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   @override
-  void onContentScrollUpdate(Offset scroll) {
-    layoutHelper.onGridScrollChange(scroll);
-  }
-
-  @override
-  void onContentScrollEnd(Offset scroll) {
-    layoutHelper.onGridScrollEnd(scroll);
-  }
-
-  @override
   List<DynamicData> getAngleExtreme() {
     return getAxisExtreme(0, false);
   }
@@ -258,5 +248,4 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     });
     return series.data.length;
   }
-
 }

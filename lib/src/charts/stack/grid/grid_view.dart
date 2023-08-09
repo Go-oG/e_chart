@@ -114,17 +114,6 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
 
-  @override
-  void onContentScrollUpdate(Offset scroll) {
-    super.onContentScrollUpdate(scroll);
-    layoutHelper.onGridScrollChange(scroll);
-  }
-
-  @override
-  void onContentScaleUpdate(double sx, double sy) {
-    super.onContentScaleUpdate(sx, sy);
-
-  }
 
 // @override
 // bool? get clipSelf {
