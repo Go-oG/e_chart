@@ -12,6 +12,10 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   Map<T, SingleNode<T, P>> get nodeMap => _nodeMap;
 
+  void updateNodeMap(Map<T, SingleNode<T, P>> map) {
+    _nodeMap = map;
+  }
+
   ///存储当前屏幕上要显示的节点的数据
   ///其大小不一定等于 [_nodeMap]的大小
   Map<T, SingleNode<T, P>> showNodeMap = {};
@@ -175,7 +179,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
       return node;
     }
-
     if (valueType != null) {
       var info = series.helper.getValueInfo(group);
       if (info == null) {
@@ -207,6 +210,35 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
       return node;
     }
+    final data = markPoint.data.coord;
+    if (data != null) {
+      bool vertical = series.direction == Direction.vertical;
+      MarkPointNode node;
+      if (coordSystem == CoordSystem.polar) {
+        var coord = findPolarCoord();
+        var radius = coord.getRadius();
+        var x = data[0].convert(radius.last);
+        var xr = x / radius.last;
+        var y = data[1].convert(coord.getSweepAngle());
+        var yr = y / coord.getSweepAngle();
+        var dd = vertical ? coord.getScale(true).convertRatio(yr) : coord.getScale(false).convertRatio(xr);
+        node = MarkPointNode(markPoint, dd.toData());
+        node.offset = Offset(x, y);
+      } else {
+        var coord = findGridCoord();
+        final xIndex = group.xAxisIndex;
+        final yIndex = group.yAxisIndex;
+        var x = data[0].convert(coord.getAxisLength(xIndex, true));
+        var xr = x / coord.getAxisLength(xIndex, true);
+        var y = data[1].convert(coord.getAxisLength(yIndex, false));
+        var yr = y / coord.getAxisLength(yIndex, false);
+        var dd = vertical ? coord.getScale(yIndex, false).convertRatio(yr) : coord.getScale(xIndex, true).convertRatio(xr);
+        node = MarkPointNode(markPoint, dd.toData());
+        node.offset = Offset(x, y);
+      }
+      return node;
+    }
+
     return null;
   }
 
@@ -240,10 +272,18 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         }
       });
       _nodeMap = sm;
+      showNodeMap = sm;
       onAnimatorStart(diffResult);
     };
     doubleTween.endListener = () {
       _nodeMap = newNodeMap;
+      Map<T, SingleNode<T, P>> sm = {};
+      startMap.forEach((key, value) {
+        if (key.data != null) {
+          sm[key.data!] = key;
+        }
+      });
+      showNodeMap = sm;
       onAnimatorEnd(diffResult);
       notifyLayoutEnd();
     };

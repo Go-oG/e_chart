@@ -172,29 +172,6 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
-    var valueType = markPoint.data.valueType;
-    if (valueType != null || markPoint.data.data != null) {
-      return super.onLayoutMarkPoint(markPoint, group, newNodeMap);
-    }
-    final coord = findGridCoord();
-    bool vertical = series.direction == Direction.vertical;
-    if (markPoint.data.coord != null) {
-      var data = markPoint.data.coord!;
-      var x = data[0].convert(coord.getAxisLength(group.xAxisIndex, true));
-      var xr = x / coord.getAxisLength(group.xAxisIndex, true);
-      var y = data[1].convert(coord.getAxisLength(group.yAxisIndex, false));
-      var yr = y / coord.getAxisLength(group.yAxisIndex, false);
-      var dd =
-          vertical ? coord.getScale(group.yAxisIndex, false).convertRatio(yr) : coord.getScale(group.xAxisIndex, true).convertRatio(xr);
-      var node = MarkPointNode(markPoint, dd.toData());
-      node.offset = Offset(x, y);
-      return node;
-    }
-    return null;
-  }
-
-  @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
     List<SingleNode<T, P>> oldShowData = getNeedShowData();
     _pageMap = await splitData(newNodeList);
@@ -215,6 +192,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
         }
       });
       showNodeMap = map;
+      updateNodeMap(map);
       onAnimatorStart(diffResult);
     };
     doubleTween.endListener = () {
@@ -225,6 +203,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
         }
       }
       showNodeMap = map;
+      updateNodeMap(newNodeMap);
       onAnimatorEnd(diffResult);
       notifyLayoutEnd();
     };

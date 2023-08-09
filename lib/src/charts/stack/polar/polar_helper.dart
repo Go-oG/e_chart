@@ -140,62 +140,6 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  Future<void> onLayoutEnd(List<SingleNode<T, P>> oldNodeList, Map<T, SingleNode<T, P>> oldNodeMap, List<SingleNode<T, P>> newNodeList,
-      Map<T, SingleNode<T, P>> newNodeMap, LayoutType type) async {
-    if (series.animation == null) {
-      super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-      return;
-    }
-
-    ///动画
-    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult = DiffUtil.diff3(oldNodeList, newNodeList, (p0) => p0.data!, (b, c) {
-      return onCreateAnimatorNode(b, c);
-    });
-    final startMap = diffResult.startMap;
-    final endMap = diffResult.endMap;
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
-    doubleTween.startListener = () {
-      onAnimatorStart(diffResult);
-    };
-    doubleTween.endListener = () {
-      onAnimatorEnd(diffResult);
-      notifyLayoutEnd();
-    };
-    doubleTween.addListener(() {
-      double t = doubleTween.value;
-      each(diffResult.startList, (node, p1) {
-        onAnimatorUpdate(node, t, startMap, endMap);
-      });
-      onAnimatorUpdateEnd(diffResult, t);
-      notifyLayoutUpdate();
-    });
-    doubleTween.start(context, type == LayoutType.update);
-  }
-
-  @override
-  MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
-    var valueType = markPoint.data.valueType;
-    var polarCoord = findPolarCoord();
-    if (markPoint.data.data != null || valueType != null) {
-      return super.onLayoutMarkPoint(markPoint, group, newNodeMap);
-    }
-    if (markPoint.data.coord != null) {
-      bool vertical = series.direction == Direction.vertical;
-      var coord = markPoint.data.coord!;
-      var radius = polarCoord.getRadius();
-      var x = coord[0].convert(radius.last);
-      var xr = x / radius.last;
-      var y = coord[1].convert(polarCoord.getSweepAngle());
-      var yr = y / polarCoord.getSweepAngle();
-      var dd = vertical ? polarCoord.getScale(true).convertRatio(yr) : polarCoord.getScale(false).convertRatio(xr);
-      var node = MarkPointNode(markPoint, dd.toData());
-      node.offset = Offset(x, y);
-      return node;
-    }
-    return null;
-  }
-
-  @override
   AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
     if(type==DiffType.accessor){
       return AnimatorNode(arc: node.arc,offset: node.arc.centroid());
