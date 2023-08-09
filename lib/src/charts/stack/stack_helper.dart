@@ -221,6 +221,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   ) async {
     if (series.animation == null) {
       _nodeMap = newNodeMap;
+      showNodeMap = Map.from(newNodeMap);
       return;
     }
 

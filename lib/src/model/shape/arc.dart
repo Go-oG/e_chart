@@ -67,7 +67,7 @@ class Arc implements Shape {
   @override
   String toString() {
     return 'IR:${innerRadius.toStringAsFixed(1)} OR:${outRadius.toStringAsFixed(1)} SA:${startAngle.toStringAsFixed(1)} '
-        'EA:${endAngle.toStringAsFixed(1)}';
+        'EA:${endAngle.toStringAsFixed(1)} center:$center';
   }
 
   double get endAngle => (startAngle + sweepAngle).toDouble();
@@ -78,12 +78,12 @@ class Arc implements Shape {
     return circlePoint(r, a, center);
   }
 
-  num centerAngle(){
-    return startAngle+(sweepAngle/2);
+  num centerAngle() {
+    return startAngle + (sweepAngle / 2);
   }
 
-  bool get isEmpty{
-    return (sweepAngle.abs())==0||(outRadius-innerRadius).abs()==0;
+  bool get isEmpty {
+    return (sweepAngle.abs()) == 0 || (outRadius - innerRadius).abs() == 0;
   }
 
   Path? _closePath;

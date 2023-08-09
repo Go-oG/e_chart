@@ -10,13 +10,12 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
     bool vertical = series.direction == Direction.vertical;
-    final DynamicData tmpData = DynamicData(1000000);
     var coord = findPolarCoord();
     PolarPosition position;
     if (vertical) {
-      position = coord.dataToPosition(x, tmpData.change(groupNode.nodeList.first.getUp()));
+      position = coord.dataToPosition(x, groupNode.nodeList.first.getUp().toData());
     } else {
-      position = coord.dataToPosition(tmpData.change(groupNode.nodeList.first.getUp()), x);
+      position = coord.dataToPosition(groupNode.nodeList.first.getUp().toData(), x);
     }
     num ir = position.radius.length == 1 ? 0 : position.radius[0];
     num or = position.radius.length == 1 ? position.radius[0] : position.radius[1];
@@ -96,8 +95,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
     DynamicData tmpData = DynamicData(0);
 
     each(groupNode.nodeList, (colNode, i) {
-      int polarIndex = series.polarIndex;
-      var coord = context.findPolarCoord(polarIndex);
+      var coord = findPolarCoord();
       Arc arc;
       if (vertical) {
         var up = coord.dataToPosition(x, tmpData.change(colNode.getUp()));
@@ -142,6 +140,39 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
+  Future<void> onLayoutEnd(List<SingleNode<T, P>> oldNodeList, Map<T, SingleNode<T, P>> oldNodeMap, List<SingleNode<T, P>> newNodeList,
+      Map<T, SingleNode<T, P>> newNodeMap, LayoutType type) async {
+    if (series.animation == null) {
+      super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+      return;
+    }
+
+    ///动画
+    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult = DiffUtil.diff3(oldNodeList, newNodeList, (p0) => p0.data!, (b, c) {
+      return onCreateAnimatorNode(b, c);
+    });
+    final startMap = diffResult.startMap;
+    final endMap = diffResult.endMap;
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
+    doubleTween.startListener = () {
+      onAnimatorStart(diffResult);
+    };
+    doubleTween.endListener = () {
+      onAnimatorEnd(diffResult);
+      notifyLayoutEnd();
+    };
+    doubleTween.addListener(() {
+      double t = doubleTween.value;
+      each(diffResult.startList, (node, p1) {
+        onAnimatorUpdate(node, t, startMap, endMap);
+      });
+      onAnimatorUpdateEnd(diffResult, t);
+      notifyLayoutUpdate();
+    });
+    doubleTween.start(context, type == LayoutType.update);
+  }
+
+  @override
   MarkPointNode? onLayoutMarkPoint(MarkPoint markPoint, P group, Map<T, SingleNode<T, P>> newNodeMap) {
     var valueType = markPoint.data.valueType;
     var polarCoord = findPolarCoord();
@@ -166,6 +197,9 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
+    if(type==DiffType.accessor){
+      return AnimatorNode(arc: node.arc,offset: node.arc.centroid());
+    }
     Arc arc;
     if (series.animatorStyle == GridAnimatorStyle.expand) {
       arc = node.arc.copy(innerRadius: 0, outRadius: 0);

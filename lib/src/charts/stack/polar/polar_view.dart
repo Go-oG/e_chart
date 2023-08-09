@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 import '../stack_view.dart';
 
 abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S extends StackSeries<T, G>, L extends PolarHelper<T, G, S>>
@@ -49,7 +50,6 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
       var data = node.data!;
       var group = node.parent;
       var as = layoutHelper.buildAreaStyle(data, group, node.styleIndex, node.status);
-
       var ls = layoutHelper.buildLineStyle(data, group, node.styleIndex, node.status);
       node.areaStyle = as;
       node.lineStyle = ls;
@@ -57,7 +57,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
         return;
       }
       as?.drawPath(canvas, mPaint, node.arc.toPath(true));
-      ls?.drawPath(canvas, mPaint, node.arc.toPath(true));
+      ls?.drawPath(canvas, mPaint, node.arc.toPath(true), drawDash: true, needSplit: false);
     });
     canvas.restore();
   }

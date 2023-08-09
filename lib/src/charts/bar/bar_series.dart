@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/bar/bar_polar_view.dart';
 
-import 'BarGridView.dart';
-import 'bar_chart.dart';
+import 'bar_grid_view.dart';
 
 class BarSeries extends StackSeries<StackItemData, BarGroupData> {
   BarSeries(
@@ -38,9 +38,9 @@ class BarSeries extends StackSeries<StackItemData, BarGroupData> {
 
   @override
   ChartView? toView() {
-    if (coordSystem != CoordSystem.polar) {
-      return BarGridView(this);
+    if (coordSystem == CoordSystem.polar) {
+      return BarPolarView(this);
     }
-    return BarView(this);
+    return BarGridView(this);
   }
 }
