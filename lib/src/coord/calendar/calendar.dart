@@ -6,6 +6,7 @@ import '../../model/enums/direction.dart';
 import '../../model/range.dart';
 import '../../style/index.dart';
 import '../coord.dart';
+import '../index.dart';
 
 ///日历坐标系
 class Calendar extends Coord {
@@ -43,4 +44,9 @@ class Calendar extends Coord {
 
   @override
   CoordSystem get coordSystem => CoordSystem.calendar;
+
+  @override
+  CoordLayout<Coord>? toCoord() {
+    return CalendarCoordImpl(this);
+  }
 }

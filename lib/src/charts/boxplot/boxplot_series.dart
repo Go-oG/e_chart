@@ -1,5 +1,6 @@
 //盒须图
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/boxplot/boxplot_chart.dart';
 
 class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
   BoxplotSeries(
@@ -29,6 +30,11 @@ class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
     super.markPointFun,
     super.selectedMode,
   });
+
+  @override
+  ChartView? toView() {
+    return BoxPlotView(this);
+  }
 
   @override
   AreaStyle? getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {

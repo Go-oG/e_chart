@@ -1,3 +1,4 @@
+import 'package:e_chart/src/coord/index.dart';
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
 import '../../model/enums/direction.dart';
@@ -31,4 +32,9 @@ class Parallel extends Coord {
 
   @override
   CoordSystem get coordSystem => CoordSystem.parallel;
+
+  @override
+  CoordLayout<Coord>? toCoord() {
+    return ParallelCoordImpl(this);
+  }
 }

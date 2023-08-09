@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/heatmap/heat_map_chart.dart';
 import 'package:flutter/painting.dart';
 
 ///热力图
@@ -12,7 +13,6 @@ class HeatMapSeries extends RectSeries {
   Fun2<HeatMapData, DynamicText?>? labelFormatFun;
   Fun2<HeatMapData, AreaStyle?>? areaStyleFun;
   Fun2<HeatMapData, LineStyle?>? borderStyleFun;
-
 
   HeatMapSeries(
     this.data, {
@@ -39,6 +39,11 @@ class HeatMapSeries extends RectSeries {
     super.z,
   }) : super(polarIndex: -1, parallelIndex: -1, radarIndex: -1);
 
+  @override
+  ChartView? toView() {
+    return HeatMapView(this);
+  }
+
   AreaStyle? getAreaStyle(Context context, HeatMapData data, int index, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
       return areaStyleFun!.call(data);
@@ -55,7 +60,7 @@ class HeatMapSeries extends RectSeries {
     return theme.getBorderStyle();
   }
 
-  LabelStyle? getLabelStyle(Context context, HeatMapData data,[Set<ViewState>? status]) {
+  LabelStyle? getLabelStyle(Context context, HeatMapData data, [Set<ViewState>? status]) {
     if (labelStyleFun != null) {
       return labelStyleFun!.call(data);
     }

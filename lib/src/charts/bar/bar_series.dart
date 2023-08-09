@@ -1,5 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 
+import 'BarGridView.dart';
+import 'bar_chart.dart';
+
 class BarSeries extends StackSeries<StackItemData, BarGroupData> {
   BarSeries(
     super.data, {
@@ -33,4 +36,11 @@ class BarSeries extends StackSeries<StackItemData, BarGroupData> {
     super.tooltip,
   });
 
+  @override
+  ChartView? toView() {
+    if (coordSystem != CoordSystem.polar) {
+      return BarGridView(this);
+    }
+    return BarView(this);
+  }
 }

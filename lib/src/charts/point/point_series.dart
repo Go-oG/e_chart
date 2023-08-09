@@ -1,5 +1,8 @@
 import 'dart:ui';
 
+import 'package:e_chart/src/charts/point/point_chart.dart';
+
+import '../../core/index.dart';
 import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
 import 'point_data.dart';
@@ -36,4 +39,9 @@ class PointSeries extends RectSeries {
           radarIndex: -1,
           parallelIndex: -1,
         );
+
+  @override
+  ChartView? toView() {
+    return PointView(this);
+  }
 }

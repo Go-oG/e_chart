@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/coord/index.dart';
 
 ///雷达图坐标系
 class Radar extends CircleCoord {
@@ -57,6 +58,11 @@ class Radar extends CircleCoord {
 
   @override
   CoordSystem get coordSystem => CoordSystem.radar;
+
+  @override
+  CoordLayout<Coord>? toCoord() {
+    return RadarCoordImpl(this);
+  }
 }
 
 /// 雷达图样式

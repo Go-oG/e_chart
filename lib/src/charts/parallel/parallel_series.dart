@@ -1,3 +1,6 @@
+import 'package:e_chart/src/charts/parallel/parallel_chart.dart';
+
+import '../../core/view.dart';
 import '../../functions.dart';
 import '../../model/data.dart';
 import '../../model/enums/coordinate.dart';
@@ -31,6 +34,11 @@ class ParallelSeries extends RectSeries {
           polarIndex: -1,
           radarIndex: -1,
         );
+
+  @override
+  ChartView? toView() {
+    return ParallelView(this);
+  }
 }
 
 class ParallelGroup {

@@ -158,7 +158,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     return Offset.zero;
   }
 
-  ///返回不包含BrushView的子视图列表
+  ///返回不包含BrushView、ToolTipView的子视图列表
   List<ChartView> getChildNotComponent() {
     List<ChartView> vl = [];
     for (var v in children) {

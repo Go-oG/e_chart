@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/coord/grid/grid_coord.dart';
 import 'package:flutter/painting.dart';
 
 class Grid extends Coord {
@@ -28,4 +29,9 @@ class Grid extends Coord {
 
   @override
   CoordSystem get coordSystem => CoordSystem.grid;
+
+  @override
+  CoordLayout<Coord>? toCoord() {
+    return GridCoordImpl(this);
+  }
 }

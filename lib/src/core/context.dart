@@ -87,7 +87,8 @@ class Context {
     ];
 
     for (var ele in coordConfigList) {
-      var c = CoordFactory.instance.convert(ele);
+      CoordLayout<Coord>? c = CoordFactory.instance.convert(ele);
+      c ??= ele.toCoord();
       if (c == null) {
         throw ChartError('无法转换对应的坐标系:$ele');
       }

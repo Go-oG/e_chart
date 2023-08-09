@@ -60,7 +60,6 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T>, S
     each(series.data, (p0, p1) {
       p0.styleIndex = p1 + index;
     });
-    Logger.i("$runtimeType allocateDataIndex $index");
     return series.data.length;
   }
 

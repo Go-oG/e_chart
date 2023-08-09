@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/line/line_chart.dart';
 
 class LineSeries extends StackSeries<StackItemData, LineGroupData> {
   bool connectNulls; // 是否连接空数据
@@ -38,4 +39,9 @@ class LineSeries extends StackSeries<StackItemData, LineGroupData> {
     super.z,
     super.tooltip,
   }) : super(groupGap: SNumber.zero, columnGap: SNumber.zero);
+
+  @override
+  ChartView? toView() {
+    return LineView(this);
+  }
 }

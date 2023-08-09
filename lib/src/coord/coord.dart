@@ -41,4 +41,8 @@ abstract class Coord extends ChartNotifier<Command> {
   void notifyCoordConfigChange() {
     value = Command.configChange;
   }
+
+
+  CoordLayout? toCoord(){return null;}
+
 }

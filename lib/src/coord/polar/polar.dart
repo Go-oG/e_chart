@@ -1,4 +1,5 @@
 import 'package:e_chart/src/component/axis/radius/radius_axis.dart';
+import 'package:e_chart/src/coord/index.dart';
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
 import '../circle_coord.dart';
@@ -33,4 +34,9 @@ class Polar extends CircleCoord {
 
   @override
   CoordSystem get coordSystem => CoordSystem.polar;
+
+  @override
+  CoordLayout<Coord>? toCoord() {
+    return PolarCoordImpl(this);
+  }
 }

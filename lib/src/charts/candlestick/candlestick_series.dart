@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/candlestick/candlestick_chart.dart';
 
 class CandleStickSeries extends ChartSeries {
   List<CandleStickGroup> data;
@@ -36,6 +37,11 @@ class CandleStickSeries extends ChartSeries {
           radarIndex: -1,
           calendarIndex: -1,
         );
+
+  @override
+  ChartView? toView() {
+    return CandleStickView(this);
+  }
 
   AreaStyle? getAreaStyle(Context context, CandleStickData data, CandleStickGroup group, int groupIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {

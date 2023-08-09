@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/calendar/calendar_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/series.dart';
@@ -132,4 +133,9 @@ class CalenderSeries extends ChartSeries {
     super.clip,
     super.z,
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1);
+
+  @override
+  ChartView? toView() {
+    return CalendarView(this);
+  }
 }

@@ -1,4 +1,7 @@
 //雷达图
+import 'package:e_chart/src/charts/radar/radar_chart.dart';
+
+import '../../core/view.dart';
 import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
 import '../../model/data.dart';
@@ -36,4 +39,9 @@ class RadarSeries extends RectSeries {
     super.id,
     super.z,
   }) : super(coordSystem: CoordSystem.radar, parallelIndex: -1, gridIndex: -1, calendarIndex: -1, polarIndex: -1);
+
+  @override
+  ChartView? toView() {
+    return RadarView(this);
+  }
 }

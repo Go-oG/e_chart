@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/pie/pie_chart.dart';
 
 /// 饼图系列
 class PieSeries extends RectSeries {
@@ -71,8 +72,10 @@ class PieSeries extends RectSeries {
     super.z,
   }) : super(gridIndex: -1, parallelIndex: -1, radarIndex: -1, polarIndex: -1);
 
-
-
+  @override
+  ChartView? toView() {
+    return PieView(this);
+  }
 }
 
 enum RoseType {

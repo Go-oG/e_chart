@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/funnel/funnel_chart.dart';
 import 'package:flutter/material.dart';
 
 class FunnelSeries extends RectSeries {
@@ -53,6 +54,11 @@ class FunnelSeries extends RectSeries {
           radarIndex: -1,
           gridIndex: -1,
         );
+
+  @override
+  ChartView? toView() {
+    return FunnelView(this);
+  }
 
   AreaStyle getAreaStyle(Context context, ItemData data, int index, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {

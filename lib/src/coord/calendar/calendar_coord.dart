@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../ext/date_time_ext.dart';
 import '../../model/index.dart';
+import '../coord.dart';
 import '../coord_impl.dart';
 import 'calendar.dart';
 
@@ -22,6 +23,7 @@ abstract class CalendarCoord extends CoordLayout<Calendar> {
   List<Offset> getDateRangePolygon(DateTime start, DateTime end);
 
   bool inRange(DateTime time);
+
 }
 
 ///日历坐标系视图
