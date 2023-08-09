@@ -274,6 +274,11 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       return TimeScale(axis.timeType, resultList, range);
     }
 
+    list.sort();
+    if (!axis.start0 && list.first == 0) {
+      list.removeAt(0);
+    }
+
     if (list.length < 2) {
       if (list.length == 1) {
         list.add(list.first + 100);
@@ -295,7 +300,6 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     if (scaleFactor < 1) {
       scaleFactor = 1;
     }
-
     int spn = axis.splitNumber;
     if (spn < 2) {
       spn = 2;

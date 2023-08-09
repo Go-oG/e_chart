@@ -204,7 +204,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         for (var column in group.nodeList) {
           for (var data in column.nodeList) {
             var up = data.up;
-            var down = data.down;
             var group = data.parent;
             int index;
             if (polar) {
@@ -214,7 +213,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
             }
             num minValue = minMap[index] ?? double.infinity;
             num maxValue = maxMap[index] ?? double.negativeInfinity;
-            minValue = min([minValue, down]);
+            minValue = min([minValue, up]);
             maxValue = max([maxValue, up]);
             minMap[index] = minValue;
             maxMap[index] = maxValue;

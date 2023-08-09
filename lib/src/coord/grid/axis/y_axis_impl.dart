@@ -6,6 +6,13 @@ class YAxisImpl extends XAxisImpl {
   YAxisImpl(super.direction, super.context, super.coord, super.axis, {super.axisIndex});
 
   @override
+  BaseScale<dynamic, num> onBuildScale(LineAxisAttrs attrs, List<DynamicData> dataSet) {
+    BaseScale<dynamic, num> result = super.onBuildScale(attrs, dataSet);
+    Logger.i("onBuildScale() D:${result.domain} R:${result.range} DS:$dataSet");
+    return result;
+  }
+
+  @override
   void doMeasure(double parentWidth, double parentHeight) {
     double length = parentHeight;
     double width = 0;
@@ -47,7 +54,7 @@ class YAxisImpl extends XAxisImpl {
   List<Offset> dataToPoint(DynamicData data) {
     List<num> nl = scale.toRange(data.data);
     List<Offset> ol = [];
-    final double h=coord.contentBox.height;
+    final double h = coord.contentBox.height;
     for (var d in nl) {
       double y = d.toDouble();
       double x = axis.position == Align2.end ? coord.contentBox.width : 0;
