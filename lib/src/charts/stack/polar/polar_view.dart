@@ -9,7 +9,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
   PolarView(super.series);
 
   @override
-  void drawGroupBk(Canvas canvas) {
+  void onDrawGroupBk(Canvas canvas) {
     Set<GroupNode> rectSet = {};
     AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
     Offset offset = layoutHelper.getTranslation();
@@ -35,7 +35,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
   }
 
   @override
-  void drawBar(Canvas canvas) {
+  void onDrawBar(Canvas canvas) {
     Offset offset = layoutHelper.getTranslation();
     final map = layoutHelper.showNodeMap;
     canvas.save();
@@ -63,7 +63,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
   }
 
   @override
-  void drawBarLabel(Canvas canvas) {
+  void onDrawBarLabel(Canvas canvas) {
     Offset offset = layoutHelper.getTranslation();
     final map = layoutHelper.showNodeMap;
     canvas.save();

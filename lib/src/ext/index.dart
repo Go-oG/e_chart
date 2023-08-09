@@ -5,6 +5,7 @@ export 'offset_ext.dart';
 export 'paint_ext.dart';
 export 'paragraph_ext.dart';
 export 'path_ext.dart';
+export 'rect_ext.dart';
 export 'string_ext.dart';
 export 'text_span_ext.dart';
 export 'text_style_ext.dart';

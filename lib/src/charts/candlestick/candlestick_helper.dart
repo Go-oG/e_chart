@@ -2,127 +2,167 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import 'candlestick_node.dart';
 
 //K线图
-class CandlestickHelper extends LayoutHelper<CandleStickSeries, List<CandleStickGroup>> {
-  List<CandlestickGroupNode> nodeList = [];
+class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, CandleStickSeries> {
+  static const String _colRectK = "colRectK";
+  static const String _borderListK = "borderListK";
+  static const String _areaRectK = "areaRectK";
+  static const String _boxRectK = "boxRectK";
+
+  static const String _openK = "open";
+  static const String _closeK = "close";
+  static const String _highK = "high";
+  static const String _lowK = "low";
 
   CandlestickHelper(super.context, super.series);
 
   @override
-  void onLayout(List<CandleStickGroup> data, LayoutType type) {
-    List<CandlestickGroupNode> list = [];
-    each(data, (group, gi) {
-      var groupNode = CandlestickGroupNode(group, []);
-      each(group.data, (p0, ci) {
-        groupNode.nodeList.add(CandlestickNode(group, p0,ci,gi));
-      });
-    });
-    GridCoord coord = findGridCoord();
-    each(list, (group, p1) {
-      if (group.nodeList.isEmpty) {
-        return;
+  void onLayoutNode(ColumnNode<CandleStickData, CandleStickGroup> columnNode, AxisIndex xIndex) {
+    final Rect colRect = columnNode.rect;
+    for (var node in columnNode.nodeList) {
+      var data = node.data;
+      if (data == null) {
+        continue;
       }
-      int xIndex = group.data.xAxisIndex;
-      int yIndex = group.data.yAxisIndex;
-      Rect rect = coord.dataToRect(
-        xIndex,
-        DynamicData(group.nodeList.first.data.time),
-        yIndex,
-        DynamicData(group.nodeList.first.data.highest),
-      );
-      num size = rect.width;
-      num boxWidth = 0;
-      if (series.boxWidth != null) {
-        boxWidth = series.boxWidth!.convert(size);
-        if (boxWidth > size) {
-          boxWidth = size;
-        }
-      } else {
-        num m1 = series.boxMinWidth.convert(size);
-        num m2 = series.boxMaxWidth.convert(size);
-        boxWidth = (m1 + m2) / 2;
-        if (boxWidth > size) {
-          boxWidth = size;
-        }
-      }
-
-      each(group.nodeList, (p0, p1) {
-        _layoutSingleNode(coord, p0, boxWidth, xIndex, yIndex);
-      });
-    });
-    nodeList = list;
-
+      var group = node.parent;
+      Offset lowC = _computeOffset(colRect, data.lowest, group.xAxisIndex);
+      Offset highC = _computeOffset(colRect, data.highest, group.xAxisIndex);
+      Offset openC = _computeOffset(colRect, data.open, group.xAxisIndex);
+      Offset closeC = _computeOffset(colRect, data.close, group.xAxisIndex);
+      node.extSet(_lowK, lowC);
+      node.extSet(_highK, highC);
+      node.extSet(_openK, openC);
+      node.extSet(_closeK, closeC);
+      _setPath(node, lowC, highC, openC, closeC, colRect);
+    }
   }
 
-  void _layoutSingleNode(GridCoord coord, CandlestickNode node, num boxWidth, int xIndex, int yIndex) {
-    var data = node.data;
-    double half = boxWidth * 0.5;
-    DynamicData dd = DynamicData(data.time);
-    Offset minCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.lowest)).topCenter;
+  void _setPath(SingleNode<CandleStickData, CandleStickGroup> node, Offset lowC, Offset highC, Offset openC, Offset closeC, Rect colRect) {
+    final double tx = colRect.width / 2;
 
-    Offset openCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.open)).topCenter;
-    Offset openLeft = openCenter.translate(-half, 0);
-    Offset openRight = openCenter.translate(half, 0);
-
-    Offset closeCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.close)).topCenter;
-    Offset closeLeft = closeCenter.translate(-half, 0);
-    Offset closeRight = closeCenter.translate(half, 0);
-    Offset maxCenter = coord.dataToRect(xIndex, dd, yIndex, DynamicData(data.highest)).topCenter;
-
-    Path path = Path();
-    path.moveTo(minCenter.dx, minCenter.dy);
-    if (data.close >= data.open) {
-      path.lineTo(openCenter.dx, openCenter.dy);
-      path.moveTo(closeCenter.dx, closeCenter.dy);
-      path.lineTo(maxCenter.dx, maxCenter.dy);
+    node.extSet(_colRectK, colRect);
+    Rect boxRect = Rect.fromPoints(highC.translate(-tx, 0), lowC.translate(tx, 0));
+    Rect areaRect;
+    if (node.data!.isUp) {
+      areaRect = Rect.fromPoints(closeC.translate(-tx, 0), openC.translate(tx, 0));
     } else {
-      path.lineTo(closeCenter.dx, closeCenter.dy);
-      path.moveTo(openCenter.dx, openCenter.dy);
-      path.lineTo(maxCenter.dx, maxCenter.dy);
+      areaRect = Rect.fromPoints(openC.translate(-tx, 0), closeC.translate(tx, 0));
     }
-    node.path = path;
-    path = Path();
-    path.moveTo(openLeft.dx, openLeft.dy);
-    path.lineTo(openRight.dx, openRight.dy);
-    path.lineTo(closeRight.dx, closeRight.dy);
-    path.lineTo(closeLeft.dx, closeLeft.dy);
-    path.close();
-    node.areaPath = path;
+
+    List<List<Offset>> borderList = [];
+    borderList.add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
+    if (node.data!.isUp) {
+      borderList.add([lowC, openC]);
+      borderList.add([closeC, highC]);
+    } else {
+      borderList.add([lowC, closeC]);
+      borderList.add([openC, highC]);
+    }
+    node.extSet(_areaRectK, areaRect);
+    node.extSet(_borderListK, borderList);
+    node.extSet(_boxRectK, boxRect);
   }
 
-  CandlestickNode? oldNode;
+  Offset _computeOffset(Rect colRect, num data, int axisIndex) {
+    var coord = findGridCoord();
+    return Offset((colRect.left + colRect.right) / 2, coord.dataToPoint(axisIndex, data.toData(), false).first.dy);
+  }
 
-  CandlestickNode? hoverEnter(Offset offset) {
-    CandlestickNode? curNode = findNode(offset);
-    if (curNode == oldNode) {
-      return null;
-    }
-    if (oldNode != null) {
-      oldNode?.removeStates([ViewState.hover, ViewState.focused]);
-    }
-    oldNode = curNode;
-    curNode?.addStates([ViewState.hover, ViewState.focused]);
-    notifyLayoutUpdate();
-    return curNode;
+//=====================
+
+  @override
+  DynamicData getUpValue(SingleNode<CandleStickData, CandleStickGroup> node) {
+    return node.data!.highest.toData();
   }
 
   @override
-  void onHoverEnd() {
-    if (oldNode != null) {
-      oldNode?.removeStates([ViewState.hover, ViewState.focused]);
-      oldNode = null;
-      notifyLayoutUpdate();
-    }
+  DynamicData getDownValue(SingleNode<CandleStickData, CandleStickGroup> node) {
+    return node.data!.lowest.toData();
   }
 
-  CandlestickNode? findNode(Offset offset) {
-    var of = context.findGridCoord().getTranslation();
-    offset = offset.translate(of.dx, of.dy);
-    for (var group in nodeList) {
-      for (var node in group.nodeList) {
-        if (node.path.contains(offset)) {
+  @override
+  AnimatorNode onCreateAnimatorNode(SingleNode<CandleStickData, CandleStickGroup> node, DiffType type) {
+    if (node.data == null) {
+      return AnimatorNode();
+    }
+    if (type == DiffType.accessor) {
+      var an = AnimatorNode();
+      an.extSetAll(node.extGetAll());
+      return an;
+    }
+    Offset tmp = node.extGet(_openK);
+    var an = AnimatorNode();
+    an.extSet(_colRectK, node.extGet(_colRectK));
+    an.extSet(_lowK, tmp);
+    an.extSet(_openK, tmp);
+    an.extSet(_closeK, tmp);
+    an.extSet(_highK, tmp);
+    return an;
+  }
+
+  @override
+  void onAnimatorUpdate(var node, double t, var startMap, var endMap) {
+    var s = startMap[node];
+    var e = endMap[node];
+    if (s == null || e == null) {
+      return;
+    }
+    Rect colRect = s.extGet(_colRectK);
+    Offset soo = s.extGet(_openK);
+    Offset sco = s.extGet(_closeK);
+    Offset sho = s.extGet(_highK);
+    Offset slo = s.extGet(_lowK);
+
+    Offset eoo = e.extGet(_openK);
+    Offset eco = e.extGet(_closeK);
+    Offset eho = e.extGet(_highK);
+    Offset elo = e.extGet(_lowK);
+
+    Offset oo = Offset.lerp(soo, eoo, t)!;
+    Offset co = Offset.lerp(sco, eco, t)!;
+    Offset ho = Offset.lerp(sho, eho, t)!;
+    Offset lo = Offset.lerp(slo, elo, t)!;
+    _setPath(node, lo, ho, oo, co, colRect);
+  }
+
+  List<List<Offset>> getBorderList(SingleNode<CandleStickData, CandleStickGroup> node) {
+    return node.extGet(_borderListK);
+  }
+
+  Rect getAreaRect(SingleNode<CandleStickData, CandleStickGroup> node) {
+    return node.extGet(_areaRectK);
+  }
+
+  @override
+  Map<int, List<SingleNode<CandleStickData, CandleStickGroup>>> splitDataByPage(var list, int start, int end) {
+    Map<int, List<SingleNode<CandleStickData, CandleStickGroup>>> resultMap = {};
+    double w = width;
+    double h = height;
+    bool vertical = series.direction == Direction.vertical;
+    double size = vertical ? w : h;
+    for (int i = start; i < end; i++) {
+      var node = list[i];
+      Rect rect = node.extGet(_boxRectK);
+      double s = vertical ? rect.left : rect.top;
+      int index = s ~/ size;
+      List<SingleNode<CandleStickData, CandleStickGroup>> tmpList = resultMap[index] ?? [];
+      resultMap[index] = tmpList;
+      tmpList.add(node);
+    }
+    return resultMap;
+  }
+
+  @override
+  SingleNode<CandleStickData, CandleStickGroup>? findNode(Offset offset) {
+    for (var node in nodeMap.values) {
+      Rect? ar = node.extGet(_areaRectK);
+      if (ar != null && ar.contains2(offset)) {
+        return node;
+      }
+      List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
+      for (var l in bl) {
+        if (offset.inPolygon(l)) {
           return node;
         }
       }
@@ -131,6 +171,5 @@ class CandlestickHelper extends LayoutHelper<CandleStickSeries, List<CandleStick
   }
 
   @override
-
   SeriesType get seriesType => SeriesType.candlestick;
 }

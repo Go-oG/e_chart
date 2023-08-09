@@ -20,20 +20,20 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T>, S
 
   @override
   void onDraw(Canvas canvas) {
-    drawGroupBk(canvas);
-    drawBar(canvas);
-    drawBarLabel(canvas);
-    drawMakeLineAndMarkPoint(canvas);
+    onDrawGroupBk(canvas);
+    onDrawBar(canvas);
+    onDrawBarLabel(canvas);
+    onDrawMark(canvas);
   }
 
-  void drawGroupBk(Canvas canvas) {}
+  void onDrawGroupBk(Canvas canvas) {}
 
-  void drawBar(Canvas canvas) {}
+  void onDrawBar(Canvas canvas) {}
 
-  void drawBarLabel(Canvas canvas) {}
+  void onDrawBarLabel(Canvas canvas) {}
 
   /// 绘制标记线和点
-  void drawMakeLineAndMarkPoint(Canvas canvas) {
+  void onDrawMark(Canvas canvas) {
     var markLineFun = series.markLineFun;
     var markPointFun = series.markPointFun;
     var markPoint = series.markPoint;

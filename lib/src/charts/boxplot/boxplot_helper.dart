@@ -15,7 +15,6 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   static const String _maxCK = "maxC";
   static const String _colRectK = "colRect";
 
-
   @override
   DynamicData getUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
     return node.data!.max.toData();

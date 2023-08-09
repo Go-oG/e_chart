@@ -21,6 +21,10 @@ mixin ExtProps {
   }
 
   T extGet<T>(String key) {
+    return extGetNull(key)!;
+  }
+
+  T? extGetNull<T>(String key) {
     return _extendProps[key];
   }
 

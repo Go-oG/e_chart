@@ -1,13 +1,8 @@
 import 'dart:ui';
-import 'package:e_chart/src/ext/paint_ext.dart';
-import 'package:e_chart/src/ext/path_ext.dart';
-import 'package:e_chart/src/model/corner.dart';
-
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../component/shader/shader.dart' as sd;
 
-import '../core/view_state.dart';
-import '../model/shape/index.dart';
 
 /// 区域样式
 class AreaStyle {
@@ -70,18 +65,7 @@ class AreaStyle {
       path.addRect(rect);
       path.close();
     } else {
-      var lt = Radius.circular(corner.leftTop);
-      var rt = Radius.circular(corner.rightTop);
-      var lb = Radius.circular(corner.leftBottom);
-      var rb = Radius.circular(corner.rightBottom);
-      var r = RRect.fromRectAndCorners(
-        rect,
-        topLeft: lt,
-        topRight: rt,
-        bottomLeft: lb,
-        bottomRight: rb,
-      );
-      path.addRRect(r);
+      path.addRRect(rect.toRRect(corner));
       path.close();
     }
     drawPath(canvas, paint, path);

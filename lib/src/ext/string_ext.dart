@@ -8,4 +8,16 @@ extension StringExt on String {
   DynamicData toData() {
     return DynamicData(this);
   }
+
+  num toNum() {
+    return double.parse(this);
+  }
+
+  double toDouble() {
+    return double.parse(this);
+  }
+
+  int toInt() {
+    return int.parse(this);
+  }
 }

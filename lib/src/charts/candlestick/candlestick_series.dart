@@ -3,28 +3,27 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/candlestick/candlestick_chart.dart';
 
-class CandleStickSeries extends ChartSeries {
-  List<CandleStickGroup> data;
-  SNumber boxMinWidth;
-  SNumber boxMaxWidth;
-  SNumber? boxWidth;
-
-  bool hoverAnimation;
-
-  Fun3<CandleStickData, CandleStickGroup, AreaStyle>? areaStyleFun;
-  Fun3<CandleStickData, CandleStickGroup, LineStyle>? borderStyleFun;
-
+class CandleStickSeries extends StackSeries<CandleStickData, CandleStickGroup> {
   CandleStickSeries(
-    this.data, {
+    super.data, {
     super.gridIndex = 0,
-    this.boxMinWidth = const SNumber.number(24),
-    this.boxMaxWidth = const SNumber.number(48),
-    this.boxWidth,
-    this.hoverAnimation = true,
-    this.areaStyleFun,
-    this.borderStyleFun,
-    super.name = '',
-    super.animation,
+    super.areaStyleFun,
+    super.columnGap,
+    super.corner,
+    super.groupGap,
+    super.groupStyleFun,
+    super.innerGap,
+    super.labelAlignFun,
+    super.labelFormatFun,
+    super.labelStyle,
+    super.labelStyleFun,
+    super.legendHoverLink,
+    super.lineStyleFun,
+    super.markLine,
+    super.markLineFun,
+    super.markPoint,
+    super.markPointFun,
+    super.animation = const AnimatorAttrs(duration: Duration(milliseconds: 800), updateDuration: Duration(milliseconds: 500)),
     super.tooltip,
     super.backgroundColor,
     super.id,
@@ -32,10 +31,10 @@ class CandleStickSeries extends ChartSeries {
     super.z,
   }) : super(
           coordSystem: CoordSystem.grid,
-          parallelIndex: -1,
           polarIndex: -1,
-          radarIndex: -1,
-          calendarIndex: -1,
+          direction: Direction.vertical,
+          realtimeSort: false,
+          selectedMode: SelectedMode.single,
         );
 
   @override
@@ -43,9 +42,13 @@ class CandleStickSeries extends ChartSeries {
     return CandleStickView(this);
   }
 
-  AreaStyle? getAreaStyle(Context context, CandleStickData data, CandleStickGroup group, int groupIndex, [Set<ViewState>? status]) {
+  @override
+  AreaStyle? getAreaStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group);
+      return areaStyleFun?.call(data, group, status ?? {});
+    }
+    if (data == null) {
+      return null;
     }
     var theme = context.option.theme.kLineTheme;
     if (theme.fill) {
@@ -55,9 +58,13 @@ class CandleStickSeries extends ChartSeries {
     return null;
   }
 
-  LineStyle? getBorderStyle(Context context, CandleStickData data, CandleStickGroup group, int groupIndex, [Set<ViewState>? status]) {
-    if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, group);
+  @override
+  LineStyle? getLineStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex, [Set<ViewState>? status]) {
+    if (lineStyleFun != null) {
+      return lineStyleFun!.call(data, group, status ?? {});
+    }
+    if (data == null) {
+      return null;
     }
     var theme = context.option.theme.kLineTheme;
     Color color = data.isUp ? theme.upColor : theme.downColor;
@@ -65,22 +72,26 @@ class CandleStickSeries extends ChartSeries {
   }
 }
 
-class CandleStickGroup {
-  int xAxisIndex;
-  int yAxisIndex;
-  List<CandleStickData> data;
-
-  CandleStickGroup(this.data, {this.xAxisIndex = 0, this.yAxisIndex = 0});
+class CandleStickGroup extends StackGroupData<CandleStickData> {
+  CandleStickGroup(
+    super.data, {
+    super.xAxisIndex = 0,
+    super.yAxisIndex = 0,
+    super.barMaxSize,
+    super.barMinSize,
+    super.barSize,
+    super.id,
+    super.styleIndex,
+  });
 }
 
-class CandleStickData {
-  DateTime time;
+class CandleStickData extends StackItemData {
+  DynamicData time;
   double highest;
   double lowest;
   double open;
   double close;
   double lastClose;
-  DynamicText? label;
 
   CandleStickData({
     required this.time,
@@ -89,8 +100,9 @@ class CandleStickData {
     required this.lowest,
     required this.highest,
     required this.lastClose,
-    this.label,
-  });
+    super.label,
+    super.id,
+  }) : super(time, max([highest, close]).toData());
 
   bool get isUp => close >= lastClose;
 }
