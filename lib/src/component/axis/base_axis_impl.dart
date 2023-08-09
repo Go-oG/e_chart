@@ -225,7 +225,11 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       return CategoryScale(sl, range, axis.categoryCenter);
     }
     List<DynamicData> ds = [...dataSet];
-    ds.add(DynamicData(axis.min));
+    if (axis.min != null) {
+      if (axis.min != 0 || axis.start0) {
+        ds.add(DynamicData(axis.min));
+      }
+    }
     if (axis.max != null) {
       ds.add(DynamicData(axis.max));
     }
@@ -274,7 +278,11 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       if (list.length == 1) {
         list.add(list.first + 100);
       } else {
-        list.addAll([0, 100]);
+        if (axis.start0) {
+          list.addAll([0, 100]);
+        } else {
+          list.addAll([1, 100]);
+        }
       }
     }
 

@@ -62,5 +62,4 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T>, S
     });
     return series.data.length;
   }
-
 }

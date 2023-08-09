@@ -20,7 +20,7 @@ abstract class BaseAxis {
   Fun2<DateTime, DynamicText>? timeFormatFun;
 
   ///数值轴相关
-  num min;
+  num? min;
   num? max;
   bool start0;
   int splitNumber;
@@ -58,7 +58,7 @@ abstract class BaseAxis {
     this.timeType = TimeType.day,
     this.timeFormatFun,
     this.inverse = false,
-    this.min = 0,
+    this.min,
     this.max,
     this.start0 = true,
     this.splitNumber = 5,

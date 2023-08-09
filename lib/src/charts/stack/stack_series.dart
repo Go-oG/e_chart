@@ -201,6 +201,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     }
   }
 
+  bool get isVertical => direction == Direction.vertical;
 }
 
 ///动画样式

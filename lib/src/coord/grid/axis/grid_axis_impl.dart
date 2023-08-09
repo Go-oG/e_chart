@@ -498,4 +498,17 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     return [startIndex, endIndex];
   }
+
+  ///获取坐标轴当前显示范围的数据值
+  RangeInfo getShowDataRange() {
+    int tickCount = scale.tickCount;
+    if (tickCount <= 0) {
+      tickCount = 1;
+    }
+    final distance = attrs.distance;
+    final double interval = distance / (tickCount - 1);
+    List<int> indexList = computeIndex(distance, tickCount, interval);
+    List<dynamic> dl = scale.getRangeLabel(indexList[0], indexList[1]);
+    return RangeInfo(DynamicData(dl.first), DynamicData(dl.last), indexList[0], indexList[1]);
+  }
 }

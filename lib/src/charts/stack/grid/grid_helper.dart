@@ -6,36 +6,24 @@ import 'package:flutter/animation.dart';
 ///适用于GridCoord坐标系的布局帮助者
 abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>> extends StackHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
-  Map<int, List<SingleNode<T, P>>> _pageMap = {};
-
   GridHelper(super.context, super.series);
 
-  List<SingleNode<T, P>> getPageData(List<int> pages) {
-    List<SingleNode<T, P>> list = [];
-    final map = _pageMap;
-    for (int page in pages) {
-      var tmp = map[page];
-      if (tmp == null || tmp.isEmpty) {
-        continue;
+  @override
+  List<GroupNode<T, P>> onComputeNeedLayoutData(AxisIndex index, List<GroupNode<T, P>> list) {
+    var coord = findGridCoord();
+    var rangeValue = coord.getShowDataRange(index.axisIndex, series.isVertical);
+    var startIndex = rangeValue.startIndex;
+    var endIndex = rangeValue.endIndex;
+    if(list.length<=startIndex){return [];}
+    List<GroupNode<T, P>> resultList = [];
+    for(int i=startIndex;i<=endIndex;i++){
+      if(i<list.length){
+        resultList.add(list[i]);
+      }else{
+        break;
       }
-      list.addAll(tmp);
     }
-    return list;
-  }
-
-  ///获取要显示的数据
-  List<SingleNode<T, P>> getNeedShowData() {
-    Offset offset = getTranslation();
-    int startIndex, endIndex;
-    bool vertical = series.direction == Direction.vertical;
-    double size = vertical ? width : height;
-    double scroll = vertical ? offset.dx : offset.dy;
-    scroll = scroll.abs();
-    startIndex = scroll ~/ size;
-    endIndex = (scroll + size) ~/ size;
-    endIndex += 1;
-    List<int> pages = List.generate(endIndex - startIndex, (index) => index + startIndex);
-    return getPageData(pages);
+    return resultList;
   }
 
   @override
@@ -173,12 +161,15 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
-    List<SingleNode<T, P>> oldShowData = getNeedShowData();
-    _pageMap = await splitData(newNodeList);
-    List<SingleNode<T, P>> showData = getNeedShowData();
+    if (series.animation == null || type == LayoutType.none) {
+      super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+      return;
+    }
+
+    List<SingleNode<T, P>> oldShowData = List.from(showNodeMap.values);
 
     ///动画
-    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult = DiffUtil.diff3(oldShowData, showData, (p0) => p0.data!, (b, c) {
+    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult = DiffUtil.diff3(oldShowData, newNodeList, (p0) => p0.data!, (b, c) {
       return onCreateAnimatorNode(b, c);
     });
     final startMap = diffResult.startMap;
@@ -218,62 +209,62 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     doubleTween.start(context, type == LayoutType.update);
   }
 
-  final int thresholdSize = 2000;
+ // final int thresholdSize = 2000;
 
-  ///按页拆分数据(以便后续优化)
-  ///该方法由[onLayoutEnd]调用
-  Future<Map<int, List<SingleNode<T, P>>>> splitData(List<SingleNode<T, P>> list) async {
-    if (list.length <= thresholdSize) {
-      return splitDataByPage(list, 0, list.length);
-    }
-    Map<int, List<SingleNode<T, P>>> pageMap = {};
-    int l = list.length;
-    int c = l ~/ thresholdSize;
-    if (c % thresholdSize != 0) {
-      c++;
-    }
-    List<Future<Map<int, List<SingleNode<T, P>>>>> futureList = [];
-    for (int i = 0; i < c; i++) {
-      int s = i * thresholdSize;
-      int e = (i + 1) * thresholdSize;
-      if (e > l) {
-        e = l;
-      }
-      futureList.add(Future(() {
-        return splitDataByPage(list, s, e);
-      }));
-    }
-    for (var fu in futureList) {
-      var map = await fu;
-      map.forEach((key, value) {
-        if (!pageMap.containsKey(key)) {
-          pageMap[key] = value;
-        } else {
-          List<SingleNode<T, P>> tmpList = pageMap[key]!;
-          tmpList.addAll(value);
-        }
-      });
-    }
-    return pageMap;
-  }
+  // ///按页拆分数据(以便后续优化)
+  // ///该方法由[onLayoutEnd]调用
+  // Future<Map<int, List<SingleNode<T, P>>>> splitData(List<SingleNode<T, P>> list) async {
+  //   if (list.length <= thresholdSize) {
+  //     return splitDataByPage(list, 0, list.length);
+  //   }
+  //   Map<int, List<SingleNode<T, P>>> pageMap = {};
+  //   int l = list.length;
+  //   int c = l ~/ thresholdSize;
+  //   if (c % thresholdSize != 0) {
+  //     c++;
+  //   }
+  //   List<Future<Map<int, List<SingleNode<T, P>>>>> futureList = [];
+  //   for (int i = 0; i < c; i++) {
+  //     int s = i * thresholdSize;
+  //     int e = (i + 1) * thresholdSize;
+  //     if (e > l) {
+  //       e = l;
+  //     }
+  //     futureList.add(Future(() {
+  //       return splitDataByPage(list, s, e);
+  //     }));
+  //   }
+  //   for (var fu in futureList) {
+  //     var map = await fu;
+  //     map.forEach((key, value) {
+  //       if (!pageMap.containsKey(key)) {
+  //         pageMap[key] = value;
+  //       } else {
+  //         List<SingleNode<T, P>> tmpList = pageMap[key]!;
+  //         tmpList.addAll(value);
+  //       }
+  //     });
+  //   }
+  //   return pageMap;
+  // }
 
-  Map<int, List<SingleNode<T, P>>> splitDataByPage(List<SingleNode<T, P>> list, int start, int end) {
-    Map<int, List<SingleNode<T, P>>> resultMap = {};
-    double w = width;
-    double h = height;
-    bool vertical = series.direction == Direction.vertical;
-    double size = vertical ? w : h;
-    for (int i = start; i < end; i++) {
-      var node = list[i];
-      Rect rect = node.rect;
-      double s = vertical ? rect.left : rect.top;
-      int index = s ~/ size;
-      List<SingleNode<T, P>> tmpList = resultMap[index] ?? [];
-      resultMap[index] = tmpList;
-      tmpList.add(node);
-    }
-    return resultMap;
-  }
+  // Map<int, List<SingleNode<T, P>>> splitDataByPage(List<SingleNode<T, P>> list, int start, int end) {
+  //   Map<int, List<SingleNode<T, P>>> resultMap = {};
+  //   double w = width;
+  //   double h = height;
+  //   bool vertical = series.direction == Direction.vertical;
+  //   double size = vertical ? w : h;
+  //   for (int i = start; i < end; i++) {
+  //     var node = list[i];
+  //     Rect rect = node.rect;
+  //     double s = vertical ? rect.left : rect.top;
+  //     int index = s ~/ size;
+  //     List<SingleNode<T, P>> tmpList = resultMap[index] ?? [];
+  //     resultMap[index] = tmpList;
+  //     tmpList.add(node);
+  //   }
+  //   return resultMap;
+  // }
 
   @override
   AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
@@ -320,20 +311,12 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
   @override
   void onGridScrollChange(Offset offset) {
-    super.onGridScrollChange(offset);
-    var list = getNeedShowData();
-    Map<T, SingleNode<T, P>> map = {};
-    for (var node in list) {
-      if (node.data != null) {
-        map[node.data!] = node;
-      }
-    }
-    showNodeMap = map;
+    onLayout(series.data, LayoutType.none);
   }
 
   @override
   SingleNode<T, P>? findNode(Offset offset) {
-    for (var ele in getNeedShowData()) {
+    for (var ele in showNodeMap.values) {
       if (ele.rect.contains(offset)) {
         return ele;
       }

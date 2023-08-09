@@ -34,5 +34,6 @@ export 'constans.dart';
 export 'data.dart';
 export '../charts/point/point_data.dart';
 export 'range.dart';
+export 'range_info.dart';
 export 'string_number.dart';
 export 'text_info.dart';

@@ -102,7 +102,7 @@ class ToolTipView extends LinearLayout {
   }
 
   @override
-  bool? get clipChild => true;
+  bool? get clipSelf => true;
 
   @override
   void onDrawBackground(Canvas canvas) {

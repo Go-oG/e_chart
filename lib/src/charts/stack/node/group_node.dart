@@ -20,15 +20,43 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
   Arc arc = Arc();
 
   DynamicData getX() {
+    var result = getXNodeNull();
+    if (result != null) {
+      return result.data!.x;
+    }
+    throw ChartError("无法找到对应的横坐标");
+  }
+
+  DynamicData getY() {
+    var result = getYNodeNull();
+    if (result != null) {
+      return result.data!.y;
+    }
+    throw ChartError("无法找到对应的横坐标");
+  }
+
+  SingleNode<T, P>? getXNodeNull() {
     for (var list in nodeList) {
       for (var node in list.nodeList) {
         var x = node.data?.x;
         if (x != null) {
-          return x;
+          return node;
         }
       }
     }
-    throw ChartError("无法找到对应的横坐标");
+    return null;
+  }
+
+  SingleNode<T, P>? getYNodeNull() {
+    for (var list in nodeList) {
+      for (var node in list.nodeList) {
+        var y = node.data?.y;
+        if (y != null) {
+          return node;
+        }
+      }
+    }
+    return null;
   }
 
   int getYAxisIndex() {

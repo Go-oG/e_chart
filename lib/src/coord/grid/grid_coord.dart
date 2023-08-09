@@ -115,7 +115,6 @@ class GridCoordImpl extends GridCoord {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
     bool needAlignTick = false;
-
     ///收集数据信息
     Map<XAxisImpl, List<DynamicData>> extremeMap = {};
     for (var ele in props.xAxisList) {
@@ -340,7 +339,6 @@ class GridCoordImpl extends GridCoord {
         }
       });
     }
-
     invalidate();
   }
 
@@ -480,7 +478,7 @@ class GridCoordImpl extends GridCoord {
 
   @override
   List<Offset> dataToPoint(int axisIndex, DynamicData data, bool xAxis) {
-    var axis=xAxis?getXAxis(axisIndex):getYAxis(axisIndex);
+    var axis = xAxis ? getXAxis(axisIndex) : getYAxis(axisIndex);
     return axis.dataToPoint(data);
   }
 
@@ -597,6 +595,26 @@ class GridCoordImpl extends GridCoord {
     return yMap[yAxis]!.attrs.rect.width;
   }
 
+  @override
+  RangeInfo getShowDataRange(int axisIndex, bool isXAxis) {
+    if (axisIndex < 0) {
+      axisIndex = 0;
+    }
+    BaseGridAxisImpl axisImpl;
+    if (isXAxis) {
+      if (axisIndex > props.xAxisList.length) {
+        throw ChartError("越界");
+      }
+      axisImpl = xMap[props.xAxisList[axisIndex]]!;
+    } else {
+      if (axisIndex > props.yAxisList.length) {
+        throw ChartError("越界");
+      }
+      axisImpl = yMap[props.yAxisList[axisIndex]]!;
+    }
+    return axisImpl.getShowDataRange();
+  }
+
   XAxisImpl getXAxis(int xAxisIndex) {
     if (xAxisIndex < 0) {
       xAxisIndex = 0;
@@ -629,6 +647,9 @@ class GridCoordImpl extends GridCoord {
 
 abstract class GridCoord extends CoordLayout<Grid> {
   GridCoord(super.props);
+
+  ///获取指定坐标轴当前的数据显示范围
+  RangeInfo getShowDataRange(int axisIndex, bool isXAxis);
 
   ///该方法适用于Bar
   Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);

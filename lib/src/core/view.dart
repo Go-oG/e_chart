@@ -247,7 +247,7 @@ abstract class ChartView with ViewStateProvider {
     }
     canvas.save();
     canvas.translate(left, top);
-    bool? clip = clipChild;
+    bool? clip = clipSelf;
     if (clip == null) {
       if (_series != null) {
         clip = _series!.clip;
@@ -263,7 +263,7 @@ abstract class ChartView with ViewStateProvider {
     return false;
   }
 
-  bool? get clipChild => null;
+  bool? get clipSelf => null;
 
   void onDrawBackground(Canvas canvas) {}
 

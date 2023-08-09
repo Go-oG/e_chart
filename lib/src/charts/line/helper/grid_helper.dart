@@ -15,16 +15,6 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   double _animatorPercent = 1;
 
   @override
-  List<SingleNode<StackItemData, LineGroupData>> getPageData(List<int> pages) {
-    return [];
-  }
-
-  @override
-  List<SingleNode<StackItemData, LineGroupData>> getNeedShowData() {
-    return [];
-  }
-
-  @override
   List<LineNode> getLineNodeList() {
     return _lineList;
   }
@@ -92,18 +82,21 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
 
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
-    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    _cacheLineList = await _layoutLineNode(newNodeList);
-  }
-
-  @override
-  Future<Map<int, List<SingleNode<StackItemData, LineGroupData>>>> splitData(var list) async {
-    return {};
+    if (series.animation == null || type == LayoutType.none) {
+      _lineList = await _layoutLineNode(newNodeList);
+      _animatorPercent = 1;
+    } else {
+      _cacheLineList = await _layoutLineNode(newNodeList);
+    }
+    await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
   }
 
   @override
   AnimatorNode onCreateAnimatorNode(var node, DiffType type) {
-    return AnimatorNode.none;
+    if (type == DiffType.accessor) {
+      return AnimatorNode(offset: node.position);
+    }
+    return AnimatorNode(offset: Offset(node.position.dx, height));
   }
 
   @override
@@ -129,9 +122,6 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   void onAnimatorEnd(var result) {
     _animatorPercent = 1;
   }
-
-  @override
-  void onGridScrollEnd(Offset offset) {}
 
   ///布局直线使用的数据
   Future<List<LineNode>> _layoutLineNode(List<SingleNode<StackItemData, LineGroupData>> list) async {

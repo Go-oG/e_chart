@@ -113,4 +113,20 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
   List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
     return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
+
+  @override
+  void onContentScrollUpdate(Offset scroll) {
+    super.onContentScrollUpdate(scroll);
+    layoutHelper.onGridScrollChange(scroll);
+  }
+
+// @override
+// bool? get clipSelf {
+//   Offset offset = layoutHelper.getTranslation();
+//   Offset maxSc = layoutHelper.findGridCoord().getMaxTranslation();
+//   if ((offset.dx.abs() == 0 && offset.dy.abs() == 0) || (maxSc.dx.abs() == offset.dx.abs() && maxSc.dy.abs() == offset.dy.abs())) {
+//     return false;
+//   }
+//   return true;
+// }
 }

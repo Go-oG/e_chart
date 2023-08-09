@@ -258,4 +258,5 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     });
     return series.data.length;
   }
+
 }

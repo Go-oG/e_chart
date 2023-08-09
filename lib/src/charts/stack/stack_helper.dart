@@ -4,6 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///用于处理堆叠数据的布局帮助者
 ///一般用于笛卡尔坐标系和极坐标系的布局
+///需要支持部分布局
 abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends LayoutHelper<S, List<P>> {
   ///该map存储当前给定数据的映射
@@ -30,6 +31,14 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onLayout(List<P> data, LayoutType type) async {
     AxisGroup<T, P> axisGroup = series.helper.result;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
+
+    ///实现局部布局
+    Map<AxisIndex, List<GroupNode<T, P>>> axisMapTmp = {};
+    axisMap.forEach((key, value) {
+      axisMapTmp[key] = onComputeNeedLayoutData(key, value);
+    });
+    axisMap = axisMapTmp;
+
     Map<T, SingleNode<T, P>> newNodeMap = {};
     axisMap.forEach((key, value) {
       for (var cv in value) {
@@ -81,6 +90,12 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     _onLayoutMarkPointAndLine(data, newNodeList, newNodeMap);
     await onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
     notifyLayoutUpdate();
+  }
+
+  ///计算需要布局的数据(默认全部)
+  ///子类可以实现该方法从而实现高效的数据刷新
+  List<GroupNode<T, P>> onComputeNeedLayoutData(AxisIndex index, List<GroupNode<T, P>> list) {
+    return list;
   }
 
   ///实现该方法从而布局单个Group(不需要布局其孩子)
@@ -251,7 +266,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     Map<T, SingleNode<T, P>> newNodeMap,
     LayoutType type,
   ) async {
-    if (series.animation == null) {
+    if (series.animation == null || type == LayoutType.none) {
       _nodeMap = newNodeMap;
       showNodeMap = Map.from(newNodeMap);
       return;
@@ -303,13 +318,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type);
 
   void onAnimatorStart(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
-    Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.startList) {
-      if (ele.data != null) {
-        map[ele.data!] = ele;
-      }
-    }
-    showNodeMap = map;
   }
 
   void onAnimatorUpdate(
@@ -322,13 +330,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onAnimatorUpdateEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result, double t) {}
 
   void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
-    Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.endList) {
-      if (ele.data != null) {
-        map[ele.data!] = ele;
-      }
-    }
-    showNodeMap = map;
   }
 
   ///=======其它函数
