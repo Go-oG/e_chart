@@ -59,7 +59,6 @@ class Context {
 
   LegendViewGroup? get legend => _legend;
 
-
   /// 创建Chart组件
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
@@ -102,8 +101,9 @@ class Context {
   void _createRenderView() {
     ///转换Series到View
     each(option.series, (series, i) {
-      series.seriesIndex=i;
+      series.seriesIndex = i;
       ChartView? view = SeriesFactory.instance.convert(series);
+      view ??= series.toView();
       if (view == null) {
         throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
       }
@@ -123,6 +123,17 @@ class Context {
       view.create(this, layout);
       view.bindSeries(key);
       layout.addView(view);
+    });
+
+    each(_coordList, (coord, p1) {
+      int index = 0;
+      for (var ele in coord.children) {
+        if (ele.ignoreAllocateDataIndex()) {
+          continue;
+        }
+        var old = index;
+        index += ele.allocateDataIndex(old);
+      }
     });
   }
 
@@ -290,7 +301,6 @@ class Context {
     Calendar calendar = option.calendarList[index];
     return _coordMap[calendar]! as CalendarCoord;
   }
-
 
   ///=======手势监听处理===============
   void addGesture(ChartGesture gesture) {

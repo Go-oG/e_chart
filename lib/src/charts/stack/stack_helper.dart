@@ -383,8 +383,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       oldAreStyleMap[node] = node.areaStyle;
       oldLineStyleMap[node] = node.lineStyle;
-      newAreStyleMap[node] = buildAreaStyle(node.data, node.parent, node.groupIndex, node.status);
-      newLineStyleMap[node] = buildLineStyle(node.data, node.parent, node.groupIndex, node.status);
+      newAreStyleMap[node] = buildAreaStyle(node.data, node.parent, node.styleIndex, node.status);
+      newLineStyleMap[node] = buildLineStyle(node.data, node.parent, node.styleIndex, node.status);
       node.areaStyle = null;
       node.lineStyle = null;
     });
@@ -521,11 +521,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return null;
   }
 
-  AreaStyle? buildAreaStyle(T? data, P group, int groupIndex, Set<ViewState>? status) {
-    return series.getAreaStyle(context, data, group, groupIndex, status);
+  AreaStyle? buildAreaStyle(T? data, P group, int styleIndex, Set<ViewState>? status) {
+    return series.getAreaStyle(context, data, group, styleIndex, status);
   }
 
-  LineStyle? buildLineStyle(T? data, P group, int groupIndex, Set<ViewState>? status) {
-    return series.getLineStyle(context, data, group, groupIndex, status);
+  LineStyle? buildLineStyle(T? data, P group, int styleIndex, Set<ViewState>? status) {
+    return series.getLineStyle(context, data, group, styleIndex, status);
   }
 }

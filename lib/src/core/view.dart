@@ -11,9 +11,7 @@ abstract class ChartView with ViewStateProvider {
 
   ///存储当前节点的布局方式
   LayoutParams _layoutParams = const LayoutParams.matchAll();
-
   LayoutParams get layoutParams => _layoutParams;
-
   set layoutParams(LayoutParams p) {
     _layoutParams = p;
   }
@@ -444,17 +442,27 @@ abstract class ChartView with ViewStateProvider {
 
   Rect get selfBoxBound => Rect.fromLTWH(0, 0, width, height);
 
-  Offset toLocalOffset(Offset globalOffset) {
-    return Offset(globalOffset.dx - _globalBoundRect.left, globalOffset.dy - _globalBoundRect.top);
+  Offset toLocal(Offset global) {
+    return Offset(global.dx - _globalBoundRect.left, global.dy - _globalBoundRect.top);
   }
 
-  Offset toGlobalOffset(Offset localOffset) {
-    return Offset(localOffset.dx + _globalBoundRect.left, localOffset.dy + _globalBoundRect.top);
+  Offset toGlobal(Offset local) {
+    return Offset(local.dx + _globalBoundRect.left, local.dy + _globalBoundRect.top);
   }
 
   bool get isDirty {
     return _dirty;
   }
+
+  ///分配索引
+  ///返回值表示消耗了好多的索引
+  int allocateDataIndex(int index) {
+    return 0;
+  }
+  bool ignoreAllocateDataIndex(){
+    return false;
+  }
+
 }
 
 ///实现了一个简易的手势识别器
@@ -496,22 +504,22 @@ abstract class GestureView extends ChartView {
     context.addGesture(gesture);
     if (enableClick) {
       gesture.click = (e) {
-        onClick(toLocalOffset(e.globalPosition));
+        onClick(toLocal(e.globalPosition));
       };
     }
     if (enableDoubleClick) {
       gesture.doubleClick = (e) {
-        onDoubleClick(toLocalOffset(e.globalPosition));
+        onDoubleClick(toLocal(e.globalPosition));
       };
     }
 
     if (enableHover) {
       gesture.hoverStart = (e) {
-        _lastHover = toLocalOffset(e.globalPosition);
+        _lastHover = toLocal(e.globalPosition);
         onHoverStart(_lastHover);
       };
       gesture.hoverMove = (e) {
-        Offset of = toLocalOffset(e.globalPosition);
+        Offset of = toLocal(e.globalPosition);
         onHoverMove(of, _lastHover);
         _lastHover = of;
       };
@@ -523,11 +531,11 @@ abstract class GestureView extends ChartView {
 
     if (enableLongPress) {
       gesture.longPressStart = (e) {
-        _lastLongPress = toLocalOffset(e.globalPosition);
+        _lastLongPress = toLocal(e.globalPosition);
         onLongPressStart(_lastLongPress);
       };
       gesture.longPressMove = (e) {
-        var offset = toLocalOffset(e.globalPosition);
+        var offset = toLocal(e.globalPosition);
         var dx = offset.dx - _lastLongPress.dx;
         var dy = offset.dy - _lastLongPress.dy;
         _lastLongPress = offset;
@@ -541,12 +549,12 @@ abstract class GestureView extends ChartView {
 
     if (enableDrag) {
       gesture.dragStart = (e) {
-        var offset = toLocalOffset(e.globalPosition);
+        var offset = toLocal(e.globalPosition);
         _lastDrag = offset;
         onDragStart(offset);
       };
       gesture.dragMove = (e) {
-        var offset = toLocalOffset(e.globalPosition);
+        var offset = toLocal(e.globalPosition);
         var dx = offset.dx - _lastDrag.dx;
         var dy = offset.dy - _lastDrag.dy;
         _lastDrag = offset;
@@ -560,10 +568,10 @@ abstract class GestureView extends ChartView {
 
     if (enableScale) {
       gesture.scaleStart = (e) {
-        onScaleStart(toLocalOffset(e.globalPosition));
+        onScaleStart(toLocal(e.globalPosition));
       };
       gesture.scaleUpdate = (e) {
-        onScaleUpdate(toLocalOffset(e.focalPoint), e.rotation, e.scale, false);
+        onScaleUpdate(toLocal(e.focalPoint), e.rotation, e.scale, false);
       };
       gesture.scaleEnd = () {
         onScaleEnd();
@@ -709,6 +717,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   void onBrushEndEvent(BrushEndEvent event) {
     layoutHelper.onBrushEndEvent(event);
   }
+
 }
 
 abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> extends SeriesView<T, L> {

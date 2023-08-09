@@ -118,7 +118,8 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     tmpNodeMap.forEach((key, value) {
       if (key.isNotStack) {
         var index = value.first.groupIndex;
-        resultList.add(buildNormalResult(index, key, value));
+        var styleIndex = value.first.styleIndex;
+        resultList.add(buildNormalResult(index, styleIndex, key, value));
       } else {
         stackMap[key] = value;
       }
@@ -133,12 +134,13 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     });
     each(keyList, (key, list) {
       var nl = stackMap[key]!;
-      resultList.add(buildStackResult(nl.first.groupIndex, key, nl, resultList, list));
+      var first = nl.first;
+      resultList.add(buildStackResult(first.groupIndex, first.styleIndex, key, nl, resultList, list));
     });
     _lineList = resultList;
   }
 
-  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
+  LineNode buildNormalResult(int groupIndex, int styleIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
     List<PathNode> borderList = _buildBorderPath(list);
     List<Offset?> ol = _collectOffset(list);
     Map<StackItemData, SymbolNode> nodeMap = {};
@@ -152,18 +154,19 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       }
       nodeMap[data] = SymbolNode(data, i, groupIndex, off, group);
     });
-    return LineNode(groupIndex, group, ol, borderList, [], nodeMap);
+    return LineNode(groupIndex, styleIndex, group, ol, borderList, [], nodeMap);
   }
 
   LineNode buildStackResult(
     int groupIndex,
+    int styleIndex,
     LineGroupData group,
     List<SingleNode<StackItemData, LineGroupData>> nodeList,
     List<LineNode> resultList,
     int curIndex,
   ) {
     if (nodeList.isEmpty) {
-      return LineNode(groupIndex, group, [], [], [], {});
+      return LineNode(groupIndex, styleIndex, group, [], [], [], {});
     }
     List<PathNode> borderList = _buildBorderPath(nodeList);
 
@@ -177,7 +180,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       nodeMap[data] = SymbolNode(data, i, groupIndex, off, group);
     });
 
-    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, [], nodeMap);
+    return LineNode(groupIndex, styleIndex, group, _collectOffset(nodeList), borderList, [], nodeMap);
   }
 
   ///公用部分
@@ -192,7 +195,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     StepType? stepType = series.stepLineFun?.call(group);
 
     each(olList, (list, p1) {
-      LineStyle? style = buildLineStyle(null, group, p1, null);
+      LineStyle? style = buildLineStyle(null, group, group.styleIndex, null);
       bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
       if (stepType == null) {
         borderList.add(PathNode(list, smooth, style?.dash ?? []));

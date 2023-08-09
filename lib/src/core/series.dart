@@ -37,7 +37,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       this.z = 0,
       this.clip = true,
       this.backgroundColor,
-      this.name='',
+      this.name = '',
       String? id})
       : super(Command.none) {
     if (id == null || id.isEmpty) {
@@ -62,6 +62,10 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       return animation!;
     }
     return const AnimatorAttrs();
+  }
+
+  ChartView? toView() {
+    return null;
   }
 }
 

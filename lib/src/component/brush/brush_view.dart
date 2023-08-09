@@ -37,12 +37,12 @@ class BrushView extends ChartView {
     context.removeGesture(_gesture);
     context.addGesture(_gesture);
     _gesture.longPressStart = (e) {
-      var offset = toLocalOffset(e.globalPosition);
+      var offset = toLocal(e.globalPosition);
       _lastDrag = offset;
       onDragStart(offset);
     };
     _gesture.longPressMove = (e) {
-      var offset = toLocalOffset(e.globalPosition);
+      var offset = toLocal(e.globalPosition);
       var dx = offset.dx - _lastDrag.dx;
       var dy = offset.dy - _lastDrag.dy;
       _lastDrag = offset;
@@ -53,7 +53,7 @@ class BrushView extends ChartView {
       onDragEnd();
     };
     _gesture.click = (e) {
-      onClick(toLocalOffset(e.globalPosition));
+      onClick(toLocal(e.globalPosition));
     };
   }
 

@@ -7,7 +7,11 @@ import 'helper/bar_grid_helper.dart';
 ///BarView
 class BarView extends CoordChildView<BarSeries, StackHelper<StackItemData, BarGroupData, BarSeries>> with GridChild, PolarChild {
   ///用户优化视图绘制
-  BarView(super.series);
+  BarView(super.series){
+    each(series.data, (p0, p1) {
+      Logger.i("$runtimeType styleIndex:${p0.styleIndex}");
+    });
+  }
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
@@ -78,9 +82,9 @@ class BarView extends CoordChildView<BarSeries, StackHelper<StackItemData, BarGr
       }
       var data = node.data!;
       var group = node.parent;
-      var as = layoutHelper.buildAreaStyle(data, group, node.groupIndex, node.status);
+      var as = layoutHelper.buildAreaStyle(data, group, node.styleIndex, node.status);
 
-      var ls = layoutHelper.buildLineStyle(data, group, node.groupIndex, node.status);
+      var ls = layoutHelper.buildLineStyle(data, group, node.styleIndex, node.status);
       node.areaStyle = as;
       node.lineStyle = ls;
       if (as == null && ls == null) {

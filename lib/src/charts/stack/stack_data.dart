@@ -3,13 +3,16 @@ import '../../utils/uuid_util.dart';
 
 class StackGroupData<T> {
   late final String id;
+  int styleIndex = 0;
   List<T?> data;
   int xAxisIndex;
   int yAxisIndex;
+
   String? _stackId;
+  StackStrategy strategy;
+
   String? get stackId => _stackId;
 
-  StackStrategy strategy;
   SNumber? barSize;
   SNumber? barMaxSize;
   SNumber? barMinSize;
@@ -24,6 +27,7 @@ class StackGroupData<T> {
     String? id,
     String? stackId,
     this.strategy = StackStrategy.all,
+    this.styleIndex = 0,
   }) {
     if (id == null || id.isEmpty) {
       this.id = randomId();

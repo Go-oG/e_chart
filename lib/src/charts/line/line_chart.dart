@@ -8,8 +8,7 @@ import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 import 'helper/line_helper.dart';
 import 'line_node.dart';
 
-class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, LineGroupData, LineSeries>>
-    with GridChild, PolarChild {
+class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, LineGroupData, LineSeries>> with GridChild, PolarChild {
   late LineHelper helper;
 
   LineView(super.series);
@@ -84,7 +83,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.borderList.isEmpty) {
       return;
     }
-    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.groupIndex, null);
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, null);
     if (ls == null) {
       return;
     }
@@ -107,7 +106,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
       return [];
     }
 
-    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.groupIndex, null);
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, null);
     lineNode.lineStyle = ls;
     Set<SymbolNode> symbolSet = {};
     for (var border in lineNode.borderList) {
@@ -130,7 +129,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.areaList.isEmpty) {
       return;
     }
-    var style = layoutHelper.buildAreaStyle(null, lineNode.data, lineNode.groupIndex, null);
+    var style = layoutHelper.buildAreaStyle(null, lineNode.data, lineNode.styleIndex, null);
     if (style == null) {
       return;
     }
@@ -142,7 +141,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   void drawAreaForPolar(Canvas canvas, LineNode node, Path path, LineTheme theme) {
-    var style = layoutHelper.buildAreaStyle(null, node.data, node.groupIndex, null);
+    var style = layoutHelper.buildAreaStyle(null, node.data, node.styleIndex, null);
     node.areaStyle = style;
     if (style == null) {
       return;
@@ -250,5 +249,13 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
       helper = h;
       return h;
     }
+  }
+
+  @override
+  int allocateDataIndex(int index) {
+    each(series.data, (p0, p1) {
+      p0.styleIndex = index + p1;
+    });
+    return series.data.length;
   }
 }

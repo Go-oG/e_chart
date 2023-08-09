@@ -155,7 +155,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     return formatNumber(data.stackUp).toText();
   }
 
-  AreaStyle? getAreaStyle(Context context, T? data, G group, int groupIndex, [Set<ViewState>? status]) {
+  AreaStyle? getAreaStyle(Context context, T? data, G group, int styleIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
       return areaStyleFun?.call(data, group, status ?? {});
     }
@@ -163,29 +163,30 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     if (this is LineSeries) {
       var theme = chartTheme.lineTheme;
       if (theme.fill) {
-        Color fillColor = chartTheme.getColor(groupIndex).withOpacity(theme.opacity);
+        Color fillColor = chartTheme.getColor(styleIndex).withOpacity(theme.opacity);
         return AreaStyle(color: fillColor).convert(status);
       }
     } else {
-      Color fillColor = chartTheme.getColor(groupIndex);
+      Color fillColor = chartTheme.getColor(styleIndex);
       return AreaStyle(color: fillColor).convert(status);
     }
     return null;
   }
 
-  LineStyle? getLineStyle(Context context, T? data, G group, int groupIndex, [Set<ViewState>? status]) {
+  LineStyle? getLineStyle(Context context, T? data, G group, int styleIndex, [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
       return lineStyleFun?.call(data, group, status ?? {});
     }
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
       var theme = chartTheme.lineTheme;
-      return theme.getLineStyle(chartTheme, groupIndex).convert(status);
+      return theme.getLineStyle(chartTheme, styleIndex).convert(status);
     } else {
       var barTheme = context.option.theme.barTheme;
       return barTheme.getBorderStyle();
     }
   }
+
   ChartAlign getLabelAlign(Context context, T data, G group, [Set<ViewState>? status]) {
     if (labelAlignFun != null) {
       return labelAlignFun!.call(data, group, status ?? {});

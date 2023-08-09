@@ -262,6 +262,18 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
 
   @override
   bool get enableScale => false;
+
+  @override
+  int allocateDataIndex(int index) {
+    int u = 0;
+    for (var c in children) {
+      if (c.ignoreAllocateDataIndex()) {
+        continue;
+      }
+      u += c.allocateDataIndex(index + u);
+    }
+    return u;
+  }
 }
 
 abstract class ViewParent {

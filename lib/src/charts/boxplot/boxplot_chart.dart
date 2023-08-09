@@ -30,8 +30,8 @@ class BoxPlotView extends SeriesView<BoxplotSeries, BoxplotHelper> with GridChil
       }
       var data = node.data!;
       var group = node.parent;
-      var as = layoutHelper.buildAreaStyle(data, group, node.groupIndex, node.status);
-      var ls = layoutHelper.buildLineStyle(data, group, node.groupIndex, node.status);
+      var as = layoutHelper.buildAreaStyle(data, group, node.styleIndex, node.status);
+      var ls = layoutHelper.buildLineStyle(data, group, node.styleIndex, node.status);
       node.areaStyle = as;
       node.lineStyle = ls;
       if (as == null && ls == null) {

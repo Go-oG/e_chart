@@ -56,7 +56,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     AxisGroup<T, P> group = AxisGroup(resultMap);
     group.mergeData();
     _extremeMap = _collectExtreme(group);
-
     return group;
   }
 
@@ -75,7 +74,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       dataMap[group] = childMap;
 
       each(group.data, (childData, i) {
-        childMap[i] = WrapData(childData, group, groupIndex, i);
+        childMap[i] = WrapData(childData, group, groupIndex, i, group.styleIndex);
       });
     });
     return OriginInfo(sortMap, dataMap);

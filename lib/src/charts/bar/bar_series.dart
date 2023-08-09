@@ -32,4 +32,5 @@ class BarSeries extends StackSeries<StackItemData, BarGroupData> {
     super.z,
     super.tooltip,
   });
+
 }
