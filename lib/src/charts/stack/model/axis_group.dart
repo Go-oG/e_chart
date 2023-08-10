@@ -1,3 +1,5 @@
+import 'package:e_chart/e_chart.dart';
+
 import '../../../model/data.dart';
 import '../../../utils/math_util.dart';
 import '../node/single_node.dart';
@@ -9,12 +11,11 @@ import 'axis_index.dart';
 class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
   ///存储不同坐标轴的数据
   final Map<AxisIndex, List<GroupNode<T, P>>> groupMap;
-
   final Map<AxisIndex, DataStore<SingleNode<T, P>>> storeMap = {};
 
   AxisGroup(this.groupMap);
 
-  void mergeData() {
+  void mergeData(Direction direction) {
     groupMap.forEach((key, value) {
       List<SingleNode<T, P>> nodeList = [];
       for (var ele in value) {
@@ -23,7 +24,12 @@ class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
           nodeList.addAll(col.nodeList);
         }
       }
-      DataStore<SingleNode<T, P>> store = DataStore(nodeList, (data) => data.data?.x);
+      DataStore<SingleNode<T, P>> store = DataStore(nodeList, (data) {
+        if (direction == Direction.vertical) {
+          return data.data?.x;
+        }
+        return data.data?.y;
+      });
       storeMap[key] = store;
     });
   }
@@ -89,7 +95,13 @@ class DataStore<T> {
     if (numList.length == 1) {
       _numBase = 1;
     } else {
-      List<num> ext = extremes(numList, (p0) => accessor.call(p0));
+      List<num> ext = extremes(numList, (p0) {
+        var td = accessor.call(p0);
+        if (td is DynamicData) {
+          return td.data;
+        }
+        return td;
+      });
       num diff = (ext.last - ext.first).abs();
       if (diff == 0) {
         diff = 1;

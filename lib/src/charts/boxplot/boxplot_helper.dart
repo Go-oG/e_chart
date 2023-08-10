@@ -25,7 +25,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  void onLayoutNode(var columnNode,AxisIndex xIndex, LayoutType type) {
+  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
@@ -33,7 +33,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
       if (data == null) {
         continue;
       }
-      if(!needLayoutForNode(node, type)){
+      if (!needLayoutForNode(node, type)) {
         continue;
       }
       var group = node.parent;
@@ -53,8 +53,8 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<BoxplotData, BoxplotGroup> node, DiffType type) {
-    if (type == DiffType.accessor) {
+  AnimatorNode onCreateAnimatorNode(SingleNode<BoxplotData, BoxplotGroup> node, DiffType diffType, LayoutType type) {
+    if (diffType == DiffType.accessor) {
       var an = AnimatorNode();
       an.extSetAll(node.extGetAll());
       return an;
@@ -117,7 +117,8 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
     if (vertical) {
       boxRect = Rect.fromPoints(maxC.translate(-tx, 0), minC.translate(tx, 0));
       areaRect = Rect.fromPoints(upC.translate(-tx, 0), downC.translate(tx, 0));
-      borderList.add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
+      borderList
+          .add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
       borderList.add([minC, downC]);
       borderList.add([upC, maxC]);
       for (var c in [minC, maxC, middleC]) {
@@ -127,13 +128,14 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
       boxRect = Rect.fromPoints(minC.translate(0, -ty), maxC.translate(0, ty));
       areaRect = Rect.fromPoints(downC.translate(0, -ty), upC.translate(0, ty));
       borderList.add([minC, downC]);
-      borderList.add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
+      borderList
+          .add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
       borderList.add([upC, maxC]);
       for (var c in [minC, maxC, middleC]) {
         borderList.add([c.translate(0, -ty), c.translate(0, ty)]);
       }
     }
-    node.rect=areaRect;
+    node.rect = areaRect;
     node.extSet(_borderListK, borderList);
     node.extSet(_boxRectK, boxRect);
   }
@@ -156,7 +158,6 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   Rect getAreaRect(SingleNode<BoxplotData, BoxplotGroup> node) {
     return node.rect;
   }
-
 
   @override
   SeriesType get seriesType => SeriesType.boxplot;

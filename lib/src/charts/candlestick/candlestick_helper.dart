@@ -81,11 +81,11 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<CandleStickData, CandleStickGroup> node, DiffType type) {
+  AnimatorNode onCreateAnimatorNode(SingleNode<CandleStickData, CandleStickGroup> node, DiffType diffType,LayoutType type) {
     if (node.data == null) {
       return AnimatorNode();
     }
-    if (type == DiffType.accessor) {
+    if (diffType == DiffType.accessor) {
       var an = AnimatorNode();
       an.extSetAll(node.extGetAll());
       return an;

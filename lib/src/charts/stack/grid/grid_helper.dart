@@ -4,18 +4,99 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///适用于GridCoord坐标系的布局帮助者
-abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>> extends StackHelper<T, P, S> {
+abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
+    extends StackHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
-  GridHelper(super.context, super.series);
+  GridHelper(super.context, super.series) {
+    series.addListener(handleCommand);
+  }
+
+  @override
+  void dispose() {
+    series.removeListener(handleCommand);
+    super.dispose();
+  }
+
+  void handleCommand() {
+    var c = series.value;
+    if (c.code == Command.updateData.code) {
+      handleDataUpdate();
+    }
+  }
+
+  LayoutType? _tmpType;
+
+  void handleDataUpdate() {
+    if (series.realtimeSort) {
+      _tmpType = LayoutType.update;
+    } else {
+      _tmpType = LayoutType.none;
+    }
+    findGridCoord().onChildDataSetChange(true);
+  }
+
+  @override
+  void onLayout(List<P> data, LayoutType type) {
+    if (_tmpType != null) {
+      var t = _tmpType!;
+      _tmpType = null;
+      super.onLayout(data, t);
+    } else {
+      super.onLayout(data, type);
+    }
+  }
 
   @override
   List<GroupNode<T, P>> onComputeNeedLayoutData(var helper, AxisIndex index, List<GroupNode<T, P>> list) {
-    var coord = findGridCoord();
-    var rangeValue = coord.getViewportDataRange(index.axisIndex, series.isVertical);
+    ///启用了实时排序
+    if (series.realtimeSort) {
+      int sortCount = series.sortCount ?? 2 ^ 32 - 1;
+      Set<ColumnNode<T, P>> colNodeSet = {};
+      ColumnNode<T, P>? minNode;
+      each(list, (gn, i) {
+        if (gn.nodeList.length >= 2) {
+          throw ChartError('if enable realtimeSort, stack Column must <=1');
+        }
+        var cl = gn.nodeList.first;
+        if (cl.nodeList.isEmpty) {
+          return;
+        }
+        if (colNodeSet.length < sortCount) {
+          colNodeSet.add(cl);
+          minNode = cl;
+        } else {
+          var up = cl.getUp();
+          if (up > minNode!.getUp()) {
+            colNodeSet.remove(minNode!);
+            colNodeSet.add(cl);
+            minNode = cl;
+          }
+        }
+      });
+      List<ColumnNode<T, P>> colNodeList = List.from(colNodeSet);
+      colNodeList.sort((a, b) {
+        var au = a.getUp();
+        var bu = b.getUp();
+        if (series.sort == Sort.asc) {
+          return bu.compareTo(au);
+        } else {
+          return au.compareTo(bu);
+        }
+      });
+      List<GroupNode<T, P>> rl = [];
+      each(colNodeList, (e, i) {
+        e.parentNode.nodeIndex = i;
+        rl.add(e.parentNode);
+      });
+      return List.from(colNodeList.map((e) => e.parentNode));
+    }
     var store = helper.result.storeMap[index];
     if (store == null) {
+      Logger.i("Store is empty");
       return [];
     }
+    var coord = findGridCoord();
+    var rangeValue = coord.getViewportDataRange(index.axisIndex, series.isVertical);
     List<List<SingleNode<T, P>>> nodeList = [];
     if (rangeValue.categoryList != null) {
       nodeList = store.getByStr(rangeValue.categoryList!);
@@ -44,23 +125,45 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
-    bool vertical = series.direction == Direction.vertical;
     var coord = findGridCoord();
     int yIndex = groupNode.getYAxisIndex();
-    int xAxisIndex = xIndex.axisIndex;
-    final up = groupNode.nodeList.first.getUp();
-    if (vertical) {
-      var rect = coord.dataToRect(xAxisIndex, x, yIndex, up.toData());
-      groupNode.rect = Rect.fromLTWH(rect.left, 0, rect.width, height);
-    } else {
-      var rect = coord.dataToRect(xAxisIndex, up.toData(), yIndex, x);
-      groupNode.rect = Rect.fromLTWH(0, rect.top, width, rect.height);
+    int xIndex = groupNode.getXAxisIndex();
+    final xData = groupNode.getXData();
+    final yData = groupNode.getYData();
+    List<Offset> xList = coord.dataToPoint(xIndex, xData, true);
+    List<Offset> yList = coord.dataToPoint(yIndex, yData, false);
+    if (xList.length >= 2 && yList.length >= 2) {
+      throw ChartError('内部布局状态异常');
     }
+    double l, r, t, b;
+    if (xList.length >= 2) {
+      l = xList.first.dx;
+      r = xList.last.dx;
+      if (l > r) {
+        var tt = l;
+        l = r;
+        r = tt;
+      }
+      t = 0;
+      b = height;
+    } else {
+      t = yList.first.dy;
+      b = yList.last.dy;
+      if (b < t) {
+        var tt = t;
+        t = b;
+        b = tt;
+      }
+      l = 0;
+      r = width;
+    }
+    groupNode.rect = Rect.fromLTRB(l, t, r, b);
   }
 
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
+
     int colGapCount = groupInnerCount - 1;
     if (colGapCount < 1) {
       colGapCount = 0;
@@ -140,8 +243,9 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
         node.rect = Rect.fromLTRB(offset, uo.dy, offset + sizeList[i], downo.dy);
         offset += sizeList[i] + columnGap;
       } else {
-        var lo = coord.dataToPoint(xIndex.axisIndex, x, true).first;
-        var ro = coord.dataToPoint(xIndex.axisIndex, x, true).last;
+        var axisIndex = node.parentNode.getXAxisIndex();
+        var lo = coord.dataToPoint(axisIndex, downValue, true).first;
+        var ro = coord.dataToPoint(axisIndex, upValue, true).last;
         node.rect = Rect.fromLTRB(lo.dx, offset, ro.dx, offset + sizeList[i]);
         offset += sizeList[i] + columnGap;
       }
@@ -154,17 +258,17 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     final coord = findGridCoord();
     final colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
-      if(!needLayoutForNode(node, type)){
+      if (!needLayoutForNode(node, type)) {
         continue;
       }
+      bool isX = !series.isVertical;
+      int index = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
+      final uo = coord.dataToPoint(index, getUpValue(node), isX).last;
+      final downo = coord.dataToPoint(index, getDownValue(node), isX).first;
       if (vertical) {
-        var uo = coord.dataToPoint(node.parent.yAxisIndex, getUpValue(node), false).last;
-        var downo = coord.dataToPoint(node.parent.yAxisIndex, getDownValue(node), false).first;
         node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, downo.dy);
       } else {
-        var uo = coord.dataToPoint(node.parent.xAxisIndex, getUpValue(node), true).last;
-        var downo = coord.dataToPoint(node.parent.xAxisIndex, getDownValue(node), true).first;
-        node.rect = Rect.fromLTRB(downo.dx, colRect.top, uo.dx, colRect.height);
+        node.rect = Rect.fromLTRB(downo.dx, colRect.top, uo.dx, colRect.bottom);
       }
       node.position = node.rect.center;
     }
@@ -180,7 +284,12 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
   @override
   Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
-    if (series.animation == null || type == LayoutType.none) {
+    if (oldNodeList.isEmpty && newNodeList.isEmpty) {
+      Logger.i("onLayoutEnd:() ${newNodeList.length} ${oldNodeList.length}");
+      return;
+    }
+
+    if (!needRunAnimator(type)) {
       super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
       return;
     }
@@ -188,8 +297,9 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     List<SingleNode<T, P>> oldShowData = List.from(showNodeMap.values);
 
     ///动画
-    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult = DiffUtil.diff3(oldShowData, newNodeList, (p0) => p0.data!, (b, c) {
-      return onCreateAnimatorNode(b, c);
+    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult =
+        DiffUtil.diff3(oldShowData, newNodeList, (p0) => p0.data!, (b, c) {
+      return onCreateAnimatorNode(b, c, type);
     });
     final startMap = diffResult.startMap;
     final endMap = diffResult.endMap;
@@ -229,24 +339,35 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
+  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
     final Rect rect = node.rect;
-    if (type == DiffType.accessor) {
+    if (diffType == DiffType.accessor) {
       return AnimatorNode(rect: rect, offset: rect.center);
     }
+
     Rect rr;
-    if (series.direction == Direction.vertical) {
+    if (series.isVertical) {
+      if (series.realtimeSort && type == LayoutType.update) {
+        Rect rr = Rect.fromLTRB(width, rect.top, width + rect.width, rect.bottom);
+        return AnimatorNode(rect: rr, offset: rr.center);
+      }
       if (series.animatorStyle == GridAnimatorStyle.expand) {
         rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
       } else {
         rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
       }
+      return AnimatorNode(rect: rr, offset: rr.center);
+    }
+
+    ///水平
+    if (series.realtimeSort && type == LayoutType.update) {
+      rr = Rect.fromLTRB(0, height, width, height + rect.height);
+      return AnimatorNode(rect: rr, offset: rr.center);
+    }
+    if (series.animatorStyle == GridAnimatorStyle.expand) {
+      rr = Rect.fromLTWH(0, rect.top, 0, rect.height);
     } else {
-      if (series.animatorStyle == GridAnimatorStyle.expand) {
-        rr = Rect.fromLTWH(0, rect.top, 0, rect.height);
-      } else {
-        rr = Rect.fromLTWH(rect.left, rect.top, 0, rect.height);
-      }
+      rr = Rect.fromLTWH(rect.left, rect.top, 0, rect.height);
     }
     return AnimatorNode(rect: rr, offset: rr.center);
   }

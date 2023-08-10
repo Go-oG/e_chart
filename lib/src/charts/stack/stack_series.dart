@@ -33,8 +33,12 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   // 是否启用图例hover的联动高亮
   bool legendHoverLink;
 
-  // 是否启用实时排序
+  ///是否启用实时排序(只在柱状图中生效)
+  ///当启用了实时排序则只能但一个堆叠组
   bool realtimeSort;
+  Sort sort;
+  int? sortCount;
+
   LabelStyle? labelStyle;
 
   ///在折线图中 area对应分割区域，柱状图中为Bar的区域
@@ -72,6 +76,8 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     this.animatorStyle = GridAnimatorStyle.expand,
     this.legendHoverLink = true,
     this.realtimeSort = false,
+    this.sort = Sort.asc,
+    this.sortCount,
     this.corner = Corner.zero,
     this.columnGap = const SNumber.number(4),
     this.groupGap = const SNumber.number(4),
@@ -101,7 +107,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   DataHelper<T, G, StackSeries>? _helper;
 
   DataHelper<T, G, StackSeries> get helper {
-    _helper ??= DataHelper(this, data, direction);
+    _helper ??= DataHelper(this, data, direction, realtimeSort, sort);
     return _helper!;
   }
 
@@ -114,7 +120,9 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   @override
   void notifyUpdateData() {
     _helper = null;
-    super.notifyUpdateData();
+    Future(() {
+      var r = helper.getCrossExtreme(CoordSystem.polar, -1);
+    }).then((value) => super.notifyUpdateData());
   }
 
   List<MarkPoint> getMarkPoint(G group) {

@@ -140,8 +140,8 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
-    if (type == DiffType.accessor) {
+  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType,LayoutType type) {
+    if (diffType == DiffType.accessor) {
       return AnimatorNode(arc: node.arc, offset: node.arc.centroid());
     }
     Arc arc;

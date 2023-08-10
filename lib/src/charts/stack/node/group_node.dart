@@ -8,10 +8,10 @@ import 'column_node.dart';
 ///表示为系列数据
 class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
   final AxisIndex index;
-  final int nodeIndex;
+  int nodeIndex;
   final List<ColumnNode<T, P>> nodeList;
 
-  GroupNode(this.index,this.nodeIndex, this.nodeList);
+  GroupNode(this.index, this.nodeIndex, this.nodeList);
 
   ///布局中使用的数据
   ///二维坐标使用
@@ -20,7 +20,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
   ///极坐标使用
   Arc arc = Arc();
 
-  DynamicData getX() {
+  DynamicData getXData() {
     var result = getXNodeNull();
     if (result != null) {
       return result.data!.x;
@@ -28,7 +28,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
     throw ChartError("无法找到对应的横坐标");
   }
 
-  DynamicData getY() {
+  DynamicData getYData() {
     var result = getYNodeNull();
     if (result != null) {
       return result.data!.y;
@@ -65,6 +65,16 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
     for (var list in nodeList) {
       for (var d in list.nodeList) {
         return d.parent.yAxisIndex;
+      }
+    }
+    return index;
+  }
+
+  int getXAxisIndex() {
+    int index = 0;
+    for (var list in nodeList) {
+      for (var d in list.nodeList) {
+        return d.parent.xAxisIndex;
       }
     }
     return index;

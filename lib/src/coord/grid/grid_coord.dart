@@ -143,7 +143,8 @@ class GridCoordImpl extends GridCoord {
       var axisInfo = value.axisInfo;
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var attrs = LineAxisAttrs(scaleXFactor, scrollYOffset, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
+      var attrs =
+          LineAxisAttrs(scaleXFactor, scrollYOffset, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
       topOffset -= (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
       if (needAlignTick && i == 0) {
@@ -206,7 +207,8 @@ class GridCoordImpl extends GridCoord {
       }
       double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
-      var attrs = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
+      var attrs =
+          LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
       rightOffset -= w;
       value.doLayout(attrs, dl);
       if (needAlignTick && i == 0) {
@@ -222,7 +224,8 @@ class GridCoordImpl extends GridCoord {
       }
       double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
-      var attrs = LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
+      var attrs =
+          LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
 
       leftOffset += w;
       value.doLayout(attrs, dl);
@@ -230,6 +233,24 @@ class GridCoordImpl extends GridCoord {
         splitCount = value.scale.tickCount - 1;
       }
     });
+  }
+
+  @override
+  void onChildDataSetChange(bool layoutChild) {
+    List<GridChild> childList = getGridChildList();
+
+    ///布局X轴
+    layoutXAxis(childList, contentBox);
+
+    ///布局Y轴
+    layoutYAxis(childList, contentBox);
+    if (!layoutChild) {
+      return;
+    }
+    for (var view in children) {
+      view.setForceLayout();
+      view.layout(view.left, view.top, view.right, view.bottom);
+    }
   }
 
   @override
@@ -662,4 +683,7 @@ abstract class GridCoord extends CoordLayout<Grid> {
   double getAxisLength(int axisIndex, bool isXAxis);
 
   List<GridChild> getGridChildList();
+
+  ///当子视图的数据集发生改变时需要重新布局确定坐标系
+  void onChildDataSetChange(bool layoutChild);
 }

@@ -199,7 +199,6 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
         return DynamicText.fromString(formatNumber(data));
       }
     }
-
     throw ChartError("暂不支持 $runtimeType 进行格式化");
   }
 
@@ -207,7 +206,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   static BaseScale toScale(BaseAxis axis, List<num> range, List<DynamicData> dataSet, int? splitCount, [double scaleFactor = 1]) {
     if (axis.isCategoryAxis) {
       List<String> sl = List.from(axis.categoryList);
-      if (axis.categoryList.isEmpty) {
+      if (sl.isEmpty) {
         Set<String> dSet = {};
         for (var data in dataSet) {
           if (data.isString && !dSet.contains(data.data as String)) {
@@ -216,6 +215,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
           }
         }
       }
+
       if (sl.isEmpty) {
         throw ChartError('当前提取Category数目为0');
       }

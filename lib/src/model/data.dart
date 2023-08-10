@@ -144,10 +144,10 @@ class DynamicData {
   @override
   String toString() {
     if (isString) {
-      return '$data';
+      return 'Str:$data';
     }
     if (isNum) {
-      return (data as num).toStringAsFixed(1);
+      return "Num:${(data as num).toStringAsFixed(1)}";
     }
 
     var time = data as DateTime;

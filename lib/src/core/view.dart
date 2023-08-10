@@ -42,8 +42,14 @@ abstract class ChartView with ViewStateProvider {
   @protected
   bool measureCompleted = false;
 
-  @protected
-  bool forceLayout = false;
+  bool _forceLayout = false;
+
+  bool get forceLayout => _forceLayout;
+
+  void setForceLayout() {
+    _forceLayout = true;
+  }
+
 
   @protected
   bool forceMeasure = false;
@@ -113,7 +119,8 @@ abstract class ChartView with ViewStateProvider {
   //=======布局测量相关方法==============
   void measure(double parentWidth, double parentHeight) {
     bool force = forceMeasure || forceLayout;
-    bool minDiff = (boundRect.width - parentWidth).abs() <= 0.00001 && (boundRect.height - parentHeight).abs() <= 0.00001;
+    bool minDiff =
+        (boundRect.width - parentWidth).abs() <= 0.00001 && (boundRect.height - parentHeight).abs() <= 0.00001;
     if (measureCompleted && minDiff && !force) {
       return;
     }
@@ -157,7 +164,9 @@ abstract class ChartView with ViewStateProvider {
         return;
       }
     }
-
+    if (inLayout) {
+      return;
+    }
     inLayout = true;
     oldBoundRect = boundRect;
     boundRect = Rect.fromLTRB(left, top, right, bottom);
@@ -172,7 +181,7 @@ abstract class ChartView with ViewStateProvider {
     }
     onLayout(left, top, right, bottom);
     inLayout = false;
-    forceLayout = false;
+    _forceLayout = false;
     layoutCompleted = true;
     onLayoutEnd();
   }
@@ -312,7 +321,7 @@ abstract class ChartView with ViewStateProvider {
   }
 
   void layoutSelf() {
-    forceLayout = true;
+    _forceLayout = true;
     layout(left, top, right, bottom);
   }
 
@@ -408,7 +417,7 @@ abstract class ChartView with ViewStateProvider {
 
   void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
-    forceLayout = true;
+    _forceLayout = true;
     ChartSeries? series = _series;
     unBindSeries();
     if (series != null) {
@@ -752,9 +761,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   void onContentScrollUpdate(Offset scroll) {
     layoutHelper.onContentScrollChange(scroll);
   }
-
-
-
 }
 
 abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> extends SeriesView<T, L> {

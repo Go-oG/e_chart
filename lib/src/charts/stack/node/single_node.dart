@@ -14,22 +14,21 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> with View
 
   ///布局过程中使用的临时变量
   num _up = 0;
-
   num get up => _up;
-
   set up(num u) {
     _up = u;
     data?.stackUp = u;
   }
 
   num _down = 0;
-
   num get down => _down;
-
   set down(num d) {
     _down = d;
     data?.stackDown = d;
   }
+
+
+
 
   ///只在二维坐标系下使用
   Rect rect = Rect.zero;

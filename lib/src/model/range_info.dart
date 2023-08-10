@@ -23,13 +23,13 @@ class RangeInfo {
   @override
   String toString() {
     if (categoryList != null) {
-      return "$categoryList";
+      return "C:$categoryList";
     }
     if (timeList != null) {
-      return "$timeList";
+      return "T:$timeList";
     }
     if (numRange != null) {
-      return "[${numRange!.start} , ${numRange!.end}]";
+      return "N:[${numRange!.start} , ${numRange!.end}]";
     }
 
     return "暂无数据";

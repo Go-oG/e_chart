@@ -53,6 +53,14 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
     super.destroy();
   }
 
+  @override
+  void setForceLayout() {
+    super.setForceLayout();
+    for (var c in children) {
+      c.setForceLayout();
+    }
+  }
+
   void changeChildToFront(ChartView child) {
     int index = children.indexOf(child);
     if (index != -1) {
@@ -220,7 +228,8 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
 
   void _addViewInner(ChartView child, int index) {
     if (child.parent != null && child.parent != this) {
-      throw FlutterError("The specified child already has a parent. You must call removeView() on the child's parent first.");
+      throw FlutterError(
+          "The specified child already has a parent. You must call removeView() on the child's parent first.");
     }
     _addInArray(child, index);
   }

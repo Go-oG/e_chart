@@ -20,6 +20,8 @@ class BarSeries extends StackSeries<StackItemData, BarGroupData> {
     super.markPointFun,
     super.markLineFun,
     super.realtimeSort,
+    super.sort,
+    super.sortCount,
     super.legendHoverLink,
     super.direction,
     super.animatorStyle,
