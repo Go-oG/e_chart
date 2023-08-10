@@ -2,12 +2,10 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-
 //K线图
 class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, CandleStickSeries> {
   static const String _colRectK = "colRectK";
   static const String _borderListK = "borderListK";
-  static const String _areaRectK = "areaRectK";
   static const String _boxRectK = "boxRectK";
 
   static const String _openK = "open";
@@ -18,11 +16,14 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   CandlestickHelper(super.context, super.series);
 
   @override
-  void onLayoutNode(ColumnNode<CandleStickData, CandleStickGroup> columnNode, AxisIndex xIndex) {
+  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
       var data = node.data;
       if (data == null) {
+        continue;
+      }
+      if (!needLayoutForNode(node, type)) {
         continue;
       }
       var group = node.parent;
@@ -59,7 +60,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
       borderList.add([lowC, closeC]);
       borderList.add([openC, highC]);
     }
-    node.extSet(_areaRectK, areaRect);
+    node.rect = areaRect;
     node.extSet(_borderListK, borderList);
     node.extSet(_boxRectK, boxRect);
   }
@@ -68,8 +69,6 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     var coord = findGridCoord();
     return Offset((colRect.left + colRect.right) / 2, coord.dataToPoint(axisIndex, data.toData(), false).first.dy);
   }
-
-//=====================
 
   @override
   DynamicData getUpValue(SingleNode<CandleStickData, CandleStickGroup> node) {
@@ -131,33 +130,14 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   }
 
   Rect getAreaRect(SingleNode<CandleStickData, CandleStickGroup> node) {
-    return node.extGet(_areaRectK);
-  }
-
-  @override
-  Map<int, List<SingleNode<CandleStickData, CandleStickGroup>>> splitDataByPage(var list, int start, int end) {
-    Map<int, List<SingleNode<CandleStickData, CandleStickGroup>>> resultMap = {};
-    double w = width;
-    double h = height;
-    bool vertical = series.direction == Direction.vertical;
-    double size = vertical ? w : h;
-    for (int i = start; i < end; i++) {
-      var node = list[i];
-      Rect rect = node.extGet(_boxRectK);
-      double s = vertical ? rect.left : rect.top;
-      int index = s ~/ size;
-      List<SingleNode<CandleStickData, CandleStickGroup>> tmpList = resultMap[index] ?? [];
-      resultMap[index] = tmpList;
-      tmpList.add(node);
-    }
-    return resultMap;
+    return node.rect;
   }
 
   @override
   SingleNode<CandleStickData, CandleStickGroup>? findNode(Offset offset) {
     for (var node in nodeMap.values) {
-      Rect? ar = node.extGet(_areaRectK);
-      if (ar != null && ar.contains2(offset)) {
+      Rect ar = node.rect;
+      if (ar.contains2(offset)) {
         return node;
       }
       List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];

@@ -6,7 +6,6 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   BoxplotHelper(super.context, super.series);
 
   static const String _borderListK = "borderList";
-  static const String _areaRectK = "areaRectK";
   static const String _boxRectK = "boxRectK";
   static const String _minCK = "minC";
   static const String _downCK = "downC";
@@ -26,12 +25,15 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  void onLayoutNode(ColumnNode<BoxplotData, BoxplotGroup> columnNode, AxisIndex xIndex) {
+  void onLayoutNode(var columnNode,AxisIndex xIndex, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
       var data = node.data;
       if (data == null) {
+        continue;
+      }
+      if(!needLayoutForNode(node, type)){
         continue;
       }
       var group = node.parent;
@@ -131,7 +133,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
         borderList.add([c.translate(0, -ty), c.translate(0, ty)]);
       }
     }
-    node.extSet(_areaRectK, areaRect);
+    node.rect=areaRect;
     node.extSet(_borderListK, borderList);
     node.extSet(_boxRectK, boxRect);
   }
@@ -152,27 +154,9 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   Rect getAreaRect(SingleNode<BoxplotData, BoxplotGroup> node) {
-    return node.extGet(_areaRectK);
+    return node.rect;
   }
 
-  @override
-  Map<int, List<SingleNode<BoxplotData, BoxplotGroup>>> splitDataByPage(var list, int start, int end) {
-    Map<int, List<SingleNode<BoxplotData, BoxplotGroup>>> resultMap = {};
-    double w = width;
-    double h = height;
-    bool vertical = series.direction == Direction.vertical;
-    double size = vertical ? w : h;
-    for (int i = start; i < end; i++) {
-      var node = list[i];
-      Rect rect = node.extGet(_boxRectK);
-      double s = vertical ? rect.left : rect.top;
-      int index = s ~/ size;
-      List<SingleNode<BoxplotData, BoxplotGroup>> tmpList = resultMap[index] ?? [];
-      resultMap[index] = tmpList;
-      tmpList.add(node);
-    }
-    return resultMap;
-  }
 
   @override
   SeriesType get seriesType => SeriesType.boxplot;

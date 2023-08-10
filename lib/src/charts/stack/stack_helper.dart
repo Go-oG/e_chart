@@ -29,13 +29,14 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   void onLayout(List<P> data, LayoutType type) async {
-    AxisGroup<T, P> axisGroup = series.helper.result;
+    var helper = series.helper;
+    AxisGroup<T, P> axisGroup = helper.result;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
 
-    ///实现局部布局
+    ///实现大数据量下的布局优化
     Map<AxisIndex, List<GroupNode<T, P>>> axisMapTmp = {};
     axisMap.forEach((key, value) {
-      axisMapTmp[key] = onComputeNeedLayoutData(key, value);
+      axisMapTmp[key] = onComputeNeedLayoutData(helper, key, value);
     });
     axisMap = axisMapTmp;
 
@@ -43,10 +44,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     axisMap.forEach((key, value) {
       for (var cv in value) {
         for (var ele in cv.nodeList) {
-          for (var element in ele.nodeList) {
-            if (element.data != null) {
-              newNodeMap[element.data!] = element;
+          for (var node in ele.nodeList) {
+            if (node.data == null) {
+              continue;
             }
+            newNodeMap[node.data!] = node;
           }
         }
       }
@@ -67,14 +69,14 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
             var x = groupNode.getX();
 
             ///布局当前组的位置
-            onLayoutGroup(groupNode, xIndex, x);
+            onLayoutGroup(groupNode, xIndex, x, type);
 
             ///布局组里面的列
-            onLayoutColumn(axisGroup, groupNode, xIndex, x);
+            onLayoutColumn(axisGroup, groupNode, xIndex, x, type);
 
             ///布局列里面的节点
-            for (var nl in groupNode.nodeList) {
-              onLayoutNode(nl, xIndex);
+            for (var cn in groupNode.nodeList) {
+              onLayoutNode(cn, xIndex, type);
             }
           }
         });
@@ -92,20 +94,27 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     notifyLayoutUpdate();
   }
 
+  bool needLayoutForNode(SingleNode<T, P> node, LayoutType type) {
+    if (type != LayoutType.none) {
+      return true;
+    }
+    return showNodeMap[node.data!] == null || node.rect.isEmpty;
+  }
+
   ///计算需要布局的数据(默认全部)
   ///子类可以实现该方法从而实现高效的数据刷新
-  List<GroupNode<T, P>> onComputeNeedLayoutData(AxisIndex index, List<GroupNode<T, P>> list) {
+  List<GroupNode<T, P>> onComputeNeedLayoutData(DataHelper<T, P, StackSeries> helper, AxisIndex index, List<GroupNode<T, P>> list) {
     return list;
   }
 
   ///实现该方法从而布局单个Group(不需要布局其孩子)
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
+  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type);
 
   ///布局GroupNode的孩子(ColumnNode)位置
-  void onLayoutColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x);
+  void onLayoutColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type);
 
   ///布局ColumnNode的孩子的位置
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex);
+  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type);
 
   ///布局MarkLine和MarkPoint
   void _onLayoutMarkPointAndLine(List<P> groupList, List<SingleNode<T, P>> newNodeList, Map<T, SingleNode<T, P>> newNodeMap) {
@@ -317,8 +326,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   ///创建动画节点
   AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type);
 
-  void onAnimatorStart(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
-  }
+  void onAnimatorStart(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {}
 
   void onAnimatorUpdate(
     SingleNode<T, P> node,
@@ -329,8 +337,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   void onAnimatorUpdateEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result, double t) {}
 
-  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
-  }
+  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {}
 
   ///=======其它函数
   List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
@@ -368,7 +375,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   Offset getTranslation();
-
 
   ///==========用户相关操作的处理=============
   SingleNode<T, P>? oldHoverNode;

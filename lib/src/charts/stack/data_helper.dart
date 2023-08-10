@@ -6,14 +6,15 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   final List<P> _dataList;
   final S _series;
   final Direction direction;
-  late AxisGroup<T, P> _result;
 
-  DataHelper(this._series, this._dataList, this.direction) {
-    _result = _parse();
-  }
+  late AxisGroup<T, P> _result;
 
   AxisGroup<T, P> get result {
     return _result;
+  }
+
+  DataHelper(this._series, this._dataList, this.direction) {
+    _result = _parse();
   }
 
   ///存储每个轴上的极值数据
@@ -65,14 +66,12 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   OriginInfo<T, P> _parseOriginInfo(List<P> dataList) {
     Map<P, int> sortMap = {};
     Map<P, Map<int, WrapData<T, P>>> dataMap = {};
-
     each(dataList, (group, groupIndex) {
       if (!sortMap.containsKey(group)) {
         sortMap[group] = groupIndex;
       }
       Map<int, WrapData<T, P>> childMap = dataMap[group] ?? {};
       dataMap[group] = childMap;
-
       each(group.data, (childData, i) {
         childMap[i] = WrapData(childData, group, groupIndex, i, group.styleIndex);
       });
@@ -117,7 +116,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
   ///处理单根坐标轴
   List<GroupNode<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list, OriginInfo<T, P> originInfo) {
-    int barGroupCount = _computeBarCount(list);
+    int barGroupCount = _computeMaxGroupCount(list);
 
     ///存放分组数据
     List<List<InnerData<T, P>>> groupDataSetList = List.generate(barGroupCount, (index) => []);
@@ -129,7 +128,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         groupDataSetList[i].add(InnerData(data.data[i], data));
       }
     }
-    List<GroupNode<T, P>> groupNodeList = List.generate(barGroupCount, (index) => GroupNode(axisIndex, []));
+    List<GroupNode<T, P>> groupNodeList = List.generate(barGroupCount, (index) => GroupNode(axisIndex, index, []));
 
     ///合并数据
     each(groupDataSetList, (group, index) {
@@ -235,6 +234,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     return map;
   }
 
+  ///收集分组数值信息
   Map<P, ValueInfo<T, P>> _collectGroupInfo(List<P> list) {
     Map<P, ValueInfo<T, P>> map = {};
     for (var group in list) {
@@ -276,7 +276,8 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     return map;
   }
 
-  int _computeBarCount(List<P> list) {
+  ///计算最大的group数
+  int _computeMaxGroupCount(List<P> list) {
     int max = 0;
     for (P data in list) {
       if (data.data.length > max) {

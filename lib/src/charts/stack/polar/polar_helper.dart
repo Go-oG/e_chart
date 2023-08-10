@@ -8,7 +8,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   PolarHelper(super.context, super.series);
 
   @override
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
     bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     PolarPosition position;
@@ -25,7 +25,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int colGapCount = groupInnerCount - 1;
     if (colGapCount <= 1) {
@@ -118,7 +118,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
+  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type) {
     final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
     final num down = columnNode.nodeList.first.down;
     final num diff = up - down;
@@ -141,8 +141,8 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType type) {
-    if(type==DiffType.accessor){
-      return AnimatorNode(arc: node.arc,offset: node.arc.centroid());
+    if (type == DiffType.accessor) {
+      return AnimatorNode(arc: node.arc, offset: node.arc.centroid());
     }
     Arc arc;
     if (series.animatorStyle == GridAnimatorStyle.expand) {

@@ -8,9 +8,10 @@ import 'column_node.dart';
 ///表示为系列数据
 class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
   final AxisIndex index;
+  final int nodeIndex;
   final List<ColumnNode<T, P>> nodeList;
 
-  GroupNode(this.index, this.nodeList);
+  GroupNode(this.index,this.nodeIndex, this.nodeList);
 
   ///布局中使用的数据
   ///二维坐标使用

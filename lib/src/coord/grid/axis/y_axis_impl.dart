@@ -4,14 +4,7 @@ import 'package:flutter/material.dart';
 
 class YAxisImpl extends XAxisImpl {
   YAxisImpl(super.direction, super.context, super.coord, super.axis, {super.axisIndex});
-
-  @override
-  BaseScale<dynamic, num> onBuildScale(LineAxisAttrs attrs, List<DynamicData> dataSet) {
-    BaseScale<dynamic, num> result = super.onBuildScale(attrs, dataSet);
-    Logger.i("onBuildScale() D:${result.domain} R:${result.range} DS:$dataSet");
-    return result;
-  }
-
+  
   @override
   void doMeasure(double parentWidth, double parentHeight) {
     double length = parentHeight;

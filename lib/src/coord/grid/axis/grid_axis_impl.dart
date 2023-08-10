@@ -509,6 +509,13 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     final double interval = distance / (tickCount - 1);
     List<int> indexList = computeIndex(distance, tickCount, interval);
     List<dynamic> dl = scale.getRangeLabel(indexList[0], indexList[1]);
-    return RangeInfo(DynamicData(dl.first), DynamicData(dl.last), indexList[0], indexList[1]);
+    if (scale.isCategory) {
+      return RangeInfo.category(dl as List<String>);
+    }
+    if (scale.isTime) {
+      return RangeInfo.time(dl as List<DateTime>);
+    }
+
+    return RangeInfo.range(Pair<num>(dl.first, dl.last));
   }
 }

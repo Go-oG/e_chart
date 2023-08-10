@@ -90,9 +90,10 @@ class HeatMapSeries extends RectSeries {
   }
 }
 
-class HeatMapData extends ItemData {
+class HeatMapData extends BaseItemData {
   DynamicData x;
   DynamicData y;
+  num value;
 
-  HeatMapData(this.x, this.y, num value, {super.id, super.label}) : super(value: value);
+  HeatMapData(this.x, this.y, this.value, {super.id, super.label});
 }

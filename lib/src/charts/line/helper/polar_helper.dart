@@ -18,7 +18,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x,LayoutType type) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -54,7 +54,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutNode(ColumnNode<StackItemData, LineGroupData> columnNode, AxisIndex xIndex) {
+  void onLayoutNode(var columnNode, AxisIndex xIndex,LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {

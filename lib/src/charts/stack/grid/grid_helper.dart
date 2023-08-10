@@ -9,27 +9,41 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   GridHelper(super.context, super.series);
 
   @override
-  List<GroupNode<T, P>> onComputeNeedLayoutData(AxisIndex index, List<GroupNode<T, P>> list) {
+  List<GroupNode<T, P>> onComputeNeedLayoutData(var helper, AxisIndex index, List<GroupNode<T, P>> list) {
     var coord = findGridCoord();
     var rangeValue = coord.getShowDataRange(index.axisIndex, series.isVertical);
-    var startIndex = rangeValue.startIndex;
-    var endIndex = rangeValue.endIndex;
-    if (list.length <= startIndex) {
+    var store = helper.result.storeMap[index];
+    if (store == null) {
       return [];
     }
-    List<GroupNode<T, P>> resultList = [];
-    for (int i = startIndex; i <= endIndex; i++) {
-      if (i < list.length) {
-        resultList.add(list[i]);
-      } else {
-        break;
+    List<List<SingleNode<T, P>>> nodeList = [];
+    if (rangeValue.categoryList != null) {
+      nodeList = store.getByStr(rangeValue.categoryList!);
+    } else if (rangeValue.timeList != null) {
+      nodeList = store.getByTime(rangeValue.timeList!);
+    } else if (rangeValue.numRange != null) {
+      nodeList = store.getByNum(rangeValue.numRange!.start, rangeValue.numRange!.end);
+    }
+    Set<GroupNode<T, P>> gs = {};
+    List<GroupNode<T, P>> ls = [];
+    for (var pl in nodeList) {
+      for (var node in pl) {
+        var pn = node.parentNode.parentNode;
+        if (gs.contains(pn)) {
+          continue;
+        }
+        gs.add(pn);
+        ls.add(pn);
       }
     }
-    return resultList;
+    ls.sort((a, b) {
+      return a.nodeIndex.compareTo(b.nodeIndex);
+    });
+    return ls;
   }
 
   @override
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
     bool vertical = series.direction == Direction.vertical;
     var coord = findGridCoord();
     int yIndex = groupNode.getYAxisIndex();
@@ -45,7 +59,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int colGapCount = groupInnerCount - 1;
     if (colGapCount < 1) {
@@ -135,11 +149,14 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex) {
+  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final coord = findGridCoord();
     final colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
+      if(!needLayoutForNode(node, type)){
+        continue;
+      }
       if (vertical) {
         var uo = coord.dataToPoint(node.parent.yAxisIndex, getUpValue(node), false).last;
         var downo = coord.dataToPoint(node.parent.yAxisIndex, getDownValue(node), false).first;

@@ -20,7 +20,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x,LayoutType type) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -51,7 +51,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutNode(var columnNode, AxisIndex xIndex) {
+  void onLayoutNode(var columnNode, AxisIndex xIndex,LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final coord = findGridCoord();
     final colRect = columnNode.rect;
