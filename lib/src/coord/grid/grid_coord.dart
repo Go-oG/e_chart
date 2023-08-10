@@ -585,7 +585,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  RangeInfo getShowDataRange(int axisIndex, bool isXAxis) {
+  RangeInfo getViewportDataRange(int axisIndex, bool isXAxis) {
     if (axisIndex < 0) {
       axisIndex = 0;
     }
@@ -601,7 +601,7 @@ class GridCoordImpl extends GridCoord {
       }
       axisImpl = yMap[props.yAxisList[axisIndex]]!;
     }
-    return axisImpl.getShowDataRange();
+    return axisImpl.getViewportDataRange();
   }
 
   XAxisImpl getXAxis(int xAxisIndex) {
@@ -637,8 +637,8 @@ class GridCoordImpl extends GridCoord {
 abstract class GridCoord extends CoordLayout<Grid> {
   GridCoord(super.props);
 
-  ///获取指定坐标轴当前的数据显示范围
-  RangeInfo getShowDataRange(int axisIndex, bool isXAxis);
+  ///获取指定坐标轴在当前窗口显示的数据范围
+  RangeInfo getViewportDataRange(int axisIndex, bool isXAxis);
 
   ///该方法适用于Bar
   Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);

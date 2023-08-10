@@ -11,7 +11,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   @override
   List<GroupNode<T, P>> onComputeNeedLayoutData(var helper, AxisIndex index, List<GroupNode<T, P>> list) {
     var coord = findGridCoord();
-    var rangeValue = coord.getShowDataRange(index.axisIndex, series.isVertical);
+    var rangeValue = coord.getViewportDataRange(index.axisIndex, series.isVertical);
     var store = helper.result.storeMap[index];
     if (store == null) {
       return [];

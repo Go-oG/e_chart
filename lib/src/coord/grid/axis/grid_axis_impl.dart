@@ -500,22 +500,29 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   ///获取坐标轴当前显示范围的数据值
-  RangeInfo getShowDataRange() {
+  RangeInfo getViewportDataRange() {
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
     }
     final distance = attrs.distance;
     final double interval = distance / (tickCount - 1);
-    List<int> indexList = computeIndex(distance, tickCount, interval);
-    List<dynamic> dl = scale.getRangeLabel(indexList[0], indexList[1]);
-    if (scale.isCategory) {
-      return RangeInfo.category(dl as List<String>);
-    }
-    if (scale.isTime) {
+    if (scale.isCategory || scale.isTime) {
+      List<int> indexList = computeIndex(distance, tickCount, interval);
+      List<dynamic> dl = scale.getRangeLabel(indexList[0], indexList[1]);
+      if (scale.isCategory) {
+        return RangeInfo.category(dl as List<String>);
+      }
       return RangeInfo.time(dl as List<DateTime>);
     }
 
-    return RangeInfo.range(Pair<num>(dl.first, dl.last));
+    Rect rect = coord.contentBox;
+    num viewSize = direction == Direction.horizontal ? rect.width : rect.height;
+    if (distance <= viewSize) {
+      RangeInfo.range(Pair<num>(scale.domain.first, scale.domain.last));
+    }
+    num scroll = direction == Direction.horizontal ? coord.scrollXOffset.abs() : coord.scrollYOffset.abs();
+    return RangeInfo.range(Pair<num>(scale.toData(scroll), scale.toData(scroll + viewSize)));
   }
+
 }
