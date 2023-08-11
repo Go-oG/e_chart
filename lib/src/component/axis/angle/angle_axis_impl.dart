@@ -10,7 +10,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   AngleAxisImpl(super.context, super.coord, super.axis, {super.axisIndex});
 
   @override
-  BaseScale onBuildScale(AngleAxisAttrs attrs, List<DynamicData> dataSet) {
+  BaseScale onBuildScale(AngleAxisAttrs attrs, List<dynamic> dataSet) {
     num s = attrs.angleOffset;
     num e;
     if (attrs.clockwise) {
@@ -353,7 +353,8 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   ///将一个"Y轴数据" 转换到角度范围
   ///如果轴类型为category 则返回角度的范围，否则返回单一角度
-  List<num> dataToAngle(DynamicData data) {
-    return scale.toRange(data.data);
+  List<num> dataToAngle(dynamic data) {
+    checkDataType(data);
+    return scale.toRange(data);
   }
 }

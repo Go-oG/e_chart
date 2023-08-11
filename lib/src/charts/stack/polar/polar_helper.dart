@@ -4,18 +4,19 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///帮助在极坐标系中进行布局
-abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>> extends StackHelper<T, P, S> {
+abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
+    extends StackHelper<T, P, S> {
   PolarHelper(super.context, super.series);
 
   @override
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
+  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
     bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     PolarPosition position;
     if (vertical) {
-      position = coord.dataToPosition(x, groupNode.nodeList.first.getUp().toData());
+      position = coord.dataToPosition(x, groupNode.nodeList.first.getUp());
     } else {
-      position = coord.dataToPosition(groupNode.nodeList.first.getUp().toData(), x);
+      position = coord.dataToPosition(groupNode.nodeList.first.getUp(), x);
     }
     num ir = position.radius.length == 1 ? 0 : position.radius[0];
     num or = position.radius.length == 1 ? position.radius[0] : position.radius[1];
@@ -25,7 +26,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int colGapCount = groupInnerCount - 1;
     if (colGapCount <= 1) {
@@ -92,24 +93,23 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
       offset += groupGap * dir;
     }
 
-    DynamicData tmpData = DynamicData(0);
-
     each(groupNode.nodeList, (colNode, i) {
       var coord = findPolarCoord();
       Arc arc;
       if (vertical) {
-        var up = coord.dataToPosition(x, tmpData.change(colNode.getUp()));
-        var down = coord.dataToPosition(x, tmpData.change(colNode.getDown()));
+        var up = coord.dataToPosition(x, colNode.getUp());
+        var down = coord.dataToPosition(x, colNode.getDown());
         num or = offset + sizeList[i];
         var sa = down.angle[0];
         var tmpAngle = (up.angle[0] - down.angle[0]);
         arc = groupArc.copy(startAngle: sa, sweepAngle: tmpAngle, innerRadius: offset, outRadius: or);
         offset = or + columnGap;
       } else {
-        var up = coord.dataToPosition(tmpData.change(colNode.getUp()), x);
-        var down = coord.dataToPosition(tmpData.change(colNode.getDown()), x);
+        var up = coord.dataToPosition(colNode.getUp(), x);
+        var down = coord.dataToPosition(colNode.getDown(), x);
         var diffAngle = sizeList[i] * dir;
-        arc = groupArc.copy(innerRadius: down.radius[0], outRadius: up.radius[0], startAngle: offset, sweepAngle: diffAngle);
+        arc = groupArc.copy(
+            innerRadius: down.radius[0], outRadius: up.radius[0], startAngle: offset, sweepAngle: diffAngle);
         offset += diffAngle;
         offset += columnGap * dir;
       }
@@ -140,7 +140,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType,LayoutType type) {
+  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
     if (diffType == DiffType.accessor) {
       return AnimatorNode(arc: node.arc, offset: node.arc.centroid());
     }

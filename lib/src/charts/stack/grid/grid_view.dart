@@ -2,8 +2,8 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../stack_view.dart';
 
-abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S extends StackSeries<T, G>, L extends GridHelper<T, G, S>>
-    extends StackView<T, G, S, L> with GridChild {
+abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S extends StackSeries<T, G>,
+    L extends GridHelper<T, G, S>> extends StackView<T, G, S, L> with GridChild {
   GridView(super.series);
 
   @override
@@ -110,9 +110,7 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
   }
 
   @override
-  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
-    List<DynamicData> result= layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
-    return result;
+  List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
+    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
-
 }

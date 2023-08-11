@@ -5,10 +5,6 @@ extension StringExt on String {
     return DynamicText(this);
   }
 
-  DynamicData toData() {
-    return DynamicData(this);
-  }
-
   num toNum() {
     return double.parse(this);
   }

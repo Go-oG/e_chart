@@ -44,8 +44,9 @@ class YAxisImpl extends XAxisImpl {
   }
 
   @override
-  List<Offset> dataToPoint(DynamicData data) {
-    List<num> nl = scale.toRange(data.data);
+  List<Offset> dataToPoint(dynamic data) {
+    checkDataType(data);
+    List<num> nl = scale.toRange(data);
     List<Offset> ol = [];
     final double h = coord.contentBox.height;
     for (var d in nl) {

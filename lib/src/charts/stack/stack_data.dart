@@ -1,3 +1,5 @@
+import 'package:e_chart/e_chart.dart';
+
 import '../../model/index.dart';
 import '../../utils/uuid_util.dart';
 
@@ -62,34 +64,36 @@ class StackGroupData<T> {
 
 class StackItemData {
   late final String id;
-  DynamicData x;
-  DynamicData y;
+  dynamic x;
+  dynamic y;
   DynamicText? label;
   num stackUp = 0;
   num stackDown = 0;
 
   StackItemData(this.x, this.y, {String? id, this.label}) {
+    checkDataType(x);
+    checkDataType(y);
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {
       this.id = id;
     }
-    if (!x.isNum && !y.isNum) {
+    if (x is! num && y is! num) {
       throw ChartError('x 和 y 必须有一个是num类型的数据');
     }
-    if (y.isNum) {
-      stackUp = y.data;
+    if (y is num) {
+      stackUp = y;
     } else {
-      stackUp = x.data;
+      stackUp = x;
     }
     stackDown = 0;
   }
 
   num get value {
-    if (y.isNum) {
-      return y.data;
+    if (y is num) {
+      return y;
     }
-    return x.data;
+    return x;
   }
 
   @override

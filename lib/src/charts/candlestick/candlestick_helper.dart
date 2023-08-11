@@ -67,17 +67,17 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
 
   Offset _computeOffset(Rect colRect, num data, int axisIndex) {
     var coord = findGridCoord();
-    return Offset((colRect.left + colRect.right) / 2, coord.dataToPoint(axisIndex, data.toData(), false).first.dy);
+    return Offset((colRect.left + colRect.right) / 2, coord.dataToPoint(axisIndex, data, false).first.dy);
   }
 
   @override
-  DynamicData getUpValue(SingleNode<CandleStickData, CandleStickGroup> node) {
-    return node.data!.highest.toData();
+  dynamic getUpValue(SingleNode<CandleStickData, CandleStickGroup> node) {
+    return node.data!.highest;
   }
 
   @override
-  DynamicData getDownValue(SingleNode<CandleStickData, CandleStickGroup> node) {
-    return node.data!.lowest.toData();
+  dynamic getDownValue(SingleNode<CandleStickData, CandleStickGroup> node) {
+    return node.data!.lowest;
   }
 
   @override

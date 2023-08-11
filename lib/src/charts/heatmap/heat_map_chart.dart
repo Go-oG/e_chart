@@ -47,8 +47,8 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   }
 
   @override
-  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
-    List<DynamicData> dl = [];
+  List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
+    List<dynamic> dl = [];
     for (var element in series.data) {
       if (isXAxis) {
         dl.add(element.x);

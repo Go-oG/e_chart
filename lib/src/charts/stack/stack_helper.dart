@@ -103,11 +103,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   ///实现该方法从而布局单个Group(不需要布局其孩子)
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type);
+  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type);
 
   ///布局GroupNode的孩子(ColumnNode)位置
   void onLayoutColumn(
-      AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type);
+      AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type);
 
   ///布局ColumnNode的孩子的位置
   void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type);
@@ -221,7 +221,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         return null;
       }
 
-      var node = MarkPointNode(markPoint, data.value.toData());
+      var node = MarkPointNode(markPoint, data.value);
       if (coordSystem == CoordSystem.polar) {
         var arc = snode.arc;
         node.offset = circlePoint(arc.outRadius, arc.centerAngle(), arc.center);
@@ -246,7 +246,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         var y = data[1].convert(coord.getSweepAngle());
         var yr = y / coord.getSweepAngle();
         var dd = vertical ? coord.getScale(true).convertRatio(yr) : coord.getScale(false).convertRatio(xr);
-        node = MarkPointNode(markPoint, dd.toData());
+        node = MarkPointNode(markPoint, dd);
         node.offset = Offset(x, y);
       } else {
         var coord = findGridCoord();
@@ -258,7 +258,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         var yr = y / coord.getAxisLength(yIndex, false);
         var dd =
             vertical ? coord.getScale(yIndex, false).convertRatio(yr) : coord.getScale(xIndex, true).convertRatio(xr);
-        node = MarkPointNode(markPoint, dd.toData());
+        node = MarkPointNode(markPoint, dd);
         node.offset = Offset(x, y);
       }
       return node;
@@ -357,17 +357,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {}
 
   ///=======其它函数======
-  List<DynamicData> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
+  List<dynamic> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
     CoordSystem system = CoordSystem.grid;
     if (series.coordSystem == CoordSystem.polar) {
       system = CoordSystem.polar;
     }
-    List<DynamicData> dl = [];
     if (series.isVertical && !isXAxis || (!series.isVertical && isXAxis)) {
-      for (var d in series.helper.getCrossExtreme(system, axisIndex)) {
-        dl.add(d.toData());
-      }
-      return dl;
+      return series.helper.getCrossExtreme(system, axisIndex);
     }
     return series.helper.getMainExtreme(system, axisIndex);
   }

@@ -54,9 +54,9 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   ///存储主轴上的极值数据
   ///对于竖直布局主轴为X轴
   ///对于水平布局主轴为Y轴
-  Map<AxisIndex, List<DynamicData>> _mainAxisExtremeMap = {};
+  Map<AxisIndex, List<dynamic>> _mainAxisExtremeMap = {};
 
-  List<DynamicData> getMainExtreme(CoordSystem system, int axisIndex) {
+  List<dynamic> getMainExtreme(CoordSystem system, int axisIndex) {
     if (_mainAxisExtremeMap.isEmpty) {
       return [];
     }
@@ -271,34 +271,30 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
             }
             final mainData = vertical ? node.data?.x : node.data?.y;
             if (mainData != null) {
-              if (mainData.isString) {
+              if (mainData is String) {
                 List<SingleNode<T, P>> strList = mainStrMap[mainIndex] ?? [];
                 mainStrMap[mainIndex] = strList;
                 strList.add(node);
-              } else if (mainData.isNum) {
+              } else if (mainData is num) {
                 var sn = mainNumMinMap[mainIndex];
-                var od = vertical ? sn?.data?.x : sn?.data?.y;
-                if (sn == null || ((mainData.data as num) < (od!.data as num))) {
+                var od = (vertical ? sn?.data?.x : sn?.data?.y) as num;
+                if (sn == null || mainData < od) {
                   mainNumMinMap[mainIndex] = node;
                 }
                 sn = mainNumMaxMap[mainIndex];
                 od = vertical ? sn?.data?.x : sn?.data?.y;
-                if (sn == null || ((mainData.data as num) > (od!.data as num))) {
+                if (sn == null || mainData > od) {
                   mainNumMaxMap[mainIndex] = node;
                 }
-              } else {
+              } else if (mainData is DateTime) {
                 var sn = mainTimeMinMap[mainIndex];
-                var od = vertical ? sn?.data?.x : sn?.data?.y;
-                if (sn == null ||
-                    ((mainData.data as DateTime).millisecondsSinceEpoch <
-                        (od!.data as DateTime).millisecondsSinceEpoch)) {
+                var od = (vertical ? sn?.data?.x : sn?.data?.y) as DateTime;
+                if (sn == null || mainData.millisecondsSinceEpoch < od.millisecondsSinceEpoch) {
                   mainTimeMinMap[mainIndex] = node;
                 }
                 sn = mainTimeMaxMap[mainIndex];
                 od = vertical ? sn?.data?.x : sn?.data?.y;
-                if (sn == null ||
-                    ((mainData.data as DateTime).millisecondsSinceEpoch >
-                        (od!.data as DateTime).millisecondsSinceEpoch)) {
+                if (sn == null || mainData.millisecondsSinceEpoch > od.millisecondsSinceEpoch) {
                   mainTimeMaxMap[mainIndex] = node;
                 }
               }
@@ -334,18 +330,18 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     });
 
     ///处理主轴数据
-    Map<AxisIndex, List<DynamicData>> mainResultMap = {};
+    Map<AxisIndex, List<dynamic>> mainResultMap = {};
     for (var tm in [mainNumMaxMap, mainNumMinMap, mainTimeMaxMap, mainTimeMinMap]) {
       tm.forEach((key, value) {
         var axis = AxisIndex(system, key);
-        List<DynamicData> rl = mainResultMap[axis] ?? [];
+        List<dynamic> rl = mainResultMap[axis] ?? [];
         mainResultMap[axis] = rl;
         rl.add(vertical ? value.data!.x : value.data!.y);
       });
     }
     mainStrMap.forEach((key, value) {
       var axis = AxisIndex(system, key);
-      List<DynamicData> rl = mainResultMap[axis] ?? [];
+      List<dynamic> rl = mainResultMap[axis] ?? [];
       mainResultMap[axis] = rl;
       if (realSort) {
         value.sort((a, b) {
@@ -359,14 +355,12 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         });
       }
       var result = unionBy<SingleNode<T, P>, String>([value], (a) {
-        var d = vertical ? a.data!.x : a.data!.y;
-        return d.data as String;
+        return (vertical ? a.data!.x : a.data!.y) as String;
       });
 
       rl.addAll(result.map((e) {
         return vertical ? e.data!.x : e.data!.y;
       }));
-
     });
 
     return AxisExtremeInfo(mainResultMap, crossResultMap);
@@ -434,7 +428,7 @@ class InnerData<T extends StackItemData, P extends StackGroupData<T>> {
 }
 
 class AxisExtremeInfo {
-  final Map<AxisIndex, List<DynamicData>> mainInfo;
+  final Map<AxisIndex, List<dynamic>> mainInfo;
   final Map<AxisIndex, List<num>> crossInfo;
 
   AxisExtremeInfo(this.mainInfo, this.crossInfo);

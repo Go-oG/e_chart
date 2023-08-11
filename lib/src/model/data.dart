@@ -94,78 +94,6 @@ class DataNode<P, D> with ViewStateProvider implements NodeAccessor<P, D> {
   }
 }
 
-///动态数据(只接受字符串 数字 时间类型的数据)
-class DynamicData {
-  dynamic _data;
-
-  dynamic get data => _data;
-
-  DynamicData(this._data) {
-    if (data is! String && data is! DateTime && data is! num) {
-      throw ChartError('只能是 String、DateTime、num CurrentType:${data.runtimeType}');
-    }
-  }
-
-  DynamicData change(dynamic data) {
-    if (data is! String && data is! DateTime && data is! num) {
-      throw ChartError('只能是 String DateTime num CurrentType:${data.runtimeType}');
-    }
-    _data = data;
-    return this;
-  }
-
-  bool get isString {
-    return data is String;
-  }
-
-  bool get isDate {
-    return data is DateTime;
-  }
-
-  bool get isNum {
-    return data is num;
-  }
-
-  String getText([int fractionDigits = 3, Fun2<DateTime, String>? timeFormatter]) {
-    if (isString) {
-      return '$data';
-    }
-    if (isNum) {
-      return formatNumber(data as num, 1);
-    }
-
-    var time = data as DateTime;
-    if (timeFormatter != null) {
-      return timeFormatter.call(time);
-    }
-    return '${time.month.padLeft(2, '0')}-${time.day.padLeft(2, '0')}';
-  }
-
-  @override
-  String toString() {
-    if (isString) {
-      return 'Str:$data';
-    }
-    if (isNum) {
-      return "Num:${(data as num).toStringAsFixed(1)}";
-    }
-
-    var time = data as DateTime;
-    return 'Time:${time.year}-${time.month.padLeft(2, '0')}-${time.day.padLeft(2, '0')} '
-        '${time.hour.padLeft(2, '0')}:${time.minute.padLeft(2, '0')}:${time.second.padLeft(2, '0')}';
-  }
-
-  @override
-  int get hashCode {
-    return data.hashCode;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is DynamicData && other.data == data;
-  }
-}
-
 ///动态文本
 ///只接受String、TextSpan、
 class DynamicText {
@@ -244,4 +172,15 @@ class DynamicText {
   String toString() {
     return '$text';
   }
+}
+
+String getText(dynamic data){
+  if(data is String){return data;}
+
+  if(data is num){return formatNumber(data,1);}
+  if(data is DateTime){
+    return data.toString();
+  }
+  throw ChartError("only support String num DateTime");
+
 }

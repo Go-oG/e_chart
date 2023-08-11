@@ -20,7 +20,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x,LayoutType type) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x,LayoutType type) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -36,7 +36,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         Logger.w("内部状态异常 无法找到 upValue 或者downValue");
         return;
       }
-      DynamicData upValue = getUpValue(upNode), downValue = getDownValue(downNode);
+      dynamic upValue = getUpValue(upNode), downValue = getDownValue(downNode);
       if (vertical) {
         int yIndex = upNode.parent.yAxisIndex;
         var uo = coord.dataToPoint(yIndex, upValue, false).last;

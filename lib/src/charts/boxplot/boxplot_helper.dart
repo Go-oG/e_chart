@@ -15,13 +15,13 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   static const String _colRectK = "colRect";
 
   @override
-  DynamicData getUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
-    return node.data!.max.toData();
+  dynamic getUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
+    return node.data!.max;
   }
 
   @override
-  DynamicData getDownValue(SingleNode<BoxplotData, BoxplotGroup> node) {
-    return node.data!.min.toData();
+  dynamic getDownValue(SingleNode<BoxplotData, BoxplotGroup> node) {
+    return node.data!.min;
   }
 
   @override
@@ -143,10 +143,10 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   Offset _computeOffset(Rect colRect, num data, int axisIndex, bool vertical) {
     var coord = findGridCoord();
     if (vertical) {
-      return Offset((colRect.left + colRect.right) / 2, coord.dataToPoint(axisIndex, data.toData(), false).first.dy);
+      return Offset((colRect.left + colRect.right) / 2, coord.dataToPoint(axisIndex, data, false).first.dy);
     }
     return Offset(
-      coord.dataToPoint(axisIndex, data.toData(), true).first.dx,
+      coord.dataToPoint(axisIndex, data, true).first.dx,
       (colRect.top + colRect.bottom) / 2,
     );
   }

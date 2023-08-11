@@ -86,7 +86,7 @@ class CandleStickGroup extends StackGroupData<CandleStickData> {
 }
 
 class CandleStickData extends StackItemData {
-  DynamicData time;
+  dynamic time;
   double highest;
   double lowest;
   double open;
@@ -102,7 +102,7 @@ class CandleStickData extends StackItemData {
     required this.lastClose,
     super.label,
     super.id,
-  }) : super(time, max([highest, close]).toData());
+  }) : super(time, max([highest, close]));
 
   bool get isUp => close >= lastClose;
 }

@@ -1,10 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import '../stack_data.dart';
-import '../model/axis_index.dart';
-import 'column_node.dart';
-
 ///表示为系列数据
 class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
   final AxisIndex index;
@@ -20,7 +16,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
   ///极坐标使用
   Arc arc = Arc();
 
-  DynamicData getXData() {
+  dynamic getXData() {
     var result = getXNodeNull();
     if (result != null) {
       return result.data!.x;
@@ -28,7 +24,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
     throw ChartError("无法找到对应的横坐标");
   }
 
-  DynamicData getYData() {
+  dynamic getYData() {
     var result = getYNodeNull();
     if (result != null) {
       return result.data!.y;

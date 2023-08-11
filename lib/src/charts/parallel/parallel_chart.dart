@@ -45,8 +45,8 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
   }
 
   @override
-  List<DynamicData> getDimDataSet(int dim) {
-    List<DynamicData> list = [];
+  List<dynamic> getDimDataSet(int dim) {
+    List<dynamic> list = [];
     for (var group in series.data) {
       if (dim < group.data.length) {
         var data = group.data[dim];

@@ -23,21 +23,13 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       return;
     }
     if (old.scaleRatio != attrs.scaleRatio) {
-      List<DynamicData> dl = [];
-      for (var data in scale.domain) {
-        if (data is DynamicData) {
-          dl.add(data);
-        } else {
-          dl.add(DynamicData(data));
-        }
-      }
-      scale = onBuildScale(attrs, dl);
+      scale = onBuildScale(attrs, scale.domain);
       layoutResult = onLayout(attrs, scale);
     }
   }
 
   @override
-  BaseScale onBuildScale(P attrs, List<DynamicData> dataSet) {
+  BaseScale onBuildScale(P attrs, List<dynamic> dataSet) {
     num distance = attrs.distance;
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
@@ -254,11 +246,12 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     canvas.restore();
   }
 
-  List<Offset> dataToPoint(DynamicData data) {
+  List<Offset> dataToPoint(dynamic data) {
+    checkDataType(data);
     double diffY = attrs.end.dy - attrs.start.dy;
     double diffX = attrs.end.dx - attrs.start.dx;
     double at = atan2(diffY, diffX);
-    List<num> nl = scale.toRange(data.data);
+    List<num> nl = scale.toRange(data);
     List<Offset> ol = [];
     for (var d in nl) {
       double x = attrs.start.dx + d * cos(at);

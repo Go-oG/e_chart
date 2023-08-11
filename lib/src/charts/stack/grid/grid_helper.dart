@@ -124,7 +124,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
+  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
     var coord = findGridCoord();
     int yIndex = groupNode.getYAxisIndex();
     int xIndex = groupNode.getXAxisIndex();
@@ -161,7 +161,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x, LayoutType type) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
 
     int colGapCount = groupInnerCount - 1;
@@ -236,7 +236,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
         Logger.w("内部状态异常 无法找到 upValue 或者downValue");
         return;
       }
-      DynamicData upValue = getUpValue(upNode), downValue = getDownValue(downNode);
+      dynamic upValue = getUpValue(upNode), downValue = getDownValue(downNode);
       if (vertical) {
         var uo = coord.dataToPoint(yIndex, upValue, false).last;
         var downo = coord.dataToPoint(yIndex, downValue, false).first;
@@ -274,12 +274,12 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     }
   }
 
-  DynamicData getUpValue(SingleNode<T, P> node) {
-    return node.up.toData();
+  dynamic getUpValue(SingleNode<T, P> node) {
+    return node.up;
   }
 
-  DynamicData getDownValue(SingleNode<T, P> node) {
-    return node.down.toData();
+  dynamic getDownValue(SingleNode<T, P> node) {
+    return node.down;
   }
 
   @override

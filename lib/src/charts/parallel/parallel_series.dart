@@ -2,7 +2,6 @@ import 'package:e_chart/src/charts/parallel/parallel_chart.dart';
 
 import '../../core/view.dart';
 import '../../functions.dart';
-import '../../model/data.dart';
 import '../../model/enums/coordinate.dart';
 import '../../style/line_style.dart';
 import '../../core/series.dart';
@@ -42,7 +41,7 @@ class ParallelSeries extends RectSeries {
 }
 
 class ParallelGroup {
-  final List<DynamicData> data;
+  final List<dynamic> data;
   final String id;
 
   ParallelGroup(this.id, this.data);

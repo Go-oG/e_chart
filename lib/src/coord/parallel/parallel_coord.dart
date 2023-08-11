@@ -1,16 +1,6 @@
-import 'dart:math';
-
-import 'package:e_chart/src/ext/offset_ext.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../component/index.dart';
-import '../../model/data.dart';
-import '../../model/enums/direction.dart';
-import '../coord_impl.dart';
-import 'parallel_axis_impl.dart';
-import 'parallel.dart';
-import 'parallel_axis.dart';
-import 'parallel_child.dart';
 
 ///平行坐标系
 class ParallelCoordImpl extends ParallelCoord {
@@ -123,7 +113,7 @@ class ParallelCoordImpl extends ParallelCoord {
     double offsetP = horizontal ? leftOffset : topOffset;
 
     ///计算在不同布局方向上前后占用的最大高度或者宽度
-    List<Size> textSize = measureAxisNameTextMaxSize(axisMap.keys, props.direction, max(interval, props.expandWidth));
+    List<Size> textSize = measureAxisNameTextMaxSize(axisMap.keys, props.direction, max([interval, props.expandWidth]));
 
     for (var axis in props.axisList) {
       var node = axisMap[axis]!;
@@ -147,7 +137,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
       ///处理轴内部
       Rect rect = Rect.fromLTRB(tmpLeft, tmpTop, tmpRight, tmpBottom);
-      List<DynamicData> dataSet = [];
+      List<dynamic> dataSet = [];
       for (var ele in children) {
         if (ele is ParallelChild) {
           var child = ele as ParallelChild;
@@ -207,7 +197,8 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   @override
-  ParallelPosition dataToPosition(int dimIndex, DynamicData data) {
+  ParallelPosition dataToPosition(int dimIndex, dynamic data) {
+    checkDataType(data);
     ParallelAxisImpl node = axisMap[props.axisList[dimIndex]]!;
     return ParallelPosition(node.dataToPoint(data));
   }
@@ -216,7 +207,7 @@ class ParallelCoordImpl extends ParallelCoord {
 abstract class ParallelCoord extends CoordLayout<Parallel> {
   ParallelCoord(super.props);
 
-  ParallelPosition dataToPosition(int dimIndex, DynamicData data);
+  ParallelPosition dataToPosition(int dimIndex, dynamic data);
 
   Direction get direction => props.direction;
 }

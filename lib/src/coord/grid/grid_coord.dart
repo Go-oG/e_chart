@@ -119,7 +119,7 @@ class GridCoordImpl extends GridCoord {
     bool needAlignTick = false;
 
     ///收集数据信息
-    Map<XAxisImpl, List<DynamicData>> extremeMap = {};
+    Map<XAxisImpl, List<dynamic>> extremeMap = {};
     for (var ele in props.xAxisList) {
       var axis = xMap[ele]!;
       if (ele.position == Align2.start) {
@@ -130,7 +130,7 @@ class GridCoordImpl extends GridCoord {
       if (axis.axis.alignTicks) {
         needAlignTick = true;
       }
-      List<DynamicData> dl = [];
+      List<dynamic> dl = [];
       for (var child in childList) {
         dl.addAll(child.getAxisExtreme(axis.axisIndex, true));
       }
@@ -177,7 +177,7 @@ class GridCoordImpl extends GridCoord {
   void layoutYAxis(List<GridChild> childList, Rect contentBox) {
     List<YAxisImpl> leftList = [];
     List<YAxisImpl> rightList = [];
-    Map<YAxisImpl, List<DynamicData>> extremeMap = {};
+    Map<YAxisImpl, List<dynamic>> extremeMap = {};
 
     bool needAlignTick = false;
     for (var ele in props.yAxisList) {
@@ -190,7 +190,7 @@ class GridCoordImpl extends GridCoord {
       if (axis.axis.alignTicks) {
         needAlignTick = true;
       }
-      List<DynamicData> dl = [];
+      List<dynamic> dl = [];
       for (var child in childList) {
         var da = child.getAxisExtreme(axis.axisIndex, false);
         dl.addAll(da);
@@ -201,7 +201,7 @@ class GridCoordImpl extends GridCoord {
     int? splitCount;
     double rightOffset = contentBox.left;
     each(leftList, (value, i) {
-      List<DynamicData> dl = extremeMap[value] ?? [];
+      List<dynamic> dl = extremeMap[value] ?? [];
       if (i != 0) {
         rightOffset -= value.axis.offset;
       }
@@ -218,7 +218,7 @@ class GridCoordImpl extends GridCoord {
 
     double leftOffset = contentBox.right;
     each(rightList, (value, i) {
-      List<DynamicData> dl = extremeMap[value] ?? [];
+      List<dynamic> dl = extremeMap[value] ?? [];
       if (i != 0) {
         leftOffset += value.axis.offset;
       }
@@ -476,7 +476,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y) {
+  Rect dataToRect(int xAxisIndex, dynamic x, int yAxisIndex, dynamic y) {
     List<Offset> dx = getXAxis(xAxisIndex).dataToPoint(x);
     List<Offset> dy = getYAxis(yAxisIndex).dataToPoint(y);
     double l = dx[0].dx;
@@ -487,7 +487,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool xAxis) {
+  List<Offset> dataToPoint(int axisIndex, dynamic data, bool xAxis) {
     var axis = xAxis ? getXAxis(axisIndex) : getYAxis(axisIndex);
     return axis.dataToPoint(data);
   }
@@ -662,10 +662,10 @@ abstract class GridCoord extends CoordLayout<Grid> {
   RangeInfo getViewportDataRange(int axisIndex, bool isXAxis);
 
   ///该方法适用于Bar
-  Rect dataToRect(int xAxisIndex, DynamicData x, int yAxisIndex, DynamicData y);
+  Rect dataToRect(int xAxisIndex, dynamic x, int yAxisIndex, dynamic y);
 
   ///该方法适用于Line
-  List<Offset> dataToPoint(int axisIndex, DynamicData data, bool xAxis);
+  List<Offset> dataToPoint(int axisIndex, dynamic data, bool xAxis);
 
   GridAxis getAxis(int axisIndex, bool isXAxis);
 

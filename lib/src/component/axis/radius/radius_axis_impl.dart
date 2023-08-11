@@ -100,7 +100,8 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
     axisPointer.lineStyle.drawPath(canvas, paint, arc.toPath(true), drawDash: true, needSplit: false);
   }
 
-  List<num> dataToRadius(DynamicData data) {
-    return scale.toRange(data.data);
+  List<num> dataToRadius(dynamic data) {
+    checkDataType(data);
+    return scale.toRange(data);
   }
 }

@@ -30,7 +30,7 @@ class MarkPoint {
 }
 
 class MarkPointData {
-  final List<DynamicData>? data;
+  final List<dynamic>? data;
 
   final ValueType? valueType;
   final int? valueDimIndex;
@@ -49,7 +49,7 @@ class MarkPointData {
     }
   }
 
-  MarkPointData.data(List<DynamicData> data) : this._(data: data);
+  MarkPointData.data(List<dynamic> data) : this._(data: data);
 
   MarkPointData.type(ValueType type, int dimIndex) : this._(valueType: type, valueDimIndex: dimIndex);
 
@@ -59,7 +59,7 @@ class MarkPointData {
 class MarkPointNode {
   final MarkPoint markPoint;
   Offset offset = Offset.zero;
-  DynamicData data;
+  dynamic data;
 
   MarkPointNode(this.markPoint, this.data);
 }

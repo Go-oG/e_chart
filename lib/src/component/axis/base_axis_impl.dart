@@ -22,7 +22,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   void doMeasure(double parentWidth, double parentHeight) {}
 
-  void doLayout(L attrs, List<DynamicData> dataSet) {
+  void doLayout(L attrs, List<dynamic> dataSet) {
     this.attrs = attrs;
     scale = onBuildScale(attrs, dataSet);
     titleNode.config = onLayoutAxisName();
@@ -31,14 +31,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   void onAttrsChange(L attrs) {
     this.attrs = attrs;
-    List<DynamicData> dl = [];
-    for (var data in scale.domain) {
-      if (data is DynamicData) {
-        dl.add(data);
-      } else {
-        dl.add(DynamicData(data));
-      }
-    }
+    List<dynamic> dl = scale.domain;
     scale = onBuildScale(attrs, dl);
     titleNode.config = onLayoutAxisName();
     layoutResult = onLayout(attrs, scale);
@@ -46,7 +39,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   R onLayout(L attrs, BaseScale scale);
 
-  BaseScale onBuildScale(L attrs, List<DynamicData> dataSet);
+  BaseScale onBuildScale(L attrs, List<dynamic> dataSet);
 
   TextDrawInfo onLayoutAxisName();
 
@@ -154,9 +147,6 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   }
 
   bool matchType(dynamic data) {
-    if (data is DynamicData) {
-      data = data.data;
-    }
     if (data is String && scale.isCategory) {
       return true;
     }
@@ -175,9 +165,6 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   }
 
   DynamicText formatData(dynamic data) {
-    if (data is DynamicData) {
-      data = data.data;
-    }
     if (data is DynamicText) {
       return data;
     }
@@ -203,15 +190,15 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   }
 
   ///将指定的参数转换为标度尺
-  static BaseScale toScale(BaseAxis axis, List<num> range, List<DynamicData> dataSet, int? splitCount, [double scaleFactor = 1]) {
+  static BaseScale toScale(BaseAxis axis, List<num> range, List<dynamic> dataSet, int? splitCount, [double scaleFactor = 1]) {
     if (axis.isCategoryAxis) {
       List<String> sl = List.from(axis.categoryList);
       if (sl.isEmpty) {
         Set<String> dSet = {};
         for (var data in dataSet) {
-          if (data.isString && !dSet.contains(data.data as String)) {
-            sl.add(data.data);
-            dSet.add(data.data);
+          if (data is String && !dSet.contains(data)) {
+            sl.add(data);
+            dSet.add(data);
           }
         }
       }
@@ -224,31 +211,30 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       }
       return CategoryScale(sl, range, axis.categoryCenter);
     }
-    List<DynamicData> ds = [...dataSet];
+    List<dynamic> ds = [...dataSet];
     if (axis.min != null) {
       if (axis.min != 0 || axis.start0) {
-        ds.add(DynamicData(axis.min));
+        ds.add(axis.min);
       }
     }
     if (axis.max != null) {
-      ds.add(DynamicData(axis.max));
+      ds.add(axis.max);
     }
-
     if (axis.timeRange != null) {
-      ds.add(DynamicData(axis.timeRange!.start));
-      ds.add(DynamicData(axis.timeRange!.end));
+      ds.add(axis.timeRange!.start);
+      ds.add(axis.timeRange!.end);
     }
 
     List<num> list = [];
     List<DateTime> timeList = [];
     for (var data in ds) {
-      if (data.isString) {
+      if (data is String) {
         continue;
       }
-      if (data.isNum) {
-        list.add(data.data);
-      } else if (data.isDate) {
-        timeList.add(data.data);
+      if (data is num) {
+        list.add(data);
+      } else if (data is DateTime) {
+        timeList.add(data);
       }
     }
 

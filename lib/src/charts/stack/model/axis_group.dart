@@ -1,12 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 
-import '../../../model/data.dart';
-import '../../../utils/math_util.dart';
-import '../node/single_node.dart';
-import '../stack_data.dart';
-import '../node/group_node.dart';
-import 'axis_index.dart';
-
 ///存储数据处理结果
 class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
   ///存储不同坐标轴的数据
@@ -71,20 +64,19 @@ class DataStore<T> {
       if (key == null) {
         continue;
       }
-      var data = (key is DynamicData) ? (key.data) : key;
-      if (data is String) {
-        List<T> strList = _strMap[data] ?? [];
-        _strMap[data] = strList;
+      if (key is String) {
+        List<T> strList = _strMap[key] ?? [];
+        _strMap[key] = strList;
         strList.add(node);
         continue;
       }
-      if (data is DateTime) {
-        List<T> timeList = _timeMap[data.millisecondsSinceEpoch] ?? [];
-        _timeMap[data.millisecondsSinceEpoch] = timeList;
+      if (key is DateTime) {
+        List<T> timeList = _timeMap[key.millisecondsSinceEpoch] ?? [];
+        _timeMap[key.millisecondsSinceEpoch] = timeList;
         timeList.add(node);
         continue;
       }
-      if (data is num) {
+      if (key is num) {
         numList.add(node);
       }
     }
@@ -96,11 +88,7 @@ class DataStore<T> {
       _numBase = 1;
     } else {
       List<num> ext = extremes(numList, (p0) {
-        var td = accessor.call(p0);
-        if (td is DynamicData) {
-          return td.data;
-        }
-        return td;
+        return accessor.call(p0);
       });
       num diff = (ext.last - ext.first).abs();
       if (diff == 0) {
@@ -109,9 +97,8 @@ class DataStore<T> {
       _numBase = diff / _soreSize;
     }
     for (var node in numList) {
-      dynamic key = accessor.call(node);
-      num data = (key is DynamicData) ? key.data : key;
-      int page = (data / _numBase).floor();
+      num key = accessor.call(node) as num;
+      int page = (key / _numBase).floor();
       List<T> nl = _numMap[page] ?? [];
       _numMap[page] = nl;
       nl.add(node);

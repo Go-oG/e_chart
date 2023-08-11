@@ -5,7 +5,7 @@ abstract class PolarChild  {
     return 0;
   }
 
-  List<DynamicData> getAngleExtreme();
+  List<dynamic> getAngleExtreme();
 
-  List<DynamicData> getRadiusExtreme();
+  List<dynamic> getRadiusExtreme();
 }

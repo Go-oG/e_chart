@@ -37,16 +37,16 @@ class BoxplotSeries extends StackSeries<BoxplotData, BoxplotGroup> {
   }
 
   @override
-  AreaStyle? getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+  AreaStyle? getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, int styleIndex, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
       return areaStyleFun?.call(data, group, status ?? {});
     }
     var chartTheme = context.option.theme;
-    return AreaStyle(color: chartTheme.getColor(groupIndex)).convert(status);
+    return AreaStyle(color: chartTheme.getColor(styleIndex)).convert(status);
   }
 
   @override
-  LineStyle? getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, int groupIndex, [Set<ViewState>? status]) {
+  LineStyle? getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, int styleIndex, [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
       return lineStyleFun?.call(data, group, status ?? {});
     }
@@ -80,7 +80,7 @@ class BoxplotData extends StackItemData {
   num min;
 
   BoxplotData({
-    required DynamicData x,
+    required dynamic x,
     required this.max,
     required this.upAve4,
     required this.middle,
@@ -88,5 +88,5 @@ class BoxplotData extends StackItemData {
     required this.min,
     super.label,
     super.id,
-  }) : super(x, DynamicData(max));
+  }) : super(x, max);
 }

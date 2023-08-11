@@ -18,7 +18,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, DynamicData x,LayoutType type) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -27,17 +27,16 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     final bool vertical = series.direction == Direction.vertical;
     final Arc arc = groupNode.arc;
 
-    DynamicData tmpData = DynamicData(0);
     each(groupNode.nodeList, (colNode, i) {
       var coord = findPolarCoord();
 
       PolarPosition up, down;
       if (vertical) {
-        up = coord.dataToPosition(x, tmpData.change(colNode.getUp()));
-        down = coord.dataToPosition(x, tmpData.change(colNode.getDown()));
+        up = coord.dataToPosition(x, colNode.getUp());
+        down = coord.dataToPosition(x, colNode.getDown());
       } else {
-        up = coord.dataToPosition(tmpData.change(colNode.getUp()), x);
-        down = coord.dataToPosition(tmpData.change(colNode.getDown()), x);
+        up = coord.dataToPosition(colNode.getUp(), x);
+        down = coord.dataToPosition(colNode.getDown(), x);
       }
 
       num dx = (up.radius[0] - down.radius[0]).abs();
@@ -54,7 +53,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutNode(var columnNode, AxisIndex xIndex,LayoutType type) {
+  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {
@@ -64,9 +63,9 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       }
       PolarPosition p;
       if (vertical) {
-        p = coord.dataToPosition(data.x, DynamicData(node.up));
+        p = coord.dataToPosition(data.x, node.up);
       } else {
-        p = coord.dataToPosition(DynamicData(node.up), data.x);
+        p = coord.dataToPosition(node.up, data.x);
       }
       if (vertical) {
         num r = (p.radius.first + p.radius.last) / 2;
@@ -140,7 +139,8 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     _lineList = resultList;
   }
 
-  LineNode buildNormalResult(int groupIndex, int styleIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
+  LineNode buildNormalResult(
+      int groupIndex, int styleIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
     List<PathNode> borderList = _buildBorderPath(list);
     List<Offset?> ol = _collectOffset(list);
     Map<StackItemData, SymbolNode> nodeMap = {};

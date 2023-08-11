@@ -6,13 +6,13 @@ abstract class GridChild {
 
   ///返回指定坐标轴上文字字符最多的文本
   DynamicText getAxisMaxText(int axisIndex, bool isXAxis) {
-    List<DynamicData> dl = getAxisExtreme(axisIndex, isXAxis);
+    List<dynamic> dl = getAxisExtreme(axisIndex, isXAxis);
     if (dl.isEmpty) {
       return DynamicText.empty;
     }
-    String text = dl.first.getText();
+    String text = getText(dl.first);
     for (var data in dl) {
-      String str = data.getText();
+      String str =getText(data);
       if (str.length > text.length) {
         text = str;
       }
@@ -21,6 +21,6 @@ abstract class GridChild {
   }
 
   ///返回指定坐标轴上的极值
-  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis);
+  List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis);
 
 }

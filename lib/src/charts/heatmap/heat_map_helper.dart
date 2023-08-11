@@ -52,7 +52,7 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries, List<HeatMapData>> {
       if (gridLayout != null) {
         rect = gridLayout.dataToRect(0, data.x, 0, data.y);
       } else if (calendarLayout != null) {
-        rect = calendarLayout.dataToPosition(data.x.data);
+        rect = calendarLayout.dataToPosition(data.x);
       }
       if (rect == null) {
         throw ChartError('无法布局 $gridLayout  $calendarLayout');

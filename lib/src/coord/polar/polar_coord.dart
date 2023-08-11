@@ -1,7 +1,5 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/axis/radius/radius_attrs.dart';
-import 'package:e_chart/src/component/axis/radius/radius_axis_impl.dart';
 import 'package:flutter/material.dart';
 
 ///用于实现极坐标系
@@ -69,8 +67,8 @@ class PolarCoordImpl extends PolarCoord {
     }
   }
 
-  List<DynamicData> _getAngleDataSet() {
-    List<DynamicData> list = [];
+  List<dynamic> _getAngleDataSet() {
+    List<dynamic> list = [];
     for (var child in children) {
       if (child is! PolarChild) {
         continue;
@@ -81,8 +79,8 @@ class PolarCoordImpl extends PolarCoord {
     return list;
   }
 
-  List<DynamicData> _getRadiusDataSet() {
-    List<DynamicData> list = [];
+  List<dynamic> _getRadiusDataSet() {
+    List<dynamic> list = [];
     for (var child in children) {
       if (child is! PolarChild) {
         continue;
@@ -100,7 +98,9 @@ class PolarCoordImpl extends PolarCoord {
   }
 
   @override
-  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData) {
+  PolarPosition dataToPosition(dynamic radiusData, dynamic angleData) {
+    checkDataType(radiusData);
+    checkDataType(angleData);
     List<num> angles = _angleAxis.dataToAngle(angleData);
     List<num> r = _radiusAxis.dataToRadius(radiusData);
     if (props.radius.length > 1) {
@@ -134,13 +134,15 @@ class PolarCoordImpl extends PolarCoord {
   }
 
   @override
-  PolarPosition dataToAnglePosition(DynamicData angleData) {
+  PolarPosition dataToAnglePosition(dynamic angleData) {
+    checkDataType(angleData);
     List<num> angles = _angleAxis.dataToAngle(angleData);
     return PolarPosition(center, [], angles);
   }
 
   @override
-  PolarPosition dataToRadiusPosition(DynamicData radiusData) {
+  PolarPosition dataToRadiusPosition(dynamic radiusData) {
+    checkDataType(radiusData);
     List<num> r = _radiusAxis.dataToRadius(radiusData);
     if (props.radius.length > 1) {
       double ir = _radiusAxis.attrs.start.distance2(_radiusAxis.attrs.center);
@@ -160,11 +162,11 @@ class PolarCoordImpl extends PolarCoord {
 abstract class PolarCoord extends CircleCoordLayout<Polar> {
   PolarCoord(super.props);
 
-  PolarPosition dataToPosition(DynamicData radiusData, DynamicData angleData);
+  PolarPosition dataToPosition(dynamic radiusData, dynamic angleData);
 
-  PolarPosition dataToRadiusPosition(DynamicData radiusData);
+  PolarPosition dataToRadiusPosition(dynamic radiusData);
 
-  PolarPosition dataToAnglePosition(DynamicData angleData);
+  PolarPosition dataToAnglePosition(dynamic angleData);
 
   Offset getCenter();
 

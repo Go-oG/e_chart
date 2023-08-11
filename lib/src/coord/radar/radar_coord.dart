@@ -88,14 +88,14 @@ class RadarCoordImpl extends RadarCoord {
     }
   }
 
-  List<DynamicData> collectChildData(int dim) {
-    List<DynamicData> list = [];
+  List<dynamic> collectChildData(int dim) {
+    List<dynamic> list = [];
     for (var child in children) {
       if (child is! RadarChild) {
         continue;
       }
       (child as RadarChild).dataSet(dim).forEach((element) {
-        list.add(DynamicData(element));
+        list.add(element);
       });
     }
     return list;

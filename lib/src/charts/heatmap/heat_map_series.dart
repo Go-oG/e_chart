@@ -91,9 +91,12 @@ class HeatMapSeries extends RectSeries {
 }
 
 class HeatMapData extends BaseItemData {
-  DynamicData x;
-  DynamicData y;
+  dynamic x;
+  dynamic y;
   num value;
 
-  HeatMapData(this.x, this.y, this.value, {super.id, super.label});
+  HeatMapData(this.x, this.y, this.value, {super.id, super.label}){
+    checkDataType(x);
+    checkDataType(y);
+  }
 }

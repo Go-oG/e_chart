@@ -42,8 +42,9 @@ class XAxisImpl extends BaseGridAxisImpl {
   }
 
   @override
-  List<Offset> dataToPoint(DynamicData data) {
-    List<num> nl = scale.toRange(data.data);
+  List<Offset> dataToPoint(dynamic data) {
+    checkDataType(data);
+    List<num> nl = scale.toRange(data);
     List<Offset> ol = [];
     for (var d in nl) {
       ol.add(Offset(d.toDouble(), attrs.start.dy));

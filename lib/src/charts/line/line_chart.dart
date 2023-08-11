@@ -214,17 +214,17 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   @override
-  List<DynamicData> getAxisExtreme(int axisIndex, bool isXAxis) {
+  List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
     return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
   }
 
   @override
-  List<DynamicData> getAngleExtreme() {
+  List<dynamic> getAngleExtreme() {
     return getAxisExtreme(0, false);
   }
 
   @override
-  List<DynamicData> getRadiusExtreme() {
+  List<dynamic> getRadiusExtreme() {
     return getAxisExtreme(0, true);
   }
 
