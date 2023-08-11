@@ -54,16 +54,15 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
       var data = node.data!;
       var group = node.parent;
       var as = layoutHelper.buildAreaStyle(data, group, node.styleIndex, node.status);
-
       var ls = layoutHelper.buildLineStyle(data, group, node.styleIndex, node.status);
       node.areaStyle = as;
       node.lineStyle = ls;
-      if (as == null && ls == null) {
-        return;
-      }
-      Corner corner = series.corner;
-      if (series.cornerFun != null) {
-        corner = series.cornerFun!.call(data, group, node.status);
+      Corner? corner;
+      if (as != null && ls != null) {
+        corner = series.corner;
+        if (series.cornerFun != null) {
+          corner = series.cornerFun!.call(data, group, node.status);
+        }
       }
       as?.drawRect(canvas, mPaint, node.rect, corner);
       ls?.drawRect(canvas, mPaint, node.rect, corner);
@@ -87,7 +86,12 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
       if (style == null || !style.show) {
         return;
       }
-      DynamicText? text = series.formatData(context, data, group);
+      DynamicText? text;
+      if (node.dynamicLabel != null) {
+        text = formatData(node.dynamicLabel!, data, group, node.status);
+      } else {
+        text = series.formatData(context, data, group);
+      }
       if (text == null || text.isEmpty) {
         return;
       }
@@ -115,7 +119,27 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
   }
 
   @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
-    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis);
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
+    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis, scale);
+  }
+
+  DynamicText? formatData(dynamic data, T node, G group, Set<ViewState> status) {
+    if (data is DynamicText) {
+      return data;
+    }
+    if (series.labelFormatFun != null) {
+      return series.labelFormatFun?.call(data, node, group, status);
+    }
+
+    if (data is String) {
+      return DynamicText(data);
+    }
+    if (data is DateTime) {
+      return data.toString().toText();
+    }
+    if (data is num) {
+      return DynamicText.fromString(formatNumber(data, 2));
+    }
+    return data.toString().toText();
   }
 }

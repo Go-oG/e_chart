@@ -78,10 +78,10 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
+  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
     _animatorPercent = 0;
-    await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    await _updateLine(newNodeList);
+    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    _updateLine(newNodeList);
   }
 
   @override
@@ -92,7 +92,6 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
 
   @override
   void onAnimatorUpdateEnd(var result, double t) {
-    super.onAnimatorUpdateEnd(result, t);
     _animatorPercent = t;
   }
 
@@ -102,7 +101,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     _animatorPercent = 1;
   }
 
-  Future<void> _updateLine(List<SingleNode<StackItemData, LineGroupData>> list) async {
+  void _updateLine(List<SingleNode<StackItemData, LineGroupData>> list)  {
     Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> tmpNodeMap = {};
     for (var node in list) {
       List<SingleNode<StackItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];

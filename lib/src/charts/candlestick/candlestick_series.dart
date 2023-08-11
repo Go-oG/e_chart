@@ -6,6 +6,7 @@ import 'package:e_chart/src/charts/candlestick/candlestick_chart.dart';
 class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
   CandleStickSeries(
     super.data, {
+    super.dynamicRange = true,
     super.gridIndex = 0,
     super.areaStyleFun,
     super.columnGap,
@@ -23,19 +24,19 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
     super.markLineFun,
     super.markPoint,
     super.markPointFun,
-    super.animation = const AnimatorAttrs(duration: Duration(milliseconds: 800), updateDuration: Duration(milliseconds: 500)),
+    super.animation =
+        const AnimatorAttrs(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
     super.tooltip,
     super.backgroundColor,
     super.id,
     super.clip,
     super.z,
   }) : super(
-          coordSystem: CoordSystem.grid,
-          polarIndex: -1,
-          direction: Direction.vertical,
-          realtimeSort: false,
-          selectedMode: SelectedMode.single,
-        );
+            coordSystem: CoordSystem.grid,
+            polarIndex: -1,
+            direction: Direction.vertical,
+            realtimeSort: false,
+            selectedMode: SelectedMode.single);
 
   @override
   ChartView? toView() {
@@ -43,7 +44,8 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
   }
 
   @override
-  AreaStyle? getAreaStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex, [Set<ViewState>? status]) {
+  AreaStyle? getAreaStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex,
+      [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
       return areaStyleFun?.call(data, group, status ?? {});
     }
@@ -59,7 +61,8 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
   }
 
   @override
-  LineStyle? getLineStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex, [Set<ViewState>? status]) {
+  LineStyle? getLineStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex,
+      [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
       return lineStyleFun!.call(data, group, status ?? {});
     }
@@ -105,4 +108,13 @@ class CandleStickData extends StackItemData {
   }) : super(time, max([highest, close]));
 
   bool get isUp => close >= lastClose;
+
+  @override
+  num get minValue => lowest;
+
+  @override
+  num get maxValue => highest;
+
+  @override
+  num get aveValue => (lowest + highest) / 2;
 }

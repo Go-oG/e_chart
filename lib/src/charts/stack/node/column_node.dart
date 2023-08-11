@@ -50,31 +50,38 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   }
 
   void mergeData() {
-    num up = 0;
+    num? up;
+    final bool negative = strategy == StackStrategy.negative;
+    final bool positive = strategy == StackStrategy.positive;
+    final bool all = strategy == StackStrategy.all;
+    final bool samesign = strategy == StackStrategy.samesign;
+
     for (int i = 0; i < nodeList.length; i++) {
-      var cd = nodeList[i];
-      var itemData = cd.data;
+      var cn = nodeList[i];
+      var itemData = cn.data;
       if (itemData == null) {
-        cd.up = up;
         continue;
       }
-      if (i == 0) {
-        if (strategy == StackStrategy.all ||
-            strategy == StackStrategy.samesign ||
-            (strategy == StackStrategy.positive && itemData.value > 0 && isStack) ||
-            (strategy == StackStrategy.negative && itemData.value < 0 && isStack)) {
-          up = itemData.value;
-          cd.up = itemData.value;
-          cd.down = 0;
+      bool minZero = itemData.minValue > 0;
+      bool maxZero = itemData.maxValue < 0;
+      if (up == null) {
+        if (all || samesign || (positive && minZero && isStack) || (negative && maxZero && isStack)) {
+          up = itemData.maxValue;
+          cn.up = itemData.maxValue;
+          cn.down = itemData.minValue;
         }
-      } else {
-        if (strategy == StackStrategy.all ||
-            (strategy == StackStrategy.samesign && (itemData.value <= 0 && up <= 0 || (itemData.value >= 0 && up >= 0))) ||
-            (strategy == StackStrategy.positive && itemData.value > 0) ||
-            (strategy == StackStrategy.negative && itemData.value < 0)) {
-          cd.down = up;
-          cd.up = up + itemData.value;
-          up = cd.up;
+        continue;
+      }
+      bool sameZero = (itemData.maxValue <= 0 && up <= 0) || (itemData.minValue >= 0 && up >= 0);
+      if (all || (samesign && sameZero) || (positive && minZero) || (negative && maxZero)) {
+        if (negative || (samesign && up < 0)) {
+          cn.up = up;
+          cn.down = up + itemData.minValue;
+          up = cn.down;
+        } else {
+          cn.down = up;
+          cn.up = up + itemData.maxValue;
+          up = cn.up;
         }
       }
     }

@@ -23,6 +23,6 @@ abstract class GridChild {
   ///返回指定坐标轴上的极值
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis);
 
-  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis);
+  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis,BaseScale scale);
 
 }

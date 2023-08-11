@@ -118,7 +118,7 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   }
 
   @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis,BaseScale scale) {
     return getAxisExtreme(axisIndex, isXAxis);
   }
 

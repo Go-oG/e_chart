@@ -221,8 +221,8 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
-    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis);
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis,BaseScale scale) {
+    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis,scale);
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class YAxisImpl extends XAxisImpl {
   YAxisImpl(super.direction, super.context, super.coord, super.axis, {super.axisIndex});
-  
+
   @override
   void doMeasure(double parentWidth, double parentHeight) {
     double length = parentHeight;
@@ -76,5 +76,11 @@ class YAxisImpl extends XAxisImpl {
       }
     }
     return [startIndex, endIndex];
+  }
+
+  @override
+  dynamic pxToData(num position) {
+    var diff = position - attrs.start.dy;
+    return scale.toData(diff);
   }
 }

@@ -66,22 +66,27 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
 
   void onContentScrollEnd(Offset offset) {}
 
-  void onContentScaleUpdate(double sx,double sy){}
+  void onContentScaleUpdate(double sx, double sy) {}
 
-  void onLayoutByParent(LayoutType type){}
+  void onLayoutByParent(LayoutType type) {}
 
   ///dataZoom
   void onDataZoom(DataZoomEvent event) {}
 
-  void sendClickEvent(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(ClickEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
+  void sendClickEvent(Offset offset, dynamic data,
+      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    context.dispatchEvent(
+        ClickEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
   }
 
-  void sendHoverInEvent(Offset offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(HoverInEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
+  void sendHoverInEvent(Offset offset, dynamic data,
+      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    context.dispatchEvent(
+        HoverInEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
   }
 
-  void sendHoverOutEvent(Offset? offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+  void sendHoverOutEvent(Offset? offset, dynamic data,
+      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     context.dispatchEvent(HoverOutEvent(buildEventParams(
       offset,
       data,
@@ -91,7 +96,8 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
     )));
   }
 
-  EventParams buildEventParams(Offset? offset, dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+  EventParams buildEventParams(Offset? offset, dynamic data,
+      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     return EventParams(
       offset: offset,
       componentType: ComponentType.series,

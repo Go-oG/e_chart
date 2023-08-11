@@ -190,7 +190,8 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   }
 
   ///将指定的参数转换为标度尺
-  static BaseScale toScale(BaseAxis axis, List<num> range, List<dynamic> dataSet, int? splitCount, [double scaleFactor = 1]) {
+  static BaseScale toScale(BaseAxis axis, List<num> range, List<dynamic> dataSet, int? splitCount,
+      [double scaleFactor = 1]) {
     if (axis.isCategoryAxis) {
       List<String> sl = List.from(axis.categoryList);
       if (sl.isEmpty) {
@@ -259,21 +260,19 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       }
       return TimeScale(axis.timeType, resultList, range);
     }
-
     list.sort();
-    if (!axis.start0 && list.first == 0) {
-      list.removeAt(0);
+
+    if (!axis.start0) {
+      list.removeWhere((element) => element == 0);
     }
 
-    if (list.length < 2) {
-      if (list.length == 1) {
-        list.add(list.first + 100);
+    if (list.isEmpty) {
+      list.addAll([axis.start0 ? 0 : 1, 100]);
+    } else if (list.length == 1) {
+      if (list.first < 0) {
+        list.add(axis.start0 ? 0 : list.first - 100);
       } else {
-        if (axis.start0) {
-          list.addAll([0, 100]);
-        } else {
-          list.addAll([1, 100]);
-        }
+        list.add(axis.start0 ? 0 : list.first + 100);
       }
     }
 

@@ -28,7 +28,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   StackHelper(super.context, super.series);
 
   @override
-  void onLayout(List<P> data, LayoutType type) async {
+  void onLayout(List<P> data, LayoutType type) {
     var helper = series.helper;
     AxisGroup<T, P> axisGroup = helper.result;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
@@ -84,7 +84,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     var oldNodeMap = _nodeMap;
     final List<SingleNode<T, P>> newNodeList = List.from(newNodeMap.values, growable: false);
     _onLayoutMarkPointAndLine(data, newNodeList, newNodeMap);
-    await onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
     notifyLayoutUpdate();
   }
 
@@ -101,7 +101,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     }
     return showNodeMap[node.data!] == null || node.rect.isEmpty;
   }
-
 
   ///实现该方法从而布局单个Group(不需要布局其孩子)
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type);
@@ -222,7 +221,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         return null;
       }
 
-      var node = MarkPointNode(markPoint, data.value);
+      var node = MarkPointNode(markPoint, data);
       if (coordSystem == CoordSystem.polar) {
         var arc = snode.arc;
         node.offset = circlePoint(arc.outRadius, arc.centerAngle(), arc.center);
@@ -270,13 +269,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   ///由[onLayout]最后回调
   ///可以在这里进行动画相关的处理
-  Future<void> onLayoutEnd(
-    List<SingleNode<T, P>> oldNodeList,
-    Map<T, SingleNode<T, P>> oldNodeMap,
-    List<SingleNode<T, P>> newNodeList,
-    Map<T, SingleNode<T, P>> newNodeMap,
-    LayoutType type,
-  ) async {
+  void onLayoutEnd(List<SingleNode<T, P>> oldNodeList, Map<T, SingleNode<T, P>> oldNodeMap,
+      List<SingleNode<T, P>> newNodeList, Map<T, SingleNode<T, P>> newNodeMap, LayoutType type) {
     if (!needRunAnimator(type)) {
       _nodeMap = newNodeMap;
       showNodeMap = Map.from(newNodeMap);
@@ -346,12 +340,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   void onAnimatorStart(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {}
 
-  void onAnimatorUpdate(
-    SingleNode<T, P> node,
-    double t,
-    Map<SingleNode<T, P>, AnimatorNode> startMap,
-    Map<SingleNode<T, P>, AnimatorNode> endMap,
-  ) {}
+  void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleNode<T, P>, AnimatorNode> startMap,
+      Map<SingleNode<T, P>, AnimatorNode> endMap);
 
   void onAnimatorUpdateEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result, double t) {}
 
@@ -369,7 +359,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return series.helper.getMainExtreme(system, axisIndex);
   }
 
-  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
+  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     List<dynamic> dl = [];
     showNodeMap.forEach((key, value) {
       if (value.data == null) {
@@ -382,10 +372,15 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       if (index != axisIndex) {
         return;
       }
-      if (isXAxis) {
-        dl.add(value.data!.x);
+      if (series.isVertical && !isXAxis || (!series.isVertical && isXAxis)) {
+        dl.add(value.data!.minValue);
+        dl.add(value.data!.maxValue);
       } else {
-        dl.add(value.data!.y);
+        if (isXAxis) {
+          dl.add(value.data!.x);
+        } else {
+          dl.add(value.data!.y);
+        }
       }
     });
     return dl;

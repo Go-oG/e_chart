@@ -38,12 +38,10 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   @override
   void onLayout(List<P> data, LayoutType type) {
     if (_tmpType != null) {
-      var t = _tmpType!;
+      type = _tmpType!;
       _tmpType = null;
-      super.onLayout(data, t);
-    } else {
-      super.onLayout(data, type);
     }
+    super.onLayout(data, type);
   }
 
   @override
@@ -283,9 +281,8 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
+  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
     if (oldNodeList.isEmpty && newNodeList.isEmpty) {
-      Logger.i("onLayoutEnd:() ${newNodeList.length} ${oldNodeList.length}");
       return;
     }
 
@@ -383,11 +380,17 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     if (series.animatorStyle == GridAnimatorStyle.expand) {
       r = Rect.lerp(s, e, t)!;
     } else {
-      if (series.direction == Direction.vertical) {
+      if (series.isVertical) {
         r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
       } else {
         r = Rect.fromLTWH(e.left, e.top, e.width * t, e.height);
       }
+    }
+    if (series.realtimeSort && series.dynamicLabel) {
+      var axisIndex = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
+      node.dynamicLabel = findGridCoord().pxToData(axisIndex, !series.isVertical, series.isVertical ? r.top : r.right);
+    } else {
+      node.dynamicLabel = null;
     }
     node.rect = r;
   }
@@ -395,6 +398,14 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   @override
   void onContentScrollChange(Offset offset) {
     onLayout(series.data, LayoutType.none);
+    if (!series.dynamicRange) {
+      return;
+    }
+    if (series.isVertical) {
+      findGridCoord().onAdjustAxisDataRange(AdjustAttr(false));
+    } else {
+      findGridCoord().onAdjustAxisDataRange(AdjustAttr(true));
+    }
   }
 
   @override

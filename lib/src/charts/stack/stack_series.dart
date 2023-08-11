@@ -27,19 +27,21 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   Color groupHoverColor = const Color(0xFFE3F2FD);
   ChartAlign? labelAlign;
 
-  ///该动画样式只在柱状图中使用
-  GridAnimatorStyle animatorStyle;
-
   // 是否启用图例hover的联动高亮
   bool legendHoverLink;
 
   ///是否启用实时排序(只在柱状图中生效)
-  ///当启用了实时排序则只能但一个堆叠组
   bool realtimeSort;
+  bool dynamicLabel;
   Sort sort;
   int? sortCount;
 
-  LabelStyle? labelStyle;
+  ///是否启用坐标轴数据动态范围(如果启用了，那么坐标轴将实时变化)
+  ///需要搭配 坐标轴start0 使用
+  bool dynamicRange;
+
+  ///该动画样式只在柱状图中使用
+  GridAnimatorStyle animatorStyle;
 
   ///在折线图中 area对应分割区域，柱状图中为Bar的区域
   Fun4<T?, G, Set<ViewState>, AreaStyle?>? areaStyleFun;
@@ -48,12 +50,13 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   Fun4<T?, G, Set<ViewState>, LineStyle?>? lineStyleFun;
 
   /// 标签转换
-  Fun4<T, G, Set<ViewState>, DynamicText?>? labelFormatFun;
+  Fun5<dynamic,T, G, Set<ViewState>, DynamicText?>? labelFormatFun;
 
   /// 标签对齐
   Fun4<T, G, Set<ViewState>, ChartAlign>? labelAlignFun;
 
   /// 标签样式
+  LabelStyle? labelStyle;
   Fun4<T, G, Set<ViewState>, LabelStyle?>? labelStyleFun;
 
   Fun4<T, G, Set<ViewState>, Corner>? cornerFun;
@@ -74,8 +77,10 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     this.direction = Direction.vertical,
     this.selectedMode = SelectedMode.group,
     this.animatorStyle = GridAnimatorStyle.expand,
+    this.dynamicRange = false,
     this.legendHoverLink = true,
     this.realtimeSort = false,
+    this.dynamicLabel = false,
     this.sort = Sort.asc,
     this.sortCount,
     this.corner = Corner.zero,
@@ -162,7 +167,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
 
   DynamicText? formatData(Context context, T data, G group, [Set<ViewState>? status]) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data, group, status ?? {});
+      return labelFormatFun?.call(data,data, group, status ?? {});
     }
     return formatNumber(data.stackUp).toText();
   }

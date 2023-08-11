@@ -1,5 +1,5 @@
-import 'dart:ui';
-
+import 'package:flutter/material.dart';
+import 'tooltip_theme.dart' as tp;
 import '../index.dart';
 import 'chart/line_theme.dart';
 
@@ -28,11 +28,11 @@ class ChartTheme {
   num borderWidth = 0;
   Color legendTextColor = const Color(0xFF333333);
 
-  Color labelTextColor = const Color(0xFFFFFFFF);
+  Color labelTextColor = Colors.black87;
   double labelTextSize = 13;
 
   ///通用组件主题
-  TooltipTheme tooltipTheme = TooltipTheme();
+  tp.TooltipTheme tooltipTheme = tp.TooltipTheme();
   MarkPointTheme markPointTheme = MarkPointTheme();
   VisualMapTheme visualMapTheme = VisualMapTheme();
 

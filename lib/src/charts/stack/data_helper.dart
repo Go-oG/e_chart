@@ -248,23 +248,21 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     bool polar = system == CoordSystem.polar;
     bool vertical = direction == Direction.vertical;
 
-    Map<int, num> crossMinMap = {};
-    Map<int, num> crossMaxMap = {};
-
     Map<int, SingleNode<T, P>> mainNumMaxMap = {};
     Map<int, SingleNode<T, P>> mainNumMinMap = {};
-
     Map<int, SingleNode<T, P>> mainTimeMaxMap = {};
     Map<int, SingleNode<T, P>> mainTimeMinMap = {};
-
     Map<int, List<SingleNode<T, P>>> mainStrMap = {};
+
+    Map<int, num> crossMinMap = {};
+    Map<int, num> crossMaxMap = {};
 
     axisGroup.groupMap.forEach((key, value) {
       for (var group in value) {
         for (var column in group.nodeList) {
           for (var node in column.nodeList) {
             final group = node.parent;
-            final crossData = node.up;
+
             var mainIndex = vertical ? node.parent.xAxisIndex : node.parent.yAxisIndex;
             if (mainIndex < 0) {
               mainIndex = 0;
@@ -307,10 +305,17 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
               crossIndex = vertical ? group.yAxisIndex : group.xAxisIndex;
             }
 
-            num minValue = crossMinMap[crossIndex] ?? double.infinity;
-            num maxValue = crossMaxMap[crossIndex] ?? double.negativeInfinity;
-            minValue = min([minValue, crossData]);
-            maxValue = max([maxValue, crossData]);
+            num minValue = crossMinMap[crossIndex] ?? double.maxFinite;
+            num maxValue = crossMaxMap[crossIndex] ?? double.minPositive;
+            var crossUp = node.up;
+            var crossDown = node.down;
+            if (crossUp < crossDown) {
+              var tt = crossUp;
+              crossUp = crossDown;
+              crossDown = tt;
+            }
+            minValue = min([minValue, crossDown]);
+            maxValue = max([maxValue, crossUp]);
             crossMinMap[crossIndex] = minValue;
             crossMaxMap[crossIndex] = maxValue;
           }
@@ -320,13 +325,17 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
     Map<AxisIndex, List<num>> crossResultMap = {};
     crossMinMap.forEach((key, value) {
-      crossResultMap[AxisIndex(system, key)] = [value];
+      if (value.isFinite && value != double.maxFinite && value != double.minPositive) {
+        crossResultMap[AxisIndex(system, key)] = [value];
+      }
     });
     crossMaxMap.forEach((key, value) {
-      var axis = AxisIndex(system, key);
-      List<num> list = crossResultMap[axis] ?? [];
-      crossResultMap[axis] = list;
-      list.add(value);
+      if (value.isFinite && value != double.maxFinite && value != double.minPositive) {
+        var axis = AxisIndex(system, key);
+        List<num> list = crossResultMap[axis] ?? [];
+        crossResultMap[axis] = list;
+        list.add(value);
+      }
     });
 
     ///处理主轴数据
@@ -362,7 +371,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         return vertical ? e.data!.x : e.data!.y;
       }));
     });
-
     return AxisExtremeInfo(mainResultMap, crossResultMap);
   }
 
@@ -375,34 +383,35 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
       T? minV;
       T? maxV;
-      T? aveV;
+
       List<T> nl = [];
       for (var data in group.data) {
         if (data == null) {
           continue;
         }
         nl.add(data);
-        if (minV == null || data.value < minV.value) {
+        if (minV == null || data.minValue < minV.minValue) {
           minV = data;
         }
-        if (maxV == null || data.value > maxV.value) {
+        if (maxV == null || data.maxValue > maxV.maxValue) {
           maxV = data;
         }
       }
+
+      T? aveV;
       if (nl.isNotEmpty) {
-        num v = sumBy(nl, (p0) => p0.value) / nl.length;
+        num v = sumBy(nl, (p0) => p0.aveValue) / nl.length;
         nl.sort((a, b) {
-          return a.value.compareTo(b.value);
+          return a.aveValue.compareTo(b.aveValue);
         });
         num diff = double.maxFinite;
         for (var d in nl) {
-          if ((d.value - v).abs() < diff) {
+          if ((d.aveValue - v).abs() < diff) {
             aveV = d;
-            diff = (d.value - v).abs();
+            diff = (d.aveValue - v).abs();
           }
         }
       }
-
       map[group] = ValueInfo(group, minV, maxV, aveV);
     }
     return map;

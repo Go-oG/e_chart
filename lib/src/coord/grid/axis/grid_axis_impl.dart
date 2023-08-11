@@ -83,7 +83,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  List<LabelResult> onBuildLabelResult(LineAxisAttrs attrs, BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+  List<LabelResult> onBuildLabelResult(
+      LineAxisAttrs attrs, BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
@@ -173,6 +174,10 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   @override
   void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
+    var splitLine = axis.splitLine;
+    if (!splitLine.show) {
+      return;
+    }
     bool vertical = direction != Direction.vertical;
     double w = coord.contentBox.width;
     double h = coord.contentBox.height;
@@ -183,10 +188,18 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     } else {
       dir = axis.position == Align2.end ? -1 : 1;
     }
+
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
     canvas.clipRect(getClipRect(scroll));
     each(layoutResult.split, (split, p1) {
+      int interval = splitLine.interval;
+      if (interval > 0) {
+        interval += 1;
+      }
+      if (interval > 0 && split.index % interval != 0) {
+        return;
+      }
       LineStyle? style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
@@ -525,4 +538,5 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     return RangeInfo.range(Pair<num>(scale.toData(scroll), scale.toData(scroll + viewSize)));
   }
 
+  dynamic pxToData(num position);
 }

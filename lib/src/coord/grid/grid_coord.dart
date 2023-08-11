@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
 import 'axis/grid_axis_impl.dart';
 
 ///实现二维坐标系
@@ -84,10 +83,10 @@ class GridCoordImpl extends GridCoord {
     List<GridChild> childList = getGridChildList();
 
     ///布局X轴
-    layoutXAxis(childList, contentBox, false);
+    layoutXAxis(childList, contentBox, false, true);
 
     ///布局Y轴
-    layoutYAxis(childList, contentBox, false);
+    layoutYAxis(childList, contentBox, false, true);
 
     ///修正由于坐标系线条宽度导致的遮挡
     topOffset = topList.isEmpty ? 0 : topList.first.axis.axisLine.width / 2;
@@ -113,7 +112,7 @@ class GridCoordImpl extends GridCoord {
     }
   }
 
-  void layoutXAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme) {
+  void layoutXAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme, bool force) {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
     bool needAlignTick = false;
@@ -133,7 +132,7 @@ class GridCoordImpl extends GridCoord {
       List<dynamic> dl = [];
       for (var child in childList) {
         var rl = useViewPortExtreme
-            ? child.getViewPortAxisExtreme(axis.axisIndex, true)
+            ? child.getViewPortAxisExtreme(axis.axisIndex, true, axis.scale)
             : child.getAxisExtreme(axis.axisIndex, true);
         dl.addAll(rl);
       }
@@ -177,7 +176,7 @@ class GridCoordImpl extends GridCoord {
     });
   }
 
-  void layoutYAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme) {
+  void layoutYAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme, bool force) {
     List<YAxisImpl> leftList = [];
     List<YAxisImpl> rightList = [];
     Map<YAxisImpl, List<dynamic>> extremeMap = {};
@@ -196,7 +195,7 @@ class GridCoordImpl extends GridCoord {
       List<dynamic> dl = [];
       for (var child in childList) {
         var rl = useViewPortExtreme
-            ? child.getViewPortAxisExtreme(axis.axisIndex, false)
+            ? child.getViewPortAxisExtreme(axis.axisIndex, false, axis.scale)
             : child.getAxisExtreme(axis.axisIndex, false);
         dl.addAll(rl);
       }
@@ -215,7 +214,16 @@ class GridCoordImpl extends GridCoord {
       var attrs =
           LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
       rightOffset -= w;
-      value.doLayout(attrs, dl);
+      if (!force && useViewPortExtreme && dl.length >= 2 && value.scale.isNum) {
+        dl.sort();
+        if (value.scale.domain.first == dl.first && value.scale.domain.last == dl.last) {
+        } else {
+          value.doLayout(attrs, dl);
+        }
+      } else {
+        value.doLayout(attrs, dl);
+      }
+
       if (needAlignTick && i == 0) {
         splitCount = value.scale.tickCount - 1;
       }
@@ -244,16 +252,28 @@ class GridCoordImpl extends GridCoord {
     List<GridChild> childList = getGridChildList();
 
     ///布局X轴
-    layoutXAxis(childList, contentBox, false);
+    layoutXAxis(childList, contentBox, false, true);
 
     ///布局Y轴
-    layoutYAxis(childList, contentBox, false);
+    layoutYAxis(childList, contentBox, false, true);
     if (!layoutChild) {
       return;
     }
     for (var view in children) {
       view.setForceLayout();
       view.layout(view.left, view.top, view.right, view.bottom);
+    }
+  }
+
+  @override
+  void onAdjustAxisDataRange(AdjustAttr attr) {
+    if (attr.xAxis) {
+      layoutXAxis(getGridChildList(), contentBox, true, false);
+    } else {
+      layoutYAxis(getGridChildList(), contentBox, true, false);
+    }
+    for (var view in children) {
+      view.onLayoutByParent(LayoutType.none);
     }
   }
 
@@ -656,6 +676,16 @@ class GridCoordImpl extends GridCoord {
     });
     return size;
   }
+
+  @override
+  dynamic pxToData(int axisIndex, bool xAxis, num position) {
+    if (axisIndex < 0) {
+      axisIndex = 0;
+    }
+    var axis = xAxis ? props.xAxisList[axisIndex] : props.yAxisList[axisIndex];
+    var axisImpl = xAxis ? xMap[axis]! : yMap[axis]!;
+    return axisImpl.pxToData(position);
+  }
 }
 
 abstract class GridCoord extends CoordLayout<Grid> {
@@ -666,6 +696,8 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   ///该方法适用于Bar
   Rect dataToRect(int xAxisIndex, dynamic x, int yAxisIndex, dynamic y);
+
+  dynamic pxToData(int axisIndex, bool xAxis, num position);
 
   ///该方法适用于Line
   List<Offset> dataToPoint(int axisIndex, dynamic data, bool xAxis);
@@ -687,6 +719,10 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   List<GridChild> getGridChildList();
 
+  ///=====下面的方法由子视图回调
   ///当子视图的数据集发生改变时需要重新布局确定坐标系
   void onChildDataSetChange(bool layoutChild);
+
+  ///当子视图需要实现动态坐标轴时回调该方法
+  void onAdjustAxisDataRange(AdjustAttr attr);
 }

@@ -4,7 +4,8 @@ import 'package:e_chart/src/charts/bar/bar_polar_view.dart';
 import 'bar_grid_view.dart';
 
 class BarSeries extends GridSeries<StackItemData, BarGroupData> {
-  BarSeries(super.data, {
+  BarSeries(
+    super.data, {
     super.corner,
     super.columnGap,
     super.groupGap,
@@ -36,6 +37,8 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
     super.z,
     super.tooltip,
     super.labelStyle,
+    super.dynamicLabel,
+    super.dynamicRange,
   });
 
   @override

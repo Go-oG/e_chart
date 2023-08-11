@@ -1,8 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 
-import '../../model/index.dart';
-import '../../utils/uuid_util.dart';
-
 class StackGroupData<T> {
   late final String id;
   int styleIndex = 0;
@@ -67,7 +64,9 @@ class StackItemData {
   dynamic x;
   dynamic y;
   DynamicText? label;
+
   num stackUp = 0;
+
   num stackDown = 0;
 
   StackItemData(this.x, this.y, {String? id, this.label}) {
@@ -94,6 +93,18 @@ class StackItemData {
       return y;
     }
     return x;
+  }
+
+  num get minValue {
+    return 0;
+  }
+
+  num get maxValue {
+    return value;
+  }
+
+  num get aveValue {
+    return value/2;
   }
 
   @override

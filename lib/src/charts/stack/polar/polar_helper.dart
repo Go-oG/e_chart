@@ -154,17 +154,6 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onAnimatorStart(var result) {
-    Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.startList) {
-      if (ele.data != null) {
-        map[ele.data!] = ele;
-      }
-    }
-    showNodeMap = map;
-  }
-
-  @override
   void onAnimatorUpdate(SingleNode<T, P> node, double t, var startMap, var endMap) {
     var e = endMap[node]!.arc;
     if (e == null) {
@@ -192,17 +181,6 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
       startAngle: e.startAngle,
       center: e.center,
     );
-  }
-
-  @override
-  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {
-    Map<T, SingleNode<T, P>> map = {};
-    for (var ele in result.endList) {
-      if (ele.data != null) {
-        map[ele.data!] = ele;
-      }
-    }
-    showNodeMap = map;
   }
 
   @override

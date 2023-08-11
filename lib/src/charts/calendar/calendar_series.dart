@@ -1,8 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/calendar/calendar_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../core/series.dart';
 import 'item_style.dart';
 import 'date_range.dart';
 import 'font_style.dart';

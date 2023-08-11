@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 
-
 ///将给定的domain映射到range
 abstract class BaseScale<D, R extends num> {
   ///表示域的范围(数据)
@@ -34,7 +33,8 @@ abstract class BaseScale<D, R extends num> {
   int get tickCount;
 
   List<D> get labels;
-  List<D> getRangeLabel(int startIndex,int endIndex);
+
+  List<D> getRangeLabel(int startIndex, int endIndex);
 
   ///Tick之间的距离间距
   num get tickInterval {
@@ -53,10 +53,12 @@ abstract class BaseScale<D, R extends num> {
 
   bool get isLog => false;
 
-  @override
-  String toString() {
-
-    return "domain:$domain range:$range";
+  bool get isNum {
+    return !isCategory && !isTime;
   }
 
+  @override
+  String toString() {
+    return "domain:$domain range:$range";
+  }
 }

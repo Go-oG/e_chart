@@ -4,10 +4,12 @@ class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends S
   GridSeries(
     super.data, {
     super.direction = Direction.vertical,
+    super.dynamicRange,
+    super.realtimeSort,
+    super.dynamicLabel,
     super.selectedMode,
     super.animatorStyle,
-    super.legendHoverLink = true,
-    super.realtimeSort = false,
+    super.legendHoverLink,
     super.sort,
     super.sortCount,
     super.corner,

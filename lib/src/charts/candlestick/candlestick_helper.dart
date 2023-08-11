@@ -23,9 +23,6 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
       if (data == null) {
         continue;
       }
-      if (!needLayoutForNode(node, type)) {
-        continue;
-      }
       var group = node.parent;
       Offset lowC = _computeOffset(colRect, data.lowest, group.xAxisIndex);
       Offset highC = _computeOffset(colRect, data.highest, group.xAxisIndex);
@@ -39,7 +36,8 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     }
   }
 
-  void _setPath(SingleNode<CandleStickData, CandleStickGroup> node, Offset lowC, Offset highC, Offset openC, Offset closeC, Rect colRect) {
+  void _setPath(SingleNode<CandleStickData, CandleStickGroup> node, Offset lowC, Offset highC, Offset openC,
+      Offset closeC, Rect colRect) {
     final double tx = colRect.width / 2;
 
     node.extSet(_colRectK, colRect);
@@ -52,7 +50,8 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     }
 
     List<List<Offset>> borderList = [];
-    borderList.add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
+    borderList
+        .add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
     if (node.data!.isUp) {
       borderList.add([lowC, openC]);
       borderList.add([closeC, highC]);
@@ -67,21 +66,12 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
 
   Offset _computeOffset(Rect colRect, num data, int axisIndex) {
     var coord = findGridCoord();
-    return Offset((colRect.left + colRect.right) / 2, coord.dataToPoint(axisIndex, data, false).first.dy);
+    List<Offset> ol = coord.dataToPoint(axisIndex, data, false);
+    return Offset((colRect.left + colRect.right) / 2, ol.first.dy);
   }
 
   @override
-  dynamic getUpValue(SingleNode<CandleStickData, CandleStickGroup> node) {
-    return node.data!.highest;
-  }
-
-  @override
-  dynamic getDownValue(SingleNode<CandleStickData, CandleStickGroup> node) {
-    return node.data!.lowest;
-  }
-
-  @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<CandleStickData, CandleStickGroup> node, DiffType diffType,LayoutType type) {
+  AnimatorNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
     if (node.data == null) {
       return AnimatorNode();
     }
@@ -123,6 +113,48 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     Offset ho = Offset.lerp(sho, eho, t)!;
     Offset lo = Offset.lerp(slo, elo, t)!;
     _setPath(node, lo, ho, oo, co, colRect);
+  }
+
+  @override
+  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale<dynamic, num> scale) {
+    if (isXAxis) {
+      return super.getViewPortAxisExtreme(axisIndex, isXAxis, scale);
+    }
+    if (scale.isCategory || scale.isTime) {
+      throw ChartError("K线图只支持num");
+    }
+    var result = super.getViewPortAxisExtreme(axisIndex, isXAxis, scale);
+    if (result.length < 2) {
+      return result;
+    }
+
+    List<num> dl = [];
+    for (var d in result) {
+      if (d is num) {
+        dl.add(d);
+      }
+    }
+    if (dl.length < 2) {
+      return result;
+    }
+    dl.sort();
+    var dlMin = dl.first;
+    var dlMax = dl.last;
+
+    var mainMax = scale.domain.last as num;
+    var mainMin = scale.domain.first as num;
+    num rMin, rMax;
+    if (dlMin <= mainMin * 1.2 && dlMin >= mainMin) {
+      rMin = mainMin;
+    } else {
+      rMin = dlMin;
+    }
+    if (dlMax <= mainMax && dlMax >= mainMax * 0.8) {
+      rMax = mainMax;
+    } else {
+      rMax = dlMax;
+    }
+    return [rMin, rMax];
   }
 
   List<List<Offset>> getBorderList(SingleNode<CandleStickData, CandleStickGroup> node) {

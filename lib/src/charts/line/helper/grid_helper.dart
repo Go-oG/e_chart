@@ -20,7 +20,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x,LayoutType type) {
+  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -51,7 +51,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutNode(var columnNode, AxisIndex xIndex,LayoutType type) {
+  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final coord = findGridCoord();
     final colRect = columnNode.rect;
@@ -81,18 +81,18 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  Future<void> onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) async {
+  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
     if (series.animation == null || type == LayoutType.none) {
-      _lineList = await _layoutLineNode(newNodeList);
+      _lineList =  _layoutLineNode(newNodeList);
       _animatorPercent = 1;
     } else {
-      _cacheLineList = await _layoutLineNode(newNodeList);
+      _cacheLineList = _layoutLineNode(newNodeList);
     }
-    await super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(var node,DiffType diffType,LayoutType type) {
+  AnimatorNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
     if (diffType == DiffType.accessor) {
       return AnimatorNode(offset: node.position);
     }
@@ -124,7 +124,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   ///布局直线使用的数据
-  Future<List<LineNode>> _layoutLineNode(List<SingleNode<StackItemData, LineGroupData>> list) async {
+  List<LineNode> _layoutLineNode(List<SingleNode<StackItemData, LineGroupData>> list)  {
     Map<LineGroupData, int> groupSortMap = {};
     Map<String, int> sortMap = {};
     Map<String, Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>>> stackMap = {};
@@ -153,23 +153,18 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
     });
 
-    List<Future<LineNode>> futureList = [];
+    List<LineNode> resultList = [];
 
     ///先处理普通的
     normalMap.forEach((key, value) {
       if (value.isEmpty) {
         return;
       }
-      var f = Future(() {
-        var group = list.first.parent;
-        var index = list.first.groupIndex;
-        var styleIndex = list.first.styleIndex;
-        return buildNormalResult(index, styleIndex, group, list);
-      });
-      futureList.add(f);
+      var group = list.first.parent;
+      var index = list.first.groupIndex;
+      var styleIndex = list.first.styleIndex;
+      resultList.add(buildNormalResult(index, styleIndex, group, list));
     });
-
-    List<LineNode> resultList = [];
 
     ///处理堆叠数据
     List<String> keyList = List.from(stackMap.keys);
@@ -189,14 +184,11 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         resultList.add(buildStackResult(first.groupIndex, first.styleIndex, group, cur, resultList, i));
       }
     });
-    for (var f in futureList) {
-      resultList.add(await f);
-    }
-    futureList = [];
     return resultList;
   }
 
-  LineNode buildNormalResult(int groupIndex, int styleIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
+  LineNode buildNormalResult(
+      int groupIndex, int styleIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
     List<PathNode> borderList = _buildBorderPath(list);
     List<AreaNode> areaList = buildAreaPathForNormal(list);
     List<Offset?> ol = _collectOffset(list);
@@ -270,7 +262,8 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return LineNode(groupIndex, styleIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap);
   }
 
-  List<AreaNode> buildAreaPathForStack(List<SingleNode<StackItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
+  List<AreaNode> buildAreaPathForStack(
+      List<SingleNode<StackItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
     if (curList.length < 2) {
       return [];
     }
