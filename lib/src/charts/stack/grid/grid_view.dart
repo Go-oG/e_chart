@@ -111,6 +111,11 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
 
   @override
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
-    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
+    return layoutHelper.getAxisExtreme(axisIndex, isXAxis);
+  }
+
+  @override
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
+    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis);
   }
 }

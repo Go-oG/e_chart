@@ -71,4 +71,9 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   HeatMapHelper buildLayoutHelper() {
     return HeatMapHelper(context, series);
   }
+
+  @override
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
+    return getAxisExtreme(axisIndex,isXAxis);
+  }
 }

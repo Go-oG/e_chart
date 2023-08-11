@@ -118,6 +118,11 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   }
 
   @override
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
+    return getAxisExtreme(axisIndex, isXAxis);
+  }
+
+  @override
   PointHelper buildLayoutHelper() {
     return PointHelper(context, series);
   }

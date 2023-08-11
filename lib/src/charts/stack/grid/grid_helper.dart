@@ -403,6 +403,11 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
+  void onLayoutByParent(LayoutType type) {
+    onLayout(series.data, type);
+  }
+
+  @override
   SingleNode<T, P>? findNode(Offset offset) {
     for (var ele in showNodeMap.values) {
       if (ele.rect.contains(offset)) {

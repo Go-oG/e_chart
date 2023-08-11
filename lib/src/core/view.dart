@@ -487,6 +487,8 @@ abstract class ChartView with ViewStateProvider {
   void onContentScrollEnd(Offset scroll) {}
 
   void onContentScaleUpdate(double sx, double sy) {}
+
+  void onLayoutByParent(LayoutType type){}
 }
 
 ///实现了一个简易的手势识别器
@@ -760,6 +762,11 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   @override
   void onContentScrollUpdate(Offset scroll) {
     layoutHelper.onContentScrollChange(scroll);
+  }
+
+  @override
+  void onLayoutByParent(LayoutType type) {
+    layoutHelper.onLayoutByParent(type);
   }
 }
 

@@ -94,11 +94,11 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
 
   @override
   List<dynamic> getAngleExtreme() {
-    return layoutHelper.getAxisExtreme(series, 0, false);
+    return layoutHelper.getAxisExtreme( 0, false);
   }
 
   @override
   List<dynamic> getRadiusExtreme() {
-    return layoutHelper.getAxisExtreme(series, 0, true);
+    return layoutHelper.getAxisExtreme( 0, true);
   }
 }

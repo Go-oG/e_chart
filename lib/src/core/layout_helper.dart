@@ -68,6 +68,7 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
 
   void onContentScaleUpdate(double sx,double sy){}
 
+  void onLayoutByParent(LayoutType type){}
 
   ///dataZoom
   void onDataZoom(DataZoomEvent event) {}

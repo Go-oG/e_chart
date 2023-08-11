@@ -3,7 +3,7 @@ import 'package:e_chart/src/charts/bar/bar_polar_view.dart';
 
 import 'bar_grid_view.dart';
 
-class BarSeries extends StackSeries<StackItemData, BarGroupData> {
+class BarSeries extends GridSeries<StackItemData, BarGroupData> {
   BarSeries(super.data, {
     super.corner,
     super.columnGap,

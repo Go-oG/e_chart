@@ -88,6 +88,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     notifyLayoutUpdate();
   }
 
+  ///计算需要布局的数据(默认全部)
+  ///子类可以实现该方法从而实现高效的数据刷新
+  List<GroupNode<T, P>> onComputeNeedLayoutData(
+      DataHelper<T, P, StackSeries> helper, AxisIndex index, List<GroupNode<T, P>> list) {
+    return list;
+  }
+
   bool needLayoutForNode(SingleNode<T, P> node, LayoutType type) {
     if (type != LayoutType.none) {
       return true;
@@ -95,12 +102,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return showNodeMap[node.data!] == null || node.rect.isEmpty;
   }
 
-  ///计算需要布局的数据(默认全部)
-  ///子类可以实现该方法从而实现高效的数据刷新
-  List<GroupNode<T, P>> onComputeNeedLayoutData(
-      DataHelper<T, P, StackSeries> helper, AxisIndex index, List<GroupNode<T, P>> list) {
-    return list;
-  }
 
   ///实现该方法从而布局单个Group(不需要布局其孩子)
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type);
@@ -357,7 +358,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {}
 
   ///=======其它函数======
-  List<dynamic> getAxisExtreme(S series, int axisIndex, bool isXAxis) {
+  List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
     CoordSystem system = CoordSystem.grid;
     if (series.coordSystem == CoordSystem.polar) {
       system = CoordSystem.polar;
@@ -366,6 +367,28 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       return series.helper.getCrossExtreme(system, axisIndex);
     }
     return series.helper.getMainExtreme(system, axisIndex);
+  }
+
+  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
+    List<dynamic> dl = [];
+    showNodeMap.forEach((key, value) {
+      if (value.data == null) {
+        return;
+      }
+      var index = isXAxis ? value.parent.xAxisIndex : value.parent.yAxisIndex;
+      if (index < 0) {
+        index = 0;
+      }
+      if (index != axisIndex) {
+        return;
+      }
+      if (isXAxis) {
+        dl.add(value.data!.x);
+      } else {
+        dl.add(value.data!.y);
+      }
+    });
+    return dl;
   }
 
   Offset getTranslation();

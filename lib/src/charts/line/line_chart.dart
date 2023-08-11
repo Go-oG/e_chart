@@ -8,7 +8,8 @@ import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 import 'helper/line_helper.dart';
 import 'line_node.dart';
 
-class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, LineGroupData, LineSeries>> with GridChild, PolarChild {
+class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, LineGroupData, LineSeries>>
+    with GridChild, PolarChild {
   late LineHelper helper;
 
   LineView(super.series);
@@ -101,7 +102,8 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     }
   }
 
-  List<SymbolNode> drawLineForPolar(Canvas canvas, LineNode lineNode, LineTheme theme, double percent, bool needSymbol) {
+  List<SymbolNode> drawLineForPolar(
+      Canvas canvas, LineNode lineNode, LineTheme theme, double percent, bool needSymbol) {
     if (lineNode.borderList.isEmpty) {
       return [];
     }
@@ -215,7 +217,12 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
 
   @override
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
-    return layoutHelper.getAxisExtreme(series, axisIndex, isXAxis);
+    return layoutHelper.getAxisExtreme(axisIndex, isXAxis);
+  }
+
+  @override
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis) {
+    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis);
   }
 
   @override

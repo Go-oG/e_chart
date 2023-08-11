@@ -1,4 +1,5 @@
 export 'grid/grid_view.dart';
+export 'grid/grid_series.dart';
 export 'grid/grid_helper.dart';
 
 export 'model/axis_group.dart';

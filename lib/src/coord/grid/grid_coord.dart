@@ -84,10 +84,10 @@ class GridCoordImpl extends GridCoord {
     List<GridChild> childList = getGridChildList();
 
     ///布局X轴
-    layoutXAxis(childList, contentBox);
+    layoutXAxis(childList, contentBox, false);
 
     ///布局Y轴
-    layoutYAxis(childList, contentBox);
+    layoutYAxis(childList, contentBox, false);
 
     ///修正由于坐标系线条宽度导致的遮挡
     topOffset = topList.isEmpty ? 0 : topList.first.axis.axisLine.width / 2;
@@ -113,7 +113,7 @@ class GridCoordImpl extends GridCoord {
     }
   }
 
-  void layoutXAxis(List<GridChild> childList, Rect contentBox) {
+  void layoutXAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme) {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
     bool needAlignTick = false;
@@ -132,7 +132,10 @@ class GridCoordImpl extends GridCoord {
       }
       List<dynamic> dl = [];
       for (var child in childList) {
-        dl.addAll(child.getAxisExtreme(axis.axisIndex, true));
+        var rl = useViewPortExtreme
+            ? child.getViewPortAxisExtreme(axis.axisIndex, true)
+            : child.getAxisExtreme(axis.axisIndex, true);
+        dl.addAll(rl);
       }
       extremeMap[axis] = dl;
     }
@@ -174,7 +177,7 @@ class GridCoordImpl extends GridCoord {
     });
   }
 
-  void layoutYAxis(List<GridChild> childList, Rect contentBox) {
+  void layoutYAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme) {
     List<YAxisImpl> leftList = [];
     List<YAxisImpl> rightList = [];
     Map<YAxisImpl, List<dynamic>> extremeMap = {};
@@ -192,8 +195,10 @@ class GridCoordImpl extends GridCoord {
       }
       List<dynamic> dl = [];
       for (var child in childList) {
-        var da = child.getAxisExtreme(axis.axisIndex, false);
-        dl.addAll(da);
+        var rl = useViewPortExtreme
+            ? child.getViewPortAxisExtreme(axis.axisIndex, false)
+            : child.getAxisExtreme(axis.axisIndex, false);
+        dl.addAll(rl);
       }
       extremeMap[axis] = dl;
     }
@@ -226,7 +231,6 @@ class GridCoordImpl extends GridCoord {
       Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
       var attrs =
           LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
-
       leftOffset += w;
       value.doLayout(attrs, dl);
       if (needAlignTick && splitCount == null && i == 0) {
@@ -240,10 +244,10 @@ class GridCoordImpl extends GridCoord {
     List<GridChild> childList = getGridChildList();
 
     ///布局X轴
-    layoutXAxis(childList, contentBox);
+    layoutXAxis(childList, contentBox, false);
 
     ///布局Y轴
-    layoutYAxis(childList, contentBox);
+    layoutYAxis(childList, contentBox, false);
     if (!layoutChild) {
       return;
     }
@@ -302,7 +306,6 @@ class GridCoordImpl extends GridCoord {
         value.onScrollChange(sx);
       });
     }
-
     if (sy.abs() > maxOffset.dy) {
       sy = maxOffset.dy;
     }
@@ -317,15 +320,15 @@ class GridCoordImpl extends GridCoord {
         value.onScrollChange(sy);
       });
     }
-
-    if (hasChange) {
-      Offset offset = Offset(scrollXOffset, scrollYOffset);
-      each(children, (p0, p1) {
-        if (p0 is CoordChildView) {
-          p0.onContentScrollUpdate(offset);
-        }
-      });
+    if (!hasChange) {
+      return;
     }
+    Offset scroll = Offset(scrollXOffset, scrollYOffset);
+    each(children, (p0, p1) {
+      if (p0 is CoordChildView) {
+        p0.onContentScrollUpdate(scroll);
+      }
+    });
     invalidate();
   }
 

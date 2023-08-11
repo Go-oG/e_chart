@@ -107,8 +107,12 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   DataHelper<T, G, StackSeries>? _helper;
 
   DataHelper<T, G, StackSeries> get helper {
-    _helper ??= DataHelper(this, data, direction, realtimeSort, sort);
+    _helper ??= buildHelper();
     return _helper!;
+  }
+
+  DataHelper<T, G, StackSeries> buildHelper() {
+    return DataHelper(this, data, direction, realtimeSort, sort);
   }
 
   @override
@@ -121,7 +125,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   void notifyUpdateData() {
     _helper = null;
     Future(() {
-      var r = helper.getCrossExtreme(CoordSystem.polar, -1);
+      helper.getCrossExtreme(CoordSystem.polar, -1);
     }).then((value) => super.notifyUpdateData());
   }
 
