@@ -35,7 +35,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     List<Arc> splitList = buildSplitArc(attrs, scale);
     List<TickResult> tickList = buildTickResult(attrs, scale);
     List<LabelResult> labelList = buildLabelResult(attrs, scale);
-    return AngleAxisLayoutResult(arc, splitList, tickList, labelList);
+    return AngleAxisLayoutResult(arc, splitList, [], tickList, labelList);
   }
 
   ///返回分割区域

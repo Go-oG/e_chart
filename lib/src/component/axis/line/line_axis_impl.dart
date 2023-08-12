@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:e_chart/src/component/axis/model/line_result.dart';
 import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +9,8 @@ import '../../../style/index.dart';
 import '../../../utils/index.dart';
 import '../../index.dart';
 
-class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordLayout> extends BaseAxisImpl<T, P, LineAxisLayoutResult, C> {
+class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordLayout>
+    extends BaseAxisImpl<T, P, LineAxisLayoutResult, C> {
   final tmpTick = MainTick();
   final MinorTick tmpMinorTick = MinorTick();
 
@@ -45,10 +47,27 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     ///夹角
     final angle = attrs.end.offsetAngle(attrs.start);
     final Offset end = circlePoint(distance, angle, attrs.start);
+    List<LineResult> lineResult = onBuildLineResult(scale, attrs.start, distance, angle);
     List<TickResult> tickResult = onBuildTickResult(scale, attrs.start, distance, angle);
     List<LineSplitResult> splitResult = onBuildSplitResult(tickResult, attrs.start);
-    List<LabelResult> labelResult = onBuildLabelResult(attrs, scale, attrs.start, distance, angle);
-    return LineAxisLayoutResult(viewSize, attrs.start, end, splitResult, tickResult, labelResult);
+    List<LabelResult> labelResult = onBuildLabelResult(scale, attrs.start, distance, angle);
+    return LineAxisLayoutResult(viewSize, attrs.start, end, splitResult, lineResult, tickResult, labelResult);
+  }
+
+  List<LineResult> onBuildLineResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+    int tickCount = scale.tickCount;
+    if (tickCount <= 0) {
+      tickCount = 1;
+    }
+    final double interval = scale.tickInterval.toDouble();
+    List<LineResult> resultList = [];
+    for (int i = 0; i < tickCount - 1; i++) {
+      Offset offset = center.translate(interval * i, 0);
+      Offset start = offset.rotateOffset(angle, center: center);
+      Offset end = center.translate(interval * (i + 1), 0).rotateOffset(angle, center: center);
+      resultList.add(LineResult(i, tickCount - 1, start, end));
+    }
+    return resultList;
   }
 
   List<TickResult> onBuildTickResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
@@ -56,9 +75,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     if (tickCount <= 0) {
       tickCount = 1;
     }
-
     final double interval = distance / (tickCount - 1);
-
     MainTick tick = axis.axisTick.tick ?? tmpTick;
     MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
     final double tickOffset = (tick.inside ? -tick.length : tick.length).toDouble();
@@ -94,19 +111,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     return resultList;
   }
 
-  List<LineSplitResult> onBuildSplitResult(List<TickResult> tickResult, Offset center) {
-    List<LineSplitResult> resultList = [];
-    int c = tickResult.length - 1;
-    for (int i = 0; i < c; i++) {
-      TickResult pre = tickResult[i];
-      TickResult next = tickResult[i + 1];
-      LineSplitResult result = LineSplitResult(pre.index, pre.maxIndex - 1, center, pre.start, next.start);
-      resultList.add(result);
-    }
-    return resultList;
-  }
-
-  List<LabelResult> onBuildLabelResult(P attrs, BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+  List<LabelResult> onBuildLabelResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
@@ -114,11 +119,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     final double interval = distance / (tickCount - 1);
     MainTick tick = axis.axisTick.tick ?? tmpTick;
     MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
-
     AxisLabel axisLabel = axis.axisLabel;
-
     List<DynamicText> labels = obtainLabel();
-
     double labelOffset = axisLabel.padding + axisLabel.margin + 0;
     if (axisLabel.inside == tick.inside) {
       labelOffset += tick.length;
@@ -163,6 +165,18 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     return resultList;
   }
 
+  List<LineSplitResult> onBuildSplitResult(List<TickResult> tickResult, Offset center) {
+    List<LineSplitResult> resultList = [];
+    int c = tickResult.length - 1;
+    for (int i = 0; i < c; i++) {
+      TickResult pre = tickResult[i];
+      TickResult next = tickResult[i + 1];
+      LineSplitResult result = LineSplitResult(pre.index, pre.maxIndex - 1, center, pre.start, next.start);
+      resultList.add(result);
+    }
+    return resultList;
+  }
+
   @override
   TextDrawInfo onLayoutAxisName() {
     Offset center;
@@ -191,9 +205,9 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     int c = layoutResult.split.length;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
-    each(layoutResult.split, (split, i) {
+    each(layoutResult.line, (line, i) {
       LineStyle? style = axis.getAxisLineStyle(i, c, theme);
-      style?.drawPolygon(canvas, paint, [split.start, split.end]);
+      style?.drawPolygon(canvas, paint, [line.start, line.end]);
     });
     canvas.restore();
   }

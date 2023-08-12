@@ -58,7 +58,7 @@ class YAxisImpl extends XAxisImpl {
   }
 
   @override
-  List<int> computeIndex(num distance, int tickCount, num interval) {
+  List<int> computeRangeIndex(num distance, int tickCount, num interval) {
     Rect rect = coord.contentBox;
     int startIndex, endIndex;
     if (distance <= rect.height) {

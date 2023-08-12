@@ -387,6 +387,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   Offset getTranslation();
+  Offset getMaxTranslation();
 
   ///==========用户相关操作的处理=============
   SingleNode<T, P>? oldHoverNode;

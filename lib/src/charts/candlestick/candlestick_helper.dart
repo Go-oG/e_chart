@@ -67,7 +67,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   Offset _computeOffset(Rect colRect, num data, int axisIndex) {
     var coord = findGridCoord();
     List<Offset> ol = coord.dataToPoint(axisIndex, data, false);
-    return Offset((colRect.left + colRect.right) / 2, ol.first.dy);
+    return Offset(colRect.left , ol.first.dy);
   }
 
   @override

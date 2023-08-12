@@ -19,6 +19,9 @@ class SNumber {
   /// 否则返回当前的值
   double convert(num data) {
     if (percent) {
+      if (number == 0) {
+        return 0;
+      }
       return data * percentRatio();
     }
     return number.toDouble();
@@ -32,5 +35,4 @@ class SNumber {
   String toString() {
     return "number:${number.toStringAsFixed(2)} isPercent:$percent";
   }
-
 }

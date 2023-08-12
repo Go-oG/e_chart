@@ -4,16 +4,15 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/candlestick/candlestick_chart.dart';
 
 class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
-  CandleStickSeries(
-    super.data, {
+  CandleStickSeries(super.data, {
     super.dynamicRange = true,
     super.gridIndex = 0,
     super.areaStyleFun,
-    super.columnGap,
+    super.columnGap = SNumber.zero,
     super.corner,
-    super.groupGap,
+    super.groupGap = SNumber.zero,
     super.groupStyleFun,
-    super.innerGap,
+    super.innerGap = 0,
     super.labelAlignFun,
     super.labelFormatFun,
     super.labelStyle,
@@ -25,18 +24,18 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
     super.markPoint,
     super.markPointFun,
     super.animation =
-        const AnimatorAttrs(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
+    const AnimatorAttrs(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
     super.tooltip,
     super.backgroundColor,
     super.id,
     super.clip,
     super.z,
   }) : super(
-            coordSystem: CoordSystem.grid,
-            polarIndex: -1,
-            direction: Direction.vertical,
-            realtimeSort: false,
-            selectedMode: SelectedMode.single);
+      coordSystem: CoordSystem.grid,
+      polarIndex: -1,
+      direction: Direction.vertical,
+      realtimeSort: false,
+      selectedMode: SelectedMode.single);
 
   @override
   ChartView? toView() {
@@ -76,13 +75,12 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
 }
 
 class CandleStickGroup extends StackGroupData<CandleStickData> {
-  CandleStickGroup(
-    super.data, {
+  CandleStickGroup(super.data, {
     super.xAxisIndex = 0,
     super.yAxisIndex = 0,
     super.barMaxSize,
     super.barMinSize,
-    super.barSize,
+    super.barSize=const SNumber.percent(80),
     super.id,
     super.styleIndex,
   });

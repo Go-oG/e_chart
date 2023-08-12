@@ -173,7 +173,6 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     double groupGap = series.groupGap.convert(groupSize) * 2;
     double columnGap = series.columnGap.convert(groupSize);
     double allGap = groupGap + colGapCount * columnGap;
-
     double canUseSize = groupSize - allGap;
     if (canUseSize < 0) {
       canUseSize = groupSize.toDouble();
@@ -217,10 +216,8 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
         sizeList[i] = sizeList[i] * k;
       }
     }
-
     double offset = vertical ? groupRect.left : groupRect.top;
     offset += groupGap * 0.5;
-
     each(groupNode.nodeList, (node, i) {
       if (node.nodeList.isEmpty) {
         return;
@@ -431,6 +428,11 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   @override
   Offset getTranslation() {
     return findGridCoord().getTranslation();
+  }
+
+  @override
+  Offset getMaxTranslation() {
+    return findGridCoord().getMaxTranslation();
   }
 
   @override

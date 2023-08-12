@@ -5,6 +5,7 @@ import '../../tick/main_tick.dart';
 class AxisTick {
   bool show;
   MainTick? tick;
+ // bool alignLabel;
   Fun3<int, int, MainTick?>? tickFun;
 
   AxisTick({

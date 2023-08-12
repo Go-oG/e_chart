@@ -16,6 +16,7 @@ class LineAxisLayoutResult extends AxisLayoutResult {
     this.start,
     this.end,
     this.split,
+    super.line,
     super.tick,
     super.label,
   );
