@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 class BrushEvent extends ChartEvent {
-  final CoordSystem coord;
+  final CoordType coord;
   final String brushId;
   final int? xAxisIndex;
   final int? yAxisIndex;
@@ -17,7 +17,7 @@ class BrushEvent extends ChartEvent {
 }
 
 class BrushEndEvent extends ChartEvent {
-  final CoordSystem coord;
+  final CoordType coord;
   final String brushId;
   final List<BrushArea> data;
 
@@ -26,7 +26,7 @@ class BrushEndEvent extends ChartEvent {
 
 class BrushClearEvent extends ChartEvent {
   final String brushId;
-  final CoordSystem coord;
+  final CoordType coord;
 
   BrushClearEvent(this.brushId, this.coord);
 }

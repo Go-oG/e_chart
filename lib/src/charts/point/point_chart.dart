@@ -72,7 +72,7 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(selfBoxBound,globalBoxBound, LayoutType.layout);
   }
 
   @override

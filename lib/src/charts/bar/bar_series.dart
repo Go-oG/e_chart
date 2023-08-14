@@ -29,7 +29,7 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
     super.selectedMode,
     super.gridIndex,
     super.polarIndex = -1,
-    super.coordSystem = CoordSystem.grid,
+    super.coordType = CoordType.grid,
     super.animation,
     super.backgroundColor,
     super.id,
@@ -43,7 +43,7 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
 
   @override
   ChartView? toView() {
-    if (coordSystem == CoordSystem.polar) {
+    if (coordType == CoordType.polar) {
       return BarPolarView(this);
     }
     return BarGridView(this);

@@ -30,7 +30,7 @@ class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends S
     super.animation,
     super.backgroundColor,
     super.clip,
-    super.coordSystem,
+    super.coordType,
     super.gridIndex,
     super.polarIndex,
     super.id,

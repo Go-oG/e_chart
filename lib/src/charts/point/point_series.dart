@@ -6,7 +6,6 @@ import '../../core/index.dart';
 import '../../functions.dart';
 import '../../model/enums/coordinate.dart';
 import 'point_data.dart';
-import '../../core/series.dart';
 import '../../symbol/chart_symbol.dart';
 import 'point_node.dart';
 
@@ -28,7 +27,7 @@ class PointSeries extends RectSeries {
     super.gridIndex,
     super.polarIndex = 0,
     super.calendarIndex = 0,
-    super.coordSystem = CoordSystem.grid,
+    super.coordType = CoordType.grid,
     super.tooltip,
     super.animation,
     super.backgroundColor,

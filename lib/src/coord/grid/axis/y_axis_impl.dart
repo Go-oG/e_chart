@@ -65,7 +65,7 @@ class YAxisImpl extends XAxisImpl {
       startIndex = 0;
       endIndex = tickCount;
     } else {
-      double scroll = coord.scrollXOffset.abs();
+      double scroll = coord.scrollX.abs();
       startIndex = scroll ~/ interval - 2;
       if (startIndex < 0) {
         startIndex = 0;

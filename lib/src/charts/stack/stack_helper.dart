@@ -6,7 +6,7 @@ import 'package:e_chart/e_chart.dart';
 ///一般用于笛卡尔坐标系和极坐标系的布局
 ///需要支持部分布局
 abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
-    extends LayoutHelper<S, List<P>> {
+    extends LayoutHelper<S> {
   ///该map存储当前给定数据的映射
   ///如果给定的数据为空则不会存在
   Map<T, SingleNode<T, P>> _nodeMap = {};
@@ -28,7 +28,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   StackHelper(super.context, super.series);
 
   @override
-  void onLayout(List<P> data, LayoutType type) {
+  void onLayout(LayoutType type) {
     var helper = series.helper;
     AxisGroup<T, P> axisGroup = helper.result;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
@@ -83,7 +83,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     List<SingleNode<T, P>> oldNodeList = List.from(_nodeMap.values);
     var oldNodeMap = _nodeMap;
     final List<SingleNode<T, P>> newNodeList = List.from(newNodeMap.values, growable: false);
-    _onLayoutMarkPointAndLine(data, newNodeList, newNodeMap);
+    _onLayoutMarkPointAndLine(series.data, newNodeList, newNodeMap);
     onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
     notifyLayoutUpdate();
   }
@@ -169,7 +169,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         throw ChartError("in GridCoord or PolarCoord ,markPoint.data must is null or length >2");
       }
       var node = MarkPointNode(markPoint, dl[1]);
-      if (coordSystem == CoordSystem.polar) {
+      if (coordSystem == CoordType.polar) {
         var position = findPolarCoord().dataToPosition(dl[0], dl[1]);
         var angle = (position.angle.first + position.angle.last) / 2;
         var radius = (position.radius.first + position.radius.last) / 2;
@@ -222,7 +222,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
 
       var node = MarkPointNode(markPoint, data);
-      if (coordSystem == CoordSystem.polar) {
+      if (coordSystem == CoordType.polar) {
         var arc = snode.arc;
         node.offset = circlePoint(arc.outRadius, arc.centerAngle(), arc.center);
       } else {
@@ -238,7 +238,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     if (data != null) {
       bool vertical = series.direction == Direction.vertical;
       MarkPointNode node;
-      if (coordSystem == CoordSystem.polar) {
+      if (coordSystem == CoordType.polar) {
         var coord = findPolarCoord();
         var radius = coord.getRadius();
         var x = data[0].convert(radius.last);
@@ -277,6 +277,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       return;
     }
 
+    var animation = series.animation!;
+
     ///动画
     DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult =
         DiffUtil.diff3(oldNodeList, newNodeList, (p0) => p0.data!, (b, c) {
@@ -284,7 +286,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     });
     final startMap = diffResult.startMap;
     final endMap = diffResult.endMap;
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: animation);
     doubleTween.startListener = () {
       Map<T, SingleNode<T, P>> sm = {};
       startMap.forEach((key, value) {
@@ -349,9 +351,9 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   ///=======其它函数======
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
-    CoordSystem system = CoordSystem.grid;
-    if (series.coordSystem == CoordSystem.polar) {
-      system = CoordSystem.polar;
+    CoordType system = CoordType.grid;
+    if (series.coordType == CoordType.polar) {
+      system = CoordType.polar;
     }
     if (series.isVertical && !isXAxis || (!series.isVertical && isXAxis)) {
       return series.helper.getCrossExtreme(system, axisIndex);
@@ -387,12 +389,28 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   Offset getTranslation();
+
   Offset getMaxTranslation();
 
   ///==========用户相关操作的处理=============
   SingleNode<T, P>? oldHoverNode;
 
   @override
+  void onClick(Offset localOffset) {
+    super.onClick(localOffset);
+    handleHoverOrClick(localOffset, true);
+  }
+
+  @override
+  void onHoverMove(Offset localOffset) {
+    handleHoverOrClick(localOffset, false);
+  }
+
+  @override
+  void onHoverStart(Offset localOffset) {
+    handleHoverOrClick(localOffset, false);
+  }
+
   void handleHoverOrClick(Offset offset, bool click) {
     Offset tr = getTranslation();
     offset = offset.translate(tr.dx, tr.dy);
@@ -433,6 +451,16 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
     });
 
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      nodeMap.forEach((key, node) {
+        node.areaStyle = buildAreaStyle(node.data, node.parent, node.styleIndex, node.status);
+        node.lineStyle = buildLineStyle(node.data, node.parent, node.styleIndex, node.status);
+      });
+      notifyLayoutUpdate();
+      return;
+    }
+
     Map<SingleNode<T, P>, AreaStyle?> oldAreStyleMap = {};
     Map<SingleNode<T, P>, LineStyle?> oldLineStyleMap = {};
 
@@ -448,7 +476,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       node.lineStyle = null;
     });
 
-    ChartDoubleTween doubleTween = ChartDoubleTween(props: series.animatorProps);
+    ChartDoubleTween doubleTween = ChartDoubleTween(props: animation);
     AreaStyleTween areaTween = AreaStyleTween(const AreaStyle(), const AreaStyle());
     LineStyleTween lineTween = LineStyleTween(const LineStyle(), const LineStyle());
     doubleTween.addListener(() {
@@ -490,11 +518,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
-        if (coordSystem == CoordSystem.grid && rectInPath(area.path, node.rect)) {
+        if (coordSystem == CoordType.grid && rectInPath(area.path, node.rect)) {
           has = true;
           break;
         }
-        if (coordSystem == CoordSystem.polar && arcInPath(area.path, node.arc)) {
+        if (coordSystem == CoordType.polar && arcInPath(area.path, node.arc)) {
           has = true;
           break;
         }
@@ -515,11 +543,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
-        if (coordSystem == CoordSystem.grid && rectInPath(area.path, node.rect)) {
+        if (coordSystem == CoordType.grid && rectInPath(area.path, node.rect)) {
           has = true;
           break;
         }
-        if (coordSystem == CoordSystem.polar && arcInPath(area.path, node.arc)) {
+        if (coordSystem == CoordType.polar && arcInPath(area.path, node.arc)) {
           has = true;
           break;
         }
@@ -565,7 +593,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return bound.overlaps(rect);
   }
 
-  CoordSystem get coordSystem;
+  CoordType get coordSystem;
 
   SingleNode<T, P>? findNodeByData(T? data) {
     return nodeMap[data];

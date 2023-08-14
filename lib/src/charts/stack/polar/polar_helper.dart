@@ -195,13 +195,13 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   Offset getTranslation() {
-    return findPolarCoord().getTranslation();
+    return findPolarCoord().getScroll();
   }
   @override
   Offset getMaxTranslation() {
-    return findPolarCoord().getMaxTranslation();
+    return findPolarCoord().getMaxScroll();
   }
 
   @override
-  CoordSystem get coordSystem => CoordSystem.polar;
+  CoordType get coordSystem => CoordType.polar;
 }

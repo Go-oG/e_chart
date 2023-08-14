@@ -41,7 +41,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   ///对于水平布局交叉轴为X轴
   Map<AxisIndex, List<num>> _crossAxisExtremeMap = {};
 
-  List<num> getCrossExtreme(CoordSystem system, int axisIndex) {
+  List<num> getCrossExtreme(CoordType system, int axisIndex) {
     if (_crossAxisExtremeMap.isEmpty) {
       return [];
     }
@@ -56,7 +56,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   ///对于水平布局主轴为Y轴
   Map<AxisIndex, List<dynamic>> _mainAxisExtremeMap = {};
 
-  List<dynamic> getMainExtreme(CoordSystem system, int axisIndex) {
+  List<dynamic> getMainExtreme(CoordType system, int axisIndex) {
     if (_mainAxisExtremeMap.isEmpty) {
       return [];
     }
@@ -121,12 +121,12 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     Map<AxisIndex, List<P>> axisGroupMap = {};
     for (var group in dataList) {
       int mainAxisIndex;
-      CoordSystem system;
-      if (_series.coordSystem == CoordSystem.polar) {
-        system = CoordSystem.polar;
+      CoordType system;
+      if (_series.coordType == CoordType.polar) {
+        system = CoordType.polar;
         mainAxisIndex = _series.polarIndex;
       } else {
-        system = CoordSystem.grid;
+        system = CoordType.grid;
         if (direction == Direction.vertical) {
           mainAxisIndex = group.xAxisIndex;
         } else {
@@ -244,8 +244,8 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
   ///收集极值信息
   AxisExtremeInfo _collectExtreme(AxisGroup<T, P> axisGroup) {
-    CoordSystem system = _series.coordSystem ?? CoordSystem.grid;
-    bool polar = system == CoordSystem.polar;
+    CoordType system = _series.coordType ?? CoordType.grid;
+    bool polar = system == CoordType.polar;
     bool vertical = direction == Direction.vertical;
 
     Map<int, SingleNode<T, P>> mainNumMaxMap = {};

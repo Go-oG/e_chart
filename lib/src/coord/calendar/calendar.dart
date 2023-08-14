@@ -43,7 +43,7 @@ class Calendar extends Coord {
   });
 
   @override
-  CoordSystem get coordSystem => CoordSystem.calendar;
+  CoordType get coordSystem => CoordType.calendar;
 
   @override
   CoordLayout<Coord>? toCoord() {

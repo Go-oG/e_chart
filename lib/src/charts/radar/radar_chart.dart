@@ -8,17 +8,6 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
   RadarView(super.series);
 
   @override
-  void onUpdateDataCommand(covariant Command c) {
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
-  }
-
-  @override
   void onDraw(Canvas canvas) {
     ChartTheme chartTheme = context.option.theme;
     RadarTheme theme = chartTheme.radarTheme;

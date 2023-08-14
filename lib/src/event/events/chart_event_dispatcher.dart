@@ -16,6 +16,7 @@ class EventDispatcher {
   }
 
   void dispatch(ChartEvent event) {
+    Logger.i('$runtimeType dispatch($event)');
     for (var call in _callSet) {
       try {
         call.call(event);

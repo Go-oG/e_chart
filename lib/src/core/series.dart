@@ -9,7 +9,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   String name;
 
   ///坐标系系统
-  CoordSystem? coordSystem;
+  CoordType? coordType;
 
   ///坐标轴取值索引(和coordSystem配合实现定位)
   int gridIndex;
@@ -32,7 +32,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       this.radarIndex = 0,
       this.parallelIndex = 0,
       this.animation = const AnimatorAttrs(),
-      this.coordSystem,
+      this.coordType,
       this.tooltip,
       this.z = 0,
       this.clip = true,
@@ -57,13 +57,6 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     value = Command.configChange;
   }
 
-  AnimatorAttrs get animatorProps {
-    if (animation != null) {
-      return animation!;
-    }
-    return const AnimatorAttrs();
-  }
-
   ChartView? toView() {
     return null;
   }
@@ -86,7 +79,7 @@ abstract class RectSeries extends ChartSeries {
     this.bottomMargin = SNumber.zero,
     this.width,
     this.height,
-    super.coordSystem,
+    super.coordType,
     super.gridIndex,
     super.calendarIndex,
     super.parallelIndex,

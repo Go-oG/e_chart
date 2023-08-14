@@ -10,22 +10,12 @@ class FunnelView extends SeriesView<FunnelSeries,FunnelHelper> {
   FunnelView(super.series);
 
   @override
-  void onUpdateDataCommand(covariant Command c) {
-    layoutHelper.doLayout(series.dataList, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.dataList, selfBoxBound, LayoutType.layout);
-  }
-
-  @override
   void onDraw(Canvas canvas) {
     List<FunnelNode> nodeList = layoutHelper.nodeList;
     if (nodeList.isEmpty) {
       return;
     }
+
     for (var node in nodeList) {
       node.areaStyle.drawPath(canvas, mPaint, node.path);
       series.getBorderStyle(context, node.data, node.dataIndex)?.drawPath(canvas, mPaint, node.path);

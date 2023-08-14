@@ -418,7 +418,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     final bool vertical = direction == Direction.horizontal;
     Rect rect = coord.contentBox;
-    Offset scroll = coord.getTranslation();
+    Offset scroll = coord.getScroll();
     final pointerDis = computeAxisPointerDis(axisPointer, offset);
     final double paintOffset = axisPointer.lineStyle.width * 0.5;
 
@@ -462,7 +462,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   ///计算AxisPointer的距离
   double computeAxisPointerDis(AxisPointer axisPointer, Offset offset) {
-    Offset scroll = coord.getTranslation();
+    Offset scroll = coord.getScroll();
     offset = offset.translate(-scroll.dx, -scroll.dy);
 
     bool vertical = direction == Direction.horizontal;
@@ -528,7 +528,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         startIndex = 0;
         endIndex = tickCount;
       } else {
-        double scroll = coord.scrollXOffset.abs();
+        double scroll = coord.scrollX.abs();
         startIndex = scroll ~/ interval - 2;
         if (startIndex < 0) {
           startIndex = 0;
@@ -546,7 +546,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       startIndex = 0;
       endIndex = tickCount;
     } else {
-      double scroll = coord.scrollYOffset.abs();
+      double scroll = coord.scrollY.abs();
       startIndex = scroll ~/ interval - 2;
       if (startIndex < 0) {
         startIndex = 0;
@@ -581,7 +581,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     if (distance <= viewSize) {
       RangeInfo.range(Pair<num>(scale.domain.first, scale.domain.last));
     }
-    num scroll = direction == Direction.horizontal ? coord.scrollXOffset.abs() : coord.scrollYOffset.abs();
+    num scroll = direction == Direction.horizontal ? coord.scrollX.abs() : coord.scrollY.abs();
     return RangeInfo.range(Pair<num>(scale.toData(scroll), scale.toData(scroll + viewSize)));
   }
 

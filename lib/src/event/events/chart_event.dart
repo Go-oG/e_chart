@@ -5,7 +5,6 @@ import '../../model/index.dart';
 abstract class ChartEvent {}
 
 class EventParams {
-  Offset? offset;
   ///当前图形元素所属的组件名称，
   ComponentType componentType;
 
@@ -29,7 +28,6 @@ class EventParams {
   DataType dataType;
 
   EventParams({
-    required this.offset,
     required this.componentType,
     required this.data,
     required this.dataIndex,
@@ -38,4 +36,12 @@ class EventParams {
     this.seriesType,
     this.seriesIndex,
   });
+
+  @override
+  String toString() {
+    return "componentType:$componentType\n"
+        "seriesType:$seriesType seriesIndex:$seriesIndex\n"
+        "groupIndex:$groupIndex dataIndex:$dataIndex dataType:$dataType\n"
+        "data:$data ";
+  }
 }

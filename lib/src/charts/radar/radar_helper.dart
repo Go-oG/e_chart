@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'radar_node.dart';
 
 /// 雷达图布局
-class RadarHelper extends LayoutHelper<RadarSeries, List<GroupData>> {
+class RadarHelper extends LayoutHelper<RadarSeries> {
   List<RadarGroupNode> _groupNodeList = [];
 
   RadarHelper(super.context, super.series);
@@ -17,14 +17,14 @@ class RadarHelper extends LayoutHelper<RadarSeries, List<GroupData>> {
   double radius = 0;
 
   @override
-  void onLayout(List<GroupData> data, LayoutType type) {
+  void onLayout(LayoutType type) {
     RadarCoord layout = context.findRadarCoord(series.radarIndex);
     center = layout.getCenter();
     radius = layout.getRadius();
 
     List<RadarNode> oldList = _nodeList;
     List<RadarNode> newList = [];
-    each(data, (data, gi) {
+    each(series.data, (data, gi) {
       var groupNode = RadarGroupNode(gi, data, []);
       int i = 0;
       for (var c in data.childData) {
@@ -36,9 +36,15 @@ class RadarHelper extends LayoutHelper<RadarSeries, List<GroupData>> {
       newList.addAll(groupNode.nodeList);
     });
 
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      _nodeList = newList;
+      return;
+    }
+
     DiffUtil.diff2(
       context,
-      series.animatorProps,
+      animation,
       oldList,
       newList,
       (data, node, add) => center,

@@ -4,16 +4,16 @@ import 'package:e_chart/e_chart.dart';
 
 import 'point_node.dart';
 
-class PointHelper extends LayoutHelper<PointSeries, List<PointData>> {
+class PointHelper extends LayoutHelper<PointSeries> {
   List<PointNode> nodeList = [];
 
   PointHelper(super.context, super.series);
 
   @override
-  void onLayout(List<PointData> data, LayoutType type) {
+  void onLayout(LayoutType type) {
     List<PointNode> oldList = nodeList;
     List<PointNode> newList =[];
-    each(data, (e, i) {
+    each(series.data, (e, i) {
       newList.add(PointNode(e, i, -1, Offset.zero));
     });
 
@@ -22,15 +22,15 @@ class PointHelper extends LayoutHelper<PointSeries, List<PointData>> {
   }
 
   void layoutNode(List<PointNode> nodeList) {
-    if (CoordSystem.polar == series.coordSystem) {
+    if (CoordType.polar == series.coordType) {
       _layoutForPolar(nodeList, findPolarCoord());
       return;
     }
-    if (CoordSystem.calendar == series.coordSystem) {
+    if (CoordType.calendar == series.coordType) {
       _layoutForCalendar(nodeList, findCalendarCoord());
       return;
     }
-    if (CoordSystem.grid == series.coordSystem) {
+    if (CoordType.grid == series.coordType) {
       _layoutForGrid(nodeList, findGridCoord());
       return;
     }

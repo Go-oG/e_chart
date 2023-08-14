@@ -33,7 +33,7 @@ class Polar extends CircleCoord {
   }
 
   @override
-  CoordSystem get coordSystem => CoordSystem.polar;
+  CoordType get coordSystem => CoordType.polar;
 
   @override
   CoordLayout<Coord>? toCoord() {

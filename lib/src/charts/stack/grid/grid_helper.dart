@@ -36,12 +36,12 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onLayout(List<P> data, LayoutType type) {
+  void onLayout(LayoutType type) {
     if (_tmpType != null) {
       type = _tmpType!;
       _tmpType = null;
     }
-    super.onLayout(data, type);
+    super.onLayout(type);
   }
 
   @override
@@ -297,7 +297,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     });
     final startMap = diffResult.startMap;
     final endMap = diffResult.endMap;
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animation!);
     doubleTween.startListener = () {
       Map<T, SingleNode<T, P>> map = {};
       diffResult.startMap.forEach((key, value) {
@@ -393,8 +393,8 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onContentScrollChange(Offset offset) {
-    onLayout(series.data, LayoutType.none);
+  void onCoordScrollUpdate(CoordScroll scroll) {
+    onLayout(LayoutType.none);
     if (!series.dynamicRange) {
       return;
     }
@@ -406,13 +406,13 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  void onContentScaleUpdate(double sx, double sy) {
-    onLayout(series.data, LayoutType.none);
+  void onCoordScaleUpdate(CoordScale scale) {
+    onLayout(LayoutType.none);
   }
 
   @override
   void onLayoutByParent(LayoutType type) {
-    onLayout(series.data, type);
+    onLayout(type);
   }
 
   @override
@@ -427,14 +427,14 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
   @override
   Offset getTranslation() {
-    return findGridCoord().getTranslation();
+    return findGridCoord().getScroll();
   }
 
   @override
   Offset getMaxTranslation() {
-    return findGridCoord().getMaxTranslation();
+    return findGridCoord().getMaxScroll();
   }
 
   @override
-  CoordSystem get coordSystem => CoordSystem.grid;
+  CoordType get coordSystem => CoordType.grid;
 }

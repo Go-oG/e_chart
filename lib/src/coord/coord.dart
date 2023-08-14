@@ -30,7 +30,7 @@ abstract class Coord extends ChartNotifier<Command> {
     }
   }
 
-  CoordSystem get coordSystem;
+  CoordType get coordSystem;
 
   ///通知数据更新
   void notifyUpdateData() {
@@ -41,7 +41,6 @@ abstract class Coord extends ChartNotifier<Command> {
   void notifyCoordConfigChange() {
     value = Command.configChange;
   }
-
 
   CoordLayout? toCoord(){return null;}
 

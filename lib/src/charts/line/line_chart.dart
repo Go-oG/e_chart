@@ -16,19 +16,13 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    layoutHelper.doMeasure(series.data, parentWidth, parentHeight);
+    layoutHelper.doMeasure(parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
-  }
-
-  @override
   void onDraw(Canvas canvas) {
-    if (series.coordSystem == CoordSystem.polar) {
+    if (series.coordType == CoordType.polar) {
       drawForPolar(canvas);
     } else {
       drawForGrid(canvas);
@@ -237,7 +231,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
 
   @override
   StackHelper<StackItemData, LineGroupData, LineSeries> buildLayoutHelper() {
-    if (series.coordSystem == CoordSystem.polar) {
+    if (series.coordType == CoordType.polar) {
       var h = LinePolarHelper(context, series);
       helper = h;
       return h;

@@ -47,7 +47,7 @@ class FunnelSeries extends RectSeries {
     super.tooltip,
     super.z,
   }) : super(
-          coordSystem: null,
+          coordType: null,
           calendarIndex: -1,
           parallelIndex: -1,
           polarIndex: -1,

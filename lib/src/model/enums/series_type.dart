@@ -31,4 +31,8 @@ class SeriesType {
   bool operator ==(Object other) {
     return other is SeriesType && other.type == type;
   }
+  @override
+  String toString() {
+    return type;
+  }
 }

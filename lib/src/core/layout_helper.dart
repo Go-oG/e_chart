@@ -3,49 +3,51 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///用于辅助布局相关的抽象类
-///一般情况下SeriesView 都需要一个Helper来辅助布局
-abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Command> {
+///一般情况下和SeriesView 配合使用
+abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command> {
   late Context context;
   late S series;
-  Rect rect = Rect.zero;
-  late T data;
+  Rect boxBound = Rect.zero;
+  Rect globalBoxBound = Rect.zero;
 
   LayoutHelper(this.context, this.series, {bool equalsObject = false}) : super(Command.none, equalsObject);
 
+  ///该构造方法用于在无法马上初始化时使用
+  ///一般用于Graph等存在多个Layout方式的视图中
   LayoutHelper.lazy({bool equalsObject = false}) : super(Command.none, equalsObject);
 
-  void doMeasure(T data, double parentWidth, double parentHeight) {
-    this.rect = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
+  ///==========布局测量相关===========
+  void doMeasure(double parentWidth, double parentHeight) {
+    this.boxBound = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
     onMeasure();
   }
 
-  void doLayout(T data, Rect rect, LayoutType type) {
-    this.rect = rect;
-    this.data = data;
-    onLayout(data, type);
+  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
+    this.boxBound = boxBound;
+    this.globalBoxBound = globalBoxBound;
+    onLayout(type);
   }
 
-  void onLayout(T data, LayoutType type);
+  void onLayout(LayoutType type);
 
   void onMeasure() {}
 
   void stopLayout() {}
 
-  double get width => rect.width;
+  double get width => boxBound.width;
 
-  double get height => rect.height;
+  double get height => boxBound.height;
 
+  ///=========手势处理================
   void onClick(Offset localOffset) {}
 
   void onHoverStart(Offset localOffset) {}
 
   void onHoverMove(Offset localOffset) {}
 
-  void handleHoverOrClick(Offset offset, bool click) {}
-
   void onHoverEnd() {}
 
-  ///=======事件通知=======
+  ///=========事件通知========
   ///Brush
   void onBrushEvent(BrushEvent event) {}
 
@@ -62,44 +64,53 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
 
   void onLegendScrollEvent(LegendScrollEvent event) {}
 
-  void onContentScrollChange(Offset offset) {}
+  void onCoordScrollStart(CoordScroll scroll) {}
 
-  void onContentScrollEnd(Offset offset) {}
+  void onCoordScrollUpdate(CoordScroll scroll) {}
 
-  void onContentScaleUpdate(double sx, double sy) {}
+  void onCoordScrollEnd(CoordScroll scroll) {}
+
+  void onCoordScaleStart(CoordScale scale) {}
+
+  void onCoordScaleUpdate(CoordScale scale) {}
+
+  void onCoordScaleEnd(CoordScale scale) {}
 
   void onLayoutByParent(LayoutType type) {}
 
   ///dataZoom
   void onDataZoom(DataZoomEvent event) {}
 
+  ///==============事件发送============
   void sendClickEvent(Offset offset, dynamic data,
       {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(
-        ClickEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
+    context.dispatchEvent(ClickEvent(
+      offset,
+      toGlobal(offset),
+      buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
+    ));
   }
 
   void sendHoverInEvent(Offset offset, dynamic data,
       {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(
-        HoverInEvent(buildEventParams(offset, data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex)));
-  }
-
-  void sendHoverOutEvent(Offset? offset, dynamic data,
-      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(HoverOutEvent(buildEventParams(
+    context.dispatchEvent(HoverInEvent(
       offset,
-      data,
-      dataType: dataType,
-      dataIndex: dataIndex,
-      groupIndex: groupIndex,
-    )));
+      toGlobal(offset),
+      buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
+    ));
   }
 
-  EventParams buildEventParams(Offset? offset, dynamic data,
+  void sendHoverOutEvent(Offset offset, dynamic data,
       {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    context.dispatchEvent(HoverOutEvent(
+      offset,
+      toGlobal(offset),
+      buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
+    ));
+  }
+
+  EventParams buildEventParams(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     return EventParams(
-      offset: offset,
       componentType: ComponentType.series,
       data: data,
       dataIndex: dataIndex,
@@ -110,7 +121,9 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
     );
   }
 
-  ///========其它函数=======================
+  SeriesType get seriesType;
+
+  ///========查找坐标系函数=======================
   GridCoord findGridCoord() {
     return context.findGridCoord(series.gridIndex);
   }
@@ -135,14 +148,22 @@ abstract class LayoutHelper<S extends ChartSeries, T> extends ChartNotifier<Comm
     return context.findRadarCoord(series.radarIndex);
   }
 
-  SeriesType get seriesType;
-
+  ///========通知布局节点刷新=======
   void notifyLayoutUpdate() {
     value = Command.layoutUpdate;
   }
 
   void notifyLayoutEnd() {
     value = Command.layoutEnd;
+  }
+
+  ///========坐标转换=======
+  Offset toLocal(Offset global) {
+    return Offset(global.dx - globalBoxBound.left, global.dy - globalBoxBound.top);
+  }
+
+  Offset toGlobal(Offset local) {
+    return Offset(local.dx + globalBoxBound.left, local.dy + globalBoxBound.top);
   }
 }
 

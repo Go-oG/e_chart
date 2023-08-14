@@ -1,7 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 
-import 'chart_action.dart';
-
 ///行为分发器
 ///用于程序模拟用户操作
 class ActionDispatcher {
@@ -28,5 +26,4 @@ class ActionDispatcher {
       }
     }
   }
-
 }

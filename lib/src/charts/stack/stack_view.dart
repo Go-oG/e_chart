@@ -2,20 +2,14 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-abstract class StackView<T extends StackItemData, G extends StackGroupData<T>, S extends StackSeries<T, G>, L extends StackHelper<T, G, S>>
-    extends CoordChildView<S, L> {
+abstract class StackView<T extends StackItemData, G extends StackGroupData<T>, S extends StackSeries<T, G>,
+    L extends StackHelper<T, G, S>> extends CoordChildView<S, L> {
   StackView(super.series);
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    layoutHelper.doMeasure(series.data, parentWidth, parentHeight);
+    layoutHelper.doMeasure(parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
   }
 
   @override

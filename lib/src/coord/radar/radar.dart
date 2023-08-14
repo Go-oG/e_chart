@@ -57,7 +57,7 @@ class Radar extends CircleCoord {
   }
 
   @override
-  CoordSystem get coordSystem => CoordSystem.radar;
+  CoordType get coordSystem => CoordType.radar;
 
   @override
   CoordLayout<Coord>? toCoord() {

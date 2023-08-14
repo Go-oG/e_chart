@@ -8,19 +8,6 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
   ParallelView(super.series);
 
   @override
-  void onUpdateDataCommand(covariant Command c) {
-    super.onUpdateDataCommand(c);
-    layoutHelper.findParallelCoord().onReceiveCommand(Command.updateData);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
-  }
-
-  @override
   void onDraw(Canvas canvas) {
     _drawData(canvas);
   }

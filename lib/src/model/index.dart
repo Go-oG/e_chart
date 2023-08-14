@@ -16,6 +16,9 @@ export 'enums/step_type.dart';
 export 'enums/trigger.dart';
 export 'enums/trigger_on.dart';
 
+export 'event/coord_scale.dart';
+export 'event/coord_scroll.dart';
+
 export 'shape/index.dart';
 
 export 'quadtree/quad_node.dart';

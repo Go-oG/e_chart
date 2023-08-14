@@ -3,7 +3,7 @@ import 'package:flutter/animation.dart';
 
 import 'heat_map_node.dart';
 
-class HeatMapHelper extends LayoutHelper<HeatMapSeries, List<HeatMapData>> {
+class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
   List<HeatMapNode> _nodeList = [];
 
   HeatMapHelper(super.context, super.series);
@@ -11,13 +11,19 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries, List<HeatMapData>> {
   List<HeatMapNode> get nodeList => _nodeList;
 
   @override
-  void onLayout(List<HeatMapData> data, LayoutType type) {
+  void onLayout(LayoutType type) {
     List<HeatMapNode> oldList = _nodeList;
-    List<HeatMapNode> newList = convertData(data);
+    List<HeatMapNode> newList = convertData(series.data);
     layoutNode(newList);
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      _nodeList = newList;
+      notifyLayoutUpdate();
+      return;
+    }
     DiffUtil.diff2<Rect, HeatMapData, HeatMapNode>(
       context,
-      series.animatorProps,
+      animation,
       oldList,
       newList,
       (data, node, add) => Rect.fromCenter(center: node.attr.center, width: 0, height: 0),
@@ -41,7 +47,7 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries, List<HeatMapData>> {
   void layoutNode(List<HeatMapNode> nodeList) {
     GridCoord? gridLayout;
     CalendarCoord? calendarLayout;
-    if (series.coordSystem == CoordSystem.grid) {
+    if (series.coordType == CoordType.grid) {
       gridLayout = findGridCoord();
     } else {
       calendarLayout = findCalendarCoord();
@@ -59,6 +65,68 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries, List<HeatMapData>> {
       }
       node.attr = rect;
     }
+  }
+
+  @override
+  void onClick(Offset localOffset) {
+    handleHoverOrClick(localOffset, true);
+  }
+
+  @override
+  void onHoverStart(Offset localOffset) {
+    handleHoverOrClick(localOffset, false);
+  }
+
+  @override
+  void onHoverMove(Offset localOffset) {
+    handleHoverOrClick(localOffset, false);
+  }
+
+  @override
+  void onHoverEnd() {}
+
+  HeatMapNode? _hoverNode;
+
+  void handleHoverOrClick(Offset offset, bool click) {
+    var oldOffset = offset;
+    Offset scroll;
+    if (series.coordType == CoordType.grid) {
+      scroll = findGridCoord().getScroll();
+    } else {
+      scroll = findCalendarCoord().getScroll();
+    }
+    offset = offset.translate(scroll.dx.abs(), scroll.dy.abs());
+    var clickNode = findNode(offset);
+    if (_hoverNode == clickNode) {
+      return;
+    }
+
+    if (click) {
+      if (clickNode != null) {
+        sendClickEvent(oldOffset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+      }
+    } else {
+      if (_hoverNode != null) {
+        sendHoverOutEvent(oldOffset, _hoverNode!.data,
+            dataIndex: _hoverNode!.dataIndex, groupIndex: _hoverNode!.groupIndex);
+      }
+      if (clickNode != null) {
+        sendHoverInEvent(oldOffset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+      }
+    }
+    _hoverNode?.removeState(ViewState.hover);
+    clickNode?.addState(ViewState.hover);
+    _hoverNode = clickNode;
+    notifyLayoutUpdate();
+  }
+
+  HeatMapNode? findNode(Offset offset) {
+    for (var node in _nodeList) {
+      if (node.attr.contains2(offset)) {
+        return node;
+      }
+    }
+    return null;
   }
 
   @override

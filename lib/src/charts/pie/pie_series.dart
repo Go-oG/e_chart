@@ -62,7 +62,7 @@ class PieSeries extends RectSeries {
     super.bottomMargin,
     super.width,
     super.height,
-    super.coordSystem,
+    super.coordType,
     super.calendarIndex,
     super.tooltip,
     super.animation,

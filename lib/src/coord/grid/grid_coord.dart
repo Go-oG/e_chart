@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/utils/viewport_util.dart';
 import 'package:flutter/material.dart';
 import 'axis/grid_axis_impl.dart';
 
@@ -138,15 +139,15 @@ class GridCoordImpl extends GridCoord {
       }
       extremeMap[axis] = dl;
     }
-    scaleXFactor = props.baseXScale;
+    scale.dx = props.baseXScale;
+
     int? splitCount;
     double topOffset = contentBox.top;
     each(topList, (value, i) {
       var axisInfo = value.axisInfo;
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var attrs =
-          LineAxisAttrs(scaleXFactor, scrollYOffset, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
+      var attrs = LineAxisAttrs(scaleX, scrollX, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
       topOffset -= (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
       if (needAlignTick && i == 0) {
@@ -159,14 +160,8 @@ class GridCoordImpl extends GridCoord {
       var axisInfo = value.axisInfo;
       var h = axisInfo.bound.height;
       Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
-      var attrs = LineAxisAttrs(
-        scaleXFactor,
-        scrollXOffset,
-        rect,
-        rect.topLeft.translate(0, -1),
-        rect.topRight.translate(0, -1),
-        splitCount: splitCount,
-      );
+      var attrs = LineAxisAttrs(scaleX, scrollX, rect, rect.topLeft.translate(0, -1), rect.topRight.translate(0, -1),
+          splitCount: splitCount);
       bottomOffset += (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
 
@@ -201,7 +196,7 @@ class GridCoordImpl extends GridCoord {
       }
       extremeMap[axis] = dl;
     }
-    scaleYFactor = props.baseYScale;
+    scale.dy = props.baseYScale;
     int? splitCount;
     double rightOffset = contentBox.left;
     each(leftList, (value, i) {
@@ -211,8 +206,7 @@ class GridCoordImpl extends GridCoord {
       }
       double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
-      var attrs =
-          LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
+      var attrs = LineAxisAttrs(scaleY, scrollY, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
       rightOffset -= w;
       if (!force && useViewPortExtreme && dl.length >= 2 && value.scale.isNum) {
         dl.sort();
@@ -237,8 +231,7 @@ class GridCoordImpl extends GridCoord {
       }
       double w = value.axisInfo.bound.width;
       Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
-      var attrs =
-          LineAxisAttrs(scaleYFactor, scrollYOffset, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
+      var attrs = LineAxisAttrs(scaleY, scrollY, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
       leftOffset += w;
       value.doLayout(attrs, dl);
       if (needAlignTick && splitCount == null && i == 0) {
@@ -307,46 +300,30 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    var sx = diff.dx + scrollXOffset;
-    var sy = diff.dy + scrollYOffset;
-
-    Offset maxOffset = getMaxTranslation();
-    if (sx.abs() > maxOffset.dx) {
-      sx = -maxOffset.dx;
-    }
-    if (sx > 0) {
-      sx = 0;
-    }
+    Offset sc = adjustScrollOffset2(scrollX, scrollY, diff.dx, diff.dy, getMaxXScroll(), getMaxYScroll());
     bool hasChange = false;
-    if (sx != scrollXOffset) {
+    if (sc.dx != scrollX) {
       hasChange = true;
-      scrollXOffset = sx;
+      scroll.dx = sc.dx;
       xMap.forEach((key, value) {
-        value.attrs.scroll = sx;
-        value.onScrollChange(sx);
+        value.attrs.scroll = sc.dx;
+        value.onScrollChange(sc.dx);
       });
     }
-    if (sy.abs() > maxOffset.dy) {
-      sy = maxOffset.dy;
-    }
-    if (sy < 0) {
-      sy = 0;
-    }
-    if (sy != scrollYOffset) {
+    if (sc.dy != scrollY) {
       hasChange = true;
-      scrollYOffset = sy;
+      scroll.dy = sc.dy;
       yMap.forEach((key, value) {
-        value.attrs.scroll = sy;
-        value.onScrollChange(sy);
+        value.attrs.scroll = sc.dy;
+        value.onScrollChange(sc.dy);
       });
     }
     if (!hasChange) {
       return;
     }
-    Offset scroll = Offset(scrollXOffset, scrollYOffset);
     each(children, (p0, p1) {
       if (p0 is CoordChildView) {
-        p0.onContentScrollUpdate(scroll);
+        p0.onCoordScrollUpdate(scroll);
       }
     });
     invalidate();
@@ -354,10 +331,9 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onDragEnd() {
-    Offset offset = Offset(scrollXOffset, scrollYOffset);
     for (var child in children) {
       if (child is CoordChildView) {
-        child.onContentScrollEnd(offset);
+        child.onCoordScrollEnd(scroll);
       }
     }
   }
@@ -367,7 +343,7 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    var sx = scaleXFactor + scale * cos(rotation);
+    var sx = scaleX + scale * cos(rotation);
     if (sx < 0.001) {
       sx = 0.001;
     }
@@ -375,31 +351,31 @@ class GridCoordImpl extends GridCoord {
       sx = 100;
     }
     bool hasChange = false;
-    if (sx != scaleXFactor) {
+    if (sx != scaleX) {
       hasChange = true;
-      scaleXFactor = sx;
+      this.scale.dx = sx;
       xMap.forEach((key, value) {
-        value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleXFactor));
+        value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleX));
       });
     }
-    var sy = scaleXFactor + scale * sin(rotation);
+    var sy = scaleY + scale * sin(rotation);
     if (sy < 0.001) {
       sy = 0.001;
     }
     if (sy > 100) {
       sy = 100;
     }
-    if (sy != scaleYFactor) {
+    if (sy != scaleY) {
       hasChange = true;
-      scaleYFactor = sy;
+      this.scale.dy = sy;
       yMap.forEach((key, value) {
-        value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleYFactor));
+        value.onAttrsChange(value.attrs.copyWith(scaleRatio: sy));
       });
     }
     if (hasChange) {
       each(children, (p0, p1) {
         if (p0 is CoordChildView) {
-          p0.onContentScaleUpdate(scaleXFactor, scaleYFactor);
+          p0.onCoordScaleUpdate(this.scale);
         }
       });
       invalidate();
@@ -412,7 +388,7 @@ class GridCoordImpl extends GridCoord {
   void onHoverStart(Offset offset) {
     super.onHoverStart(offset);
     if (needInvalidateAxisPointer(false)) {
-      _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+      _axisPointerOffset = offset.translate(scrollX.abs(), scrollY.abs());
       invalidate();
     }
   }
@@ -421,7 +397,7 @@ class GridCoordImpl extends GridCoord {
   void onHoverMove(Offset offset, Offset last) {
     super.onHoverMove(offset, last);
     if (needInvalidateAxisPointer(false)) {
-      _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+      _axisPointerOffset = offset.translate(scrollX.abs(), scrollY.abs());
       invalidate();
     }
   }
@@ -439,7 +415,7 @@ class GridCoordImpl extends GridCoord {
   void onClick(Offset offset) {
     super.onClick(offset);
     if (needInvalidateAxisPointer(true)) {
-      _axisPointerOffset = offset.translate(scrollXOffset.abs(), scrollYOffset);
+      _axisPointerOffset = offset.translate(scrollX.abs(), scrollY.abs());
       if (!contentBox.contains(offset)) {
         _axisPointerOffset = null;
       }
@@ -538,33 +514,6 @@ class GridCoordImpl extends GridCoord {
       return getXAxis(axisIndex).scale;
     }
     return getYAxis(axisIndex).scale;
-  }
-
-  @override
-  Offset getMaxTranslation() {
-    double dx = 0;
-    xMap.forEach((key, value) {
-      List<num> rv = value.scale.range;
-      double diff = (rv[0] - rv[1]).abs().toDouble();
-      if (diff > contentBox.width) {
-        diff = diff - contentBox.width;
-        if (diff > dx) {
-          dx = diff;
-        }
-      }
-    });
-    double dy = 0;
-    yMap.forEach((key, value) {
-      List<num> rv = value.scale.range;
-      double diff = (rv[0] - rv[1]).abs().toDouble();
-      if (diff > contentBox.height) {
-        diff = diff - contentBox.height;
-        if (diff > dy) {
-          dy = diff;
-        }
-      }
-    });
-    return Offset(dx, dy);
   }
 
   @override
@@ -685,6 +634,38 @@ class GridCoordImpl extends GridCoord {
     var axis = xAxis ? props.xAxisList[axisIndex] : props.yAxisList[axisIndex];
     var axisImpl = xAxis ? xMap[axis]! : yMap[axis]!;
     return axisImpl.pxToData(position);
+  }
+
+  @override
+  double getMaxXScroll() {
+    double dx = 0;
+    xMap.forEach((key, value) {
+      List<num> rv = value.scale.range;
+      double diff = (rv[0] - rv[1]).abs().toDouble();
+      if (diff > contentBox.width) {
+        diff = diff - contentBox.width;
+        if (diff > dx) {
+          dx = diff;
+        }
+      }
+    });
+    return dx;
+  }
+
+  @override
+  double getMaxYScroll() {
+    double dy = 0;
+    yMap.forEach((key, value) {
+      List<num> rv = value.scale.range;
+      double diff = (rv[0] - rv[1]).abs().toDouble();
+      if (diff > contentBox.height) {
+        diff = diff - contentBox.height;
+        if (diff > dy) {
+          dy = diff;
+        }
+      }
+    });
+    return dy;
   }
 }
 

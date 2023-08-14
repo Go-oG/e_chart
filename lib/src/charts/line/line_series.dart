@@ -31,7 +31,7 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
     super.selectedMode,
     super.gridIndex,
     super.polarIndex = -1,
-    super.coordSystem = CoordSystem.grid,
+    super.coordType = CoordType.grid,
     super.animation,
     super.backgroundColor,
     super.id,

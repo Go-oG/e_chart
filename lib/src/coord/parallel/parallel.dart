@@ -31,7 +31,7 @@ class Parallel extends Coord {
   });
 
   @override
-  CoordSystem get coordSystem => CoordSystem.parallel;
+  CoordType get coordSystem => CoordType.parallel;
 
   @override
   CoordLayout<Coord>? toCoord() {

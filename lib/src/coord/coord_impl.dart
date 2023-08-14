@@ -6,10 +6,17 @@ import 'package:flutter/material.dart';
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
 
-  double scaleXFactor = 1;
-  double scaleYFactor = 1;
-  double scrollXOffset = 0;
-  double scrollYOffset = 0;
+  late final CoordScale scale;
+
+  double get scaleX => scale.dx;
+
+  double get scaleY => scale.dy;
+
+  late final CoordScroll scroll;
+
+  double get scrollX => scroll.dx;
+
+  double get scrollY => scroll.dy;
 
   ///存储内容的边界
   Rect contentBox = Rect.zero;
@@ -17,8 +24,10 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   BrushView? _brushView;
   ToolTipView? _tipView;
 
-  CoordLayout(this.props){
-    layoutParams=props.layoutParams;
+  CoordLayout(this.props) : super() {
+    layoutParams = props.layoutParams;
+    scale = CoordScale(props.id, props.coordSystem, 1, 1);
+    scroll = CoordScroll(props.id, props.coordSystem, 0, 0);
   }
 
   @override
@@ -146,17 +155,21 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   bool get enableLongPress => true;
 
   Offset getScaleFactor() {
-    return Offset(scaleXFactor, scaleYFactor);
+    return Offset(scale.dx, scale.dy);
   }
 
-  Offset getTranslation() {
-    return Offset(scrollXOffset, scrollYOffset);
+  Offset getScroll() {
+    return Offset(scroll.dx, scroll.dy);
   }
 
-  ///获取最大能够平移的值
-  Offset getMaxTranslation() {
-    return Offset.zero;
+  ///获取滚动的最大量(都应该是整数)
+  Offset getMaxScroll() {
+    return Offset(getMaxXScroll(), getMaxYScroll());
   }
+
+  double getMaxXScroll();
+
+  double getMaxYScroll();
 
   ///返回不包含BrushView、ToolTipView的子视图列表
   List<ChartView> getChildNotComponent() {

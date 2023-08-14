@@ -1,5 +1,3 @@
-import '../../component/brush/brush.dart';
-import '../../component/brush/brush_view.dart';
 import '../../model/enums/coordinate.dart';
 import '../coord_impl.dart';
 import '../coord.dart';
@@ -9,8 +7,13 @@ class SingleCoordImpl extends CoordLayout {
   SingleCoordImpl() : super(SingleConfig());
 
   @override
-  BrushView? onCreateBrushView(Brush brush) {
-    return null;
+  double getMaxXScroll() {
+    return 0;
+  }
+
+  @override
+  double getMaxYScroll() {
+    return 0;
   }
 }
 
@@ -24,14 +27,14 @@ class SingleConfig extends Coord {
   });
 
   @override
-  CoordSystem get coordSystem => CoordSystem.single;
+  CoordType get coordSystem => CoordType.single;
 }
 
 class SingleCoordConfig extends Coord {
   SingleCoordConfig({super.show, super.id});
 
   @override
-  CoordSystem get coordSystem => CoordSystem.single;
+  CoordType get coordSystem => CoordType.single;
 
   @override
   bool operator ==(Object other) => other is SingleCoordConfig && id == other.id;

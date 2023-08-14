@@ -27,7 +27,7 @@ class ParallelSeries extends RectSeries {
     super.id,
     super.z,
   }) : super(
-          coordSystem: CoordSystem.parallel,
+    coordType: CoordType.parallel,
           gridIndex: -1,
           calendarIndex: -1,
           polarIndex: -1,

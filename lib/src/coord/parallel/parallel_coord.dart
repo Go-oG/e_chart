@@ -1,7 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-
 ///平行坐标系
 class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
@@ -154,15 +153,7 @@ class ParallelCoordImpl extends ParallelCoord {
         end = rect.topRight.translate(-textSize[1].width, 0);
       }
 
-      var attrs = ParallelAxisAttrs(
-        1,
-        scrollXOffset,
-        rect,
-        start,
-        end,
-        textStartSize: textSize[0],
-        textEndSize: textSize[1],
-      );
+      var attrs = ParallelAxisAttrs(1, scrollX, rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
       node.doLayout(attrs, dataSet);
     }
 
@@ -201,6 +192,16 @@ class ParallelCoordImpl extends ParallelCoord {
     checkDataType(data);
     ParallelAxisImpl node = axisMap[props.axisList[dimIndex]]!;
     return ParallelPosition(node.dataToPoint(data));
+  }
+
+  @override
+  double getMaxXScroll() {
+    return 0;
+  }
+
+  @override
+  double getMaxYScroll() {
+    return 0;
   }
 }
 

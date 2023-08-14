@@ -45,14 +45,8 @@ class PolarCoordImpl extends PolarCoord {
     double or = width / 2;
 
     AngleAxis angleAxis = props.angleAxis;
-    var angleAttrs = AngleAxisAttrs(
-      center,
-      angleAxis.offsetAngle.toDouble(),
-      [ir, or],
-      scaleYFactor,
-      scrollYOffset,
-      clockwise: angleAxis.clockwise,
-    );
+    var angleAttrs = AngleAxisAttrs(center, angleAxis.offsetAngle.toDouble(), [ir, or], scaleY, scrollY,
+        clockwise: angleAxis.clockwise);
     _angleAxis.doLayout(angleAttrs, _getAngleDataSet());
 
     num angle = props.radiusAxis.offsetAngle;
@@ -156,6 +150,16 @@ class PolarCoordImpl extends PolarCoord {
   @override
   num getSweepAngle() {
     return 360;
+  }
+
+  @override
+  double getMaxXScroll() {
+    return 0;
+  }
+
+  @override
+  double getMaxYScroll() {
+    return 0;
   }
 }
 

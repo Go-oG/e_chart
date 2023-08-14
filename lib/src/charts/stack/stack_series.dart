@@ -101,7 +101,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     super.animation = defaultAnimatorAttrs,
     super.backgroundColor,
     super.clip,
-    super.coordSystem = CoordSystem.grid,
+    super.coordType = CoordType.grid,
     super.gridIndex,
     super.polarIndex,
     super.id,
@@ -130,7 +130,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   void notifyUpdateData() {
     _helper = null;
     Future(() {
-      helper.getCrossExtreme(CoordSystem.polar, -1);
+      helper.getCrossExtreme(CoordType.polar, -1);
     }).then((value) => super.notifyUpdateData());
   }
 

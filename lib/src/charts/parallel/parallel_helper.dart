@@ -3,16 +3,24 @@ import 'package:flutter/material.dart';
 
 import 'parallel_node.dart';
 
-class ParallelHelper extends LayoutHelper<ParallelSeries, List<ParallelGroup>> {
+class ParallelHelper extends LayoutHelper<ParallelSeries> {
   List<ParallelNode> nodeList = [];
 
   ParallelHelper(super.context, super.series);
 
   @override
-  void onLayout(List<ParallelGroup> data, LayoutType type) {
+  void onLayout(LayoutType type) {
     List<ParallelNode> oldList = nodeList;
-    List<ParallelNode> newList = convertData(data);
+    List<ParallelNode> newList = convertData(series.data);
     layoutNode(newList);
+
+    var animation=series.animation;
+    if(animation==null||animation.updateDuration.inMilliseconds<=0){
+      nodeList=newList;
+      notifyLayoutUpdate();
+      return;
+    }
+
     ParallelCoord layout = context.findParallelCoord(series.parallelIndex);
     Direction direction = layout.direction;
     DiffResult<ParallelNode, ParallelGroup> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
@@ -32,7 +40,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries, List<ParallelGroup>> {
     Map<ParallelGroup, List<Offset?>> startMap = result.startMap.map((key, value) => MapEntry(key, value.offsetList));
     Map<ParallelGroup, List<Offset?>> endMap = result.endMap.map((key, value) => MapEntry(key, value.offsetList));
 
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animatorProps);
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: animation);
     OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
 
     doubleTween.startListener = () {

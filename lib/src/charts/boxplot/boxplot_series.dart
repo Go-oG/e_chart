@@ -9,7 +9,7 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
     super.groupGap,
     super.innerGap,
     super.direction,
-    super.coordSystem,
+    super.coordType,
     super.areaStyleFun,
     super.lineStyleFun,
     super.animation,

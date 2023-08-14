@@ -1,30 +1,6 @@
-import 'package:e_chart/src/ext/int_ext.dart';
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/utils/viewport_util.dart';
 import 'package:flutter/material.dart';
-
-import '../../ext/date_time_ext.dart';
-import '../../model/index.dart';
-import '../coord.dart';
-import '../coord_impl.dart';
-import 'calendar.dart';
-
-abstract class CalendarCoord extends CoordLayout<Calendar> {
-  CalendarCoord(super.props);
-
-  Rect dataToPosition(DateTime date);
-
-  int getRowCount();
-
-  int getColumnCount();
-
-  Size getCellSize();
-
-  List<Offset> getMonthPolygon(int year, int month);
-
-  List<Offset> getDateRangePolygon(DateTime start, DateTime end);
-
-  bool inRange(DateTime time);
-
-}
 
 ///日历坐标系视图
 class CalendarCoordImpl extends CalendarCoord {
@@ -114,6 +90,7 @@ class CalendarCoordImpl extends CalendarCoord {
   @override
   void onDraw(Canvas canvas) {
     canvas.save();
+    canvas.translate(scrollX, scrollY);
     canvas.clipRect(boxBounds);
     if (props.gridLineStyle != null) {
       var style = props.gridLineStyle!;
@@ -143,7 +120,6 @@ class CalendarCoordImpl extends CalendarCoord {
         style.drawPolygon(canvas, mPaint, getDateRangePolygon(t1, t2));
       }
     }
-
     canvas.restore();
   }
 
@@ -307,6 +283,62 @@ class CalendarCoordImpl extends CalendarCoord {
   bool inRange(DateTime time) {
     return _nodeMap[key(time)] != null;
   }
+
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    super.onDragMove(offset, diff);
+    var maxOffset = getMaxScroll();
+    Offset sc = adjustScrollOffset2(scroll.dx, scroll.dy, diff.dx, diff.dy, maxOffset.dx, maxOffset.dy);
+    if (scroll.dx != sc.dx || scroll.dy != sc.dy) {
+      scroll.dx = sc.dx;
+      scroll.dy = sc.dy;
+      invalidate();
+    }
+  }
+
+  @override
+  double getMaxXScroll() {
+    double w = columnCount * cellWidth;
+    if (w > width) {
+      return w - width;
+    }
+    return 0;
+  }
+
+  @override
+  double getMaxYScroll() {
+    double h = rowCount * cellHeight;
+    if (h > height) {
+      return h - height;
+    }
+    return 0;
+  }
+
+
+  @override
+  bool get enableDrag => true;
+
+  @override
+  bool get enableLongPress => true;
+}
+
+
+abstract class CalendarCoord extends CoordLayout<Calendar> {
+  CalendarCoord(super.props);
+
+  Rect dataToPosition(DateTime date);
+
+  int getRowCount();
+
+  int getColumnCount();
+
+  Size getCellSize();
+
+  List<Offset> getMonthPolygon(int year, int month);
+
+  List<Offset> getDateRangePolygon(DateTime start, DateTime end);
+
+  bool inRange(DateTime time);
 }
 
 class CalendarNode {

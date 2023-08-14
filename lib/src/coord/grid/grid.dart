@@ -33,7 +33,7 @@ class Grid extends Coord {
   }
 
   @override
-  CoordSystem get coordSystem => CoordSystem.grid;
+  CoordType get coordSystem => CoordType.grid;
 
   @override
   CoordLayout<Coord>? toCoord() {

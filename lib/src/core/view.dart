@@ -50,7 +50,6 @@ abstract class ChartView with ViewStateProvider {
     _forceLayout = true;
   }
 
-
   @protected
   bool forceMeasure = false;
 
@@ -476,19 +475,25 @@ abstract class ChartView with ViewStateProvider {
     return 0;
   }
 
+  ///是否忽略索引分配
   bool ignoreAllocateDataIndex() {
     return false;
   }
 
-  void onContentScrollStart(Offset scroll) {}
+  ///=======由坐标系回调=========
+  void onCoordScrollStart(CoordScroll scroll) {}
 
-  void onContentScrollUpdate(Offset scroll) {}
+  void onCoordScrollUpdate(CoordScroll scroll) {}
 
-  void onContentScrollEnd(Offset scroll) {}
+  void onCoordScrollEnd(CoordScroll scroll) {}
 
-  void onContentScaleUpdate(double sx, double sy) {}
+  void onCoordScaleStart(CoordScale scale) {}
 
-  void onLayoutByParent(LayoutType type){}
+  void onCoordScaleUpdate(CoordScale scale) {}
+
+  void onCoordScaleEnd(CoordScale scale) {}
+
+  void onLayoutByParent(LayoutType type) {}
 }
 
 ///实现了一个简易的手势识别器
@@ -671,6 +676,16 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   }
 
   @override
+  void onUpdateDataCommand(covariant Command c) {
+    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.update);
+  }
+
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
+  }
+
+  @override
   void onDrawBackground(Canvas canvas) {
     Color? color = series.backgroundColor;
     if (color != null) {
@@ -745,23 +760,33 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   }
 
   @override
-  void onContentScaleUpdate(double sx, double sy) {
-    layoutHelper.onContentScaleUpdate(sx, sy);
+  void onCoordScaleUpdate(CoordScale scale) {
+    layoutHelper.onCoordScaleUpdate(scale);
   }
 
   @override
-  void onContentScrollEnd(Offset scroll) {
-    layoutHelper.onContentScrollEnd(scroll);
+  void onCoordScaleStart(CoordScale scale) {
+    layoutHelper.onCoordScaleStart(scale);
   }
 
   @override
-  void onContentScrollStart(Offset scroll) {
-    layoutHelper.onContentScrollChange(scroll);
+  void onCoordScaleEnd(CoordScale scale) {
+    layoutHelper.onCoordScaleEnd(scale);
   }
 
   @override
-  void onContentScrollUpdate(Offset scroll) {
-    layoutHelper.onContentScrollChange(scroll);
+  void onCoordScrollStart(CoordScroll scroll) {
+    layoutHelper.onCoordScrollUpdate(scroll);
+  }
+
+  @override
+  void onCoordScrollUpdate(CoordScroll scroll) {
+    layoutHelper.onCoordScrollUpdate(scroll);
+  }
+
+  @override
+  void onCoordScrollEnd(CoordScroll scroll) {
+    layoutHelper.onCoordScrollEnd(scroll);
   }
 
   @override

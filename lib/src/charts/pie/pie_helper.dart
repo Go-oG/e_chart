@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/pie/pie_tween.dart';
 import 'package:flutter/material.dart';
 
 ///饼图布局
-class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
+class PieHelper extends LayoutHelper<PieSeries> {
   List<PieNode> _nodeList = [];
 
   PieHelper(super.context, super.series);
@@ -22,19 +22,26 @@ class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
   Offset center = Offset.zero;
 
   @override
-  void onLayout(List<ItemData> data, LayoutType type) {
+  void onLayout(LayoutType type) {
     pieAngle = _adjustPieAngle(series.sweepAngle);
     center = _computeCenterPoint(series.center);
     hoverNode = null;
     _preHandleRadius();
     List<PieNode> oldList = _nodeList;
-    List<PieNode> newList = _preHandleData(data);
+    List<PieNode> newList = _preHandleData(series.data);
     layoutNode(newList);
 
-    PieTween arcTween = PieTween(Arc(), Arc(), props: series.animatorProps);
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      _nodeList = newList;
+      notifyLayoutUpdate();
+      return;
+    }
+
+    PieTween arcTween = PieTween(Arc(), Arc(), props: animation);
     DiffUtil.diff2<Arc, ItemData, PieNode>(
       context,
-      series.animatorProps,
+      animation,
       oldList,
       newList,
       (data, node, add) {
@@ -78,6 +85,20 @@ class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
   PieNode? hoverNode;
 
   @override
+  void onClick(Offset localOffset) {
+    handleHoverOrClick(localOffset, true);
+  }
+
+  @override
+  void onHoverStart(Offset localOffset) {
+    handleHoverOrClick(localOffset, false);
+  }
+
+  @override
+  void onHoverMove(Offset localOffset) {
+    handleHoverOrClick(localOffset, false);
+  }
+
   void handleHoverOrClick(Offset offset, bool click) {
     List<PieNode> nodeList = _nodeList;
     if (nodeList.isEmpty) {
@@ -105,6 +126,14 @@ class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
       }
     }
 
+    var animator = series.animation;
+    if (animator == null || animator.updateDuration.inMilliseconds <= 0) {
+      hoverNode?.removeStates([ViewState.hover, ViewState.focused]);
+      clickNode?.addStates([ViewState.hover, ViewState.focused]);
+
+      return;
+    }
+
     PieNode? oldHoverNode = hoverNode;
     hoverNode = clickNode;
     oldHoverNode?.removeStates([ViewState.hover, ViewState.focused]);
@@ -119,7 +148,7 @@ class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
     List<PieTween> tweenList = [];
     each(nodeList, (node, p1) {
       if (oldHoverNode != null && node.data == oldHoverNode.data) {
-        PieTween tween = PieTween(oldMap[node]!, node.attr, props: series.animatorProps);
+        PieTween tween = PieTween(oldMap[node]!, node.attr, props: animator);
         tween.addListener(() {
           oldHoverNode.attr = tween.value;
           notifyLayoutUpdate();
@@ -135,7 +164,7 @@ class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
         } else {
           p = node.attr.copy(outRadius: node.attr.outRadius + series.scaleExtend.number);
         }
-        PieTween tween = PieTween(oldMap[node]!, p, props: series.animatorProps);
+        PieTween tween = PieTween(oldMap[node]!, p, props: animator);
         tween.addListener(() {
           clickNode!.attr = tween.value;
           notifyLayoutUpdate();
@@ -150,10 +179,10 @@ class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
 
   @override
   void onHoverEnd() {
-    if (hoverNode == null) {
+    var node = hoverNode;
+    if (node == null) {
       return;
     }
-    var node = hoverNode!;
     hoverNode = null;
     num or;
     if (series.scaleExtend.percent) {
@@ -161,7 +190,15 @@ class PieHelper extends LayoutHelper<PieSeries, List<ItemData>> {
     } else {
       or = node.attr.outRadius - series.scaleExtend.number;
     }
-    PieTween tween = PieTween(node.attr, node.attr.copy(outRadius: or), props: series.animatorProps);
+
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      node.attr = node.attr.copy(outRadius: or);
+      notifyLayoutUpdate();
+      return;
+    }
+
+    PieTween tween = PieTween(node.attr, node.attr.copy(outRadius: or), props: animation);
     tween.addListener(() {
       node.attr = tween.value;
       notifyLayoutUpdate();

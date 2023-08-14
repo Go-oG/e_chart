@@ -26,7 +26,7 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
         style = s2;
       }
       if (style != null) {
-        if (series.coordSystem == CoordSystem.polar) {
+        if (series.coordType == CoordType.polar) {
           style.drawPath(canvas, mPaint, group.arc.toPath(false));
         } else {
           style.drawRect(canvas, mPaint, group.rect);

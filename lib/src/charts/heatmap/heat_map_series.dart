@@ -29,7 +29,7 @@ class HeatMapSeries extends RectSeries {
     super.width,
     super.height,
     super.animation,
-    super.coordSystem = CoordSystem.calendar,
+    super.coordType = CoordType.calendar,
     super.gridIndex,
     super.calendarIndex = 0,
     super.tooltip,

@@ -205,21 +205,21 @@ class Context {
   }
 
   CoordLayout? _findCoord(ChartView view, ChartSeries series) {
-    if (series.coordSystem != null) {
-      var coord = series.coordSystem!;
-      if (coord == CoordSystem.grid) {
+    if (series.coordType != null) {
+      var coord = series.coordType!;
+      if (coord == CoordType.grid) {
         return findGridCoord();
       }
-      if (coord == CoordSystem.polar) {
+      if (coord == CoordType.polar) {
         return findPolarCoord(series.polarIndex);
       }
-      if (coord == CoordSystem.radar) {
+      if (coord == CoordType.radar) {
         return findRadarCoord(series.radarIndex);
       }
-      if (coord == CoordSystem.parallel) {
+      if (coord == CoordType.parallel) {
         return findParallelCoord(series.parallelIndex);
       }
-      if (coord == CoordSystem.calendar) {
+      if (coord == CoordType.calendar) {
         return findCalendarCoord(series.calendarIndex);
       }
     }

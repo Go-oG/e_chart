@@ -54,7 +54,7 @@ class RadarCoordImpl extends RadarCoord {
       var axis = axisMap[p0]!;
       double angle = oa + i * itemAngle;
       Offset o = circlePoint(radius, angle, center);
-      var attrs = LineAxisAttrs(scaleXFactor, scrollXOffset, Rect.zero, center, o);
+      var attrs = LineAxisAttrs(scaleX, scrollX, Rect.zero, center, o);
       axis.doLayout(attrs, collectChildData(i));
     });
 
@@ -158,6 +158,16 @@ class RadarCoordImpl extends RadarCoord {
 
   @override
   double getRadius() => radius;
+
+  @override
+  double getMaxXScroll() {
+    return 0;
+  }
+
+  @override
+  double getMaxYScroll() {
+    return 0;
+  }
 }
 
 abstract class RadarCoord extends CircleCoordLayout<Radar> {

@@ -8,20 +8,6 @@ class PieView extends SeriesView<PieSeries, PieHelper> {
   PieView(super.series);
 
   @override
-  bool get enableDrag => false;
-
-  @override
-  void onUpdateDataCommand(Command c) {
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
-  }
-
-  @override
   void onDraw(Canvas canvas) {
     List<PieNode> nodeList = layoutHelper.nodeList;
     each(nodeList, (node, i) {

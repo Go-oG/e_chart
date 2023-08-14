@@ -9,23 +9,18 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   HeatMapView(super.series);
 
   @override
-  int get calendarIndex => series.calendarIndex;
-
-
-  @override
-  void onUpdateDataCommand(covariant Command c) {
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(series.data, selfBoxBound, LayoutType.layout);
-  }
-
-  @override
   void onDraw(Canvas canvas) {
+    var coord = layoutHelper.findCalendarCoord();
+    var to = coord.getScroll();
+    canvas.save();
+    canvas.translate(to.dx, to.dy);
+    Rect sRect=Rect.fromLTWH(to.dx.abs(), to.dy.abs(), width, height);
     each(layoutHelper.nodeList, (node, index) {
+      Rect rect=node.attr;
+      if(!rect.overlaps(sRect)){
+        return;
+      }
+
       getAreaStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
       getBorderStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
       if (node.data.label == null || node.data.label!.isEmpty) {
@@ -39,6 +34,7 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
       Alignment align = series.labelAlignFun?.call(node.d) ?? Alignment.center;
       style.draw(canvas, mPaint, label, TextDrawInfo.fromRect(node.attr, align));
     });
+    canvas.restore();
   }
 
   @override
@@ -59,21 +55,24 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
     return dl;
   }
 
-  AreaStyle? getAreaStyle(HeatMapNode node, int index) {
-    return series.getAreaStyle(context, node.data, index, node.status);
-  }
-
-  LineStyle? getBorderStyle(HeatMapNode node, int index) {
-    return series.getBorderStyle(context, node.data, index, node.status);
-  }
-
   @override
   HeatMapHelper buildLayoutHelper() {
     return HeatMapHelper(context, series);
   }
 
   @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis,BaseScale scale) {
-    return getAxisExtreme(axisIndex,isXAxis);
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
+    return getAxisExtreme(axisIndex, isXAxis);
+  }
+
+  @override
+  int get calendarIndex => series.calendarIndex;
+
+  AreaStyle? getAreaStyle(HeatMapNode node, int index) {
+    return series.getAreaStyle(context, node.data, index, node.status);
+  }
+
+  LineStyle? getBorderStyle(HeatMapNode node, int index) {
+    return series.getBorderStyle(context, node.data, index, node.status);
   }
 }
