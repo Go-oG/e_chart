@@ -3,15 +3,24 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 
-class GroupData {
+class GroupData extends BaseGroupData<ItemData> {
+  GroupData(
+    super.data, {
+    super.id,
+    super.label,
+  });
+}
+
+class BaseGroupData<T> {
   late final String id;
   DynamicText? label;
-  List<ItemData> childData;
+
+  List<T> data;
 
   bool show = true;
 
-  GroupData(
-    this.childData, {
+  BaseGroupData(
+    this.data, {
     String? id,
     this.label,
   }) {
@@ -29,12 +38,13 @@ class GroupData {
 
   @override
   bool operator ==(Object other) {
-    return other is GroupData && other.id == id;
+    return other is BaseGroupData && other.id == id;
   }
 }
 
 class ItemData extends BaseItemData {
   num value;
+
   ItemData(this.value, {super.label, super.id});
 }
 
@@ -174,13 +184,16 @@ class DynamicText {
   }
 }
 
-String getText(dynamic data){
-  if(data is String){return data;}
+String getText(dynamic data) {
+  if (data is String) {
+    return data;
+  }
 
-  if(data is num){return formatNumber(data,1);}
-  if(data is DateTime){
+  if (data is num) {
+    return formatNumber(data, 1);
+  }
+  if (data is DateTime) {
     return data.toString();
   }
   throw ChartError("only support String num DateTime");
-
 }

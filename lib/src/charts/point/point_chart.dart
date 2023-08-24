@@ -2,83 +2,17 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/point/point_helper.dart';
 import 'package:flutter/material.dart';
 
-import 'point_node.dart';
-
 class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild, CalendarChild, GridChild {
   PointView(super.series);
 
   @override
-  void onClick(Offset offset) {
-    handleHover(offset);
-  }
-
-  @override
-  void onHoverStart(Offset offset) {
-    handleHover(offset);
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    handleHover(offset);
-  }
-
-  @override
-  void onHoverEnd() {
-    handleCancel();
-  }
-
-  void handleHover(Offset offset) {
-    PointNode? clickNode;
-    var nodeList = layoutHelper.nodeList;
-    for (var node in nodeList) {
-      if (series.includeFun != null && series.includeFun!.call(node, offset)) {
-        clickNode = node;
-        break;
-      }
-      if (node.internal(offset)) {
-        clickNode = node;
-        break;
-      }
-    }
-    bool result = false;
-    for (var node in nodeList) {
-      if (node == clickNode) {
-        if (node.addState(ViewState.hover)) {
-          result = true;
-        }
-      } else {
-        if (node.removeState(ViewState.hover)) {
-          result = true;
-        }
-      }
-    }
-    if (result) {
-      invalidate();
-    }
-  }
-
-  void handleCancel() {
-    bool result = false;
-    for (var node in layoutHelper.nodeList) {
-      if (node.removeState(ViewState.hover)) {
-        result = true;
-      }
-    }
-    if (result) {
-      invalidate();
-    }
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(selfBoxBound,globalBoxBound, LayoutType.layout);
-  }
-
-  @override
   void onDraw(Canvas canvas) {
+    LabelStyle labelStyle = LabelStyle(textStyle: TextStyle(fontSize: 18,color: Colors.black));
     for (var node in layoutHelper.nodeList) {
-      node.symbol?.draw(canvas, mPaint, node.attr);
+      node.symbol.convert(node.status).draw2(canvas, mPaint, node.attr.offset, node.attr.size);
+      if (node.data.label != null) {
+        labelStyle.draw(canvas, mPaint, node.data.label!, TextDrawInfo(node.attr.offset));
+      }
     }
   }
 
@@ -89,7 +23,9 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   List<dynamic> getAngleExtreme() {
     List<dynamic> dl = [];
     for (var ele in series.data) {
-      dl.add(ele.y);
+      for (var e in ele.data) {
+        dl.add(e.y);
+      }
     }
     return dl;
   }
@@ -98,7 +34,9 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   List<dynamic> getRadiusExtreme() {
     List<dynamic> dl = [];
     for (var ele in series.data) {
-      dl.add(ele.x);
+      for (var e in ele.data) {
+        dl.add(e.x);
+      }
     }
     return dl;
   }
@@ -110,15 +48,27 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
 
   @override
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
-    if (isXAxis) {
-      return List.from(series.data.map((e) => e.x));
-    } else {
-      return List.from(series.data.map((e) => e.y));
+    if (axisIndex <= 0) {
+      axisIndex = 0;
     }
+    List<dynamic> dl = [];
+    for (var group in series.data) {
+      var index = isXAxis ? group.gridXIndex : group.gridYIndex;
+      if (index < 0) {
+        index = 0;
+      }
+      if (index != axisIndex) {
+        continue;
+      }
+      for (var e in group.data) {
+        dl.add(isXAxis ? e.x : e.y);
+      }
+    }
+    return dl;
   }
 
   @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis,BaseScale scale) {
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     return getAxisExtreme(axisIndex, isXAxis);
   }
 

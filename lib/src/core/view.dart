@@ -504,7 +504,7 @@ abstract class GestureView extends ChartView {
   @override
   void onCreate() {
     super.onCreate();
-    _gesture = gestureArea;
+    _gesture = buildGesture;
     onInitGesture(_gesture);
   }
 
@@ -512,16 +512,16 @@ abstract class GestureView extends ChartView {
   @override
   void onLayoutEnd() {
     super.onLayoutEnd();
-    onGestureAreaInit(_gesture);
+    onGestureInit(_gesture);
   }
 
-  ChartGesture get gestureArea {
+  ChartGesture get buildGesture {
     return RectGesture();
   }
 
-  void onGestureAreaInit(ChartGesture gesture) {
+  void onGestureInit(ChartGesture gesture) {
     if (gesture is RectGesture) {
-      (gesture).rect = boxBounds;
+      (gesture).rect = globalBoxBound;
     }
   }
 

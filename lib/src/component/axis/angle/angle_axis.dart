@@ -25,7 +25,6 @@ class AngleAxis extends BaseAxis {
     super.timeRange,
     super.timeType,
     super.timeFormatFun,
-
     super.axisName,
     super.axisLine,
     super.axisLabel,
@@ -36,6 +35,6 @@ class AngleAxis extends BaseAxis {
     super.minorTick,
     super.axisPointer,
     super.alignTicks,
-    super.categoryCenter,
+    super.categoryCenter = false,
   }) : super(inverse: false);
 }

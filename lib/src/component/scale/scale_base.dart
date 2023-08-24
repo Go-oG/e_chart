@@ -39,11 +39,10 @@ abstract class BaseScale<D, R extends num> {
   ///Tick之间的距离间距
   double get tickInterval {
     num v = (range[1] - range[0]).abs();
-    int c = tickCount;
-    if (c <= 1) {
+    int c = tickCount - 1;
+    if (c < 1) {
       return v.toDouble();
     }
-    c = c - 1;
     return v / c;
   }
 

@@ -95,8 +95,13 @@ class HeatMapData extends BaseItemData {
   dynamic y;
   num value;
 
-  HeatMapData(this.x, this.y, this.value, {super.id, super.label}){
+  HeatMapData(this.x, this.y, this.value, {super.id, super.label}) {
     checkDataType(x);
     checkDataType(y);
+  }
+
+  @override
+  String toString() {
+    return "$runtimeType x:$x y:$y value:${value.toStringAsFixed(2)}";
   }
 }

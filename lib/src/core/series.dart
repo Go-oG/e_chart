@@ -57,9 +57,13 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     value = Command.configChange;
   }
 
+
+
   ChartView? toView() {
     return null;
   }
+
+
 }
 
 abstract class RectSeries extends ChartSeries {

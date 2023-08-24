@@ -286,7 +286,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       scaleFactor = 1;
     }
     int spn = axis.splitNumber;
-    if (spn < 2) {
+    if (spn <2) {
       spn = 2;
     }
     spn = (spn * scaleFactor).round();

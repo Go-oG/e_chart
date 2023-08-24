@@ -5,14 +5,13 @@ class EmptySymbol extends ChartSymbol {
   EmptySymbol();
 
   @override
-  void draw(Canvas canvas, Paint paint,Offset offset) {
-  }
-
-  @override
   Size get size => const Size(0, 0);
 
   @override
-  bool internal(Offset point) {
+  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {}
+
+  @override
+  bool internal2(Offset center, Size size, Offset point) {
     return false;
   }
 }

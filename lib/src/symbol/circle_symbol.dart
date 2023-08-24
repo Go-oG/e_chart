@@ -2,12 +2,12 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class CircleSymbol extends ChartSymbol {
-  final num outerRadius;
-  final num innerRadius;
-  final Color innerColor;
-  final Color outerColor;
-  final bool fill;
-  final double strokeWidth;
+  num outerRadius;
+  num innerRadius;
+  Color innerColor;
+  Color outerColor;
+  bool fill;
+  double strokeWidth;
 
   CircleSymbol(
       {this.innerRadius = 0,
@@ -28,7 +28,24 @@ class CircleSymbol extends ChartSymbol {
         strokeWidth = 0;
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  Size get size => Size.square(outerRadius * 2);
+
+  @override
+  bool internal2(Offset center, Size size, Offset point) {
+    double dis = point.distance2(center);
+    return dis <= (size.longestSide / 2);
+  }
+
+  @override
+  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
+    if (innerRadius <= 0) {
+      innerRadius = 0;
+      outerRadius = size.longestSide / 2;
+    } else {
+      double p = innerRadius / outerRadius;
+      outerRadius = size.longestSide / 2;
+      innerRadius = p * outerRadius;
+    }
     center = offset;
     num or = outerRadius;
     num ir = innerRadius;
@@ -43,14 +60,5 @@ class CircleSymbol extends ChartSymbol {
       paint.color = innerColor;
       canvas.drawCircle(center, ir.toDouble(), paint);
     }
-  }
-
-  @override
-  Size get size => Size.square(outerRadius * 2);
-
-  @override
-  bool internal(Offset point) {
-    double dis = point.distance2(center);
-    return dis >= innerRadius && dis <= outerRadius;
   }
 }

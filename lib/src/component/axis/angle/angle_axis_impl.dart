@@ -18,6 +18,25 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     } else {
       e = s - maxAngle;
     }
+    if (axis.isCategoryAxis) {
+      List<String> sl = List.from(axis.categoryList);
+      if (sl.isEmpty) {
+        Set<String> dSet = {};
+        for (var data in dataSet) {
+          if (data is String && !dSet.contains(data)) {
+            sl.add(data);
+            dSet.add(data);
+          }
+        }
+      }
+      if (sl.isEmpty) {
+        throw ChartError('当前提取Category数目为0');
+      }
+      if (axis.inverse) {
+        return CategoryScale(List.from(sl.reversed), [s, e], true);
+      }
+      return CategoryScale(sl, [s, e], true);
+    }
     return BaseAxisImpl.toScale(axis, [s, e], dataSet, attrs.splitCount);
   }
 
@@ -64,8 +83,12 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   ///返回所有的Tick
   List<TickResult> buildTickResult(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     int tickCount = scale.tickCount - 1;
+    if (scale.isCategory) {
+      tickCount = scale.domain.length;
+    }
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / tickCount;
+
     List<TickResult> tickList = [];
 
     MainTick tick = axis.axisTick.tick ?? tmpTick;
@@ -114,11 +137,17 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   ///返回所有的Label
   List<LabelResult> buildLabelResult(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale) {
-    final int dir = attrs.clockwise ? 1 : -1;
-    int count = scale.tickCount - 1;
-    if (count <= 0) {
+    List<DynamicText> labels = obtainLabel();
+    if (labels.length <= 1) {
       return [];
     }
+
+    final int dir = attrs.clockwise ? 1 : -1;
+    int count = scale.tickCount - 1;
+    if (scale.isCategory) {
+      count = labels.length;
+    }
+
     final num angleInterval = dir * maxAngle / count;
     MainTick tick = axis.axisTick.tick ?? tmpTick;
     MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
@@ -136,11 +165,11 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     }
 
     List<LabelResult> resultList = [];
-    List<DynamicText> labels = obtainLabel();
+
     for (int i = 0; i < labels.length; i++) {
       DynamicText text = labels[i];
       num d = i;
-      if (axis.isCategoryAxis && axis.categoryCenter) {
+      if (axis.isCategoryAxis) {
         d += 0.5;
       }
       num angle = attrs.angleOffset + angleInterval * d;

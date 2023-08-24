@@ -205,8 +205,8 @@ class Context {
   }
 
   CoordLayout? _findCoord(ChartView view, ChartSeries series) {
-    if (series.coordType != null) {
-      var coord = series.coordType!;
+    var coord = series.coordType;
+    if (coord != null) {
       if (coord == CoordType.grid) {
         return findGridCoord();
       }
@@ -223,19 +223,19 @@ class Context {
         return findCalendarCoord(series.calendarIndex);
       }
     }
-
+    if (view is GridChild) {
+      return findGridCoord();
+    }
+    if (view is PolarChild) {
+      return findPolarCoord((view as PolarChild).polarIndex);
+    }
     if (view is RadarChild) {
       return findRadarCoord((view as RadarChild).radarIndex);
     }
     if (view is ParallelChild) {
       return findParallelCoord((view as ParallelChild).parallelIndex);
     }
-    if (view is PolarChild) {
-      return findPolarCoord((view as PolarChild).polarIndex);
-    }
-    if (view is GridChild) {
-      return findGridCoord();
-    }
+
     if (view is CalendarChild) {
       return findCalendarCoord((view as CalendarChild).calendarIndex);
     }

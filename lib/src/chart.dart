@@ -27,7 +27,6 @@ class ChartOption {
     this.parallelList = const [],
     this.calendarList = const [],
     this.animation = const AnimatorAttrs(),
-    Grid? grid,
     this.toolTip,
     ChartTheme? theme,
     this.eventCall,

@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/model/index.dart';
 import 'package:flutter/material.dart';
 
@@ -35,13 +36,6 @@ class IconSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
-    center = offset;
-    TextDrawInfo config = TextDrawInfo(center, align: Alignment.center);
-    style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
-  }
-
-  @override
   Size get size {
     double s = icon.size ?? 8;
     return Size.square(s);
@@ -51,5 +45,18 @@ class IconSymbol extends ChartSymbol {
   bool internal(Offset point) {
     Size s = size;
     return Rect.fromCenter(center: center, width: s.width, height: s.height).contains(point);
+  }
+
+  @override
+  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
+    center = offset;
+    TextDrawInfo config = TextDrawInfo(center, align: Alignment.center);
+    style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
+  }
+
+  @override
+  bool internal2(Offset center, Size size, Offset point) {
+    size = this.size;
+    return Rect.fromCenter(center: center, width: size.width, height: size.height).contains2(point);
   }
 }

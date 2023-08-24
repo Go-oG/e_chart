@@ -200,6 +200,19 @@ class PolarPosition {
   }
 
   Offset get position {
-    return circlePoint(radius.last, angle.last, center);
+    num a;
+    if (angle.length >= 2) {
+      a = (angle.first + angle.last) / 2;
+    } else {
+      a = angle.first;
+    }
+    num r;
+    if (radius.length >= 2) {
+      r = (radius.first + radius.last) / 2;
+    } else {
+      r = radius.last;
+    }
+
+    return circlePoint(r, a, center);
   }
 }

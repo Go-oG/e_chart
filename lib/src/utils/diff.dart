@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 
 class DiffUtil {
@@ -263,6 +265,45 @@ class DiffUtil {
     for (var tween in tweenList) {
       tween.tween.start(context, tween.status == TweenWrap.updateStatus);
     }
+  }
+
+  ///用于在点击或者hover触发时执行diff动画
+  static void diffUpdate<P, D, N extends NodeAccessor<P, D>>(
+    Context context,
+    AnimatorAttrs attrs,
+    Iterable<N> oldList,
+    Iterable<N> newList,
+    P Function(D data, N node, bool isOld) builder,
+    P Function(P s, P e, double t) lerpFun,
+    VoidCallback callback,
+  ) {
+    Map<D, P> startMap = {};
+    Map<D, P> endMap = {};
+
+    each(oldList, (p0, p1) {
+      startMap[p0.d] =p0.getP();
+      endMap[p0.d] = builder.call(p0.d, p0, true);
+    });
+    each(newList, (p0, p1) {
+      startMap[p0.d] = p0.getP();
+      endMap[p0.d] = builder.call(p0.d, p0, false);
+    });
+    final List<N> nodeList = [...oldList, ...newList];
+
+    ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+    updateTween.endListener = () {
+      callback.call();
+    };
+    updateTween.addListener(() {
+      double t = updateTween.value;
+      for (var n in nodeList) {
+        P s = startMap[n.d] as P;
+        P e = endMap[n.d] as P;
+        n.setP(lerpFun.call(s, e, t));
+      }
+      callback.call();
+    });
+    updateTween.start(context, true);
   }
 }
 

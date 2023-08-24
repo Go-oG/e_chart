@@ -243,7 +243,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   ///收集极值信息
-  AxisExtremeInfo _collectExtreme(AxisGroup<T, P> axisGroup) {
+  ExtremeInfo _collectExtreme(AxisGroup<T, P> axisGroup) {
     CoordType system = _series.coordType ?? CoordType.grid;
     bool polar = system == CoordType.polar;
     bool vertical = direction == Direction.vertical;
@@ -371,7 +371,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         return vertical ? e.data!.x : e.data!.y;
       }));
     });
-    return AxisExtremeInfo(mainResultMap, crossResultMap);
+    return ExtremeInfo(mainResultMap, crossResultMap);
   }
 
   ///收集分组数值信息
@@ -436,11 +436,11 @@ class InnerData<T extends StackItemData, P extends StackGroupData<T>> {
   InnerData(this.data, this.parent);
 }
 
-class AxisExtremeInfo {
+class ExtremeInfo {
   final Map<AxisIndex, List<dynamic>> mainInfo;
   final Map<AxisIndex, List<num>> crossInfo;
 
-  AxisExtremeInfo(this.mainInfo, this.crossInfo);
+  ExtremeInfo(this.mainInfo, this.crossInfo);
 }
 
 class OriginInfo<T extends StackItemData, P extends StackGroupData<T>> {

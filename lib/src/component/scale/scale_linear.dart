@@ -12,7 +12,7 @@ class LinearScale extends BaseScale<num, num> {
     if (domain.length < 2) {
       throw ChartError('LinearScale Domain必须大于等于2');
     }
-    if(domain.first==domain.last){
+    if (domain.first == domain.last) {
       throw ChartError("两个数值不能相等");
     }
   }

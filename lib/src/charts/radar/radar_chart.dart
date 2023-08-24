@@ -47,8 +47,8 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
   List<num> dataSet(int dim) {
     List<num> resultList = [];
     for (var group in series.data) {
-      if (group.childData.length > dim) {
-        resultList.add(group.childData[dim].value);
+      if (group.data.length > dim) {
+        resultList.add(group.data[dim].value);
       }
     }
     return resultList;
