@@ -21,7 +21,7 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
       notifyLayoutUpdate();
       return;
     }
-    DiffUtil.diff2<Rect, HeatMapData, HeatMapNode>(
+    DiffUtil.diffLayout<Rect, HeatMapData, HeatMapNode>(
       context,
       animation,
       oldList,
@@ -101,22 +101,19 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
       return;
     }
 
-    if (click) {
-      if (clickNode != null) {
-        sendClickEvent(oldOffset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
-      }
-    } else {
-      if (_hoverNode != null) {
-        sendHoverOutEvent(oldOffset, _hoverNode!.data,
-            dataIndex: _hoverNode!.dataIndex, groupIndex: _hoverNode!.groupIndex);
-      }
-      if (clickNode != null) {
-        sendHoverInEvent(oldOffset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
-      }
-    }
-    _hoverNode?.removeState(ViewState.hover);
-    clickNode?.addState(ViewState.hover);
+    var oldNode = _hoverNode;
     _hoverNode = clickNode;
+    if (oldNode != null) {
+      sendHoverOutEvent(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
+    }
+    if (clickNode != null) {
+      click
+          ? sendClickEvent(oldOffset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex)
+          : sendHoverInEvent(oldOffset, clickNode.data,
+              dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+    }
+    oldNode?.removeState(ViewState.hover);
+    clickNode?.addState(ViewState.hover);
     notifyLayoutUpdate();
   }
 

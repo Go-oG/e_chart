@@ -17,7 +17,7 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     for (var ele in layoutHelper.nodeList) {
       List<Offset> ol = [];
       LineStyle style = series.styleFun.call(ele.data);
-      for (var offset in ele.offsetList) {
+      for (var offset in ele.attr) {
         if (offset == null) {
           style.drawPolygon(canvas, mPaint, ol);
           ol = [];

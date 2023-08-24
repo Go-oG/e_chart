@@ -20,6 +20,6 @@ class AnimatorAttrs {
     this.threshold = 2000,
     this.behavior = AnimationBehavior.normal,
     this.curve = Curves.easeOutCubic,
-    this.updateCurve = Curves.easeInOutCubic,
+    this.updateCurve = Curves.fastEaseInToSlowEaseOut,
   });
 }

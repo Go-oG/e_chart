@@ -42,11 +42,9 @@ class HoverInEvent extends ChartEvent {
 }
 
 class HoverOutEvent extends ChartEvent {
-  final Offset localOffset;
-  final Offset globalOffset;
   final EventParams event;
 
-  HoverOutEvent(this.localOffset, this.globalOffset, this.event);
+  HoverOutEvent(this.event);
 
   @override
   String toString() {

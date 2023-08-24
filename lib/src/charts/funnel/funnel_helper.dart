@@ -25,7 +25,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
       return;
     }
 
-    DiffUtil.diff2<List<Offset>, ItemData, FunnelNode>(context, animation, oldList, newList, (data, node, add) {
+    DiffUtil.diffLayout<List<Offset>, ItemData, FunnelNode>(context, animation, oldList, newList, (data, node, add) {
       List<Offset> pl = node.pointList;
       Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
       return [o0, o0, o0, o0];
@@ -211,13 +211,11 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
 
   @override
   void onHoverStart(Offset localOffset) {
-    super.onHoverStart(localOffset);
     handleHoverOrClick(localOffset, false);
   }
 
   @override
   void onHoverMove(Offset localOffset) {
-    super.onHoverMove(localOffset);
     handleHoverOrClick(localOffset, false);
   }
 
@@ -243,14 +241,24 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
       }
     }
     if (!result) {
-      Logger.i("无法找到");
+      return;
+    }
+
+    if (_hoverNode == hoverNode) {
+      if (hoverNode != null) {
+        if (click) {
+          sendClickEvent(offset, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
+        } else {
+          sendHoverInEvent(offset, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
+        }
+      }
       return;
     }
 
     final old = _hoverNode;
     _hoverNode = hoverNode;
-    if (old != null && !click) {
-      sendHoverOutEvent(offset, old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
+    if (old != null) {
+      sendHoverOutEvent(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
     }
     if (hoverNode != null) {
       if (click) {
@@ -314,13 +322,12 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
   @override
   void onHoverEnd() {
     var old = _hoverNode;
+    _hoverNode = null;
     if (old == null) {
       return;
     }
-    _hoverNode = null;
+    sendHoverOutEvent(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
 
-    sendHoverOutEvent(boxBound.topRight.translate(1, 0), old.data,
-        dataIndex: old.dataIndex, groupIndex: old.groupIndex);
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       old.removeState(ViewState.hover);

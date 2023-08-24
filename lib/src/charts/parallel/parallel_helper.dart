@@ -14,84 +14,68 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     List<ParallelNode> newList = convertData(series.data);
     layoutNode(newList);
 
-    var animation=series.animation;
-    if(animation==null||animation.updateDuration.inMilliseconds<=0){
-      nodeList=newList;
+    var animation = series.animation;
+    if (animation == null) {
+      nodeList = newList;
       notifyLayoutUpdate();
       return;
     }
 
-    ParallelCoord layout = context.findParallelCoord(series.parallelIndex);
-    Direction direction = layout.direction;
-    DiffResult<ParallelNode, ParallelGroup> result = DiffUtil.diff(oldList, newList, (p0) => p0.data, (p0, p1, newData) {
-      ParallelNode node = ParallelNode(p0);
-      for (var offset in p1.offsetList) {
-        if (offset == null) {
-          node.offsetList.add(null);
-        } else {
-          double dx = direction == Direction.vertical ? 0 : offset.dx;
-          double dy = direction == Direction.vertical ? offset.dy : height;
-          node.offsetList.add(Offset(dx, dy));
-        }
-      }
-      return node;
-    });
-
-    Map<ParallelGroup, List<Offset?>> startMap = result.startMap.map((key, value) => MapEntry(key, value.offsetList));
-    Map<ParallelGroup, List<Offset?>> endMap = result.endMap.map((key, value) => MapEntry(key, value.offsetList));
-
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: animation);
-    OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
-
-    doubleTween.startListener = () {
-      nodeList = result.startList;
-    };
-    doubleTween.endListener = () {
-      nodeList = result.endList;
-      notifyLayoutEnd();
-    };
-    doubleTween.addListener(() {
-      each(result.startList, (p0, p1) {
-        List<Offset?> sl = startMap[p0.data]!;
-        List<Offset?> el = endMap[p0.data]!;
-        double t = doubleTween.value;
-        List<Offset?> pl = [];
-        for (int i = 0; i < sl.length; i++) {
-          if (sl[i] == null || el[i] == null) {
-            pl.add(el[i]);
+    Direction direction = findParallelCoord().direction;
+    DiffUtil.diffLayout<List<Offset?>, ParallelGroup, ParallelNode>(
+      context,
+      animation,
+      oldList,
+      newList,
+      (data, node, add) {
+        List<Offset?> ol = [];
+        for (var offset in node.attr) {
+          if (offset == null) {
+            ol.add(null);
           } else {
-            offsetTween.changeValue(sl[i]!, el[i]!);
-            pl.add(offsetTween.safeGetValue(t));
+            double dx = direction == Direction.vertical ? 0 : offset.dx;
+            double dy = direction == Direction.vertical ? offset.dy : height;
+            ol.add(Offset(dx, dy));
           }
         }
-        p0.update(pl);
-      });
-      notifyLayoutUpdate();
-    });
-    doubleTween.start(context, type == LayoutType.update);
+        return ol;
+      },
+      (s, e, t) {
+        List<Offset?> pl = [];
+        for (int i = 0; i < s.length; i++) {
+          var so = s[i];
+          var eo = e[i];
+          pl.add(Offset.lerp(so, eo, t));
+        }
+        return pl;
+      },
+      (resultList) {
+        nodeList = resultList;
+        notifyLayoutUpdate();
+      },
+    );
   }
 
   void layoutNode(List<ParallelNode> nodeList) {
-    ParallelCoord layout = context.findParallelCoord(series.parallelIndex);
+    var coord = findParallelCoord();
     for (var node in nodeList) {
       List<Offset?> ol = [];
       for (int i = 0; i < node.data.data.length; i++) {
         var data = node.data.data[i];
-        ol.add(layout.dataToPosition(i, data).center);
+        ol.add(coord.dataToPosition(i, data).center);
       }
-      node.offsetList = ol;
+      node.attr = ol;
     }
   }
-
 
   @override
   SeriesType get seriesType => SeriesType.parallel;
 
   static List<ParallelNode> convertData(List<ParallelGroup> list) {
     List<ParallelNode> nodeList = [];
-    for (var group in list) {
-      nodeList.add(ParallelNode(group));
-    }
+    each(list, (p0, p1) {
+      nodeList.add(ParallelNode(p0, p1, 0, []));
+    });
     return nodeList;
   }
 }

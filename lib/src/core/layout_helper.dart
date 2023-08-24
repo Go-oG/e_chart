@@ -100,11 +100,9 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     ));
   }
 
-  void sendHoverOutEvent(Offset offset, dynamic data,
+  void sendHoverOutEvent(dynamic data,
       {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     context.dispatchEvent(HoverOutEvent(
-      offset,
-      toGlobal(offset),
       buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
     ));
   }

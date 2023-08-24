@@ -42,7 +42,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       return;
     }
 
-    DiffUtil.diff2(
+    DiffUtil.diffLayout(
       context,
       animation,
       oldList,

@@ -26,7 +26,7 @@ class PointHelper extends LayoutHelper<PointSeries> {
       if (duration.inMilliseconds <= 0) {
         nodeList = newList;
       } else {
-        DiffUtil.diff2<PointSize, PointData, PointNode>(
+        DiffUtil.diffLayout<PointSize, PointData, PointNode>(
             context, animation, oldList, newList, (data, node, add) => PointSize.all(node.attr.offset, Size.zero),
             (s, e, t) {
           PointSize size = PointSize();
@@ -133,6 +133,7 @@ class PointHelper extends LayoutHelper<PointSeries> {
     if (node == null) {
       return;
     }
+    sendHoverOutEvent(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
     _runUpdateAnimation([node], [], series.animation);
   }
 
@@ -152,10 +153,16 @@ class PointHelper extends LayoutHelper<PointSeries> {
     List<PointNode> oldList = [];
     if (old != null) {
       oldList.add(old);
+      sendHoverOutEvent(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
     }
     List<PointNode> newList = [];
     if (clickNode != null) {
       newList.add(clickNode);
+      if (click) {
+        sendClickEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+      } else {
+        sendHoverInEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+      }
     }
     _runUpdateAnimation(oldList, newList, series.animation);
   }

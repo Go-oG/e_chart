@@ -292,7 +292,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
     ///动画
     DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult =
-        DiffUtil.diff3(oldShowData, newNodeList, (p0) => p0.data!, (b, c) {
+        DiffUtil.diff(oldShowData, newNodeList, (p0) => p0.data!, (b, c) {
       return onCreateAnimatorNode(b, c, type);
     });
     final startMap = diffResult.startMap;
