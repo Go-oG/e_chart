@@ -67,21 +67,21 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   Offset _computeOffset(Rect colRect, num data, int axisIndex) {
     var coord = findGridCoord();
     List<Offset> ol = coord.dataToPoint(axisIndex, data, false);
-    return Offset(colRect.left , ol.first.dy);
+    return Offset(colRect.left, ol.first.dy);
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
+  StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
     if (node.data == null) {
-      return AnimatorNode();
+      return StackAnimationNode();
     }
     if (diffType == DiffType.accessor) {
-      var an = AnimatorNode();
+      var an = StackAnimationNode();
       an.extSetAll(node.extGetAll());
       return an;
     }
     Offset tmp = node.extGet(_openK);
-    var an = AnimatorNode();
+    var an = StackAnimationNode();
     an.extSet(_colRectK, node.extGet(_colRectK));
     an.extSet(_lowK, tmp);
     an.extSet(_openK, tmp);

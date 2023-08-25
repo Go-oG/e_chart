@@ -36,7 +36,7 @@ class GraphGridLayout extends GraphLayout {
   ///============布局使用的数值======
 
   @override
-  void onLayout( LayoutType type) {
+  void onLayout(LayoutType type) {
     stopLayout();
     clearInterrupt();
     if (workerThread) {

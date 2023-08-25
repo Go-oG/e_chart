@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'dart:ui';
-
 import '../model/string_number.dart';
 import 'coord_impl.dart';
 import 'coord.dart';
@@ -19,7 +18,7 @@ abstract class CircleCoordLayout<T extends CircleCoord> extends CoordLayout<T> {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     for (var child in children) {
-      child.layout(0, 0, width, height);
+     child.layout(0, 0, width, height);
     }
   }
 }

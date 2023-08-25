@@ -107,14 +107,13 @@ class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
     layoutHelper.doLayout(selfBoxBound,globalBoxBound, LayoutType.layout);
     tx = ty = 0;
     doAnimator();
   }
 
   void doAnimator() {
-    AnimatorAttrs? attrs = series.animation;
+    AnimationAttrs? attrs = series.animation;
     if (attrs == null) {
       return;
     }

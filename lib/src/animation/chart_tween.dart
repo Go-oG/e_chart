@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 /// 抽象的补间动画
 abstract class ChartTween<T> extends ValueNotifier<T> {
-  final AnimatorAttrs props;
+  final AnimationAttrs props;
   AnimationController? _controller;
   T _begin;
   T _end;
@@ -15,7 +15,7 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     this._begin,
     this._end, {
     bool allowCross = true,
-    this.props = const AnimatorAttrs(),
+    this.props = const AnimationAttrs(),
   }) : super(_begin) {
     _allowCross = allowCross;
   }

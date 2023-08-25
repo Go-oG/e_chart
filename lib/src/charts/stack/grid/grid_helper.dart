@@ -291,7 +291,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     List<SingleNode<T, P>> oldShowData = List.from(showNodeMap.values);
 
     ///动画
-    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult =
+    DiffResult2<SingleNode<T, P>, StackAnimationNode, T> diffResult =
         DiffUtil.diff(oldShowData, newNodeList, (p0) => p0.data!, (b, c) {
       return onCreateAnimatorNode(b, c, type);
     });
@@ -333,37 +333,37 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
+  StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
     final Rect rect = node.rect;
     if (diffType == DiffType.accessor) {
-      return AnimatorNode(rect: rect, offset: rect.center);
+      return StackAnimationNode(rect: rect, offset: rect.center);
     }
 
     Rect rr;
     if (series.isVertical) {
       if (series.realtimeSort && type == LayoutType.update) {
         Rect rr = Rect.fromLTRB(width, rect.top, width + rect.width, rect.bottom);
-        return AnimatorNode(rect: rr, offset: rr.center);
+        return StackAnimationNode(rect: rr, offset: rr.center);
       }
       if (series.animatorStyle == GridAnimatorStyle.expand) {
         rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
       } else {
         rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
       }
-      return AnimatorNode(rect: rr, offset: rr.center);
+      return StackAnimationNode(rect: rr, offset: rr.center);
     }
 
     ///水平
     if (series.realtimeSort && type == LayoutType.update) {
       rr = Rect.fromLTRB(0, height, width, height + rect.height);
-      return AnimatorNode(rect: rr, offset: rr.center);
+      return StackAnimationNode(rect: rr, offset: rr.center);
     }
     if (series.animatorStyle == GridAnimatorStyle.expand) {
       rr = Rect.fromLTWH(0, rect.top, 0, rect.height);
     } else {
       rr = Rect.fromLTWH(rect.left, rect.top, 0, rect.height);
     }
-    return AnimatorNode(rect: rr, offset: rr.center);
+    return StackAnimationNode(rect: rr, offset: rr.center);
   }
 
   @override

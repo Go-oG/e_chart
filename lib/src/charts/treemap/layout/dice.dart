@@ -2,16 +2,13 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-import 'layout.dart';
-import '../node.dart';
-
 //从左至右
 class DiceLayout extends TreemapLayout {
 
   @override
-  void onLayout2(TreeMapNode root,LayoutType type) {
+ void onLayout2(TreeMapNode root,LayoutType type) {
     if (root.notChild) {
-      return;
+      return ;
     }
     layoutChildren(boxBound, root.children);
   }

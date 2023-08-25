@@ -14,14 +14,12 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
   @override
   void onLayout(LayoutType type) {
     _hoverNode = null;
-
     List<FunnelNode> oldList = nodeList;
     List<FunnelNode> newList = convertData(series.dataList);
     layoutNode(newList);
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       nodeList = newList;
-      notifyLayoutUpdate();
       return;
     }
 

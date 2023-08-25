@@ -109,7 +109,7 @@ class GridCoordImpl extends GridCoord {
       } else {
         bb = tt + view.height;
       }
-      view.layout(ll, tt, rr, bb);
+    view.layout(ll, tt, rr, bb);
     }
   }
 

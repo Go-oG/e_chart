@@ -69,7 +69,22 @@ class DiffUtil {
 
   static void diffLayout<P, D, N extends NodeAccessor<P, D>>(
     Context context,
-    AnimatorAttrs attrs,
+    AnimationAttrs attrs,
+    Iterable<N> oldList,
+    Iterable<N> newList,
+    P Function(D data, N node, bool add) builder,
+    P Function(P s, P e, double t) lerpFun,
+    void Function(List<N> resultList) resultCall, [
+    VoidCallback? onStart,
+    VoidCallback? onEnd,
+  ]) {
+    for (var tween in diffLayout2(attrs, oldList, newList, builder, lerpFun, resultCall, onStart, onEnd)) {
+      tween.start(context);
+    }
+  }
+
+  static List<AnimationNode> diffLayout2<P, D, N extends NodeAccessor<P, D>>(
+    AnimationAttrs attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
     P Function(D data, N node, bool add) builder,
@@ -229,15 +244,22 @@ class DiffUtil {
       }
     }
 
-    for (var tween in tweenList) {
-      tween.tween.start(context, tween.status == TweenWrap.updateStatus);
+    List<AnimationNode> nl = [];
+    for (var wrap in tweenList) {
+      var status = wrap.status;
+      if (status == TweenWrap.updateStatus || status == TweenWrap.removeStatus) {
+        nl.add(AnimationNode(wrap.tween, attrs, LayoutType.update));
+      } else {
+        nl.add(AnimationNode(wrap.tween, attrs, LayoutType.layout));
+      }
     }
+    return nl;
   }
 
   ///用于在点击或者hover触发时执行diff动画
   static void diffUpdate<P, D, N extends NodeAccessor<P, D>>(
     Context context,
-    AnimatorAttrs attrs,
+    AnimationAttrs attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
     P Function(D data, N node, bool isOld) builder,

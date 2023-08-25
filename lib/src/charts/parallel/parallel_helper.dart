@@ -17,8 +17,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     var animation = series.animation;
     if (animation == null) {
       nodeList = newList;
-      notifyLayoutUpdate();
-      return;
+      return ;
     }
 
     Direction direction = findParallelCoord().direction;

@@ -1,9 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-
-import '../node.dart';
-import 'layout.dart';
 import 'square.dart';
 
 class ResquareLayout extends TreemapLayout {
@@ -11,7 +8,7 @@ class ResquareLayout extends TreemapLayout {
 
   @override
   void onLayout2(TreeMapNode root, LayoutType type) {
-    Rect rect=boxBound;
+    Rect rect = boxBound;
     resquarify(root, rowsRatio, rect.left, rect.top, rect.right, rect.bottom);
   }
 

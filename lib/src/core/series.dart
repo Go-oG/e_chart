@@ -19,7 +19,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   int parallelIndex;
 
   Color? backgroundColor;
-  AnimatorAttrs? animation; //动画
+  AnimationAttrs? animation; //动画
   ToolTip? tooltip;
 
   bool clip; // 是否裁剪
@@ -31,7 +31,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       this.calendarIndex = 0,
       this.radarIndex = 0,
       this.parallelIndex = 0,
-      this.animation = const AnimatorAttrs(),
+      this.animation = const AnimationAttrs(),
       this.coordType,
       this.tooltip,
       this.z = 0,

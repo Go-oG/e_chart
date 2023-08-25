@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:e_chart/e_chart.dart';
 import 'package:dart_dagre/dart_dagre.dart' as dg;
 
-
 ///层次布局
 class DagreLayout extends GraphLayout {
   final bool multiGraph;

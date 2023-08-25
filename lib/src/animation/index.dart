@@ -1,5 +1,6 @@
-export 'animator_attrs.dart';
 export 'animation_manager.dart';
+export 'animation_attrs.dart';
+export 'animation_node.dart';
 export 'chart_tween.dart';
 export 'tween_set.dart' hide TweenNode;
 

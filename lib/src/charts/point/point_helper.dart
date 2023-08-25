@@ -21,34 +21,36 @@ class PointHelper extends LayoutHelper<PointSeries> {
     });
     layoutNode(newList);
     var animation = series.animation;
-    if (animation != null && type != LayoutType.none) {
-      var duration = type == LayoutType.layout ? animation.duration : animation.updateDuration;
-      if (duration.inMilliseconds <= 0) {
-        nodeList = newList;
-      } else {
-        DiffUtil.diffLayout<PointSize, PointData, PointNode>(
-            context, animation, oldList, newList, (data, node, add) => PointSize.all(node.attr.offset, Size.zero),
-            (s, e, t) {
-          PointSize size = PointSize();
-          if (s.offset == e.offset) {
-            size.offset = e.offset;
-          } else {
-            size.offset = Offset.lerp(s.offset, e.offset, t)!;
-          }
-          if (s.size == e.size) {
-            size.size = e.size;
-          } else {
-            size.size = Size.lerp(s.size, e.size, t)!;
-          }
-          return size;
-        }, (resultList) {
-          nodeList = resultList;
-          notifyLayoutUpdate();
-        });
-      }
-    } else {
+    if (animation == null || type == LayoutType.none) {
       nodeList = newList;
+      return;
     }
+
+    var duration = type == LayoutType.layout ? animation.duration : animation.updateDuration;
+    if (duration.inMilliseconds <= 0) {
+      nodeList = newList;
+      return;
+    }
+
+    DiffUtil.diffLayout<PointSize, PointData, PointNode>(
+        context, animation, oldList, newList, (data, node, add) => PointSize.all(node.attr.offset, Size.zero),
+        (s, e, t) {
+      PointSize size = PointSize();
+      if (s.offset == e.offset) {
+        size.offset = e.offset;
+      } else {
+        size.offset = Offset.lerp(s.offset, e.offset, t)!;
+      }
+      if (s.size == e.size) {
+        size.size = e.size;
+      } else {
+        size.size = Size.lerp(s.size, e.size, t)!;
+      }
+      return size;
+    }, (resultList) {
+      nodeList = resultList;
+      notifyLayoutUpdate();
+    });
   }
 
   void layoutNode(List<PointNode> nodeList) {
@@ -167,7 +169,7 @@ class PointHelper extends LayoutHelper<PointSeries> {
     _runUpdateAnimation(oldList, newList, series.animation);
   }
 
-  void _runUpdateAnimation(List<PointNode> oldList, List<PointNode> newList, AnimatorAttrs? animation) {
+  void _runUpdateAnimation(List<PointNode> oldList, List<PointNode> newList, AnimationAttrs? animation) {
     Offset diffSize = const Offset(4, 4);
     for (var node in oldList) {
       node.removeState(ViewState.selected);

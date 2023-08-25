@@ -51,6 +51,7 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     if (_inLayout) {
       return;
     }
+
     if (_boundRect.height != size.height || _boundRect.width != size.width) {
       _stopwatch.start();
       _inLayout = true;
@@ -84,6 +85,14 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
       rethrow;
     } finally {
       _inDrawing = false;
+    }
+    var queue = context.getAndResetAnimationQueue();
+    for (var node in queue) {
+      try {
+        node.start(context);
+      } catch (e) {
+        Logger.e(e);
+      }
     }
   }
 

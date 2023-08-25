@@ -47,11 +47,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onHoverEnd() {}
 
-  void onDragStart(Offset offset){}
+  void onDragStart(Offset offset) {}
 
-  void onDragMove(Offset offset, Offset diff){}
+  void onDragMove(Offset offset, Offset diff) {}
 
-  void onDragEnd(){}
+  void onDragEnd() {}
 
   ///=========事件通知========
   ///Brush
@@ -106,8 +106,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     ));
   }
 
-  void sendHoverOutEvent(dynamic data,
-      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+  void sendHoverOutEvent(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     context.dispatchEvent(HoverOutEvent(
       buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
     ));
@@ -172,3 +171,4 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 }
 
 enum LayoutType { none, layout, update }
+

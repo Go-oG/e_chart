@@ -10,7 +10,7 @@ class ChartOption {
   List<Parallel> parallelList;
   List<Calendar> calendarList;
   List<ChartSeries> series;
-  AnimatorAttrs animation;
+  AnimationAttrs animation;
   ToolTip? toolTip;
   ChartTheme theme = ChartTheme();
   VoidFun1<ChartEvent>? eventCall;
@@ -26,7 +26,7 @@ class ChartOption {
     this.radarList = const [],
     this.parallelList = const [],
     this.calendarList = const [],
-    this.animation = const AnimatorAttrs(),
+    this.animation = const AnimationAttrs(),
     this.toolTip,
     ChartTheme? theme,
     this.eventCall,

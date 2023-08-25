@@ -160,6 +160,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   void onLayout(double left, double top, double right, double bottom) {
     double parentLeft = layoutParams.padding.left;
     double parentTop = layoutParams.padding.top;
+
     for (var child in children) {
       LayoutParams lp = child.layoutParams;
       double childLeft = parentLeft + lp.margin.left;

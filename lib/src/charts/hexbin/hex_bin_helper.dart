@@ -56,12 +56,9 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
     var animation = series.animation;
     if (animation == null) {
       nodeList = newList;
-      notifyLayoutUpdate();
       return;
     }
-
-    DiffUtil.diffLayout<HexAttr, ItemData, HexbinNode>(
-      context,
+    var an = DiffUtil.diffLayout2<HexAttr, ItemData, HexbinNode>(
       animation,
       oldNodeList,
       newList,
@@ -72,6 +69,7 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
         notifyLayoutUpdate();
       },
     );
+    context.addAnimationToQueue(an);
   }
 
   void onLayout2(List<HexbinNode> data, LayoutType type) {}
@@ -166,7 +164,7 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
     _runUpdateAnimation(oldList, newList, series.animation);
   }
 
-  void _runUpdateAnimation(List<HexbinNode> oldList, List<HexbinNode> newList, AnimatorAttrs? animation) {
+  void _runUpdateAnimation(List<HexbinNode> oldList, List<HexbinNode> newList, AnimationAttrs? animation) {
     for (var node in oldList) {
       node.removeState(ViewState.selected);
       node.removeState(ViewState.hover);

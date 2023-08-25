@@ -3,8 +3,6 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-import 'layout.dart';
-import '../node.dart';
 
 /// 从上到下
 class SliceLayout extends TreemapLayout {

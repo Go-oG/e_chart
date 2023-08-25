@@ -24,7 +24,7 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
     super.markPoint,
     super.markPointFun,
     super.animation =
-    const AnimatorAttrs(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
+    const AnimationAttrs(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
     super.tooltip,
     super.backgroundColor,
     super.id,

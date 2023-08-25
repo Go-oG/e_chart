@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-abstract class ChartView with ViewStateProvider {
+abstract class ChartView {
   Context? _context;
 
   Context get context => _context!;

@@ -73,8 +73,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
       return;
     }
 
-    DiffUtil.diffLayout<PackAttr, TreeData, PackNode>(
-      context,
+   var an= DiffUtil.diffLayout2<PackAttr, TreeData, PackNode>(
       animation,
       oldRootNode?.descendants() ?? [],
       node.descendants(),
@@ -94,7 +93,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
         rootNode = node;
       },
     );
-
+    context.addAnimationToQueue(an);
   }
 
   @override

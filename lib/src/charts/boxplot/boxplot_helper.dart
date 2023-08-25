@@ -53,14 +53,14 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(SingleNode<BoxplotData, BoxplotGroup> node, DiffType diffType, LayoutType type) {
+  StackAnimationNode onCreateAnimatorNode(SingleNode<BoxplotData, BoxplotGroup> node, DiffType diffType, LayoutType type) {
     if (diffType == DiffType.accessor) {
-      var an = AnimatorNode();
+      var an = StackAnimationNode();
       an.extSetAll(node.extGetAll());
       return an;
     }
     Offset middleOffset = node.extGet(_middleCK);
-    var an = AnimatorNode();
+    var an = StackAnimationNode();
     an.extSet(_colRectK, node.extGet(_colRectK));
     an.extSet(_minCK, middleOffset);
     an.extSet(_downCK, middleOffset);

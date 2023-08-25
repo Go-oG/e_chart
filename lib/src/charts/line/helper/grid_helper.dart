@@ -83,7 +83,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   @override
   void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
     if (series.animation == null || type == LayoutType.none) {
-      _lineList =  _layoutLineNode(newNodeList);
+      _lineList = _layoutLineNode(newNodeList);
       _animatorPercent = 1;
     } else {
       _cacheLineList = _layoutLineNode(newNodeList);
@@ -92,11 +92,11 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  AnimatorNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
+  StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
     if (diffType == DiffType.accessor) {
-      return AnimatorNode(offset: node.position);
+      return StackAnimationNode(offset: node.position);
     }
-    return AnimatorNode(offset: Offset(node.position.dx, height));
+    return StackAnimationNode(offset: Offset(node.position.dx, height));
   }
 
   @override
@@ -124,7 +124,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   ///布局直线使用的数据
-  List<LineNode> _layoutLineNode(List<SingleNode<StackItemData, LineGroupData>> list)  {
+  List<LineNode> _layoutLineNode(List<SingleNode<StackItemData, LineGroupData>> list) {
     Map<LineGroupData, int> groupSortMap = {};
     Map<String, int> sortMap = {};
     Map<String, Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>>> stackMap = {};

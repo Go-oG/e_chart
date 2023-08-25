@@ -2,17 +2,19 @@ import 'package:flutter/animation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../utils/log_util.dart';
-import 'animator_attrs.dart';
+import 'animation_attrs.dart';
+import 'animation_node.dart';
 
 ///全局的动画管理者
 class AnimationManager {
   final Uuid _uuid = const Uuid();
+
   AnimationManager();
 
   ///存储已经创建的控制器
   final Map<String, AnimationController> _map = {};
 
-  AnimationController bounded(TickerProvider provider, AnimatorAttrs props, {String? key, bool useUpdate = false}) {
+  AnimationController bounded(TickerProvider provider, AnimationAttrs props, {String? key, bool useUpdate = false}) {
     _collate();
     AnimationController c = AnimationController(
       vsync: provider,
@@ -81,6 +83,19 @@ class AnimationManager {
     _map.forEach((key, value) {
       value.resync(provider);
     });
+  }
+
+  ///存储动画队列
+  List<AnimationNode> _animatorQueue = [];
+
+  List<AnimationNode> getAndRestAnimatorQueue() {
+    List<AnimationNode> nodeList = _animatorQueue;
+    _animatorQueue = [];
+    return nodeList;
+  }
+
+  void addAnimatorToQueue(List<AnimationNode> nodes) {
+    _animatorQueue.addAll(nodes);
   }
 
   void dispose() {

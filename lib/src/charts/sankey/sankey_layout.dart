@@ -3,13 +3,8 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'layout_node.dart';
-import 'sankey_align.dart';
-import 'sankey_series.dart';
-import 'sort.dart';
-
 ///Ref:https://github.com/d3/d3-sankey/blob/master/src/sankey.js
-class SankeyLayout extends LayoutHelper <SankeySeries>{
+class SankeyLayout extends LayoutHelper<SankeySeries> {
   /// 整个视图区域坐标坐标
   double left = 0, top = 0, right = 1, bottom = 1;
   double _nodeWidth = 24;
@@ -22,7 +17,7 @@ class SankeyLayout extends LayoutHelper <SankeySeries>{
   List<SankeyNode> _nodes = [];
   List<SankeyLink> _links = [];
 
-  SankeyLayout(super.context,super.series) {
+  SankeyLayout(super.context, super.series) {
     _nodeWidth = series.nodeWidth;
     _nodeGap = series.gap;
     _align = series.align;
@@ -39,7 +34,7 @@ class SankeyLayout extends LayoutHelper <SankeySeries>{
     bottom = height;
     _nodes = [];
     _links = [];
-    _nodes.addAll(buildNodes(series.data.data,series.data.links, 0));
+    _nodes.addAll(buildNodes(series.data.data, series.data.links, 0));
     _links.addAll(buildLink(_nodes, series.data.links));
 
     _computeNodeLinks(_nodes, _links);
@@ -52,7 +47,7 @@ class SankeyLayout extends LayoutHelper <SankeySeries>{
   }
 
   @override
-  SeriesType get seriesType=>SeriesType.sankey;
+  SeriesType get seriesType => SeriesType.sankey;
 
   /// 计算链接位置
   void _computeLinkPosition(List<SankeyLink> links, List<SankeyNode> nodes) {
@@ -100,7 +95,7 @@ class SankeyLayout extends LayoutHelper <SankeySeries>{
       Path path = line.toPath(false);
       Matrix4 matrix4 = Matrix4.translationValues(0, m.max(1, link.width), 0);
       Path path2 = path.transform(matrix4.storage);
-      link.path = path.mergePath( path2);
+      link.path = path.mergePath(path2);
     }
   }
 

@@ -322,7 +322,6 @@ class CalendarCoordImpl extends CalendarCoord {
   bool get enableLongPress => true;
 }
 
-
 abstract class CalendarCoord extends CoordLayout<Calendar> {
   CalendarCoord(super.props);
 

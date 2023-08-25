@@ -32,15 +32,12 @@ class PieHelper extends LayoutHelper<PieSeries> {
     layoutNode(newList);
 
     var animation = series.animation;
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+    if (animation == null) {
       _nodeList = newList;
-      notifyLayoutUpdate();
       return;
     }
-
     PieTween arcTween = PieTween(Arc(), Arc(), props: animation);
-    DiffUtil.diffLayout<Arc, ItemData, PieNode>(
-      context,
+    var an = DiffUtil.diffLayout2<Arc, ItemData, PieNode>(
       animation,
       oldList,
       newList,
@@ -69,6 +66,7 @@ class PieHelper extends LayoutHelper<PieSeries> {
         notifyLayoutUpdate();
       },
     );
+    context.addAnimationToQueue(an);
   }
 
   void layoutNode(List<PieNode> nodeList) {
@@ -166,7 +164,6 @@ class PieHelper extends LayoutHelper<PieSeries> {
         notifyLayoutUpdate();
       },
     );
-
   }
 
   @override

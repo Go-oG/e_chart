@@ -42,12 +42,17 @@ class DefaultRender extends BaseRender {
         double s = v.props.radius.last.convert(min(rect.width, rect.height)) * 2;
         Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: s, height: s);
         v.layout(r2.left, r2.top, r2.right, r2.bottom);
-      } else {
-        var lp = v.props.layoutParams;
-        double lm = lp.margin.left;
-        double tm = lp.margin.top;
-        v.layout(rect.left + lm, rect.top + tm, rect.left + lm + v.width, rect.top + tm + v.height);
+        continue;
       }
+      var lp = v.props.layoutParams;
+      double lm = lp.margin.left;
+      double tm = lp.margin.top;
+      v.layout(
+        rect.left + lm,
+        rect.top + tm,
+        rect.left + lm + v.width,
+        rect.top + tm + v.height,
+      );
     }
   }
 

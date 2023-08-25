@@ -85,7 +85,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     final List<SingleNode<T, P>> newNodeList = List.from(newNodeMap.values, growable: false);
     _onLayoutMarkPointAndLine(series.data, newNodeList, newNodeMap);
     onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-    notifyLayoutUpdate();
   }
 
   ///计算需要布局的数据(默认全部)
@@ -280,7 +279,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     var animation = series.animation!;
 
     ///动画
-    DiffResult2<SingleNode<T, P>, AnimatorNode, T> diffResult =
+    DiffResult2<SingleNode<T, P>, StackAnimationNode, T> diffResult =
         DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data!, (b, c) {
       return onCreateAnimatorNode(b, c, type);
     });
@@ -338,16 +337,16 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   ///创建动画节点
-  AnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type);
+  StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type);
 
-  void onAnimatorStart(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {}
+  void onAnimatorStart(DiffResult2<SingleNode<T, P>, StackAnimationNode, T> result) {}
 
-  void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleNode<T, P>, AnimatorNode> startMap,
-      Map<SingleNode<T, P>, AnimatorNode> endMap);
+  void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleNode<T, P>, StackAnimationNode> startMap,
+      Map<SingleNode<T, P>, StackAnimationNode> endMap);
 
-  void onAnimatorUpdateEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result, double t) {}
+  void onAnimatorUpdateEnd(DiffResult2<SingleNode<T, P>, StackAnimationNode, T> result, double t) {}
 
-  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, AnimatorNode, T> result) {}
+  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, StackAnimationNode, T> result) {}
 
   ///=======其它函数======
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {

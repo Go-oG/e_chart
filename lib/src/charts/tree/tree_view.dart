@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class TreeView extends SeriesView<TreeSeries,TreeLayout> {
+class TreeView extends SeriesView<TreeSeries, TreeLayout> {
   TreeView(super.series);
 
   Offset transOffset = Offset.zero;
@@ -45,8 +45,7 @@ class TreeView extends SeriesView<TreeSeries,TreeLayout> {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    layoutHelper.doLayout(selfBoxBound,globalBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
     transOffset = layoutHelper.translationOffset;
   }
 
@@ -109,8 +108,8 @@ class TreeView extends SeriesView<TreeSeries,TreeLayout> {
 
   @override
   TreeLayout buildLayoutHelper() {
-    series.layout.context=context;
-    series.layout.series=series;
+    series.layout.context = context;
+    series.layout.series = series;
     return series.layout;
   }
 }

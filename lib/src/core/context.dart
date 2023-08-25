@@ -313,7 +313,7 @@ class Context {
   }
 
   ///=========动画管理==================
-  AnimationController boundedAnimation(AnimatorAttrs props, [bool useUpdate = false]) {
+  AnimationController boundedAnimation(AnimationAttrs props, [bool useUpdate = false]) {
     return _animationManager.bounded(_provider, props, useUpdate: useUpdate);
   }
 
@@ -326,6 +326,14 @@ class Context {
       return;
     }
     _animationManager.remove(c, cancel);
+  }
+
+  void addAnimationToQueue(List<AnimationNode> nodes) {
+    _animationManager.addAnimatorToQueue(nodes);
+  }
+
+  List<AnimationNode> getAndResetAnimationQueue() {
+    return _animationManager.getAndRestAnimatorQueue();
   }
 
   ///========Action分发监听============

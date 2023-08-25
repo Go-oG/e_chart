@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-
 ///环形布局
 class CircularLayout extends GraphLayout {
   List<SNumber> center;

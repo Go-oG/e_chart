@@ -1,15 +1,13 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-
 /// 近似平衡二叉树排列
 /// 为宽矩形选择水平分区，为高矩形选择垂直分区的布局方式。
 /// 由于权重只能为int 因此内部会进行相关的double->int的转换
 class BinaryLayout extends TreemapLayout {
-
   @override
-  void onLayout2(TreeMapNode root,LayoutType type) {
-    Rect area=boxBound;
+  void onLayout2(TreeMapNode root, LayoutType type) {
+    Rect area = boxBound;
     BinaryNode binaryNode = _convertToBinaryNode(null, root, false);
     binaryNode.x = area.center.dx;
     binaryNode.y = area.center.dy;
@@ -118,5 +116,6 @@ class BinaryLayout extends TreemapLayout {
 class BinaryNode extends TreeNode<BinaryNode> {
   final TreeData props;
   final TreeMapNode layoutNode;
+
   BinaryNode(super.parent, this.props, this.layoutNode, {super.deep, super.maxDeep, super.value});
 }

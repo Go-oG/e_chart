@@ -2,7 +2,6 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-
 ///三角形布局
 ///将忽略 flat
 class HexTriangleLayout extends HexbinLayout {
@@ -44,7 +43,7 @@ class HexTriangleLayout extends HexbinLayout {
     _level = computeLevel(data.length);
     List<Hex> hexList = triangle(_level, direction);
     each(data, (node, i) {
-      node.attr=HexAttr(hexList[i]);
+      node.attr = HexAttr(hexList[i]);
     });
   }
 

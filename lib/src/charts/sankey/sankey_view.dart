@@ -2,8 +2,6 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 import 'sankey_layout.dart';
-import 'layout_node.dart';
-import 'sankey_series.dart';
 
 /// 桑基图
 class SankeyView extends SeriesView<SankeySeries, SankeyLayout> {

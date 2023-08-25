@@ -13,7 +13,6 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
   @override
   void onLayout(LayoutType type) {
     var oldList=this.nodeList;
-
     List<LayoutNode> nodeList=[];
     for (var d in series.data) {
       LayoutNode node = LayoutNode(d);

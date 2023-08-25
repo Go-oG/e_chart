@@ -2,11 +2,6 @@ import 'dart:math' as m;
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import 'dice.dart';
-import 'layout.dart';
-import '../node.dart';
-import 'slice.dart';
-
 double phi = (1 + m.sqrt(5)) / 2;
 
 class SquareLayout extends TreemapLayout {
@@ -17,7 +12,7 @@ class SquareLayout extends TreemapLayout {
     root.children.sort((a, b) {
       return b.value.compareTo(a.value);
     });
-    Rect rect=boxBound;
+    Rect rect = boxBound;
     layoutChildren(ratio, root, rect.left, rect.top, rect.right, rect.bottom);
   }
 

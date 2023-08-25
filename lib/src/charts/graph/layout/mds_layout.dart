@@ -6,7 +6,6 @@ import 'package:ml_linalg/matrix.dart';
 import 'package:scidart/numdart.dart' as sv;
 
 
-
 ///高维数据降维算法布局
 ///Ref:https://github.com/antvis/layout/blob/master/src/layout/mds.ts
 class MDSLayout extends GraphLayout {
@@ -41,6 +40,7 @@ class MDSLayout extends GraphLayout {
     } else {
       runLayout(context, series.graph, width, height);
     }
+
   }
 
   void runLayout(Context context, Graph graph, num width, num height) {

@@ -165,10 +165,9 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
     convertData();
-    layoutHelper.doLayout(selfBoxBound,globalBoxBound, LayoutType.layout);
     _drawRoot = root;
+    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
   }
 
   void convertData() {
@@ -201,7 +200,7 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
   }
 
   void runAnimator() {
-    AnimatorAttrs? info = series.animation;
+    AnimationAttrs? info = series.animation;
     if (info == null) {
       return;
     }
