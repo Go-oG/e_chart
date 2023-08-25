@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'layout/pack_helper.dart';
 
-
 class PackView extends SeriesView<PackSeries, PackHelper> {
   double tx = 0;
   double ty = 0;
@@ -11,7 +10,7 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
   ChartTween? tween;
 
   ///临时记录最大层级
-  late PackNode showNode;
+  PackNode? showNode;
 
   PackView(super.series);
 
@@ -115,6 +114,9 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
   }
 
   @override
+  bool get enableDrag => true;
+
+  @override
   void onDragMove(Offset offset, Offset diff) {
     tx += diff.dx;
     ty += diff.dy;
@@ -125,6 +127,7 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
     layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
+    showNode = layoutHelper.rootNode;
   }
 
   @override
