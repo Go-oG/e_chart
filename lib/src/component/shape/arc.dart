@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math.dart';
 
 import '../../ext/offset_ext.dart';
 
@@ -48,27 +49,6 @@ class Arc implements Shape {
       padAngle: padAngle ?? this.padAngle,
       center: center ?? this.center,
     );
-  }
-
-  static Arc lerp(Arc begin, Arc end, double t) {
-    double innerRadius = begin.innerRadius + (end.innerRadius - begin.innerRadius) * t;
-    double outerRadius = begin.outRadius + (end.outRadius - begin.outRadius) * t;
-    double startAngle = begin.startAngle + (end.startAngle - begin.startAngle) * t;
-    double sweepAngle = begin.sweepAngle + (end.sweepAngle - begin.sweepAngle) * t;
-    Offset center = Offset.lerp(begin.center, end.center, t)!;
-    return Arc(
-      innerRadius: innerRadius,
-      outRadius: outerRadius,
-      sweepAngle: sweepAngle,
-      startAngle: startAngle,
-      center: center,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'IR:${innerRadius.toStringAsFixed(1)} OR:${outRadius.toStringAsFixed(1)} SA:${startAngle.toStringAsFixed(1)} '
-        'EA:${endAngle.toStringAsFixed(1)} center:$center';
   }
 
   double get endAngle => (startAngle + sweepAngle).toDouble();
@@ -155,8 +135,8 @@ class Arc implements Shape {
         InnerOffset rt = _computeRT(or, corner, inEndAngle);
         path.lineTo(lt.p1.dx, lt.p1.dy);
         path.arcToPoint(lt.p2, radius: cr, largeArc: false, clockwise: true);
-        double a = lt.p2.offsetAngle(center) * Constants.angleUnit;
-        double b = rt.p1.offsetAngle(center) * Constants.angleUnit;
+        double a = lt.p2.angle(center) * Constants.angleUnit;
+        double b = rt.p1.angle(center) * Constants.angleUnit;
         if (b < a) {
           b += 2 * pi;
         }
@@ -168,8 +148,8 @@ class Arc implements Shape {
         InnerOffset lt = _computeLT(or, corner, inEndAngle);
         path.lineTo(rt.p2.dx, rt.p2.dy);
         path.arcToPoint(rt.p1, radius: cr, largeArc: false, clockwise: false);
-        double a = rt.p1.offsetAngle(center) * Constants.angleUnit;
-        double b = lt.p2.offsetAngle(center) * Constants.angleUnit;
+        double a = rt.p1.angle(center) * Constants.angleUnit;
+        double b = lt.p2.angle(center) * Constants.angleUnit;
         if (b > a) {
           b -= 2 * pi;
         }
@@ -229,8 +209,8 @@ class Arc implements Shape {
         path.moveTo(lt.p1.dx, lt.p1.dy);
         path.arcToPoint(lt.p2, radius: ocr, largeArc: false, clockwise: true);
 
-        double a = lt.p2.offsetAngle(center) * Constants.angleUnit;
-        double b = rt.p1.offsetAngle(center) * Constants.angleUnit;
+        double a = lt.p2.angle(center) * Constants.angleUnit;
+        double b = rt.p1.angle(center) * Constants.angleUnit;
         if (b < a) {
           b += 2 * pi;
         }
@@ -251,8 +231,8 @@ class Arc implements Shape {
         path.lineTo(rb.p1.dx, rb.p1.dy);
         path.arcToPoint(rb.p2, radius: icR, largeArc: false, clockwise: true);
 
-        double a = rb.p2.offsetAngle(center) * Constants.angleUnit;
-        double b = lb.p1.offsetAngle(center) * Constants.angleUnit;
+        double a = rb.p2.angle(center) * Constants.angleUnit;
+        double b = lb.p1.angle(center) * Constants.angleUnit;
         if (b > a) {
           b -= 2 * pi;
         }
@@ -276,8 +256,8 @@ class Arc implements Shape {
       InnerOffset lt = _computeLT(or, outCorner, outEndAngle);
       path.moveTo(rt.p2.dx, rt.p2.dy);
       path.arcToPoint(rt.p1, radius: Radius.circular(outCorner), largeArc: false, clockwise: false);
-      double a = rt.p1.offsetAngle(center) * Constants.angleUnit;
-      double b = lt.p2.offsetAngle(center) * Constants.angleUnit;
+      double a = rt.p1.angle(center) * Constants.angleUnit;
+      double b = lt.p2.angle(center) * Constants.angleUnit;
       if (b > a) {
         a += 2 * pi;
       }
@@ -297,8 +277,8 @@ class Arc implements Shape {
       InnerOffset rb = _computeRB(ir, inCorner, sa);
       path.lineTo(lb.p2.dx, lb.p2.dy);
       path.arcToPoint(lb.p1, radius: Radius.circular(inCorner), largeArc: false, clockwise: false);
-      double a = lb.p1.offsetAngle(center) * Constants.angleUnit;
-      double b = rb.p2.offsetAngle(center) * Constants.angleUnit;
+      double a = lb.p1.angle(center) * Constants.angleUnit;
+      double b = rb.p2.angle(center) * Constants.angleUnit;
       if (a > b) {
         a -= 2 * pi;
       }
@@ -315,26 +295,37 @@ class Arc implements Shape {
     return path;
   }
 
-  static Path _buildCircle(Offset center, num startAngle, double ir, double or, int direction) {
-    const double sweep = 1.99999 * pi;
-
-    ///直接为圆相关的
-    Path outPath = Path();
-    Offset o1 = circlePoint(or, startAngle, center);
-    Rect orRect = Rect.fromCircle(center: center, radius: or);
-    outPath.moveTo(o1.dx, o1.dy);
-    outPath.arcTo(orRect, startAngle * Constants.angleUnit, sweep, false);
-    outPath.close();
-    if (ir <= innerMin) {
-      return outPath;
+  @override
+  bool contains(Offset offset) {
+    double d1 = offset.distance2(center);
+    if (d1 > outRadius || d1 < innerRadius) {
+      return false;
+    }
+    if (sweepAngle.abs() >= 360) {
+      return true;
     }
 
-    Rect irRect = Rect.fromCircle(center: center, radius: ir);
-    Path innerPath = Path();
-    o1 = circlePoint(ir, startAngle, center);
-    innerPath.arcTo(irRect, startAngle * Constants.angleUnit, sweep, false);
-    innerPath.close();
-    return Path.combine(PathOperation.difference, outPath, innerPath);
+    Offset oA = circlePoint(d1, startAngle, center);
+    Vector2 vectorA = Vector2(oA.dx - center.dx, oA.dy - center.dy);
+    Offset oB = circlePoint(d1, startAngle + sweepAngle, center);
+    Vector2 vectorB = Vector2(oB.dx - center.dx, oB.dy - center.dy);
+    Vector2 vectorP = Vector2(offset.dx - center.dx, offset.dy - center.dy);
+
+    if (vectorP.x == 0 && vectorP.y == 0) {
+      return true;
+    }
+
+    ///精度(4位小数)
+    var ab = (vectorA.angleToSigned(vectorB) * 1000).toInt();
+    var ap = (vectorA.angleToSigned(vectorP) * 1000).toInt();
+
+    bool result = ap <= ab;
+    if (ap < 0 && ab < 0) {
+      result = ap >= ab;
+    } else if (ab > 0 && ap < 0) {
+      result = false;
+    }
+    return result;
   }
 
   Path arcOpen() {
@@ -366,6 +357,13 @@ class Arc implements Shape {
     return _computeCornerPoint(center, innerRadius, corner, angle, false, false);
   }
 
+
+  @override
+  String toString() {
+    return 'IR:${innerRadius.toStringAsFixed(1)} OR:${outRadius.toStringAsFixed(1)} SA:${startAngle.toStringAsFixed(1)} '
+        'EA:${endAngle.toStringAsFixed(1)} center:$center';
+  }
+
   ///计算切点位置
   static InnerOffset _computeCornerPoint(Offset center, num r, num corner, num angle, bool left, bool top) {
     InnerOffset result = InnerOffset();
@@ -384,9 +382,9 @@ class Arc implements Shape {
     result.p2 = o2;
 
     ///旋转
-    result.center = result.center.rotateOffset(angle, center: center);
-    result.p1 = result.p1.rotateOffset(angle, center: center);
-    result.p2 = result.p2.rotateOffset(angle, center: center);
+    result.center = result.center.rotate(angle, center: center);
+    result.p1 = result.p1.rotate(angle, center: center);
+    result.p2 = result.p2.rotate(angle, center: center);
     return result;
   }
 
@@ -418,10 +416,43 @@ class Arc implements Shape {
     return Offset(x1, y1);
   }
 
-  @override
-  bool internal(Offset offset) {
-    return offset.inArc(this);
+  static Path _buildCircle(Offset center, num startAngle, double ir, double or, int direction) {
+    const double sweep = 1.99999 * pi;
+
+    ///直接为圆相关的
+    Path outPath = Path();
+    Offset o1 = circlePoint(or, startAngle, center);
+    Rect orRect = Rect.fromCircle(center: center, radius: or);
+    outPath.moveTo(o1.dx, o1.dy);
+    outPath.arcTo(orRect, startAngle * Constants.angleUnit, sweep, false);
+    outPath.close();
+    if (ir <= innerMin) {
+      return outPath;
+    }
+
+    Rect irRect = Rect.fromCircle(center: center, radius: ir);
+    Path innerPath = Path();
+    o1 = circlePoint(ir, startAngle, center);
+    innerPath.arcTo(irRect, startAngle * Constants.angleUnit, sweep, false);
+    innerPath.close();
+    return Path.combine(PathOperation.difference, outPath, innerPath);
   }
+
+  static Arc lerp(Arc begin, Arc end, double t) {
+    double innerRadius = begin.innerRadius + (end.innerRadius - begin.innerRadius) * t;
+    double outerRadius = begin.outRadius + (end.outRadius - begin.outRadius) * t;
+    double startAngle = begin.startAngle + (end.startAngle - begin.startAngle) * t;
+    double sweepAngle = begin.sweepAngle + (end.sweepAngle - begin.sweepAngle) * t;
+    Offset center = Offset.lerp(begin.center, end.center, t)!;
+    return Arc(
+      innerRadius: innerRadius,
+      outRadius: outerRadius,
+      sweepAngle: sweepAngle,
+      startAngle: startAngle,
+      center: center,
+    );
+  }
+
 }
 
 class InnerOffset {

@@ -101,7 +101,7 @@ class SankeyView extends SeriesView<SankeySeries, SankeyLayout> {
       }
     }
     for (var ele in _nodeList) {
-      if (offset.inRect(ele.rect)) {
+      if (ele.rect.contains2(offset)) {
         return ele;
       }
     }

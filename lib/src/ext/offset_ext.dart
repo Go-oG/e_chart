@@ -1,9 +1,7 @@
 import 'dart:math' as m;
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math.dart';
-import '../component/shape/arc.dart';
-import '../model/constans.dart';
-
 
 extension OffsetExt on Offset {
   ///求两点之间的距离
@@ -13,114 +11,15 @@ extension OffsetExt on Offset {
     return m.sqrt(a * a + b * b);
   }
 
-  /// 求点Q到直线的距离
-  double lineDistance(Offset p1, Offset p2) {
-    if (p1.dx.compareTo(p2.dx) == 0 && p1.dy.compareTo(p2.dy) == 0) {
-      return distance2(p1);
-    }
-    double A = p2.dy - p1.dy;
-    double B = p1.dx - p2.dx;
-    double C = p2.dx * p1.dy - p1.dx * p2.dy;
-    return ((A * dx + B * dy + C) / (m.sqrt(A * A + B * B))).abs();
-  }
-
   /// 判断点Q是否在由 p1 p2组成的线段上 允许偏移值
   /// [deviation] 偏差值必须大于等于0
   bool inLine(Offset p1, Offset p2, {double deviation = 4}) {
-    if (deviation < 0) {
-      throw FlutterError('偏差值必须大于等于0');
-    }
-    if (dy > m.max(p1.dy, p2.dy) + deviation || dy < m.min(p1.dy, p2.dy) - deviation) {
-      return false;
-    }
-    if (dx > m.max(p1.dx, p2.dx) + deviation || dx < m.min(p1.dx, p2.dx) - deviation) {
-      return false;
-    }
-    double distance = lineDistance(p1, p2);
-    return distance <= deviation;
-  }
-
-  //判断点是否在矩形内部
-  bool inRect(Rect rect) {
-    return inPolygon([
-      Offset(rect.left, rect.top),
-      Offset(rect.right, rect.top),
-      Offset(rect.right, rect.bottom),
-      Offset(rect.left, rect.bottom),
-    ]);
+    return BaseLine(p1, p2).inLine(this, deviation: deviation);
   }
 
   //判断点是否在多边形内部(包含边界)
   bool inPolygon(List<Offset> list) {
-    if (list.isEmpty) {
-      return false;
-    }
-    if (list.length == 1) {
-      Offset p1 = list[0];
-      double a = (dx - p1.dx).abs();
-      double b = (dy - p1.dy).abs();
-      return m.sqrt(a * a + b * b) <= 0.01;
-    }
-    if (list.length == 2) {
-      return inLine(list[0], list[1], deviation: 0.05);
-    }
-    return inPolygonInner(list) || inPolygonBorder(list);
-  }
-
-  //参考百度地图(BaiduMap)的判断
-  /// 返回一个点是否在一个多边形区域内
-  bool inPolygonInner(List<Offset> mPoints) {
-    int nCross = 0;
-    for (int i = 0; i < mPoints.length; i++) {
-      Offset p1 = mPoints[i];
-      Offset p2 = mPoints[((i + 1) % mPoints.length)];
-      if (p1.dy == p2.dy) {
-        continue;
-      }
-
-      if (dy < m.min(p1.dy, p2.dy)) {
-        continue;
-      }
-      if (dy >= m.max(p1.dy, p2.dy)) {
-        continue;
-      }
-
-      double x = (dy - p1.dy) * (p2.dx - p1.dx) / (p2.dy - p1.dy) + p1.dx;
-      if (x > dx) {
-        //只统计单边交点
-        nCross++;
-      }
-    }
-    return (nCross % 2 == 1);
-  }
-
-  /// 返回一个点是否在一个多边形边界上
-  bool inPolygonBorder(List<Offset> mPoints) {
-    for (int i = 0; i < mPoints.length; i++) {
-      Offset p1 = mPoints[i];
-      Offset p2 = mPoints[((i + 1) % mPoints.length)];
-      if (dy < m.min(p1.dy, p2.dy)) {
-        continue;
-      }
-      if (dy > m.max(p1.dy, p2.dy)) {
-        continue;
-      }
-      if (p1.dy == p2.dy) {
-        double minX = m.min(p1.dx, p2.dx);
-        double maxX = m.max(p1.dx, p2.dx);
-// point在水平线段p1p2上,直接return true
-        if ((dy == p1.dy) && (dx >= minX && dx <= maxX)) {
-          return true;
-        }
-      } else {
-        // 求解交点
-        double x = (dy - p1.dy) * (p2.dx - p1.dx) / (p2.dy - p1.dy) + p1.dx;
-        if (x == dx) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return Polygon(list).contains(this);
   }
 
   /// 判断点是否在一个扇形上
@@ -164,15 +63,16 @@ extension OffsetExt on Offset {
   }
 
   bool inArc(Arc arc) {
-    return inSector(arc.innerRadius, arc.outRadius, arc.startAngle, arc.sweepAngle, center: arc.center);
+    return arc.contains(this);
   }
 
   bool inCircle(num radius, {Offset center = Offset.zero}) {
     return distance2(center) <= radius;
   }
 
-  /// 给定一个点的坐标和圆心坐标求，求点的偏移角度
-  double offsetAngle([Offset center = Offset.zero]) {
+  /// 给定圆心坐标求当前点的偏移角度
+  /// 返回值为角度[0,360]
+  double angle([Offset center = Offset.zero]) {
     double d = m.atan2(dy - center.dy, dx - center.dx);
     if (d < 0) {
       d += 2 * m.pi;
@@ -183,7 +83,7 @@ extension OffsetExt on Offset {
   ///返回绕center点旋转angle角度后的位置坐标
   ///逆时针 angle 为负数
   ///顺时针 angle 为正数
-  Offset rotateOffset(num angle, {Offset center = Offset.zero}) {
+  Offset rotate(num angle, {Offset center = Offset.zero}) {
     angle = angle % 360;
     num t = angle * Constants.angleUnit;
     double x = (dx - center.dx) * m.cos(t) - (dy - center.dy) * m.sin(t) + center.dx;

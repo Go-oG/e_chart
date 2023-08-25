@@ -77,6 +77,6 @@ class ArcGesture extends ChartGesture {
     if (edgeFun != null) {
       return edgeFun!.call(globalOffset);
     }
-    return globalOffset.inSector(innerRadius, outerRadius, startAngle, sweepAngle);
+    return globalOffset.inSector(innerRadius, outerRadius, startAngle, sweepAngle,center: center);
   }
 }

@@ -145,7 +145,7 @@ class RadarCoordImpl extends RadarCoord {
     if (node == null) {
       throw ChartError("无法找到节点");
     }
-    double angle = node.attrs.end.offsetAngle(node.attrs.start);
+    double angle = node.attrs.end.angle(node.attrs.start);
     double r = node.dataToRadius(data);
     return RadarPosition(center, r, angle);
   }

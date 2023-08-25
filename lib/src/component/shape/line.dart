@@ -155,7 +155,7 @@ class Line implements Shape {
   }
 
   @override
-  bool internal(Offset offset) {
+  bool contains(Offset offset) {
     Path path = toPath(false);
     PathMetrics metrics = path.computeMetrics();
     for (PathMetric metric in metrics) {

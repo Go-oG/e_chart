@@ -54,7 +54,7 @@ class PositiveShape implements Shape {
   }
 
   @override
-  bool internal(Offset offset) {
+  bool contains(Offset offset) {
     return toPath(true).contains(offset);
   }
 }

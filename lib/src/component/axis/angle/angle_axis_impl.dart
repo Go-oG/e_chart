@@ -214,7 +214,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     if (align == Align2.start) {
       return TextDrawInfo(start, align: Alignment.centerLeft);
     }
-    return TextDrawInfo(end, align: toAlignment(end.offsetAngle(start)));
+    return TextDrawInfo(end, align: toAlignment(end.angle(start)));
   }
 
   @override
@@ -364,7 +364,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       } else {
         dis = c * interval;
       }
-      final angle = offset.offsetAngle(attrs.center);
+      final angle = offset.angle(attrs.center);
       ol = [attrs.center, circlePoint(dis, angle, attrs.center)];
     } else {
       ol = [attrs.center, offset];
@@ -374,7 +374,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     ///绘制 数据
     dis = ol.last.distance2(ol.first);
     DynamicText dt = formatData(scale.toData(dis));
-    num angle = offset.offsetAngle(attrs.center);
+    num angle = offset.angle(attrs.center);
     Offset o = circlePoint(attrs.radius.last, angle, attrs.center);
     TextDrawInfo config = TextDrawInfo(o, align: toAlignment(angle, axis.axisLabel.inside));
     axisPointer.labelStyle.draw(canvas, paint, dt, config);

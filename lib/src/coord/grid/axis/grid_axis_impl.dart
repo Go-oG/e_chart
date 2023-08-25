@@ -47,8 +47,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     for (int i = indexList[0]; i < indexList[1] - 1; i++) {
       Offset s = center.translate(interval * i, 0);
       Offset e = center.translate(interval * (i + 1), 0);
-      Offset start = s.rotateOffset(angle, center: center);
-      Offset end = e.rotateOffset(angle, center: center);
+      Offset start = s.rotate(angle, center: center);
+      Offset end = e.rotate(angle, center: center);
       resultList.add(LineResult(i, scale.tickCount - 1, start, end));
     }
     return resultList;
@@ -75,8 +75,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     for (int i = indexList[0]; i < indexList[1]; i++) {
       double t = i.toDouble();
       final Offset offset = center.translate(interval * t, 0);
-      Offset start = offset.rotateOffset(angle, center: center);
-      Offset end = offset.translate(0, tickOffset).rotateOffset(angle, center: center);
+      Offset start = offset.rotate(angle, center: center);
+      Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
       int oi = i * minorSN;
       TickResult result = TickResult(oi, i, tickCount, start, end, []);
       resultList.add(result);
@@ -89,8 +89,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         Offset ms = offset.translate(minorInterval * j, 0);
         Offset me = ms.translate(0, minorOffset);
 
-        ms = ms.rotateOffset(angle, center: center);
-        me = me.rotateOffset(angle, center: center);
+        ms = ms.rotate(angle, center: center);
+        me = me.rotate(angle, center: center);
         result.minorTickList.add(TickResult(oi + j, i, tickCount, ms, me));
       }
     }
@@ -142,7 +142,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       final double parenDis = interval * d;
       Offset offset = center.translate(parenDis, 0);
       Offset textOffset = offset.translate(0, labelOffset);
-      textOffset = textOffset.rotateOffset(angle, center: center);
+      textOffset = textOffset.rotate(angle, center: center);
       TextDrawInfo config = TextDrawInfo(textOffset, align: align);
       DynamicText? text;
       int t = i - indexList[0];

@@ -8,13 +8,13 @@ num max(Iterable<num> list) {
 
 T maxBy<T>(Iterable<T> list, num Function(T) convert) {
   if (list.isEmpty) {
-   throw FlutterError('列表为空');
+    throw FlutterError('列表为空');
   }
-  num v=convert.call(list.first);
-  T result=list.first;
+  num v = convert.call(list.first);
+  T result = list.first;
   for (var v2 in list) {
     var tv = convert.call(v2);
-    if(tv.compareTo(v)>0){
+    if (tv.compareTo(v) > 0) {
       v = tv;
       result = v2;
     }
@@ -27,14 +27,14 @@ num min(Iterable<num> list) {
 }
 
 T minBy<T>(Iterable<T> list, num Function(T) convert) {
-  if ( list.isEmpty) {
+  if (list.isEmpty) {
     throw ChartError('List Is Empty');
   }
-  num v=convert.call(list.first);
-  T result=list.first;
+  num v = convert.call(list.first);
+  T result = list.first;
   for (var v2 in list) {
     var tv = convert.call(v2);
-    if(tv.compareTo(v)<0){
+    if (tv.compareTo(v) < 0) {
       v = tv;
       result = v2;
     }
@@ -102,4 +102,12 @@ num mediumBy<T>(Iterable<T> list, num Function(T) call) {
 
 num log10(num v) {
   return math.log(v) / math.ln10;
+}
+
+num hypot(List<num> list) {
+  double a = 0;
+  for (var c in list) {
+    a += c * c;
+  }
+  return math.sqrt(a);
 }

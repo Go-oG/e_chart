@@ -31,7 +31,7 @@ class Circle implements Shape {
   }
 
   @override
-  bool internal(Offset offset) {
+  bool contains(Offset offset) {
     return offset.inCircle(r,center: center);
   }
 

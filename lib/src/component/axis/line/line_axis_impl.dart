@@ -43,7 +43,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     final double distance = attrs.distance;
 
     ///夹角
-    final angle = attrs.end.offsetAngle(attrs.start);
+    final angle = attrs.end.angle(attrs.start);
     final Offset end = circlePoint(distance, angle, attrs.start);
     List<LineResult> lineResult = onBuildLineResult(scale, attrs.start, distance, angle);
     List<TickResult> tickResult = onBuildTickResult(scale, attrs.start, distance, angle);
@@ -61,8 +61,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     List<LineResult> resultList = [];
     for (int i = 0; i < tickCount - 1; i++) {
       Offset offset = center.translate(interval * i, 0);
-      Offset start = offset.rotateOffset(angle, center: center);
-      Offset end = center.translate(interval * (i + 1), 0).rotateOffset(angle, center: center);
+      Offset start = offset.rotate(angle, center: center);
+      Offset end = center.translate(interval * (i + 1), 0).rotate(angle, center: center);
       resultList.add(LineResult(i, tickCount - 1, start, end));
     }
     return resultList;
@@ -86,8 +86,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     List<TickResult> resultList = [];
     for (int i = 0; i < tickCount; i++) {
       Offset offset = center.translate(interval * i, 0);
-      Offset start = offset.rotateOffset(angle, center: center);
-      Offset end = offset.translate(0, tickOffset).rotateOffset(angle, center: center);
+      Offset start = offset.rotate(angle, center: center);
+      Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
       int oi = i * minorSN;
       TickResult result = TickResult(oi, i, tickCount, start, end, []);
       resultList.add(result);
@@ -101,8 +101,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
         Offset ms = offset.translate(minorInterval * j, 0);
         Offset me = ms.translate(0, minorOffset);
 
-        ms = ms.rotateOffset(angle, center: center);
-        me = me.rotateOffset(angle, center: center);
+        ms = ms.rotate(angle, center: center);
+        me = me.rotate(angle, center: center);
         result.minorTickList.add(TickResult(oi + j, i, tickCount, ms, me));
       }
     }
@@ -134,7 +134,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
       Offset offset = center.translate(parenDis, 0);
       Offset textOffset = offset.translate(0, labelOffset);
-      textOffset = textOffset.rotateOffset(angle, center: center);
+      textOffset = textOffset.rotate(angle, center: center);
       TextDrawInfo config = TextDrawInfo(textOffset, align: toAlignment(angle + 90, axisLabel.inside));
       DynamicText? text;
       if (labels.length > i) {
@@ -191,7 +191,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       p = Offset((attrs.start.dx + attrs.end.dx) / 2, (attrs.start.dy + attrs.end.dy) / 2);
     }
 
-    num a = p.offsetAngle(center);
+    num a = p.angle(center);
     double r = center.distance2(p);
     r += axis.axisName?.nameGap ?? 0;
     return TextDrawInfo(circlePoint(r, a, center), align: toAlignment(a));
