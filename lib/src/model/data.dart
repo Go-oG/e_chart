@@ -46,6 +46,11 @@ class ItemData extends BaseItemData {
   num value;
 
   ItemData(this.value, {super.label, super.id});
+
+  @override
+  String toString() {
+    return "$runtimeType value:${value.toStringAsFixed(2)}";
+  }
 }
 
 class BaseItemData {
