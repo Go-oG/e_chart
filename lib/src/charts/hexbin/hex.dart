@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 
 class Hex {
@@ -5,7 +7,7 @@ class Hex {
   final int r;
   final int s;
 
-  Hex(this.q, this.r, this.s) {
+   Hex(this.q, this.r, this.s){
     if (q + r + s != 0) throw FlutterError("q + r + s must be 0");
   }
 
@@ -121,6 +123,60 @@ class Hex {
   ///[direction] [0,5]
   Hex diagonalNeighbor(int direction) {
     return add(Hex.diagonals[direction]);
+  }
+
+  ///返回已当前节点为中心的第N层的环节点
+  List<Hex> ring(int N, [int ringStartIndex = 4, bool clockwise = false]) {
+    if (N < 0) {
+      throw FlutterError('N must >=0');
+    }
+    if (N == 0) {
+      return [this];
+    }
+    List<Hex> results = [];
+    var h1 = Hex.direction(ringStartIndex);
+    var hex = add(h1.scale(N));
+    for (int i = 0; i < 6; i++) {
+      for (int k = 0; k < N; k++) {
+        results.add(hex);
+        hex = hex.neighbor2((i + (ringStartIndex - 4)) % 6);
+      }
+    }
+    if (clockwise) {
+      results = List.from(results.reversed);
+    }
+    return results;
+  }
+
+  ///判断当前节点是否在以[center]为中心 ,N 为半径的环上
+  bool inRing(Hex center, int N) {
+    Set<Hex> hexList = Set.from(center.ring(N));
+    return hexList.contains(this);
+  }
+
+  ///返回连接两个节点之间的线节点
+  List<Hex> line(Hex end) {
+    int N = distance(end);
+    List<Hex> results = [];
+    double step = 1.0 / max(N, 1);
+    for (int i = 0; i <= N; i++) {
+      results.add(Hex.lerp(this, end, step * i));
+    }
+    return results;
+  }
+
+  ///将一个偏移坐标系下的位置转换为cube坐标系下的位置
+  static Hex offsetCoordToHexCoord(int row, int col, {bool flat = true, bool evenLineIndent = true}) {
+    int dir = evenLineIndent ? -1 : 1;
+    if (flat) {
+      var q = col;
+      var r = (row - (col + dir * (col & 1)) / 2).toInt();
+      return Hex(q, r, -q - r);
+    } else {
+      var q = (col - (row + dir * (row & 1)) / 2).toInt();
+      var r = row;
+      return Hex(q, r, -q - r);
+    }
   }
 
   @override

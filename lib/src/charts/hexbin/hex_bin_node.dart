@@ -6,9 +6,19 @@ class HexbinNode extends DataNode<HexAttr, ItemData> {
 }
 
 class HexAttr {
-  //Hex 坐标
-  Hex hex = Hex(0, 0, 0);
+  static final HexAttr zero = HexAttr.all(Hex(0, 0, 0), PositiveShape(count: 0), Offset.zero);
+  final Hex hex;
+  late final PositiveShape shape;
+  late final Offset center;
+  double alpha = 1;
 
-  PositiveShape shape = PositiveShape(count: 0);
-  Offset center = Offset.zero;
+  HexAttr(this.hex);
+
+  HexAttr.all(this.hex, this.shape, this.center);
+
+  HexAttr copy({double? alpha}) {
+    var attr = HexAttr.all(hex, shape, center);
+    attr.alpha = alpha ?? this.alpha;
+    return attr;
+  }
 }

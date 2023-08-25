@@ -417,11 +417,6 @@ abstract class ChartView with ViewStateProvider {
   void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
     _forceLayout = true;
-    ChartSeries? series = _series;
-    unBindSeries();
-    if (series != null) {
-      bindSeries(series);
-    }
     onStop();
     onStart();
     layout(left, top, right, bottom);
@@ -505,24 +500,17 @@ abstract class GestureView extends ChartView {
   void onCreate() {
     super.onCreate();
     _gesture = buildGesture;
-    onInitGesture(_gesture);
   }
 
   @mustCallSuper
   @override
   void onLayoutEnd() {
     super.onLayoutEnd();
-    onGestureInit(_gesture);
+    onInitGesture(_gesture);
   }
 
   ChartGesture get buildGesture {
     return RectGesture();
-  }
-
-  void onGestureInit(ChartGesture gesture) {
-    if (gesture is RectGesture) {
-      (gesture).rect = globalBoxBound;
-    }
   }
 
   Offset _lastHover = Offset.zero;
@@ -608,6 +596,10 @@ abstract class GestureView extends ChartView {
         onScaleEnd();
       };
     }
+
+    if (gesture is RectGesture) {
+      (gesture).rect = globalBoxBound;
+    }
   }
 
   bool get enableClick => true;
@@ -670,7 +662,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     series.dispose();
     super.onDestroy();
   }
-  
+
   L buildLayoutHelper();
 
   @override
@@ -684,6 +676,12 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   @override
   void onUpdateDataCommand(covariant Command c) {
     layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.update);
+  }
+
+  @override
+  void onSeriesConfigChangeCommand(covariant Command c) {
+    layoutHelper = buildLayoutHelper();
+    super.onSeriesConfigChangeCommand(c);
   }
 
   @override
@@ -818,24 +816,23 @@ class LayoutParams {
   final EdgeInsets margin;
   final EdgeInsets padding;
 
-  const LayoutParams(this.width,
-      this.height, {
-        this.margin = EdgeInsets.zero,
-        this.padding = EdgeInsets.zero,
-      });
+  const LayoutParams(
+    this.width,
+    this.height, {
+    this.margin = EdgeInsets.zero,
+    this.padding = EdgeInsets.zero,
+  });
 
   const LayoutParams.matchAll({
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
-  })
-      : width = const SizeParams.match(),
+  })  : width = const SizeParams.match(),
         height = const SizeParams.match();
 
   const LayoutParams.wrapAll({
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
-  })
-      : width = const SizeParams.wrap(),
+  })  : width = const SizeParams.wrap(),
         height = const SizeParams.wrap();
 }
 

@@ -121,9 +121,9 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   }
 
   @override
-  void notifySeriesConfigChange() {
+  void notifyConfigChange() {
     _helper = null;
-    super.notifySeriesConfigChange();
+    super.notifyConfigChange();
   }
 
   @override

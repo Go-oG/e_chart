@@ -52,18 +52,16 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     value = Command.updateData;
   }
 
-  ///通知视图当前Series 配置发生了变化
-  void notifySeriesConfigChange() {
+  ///通知视图当前Series 配置发生了变化(包含了数据变化)
+  /// 它会触发整个View重新走一遍构造流程
+  /// 如果仅仅只是数据发生变化了建议使用 [notifyUpdateData]
+  void notifyConfigChange() {
     value = Command.configChange;
   }
-
-
 
   ChartView? toView() {
     return null;
   }
-
-
 }
 
 abstract class RectSeries extends ChartSeries {

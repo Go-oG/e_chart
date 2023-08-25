@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
 
-import '../hex.dart';
 
 ///平行四边形布局
 class HexParallelLayout extends HexbinLayout {
@@ -36,7 +35,7 @@ class HexParallelLayout extends HexbinLayout {
     Pair<int> p = Pair(s, e);
     List<Hex> hexList = parallelograms(p, p);
     each(data, (node, i) {
-      node.attr.hex = hexList[i];
+      node.attr=HexAttr(hexList[i]);
     });
   }
 

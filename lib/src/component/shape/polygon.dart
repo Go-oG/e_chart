@@ -4,7 +4,7 @@ import 'dart:ui';
 import '../../utils/math_util.dart';
 import 'base_line.dart';
 
-//多边形
+///多边形
 class Polygon {
   final List<Offset> points;
 

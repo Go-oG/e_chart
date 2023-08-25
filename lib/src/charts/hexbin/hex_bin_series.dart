@@ -30,7 +30,7 @@ class HexbinSeries extends RectSeries {
     super.bottomMargin,
     super.width,
     super.height,
-    super.animation,
+    super.animation = null,
     super.clip,
     super.tooltip,
     super.backgroundColor,
@@ -46,6 +46,7 @@ class HexbinSeries extends RectSeries {
   ChartView? toView() {
     return HexbinView(this);
   }
+
   AreaStyle? getItemStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
     if (itemStyleFun != null) {
       return itemStyleFun?.call(data, status);

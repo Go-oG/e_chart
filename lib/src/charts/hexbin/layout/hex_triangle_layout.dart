@@ -44,7 +44,7 @@ class HexTriangleLayout extends HexbinLayout {
     _level = computeLevel(data.length);
     List<Hex> hexList = triangle(_level, direction);
     each(data, (node, i) {
-      node.attr.hex = hexList[i];
+      node.attr=HexAttr(hexList[i]);
     });
   }
 

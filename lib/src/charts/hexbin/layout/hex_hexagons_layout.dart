@@ -2,7 +2,6 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-
 class HexagonsLayout extends HexbinLayout {
   int ringStartIndex;
   bool clockwise;
@@ -24,7 +23,7 @@ class HexagonsLayout extends HexbinLayout {
     int level = computeMinLevel(data.length);
     List<Hex> hexList = hexagons(level);
     each(data, (node, i) {
-      node.attr.hex = hexList[i];
+      node.attr=HexAttr(hexList[i]);
     });
   }
 
@@ -54,7 +53,7 @@ class HexagonsLayout extends HexbinLayout {
     Hex centerHex = Hex(0, 0, 0);
     hexList.add(centerHex);
     for (int k = 1; k <= level; k++) {
-      hexList.addAll(HexbinLayout.ring(centerHex, k, ringStartIndex, clockwise));
+      hexList.addAll(centerHex.ring(k, ringStartIndex, clockwise));
     }
     return hexList;
   }
