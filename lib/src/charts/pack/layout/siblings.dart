@@ -41,7 +41,7 @@ class Siblings {
   }
 
   static num _score(InnerNode node) {
-    PackProps a = node.circle, b = node.next!.circle;
+    PackAttr a = node.circle, b = node.next!.circle;
     num ab = a.r + b.r, dx = (a.x * b.r + b.x * a.r) / ab, dy = (a.y * b.r + b.y * a.r) / ab;
     return dx * dx + dy * dy;
   }
@@ -130,7 +130,7 @@ class Siblings {
     }
 
     // Compute the enclosing circle of the front chain.
-    List<PackProps> cl = [b!.circle];
+    List<PackAttr> cl = [b!.circle];
     c = b;
     while ((c = c?.next) != b) {
       cl.add(c!.circle);
@@ -148,7 +148,7 @@ class Siblings {
 }
 
 class InnerNode {
-  PackProps circle;
+  PackAttr circle;
   InnerNode? next;
   InnerNode? previous;
 

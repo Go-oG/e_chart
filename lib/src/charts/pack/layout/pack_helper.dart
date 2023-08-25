@@ -1,12 +1,7 @@
 import 'dart:math' as m;
-import 'dart:ui';
-import 'package:e_chart/src/functions.dart';
 
-import '../../../core/layout_helper.dart';
-import '../../../model/enums/series_type.dart';
-import '../../graph/layout/force/lcg.dart';
-import '../pack_node.dart';
-import '../pack_series.dart';
+import 'dart:ui';
+import 'package:e_chart/e_chart.dart';
 import 'siblings.dart';
 
 class PackHelper extends LayoutHelper<PackSeries> {
@@ -17,7 +12,6 @@ class PackHelper extends LayoutHelper<PackSeries> {
   Fun2<PackNode, num> _paddingFun = (a) {
     return 3;
   };
-
   PackNode? rootNode;
 
   PackHelper(super.context, super.series);
@@ -87,6 +81,136 @@ class PackHelper extends LayoutHelper<PackSeries> {
   PackHelper padding(Fun2<PackNode, num> fun1) {
     _paddingFun = fun1;
     return this;
+  }
+
+  double tx = 0;
+  double ty = 0;
+  double scale = 1;
+
+  ///临时记录最大层级
+  PackNode? showNode;
+
+  @override
+  void onClick(Offset localOffset) {
+    PackNode? clickNode = findNode(localOffset);
+    if (clickNode != null) {
+      sendClickEvent(localOffset, clickNode.data, dataIndex: clickNode.childIndex, groupIndex: 0);
+    }
+    if (clickNode == null || clickNode == rootNode) {
+      return;
+    }
+
+    PackNode pn = clickNode.parent == null ? clickNode : clickNode.parent!;
+    if (pn == showNode) {
+      return;
+    }
+    showNode = pn;
+
+    ///计算新的缩放系数
+    double oldScale = scale;
+    double newScale = m.min(width, height) * 0.5 / pn.props.r;
+    double scaleDiff = newScale - oldScale;
+
+    ///计算偏移变化值
+    double oldTx = tx;
+    double oldTy = ty;
+    double ntx = width / 2 - newScale * pn.props.x;
+    double nty = height / 2 - newScale * pn.props.y;
+    double diffTx = (ntx - oldTx);
+    double diffTy = (nty - oldTy);
+
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      scale = oldScale + scaleDiff;
+      tx = oldTx + diffTx;
+      ty = oldTy + diffTy;
+      notifyLayoutUpdate();
+      return;
+    }
+    var tween = ChartDoubleTween(props: animation);
+    tween.addListener(() {
+      var t = tween.value;
+      scale = oldScale + scaleDiff * t;
+      tx = oldTx + diffTx * t;
+      ty = oldTy + diffTy * t;
+      notifyLayoutUpdate();
+    });
+    tween.start(context, true);
+  }
+
+  PackNode? _oldHoverNode;
+
+  void _handleHover(Offset offset) {
+    PackNode? hoverNode = findNode(offset);
+    if (hoverNode == rootNode) {
+      return;
+    }
+    if (hoverNode != null) {
+      sendHoverInEvent(offset, hoverNode.data, dataIndex: hoverNode.childIndex, groupIndex: 0);
+    }
+
+    if (hoverNode == _oldHoverNode) {
+      return;
+    }
+
+    _oldHoverNode?.removeState(ViewState.hover);
+    var oldNode = _oldHoverNode;
+    if(oldNode!=null){
+      sendHoverOutEvent(oldNode.data, dataIndex: oldNode.childIndex, groupIndex: 0);
+    }
+    hoverNode?.addState(ViewState.hover);
+    _oldHoverNode = hoverNode;
+    notifyLayoutUpdate();
+  }
+
+  @override
+  void onHoverStart(Offset localOffset) {
+    _handleHover(localOffset);
+  }
+
+  @override
+  void onHoverMove(Offset localOffset) {
+    _handleHover(localOffset);
+  }
+
+  @override
+  void onHoverEnd() {
+    _oldHoverNode?.removeState(ViewState.hover);
+    _oldHoverNode = null;
+    notifyLayoutUpdate();
+  }
+
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    tx += diff.dx;
+    ty += diff.dy;
+    notifyLayoutUpdate();
+  }
+
+  PackNode? findNode(Offset offset) {
+    if (rootNode == null) {
+      return null;
+    }
+    List<PackNode> rl = [rootNode!];
+    PackNode? parent;
+    while (rl.isNotEmpty) {
+      PackNode node = rl.removeAt(0);
+      Offset center = Offset(node.props.x, node.props.y);
+      center = center.scale(scale, scale);
+      center = center.translate(tx, ty);
+      if (offset.inCircle(node.props.r * scale, center: center)) {
+        parent = node;
+        if (node.hasChild) {
+          rl = [...node.children];
+        } else {
+          return node;
+        }
+      }
+    }
+    if (parent != null) {
+      return parent;
+    }
+    return null;
   }
 }
 

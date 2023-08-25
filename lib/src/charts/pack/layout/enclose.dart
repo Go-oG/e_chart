@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import '../../graph/layout/force/lcg.dart';
 import '../pack_node.dart';
 
-PackProps? packEncloseRandom(List<PackProps> circles, LCG random) {
+PackAttr? packEncloseRandom(List<PackAttr> circles, LCG random) {
   shuffle(circles, random);
   int i = 0, n = circles.length;
-  List<PackProps> B = [];
-  PackProps p;
-  PackProps? e;
+  List<PackAttr> B = [];
+  PackAttr p;
+  PackAttr? e;
   while (i < n) {
     p = circles[i];
     if (e != null && enclosesWeak(e, p)) {
@@ -23,7 +23,7 @@ PackProps? packEncloseRandom(List<PackProps> circles, LCG random) {
   return e;
 }
 
-List<PackProps> extendBasis(List<PackProps> B, PackProps p) {
+List<PackAttr> extendBasis(List<PackAttr> B, PackAttr p) {
   int i, j;
   if (enclosesWeakAll(p, B)) {
     return [p];
@@ -52,19 +52,19 @@ List<PackProps> extendBasis(List<PackProps> B, PackProps p) {
   throw FlutterError('异常');
 }
 
-bool enclosesNot(PackProps a, PackProps b) {
+bool enclosesNot(PackAttr a, PackAttr b) {
   var dr = a.r - b.r, dx = b.x - a.x, dy = b.y - a.y;
   return dr < 0 || dr * dr < dx * dx + dy * dy;
 }
 
-bool enclosesWeak(PackProps a, PackProps b) {
+bool enclosesWeak(PackAttr a, PackAttr b) {
   num maxV = max(a.r, b.r);
   maxV = max(maxV, 1);
   var dr = a.r - b.r + maxV * 1e-9, dx = b.x - a.x, dy = b.y - a.y;
   return dr > 0 && dr * dr > dx * dx + dy * dy;
 }
 
-bool enclosesWeakAll(PackProps a, B) {
+bool enclosesWeakAll(PackAttr a, B) {
   for (var i = 0; i < B.length; ++i) {
     if (!enclosesWeak(a, B[i])) {
       return false;
@@ -73,7 +73,7 @@ bool enclosesWeakAll(PackProps a, B) {
   return true;
 }
 
-PackProps? encloseBasis(B) {
+PackAttr? encloseBasis(B) {
   switch (B.length) {
     case 1:
       return encloseBasis1(B[0]);
@@ -85,11 +85,11 @@ PackProps? encloseBasis(B) {
   return null;
 }
 
-PackProps encloseBasis1(PackProps a) {
-  return PackProps(a.x, a.y, a.r);
+PackAttr encloseBasis1(PackAttr a) {
+  return PackAttr(a.x, a.y, a.r);
 }
 
-PackProps encloseBasis2(PackProps a, PackProps b) {
+PackAttr encloseBasis2(PackAttr a, PackAttr b) {
   var x1 = a.x,
       y1 = a.y,
       r1 = a.r,
@@ -101,14 +101,14 @@ PackProps encloseBasis2(PackProps a, PackProps b) {
       r21 = r2 - r1,
       l = sqrt(x21 * x21 + y21 * y21);
 
-  PackProps data = PackProps(0,0,0);
+  PackAttr data = PackAttr(0,0,0);
   data.r = (l + r1 + r2) / 2;
   data.x=  (x1 + x2 + x21 / l * r21) / 2;
   data.y= (y1 + y2 + y21 / l * r21) / 2;
   return data;
 }
 
-PackProps encloseBasis3(PackProps a, PackProps b, PackProps c) {
+PackAttr encloseBasis3(PackAttr a, PackAttr b, PackAttr c) {
   var x1 = a.x,
       y1 = a.y,
       r1 = a.r,
@@ -137,7 +137,7 @@ PackProps encloseBasis3(PackProps a, PackProps b, PackProps c) {
       C = xa * xa + ya * ya - r1 * r1,
       r = -(A.abs() > 1e-6 ? (B + sqrt(B * B - 4 * A * C)) / (2 * A) : C / B);
 
-  return PackProps(x1 + xa + xb * r, y1 + ya + yb * r, r);
+  return PackAttr(x1 + xa + xb * r, y1 + ya + yb * r, r);
 }
 
 void shuffle(List array, LCG random) {

@@ -80,7 +80,7 @@ class TreeData {
 
   @override
   String toString() {
-    return (label == null || label!.isEmpty) ? '$value' : '$label';
+    return "$runtimeType label:$label value:${value.toStringAsFixed(2)}";
   }
 
   static int computeDeep(TreeData data) {

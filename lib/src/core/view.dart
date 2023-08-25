@@ -732,6 +732,21 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     layoutHelper.onHoverEnd();
   }
 
+  @override
+  void onDragStart(Offset offset) {
+    layoutHelper.onDragStart(offset);
+  }
+
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    layoutHelper.onDragMove(offset, diff);
+  }
+
+  @override
+  void onDragEnd() {
+    layoutHelper.onDragEnd();
+  }
+
   @mustCallSuper
   @override
   void onStart() {

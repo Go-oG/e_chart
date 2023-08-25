@@ -47,6 +47,12 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onHoverEnd() {}
 
+  void onDragStart(Offset offset){}
+
+  void onDragMove(Offset offset, Offset diff){}
+
+  void onDragEnd(){}
+
   ///=========事件通知========
   ///Brush
   void onBrushEvent(BrushEvent event) {}
