@@ -12,9 +12,10 @@ class PackTheme {
     if (maxDeep <= deep || maxDeep <= 0) {
       return AreaStyle(color: color);
     }
-    HSLColor hslColor = HSLColor.fromColor(color);
-    double hue = hslColor.hue * (1 - (deep / maxDeep));
-    return AreaStyle(color: hslColor.withHue(hue).toColor());
+    var s = color.withOpacity(color.opacity * 0.2);
+    var e = color;
+    var t = Color.lerp(s, e, deep / maxDeep);
+    return AreaStyle(color: t);
   }
 
   LineStyle? getBorderStyle() {

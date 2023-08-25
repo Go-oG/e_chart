@@ -21,6 +21,12 @@ class PackHelper extends LayoutHelper<PackSeries> {
     var node = PackNode.fromPackData(series.data);
     node.sum((p0) => p0.value);
     node.computeHeight();
+    var h=node.height;
+    node.each((node, index, startNode){
+      node.maxDeep=h;
+      return false;
+    });
+
     if (series.sortFun != null) {
       node.sort(series.sortFun!);
     } else {
@@ -148,7 +154,6 @@ class PackHelper extends LayoutHelper<PackSeries> {
     if (hoverNode != null) {
       sendHoverInEvent(offset, hoverNode.data, dataIndex: hoverNode.childIndex, groupIndex: 0);
     }
-
     if (hoverNode == _oldHoverNode) {
       return;
     }

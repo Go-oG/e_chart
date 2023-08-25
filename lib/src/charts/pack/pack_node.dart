@@ -2,9 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 class PackNode extends TreeNode<PackNode> with ViewStateProvider implements NodeAccessor<PackAttr, TreeData> {
   final TreeData data;
-  PackAttr cur = PackAttr(0, 0, 0);
-  PackAttr start = PackAttr(0, 0, 0);
-  PackAttr end = PackAttr(0, 0, 0);
+  PackAttr _attr = PackAttr(0, 0, 0);
 
   PackNode(super.parent, this.data, {super.deep, super.maxDeep, super.value});
 
@@ -14,16 +12,16 @@ class PackNode extends TreeNode<PackNode> with ViewStateProvider implements Node
     });
   }
 
-  PackAttr get props => cur;
+  PackAttr get props => _attr;
 
   @override
   TreeData get d => data;
 
   @override
-  PackAttr getP() => cur;
+  PackAttr getP() => _attr;
 
   @override
-  void setP(PackAttr po) => cur = po;
+  void setP(PackAttr po) => _attr = po;
 }
 
 class PackAttr {
