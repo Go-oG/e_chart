@@ -1,3 +1,4 @@
+import 'package:e_chart/src/component/theme/chart/hexbin_theme.dart';
 import 'package:flutter/material.dart';
 import 'tooltip_theme.dart' as tp;
 import '../index.dart';
@@ -56,6 +57,7 @@ class ChartTheme {
   FunnelTheme funnelTheme = FunnelTheme();
   HeadMapTheme headMapTheme = HeadMapTheme();
   GraphTheme graphTheme = GraphTheme();
+  HexbinTheme hexbinTheme=HexbinTheme();
 
   final Map<String, dynamic> _themeMap = {};
 

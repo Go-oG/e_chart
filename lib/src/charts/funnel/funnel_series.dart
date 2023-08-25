@@ -1,5 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/funnel/funnel_chart.dart';
+import 'package:e_chart/src/charts/funnel/funnel_view.dart';
 import 'package:flutter/material.dart';
 
 class FunnelSeries extends RectSeries {

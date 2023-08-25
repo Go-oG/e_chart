@@ -24,3 +24,47 @@ export 'point/point_series.dart';
 export 'point/point_data.dart';
 
 export 'radar/radar_series.dart';
+
+export 'graph/index.dart';
+
+export 'hexbin/hex_bin_helper.dart' hide Orientation;
+export 'hexbin/layout/hex_hexagons_layout.dart';
+export 'hexbin/layout/hex_parallel_layout.dart';
+export 'hexbin/layout/hex_rect_layout.dart';
+export 'hexbin/layout/hex_triangle_layout.dart';
+export 'hexbin/hex.dart';
+export 'hexbin/hex_bin_node.dart';
+export 'hexbin/hex_bin_series.dart';
+
+export 'pack/pack_series.dart';
+export 'pack/pack_node.dart';
+
+export 'sankey/sankey_series.dart';
+export 'sankey/sankey_align.dart';
+export 'sankey/sort.dart';
+export 'sankey/layout_node.dart';
+
+export 'sunburst/sunburst_series.dart';
+export 'themeriver/theme_river_series.dart';
+
+export 'tree/layout/compact_layout.dart';
+export 'tree/layout/d3_tree_layout.dart' hide InnerNode;
+export 'tree/layout/d3_dendrogram_layout.dart';
+export 'tree/layout/dendrogram_layout.dart';
+export 'tree/layout/indented_layout.dart';
+export 'tree/layout/mindmap_layout.dart';
+export 'tree/layout/radial_layout.dart';
+export 'tree/node.dart';
+export 'tree/tree_layout.dart';
+export 'tree/tree_series.dart';
+
+export 'treemap/layout/binary.dart' hide BinaryNode;
+export 'treemap/layout/dice.dart';
+export 'treemap/layout/layout.dart';
+export 'treemap/layout/resquarify.dart';
+export 'treemap/layout/slice.dart';
+export 'treemap/layout/slice_dice.dart';
+export 'treemap/layout/square.dart' hide Row;
+export 'treemap/node.dart';
+export 'treemap/treemap_series.dart';
+

@@ -77,7 +77,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   @override
   void onUpdateDataCommand(covariant Command c) {
     setForceLayout();
-    layout(left, top, right, bottom);
+    this.layout(left, top, right, bottom);
   }
 
   @override

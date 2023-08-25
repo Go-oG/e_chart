@@ -1,5 +1,5 @@
 
-import 'package:e_chart/src/charts/point/point_chart.dart';
+import 'package:e_chart/src/charts/point/point_view.dart';
 
 import '../../core/index.dart';
 import '../../functions.dart';

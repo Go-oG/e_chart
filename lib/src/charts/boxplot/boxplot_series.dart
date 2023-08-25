@@ -1,6 +1,6 @@
 //盒须图
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/boxplot/boxplot_chart.dart';
+import 'package:e_chart/src/charts/boxplot/boxplot_view.dart';
 
 class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
   BoxplotSeries(

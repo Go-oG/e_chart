@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
@@ -24,7 +23,7 @@ class ToolTipView extends LinearLayout {
     this.menu = menu;
     children.clear();
     if (menu == null) {
-      layout(0, top, right, bottom);
+      this.layout(0, top, right, bottom);
       return;
     }
     if (menu.title != null) {
@@ -48,7 +47,7 @@ class ToolTipView extends LinearLayout {
   }
 
   void updatePosition(Offset offset) {
-    layout(left + offset.dx, top + offset.dy, right + offset.dx, bottom + offset.dy);
+    this.layout(left + offset.dx, top + offset.dy, right + offset.dx, bottom + offset.dy);
   }
 
   @override

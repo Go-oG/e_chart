@@ -665,6 +665,12 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     layoutHelper = buildLayoutHelper();
   }
 
+  @override
+  void onDestroy() {
+    series.dispose();
+    super.onDestroy();
+  }
+  
   L buildLayoutHelper();
 
   @override
@@ -812,23 +818,24 @@ class LayoutParams {
   final EdgeInsets margin;
   final EdgeInsets padding;
 
-  const LayoutParams(
-    this.width,
-    this.height, {
-    this.margin = EdgeInsets.zero,
-    this.padding = EdgeInsets.zero,
-  });
+  const LayoutParams(this.width,
+      this.height, {
+        this.margin = EdgeInsets.zero,
+        this.padding = EdgeInsets.zero,
+      });
 
   const LayoutParams.matchAll({
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
-  })  : width = const SizeParams.match(),
+  })
+      : width = const SizeParams.match(),
         height = const SizeParams.match();
 
   const LayoutParams.wrapAll({
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
-  })  : width = const SizeParams.wrap(),
+  })
+      : width = const SizeParams.wrap(),
         height = const SizeParams.wrap();
 }
 

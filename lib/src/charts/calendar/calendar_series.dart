@@ -1,5 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/calendar/calendar_chart.dart';
+import 'package:e_chart/src/charts/calendar/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'item_style.dart';
 import 'date_range.dart';

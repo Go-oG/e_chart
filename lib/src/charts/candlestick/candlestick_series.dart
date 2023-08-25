@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/candlestick/candlestick_chart.dart';
+import 'package:e_chart/src/charts/candlestick/candlestick_view.dart';
 
 class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
   CandleStickSeries(super.data, {

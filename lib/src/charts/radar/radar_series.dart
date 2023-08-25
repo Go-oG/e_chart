@@ -1,5 +1,5 @@
 //雷达图
-import 'package:e_chart/src/charts/radar/radar_chart.dart';
+import 'package:e_chart/src/charts/radar/radar_view.dart';
 
 import '../../core/view.dart';
 import '../../functions.dart';

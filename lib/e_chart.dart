@@ -23,3 +23,5 @@ export 'src/style/index.dart';
 export 'src/symbol/index.dart';
 
 export 'src/utils/index.dart';
+
+export 'package:dart_dagre/dart_dagre.dart';

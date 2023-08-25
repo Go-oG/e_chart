@@ -1,3 +1,4 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 
 class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
@@ -5,6 +6,8 @@ class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   final Set<VoidCallback> _listenerSet = {};
 
   ChartNotifier(this._value, [this.equalsObject = false]);
+
+  bool _disposeFlag = false;
 
   @override
   T get value => _value;
@@ -38,7 +41,12 @@ class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   @override
   void dispose() {
     clearListener();
-    super.dispose();
+    if (!_disposeFlag) {
+      _disposeFlag = true;
+      super.dispose();
+    }else{
+      Logger.w("已经调用过了Dispose");
+    }
   }
 
   @override

@@ -1,5 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/heatmap/heat_map_chart.dart';
+import 'package:e_chart/src/charts/heatmap/heat_map_view.dart';
 import 'package:flutter/painting.dart';
 
 ///热力图

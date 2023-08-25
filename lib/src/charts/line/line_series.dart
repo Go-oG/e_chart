@@ -1,5 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/line/line_chart.dart';
+import 'package:e_chart/src/charts/line/line_view.dart';
 
 class LineSeries extends GridSeries<StackItemData, LineGroupData> {
   bool connectNulls; // 是否连接空数据

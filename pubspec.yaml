@@ -14,6 +14,9 @@ dependencies:
   vector_math: ^2.1.4
   gesture_x_detector: ^1.1.1
   stack_trace: ^1.11.1
+  dart_dagre: ^0.0.1
+  ml_linalg: ^13.11.30
+  scidart: ^0.0.2-dev.12
 
 dependency_overrides:
   stack_trace: ^1.11.1

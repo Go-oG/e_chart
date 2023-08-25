@@ -1,4 +1,4 @@
-import 'package:e_chart/src/charts/parallel/parallel_chart.dart';
+import 'package:e_chart/src/charts/parallel/parallel_view.dart';
 
 import '../../core/view.dart';
 import '../../functions.dart';
