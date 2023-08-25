@@ -23,7 +23,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
       return;
     }
 
-    DiffUtil.diffLayout<List<Offset>, ItemData, FunnelNode>(context, animation, oldList, newList, (data, node, add) {
+    var an=DiffUtil.diffLayout2<List<Offset>, ItemData, FunnelNode>(animation, oldList, newList, (data, node, add) {
       List<Offset> pl = node.pointList;
       Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
       return [o0, o0, o0, o0];
@@ -41,6 +41,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
       nodeList = List.from(result);
       notifyLayoutUpdate();
     });
+    context.addAnimationToQueue(an);
   }
 
   List<FunnelNode> convertData(List<ItemData> list) {

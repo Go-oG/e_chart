@@ -42,8 +42,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       return;
     }
 
-    DiffUtil.diffLayout(
-      context,
+    var an = DiffUtil.diffLayout2(
       animation,
       oldList,
       newList,
@@ -59,6 +58,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
         notifyLayoutUpdate();
       },
     );
+    context.addAnimationToQueue(an);
   }
 
   Map<RadarGroupNode, List<RadarNode>> splitNode(List<RadarNode> nodeList) {

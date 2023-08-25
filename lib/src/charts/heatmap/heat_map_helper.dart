@@ -18,10 +18,9 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       _nodeList = newList;
-      return ;
+      return;
     }
-    DiffUtil.diffLayout<Rect, HeatMapData, HeatMapNode>(
-      context,
+    var an = DiffUtil.diffLayout2<Rect, HeatMapData, HeatMapNode>(
       animation,
       oldList,
       newList,
@@ -32,7 +31,7 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
         notifyLayoutUpdate();
       },
     );
-
+    context.addAnimationToQueue(an);
   }
 
   List<HeatMapNode> convertData(List<HeatMapData> dataList) {

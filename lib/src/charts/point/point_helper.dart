@@ -32,25 +32,31 @@ class PointHelper extends LayoutHelper<PointSeries> {
       return;
     }
 
-    DiffUtil.diffLayout<PointSize, PointData, PointNode>(
-        context, animation, oldList, newList, (data, node, add) => PointSize.all(node.attr.offset, Size.zero),
-        (s, e, t) {
-      PointSize size = PointSize();
-      if (s.offset == e.offset) {
-        size.offset = e.offset;
-      } else {
-        size.offset = Offset.lerp(s.offset, e.offset, t)!;
-      }
-      if (s.size == e.size) {
-        size.size = e.size;
-      } else {
-        size.size = Size.lerp(s.size, e.size, t)!;
-      }
-      return size;
-    }, (resultList) {
-      nodeList = resultList;
-      notifyLayoutUpdate();
-    });
+    var an = DiffUtil.diffLayout2<PointSize, PointData, PointNode>(
+      animation,
+      oldList,
+      newList,
+      (data, node, add) => PointSize.all(node.attr.offset, Size.zero),
+      (s, e, t) {
+        PointSize size = PointSize();
+        if (s.offset == e.offset) {
+          size.offset = e.offset;
+        } else {
+          size.offset = Offset.lerp(s.offset, e.offset, t)!;
+        }
+        if (s.size == e.size) {
+          size.size = e.size;
+        } else {
+          size.size = Size.lerp(s.size, e.size, t)!;
+        }
+        return size;
+      },
+      (resultList) {
+        nodeList = resultList;
+        notifyLayoutUpdate();
+      },
+    );
+    context.addAnimationToQueue(an);
   }
 
   void layoutNode(List<PointNode> nodeList) {

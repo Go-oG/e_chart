@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart';
 class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
   num maxTransX = 0,
       maxTransY = 0;
-
   List<LayoutNode> nodeList=[];
   ThemeRiverHelper(super.context, super.series);
 
@@ -75,16 +74,15 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
       }
       node._buildPath(pList, pList2, series.smooth);
     }
-    adjust(nodeList, width, height, series);
+    adjust(nodeList, width, height);
     this.nodeList=nodeList;
   }
 
   @override
   SeriesType get seriesType=>SeriesType.themeriver;
 
-  void adjust(List<LayoutNode> nodeList, num width, num height, ThemeRiverSeries series) {
+  void adjust(List<LayoutNode> nodeList, num width, num height) {
     Direction direction = series.direction;
-
     Rect first = nodeList.first.drawPath.getBounds();
     Rect last = nodeList.last.drawPath.getBounds();
     if (direction == Direction.horizontal) {

@@ -21,8 +21,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     }
 
     Direction direction = findParallelCoord().direction;
-    DiffUtil.diffLayout<List<Offset?>, ParallelGroup, ParallelNode>(
-      context,
+    var an=DiffUtil.diffLayout2<List<Offset?>, ParallelGroup, ParallelNode>(
       animation,
       oldList,
       newList,
@@ -53,6 +52,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
         notifyLayoutUpdate();
       },
     );
+    context.addAnimationToQueue(an);
   }
 
   void layoutNode(List<ParallelNode> nodeList) {
