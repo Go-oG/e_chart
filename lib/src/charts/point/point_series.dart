@@ -1,15 +1,10 @@
+import 'package:e_chart/e_chart.dart';
 
-import 'package:e_chart/src/charts/point/point_view.dart';
-
-import '../../core/index.dart';
-import '../../functions.dart';
-import '../../model/enums/coordinate.dart';
-import 'point_data.dart';
-import '../../symbol/chart_symbol.dart';
+import 'point_view.dart';
 
 class PointSeries extends RectSeries {
   List<PointGroup> data;
-  Fun3<PointData,PointGroup, ChartSymbol> symbolFun;
+  Fun3<PointData, PointGroup, ChartSymbol> symbolFun;
 
   PointSeries(
     this.data, {
@@ -36,5 +31,4 @@ class PointSeries extends RectSeries {
   ChartView? toView() {
     return PointView(this);
   }
-
 }

@@ -1,7 +1,7 @@
 import 'package:e_chart/src/model/text_info.dart';
 import 'package:flutter/painting.dart';
 
-import '../style/label.dart';
+import '../component/style/index.dart';
 import '../utils/align_util.dart';
 import 'enums/direction.dart';
 

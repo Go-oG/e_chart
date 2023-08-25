@@ -1,8 +1,6 @@
 import 'dart:ui';
 
-import '../../../style/label.dart';
-import '../../../style/line_style.dart';
-
+import '../../style/index.dart';
 class HexbinTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFEEEEEE);

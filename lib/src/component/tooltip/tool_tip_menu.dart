@@ -1,7 +1,6 @@
-import 'package:e_chart/src/style/index.dart';
-
 import '../../model/data.dart';
-import '../../symbol/chart_symbol.dart';
+import '../style/index.dart';
+import '../symbol/chart_symbol.dart';
 
 class ToolTipMenu {
   DynamicText? title;

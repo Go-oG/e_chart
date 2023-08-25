@@ -1,12 +1,7 @@
 import 'dart:math';
-import 'dart:ui';
-import 'package:e_chart/src/ext/text_style_ext.dart';
+import 'dart:ui' show Paragraph, ParagraphConstraints;
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../component/index.dart';
-import '../core/view_state.dart';
-import '../model/index.dart';
-import 'area_style.dart';
 
 class LabelStyle {
   final bool show;
@@ -68,7 +63,7 @@ class LabelStyle {
     painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
     if (painter.height > config.maxHeight) {
       int maxLineCount = config.maxHeight ~/ (painter.height / painter.computeLineMetrics().length);
-      maxLineCount = max(1, maxLineCount);
+      maxLineCount = max([1, maxLineCount]).toInt();
       painter.maxLines = maxLineCount;
       painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
     }
@@ -152,8 +147,7 @@ class LabelStyle {
   }
 
   //TODO 待实现
-  LabelStyle convert(Set<ViewState>? set){
+  LabelStyle convert(Set<ViewState>? set) {
     return this;
   }
-
 }

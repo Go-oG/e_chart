@@ -1,7 +1,7 @@
 
 import 'dart:ui';
 
-import '../../../style/line_style.dart';
+import '../../style/index.dart';
 
 class PieTheme {
   num borderWidth = 0;

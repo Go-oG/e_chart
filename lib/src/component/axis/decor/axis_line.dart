@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../functions.dart';
+import '../../style/index.dart';
 import '../../theme/axis_theme.dart';
-import '../../../style/line_style.dart';
 import 'axis_symbol.dart';
 
 class AxisLine {

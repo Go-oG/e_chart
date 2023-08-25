@@ -1,11 +1,9 @@
 import 'dart:math';
-import 'package:e_chart/src/component/axis/model/line_result.dart';
 import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/material.dart';
 
 import '../../../coord/coord_impl.dart';
 import '../../../model/index.dart';
-import '../../../style/index.dart';
 import '../../../utils/index.dart';
 import '../../index.dart';
 

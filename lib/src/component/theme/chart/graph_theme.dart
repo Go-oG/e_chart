@@ -1,10 +1,8 @@
 import 'dart:ui';
 
-import '../../../style/label.dart';
-import '../../../style/line_style.dart';
-import '../../../symbol/chart_symbol.dart';
-import '../../../symbol/circle_symbol.dart';
-import '../theme.dart';
+import '../../symbol/chart_symbol.dart';
+import '../../symbol/circle_symbol.dart';
+
 class GraphTheme {
   num borderWidth = 0;
   Color borderColor = const Color(0xFFCCCCCC);

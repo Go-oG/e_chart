@@ -1,8 +1,9 @@
 import 'dart:math' as m;
 import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math.dart';
+import '../component/shape/arc.dart';
 import '../model/constans.dart';
-import '../model/shape/index.dart';
+
 
 extension OffsetExt on Offset {
   ///求两点之间的距离

@@ -1,8 +1,5 @@
 import 'dart:ui';
 
-import '../../../style/label.dart';
-import '../../../style/line_style.dart';
-import '../theme.dart';
 ///K线图主题
 class KLineTheme {
   Color upColor = const Color(0xFFEB5454);

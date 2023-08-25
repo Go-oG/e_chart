@@ -1,6 +1,5 @@
-import '../../../style/line_style.dart';
-import '../../../symbol/chart_symbol.dart';
-import '../../../symbol/circle_symbol.dart';
+import '../../style/index.dart';
+import '../../symbol/index.dart';
 import '../theme.dart';
 ///折线图主题
 class LineTheme {

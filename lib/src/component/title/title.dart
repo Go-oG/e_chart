@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../model/enums/align2.dart';
-import '../../style/label.dart';
+import '../style/label.dart';
 
 class ChartTitle {
   bool show = false;

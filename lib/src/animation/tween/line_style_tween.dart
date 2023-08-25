@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui show lerpDouble;
 import '../../../src/component/shader/shader.dart' as sd;
-import '../../style/line_style.dart';
+import '../../component/style/line_style.dart';
 import '../chart_tween.dart';
 import 'shader_tween.dart';
 
 class LineStyleTween extends ChartTween<LineStyle> {
-
   ChartShaderTween? _shaderTween;
 
-  LineStyleTween(super.begin, super.end,{super.allowCross,super.props}) {
+  LineStyleTween(super.begin, super.end, {super.allowCross, super.props}) {
     changeValue(begin, end);
   }
 
@@ -33,7 +32,7 @@ class LineStyleTween extends ChartTween<LineStyle> {
       dash = animatorPercent < 0.5 ? begin.dash : end.dash;
     }
 
-    List<BoxShadow> shadowList=BoxShadow.lerpList(begin.shadow, end.shadow, animatorPercent)??[];
+    List<BoxShadow> shadowList = BoxShadow.lerpList(begin.shadow, end.shadow, animatorPercent) ?? [];
     sd.ChartShader? shader;
     if (_shaderTween != null) {
       shader = _shaderTween!.convert(animatorPercent);

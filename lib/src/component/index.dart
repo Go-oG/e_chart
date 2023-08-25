@@ -73,3 +73,7 @@ export 'title/title.dart';
 export 'tooltip/tool_tip.dart';
 export 'tooltip/tool_tip_menu.dart';
 export 'tooltip/tool_tip_view.dart';
+
+export 'shape/index.dart';
+export 'style/index.dart';
+export 'symbol/index.dart';

@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../ext/offset_ext.dart';
-import '../constans.dart';
+
+import '../../model/constans.dart';
 import 'chart_shape.dart';
 
 class Arc implements Shape {

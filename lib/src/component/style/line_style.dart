@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import '../component/shader/shader.dart' as sd;
+import '../shader/shader.dart' as sd;
 
 /// 线段样式
 class LineStyle {

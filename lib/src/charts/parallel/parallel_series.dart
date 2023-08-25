@@ -1,10 +1,8 @@
-import 'package:e_chart/src/charts/parallel/parallel_view.dart';
 
-import '../../core/view.dart';
-import '../../functions.dart';
-import '../../model/enums/coordinate.dart';
-import '../../style/line_style.dart';
-import '../../core/series.dart';
+
+import 'package:e_chart/e_chart.dart';
+
+import 'parallel_view.dart';
 
 class ParallelSeries extends RectSeries {
   List<ParallelGroup> data;

@@ -1,4 +1,4 @@
-import '../../style/label.dart';
+import '../style/label.dart';
 
 class MarkPointTheme {
   LabelStyle labelStyle = const LabelStyle();

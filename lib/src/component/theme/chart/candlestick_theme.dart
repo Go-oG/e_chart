@@ -1,7 +1,6 @@
 import 'dart:ui';
 
-import '../../../style/line_style.dart';
-import '../theme.dart';
+import '../../style/line_style.dart';
 
 class CandlestickTheme {
   num borderWidth = 1;

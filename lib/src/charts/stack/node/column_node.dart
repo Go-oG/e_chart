@@ -1,8 +1,6 @@
 import 'dart:ui';
-import '../../../model/index.dart';
-import '../stack_data.dart';
-import 'group_node.dart';
-import 'single_node.dart';
+import 'package:e_chart/e_chart.dart';
+
 
 class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   final GroupNode<T, P> parentNode;

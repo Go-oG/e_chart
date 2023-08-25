@@ -1,9 +1,7 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
-import '../../../style/line_style.dart';
-import '../theme.dart';
+import '../../style/line_style.dart';
+
 class BoxplotTheme {
   num borderWidth = 1;
   Color borderColor=Colors.black45;

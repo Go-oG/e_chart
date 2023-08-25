@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../style/line_style.dart';
+import '../style/index.dart';
 
 ///引导线
 class GuideLine {

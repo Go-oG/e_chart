@@ -1,13 +1,7 @@
 //雷达图
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/radar/radar_view.dart';
 
-import '../../core/view.dart';
-import '../../functions.dart';
-import '../../model/enums/coordinate.dart';
-import '../../model/data.dart';
-import '../../style/index.dart';
-import '../../core/series.dart';
-import '../../symbol/chart_symbol.dart';
 
 class RadarSeries extends RectSeries {
   List<GroupData> data;

@@ -1,5 +1,5 @@
 import '../../../functions.dart';
-import '../../../style/index.dart';
+import '../../style/index.dart';
 import '../../theme/axis_theme.dart';
 
 ///坐标轴在grid区域中的分隔线

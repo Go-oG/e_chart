@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../../../style/line_style.dart';
+import '../../style/line_style.dart';
 
 class BarTheme {
   num borderWidth = 0;

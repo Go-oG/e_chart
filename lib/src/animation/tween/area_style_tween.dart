@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../style/area_style.dart';
+import '../../component/style/area_style.dart';
 import '../chart_tween.dart';
 import 'color_tween.dart';
 import 'shader_tween.dart';

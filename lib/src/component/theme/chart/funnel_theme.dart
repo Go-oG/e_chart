@@ -1,8 +1,7 @@
 import 'dart:ui';
 
-import '../../../style/label.dart';
-import '../../../style/line_style.dart';
-import '../theme.dart';
+import '../../style/label.dart';
+import '../../style/line_style.dart';
 
 class FunnelTheme {
   num borderWidth = 0;

@@ -19,8 +19,6 @@ export 'enums/trigger_on.dart';
 export 'event/coord_scale.dart';
 export 'event/coord_scroll.dart';
 
-export 'shape/index.dart';
-
 export 'quadtree/quad_node.dart';
 export 'quadtree/quadtree.dart' hide InnerQuad;
 
