@@ -74,8 +74,10 @@ class DiffUtil {
     Iterable<N> newList,
     P Function(D data, N node, bool add) builder,
     P Function(P s, P e, double t) lerpFun,
-    void Function(List<N> resultList) resultCall,
-  ) {
+    void Function(List<N> resultList) resultCall, [
+    VoidCallback? onStart,
+    VoidCallback? onEnd,
+  ]) {
     Map<D, N> oldMap = {};
     for (var n in oldList) {
       oldMap[n.d] = n;
@@ -126,8 +128,18 @@ class DiffUtil {
     }
 
     List<TweenWrap> tweenList = [];
+
+    bool hasCallStart = false;
+    bool hasCallEnd = false;
+
     if (addSet.isNotEmpty) {
       ChartDoubleTween addTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+      addTween.startListener = () {
+        if (!hasCallStart) {
+          hasCallStart = true;
+          onStart?.call();
+        }
+      };
       addTween.addListener(() {
         double t = addTween.value;
         for (var d in addSet) {
@@ -139,17 +151,31 @@ class DiffUtil {
         resultCall.call(nodeList);
       });
       addTween.endListener = () {
+        if (!hasCallEnd) {
+          hasCallEnd = true;
+          onEnd?.call();
+        }
         resultCall.call(nodeList);
       };
       tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
     }
     if (removeSet.isNotEmpty) {
       ChartDoubleTween removeTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+      removeTween.startListener = () {
+        if (!hasCallStart) {
+          hasCallStart = true;
+          onStart?.call();
+        }
+      };
       removeTween.endListener = () {
         nodeList.removeWhere((e) {
           return removeSet.contains(e.d);
         });
         resultCall.call(nodeList);
+        if (!hasCallEnd) {
+          hasCallEnd = true;
+          onEnd?.call();
+        }
       };
       removeTween.addListener(() {
         double t = removeTween.value;
@@ -177,8 +203,18 @@ class DiffUtil {
 
       if (needUpdateList.isNotEmpty) {
         ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+        updateTween.startListener = () {
+          if (!hasCallStart) {
+            hasCallStart = true;
+            onStart?.call();
+          }
+        };
         updateTween.endListener = () {
           resultCall.call(nodeList);
+          if (!hasCallEnd) {
+            hasCallEnd = true;
+            onEnd?.call();
+          }
         };
         updateTween.addListener(() {
           double t = updateTween.value;

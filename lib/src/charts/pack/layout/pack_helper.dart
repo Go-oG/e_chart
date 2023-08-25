@@ -21,9 +21,9 @@ class PackHelper extends LayoutHelper<PackSeries> {
     var node = PackNode.fromPackData(series.data);
     node.sum((p0) => p0.value);
     node.computeHeight();
-    var h=node.height;
-    node.each((node, index, startNode){
-      node.maxDeep=h;
+    var h = node.height;
+    node.each((node, index, startNode) {
+      node.maxDeep = h;
       return false;
     });
 
@@ -66,7 +66,35 @@ class PackHelper extends LayoutHelper<PackSeries> {
         return false;
       });
     }
-    rootNode = node;
+    var oldRootNode = rootNode;
+    var animation = series.animation;
+    if (animation == null) {
+      rootNode = node;
+      return;
+    }
+
+    DiffUtil.diffLayout<PackAttr, TreeData, PackNode>(
+      context,
+      animation,
+      oldRootNode?.descendants() ?? [],
+      node.descendants(),
+      (data, node, add) {
+        PackAttr attr = node.getP();
+        return PackAttr(attr.x, attr.y, 0);
+      },
+      (s, e, t) {
+        var sr = s.r;
+        var er = e.r;
+        return PackAttr(e.x, e.y, lerpDouble(sr, er, t)!);
+      },
+      (resultList) {
+        notifyLayoutUpdate();
+      },
+      () {
+        rootNode = node;
+      },
+    );
+
   }
 
   @override
@@ -160,7 +188,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
 
     _oldHoverNode?.removeState(ViewState.hover);
     var oldNode = _oldHoverNode;
-    if(oldNode!=null){
+    if (oldNode != null) {
       sendHoverOutEvent(oldNode.data, dataIndex: oldNode.childIndex, groupIndex: 0);
     }
     hoverNode?.addState(ViewState.hover);
