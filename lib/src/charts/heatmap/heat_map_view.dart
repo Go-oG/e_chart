@@ -31,7 +31,7 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
       if (style == null || !style.show) {
         return;
       }
-      Alignment align = series.labelAlignFun?.call(node.d) ?? Alignment.center;
+      Alignment align = series.labelAlignFun?.call(node.getData()) ?? Alignment.center;
       style.draw(canvas, mPaint, label, TextDrawInfo.fromRect(node.attr, align));
     });
     canvas.restore();

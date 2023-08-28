@@ -30,7 +30,7 @@ class HexbinSeries extends RectSeries {
     super.bottomMargin,
     super.width,
     super.height,
-    super.animation = null,
+    super.animation,
     super.clip,
     super.tooltip,
     super.backgroundColor,

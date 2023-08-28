@@ -822,6 +822,7 @@ abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> ext
 
   @override
   bool get enableScale => false;
+
 }
 
 class LayoutParams {

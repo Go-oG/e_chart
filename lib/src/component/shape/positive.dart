@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+
 import '../../ext/offset_ext.dart';
 import 'chart_shape.dart';
 
@@ -56,5 +58,13 @@ class PositiveShape implements Shape {
   @override
   bool contains(Offset offset) {
     return toPath(true).contains(offset);
+  }
+
+  static PositiveShape lerp(PositiveShape s, PositiveShape e, double t) {
+    var c = Offset.lerp(s.center, e.center, t)!;
+    var r = lerpDouble(s.r, e.r, t)!;
+    var angle = lerpDouble(s.angleOffset, e.angleOffset, t)!;
+    var count = lerpInt(s.count, e.count, t);
+    return PositiveShape(count: count, center: c, r: r, angleOffset: angle);
   }
 }

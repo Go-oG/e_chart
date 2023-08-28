@@ -173,4 +173,27 @@ class Line implements Shape {
     }
     return false;
   }
+
+  ///将该段线条追加到Path的后面
+  void appendToPathEnd(Path path) {
+    Offset firstPoint = _pointList.first;
+    path.lineTo(firstPoint.dx, firstPoint.dy);
+    List<Offset> tmpList = [];
+    tmpList.add(_pointList[0]);
+    tmpList.addAll(_pointList);
+    tmpList.add(_pointList.last);
+    tmpList.add(_pointList.last);
+    for (int i = 1; i < tmpList.length - 3; i++) {
+      Offset pre = tmpList[i - 1];
+      Offset p = tmpList[i + 1];
+      if (pre.dx == p.dx || pre.dy == p.dy) {
+        path.lineTo(p.dx, p.dy);
+      } else {
+        List<Offset> list = _getCtrlPoint(tmpList, i, ratio: Constants.smoothRatio);
+        Offset leftPoint = list[0];
+        Offset rightPoint = list[1];
+        path.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+      }
+    }
+  }
 }

@@ -211,6 +211,8 @@ abstract class ParallelCoord extends CoordLayout<Parallel> {
   ParallelPosition dataToPosition(int dimIndex, dynamic data);
 
   Direction get direction => props.direction;
+
+  int getAxisCount()=>props.axisList.length;
 }
 
 class ParallelPosition {

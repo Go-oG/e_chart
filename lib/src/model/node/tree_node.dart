@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 
-import 'link.dart';
+import '../link.dart';
 
 typedef TreeFun<T extends TreeNode<T>> = bool Function(T node, int index, T startNode);
 

@@ -19,7 +19,7 @@ List<List<T>> splitList<T>(List<T> list, int count) {
   return rl;
 }
 
-List<List<T?>> splitListOrNull<T>(List<T?> list, int count) {
+List<List<T?>> splitList2<T>(List<T?> list, int count) {
   List<List<T?>> rl = [];
   if (count <= 0) {
     count = 1;
@@ -38,73 +38,25 @@ List<List<T?>> splitListOrNull<T>(List<T?> list, int count) {
   return rl;
 }
 
-List<List<T>> chunk<T>(Iterable<T>? list, [int size = 1]) {
-  if (list == null || list.isEmpty) {
-    return [];
-  }
+List<List<T>> splitListForNull<T>(List<T?> list) {
   List<List<T>> rl = [];
-  List<T> tmp = [];
-
-  for (T v in list) {
-    if (tmp.length >= size) {
-      rl.add(tmp);
-      tmp = [];
+  List<T> tmpList = [];
+  for (int i = 0; i < list.length; i++) {
+    var t = list[i];
+    if (t != null) {
+      tmpList.add(t);
+    } else {
+      rl.add(tmpList);
+      tmpList = [];
     }
-    tmp.add(v);
   }
-  if (tmp.isNotEmpty) {
-    rl.add(tmp);
+  if (tmpList.isNotEmpty) {
+    rl.add(tmpList);
   }
   return rl;
 }
 
-List<T> concat<T>(
-  Iterable<T>? iterable, [
-  Iterable<T>? i2,
-  Iterable<T>? i3,
-  Iterable<T>? i4,
-  Iterable<T>? i5,
-  Iterable<T>? i6,
-  Iterable<T>? i7,
-  Iterable<T>? i8,
-  Iterable<T>? i9,
-  Iterable<T>? i10,
-]) {
-  List<Iterable<T>> tl = [];
-  if (iterable != null) {
-    tl.add(iterable);
-  }
-  if (i2 != null) {
-    tl.add(i2);
-  }
-  if (i3 != null) {
-    tl.add(i3);
-  }
-  if (i4 != null) {
-    tl.add(i4);
-  }
-  if (i5 != null) {
-    tl.add(i5);
-  }
-  if (i6 != null) {
-    tl.add(i6);
-  }
-  if (i7 != null) {
-    tl.add(i7);
-  }
-  if (i8 != null) {
-    tl.add(i8);
-  }
-  if (i9 != null) {
-    tl.add(i9);
-  }
-  if (i10 != null) {
-    tl.add(i10);
-  }
-  return concat2(tl);
-}
-
-List<T> concat2<T>(Iterable<Iterable<T>> iterable) {
+List<T> concat<T>(Iterable<Iterable<T>> iterable) {
   List<T> rl = [];
   for (var v in iterable) {
     rl.addAll(v);
@@ -233,7 +185,7 @@ void fill<T>(List<T> list, Iterable<T> values, [int start = 0, int? end]) {
 }
 
 ///删除List中在 values中出现的值
-void pull<T>(Iterable<T> list, Iterable<T> values) {
+void deleteList<T>(Iterable<T> list, Iterable<T> values) {
   Set<T> tset = Set.from(values);
   if (list is List) {
     (list as List).removeWhere((e) => tset.contains(e));
@@ -396,6 +348,12 @@ List<T> withOut<T>(Iterable<T> list, Iterable<T> values) {
 }
 
 void each<T>(Iterable<T> list, void Function(T, int) call) {
+  eachNull(list, (p0, p1) {
+    call.call(p0 as T, p1);
+  });
+}
+
+void eachNull<T>(Iterable<T?> list, void Function(T?, int) call) {
   int i = 0;
   for (var ele in list) {
     call.call(ele, i);
@@ -422,7 +380,7 @@ List<T> xor<T>(Iterable<Iterable<T>> list) {
 
 List<T> xorBy<T, K>(Iterable<Iterable<T>> list, K Function(T) convert) {
   List<T> rl = [];
-  List<T> cl = concat2<T>(list);
+  List<T> cl = concat<T>(list);
   Map<K?, int> map = {};
   for (var e in cl) {
     var k = convert.call(e);
@@ -493,5 +451,19 @@ K reduce2<T, K>(Iterable<T> list, K Function(K, T) call, K initValue) {
   return k;
 }
 
-
-
+bool equalList<T>(List<T?> s, List<T?> e) {
+  if (s.length != e.length) {
+    return false;
+  }
+  if (s.isEmpty) {
+    return true;
+  }
+  for (int i = 0; i < s.length; i++) {
+    var sv = s[i];
+    var ev = e[i];
+    if (sv != ev) {
+      return false;
+    }
+  }
+  return true;
+}

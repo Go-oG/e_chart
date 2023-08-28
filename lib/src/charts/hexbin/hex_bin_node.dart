@@ -8,8 +8,8 @@ class HexbinNode extends DataNode<HexAttr, ItemData> {
 class HexAttr {
   static final HexAttr zero = HexAttr.all(Hex(0, 0, 0), PositiveShape(count: 0), Offset.zero);
   final Hex hex;
-  late final PositiveShape shape;
-  late final Offset center;
+  late PositiveShape shape;
+  late Offset center;
   double alpha = 1;
 
   HexAttr(this.hex);

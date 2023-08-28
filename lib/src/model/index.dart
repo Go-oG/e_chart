@@ -32,13 +32,17 @@ export 'data.dart';
 export 'link.dart';
 export 'mixin_props.dart';
 export 'node_attr.dart';
+export 'optimun.dart';
 export 'range.dart';
 export 'range_info.dart';
 export 'string_number.dart';
 export 'text_info.dart';
-export 'tree_node.dart';
 export 'graph/graph.dart';
 export 'graph/graph_node.dart';
 export 'graph/edge.dart';
 export 'tree_data.dart';
+
+export 'node/data_node.dart';
+export 'node/symbol_node.dart';
+export 'node/tree_node.dart';
 

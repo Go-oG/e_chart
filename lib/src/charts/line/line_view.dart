@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/line/helper/grid_helper.dart';
 import 'package:e_chart/src/charts/line/helper/polar_helper.dart';
-import 'package:e_chart/src/component/theme/chart/line_theme.dart';
 
 import 'helper/line_helper.dart';
 import 'line_node.dart';
@@ -65,7 +64,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     canvas.translate(offset.dx, 0);
     each(lineList, (lineNode, p1) {
       bool needSymbol = series.symbolFun != null || theme.showSymbol;
-      List<SymbolNode> symbolList = drawLineForPolar(canvas, lineNode, theme, t, needSymbol);
+      List<LineSymbolNode> symbolList = drawLineForPolar(canvas, lineNode, theme, t, needSymbol);
       if (needSymbol && symbolList.isNotEmpty) {
         drawSymbolForPolar(canvas, symbolList, theme);
       }
@@ -87,7 +86,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
       if (!clipRect.overlaps(border.rect)) {
         continue;
       }
-      for (var subPath in border.subPathList) {
+      for (var subPath in border.segmentList) {
         if (!clipRect.overlaps(subPath.bound)) {
           continue;
         }
@@ -96,7 +95,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     }
   }
 
-  List<SymbolNode> drawLineForPolar(
+  List<LineSymbolNode> drawLineForPolar(
       Canvas canvas, LineNode lineNode, LineTheme theme, double percent, bool needSymbol) {
     if (lineNode.borderList.isEmpty) {
       return [];
@@ -104,7 +103,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
 
     var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, null);
     lineNode.lineStyle = ls;
-    Set<SymbolNode> symbolSet = {};
+    Set<LineSymbolNode> symbolSet = {};
     for (var border in lineNode.borderList) {
       var path = border.path.percentPath(percent);
       drawAreaForPolar(canvas, lineNode, path, theme);
@@ -150,7 +149,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
 
   void drawSymbol(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
     lineNode.symbolMap.forEach((key, node) {
-      if (!clipRect.contains(node.attr)) {
+      if (!clipRect.contains2(node.attr)) {
         return;
       }
       if (series.symbolFun != null) {
@@ -162,7 +161,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     });
   }
 
-  void drawSymbolForPolar(Canvas canvas, List<SymbolNode> symbolList, LineTheme theme) {
+  void drawSymbolForPolar(Canvas canvas, List<LineSymbolNode> symbolList, LineTheme theme) {
     each(symbolList, (symbol, p1) {
       if (series.symbolFun != null) {
         ChartSymbol? cs = series.symbolFun?.call(symbol.data, symbol.group, symbol.status);

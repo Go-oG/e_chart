@@ -106,10 +106,22 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     ));
   }
 
+  void sendClickEvent2(Offset offset, DataNode node) {
+    sendClickEvent(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+  }
+
+  void sendHoverInEvent2(Offset offset, DataNode node) {
+    sendHoverInEvent(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+  }
+
   void sendHoverOutEvent(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
     context.dispatchEvent(HoverOutEvent(
       buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
     ));
+  }
+
+  void sendHoverOutEvent2(DataNode node) {
+    sendHoverOutEvent(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
   }
 
   EventParams buildEventParams(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
@@ -171,4 +183,3 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 }
 
 enum LayoutType { none, layout, update }
-

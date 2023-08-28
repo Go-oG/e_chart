@@ -28,8 +28,8 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
       if (style == null && borderStyle == null) {
         return false;
       }
-      Offset center = Offset(node.props.x, node.props.y);
-      double r = node.props.r;
+      Offset center = Offset(node.getAttr().x, node.getAttr().y);
+      double r = node.getAttr().r;
       style?.drawCircle(canvas, mPaint, center, r);
       borderStyle?.drawArc(canvas, mPaint, r - borderStyle.width / 2, 0, 360);
       return false;
@@ -44,13 +44,13 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
         if (labelStyle == null || !labelStyle.show) {
           return false;
         }
-        double r = node.props.r;
+        double r = node.getAttr().r;
 
         if (series.optTextDraw && r * 2 * scale < label.length * (labelStyle.textStyle.fontSize ?? 8) * 0.5) {
           return false;
         }
 
-        Offset center = Offset(node.props.x, node.props.y);
+        Offset center = Offset(node.getAttr().x, node.getAttr().y);
         center = center.scale(scale, scale);
         center = center.translate(tx, ty);
         TextDrawInfo config = TextDrawInfo(

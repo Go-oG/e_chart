@@ -7,8 +7,8 @@ class LineNode {
   final int styleIndex;
   final LineGroupData data;
   final List<Offset?> offsetList;
-  final Map<StackItemData, SymbolNode> symbolMap;
-  final List<PathNode> borderList;
+  final Map<StackItemData, LineSymbolNode> symbolMap;
+  final List<OptLinePath> borderList;
   final List<AreaNode> areaList;
   AreaStyle? areaStyle;
   LineStyle? lineStyle;
@@ -24,22 +24,6 @@ class LineNode {
   );
 }
 
-class PathNode {
-  final List<Offset> offsetList;
-  late final Rect rect;
-  late final Path path;
-  final List<SubPath> subPathList = [];
-
-  PathNode(this.offsetList, bool smooth, List<num> dash) {
-    path = Line(offsetList, smooth: smooth, dashList: dash).toPath(false);
-    rect = path.getBounds();
-    double maxSize = 10000;
-    for (var p in path.split(maxSize)) {
-      subPathList.add(SubPath(p));
-    }
-  }
-}
-
 ///TODO 超大数据量时需要优化
 class AreaNode {
   final Area area;
@@ -52,25 +36,25 @@ class AreaNode {
   }
 }
 
-class SymbolNode extends DataNode<Offset, StackItemData> {
+class LineSymbolNode extends SymbolNode<StackItemData> {
   final LineGroupData group;
 
-  SymbolNode(
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
+  LineSymbolNode(
+    StackItemData data,
+    int dataIndex,
+    int groupIndex,
+    Offset attr,
     this.group,
-  );
+  ) : super(data, dataIndex, groupIndex, attr);
 }
 
-class SubPath {
-  final Path path;
-  late final Rect bound;
+class OptLinePath extends OptPath {
+  final List<Offset> offsetList;
 
-  SubPath(this.path) {
-    bound = path.getBounds();
+  static OptLinePath build(List<Offset> list, bool smooth, List<num> dash, [num splitLen = 500]) {
+    var path = Line(list, smooth: smooth, dashList: dash).toPath(false);
+    return OptLinePath(list, path, splitLen);
   }
 
-  SubPath.all(this.path, this.bound);
+  OptLinePath(this.offsetList, Path path, [num splitLen = 500]) : super(path, splitLen);
 }

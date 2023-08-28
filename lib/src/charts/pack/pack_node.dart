@@ -12,16 +12,14 @@ class PackNode extends TreeNode<PackNode> with ViewStateProvider implements Node
     });
   }
 
-  PackAttr get props => _attr;
+  @override
+  TreeData getData() => data;
 
   @override
-  TreeData get d => data;
+  PackAttr getAttr() => _attr;
 
   @override
-  PackAttr getP() => _attr;
-
-  @override
-  void setP(PackAttr po) => _attr = po;
+  void setAttr(PackAttr po) => _attr = po;
 }
 
 class PackAttr {

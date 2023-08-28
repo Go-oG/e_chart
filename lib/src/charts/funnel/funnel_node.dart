@@ -136,12 +136,12 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   }
 
   @override
-  void setP(List<Offset> po) {
+  void setAttr(List<Offset> po) {
     pointList = po;
   }
 
   @override
-  List<Offset> getP() {
+  List<Offset> getAttr() {
     return List.from(pointList);
   }
 }

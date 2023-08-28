@@ -41,8 +41,8 @@ class PackHelper extends LayoutHelper<PackSeries> {
     }
 
     LCG random = DefaultLCG();
-    node.props.x = _dx / 2;
-    node.props.y = _dy / 2;
+    node.getAttr().x = _dx / 2;
+    node.getAttr().y = _dy / 2;
     if (_radiusFun != null) {
       node
           .eachBefore(_radiusLeaf(_radiusFun!))
@@ -54,15 +54,15 @@ class PackHelper extends LayoutHelper<PackSeries> {
           .eachAfter(_packChildrenRandom((e) {
             return 0;
           }, 1, random))
-          .eachAfter(_packChildrenRandom(_paddingFun, node.props.r / m.min(_dx, _dy), random))
-          .eachBefore(_translateChild(m.min(_dx, _dy) / (2 * node.props.r)));
+          .eachAfter(_packChildrenRandom(_paddingFun, node.getAttr().r / m.min(_dx, _dy), random))
+          .eachBefore(_translateChild(m.min(_dx, _dy) / (2 * node.getAttr().r)));
     }
 
     ///修正位置
     if (_rect.left != 0 || _rect.top != 0) {
       node.each((p0, p1, p2) {
-        p0.props.x += _rect.left;
-        p0.props.y += _rect.top;
+        p0.getAttr().x += _rect.left;
+        p0.getAttr().y += _rect.top;
         return false;
       });
     }
@@ -73,12 +73,12 @@ class PackHelper extends LayoutHelper<PackSeries> {
       return;
     }
 
-   var an= DiffUtil.diffLayout2<PackAttr, TreeData, PackNode>(
+   var an= DiffUtil.diffLayout<PackAttr, TreeData, PackNode>(
       animation,
       oldRootNode?.descendants() ?? [],
       node.descendants(),
       (data, node, add) {
-        PackAttr attr = node.getP();
+        PackAttr attr = node.getAttr();
         return PackAttr(attr.x, attr.y, 0);
       },
       (s, e, t) {
@@ -141,14 +141,14 @@ class PackHelper extends LayoutHelper<PackSeries> {
 
     ///计算新的缩放系数
     double oldScale = scale;
-    double newScale = m.min(width, height) * 0.5 / pn.props.r;
+    double newScale = m.min(width, height) * 0.5 / pn.getAttr().r;
     double scaleDiff = newScale - oldScale;
 
     ///计算偏移变化值
     double oldTx = tx;
     double oldTy = ty;
-    double ntx = width / 2 - newScale * pn.props.x;
-    double nty = height / 2 - newScale * pn.props.y;
+    double ntx = width / 2 - newScale * pn.getAttr().x;
+    double nty = height / 2 - newScale * pn.getAttr().y;
     double diffTx = (ntx - oldTx);
     double diffTy = (nty - oldTy);
 
@@ -227,10 +227,10 @@ class PackHelper extends LayoutHelper<PackSeries> {
     PackNode? parent;
     while (rl.isNotEmpty) {
       PackNode node = rl.removeAt(0);
-      Offset center = Offset(node.props.x, node.props.y);
+      Offset center = Offset(node.getAttr().x, node.getAttr().y);
       center = center.scale(scale, scale);
       center = center.translate(tx, ty);
-      if (offset.inCircle(node.props.r * scale, center: center)) {
+      if (offset.inCircle(node.getAttr().r * scale, center: center)) {
         parent = node;
         if (node.hasChild) {
           rl = [...node.children];
@@ -254,7 +254,7 @@ bool Function(PackNode, int, PackNode) _radiusLeaf(Fun2<PackNode, num> radiusFun
   return (PackNode node, int b, PackNode c) {
     if (node.notChild) {
       double r = m.max(0, radiusFun.call(node)).toDouble();
-      node.props.r = r;
+      node.getAttr().r = r;
     }
     return false;
   };
@@ -268,16 +268,16 @@ bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> p
       num r = paddingFun(node) * k, e;
       if (r != 0) {
         for (i = 0; i < n; ++i) {
-          children[i].props.r += r;
+          children[i].getAttr().r += r;
         }
       }
       e = Siblings.packSiblingsRandom(children, random);
       if (r != 0) {
         for (i = 0; i < n; ++i) {
-          children[i].props.r -= r;
+          children[i].getAttr().r -= r;
         }
       }
-      node.props.r = e + r.toDouble();
+      node.getAttr().r = e + r.toDouble();
     }
     return false;
   };
@@ -286,10 +286,10 @@ bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> p
 bool Function(PackNode, int, PackNode) _translateChild(num k) {
   return (PackNode node, int b, PackNode c) {
     var parent = node.parent;
-    node.props.r *= k;
+    node.getAttr().r *= k;
     if (parent != null) {
-      node.props.x = parent.props.x + k * node.props.x;
-      node.props.y = parent.props.y + k * node.props.y;
+      node.getAttr().x = parent.getAttr().x + k * node.getAttr().x;
+      node.getAttr().y = parent.getAttr().y + k * node.getAttr().y;
     }
 
     return false;

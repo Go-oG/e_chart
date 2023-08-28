@@ -20,7 +20,7 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
       _nodeList = newList;
       return;
     }
-    var an = DiffUtil.diffLayout2<Rect, HeatMapData, HeatMapNode>(
+    var an = DiffUtil.diffLayout<Rect, HeatMapData, HeatMapNode>(
       animation,
       oldList,
       newList,

@@ -119,7 +119,7 @@ extension PathExt on Path {
   }
 
   ///将当前Path进行拆分
-  List<Path> split([double maxLength = 300]) {
+  List<Path> split([num maxLength = 300]) {
     List<Path> pathList = [];
 
     PathMetrics metrics = computeMetrics();

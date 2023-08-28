@@ -42,7 +42,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       return;
     }
 
-    var an = DiffUtil.diffLayout2(
+    var an = DiffUtil.diffLayout(
       animation,
       oldList,
       newList,

@@ -1,22 +1,19 @@
-
-
 import 'package:e_chart/e_chart.dart';
 
 import 'parallel_view.dart';
 
-class ParallelSeries extends RectSeries {
+class ParallelSeries extends ChartSeries {
   List<ParallelGroup> data;
-  Fun2<ParallelGroup, LineStyle> styleFun;
+  Fun4<ParallelGroup, int, Set<ViewState>, LineStyle>? styleFun;
+  Fun4<ParallelGroup, int, Set<ViewState>, ChartSymbol?>? symbolFun;
+
+  bool connectNull;
 
   ParallelSeries({
     required this.data,
-    required this.styleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    this.styleFun,
+    this.symbolFun,
+    this.connectNull = true,
     super.animation,
     super.parallelIndex,
     super.clip,
@@ -24,13 +21,7 @@ class ParallelSeries extends RectSeries {
     super.backgroundColor,
     super.id,
     super.z,
-  }) : super(
-    coordType: CoordType.parallel,
-          gridIndex: -1,
-          calendarIndex: -1,
-          polarIndex: -1,
-          radarIndex: -1,
-        );
+  }) : super(coordType: CoordType.parallel, gridIndex: -1, calendarIndex: -1, polarIndex: -1, radarIndex: -1);
 
   @override
   ChartView? toView() {
@@ -38,9 +29,6 @@ class ParallelSeries extends RectSeries {
   }
 }
 
-class ParallelGroup {
-  final List<dynamic> data;
-  final String id;
-
-  ParallelGroup(this.id, this.data);
+class ParallelGroup extends BaseGroupData<dynamic> {
+  ParallelGroup(super.data, {super.id, super.label});
 }

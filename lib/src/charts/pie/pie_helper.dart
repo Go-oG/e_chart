@@ -37,7 +37,7 @@ class PieHelper extends LayoutHelper<PieSeries> {
       return;
     }
     PieTween arcTween = PieTween(Arc(), Arc(), props: animation);
-    var an = DiffUtil.diffLayout2<Arc, ItemData, PieNode>(
+    var an = DiffUtil.diffLayout<Arc, ItemData, PieNode>(
       animation,
       oldList,
       newList,

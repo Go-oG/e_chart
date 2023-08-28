@@ -94,7 +94,8 @@ class LineStyle {
   }
 
   ///绘制一个圆弧部分(也可以绘制圆)
-  void drawArc(Canvas canvas, Paint paint, double radius, num startAngle, num sweepAngle, [Offset center = Offset.zero]) {
+  void drawArc(Canvas canvas, Paint paint, double radius, num startAngle, num sweepAngle,
+      [Offset center = Offset.zero]) {
     //优化绘制半径、消除
     double r = radius;
     if (align == Align2.start) {
@@ -156,8 +157,9 @@ class LineStyle {
   }
 
   ///请注意该方法在Path 路径过长时会出现
+  ///此时应该将needSplit 指定为true进行优化
   ///绘制效率严重低下的问题
-  void drawPath(Canvas canvas, Paint paint, Path path, {bool drawDash = false, bool needSplit = true}) {
+  void drawPath(Canvas canvas, Paint paint, Path path, {bool drawDash = false, bool needSplit = true,num splitLength=200}) {
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
@@ -175,7 +177,7 @@ class LineStyle {
       return;
     }
 
-    for (var p in path.split()) {
+    for (var p in path.split(splitLength)) {
       canvas.drawPath(p, paint);
     }
   }

@@ -17,3 +17,7 @@ List<int> range(int start, int end, [int step = 1]) {
   }
   return rl;
 }
+
+int lerpInt(int s, int e, num t) {
+  return (s + (e - s) * t).round();
+}

@@ -62,8 +62,19 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
       animation,
       oldNodeList,
       newList,
-      (data, node, add) => node.attr.copy(alpha: 0),
-      (s, e, t) => e.copy(alpha: lerpDouble(s.alpha, e.alpha, t)),
+      (data, node, add) {
+        num angleOffset = flat ? _flat.angle : _pointy.angle;
+        var attr = HexAttr(node.attr.hex);
+        attr.center = node.attr.center;
+        attr.shape = PositiveShape(center: node.attr.center, count: 6, r: 0, angleOffset: angleOffset);
+        return attr;
+      },
+      (s, e, t, type) {
+        var attr = e.copy(alpha: 1);
+        attr.center = Offset.lerp(s.center, e.center, t)!;
+        attr.shape = PositiveShape.lerp(s.shape, e.shape, t);
+        return attr;
+      },
       (resultList) {
         nodeList = resultList;
         notifyLayoutUpdate();

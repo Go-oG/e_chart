@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 class ParallelTheme {
-  num borderWidth = 0;
-  Color borderColor = const Color(0xFFCCCCCC);
+  num lineWidth = 1;
+  bool smooth=false;
+  List<num> dash=[];
+  List<Color> colors=[];
 }
 
