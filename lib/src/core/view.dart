@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/utils/platform_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -608,7 +607,7 @@ abstract class GestureView extends ChartView {
 
   bool get enableLongPress => false;
 
-  bool get enableHover => !(Platform.isAndroid || Platform.isIOS);
+  bool get enableHover => isWeb;
 
   bool get enableDrag => false;
 

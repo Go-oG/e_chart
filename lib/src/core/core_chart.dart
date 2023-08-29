@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:gesture_x_detector/gesture_x_detector.dart';
 import 'package:gesture_x_detector/gesture_x_detector.dart' as x;
+import '../utils/platform_util.dart';
 import 'render/base_render.dart';
 import 'render/default_render.dart';
 
@@ -96,8 +95,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     Widget ges = XGestureDetector(
       behavior: HitTestBehavior.translucent,
       bypassMoveEventAfterLongPress: true,
-      doubleTapTimeConsider:widget.option.doubleClickInterval,
-      longPressTimeConsider:widget.option.longPressTime,
+      doubleTapTimeConsider: widget.option.doubleClickInterval,
+      longPressTimeConsider: widget.option.longPressTime,
       onTap: dispatcher.onTap,
       onDoubleTap: dt,
       onLongPress: lps,
@@ -119,8 +118,6 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         child: Container(),
       ),
     );
-
-    bool isPhone = Platform.isIOS || Platform.isAndroid;
 
     if (isPhone) {
       return ges;
