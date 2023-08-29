@@ -22,6 +22,20 @@ T maxBy<T>(Iterable<T> list, num Function(T) convert) {
   return result!;
 }
 
+num maxBy2<T>(Iterable<T> list, num Function(T) convert) {
+  if (list.isEmpty) {
+    throw FlutterError('列表为空');
+  }
+  num v = convert.call(list.first);
+  for (var v2 in list) {
+    var tv = convert.call(v2);
+    if (tv.compareTo(v) > 0) {
+      v = tv;
+    }
+  }
+  return v;
+}
+
 num min(Iterable<num> list) {
   return minBy<num>(list, (p0) => p0);
 }
@@ -40,6 +54,20 @@ T minBy<T>(Iterable<T> list, num Function(T) convert) {
     }
   }
   return result;
+}
+
+num minBy2<T>(Iterable<T> list, num Function(T) convert) {
+  if (list.isEmpty) {
+    throw ChartError('List Is Empty');
+  }
+  num v = convert.call(list.first);
+  for (var v2 in list) {
+    var tv = convert.call(v2);
+    if (tv.compareTo(v) < 0) {
+      v = tv;
+    }
+  }
+  return v;
 }
 
 List<num> extremes<T>(Iterable<T> list, num Function(T) call) {

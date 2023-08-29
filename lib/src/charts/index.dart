@@ -42,7 +42,7 @@ export 'pack/pack_node.dart';
 export 'sankey/sankey_series.dart';
 export 'sankey/sankey_align.dart';
 export 'sankey/sort.dart';
-export 'sankey/layout_node.dart';
+export 'sankey/sankey_node.dart';
 
 export 'sunburst/sunburst_series.dart';
 export 'themeriver/theme_river_series.dart';

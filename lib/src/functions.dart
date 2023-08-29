@@ -9,6 +9,7 @@ typedef Fun4<A, B, C, D> = D Function(A, B, C);
 typedef Fun5<A, B, C, D, E> = E Function(A, B, C, D);
 
 typedef Fun6<A, B, C, D, E, F> = F Function(A, B, C, D, E);
+typedef Fun7<A, B, C, D, E, F, G> = G Function(A, B, C, D, E, F);
 
 typedef VoidFun1<A> = void Function(A);
 

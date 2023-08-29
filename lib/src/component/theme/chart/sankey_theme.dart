@@ -1,6 +1,10 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
-class SankeyTheme {
-  num borderWidth = 0;
-  Color borderColor = const Color(0xFFCCCCCC);
+import '../border_theme.dart';
+
+class SankeyTheme extends BorderTheme{
+
+  Color? linkColor;
+
+
 }

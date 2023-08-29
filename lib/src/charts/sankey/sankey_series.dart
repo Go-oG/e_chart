@@ -10,20 +10,25 @@ class SankeySeries extends RectSeries {
   NodeSort? nodeSort;
   LinkSort? linkSort;
   Direction direction;
-  Fun2<ItemData, AreaStyle> nodeStyle;
-  Fun3<ItemData, ItemData, AreaStyle>? linkStyleFun;
+  bool smooth;
+  Fun4<BaseItemData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
+
+  Fun4<BaseItemData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
+
+  Fun7<BaseItemData, int, Set<ViewState>, BaseItemData, int, Set<ViewState>, AreaStyle>? linkStyleFun;
 
   SankeySeries({
     required this.data,
-    this.nodeWidth = 16,
+    this.nodeWidth = 32,
     this.gap = 8,
     this.iterationCount = 6,
     this.align = const JustifyAlign(),
     this.direction = Direction.horizontal,
     this.nodeSort,
     this.linkSort,
-    required this.nodeStyle,
+    this.areaStyleFun,
     this.linkStyleFun,
+    this.smooth = true,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -36,13 +41,8 @@ class SankeySeries extends RectSeries {
     super.animation,
     super.clip,
     super.z,
-  }) : super(
-          gridIndex: -1,
-          polarIndex: -1,
-          radarIndex: -1,
-          calendarIndex: -1,
-          parallelIndex: -1
-        );
+  }) : super(gridIndex: -1, polarIndex: -1, radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
+
   @override
   ChartView? toView() {
     return SankeyView(this);
@@ -56,13 +56,11 @@ class SankeyData {
   SankeyData(this.data, this.links);
 }
 
-class SankeyLinkData {
-  ItemData src;
-  ItemData target;
-  double value;
-  DynamicText? label;
+class SankeyLinkData extends ItemData {
+  final ItemData src;
+  final ItemData target;
 
-  SankeyLinkData(this.src, this.target, this.value, {this.label});
+  SankeyLinkData(this.src, this.target, super.value, {super.label, super.id});
 
   @override
   int get hashCode {

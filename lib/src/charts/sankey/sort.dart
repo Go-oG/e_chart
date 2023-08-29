@@ -1,5 +1,5 @@
 
-import 'layout_node.dart';
+import 'sankey_node.dart';
 
 typedef LinkSort = int Function(SankeyLink, SankeyLink);
 
