@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewParent {
@@ -53,7 +54,9 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     }
 
     if (_boundRect.height != size.height || _boundRect.width != size.width) {
-      _stopwatch.start();
+      if(kDebugMode){
+        _stopwatch.start();
+      }
       _inLayout = true;
       _boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
       try {
@@ -64,8 +67,10 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
       } finally {
         _inLayout = false;
       }
-      _stopwatch.stop();
-      Logger.i('$runtimeType Layout总耗时:${_stopwatch.elapsedMilliseconds}ms');
+      if(kDebugMode){
+        _stopwatch.stop();
+        Logger.i('$runtimeType Layout总耗时:${_stopwatch.elapsedMilliseconds}ms');
+      }
     }
     if (_inDrawing) {
       return;

@@ -17,7 +17,7 @@ class FunnelView extends SeriesView<FunnelSeries,FunnelHelper> {
     }
 
     for (var node in nodeList) {
-      node.areaStyle.drawPath(canvas, mPaint, node.path);
+      node.areaStyle?.drawPath(canvas, mPaint, node.path);
       series.getBorderStyle(context, node.data, node.dataIndex)?.drawPath(canvas, mPaint, node.path);
     }
     for (var node in nodeList) {

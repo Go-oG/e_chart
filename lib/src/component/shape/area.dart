@@ -12,11 +12,7 @@ class Area implements Shape {
   final bool upSmooth;
   final bool downSmooth;
 
-  Area(this.upList, this.downList, {this.upSmooth = true, this.downSmooth = true}) {
-    if (upList.isEmpty || downList.isEmpty) {
-      throw FlutterError('Point List must not empty');
-    }
-  }
+  Area(this.upList, this.downList, {this.upSmooth = true, this.downSmooth = true});
 
   Path? _path;
 
@@ -31,53 +27,62 @@ class Area implements Shape {
 
   Path buildPath() {
     Path mPath = Path();
-    if (upSmooth) {
-      Offset firstPoint = upList.first;
-      mPath.moveTo(firstPoint.dx, firstPoint.dy);
-      List<Offset> tmpList = [];
-      tmpList.add(upList[0]);
-      tmpList.addAll(upList);
-      tmpList.add(upList.last);
-      tmpList.add(upList.last);
-      for (int i = 1; i < tmpList.length - 3; i++) {
-        List<Offset> list = _getCtrlPoint(tmpList, i);
-        Offset leftPoint = list[0];
-        Offset rightPoint = list[1];
-        Offset p = tmpList[i + 1];
-        mPath.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
-      }
-    } else {
-      bool first = true;
-      for (var of in upList) {
-        if (first) {
-          first = false;
-          mPath.moveTo(of.dx, of.dy);
-        } else {
-          mPath.lineTo(of.dx, of.dy);
+    if (upList.isNotEmpty) {
+      if (upSmooth) {
+        Offset firstPoint = upList.first;
+        mPath.moveTo(firstPoint.dx, firstPoint.dy);
+        List<Offset> tmpList = [];
+        tmpList.add(upList[0]);
+        tmpList.addAll(upList);
+        tmpList.add(upList.last);
+        tmpList.add(upList.last);
+        for (int i = 1; i < tmpList.length - 3; i++) {
+          List<Offset> list = _getCtrlPoint(tmpList, i);
+          Offset leftPoint = list[0];
+          Offset rightPoint = list[1];
+          Offset p = tmpList[i + 1];
+          mPath.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+        }
+      } else {
+        bool first = true;
+        for (var of in upList) {
+          if (first) {
+            first = false;
+            mPath.moveTo(of.dx, of.dy);
+          } else {
+            mPath.lineTo(of.dx, of.dy);
+          }
         }
       }
     }
-    Offset end = downList.last;
-    mPath.lineTo(end.dx, end.dy);
-    if (downSmooth) {
-      List<Offset> tmpList = [];
-      tmpList.add(downList.first);
-      tmpList.addAll(downList);
-      tmpList.add(downList.last);
-      tmpList.add(downList.last);
-      for (int i = tmpList.length - 3; i >= 2; i--) {
-        List<Offset> list = _getCtrlPoint(tmpList, i, reverse: true);
-        Offset leftPoint = list[0];
-        Offset rightPoint = list[1];
-        Offset p = tmpList[i - 1];
-        mPath.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+
+    if (downList.isNotEmpty) {
+      Offset end = downList.last;
+      if (upList.isNotEmpty) {
+        mPath.lineTo(end.dx, end.dy);
+      } else {
+        mPath.moveTo(end.dx, end.dy);
       }
-    } else {
-      for (var c in downList.reversed) {
-        mPath.lineTo(c.dx, c.dy);
+      if (downSmooth) {
+        List<Offset> tmpList = [];
+        tmpList.add(downList.first);
+        tmpList.addAll(downList);
+        tmpList.add(downList.last);
+        tmpList.add(downList.last);
+        for (int i = tmpList.length - 3; i >= 2; i--) {
+          List<Offset> list = _getCtrlPoint(tmpList, i, reverse: true);
+          Offset leftPoint = list[0];
+          Offset rightPoint = list[1];
+          Offset p = tmpList[i - 1];
+          mPath.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+        }
+      } else {
+        for (var c in downList.reversed) {
+          mPath.lineTo(c.dx, c.dy);
+        }
       }
+      mPath.close();
     }
-    mPath.close();
     return mPath;
   }
 

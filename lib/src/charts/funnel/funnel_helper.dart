@@ -23,7 +23,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
       return;
     }
 
-    var an=DiffUtil.diffLayout<List<Offset>, ItemData, FunnelNode>(animation, oldList, newList, (data, node, add) {
+    var an = DiffUtil.diffLayout<List<Offset>, ItemData, FunnelNode>(animation, oldList, newList, (data, node, add) {
       List<Offset> pl = node.pointList;
       Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
       return [o0, o0, o0, o0];
@@ -224,7 +224,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     Map<FunnelNode, LabelStyle> oldMap2 = {};
     FunnelNode? hoverNode;
     for (var node in nodeList) {
-      oldMap[node] = node.areaStyle;
+      oldMap[node] = node.areaStyle!;
       if (node.labelStyle != null) {
         oldMap2[node] = node.labelStyle!;
       }
@@ -336,9 +336,9 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     }
 
     List<ChartTween> tl = [];
-    AreaStyle oldStyle = old.areaStyle;
+    var oldStyle = old.areaStyle!;
     old.removeState(ViewState.hover);
-    AreaStyle style = getAreaStyle(context, series, old).convert(old.status);
+    var style = getAreaStyle(context, series, old).convert(old.status);
     AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: animation);
     tween.addListener(() {
       old.areaStyle = tween.value;

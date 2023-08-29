@@ -162,8 +162,8 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
       return labelStyle;
     }
     var theme = context.option.theme;
-    return LabelStyle(textStyle: TextStyle(color: theme.labelTextColor, fontSize: theme.labelTextSize));
-  }
+    return theme.getLabelStyle()?.convert(status);
+   }
 
   DynamicText? formatData(Context context, T data, G group, [Set<ViewState>? status]) {
     if (labelFormatFun != null) {

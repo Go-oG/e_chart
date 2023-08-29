@@ -88,8 +88,7 @@ class FunnelSeries extends RectSeries {
       return labelStyle;
     }
     var theme = context.option.theme;
-    TextStyle textStyle = TextStyle(color: theme.labelTextColor, fontSize: theme.labelTextSize);
-    return LabelStyle(textStyle: textStyle);
+    return theme.getLabelStyle();
   }
 
   ChartAlign getLabelAlign(ItemData data) {

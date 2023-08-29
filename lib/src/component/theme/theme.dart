@@ -1,14 +1,11 @@
-import 'package:e_chart/src/component/theme/chart/hexbin_theme.dart';
-import 'package:e_chart/src/component/theme/chart/pack_theme.dart';
 import 'package:flutter/material.dart';
 import 'tooltip_theme.dart' as tp;
 import '../index.dart';
-import 'chart/line_theme.dart';
 
 ///全局的主题配置
 class ChartTheme {
   ///该列表必须至少有一个
-  List<Color> colors = const [
+  List<Color> _colors = const [
     Color(0xFF63B0F2),
     Color(0xFF07F29C),
     Color(0xFF7F6CC4),
@@ -18,20 +15,42 @@ class ChartTheme {
     Color(0xFFF36261),
   ];
 
+  List<Color> get colors => _colors;
+  Map<int, AreaStyle> _areaStyleMap = {};
+  set colors(List<Color> colors) {
+    _areaStyleMap = {};
+    _colors = List.from(colors, growable: false);
+  }
+  AreaStyle getAreaStyle(int index) {
+    var style = _areaStyleMap[index];
+    if (style != null) {
+      return style;
+    }
+    style = AreaStyle(color: getColor(index));
+    _areaStyleMap[index] = style;
+    return style;
+  }
   Color getColor(int index) {
     return colors[index % colors.length];
   }
-
   Color backgroundColor = const Color(0xFFFDFDFD);
-  Color titleTextColor = const Color(0xFF464646);
-  Color titleSubTextColor = const Color(0xFF6E7079);
-  Color markTextColor = const Color(0xFFEEEEEE);
-  Color borderColor = const Color(0xFFCCCCCC);
-  num borderWidth = 0;
-  Color legendTextColor = const Color(0xFF333333);
 
-  Color labelTextColor = Colors.black87;
-  double labelTextSize = 13;
+  LabelTheme title=LabelTheme.of(const Color(0xFF464646), 15);
+  LabelTheme subTitle=LabelTheme.of(const Color(0xFF464646), 13);
+  LabelTheme mark=LabelTheme.of(const Color(0xFFEEEEEE), 13);
+  LabelTheme legend=LabelTheme.of(const Color(0xFF333333), 15);
+
+  final LabelTheme _labelStyle=LabelTheme.of(const Color(0xDD000000), 13);
+  bool showLabel = true;
+  LabelStyle? getLabelStyle() {
+    if (!showLabel) {
+      return null;
+    }
+    return _labelStyle.getStyle();
+  }
+
+  BorderTheme border=BorderTheme.any(color:const Color(0xFFCCCCCC),width: 0);
+
 
   ///通用组件主题
   tp.TooltipTheme tooltipTheme = tp.TooltipTheme();
@@ -58,8 +77,8 @@ class ChartTheme {
   FunnelTheme funnelTheme = FunnelTheme();
   HeadMapTheme headMapTheme = HeadMapTheme();
   GraphTheme graphTheme = GraphTheme();
-  HexbinTheme hexbinTheme=HexbinTheme();
-  PackTheme packTheme=PackTheme();
+  HexbinTheme hexbinTheme = HexbinTheme();
+  PackTheme packTheme = PackTheme();
 
   final Map<String, dynamic> _themeMap = {};
 

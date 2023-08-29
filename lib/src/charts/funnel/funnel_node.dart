@@ -16,8 +16,6 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   TextDrawInfo? textConfig;
   List<Offset>? labelLine;
 
-  LabelStyle? labelStyle;
-  AreaStyle areaStyle = const AreaStyle();
 
   void update(Context context, FunnelSeries series) {
     ChartTheme chartTheme = context.option.theme;

@@ -1,29 +1,48 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
-  num maxTransX = 0,
-      maxTransY = 0;
-  List<LayoutNode> nodeList=[];
+class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
+  num maxTransX = 0, maxTransY = 0;
+  List<ThemeRiverNode> nodeList = [];
+  double animatorPercent = 1;
+
   ThemeRiverHelper(super.context, super.series);
 
   @override
   void onLayout(LayoutType type) {
-    var oldList=this.nodeList;
-    List<LayoutNode> nodeList=[];
-    for (var d in series.data) {
-      LayoutNode node = LayoutNode(d);
-      nodeList.add(node);
+    tx = ty = 0;
+    List<ThemeRiverNode> newList = [];
+    each(series.data, (d, i) {
+      ThemeRiverNode node = ThemeRiverNode(d, i,0, ThemeRiverAttr.empty);
+      newList.add(node);
+    });
+    var animation = series.animation;
+    if (animation == null || type == LayoutType.none) {
+      nodeList = newList;
+      return;
     }
-    if (nodeList.isEmpty) {
-      this.nodeList=nodeList;
+    layoutNode(newList);
+
+    if (type != LayoutType.layout) {
+      nodeList = newList;
+      animatorPercent = 1;
       return;
     }
 
+    ChartDoubleTween tween = ChartDoubleTween(props: animation);
+    tween.startListener = () {
+      nodeList = newList;
+    };
+    tween.addListener(() {
+      animatorPercent = tween.value;
+      notifyLayoutUpdate();
+    });
+    context.addAnimationToQueue([AnimationNode(tween, animation, type)]);
+  }
+
+  void layoutNode(List<ThemeRiverNode> newList) {
     final List<List<_InnerNode>> innerNodeList = [];
-    for (var ele in nodeList) {
+    for (var ele in newList) {
       List<_InnerNode> tmp = [];
       for (var e2 in ele.data.data) {
         tmp.add(_InnerNode(e2.value));
@@ -43,7 +62,7 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
     int m = innerNodeList[0].length;
     tw = direction == Direction.horizontal ? width : height;
     double iw = m <= 1 ? 0 : tw / (m - 1);
-    if (m > 1&&series.minInterval!=null) {
+    if (m > 1 && series.minInterval != null) {
       double minw = series.minInterval!.convert(tw);
       if (iw < minw) {
         iw = minw;
@@ -58,8 +77,9 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
         innerNodeList[i][j].setItemLayout(i, iw * j, baseY0, innerNodeList[i][j].value * ky);
       }
     }
+
     for (int j = 0; j < innerNodeList.length; j++) {
-      LayoutNode node = nodeList[j];
+      ThemeRiverNode node = newList[j];
       var ele = innerNodeList[j];
       List<Offset> pList = [];
       List<Offset> pList2 = [];
@@ -72,40 +92,13 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
           pList2.add(Offset(ele[i].py + ele[i].py0, ele[i].x));
         }
       }
-      node._buildPath(pList, pList2, series.smooth);
+      node._buildPath(pList, pList2, series.smooth, series.direction);
     }
-    adjust(nodeList, width, height);
-    this.nodeList=nodeList;
+    //   adjust(newList, width, height);
   }
 
   @override
-  SeriesType get seriesType=>SeriesType.themeriver;
-
-  void adjust(List<LayoutNode> nodeList, num width, num height) {
-    Direction direction = series.direction;
-    Rect first = nodeList.first.drawPath.getBounds();
-    Rect last = nodeList.last.drawPath.getBounds();
-    if (direction == Direction.horizontal) {
-      maxTransX = first.width - width;
-      maxTransX = max([0, maxTransX]);
-      maxTransY = 0;
-    } else {
-      maxTransY = first.height - height;
-      maxTransY = max([0, maxTransY]);
-      maxTransX = 0;
-    }
-    Offset offset;
-    if (direction == Direction.horizontal) {
-      offset = Offset(0, ((first.top - last.bottom).abs() - height) / 2);
-    } else {
-      offset = Offset(((first.left - last.right).abs() - width) / 2, 0);
-    }
-    if (offset != Offset.zero) {
-      for (var c in nodeList) {
-        c._path = c._path.shift(offset);
-      }
-    }
-  }
+  SeriesType get seriesType => SeriesType.themeriver;
 
   Map<String, dynamic> _computeBaseline(List<List<_InnerNode>> data) {
     int layerNum = data.length;
@@ -141,6 +134,104 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries>{
 
     return {'y0': y0, 'max': max};
   }
+
+  @override
+  void onHoverMove(Offset localOffset) {
+    handleHover(localOffset, false);
+  }
+
+  @override
+  void onHoverStart(Offset localOffset) {
+    handleHover(localOffset, false);
+  }
+
+  @override
+  void onHoverEnd() {
+    _oldHoverNode?.removeState(ViewState.hover);
+    _oldHoverNode?.removeState(ViewState.selected);
+  }
+
+  @override
+  void onClick(Offset localOffset) {
+    handleHover(localOffset, true);
+  }
+
+  ThemeRiverNode? _oldHoverNode;
+  double tx = 0;
+  double ty = 0;
+
+  void handleHover(Offset local, bool click) {
+    var nodeList = this.nodeList;
+    Offset offset = local.translate(-tx, -ty);
+    var clickNode = findNode(offset);
+    if (clickNode == _oldHoverNode) {
+      return;
+    }
+    var oldNode = _oldHoverNode;
+    _oldHoverNode = clickNode;
+    oldNode?.removeStates([ViewState.hover, ViewState.selected]);
+    clickNode?.addStates([ViewState.hover, ViewState.selected]);
+    if (clickNode != null) {
+      click ? sendClickEvent2(offset, clickNode) : sendHoverInEvent2(offset, clickNode);
+    }
+    if (oldNode != null) {
+      sendHoverOutEvent2(oldNode);
+    }
+    oldNode?.attr.index = 0;
+    clickNode?.attr.index = 100;
+
+    ChartDoubleTween tween = ChartDoubleTween(props: series.animation!);
+    AreaStyleTween? selectTween;
+    AreaStyleTween? unselectTween;
+    if (clickNode != null && clickNode.areaStyle != null) {
+      selectTween = AreaStyleTween(clickNode.areaStyle!, getStyle(clickNode));
+    }
+    if (oldNode != null && oldNode.areaStyle != null) {
+      unselectTween = AreaStyleTween(oldNode.areaStyle!, getStyle(oldNode));
+    }
+    nodeList.sort((a, b) {
+      return a.attr.index.compareTo(b.attr.index);
+    });
+    tween.addListener(() {
+      double p = tween.value;
+      if (selectTween != null) {
+        clickNode!.areaStyle = selectTween.safeGetValue(p);
+      }
+      if (unselectTween != null) {
+        oldNode!.areaStyle = unselectTween.safeGetValue(p);
+      }
+      notifyLayoutUpdate();
+    });
+    tween.start(context);
+  }
+
+  ThemeRiverNode? findNode(Offset offset) {
+    for (var node in nodeList) {
+      if (node.attr.area.toPath(true).contains(offset)) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  AreaStyle getStyle(ThemeRiverNode node) {
+    var fun = series.areaStyleFun;
+    if (fun != null) {
+      return fun.call(node.data, node.dataIndex, node.status);
+    }
+    int index = node.dataIndex;
+    var color = context.option.theme.getColor(index);
+    return AreaStyle(color: color).convert(node.status);
+  }
+
+  LabelStyle? getLabelStyle(ThemeRiverNode node) {
+    var fun = series.labelStyleFun;
+    if (fun != null) {
+      return fun.call(node.data, node.dataIndex, node.status);
+    }
+    var theme = context.option.theme;
+    return theme.getLabelStyle()?.convert(node.status);
+  }
 }
 
 class _InnerNode {
@@ -160,34 +251,37 @@ class _InnerNode {
   }
 }
 
-class LayoutNode with ViewStateProvider{
-  final GroupData data;
-  List<Offset> polygonList = [];
-  int index = 0;
-  NodeProps cur = NodeProps();
-  NodeProps start = NodeProps();
-  NodeProps end = NodeProps();
+class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
+  ThemeRiverNode(super.data, super.dataIndex, super.groupIndex, super.attr);
 
-  LayoutNode(this.data);
-
-  late Path _path;
-
-  void _buildPath(List<Offset> pList, List<Offset> pList2, bool smooth) {
+  void _buildPath(List<Offset> pList, List<Offset> pList2, bool smooth, Direction direction) {
     Area area = Area(pList, pList2, upSmooth: smooth, downSmooth: smooth);
-    _path = area.toPath(true);
-    polygonList = [];
+    List<Offset> polygonList = [];
     polygonList.addAll(pList);
     polygonList.addAll(pList2.reversed);
+
+    Offset o1 = polygonList.first;
+    Offset o2 = polygonList.last;
+    TextDrawInfo config;
+    if (direction == Direction.horizontal) {
+      Offset offset = Offset(o1.dx, (o1.dy + o2.dy) * 0.5);
+      config = TextDrawInfo(offset, align: Alignment.centerLeft);
+    } else {
+      Offset offset = Offset((o1.dx + o2.dx) / 2, o1.dy);
+      config = TextDrawInfo(offset, align: Alignment.topCenter);
+    }
+    attr = ThemeRiverAttr(polygonList, area, config);
   }
 
-  Path get drawPath => _path;
-
-  AreaStyle? style;
-
-  LabelStyle? labelStyle;
+  Path get drawPath => attr.area.toPath(true);
 }
 
-class NodeProps {
-  bool hover = false;
-  bool select = false;
+class ThemeRiverAttr {
+  static final empty = ThemeRiverAttr([], Area([], []), null);
+  final List<Offset> polygonList;
+  final Area area;
+  final TextDrawInfo? textConfig;
+  int index = 0;
+
+  ThemeRiverAttr(this.polygonList, this.area, this.textConfig);
 }

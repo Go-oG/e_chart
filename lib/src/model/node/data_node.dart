@@ -1,3 +1,4 @@
+import '../../component/index.dart';
 import '../../core/view_state.dart';
 import '../../utils/diff.dart';
 
@@ -6,6 +7,10 @@ class DataNode<P, D> with ViewStateProvider implements NodeAccessor<P, D> {
   final int? groupIndex;
   final D data;
   P attr;
+
+  AreaStyle? areaStyle;
+  LineStyle? lineStyle;
+  LabelStyle? labelStyle;
 
   DataNode(this.data, this.dataIndex, this.groupIndex, this.attr);
 
@@ -20,7 +25,7 @@ class DataNode<P, D> with ViewStateProvider implements NodeAccessor<P, D> {
   }
 
   @override
-  D getData()=>data;
+  D getData() => data;
 
   @override
   P getAttr() {

@@ -6,8 +6,8 @@ class ThemeRiverSeries extends RectSeries {
   Direction direction;
   SNumber? minInterval;
   bool smooth;
-  Fun2<GroupData, AreaStyle> areaStyleFun;
-  Fun2<GroupData, LabelStyle>? labelStyleFun;
+  Fun4<GroupData,int ,Set<ViewState>, AreaStyle>? areaStyleFun;
+  Fun4<GroupData,int,Set<ViewState>, LabelStyle?>? labelStyleFun;
 
   ThemeRiverSeries(
     this.data, {
@@ -15,7 +15,7 @@ class ThemeRiverSeries extends RectSeries {
     this.minInterval,
     this.labelStyleFun,
     this.smooth = true,
-    required this.areaStyleFun,
+    this.areaStyleFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -28,13 +28,8 @@ class ThemeRiverSeries extends RectSeries {
     super.animation,
     super.clip,
     super.z,
-  }) : super(
-          gridIndex: -1,
-          calendarIndex: -1,
-          parallelIndex: -1,
-          polarIndex: -1,
-          radarIndex: -1
-        );
+  }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1, radarIndex: -1);
+
   @override
   ChartView? toView() {
     return ThemeRiverView(this);

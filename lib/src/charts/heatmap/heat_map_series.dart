@@ -68,8 +68,7 @@ class HeatMapSeries extends RectSeries {
       return labelStyle;
     }
     var theme = context.option.theme;
-    TextStyle textStyle = TextStyle(color: theme.labelTextColor, fontSize: theme.labelTextSize);
-    return LabelStyle(textStyle: textStyle).convert(status);
+    return theme.getLabelStyle()?.convert(status);
   }
 
   Alignment getLabelAlign(HeatMapData data) {
