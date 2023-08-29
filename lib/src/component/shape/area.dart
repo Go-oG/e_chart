@@ -1,7 +1,5 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../model/constans.dart';
-import 'chart_shape.dart';
 
 ///代表一个封闭的图形
 ///其路径由给定的点组成
@@ -11,8 +9,33 @@ class Area implements Shape {
 
   final bool upSmooth;
   final bool downSmooth;
+  final num ratioStartX;
 
-  Area(this.upList, this.downList, {this.upSmooth = true, this.downSmooth = true});
+  final num ratioStartY;
+  final num ratioEndX;
+  final num ratioEndY;
+
+  Area(
+    this.upList,
+    this.downList, {
+    this.upSmooth = true,
+    this.downSmooth = true,
+    this.ratioStartX = 0.5,
+    this.ratioStartY = 0,
+    this.ratioEndX = 0.5,
+    this.ratioEndY = 0,
+  });
+
+  Area.vertical(
+    this.upList,
+    this.downList, {
+    this.upSmooth = true,
+    this.downSmooth = true,
+    this.ratioStartX = 0,
+    this.ratioStartY = 0.5,
+    this.ratioEndX = 0,
+    this.ratioEndY = 0.5,
+  });
 
   Path? _path;
 
@@ -26,87 +49,107 @@ class Area implements Shape {
   }
 
   Path buildPath() {
-    Path mPath = Path();
-    if (upList.isNotEmpty) {
+    Path path = Path();
+    if (upList.length == 1) {
+      var first = upList.first;
+      path.moveTo(first.dx, first.dy);
+    }
+
+    if (upList.length > 1) {
       if (upSmooth) {
-        Offset firstPoint = upList.first;
-        mPath.moveTo(firstPoint.dx, firstPoint.dy);
-        List<Offset> tmpList = [];
-        tmpList.add(upList[0]);
-        tmpList.addAll(upList);
-        tmpList.add(upList.last);
-        tmpList.add(upList.last);
-        for (int i = 1; i < tmpList.length - 3; i++) {
-          List<Offset> list = _getCtrlPoint(tmpList, i);
-          Offset leftPoint = list[0];
-          Offset rightPoint = list[1];
-          Offset p = tmpList[i + 1];
-          mPath.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
-        }
-      } else {
-        bool first = true;
-        for (var of in upList) {
-          if (first) {
-            first = false;
-            mPath.moveTo(of.dx, of.dy);
+        Offset first = upList.first;
+        path.moveTo(first.dx, first.dy);
+        final int len = upList.length - 1;
+        for (int i = 0; i < len; i++) {
+          var cur = upList[i];
+          var next = upList[i + 1];
+          List<Offset> cl = _getCtrPoint(cur, next);
+          if (cl.length != 2) {
+            path.lineTo(next.dx, next.dy);
           } else {
-            mPath.lineTo(of.dx, of.dy);
+            var c1 = cl[0];
+            var c2 = cl[1];
+            path.cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, next.dx, next.dy);
           }
         }
+      } else {
+        each(upList, (of, i) {
+          if (i == 0) {
+            path.moveTo(of.dx, of.dy);
+          } else {
+            path.lineTo(of.dx, of.dy);
+          }
+        });
       }
     }
 
-    if (downList.isNotEmpty) {
-      Offset end = downList.last;
-      if (upList.isNotEmpty) {
-        mPath.lineTo(end.dx, end.dy);
-      } else {
-        mPath.moveTo(end.dx, end.dy);
+    if (downList.isEmpty) {
+      if (upList.length >= 3) {
+        path.close();
       }
-      if (downSmooth) {
-        List<Offset> tmpList = [];
-        tmpList.add(downList.first);
-        tmpList.addAll(downList);
-        tmpList.add(downList.last);
-        tmpList.add(downList.last);
-        for (int i = tmpList.length - 3; i >= 2; i--) {
-          List<Offset> list = _getCtrlPoint(tmpList, i, reverse: true);
-          Offset leftPoint = list[0];
-          Offset rightPoint = list[1];
-          Offset p = tmpList[i - 1];
-          mPath.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
-        }
-      } else {
-        for (var c in downList.reversed) {
-          mPath.lineTo(c.dx, c.dy);
-        }
-      }
-      mPath.close();
+      return path;
     }
-    return mPath;
+    if (downList.length == 1) {
+      var end = downList.last;
+      if (upList.isNotEmpty) {
+        path.lineTo(end.dx, end.dy);
+        path.close();
+      } else {
+        path.moveTo(end.dx, end.dy);
+      }
+      return path;
+    }
+
+    ///====区域
+    Offset end = downList.last;
+    if (upList.isNotEmpty) {
+      path.lineTo(end.dx, end.dy);
+    } else {
+      path.moveTo(end.dx, end.dy);
+    }
+    if (!downSmooth) {
+      for (int i = downList.length - 2; i >= 0; i--) {
+        var off = downList[i];
+        path.lineTo(off.dx, off.dy);
+      }
+      path.close();
+      return path;
+    }
+    for (int i = downList.length - 1; i >= 1; i--) {
+      var cur = downList[i];
+      var pre = downList[i - 1];
+      List<Offset> cl = _getCtrPoint(cur, pre);
+      if (cl.length != 2) {
+        path.lineTo(pre.dx, pre.dy);
+      } else {
+        var s = cl[0];
+        var e = cl[1];
+        path.cubicTo(s.dx, s.dy, e.dx, e.dy, pre.dx, pre.dy);
+      }
+    }
+    path.close();
+    return path;
   }
 
-  ///TODO 后续优化
-  List<Offset> _getCtrlPoint(
-    List<Offset> pointList,
-    int curIndex, {
-    bool reverse = false,
-  }) {
-    double ratio = Constants.smoothRatio;
-    Offset cur = pointList[curIndex];
-    int li = reverse ? curIndex + 1 : curIndex - 1;
-    int ri = reverse ? curIndex - 1 : curIndex + 1;
-    int ri2 = reverse ? curIndex - 2 : curIndex + 2;
-    Offset left = pointList[li];
-    Offset right = pointList[ri];
-    Offset right2 = pointList[ri2];
-
-    double ax = cur.dx + (right.dx - left.dx) * ratio;
-    double ay = cur.dy + (right.dy - left.dy) * ratio;
-    double bx = right.dx - (right2.dx - cur.dx) * ratio;
-    double by = right.dy - (right2.dy - cur.dy) * ratio;
-
-    return [Offset(ax, ay), Offset(bx, by)];
+  ///获取贝塞尔曲线控制点
+  List<Offset> _getCtrPoint(Offset start, Offset end) {
+    assertCheck(ratioStartX >= 0 && ratioStartX <= 1, "ratioStarX must >=0&&<=1 ");
+    assertCheck(ratioStartY >= 0 && ratioStartY <= 1, "ratioStartY must >=0&&<=1");
+    assertCheck(ratioEndX >= 0 && ratioEndX <= 1, "ratioEndX must >=0&&<=1");
+    assertCheck(ratioEndY >= 0 && ratioEndY <= 1, "ratioEndY must >=0&&<=1");
+    if (start.dx == end.dx || start.dy == end.dy) {
+      return [];
+    }
+    double dx = end.dx - start.dx;
+    double dy = end.dy - start.dy;
+    double c1x = start.dx + dx * ratioStartX;
+    double c1y = start.dy + dy * ratioStartY;
+    double c2x = end.dx - dx * ratioEndX;
+    double c2y = end.dy - dy * ratioEndY;
+    return [
+      Offset(c1x, c1y),
+      Offset(c2x, c2y),
+    ];
   }
 
   @override

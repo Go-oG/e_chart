@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/src/ext/index.dart';
 
 import '../../model/constans.dart';
+import '../../utils/assert_check.dart';
 import 'chart_shape.dart';
 
 class Line implements Shape {
@@ -111,47 +112,38 @@ class Line implements Shape {
   ///返回平滑曲线路径(返回的路径是未封闭的)
   Path _smooth() {
     Path path = Path();
+    if(_pointList.isEmpty){return path;}
     Offset firstPoint = _pointList.first;
     path.moveTo(firstPoint.dx, firstPoint.dy);
-    //添加前后点
-    List<Offset> tmpList = [];
-    tmpList.add(_pointList[0]);
-    tmpList.addAll(_pointList);
-    tmpList.add(_pointList.last);
-    tmpList.add(_pointList.last);
-    for (int i = 1; i < tmpList.length - 3; i++) {
-      Offset pre = tmpList[i - 1];
-      Offset p = tmpList[i + 1];
-      if (pre.dx == p.dx || pre.dy == p.dy) {
-        path.lineTo(p.dx, p.dy);
+    for (int i = 0; i < _pointList.length - 1; i++) {
+      Offset cur = _pointList[i];
+      Offset next = _pointList[i + 1];
+      List<Offset> cl = _getCtrPoint(cur, next);
+      if (cl.length != 2) {
+        path.lineTo(next.dx, next.dy);
       } else {
-        List<Offset> list = _getCtrlPoint(tmpList, i, ratio: Constants.smoothRatio);
-        Offset leftPoint = list[0];
-        Offset rightPoint = list[1];
-        path.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+        var c1 = cl[0];
+        var c2 = cl[1];
+        path.cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, next.dx, next.dy);
       }
     }
     return path;
   }
 
-  /// 根据已知点获取第i个控制点的坐标
-  List<Offset> _getCtrlPoint(List<Offset> pointList, int curIndex, {num ratio = 0.2, bool reverse = false}) {
-    Offset cur = pointList[curIndex];
-
-    int li = reverse ? curIndex + 1 : curIndex - 1;
-    int ri = reverse ? curIndex - 1 : curIndex + 1;
-    int ri2 = reverse ? curIndex - 2 : curIndex + 2;
-
-    Offset left = pointList[li];
-    Offset right = pointList[ri];
-    Offset right2 = pointList[ri2];
-
-    double ax = cur.dx + (right.dx - left.dx) * ratio;
-    double ay = cur.dy + (right.dy - left.dy) * ratio;
-    double bx = right.dx - (right2.dx - cur.dx) * ratio;
-    double by = right.dy - (right2.dy - cur.dy) * ratio;
-
-    return [Offset(ax, ay), Offset(bx, by)];
+  ///获取贝塞尔曲线控制点
+  List<Offset> _getCtrPoint(Offset start, Offset end) {
+    var v = Constants.smoothRatio;
+    assertCheck(v >= 0 && v <= 1, "smoothRatio must >=0&&<=1 ");
+    if (start.dx == end.dx || start.dy == end.dy) {
+      return [];
+    }
+    double dx = end.dx - start.dx;
+    double dy = end.dy - start.dy;
+    double c1x = start.dx + dx * v;
+    double c1y = start.dy + dy * v;
+    double c2x = end.dx - dx * v;
+    double c2y = end.dy - dy * v;
+    return [Offset(c1x, c1y), Offset(c2x, c2y)];
   }
 
   @override
@@ -176,24 +168,21 @@ class Line implements Shape {
 
   ///将该段线条追加到Path的后面
   void appendToPathEnd(Path path) {
+    if(_pointList.isEmpty){return;}
     Offset firstPoint = _pointList.first;
     path.lineTo(firstPoint.dx, firstPoint.dy);
-    List<Offset> tmpList = [];
-    tmpList.add(_pointList[0]);
-    tmpList.addAll(_pointList);
-    tmpList.add(_pointList.last);
-    tmpList.add(_pointList.last);
-    for (int i = 1; i < tmpList.length - 3; i++) {
-      Offset pre = tmpList[i - 1];
-      Offset p = tmpList[i + 1];
-      if (pre.dx == p.dx || pre.dy == p.dy) {
-        path.lineTo(p.dx, p.dy);
+    for (int i = 0; i < _pointList.length - 1; i++) {
+      Offset cur = _pointList[i];
+      Offset next = _pointList[i + 1];
+      List<Offset> cl = _getCtrPoint(cur, next);
+      if (cl.length != 2) {
+        path.lineTo(next.dx, next.dy);
       } else {
-        List<Offset> list = _getCtrlPoint(tmpList, i, ratio: Constants.smoothRatio);
-        Offset leftPoint = list[0];
-        Offset rightPoint = list[1];
-        path.cubicTo(leftPoint.dx, leftPoint.dy, rightPoint.dx, rightPoint.dy, p.dx, p.dy);
+        var c1 = cl[0];
+        var c2 = cl[1];
+        path.cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, next.dx, next.dy);
       }
     }
+
   }
 }

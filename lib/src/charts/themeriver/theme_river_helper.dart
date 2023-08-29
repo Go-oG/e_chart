@@ -13,7 +13,7 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
     tx = ty = 0;
     List<ThemeRiverNode> newList = [];
     each(series.data, (d, i) {
-      ThemeRiverNode node = ThemeRiverNode(d, i,0, ThemeRiverAttr.empty);
+      ThemeRiverNode node = ThemeRiverNode(d, i, 0, ThemeRiverAttr.empty);
       newList.add(node);
     });
     var animation = series.animation;
@@ -253,9 +253,14 @@ class _InnerNode {
 
 class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
   ThemeRiverNode(super.data, super.dataIndex, super.groupIndex, super.attr);
-
   void _buildPath(List<Offset> pList, List<Offset> pList2, bool smooth, Direction direction) {
-    Area area = Area(pList, pList2, upSmooth: smooth, downSmooth: smooth);
+    Area area;
+    if (direction == Direction.vertical) {
+      area = Area.vertical(pList, pList2, upSmooth: smooth, downSmooth: smooth);
+    } else {
+      area = Area(pList, pList2, upSmooth: smooth, downSmooth: smooth);
+    }
+
     List<Offset> polygonList = [];
     polygonList.addAll(pList);
     polygonList.addAll(pList2.reversed);
@@ -272,7 +277,6 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
     }
     attr = ThemeRiverAttr(polygonList, area, config);
   }
-
   Path get drawPath => attr.area.toPath(true);
 }
 
