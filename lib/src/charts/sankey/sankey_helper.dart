@@ -10,10 +10,11 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   List<SankeyNode> _nodes = [];
 
   List<SankeyNode> get nodes => _nodes;
-
   List<SankeyLink> _links = [];
 
   List<SankeyLink> get links => _links;
+
+  double animationProcess = 1;
 
   num _nodeGap = 0;
 
@@ -27,27 +28,43 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     top = 0;
     right = width;
     bottom = height;
-    layoutNode();
+    List<SankeyNode> nodes = buildNodes(series.data.data, series.data.links, 0);
+    List<SankeyLink> links = buildLink(nodes, series.data.links);
+    layoutNode(nodes, links);
+    var animation = series.animation;
+    if (animation != null && type == LayoutType.layout) {
+      ChartDoubleTween dt = ChartDoubleTween(props: animation);
+      animationProcess = 0;
+      dt.startListener = () {
+        _nodes = nodes;
+        _links = links;
+      };
+      dt.addListener(() {
+        animationProcess = dt.value;
+        notifyLayoutUpdate();
+      });
+      context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
+    } else {
+      animationProcess = 1;
+      _nodes = nodes;
+      _links = links;
+    }
   }
 
-  void layoutNode() {
-    _nodes = [];
-    _links = [];
-    _nodes.addAll(buildNodes(series.data.data, series.data.links, 0));
-    _links.addAll(buildLink(_nodes, series.data.links));
-    _computeNodeLinks(_nodes, _links);
-    _computeNodeValues(_nodes);
-    _computeNodeDeep(_nodes);
-    _computeNodeHeights(_nodes);
-    _computeNodeBreadths(_nodes);
-    _computeLinkBreadths(_nodes);
-    _computeLinkPosition(_links, _nodes);
-  }
-
-  void update(List<SankeyNode> nodes) {
+  void layoutNode(List<SankeyNode> nodes, List<SankeyLink> links) {
+    _computeNodeLinks(nodes, links);
+    _computeNodeValues(nodes);
+    _computeNodeDeep(nodes);
+    _computeNodeHeights(nodes);
+    _computeNodeBreadths(nodes);
     _computeLinkBreadths(nodes);
     _computeLinkPosition(links, nodes);
   }
+
+  // void update(List<SankeyNode> nodes) {
+  //   _computeLinkBreadths(nodes);
+  //   _computeLinkPosition(links, nodes);
+  // }
 
   AreaStyle? getAreaStyle(SankeyNode node) {
     var fun = series.areaStyleFun;

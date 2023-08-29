@@ -1,5 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/sankey/sankey_view.dart';
+import 'package:flutter/animation.dart';
 
 class SankeySeries extends RectSeries {
   SankeyData data;
@@ -38,7 +39,7 @@ class SankeySeries extends RectSeries {
     super.tooltip,
     super.backgroundColor,
     super.id,
-    super.animation,
+    super.animation = const AnimationAttrs(duration: Duration(seconds:2),curve: Curves.ease),
     super.clip,
     super.z,
   }) : super(gridIndex: -1, polarIndex: -1, radarIndex: -1, calendarIndex: -1, parallelIndex: -1);

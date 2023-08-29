@@ -9,11 +9,19 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
 
   @override
   void onDraw(Canvas canvas) {
+    canvas.save();
+    var ap=layoutHelper.animationProcess;
+    if (series.direction == Direction.horizontal) {
+      canvas.clipRect(Rect.fromLTWH(0, 0, width * ap, height));
+    } else {
+      canvas.clipRect(Rect.fromLTWH(0, 0, width, height * ap));
+    }
     _drawLink(canvas);
     for (var element in layoutHelper.nodes) {
       var style = layoutHelper.getAreaStyle(element);
       style?.drawRect(canvas, mPaint, element.rect);
     }
+    canvas.restore();
   }
 
   void _drawLink(Canvas canvas) {
