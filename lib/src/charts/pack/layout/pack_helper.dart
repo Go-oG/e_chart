@@ -18,7 +18,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    var node = PackNode.fromPackData(series.data);
+    var node = PackNode.fromPackData(context,series,series.data);
     node.sum((p0) => p0.value);
     node.computeHeight();
     var h = node.height;

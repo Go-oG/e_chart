@@ -25,7 +25,7 @@ class DiceLayout extends TreemapLayout {
       double p = node.areaRatio / allRatio;
       double w2 = w * p;
       Rect rect = Rect.fromLTWH(leftOffset, area.top, w2, h);
-      node.setPosition(rect);
+      node.attr.rect=rect;
       leftOffset += rect.width;
     }
   }

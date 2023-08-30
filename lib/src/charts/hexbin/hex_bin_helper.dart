@@ -39,7 +39,15 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
     var oldNodeList = nodeList;
     List<HexbinNode> newList = [];
     each(series.data, (data, p1) {
-      newList.add(HexbinNode(data, p1, 0, HexAttr.zero));
+      newList.add(HexbinNode(
+        data,
+        p1,
+        0,
+        HexAttr.zero,
+        series.getItemStyle(context, data, p1, null) ?? AreaStyle.empty,
+        series.getBorderStyle(context, data, p1, null) ?? LineStyle.empty,
+        series.getLabelStyle(context, data, p1, null) ?? LabelStyle.empty,
+      ));
     });
 
     onLayout2(newList, type);
@@ -50,7 +58,7 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
     each(newList, (node, i) {
       var center = hexToPixel(_zeroCenter, node.attr.hex, size);
       node.attr.center = center;
-      num r = series.radiusFun?.call(node.data) ?? radius;
+      num r = radius;
       node.attr.shape = PositiveShape(center: center, r: r, count: 6, angleOffset: angleOffset);
     });
     var animation = series.animation;
@@ -142,7 +150,8 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
       return;
     }
     sendHoverEndEvent2(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
-    _runUpdateAnimation([node], [], series.animation);
+    node.drawIndex = 0;
+    _runUpdateAnimation(node, null, series.animation);
   }
 
   HexbinNode? _oldNode;
@@ -152,55 +161,60 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
     offset = offset.translate(-scroll.dx, -scroll.dy);
     var clickNode = findNode(offset);
     if (clickNode == _oldNode) {
+      if (clickNode != null) {
+        click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
+      }
       return;
     }
 
     var old = _oldNode;
     _oldNode = clickNode;
-
-    List<HexbinNode> oldList = [];
     if (old != null) {
-      oldList.add(old);
+      old.drawIndex = 0;
       sendHoverEndEvent2(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
     }
-    List<HexbinNode> newList = [];
     if (clickNode != null) {
-      newList.add(clickNode);
+      clickNode.drawIndex = 100;
       click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
     }
-    _runUpdateAnimation(oldList, newList, series.animation);
+    nodeList.sort((a, b) => a.drawIndex.compareTo(b.drawIndex));
+
+    old?.removeState(ViewState.selected);
+    old?.removeState(ViewState.hover);
+    old?.updateStyle(context, series);
+    clickNode?.addState(ViewState.selected);
+    clickNode?.addState(ViewState.hover);
+    clickNode?.updateStyle(context, series);
+
+    _runUpdateAnimation(old, clickNode, series.animation);
   }
 
-  void _runUpdateAnimation(List<HexbinNode> oldList, List<HexbinNode> newList, AnimationAttrs? animation) {
-    for (var node in oldList) {
-      node.removeState(ViewState.selected);
-      node.removeState(ViewState.hover);
-    }
-    for (var node in newList) {
-      node.addState(ViewState.selected);
-      node.addState(ViewState.hover);
-    }
-
+  void _runUpdateAnimation(HexbinNode? old, HexbinNode? newNode, AnimationAttrs? animation) {
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       notifyLayoutUpdate();
       return;
     }
-
-    DiffUtil.diffUpdate<HexAttr, ItemData, HexbinNode>(
-      context,
-      animation,
-      oldList,
-      newList,
-      (data, node, isOld) {
-        return node.attr.copy(alpha: 0);
-      },
-      (s, e, t) {
-        return e.copy(alpha: lerpDouble(s.alpha, e.alpha, t));
-      },
-      () {
-        notifyLayoutUpdate();
-      },
-    );
+    var os = old?.attr;
+    var ns = newNode?.attr;
+    final angleOffset = flat ? _flat.angle : _pointy.angle;
+    ChartDoubleTween tween = ChartDoubleTween(props: animation);
+    tween.addListener(() {
+      var t = tween.value;
+      if (old != null) {
+        var r = lerpDouble(os!.shape.r, radius, t)!;
+        var angle = lerpDouble(os.shape.angleOffset, angleOffset, t)!;
+        var sp = PositiveShape(center: os.center, r: r, angleOffset: angle, count: 6);
+        old.attr = HexAttr.all(os.hex, sp, sp.center);
+      }
+      if (newNode != null) {
+        var r = lerpDouble(ns!.shape.r, radius * 1.2, t)!;
+        var angle = lerpDouble(ns.shape.angleOffset, angleOffset, t)!;
+        var sp = PositiveShape(center: ns.center, r: r, angleOffset: angle, count: 6);
+        newNode.attr = HexAttr.all(ns.hex, sp, sp.center);
+      }
+      notifyLayoutUpdate();
+    });
+    tween.start(context, true);
   }
 
   ///获取滚动偏移量
@@ -210,7 +224,7 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
   }
 
   HexbinNode? findNode(Offset offset) {
-    for (var node in nodeList) {
+    for (var node in nodeList.reversed) {
       if (node.attr.shape.contains(offset)) {
         return node;
       }

@@ -5,6 +5,8 @@ import '../shader/shader.dart' as sd;
 
 /// 线段样式
 class LineStyle {
+  static const LineStyle empty = LineStyle(width: 0);
+
   final Color color;
   final num width;
   final StrokeCap cap;
@@ -46,6 +48,9 @@ class LineStyle {
   ///下方这样写是为了改善Flutter上Path过长时
   ///绘制效率低下的问题
   void drawPolygon(Canvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
+    if (width <= 0) {
+      return;
+    }
     if (points.isEmpty) {
       return;
     }
@@ -96,6 +101,9 @@ class LineStyle {
   ///绘制一个圆弧部分(也可以绘制圆)
   void drawArc(Canvas canvas, Paint paint, double radius, num startAngle, num sweepAngle,
       [Offset center = Offset.zero]) {
+    if (width <= 0) {
+      return;
+    }
     //优化绘制半径、消除
     double r = radius;
     if (align == Align2.start) {
@@ -120,6 +128,9 @@ class LineStyle {
   }
 
   void drawRect(Canvas canvas, Paint paint, Rect rect, [Corner? corner]) {
+    if (width <= 0) {
+      return;
+    }
     RRect? rRect;
     if (corner != null) {
       var lt = Radius.circular(corner.leftTop);
@@ -159,7 +170,11 @@ class LineStyle {
   ///请注意该方法在Path 路径过长时会出现
   ///此时应该将needSplit 指定为true进行优化
   ///绘制效率严重低下的问题
-  void drawPath(Canvas canvas, Paint paint, Path path, {bool drawDash = false, bool needSplit = true,num splitLength=200}) {
+  void drawPath(Canvas canvas, Paint paint, Path path,
+      {bool drawDash = false, bool needSplit = true, num splitLength = 200}) {
+    if (width <= 0) {
+      return;
+    }
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
@@ -213,4 +228,8 @@ class LineStyle {
       shadow: shadow,
     );
   }
+
+  bool get notDraw => width <= 0;
+
+  bool get canDraw => width > 0;
 }

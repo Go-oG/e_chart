@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/utils/viewport_util.dart';
 import 'package:flutter/material.dart';
 
 ///日历坐标系视图
@@ -84,6 +83,11 @@ class CalendarCoordImpl extends CalendarCoord {
       }
       return false;
     });
+
+    viewPort.width = width;
+    viewPort.height = height;
+    viewPort.contentWidth = cellWidth * columnCount;
+    viewPort.contentHeight = cellHeight * rowCount;
     super.onLayout(left, top, right, bottom);
   }
 
@@ -287,33 +291,22 @@ class CalendarCoordImpl extends CalendarCoord {
   @override
   void onDragMove(Offset offset, Offset diff) {
     super.onDragMove(offset, diff);
-    var maxOffset = getMaxScroll();
-    Offset sc = adjustScrollOffset2(scroll.dx, scroll.dy, diff.dx, diff.dy, maxOffset.dx, maxOffset.dy);
-    if (scroll.dx != sc.dx || scroll.dy != sc.dy) {
-      scroll.dx = sc.dx;
-      scroll.dy = sc.dy;
+    var old = viewPort.getScroll();
+    Offset sc = viewPort.scroll(diff);
+    if (old.dx != sc.dx || old.dy != sc.dy) {
       invalidate();
     }
   }
 
   @override
   double getMaxXScroll() {
-    double w = columnCount * cellWidth;
-    if (w > width) {
-      return w - width;
-    }
-    return 0;
+    return viewPort.getMaxScrollX();
   }
 
   @override
   double getMaxYScroll() {
-    double h = rowCount * cellHeight;
-    if (h > height) {
-      return h - height;
-    }
-    return 0;
+    return viewPort.getMaxScrollY();
   }
-
 
   @override
   bool get enableDrag => true;

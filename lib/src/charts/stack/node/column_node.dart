@@ -31,7 +31,7 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   SingleNode<T, P>? getUpNode() {
     for (int i = nodeList.length - 1; i >= 0; i--) {
       var cn = nodeList[i];
-      if (cn.data != null) {
+      if (cn.originData != null) {
         return cn;
       }
     }
@@ -40,7 +40,7 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
 
   SingleNode<T, P>? getDownNode() {
     for (var cn in nodeList) {
-      if (cn.data != null) {
+      if (cn.originData != null) {
         return cn;
       }
     }
@@ -56,7 +56,7 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
 
     for (int i = 0; i < nodeList.length; i++) {
       var cn = nodeList[i];
-      var itemData = cn.data;
+      var itemData = cn.originData;
       if (itemData == null) {
         continue;
       }

@@ -21,7 +21,7 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
       }
       AreaStyle? style;
       if (series.groupStyleFun != null) {
-        style = series.groupStyleFun?.call(node.data, node.parent, node.status);
+        style = series.groupStyleFun?.call(node.originData, node.parent, node.status);
       } else if (group.isHover) {
         style = s2;
       }
@@ -45,27 +45,13 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     map.forEach((key, node) {
-      if (node.data == null) {
+      if (node.originData == null) {
         return;
       }
       if (node.rect.isEmpty) {
         return;
       }
-      var data = node.data!;
-      var group = node.parent;
-      var as = layoutHelper.buildAreaStyle(data, group, node.styleIndex, node.status);
-      var ls = layoutHelper.buildLineStyle(data, group, node.styleIndex, node.status);
-      node.areaStyle = as;
-      node.lineStyle = ls;
-      Corner? corner;
-      if (as != null && ls != null) {
-        corner = series.corner;
-        if (series.cornerFun != null) {
-          corner = series.cornerFun!.call(data, group, node.status);
-        }
-      }
-      as?.drawRect(canvas, mPaint, node.rect, corner);
-      ls?.drawRect(canvas, mPaint, node.rect, corner);
+      node.onDraw(canvas, mPaint);
     });
     canvas.restore();
   }
@@ -77,27 +63,31 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     map.forEach((key, node) {
-      if (node.data == null || node.rect.isEmpty) {
+      if (node.originData == null || node.rect.isEmpty) {
         return;
       }
-      var data = node.data!;
+      var data = node.originData!;
       var group = node.parent;
-      LabelStyle? style = series.getLabelStyle(context, data, group);
-      if (style == null || !style.show) {
+      var style = node.labelStyle;
+      var config = node.labelConfig;
+      var label = node.label;
+      if (!style.show || config == null || label == null || label.isEmpty) {
         return;
       }
-      DynamicText? text;
-      if (node.dynamicLabel != null) {
-        text = formatData(node.dynamicLabel!, data, group, node.status);
-      } else {
-        text = series.formatData(context, data, group);
-      }
-      if (text == null || text.isEmpty) {
-        return;
-      }
-      ChartAlign align = series.getLabelAlign(context, data, group);
-      TextDrawInfo drawInfo = align.convert(node.rect, style, series.direction);
-      style.draw(canvas, mPaint, text, drawInfo);
+      //TODO 文字处理
+      //
+      // DynamicText? text;
+      // if (node.dynamicLabel != null) {
+      //   text = formatData(node.dynamicLabel!, data, group, node.status);
+      // } else {
+      //   text = series.formatData(context, data, group,node.status);
+      // }
+      // if (text == null || text.isEmpty) {
+      //   return;
+      // }
+      // ChartAlign align = series.getLabelAlign(context, data, group);
+      // TextDrawInfo drawInfo = align.convert(node.rect, style, series.direction);
+      style.draw(canvas, mPaint, label, config);
     });
     canvas.restore();
   }

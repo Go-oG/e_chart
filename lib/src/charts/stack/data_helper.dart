@@ -3,12 +3,15 @@ import 'package:e_chart/e_chart.dart';
 ///处理二维坐标系下堆叠数据
 ///只针对数字类型处理
 class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends ChartSeries> {
+  final Context context;
   final List<P> _dataList;
   final S _series;
   final Direction direction;
   final bool realSort;
   final Sort sort;
-
+  final Fun6<Context, T?, P, int, Set<ViewState>, AreaStyle?> itemStyleFun;
+  final Fun6<Context, T?, P, int, Set<ViewState>, LineStyle?> borderStyleFun;
+  final Fun6<Context, T?, P, int, Set<ViewState>, LabelStyle?> labelStyleFun;
   final Map<T, SingleNode<T, P>> _nodeMap = {};
 
   SingleNode<T, P>? findNode(T t) {
@@ -21,14 +24,24 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     return _result;
   }
 
-  DataHelper(this._series, this._dataList, this.direction, this.realSort, this.sort) {
+  DataHelper(
+    this.context,
+    this._series,
+    this._dataList,
+    this.direction,
+    this.realSort,
+    this.sort,
+    this.itemStyleFun,
+    this.borderStyleFun,
+    this.labelStyleFun,
+  ) {
     _result = _parse();
     _result.groupMap.forEach((key, value) {
       for (var gn in value) {
         for (var cn in gn.nodeList) {
           for (var node in cn.nodeList) {
-            if (node.data != null) {
-              _nodeMap[node.data!] = node;
+            if (node.originData != null) {
+              _nodeMap[node.originData!] = node;
             }
           }
         }
@@ -166,6 +179,8 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     }
     List<GroupNode<T, P>> groupNodeList = List.generate(barGroupCount, (index) => GroupNode(axisIndex, index, []));
 
+    final Set<ViewState> emptyVS = {};
+
     ///合并数据
     each(groupDataSetList, (group, index) {
       GroupNode<T, P> groupNode = groupNodeList[index];
@@ -189,15 +204,33 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         }
       });
 
+      CoordType coord = _series.coordType == CoordType.polar ? CoordType.polar : CoordType.grid;
+
       singleNodeMap.forEach((key, value) {
         ColumnNode<T, P> column = ColumnNode(groupNode, [], true, value.first.parent.strategy);
-        List<SingleNode<T, P>> dl = List.from(value.map((e) => SingleNode(column, e, true)));
+        List<SingleNode<T, P>> dl = List.from(value.map((e) => SingleNode(
+              coord,
+              column,
+              e,
+              true,
+              itemStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? AreaStyle.empty,
+              borderStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LineStyle.empty,
+              labelStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LabelStyle.empty,
+            )));
         column.nodeList.addAll(dl);
         groupNode.nodeList.add(column);
       });
-      each(singleNodeList, (ele, i) {
+      each(singleNodeList, (e, i) {
         ColumnNode<T, P> column = ColumnNode(groupNode, [], false, StackStrategy.all);
-        var singleNode = SingleNode(column, ele, false);
+        var singleNode = SingleNode(
+          coord,
+          column,
+          e,
+          false,
+          itemStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? AreaStyle.empty,
+          borderStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LineStyle.empty,
+          labelStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LabelStyle.empty,
+        );
         column.nodeList.add(singleNode);
         groupNode.nodeList.add(column);
       });
@@ -267,7 +300,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
             if (mainIndex < 0) {
               mainIndex = 0;
             }
-            final mainData = vertical ? node.data?.x : node.data?.y;
+            final mainData = vertical ? node.originData?.x : node.originData?.y;
             if (mainData != null) {
               if (mainData is String) {
                 List<SingleNode<T, P>> strList = mainStrMap[mainIndex] ?? [];
@@ -275,23 +308,23 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
                 strList.add(node);
               } else if (mainData is num) {
                 var sn = mainNumMinMap[mainIndex];
-                var od = (vertical ? sn?.data?.x : sn?.data?.y) as num;
+                var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as num;
                 if (sn == null || mainData < od) {
                   mainNumMinMap[mainIndex] = node;
                 }
                 sn = mainNumMaxMap[mainIndex];
-                od = vertical ? sn?.data?.x : sn?.data?.y;
+                od = vertical ? sn?.originData?.x : sn?.originData?.y;
                 if (sn == null || mainData > od) {
                   mainNumMaxMap[mainIndex] = node;
                 }
               } else if (mainData is DateTime) {
                 var sn = mainTimeMinMap[mainIndex];
-                var od = (vertical ? sn?.data?.x : sn?.data?.y) as DateTime;
+                var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as DateTime;
                 if (sn == null || mainData.millisecondsSinceEpoch < od.millisecondsSinceEpoch) {
                   mainTimeMinMap[mainIndex] = node;
                 }
                 sn = mainTimeMaxMap[mainIndex];
-                od = vertical ? sn?.data?.x : sn?.data?.y;
+                od = vertical ? sn?.originData?.x : sn?.originData?.y;
                 if (sn == null || mainData.millisecondsSinceEpoch > od.millisecondsSinceEpoch) {
                   mainTimeMaxMap[mainIndex] = node;
                 }
@@ -345,7 +378,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         var axis = AxisIndex(system, key);
         List<dynamic> rl = mainResultMap[axis] ?? [];
         mainResultMap[axis] = rl;
-        rl.add(vertical ? value.data!.x : value.data!.y);
+        rl.add(vertical ? value.originData!.x : value.originData!.y);
       });
     }
     mainStrMap.forEach((key, value) {
@@ -364,11 +397,11 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         });
       }
       var result = unionBy<SingleNode<T, P>, String>([value], (a) {
-        return (vertical ? a.data!.x : a.data!.y) as String;
+        return (vertical ? a.originData!.x : a.originData!.y) as String;
       });
 
       rl.addAll(result.map((e) {
-        return vertical ? e.data!.x : e.data!.y;
+        return vertical ? e.originData!.x : e.originData!.y;
       }));
     });
     return ExtremeInfo(mainResultMap, crossResultMap);

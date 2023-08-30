@@ -19,9 +19,9 @@ class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
       }
       DataStore<SingleNode<T, P>> store = DataStore(nodeList, (data) {
         if (direction == Direction.vertical) {
-          return data.data?.x;
+          return data.originData?.x;
         }
-        return data.data?.y;
+        return data.originData?.y;
       });
       storeMap[key] = store;
     });

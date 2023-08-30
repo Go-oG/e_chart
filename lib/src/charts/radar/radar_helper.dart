@@ -24,15 +24,32 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
 
     List<RadarNode> oldList = _nodeList;
     List<RadarNode> newList = [];
-    each(series.data, (data, gi) {
-      var groupNode = RadarGroupNode(gi, data, []);
-      int i = 0;
-      for (var c in data.data) {
-        RadarNode radarNode = RadarNode(groupNode, c, i, gi);
+    each(series.data, (group, gi) {
+      var groupNode = RadarGroupNode(
+        [],
+        group,
+        gi,
+        0,
+        RadarGroupNode.emptyPath,
+        series.getAreaStyle(context, group, gi, {}) ?? AreaStyle.empty,
+        series.getLineStyle(context, group, gi, {}) ?? LineStyle.empty,
+        LabelStyle.empty,
+      );
+      each(group.data, (c, i) {
+        RadarNode radarNode = RadarNode(
+          groupNode,
+          series.getSymbol(context, c, group, i, {}),
+          c,
+          i,
+          gi,
+          Offset.zero,
+          AreaStyle.empty,
+          LineStyle.empty,
+          LabelStyle.empty,
+        );
         radarNode.attr = layout.dataToPoint(i, c.value).point;
         groupNode.nodeList.add(radarNode);
-        i++;
-      }
+      });
       newList.addAll(groupNode.nodeList);
     });
 

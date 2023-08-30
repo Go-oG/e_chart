@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/sunburst/sunburst_view.dart';
 
-import 'sunburst_helper.dart';
+import 'sunburst_node.dart';
 
 typedef RadiusDiffFun = SNumber Function(int deep, int maxDeep, num radius);
 

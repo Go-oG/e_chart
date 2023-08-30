@@ -112,7 +112,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
     if (style == null) {
       return;
     }
-    Rect rect = node.getPosition();
+    Rect rect = node.attr.rect;
     style.drawRect(canvas, mPaint, rect);
     DynamicText label = node.data.label ?? DynamicText.empty;
     if (label.isEmpty) {
@@ -167,8 +167,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   TreeMapNode? findClickNode(Offset offset) {
     offset = offset.translate(-tx, -ty);
     for (var c in drawList) {
-      Rect rect = c.getPosition();
-      if (rect.contains(offset)) {
+      if (c.contains(offset)) {
         return c;
       }
     }

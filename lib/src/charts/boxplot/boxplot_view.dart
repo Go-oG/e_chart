@@ -13,24 +13,20 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
     canvas.save();
     canvas.translate(of.dx, of.dy);
     layoutHelper.showNodeMap.forEach((key, node) {
-      if (node.data == null) {
+      var data = node.originData;
+      if (data == null) {
         return;
       }
-      var data = node.data!;
-      var group = node.parent;
-      var as = layoutHelper.buildAreaStyle(data, group, node.styleIndex, node.status);
-      var ls = layoutHelper.buildLineStyle(data, group, node.styleIndex, node.status);
-      node.areaStyle = as;
-      node.lineStyle = ls;
-      if (as == null && ls == null) {
+
+      if (node.itemStyle.notDraw && node.borderStyle.notDraw) {
         return;
       }
       Rect rect = layoutHelper.getAreaRect(node);
       List<List<Offset>> borderList = layoutHelper.getBorderList(node);
-      as?.drawRect(canvas, mPaint, rect);
-      if (ls != null) {
+      node.itemStyle.drawRect(canvas, mPaint, rect);
+      if (node.borderStyle.canDraw) {
         for (var list in borderList) {
-          ls.drawPolygon(canvas, mPaint, list);
+          node.borderStyle.drawPolygon(canvas, mPaint, list);
         }
       }
     });

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 /// 区域样式
 class AreaStyle {
+  static const AreaStyle empty = AreaStyle();
+
   final Color? color;
   final ChartShader? shader;
   final List<BoxShadow> shadow;
@@ -31,7 +33,7 @@ class AreaStyle {
   }
 
   void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points, [bool smooth = false]) {
-    if (_notDraw()) {
+    if (notDraw) {
       return;
     }
     if (points.isEmpty) {
@@ -47,7 +49,7 @@ class AreaStyle {
   }
 
   void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [bool smooth = false]) {
-    if (_notDraw()) {
+    if (notDraw) {
       return;
     }
     Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth);
@@ -55,7 +57,7 @@ class AreaStyle {
   }
 
   void drawRect(Canvas canvas, Paint paint, Rect rect, [Corner? corner]) {
-    if (_notDraw()) {
+    if (notDraw) {
       return;
     }
     Path path = Path();
@@ -70,7 +72,7 @@ class AreaStyle {
   }
 
   void drawRRect(Canvas canvas, Paint paint, RRect rect) {
-    if (_notDraw()) {
+    if (notDraw) {
       return;
     }
     Path path = Path();
@@ -79,7 +81,7 @@ class AreaStyle {
   }
 
   void drawCircle(Canvas canvas, Paint paint, Offset center, num radius) {
-    if (_notDraw()) {
+    if (notDraw) {
       return;
     }
     Path path = Path();
@@ -88,7 +90,7 @@ class AreaStyle {
   }
 
   void drawPath(Canvas canvas, Paint paint, Path path) {
-    if (_notDraw()) {
+    if (notDraw) {
       return;
     }
     if (shadow.isNotEmpty) {
@@ -118,10 +120,15 @@ class AreaStyle {
     return AreaStyle(shader: shader, shadow: shadow, color: color);
   }
 
-  bool _notDraw() {
+  bool get notDraw {
     if (color == null && shader == null && shadow.isEmpty) {
       return true;
     }
     return false;
   }
+
+  bool get canDraw {
+    return !notDraw;
+  }
+
 }

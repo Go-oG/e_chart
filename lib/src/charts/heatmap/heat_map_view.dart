@@ -20,19 +20,7 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
       if(!rect.overlaps(sRect)){
         return;
       }
-
-      getAreaStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
-      getBorderStyle(node, index)?.drawRect(canvas, mPaint, node.attr);
-      if (node.data.label == null || node.data.label!.isEmpty) {
-        return;
-      }
-      var label = node.data.label!;
-      LabelStyle? style = series.getLabelStyle(context, node.data, node.status);
-      if (style == null || !style.show) {
-        return;
-      }
-      Alignment align = series.labelAlignFun?.call(node.getData()) ?? Alignment.center;
-      style.draw(canvas, mPaint, label, TextDrawInfo.fromRect(node.attr, align));
+      node.onDraw(canvas, mPaint);
     });
     canvas.restore();
   }

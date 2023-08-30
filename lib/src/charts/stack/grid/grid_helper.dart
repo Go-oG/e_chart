@@ -292,7 +292,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
     ///动画
     DiffResult2<SingleNode<T, P>, StackAnimationNode, T> diffResult =
-        DiffUtil.diff(oldShowData, newNodeList, (p0) => p0.data!, (b, c) {
+        DiffUtil.diff(oldShowData, newNodeList, (p0) => p0.originData!, (b, c) {
       return onCreateAnimatorNode(b, c, type);
     });
     final startMap = diffResult.startMap;
@@ -301,8 +301,8 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     doubleTween.startListener = () {
       Map<T, SingleNode<T, P>> map = {};
       diffResult.startMap.forEach((key, value) {
-        if (key.data != null) {
-          map[key.data!] = key;
+        if (key.originData != null) {
+          map[key.originData!] = key;
         }
       });
       showNodeMap = map;
@@ -312,8 +312,8 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     doubleTween.endListener = () {
       Map<T, SingleNode<T, P>> map = {};
       for (var value in diffResult.endList) {
-        if (value.data != null) {
-          map[value.data!] = value;
+        if (value.originData != null) {
+          map[value.originData!] = value;
         }
       }
       showNodeMap = map;

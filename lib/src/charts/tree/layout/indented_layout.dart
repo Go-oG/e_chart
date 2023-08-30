@@ -3,9 +3,6 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../node.dart';
-import '../tree_layout.dart';
-
 /// 缩进树布局
 class IndentedLayout extends TreeLayout {
   Direction2 direction;
@@ -13,11 +10,11 @@ class IndentedLayout extends TreeLayout {
   IndentedLayout({
     this.direction = Direction2.ttb,
     super.lineType = LineType.stepBefore,
-    super.smooth=false,
+    super.smooth = false,
     super.gapFun,
     super.levelGapFun,
     super.sizeFun,
-    super.center=const [SNumber.percent(0), SNumber.percent(0)],
+    super.center = const [SNumber.percent(0), SNumber.percent(0)],
     super.centerIsRoot,
     super.levelGapSize,
     super.nodeGapSize,
@@ -40,7 +37,7 @@ class IndentedLayout extends TreeLayout {
   ///缩进树只支持stepAfter和StepBefore
   @override
   Path? getPath(TreeLayoutNode parent, TreeLayoutNode child, [List<double>? dash]) {
-    smooth=false;
+    smooth = false;
     Line line = Line([parent.center, child.center]);
     if (lineType == LineType.stepAfter) {
       line = Line(line.stepAfter(), dashList: dash);
@@ -55,8 +52,10 @@ class IndentedLayout extends TreeLayout {
       _layoutTree(root, width, height, Direction2.ltr);
       return;
     }
-    TreeLayoutNode leftRoot = TreeLayoutNode(null, root.data);
-    TreeLayoutNode rightRoot = TreeLayoutNode(null, root.data);
+    TreeLayoutNode leftRoot =
+        TreeLayoutNode(null, root.data, 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+    TreeLayoutNode rightRoot =
+        TreeLayoutNode(null, root.data, 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
     int i = 0;
     for (var element in root.children) {
       if (i % 2 == 0) {

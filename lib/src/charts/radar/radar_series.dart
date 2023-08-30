@@ -1,15 +1,15 @@
-//雷达图
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/radar/radar_view.dart';
-
 
 class RadarSeries extends RectSeries {
   List<GroupData> data;
   int splitNumber;
-  Fun2<GroupData, AreaStyle?>? areaStyleFun;
-  Fun2<GroupData, LineStyle?>? lineStyleFun;
-  Fun2<GroupData, LabelStyle>? labelStyleFun;
-  Fun4<ItemData, int, GroupData, ChartSymbol?>? symbolFun;
+  Fun4<GroupData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
+  Fun4<GroupData, int, Set<ViewState>, LineStyle?>? lineStyleFun;
+  Fun4<GroupData, int, Set<ViewState>, LabelStyle>? labelStyleFun;
+  Fun5<ItemData, int, GroupData,Set<ViewState>,  ChartSymbol?>? symbolFun;
   num nameGap;
 
   RadarSeries(
@@ -37,5 +37,43 @@ class RadarSeries extends RectSeries {
   @override
   ChartView? toView() {
     return RadarView(this);
+  }
+
+  AreaStyle? getAreaStyle(Context context, GroupData group, int index, Set<ViewState> status) {
+    var theme = context.option.theme.radarTheme;
+    var chartTheme = context.option.theme;
+    if (areaStyleFun != null) {
+      return areaStyleFun?.call(group, index, status);
+    }
+    if (theme.fill) {
+      Color fillColor = chartTheme.getColor(index);
+      return AreaStyle(color: fillColor).convert(status);
+    }
+    return null;
+  }
+
+  LineStyle? getLineStyle(Context context, GroupData group, int index, Set<ViewState> status) {
+    var chartTheme = context.option.theme;
+    var theme = chartTheme.radarTheme;
+    if (lineStyleFun != null) {
+      return lineStyleFun?.call(group, index, status);
+    }
+    if (theme.lineWidth > 0) {
+      Color lineColor = chartTheme.getColor(index);
+      return LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList).convert(status);
+    }
+    return null;
+  }
+
+  ChartSymbol? getSymbol(Context context, ItemData data,GroupData group, int index, Set<ViewState> status) {
+    var chartTheme = context.option.theme;
+    var theme = chartTheme.radarTheme;
+    if (symbolFun != null) {
+      return symbolFun?.call(data, index,group, status);
+    }
+    if(!theme.showSymbol){
+      return null;
+    }
+    return theme.symbol;
   }
 }

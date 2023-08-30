@@ -13,11 +13,28 @@ abstract class TreemapLayout extends LayoutHelper<TreeMapSeries> {
   void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
     this.boxBound = boxBound;
     this.globalBoxBound = globalBoxBound;
-    _rootNode = toTree<TreeData, TreeMapNode>(series.data, (p0) => p0.children, (p0, p1) => TreeMapNode(p0, p1));
+    int i = 0;
+    _rootNode = toTree<TreeData, TreeMapAttr, TreeMapNode>(
+      series.data,
+      (p0) => p0.children,
+      (p0, p1) {
+        var node = TreeMapNode(
+          p0,
+          p1,
+          i,
+          TreeMapAttr.of(),
+          AreaStyle.empty,
+          LineStyle.empty,
+          LabelStyle.empty,
+        );
+        i += 1;
+        return node;
+      },
+    );
     _rootNode!.sum((p0) => p0.data.value);
     _rootNode!.removeWhere((p0) => p0.value <= 0, true);
     _rootNode!.computeHeight();
-    _rootNode!.setPosition(Rect.fromLTWH(0, 0, width, height));
+    _rootNode!.setAttr(TreeMapAttr(Rect.fromLTWH(0, 0, width, height), null));
     onLayout2(_rootNode!, type);
   }
 

@@ -35,9 +35,9 @@ class PieSeries extends RectSeries {
   CircleAlign labelAlign;
   PieAnimatorStyle animatorStyle;
 
-  Fun2<ItemData, LabelStyle?>? labelStyleFun;
-  Fun2<ItemData, AreaStyle?>? areaStyleFun;
-  Fun2<ItemData, LineStyle?>? borderFun;
+  Fun4<ItemData, int, Set<ViewState>, LabelStyle?>? labelStyleFun;
+  Fun4<ItemData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
+  Fun4<ItemData, int, Set<ViewState>, LineStyle?>? borderFun;
 
   PieSeries(
     this.data, {
@@ -75,6 +75,29 @@ class PieSeries extends RectSeries {
   @override
   ChartView? toView() {
     return PieView(this);
+  }
+
+  AreaStyle? getAreaStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+    if (areaStyleFun != null) {
+      return areaStyleFun?.call(data, dataIndex, status);
+    }
+    return context.option.theme.getAreaStyle(dataIndex).convert(status);
+  }
+
+  LineStyle? getBorderStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+    if (borderFun != null) {
+      return borderFun?.call(data, dataIndex, status);
+    }
+    var theme = context.option.theme.pieTheme;
+    return theme.getBorderStyle();
+  }
+
+  LabelStyle? getLabelStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+    if (labelStyleFun != null) {
+      return labelStyleFun!.call(data, dataIndex, status);
+    }
+    var theme = context.option.theme;
+    return theme.getLabelStyle()?.convert(status);
   }
 }
 

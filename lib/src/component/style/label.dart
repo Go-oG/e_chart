@@ -4,6 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class LabelStyle {
+  static const LabelStyle empty = LabelStyle(show: false);
   final bool show;
   final double rotate;
   final TextStyle textStyle;

@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/utils/viewport_util.dart';
 import 'package:flutter/material.dart';
 import 'axis/grid_axis_impl.dart';
 
@@ -89,27 +88,42 @@ class GridCoordImpl extends GridCoord {
     ///布局Y轴
     layoutYAxis(childList, contentBox, false, true);
 
+    viewPort.width = contentBox.width;
+    viewPort.height = contentBox.height;
+    viewPort.contentWidth = 0;
+    viewPort.contentHeight = 0;
+    xMap.forEach((key, value) {
+      if (value.attrs.distance > viewPort.contentWidth) {
+        viewPort.contentWidth = value.attrs.distance;
+      }
+    });
+    yMap.forEach((key, value) {
+      if (value.attrs.distance > viewPort.contentHeight) {
+        viewPort.contentHeight = value.attrs.distance;
+      }
+    });
+
     ///修正由于坐标系线条宽度导致的遮挡
     topOffset = topList.isEmpty ? 0 : topList.first.axis.axisLine.width / 2;
     bottomOffset = bottomList.isEmpty ? 0 : bottomList.first.axis.axisLine.width / 2;
     leftOffset = leftList.isEmpty ? 0 : leftList.first.axis.axisLine.width / 2;
     rightOffset = rightList.isEmpty ? 0 : rightList.first.axis.axisLine.width / 2;
+    double ll = contentBox.left + leftOffset;
+    double tt = contentBox.top + topOffset;
+
     for (var view in children) {
-      double ll = contentBox.left + leftOffset;
-      double tt = contentBox.top + topOffset;
       double rr, bb;
       if (view.layoutParams.width.isMatch) {
         rr = contentBox.right;
       } else {
         rr = ll + view.width;
       }
-
       if (view.layoutParams.height.isMatch) {
         bb = contentBox.bottom;
       } else {
         bb = tt + view.height;
       }
-    view.layout(ll, tt, rr, bb);
+      view.layout(ll, tt, rr, bb);
     }
   }
 
@@ -300,19 +314,18 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    Offset sc = adjustScrollOffset2(scrollX, scrollY, diff.dx, diff.dy, getMaxXScroll(), getMaxYScroll());
+    Offset old = viewPort.getScroll();
+    Offset sc = viewPort.scroll(diff);
     bool hasChange = false;
-    if (sc.dx != scrollX) {
+    if (sc.dx != old.dx) {
       hasChange = true;
-      scroll.dx = sc.dx;
       xMap.forEach((key, value) {
         value.attrs.scroll = sc.dx;
         value.onScrollChange(sc.dx);
       });
     }
-    if (sc.dy != scrollY) {
+    if (sc.dy != old.dy) {
       hasChange = true;
-      scroll.dy = sc.dy;
       yMap.forEach((key, value) {
         value.attrs.scroll = sc.dy;
         value.onScrollChange(sc.dy);
@@ -321,9 +334,10 @@ class GridCoordImpl extends GridCoord {
     if (!hasChange) {
       return;
     }
+    var cs = CoordScroll(props.id, props.coordSystem, sc);
     each(children, (p0, p1) {
       if (p0 is CoordChildView) {
-        p0.onCoordScrollUpdate(scroll);
+        p0.onCoordScrollUpdate(cs);
       }
     });
     invalidate();
@@ -331,9 +345,10 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onDragEnd() {
+    var cs = CoordScroll(props.id, props.coordSystem, viewPort.getScroll());
     for (var child in children) {
       if (child is CoordChildView) {
-        child.onCoordScrollEnd(scroll);
+        child.onCoordScrollEnd(cs);
       }
     }
   }

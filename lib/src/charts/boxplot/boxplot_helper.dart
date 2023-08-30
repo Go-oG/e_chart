@@ -16,12 +16,12 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
 
   @override
   dynamic getUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
-    return node.data!.max;
+    return node.originData!.max;
   }
 
   @override
   dynamic getDownValue(SingleNode<BoxplotData, BoxplotGroup> node) {
-    return node.data!.min;
+    return node.originData!.min;
   }
 
   @override
@@ -29,7 +29,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
     final bool vertical = series.direction == Direction.vertical;
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
-      var data = node.data;
+      var data = node.originData;
       if (data == null) {
         continue;
       }

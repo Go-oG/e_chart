@@ -1,7 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-
 abstract class TreeLayout extends LayoutHelper<TreeSeries> {
   ///描述根节点的位置
   List<SNumber> center;
@@ -45,7 +44,8 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
 
   ///外部传入的数据映射
   ///所有的操作都是对该树进行操作
-  TreeLayoutNode _rootNode = TreeLayoutNode(null, TreeData(0));
+  TreeLayoutNode _rootNode =
+      TreeLayoutNode(null, TreeData(0), 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
 
   ///记录节点数
   int nodeCount = 0;
@@ -53,8 +53,12 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
   @override
   void onLayout(LayoutType type) {
     _nodeMap = {};
-    _rootNode = toTree<TreeData, TreeLayoutNode>(series.data, (p0) => p0.children, (p0, p1) {
-      TreeLayoutNode node = TreeLayoutNode(p0, p1);
+    int i = 0;
+    _rootNode = toTree<TreeData, TreeAttr, TreeLayoutNode>(series.data, (p0) => p0.children, (p0, p1) {
+      TreeLayoutNode node =
+          TreeLayoutNode(p0, p1, i, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+      node.attr.symbol = series.getSymbol(context, node);
+      i += 1;
       _nodeMap[p1] = node;
       return node;
     });

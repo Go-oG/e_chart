@@ -15,7 +15,17 @@ class PointHelper extends LayoutHelper<PointSeries> {
     List<PointNode> newList = [];
     each(series.data, (group, i) {
       each(group.data, (e, ci) {
-        var node = PointNode(series.symbolFun.call(e, group), group, e, ci, i, PointSize());
+        var node = PointNode(
+          series.symbolFun.call(e, group),
+          group,
+          e,
+          ci,
+          i,
+          PointAttr(),
+          AreaStyle.empty,
+          LineStyle.empty,
+          LabelStyle.empty,
+        );
         newList.add(node);
       });
     });
@@ -32,13 +42,13 @@ class PointHelper extends LayoutHelper<PointSeries> {
       return;
     }
 
-    var an = DiffUtil.diffLayout<PointSize, PointData, PointNode>(
+    var an = DiffUtil.diffLayout<PointAttr, PointData, PointNode>(
       animation,
       oldList,
       newList,
-      (data, node, add) => PointSize.all(node.attr.offset, Size.zero),
+      (data, node, add) => PointAttr.all(node.attr.offset, Size.zero),
       (s, e, t) {
-        PointSize size = PointSize();
+        PointAttr size = PointAttr();
         if (s.offset == e.offset) {
           size.offset = e.offset;
         } else {
@@ -184,28 +194,28 @@ class PointHelper extends LayoutHelper<PointSeries> {
 
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       for (var node in oldList) {
-        node.attr = PointSize.all(node.attr.offset, (node.attr.size - diffSize) as Size);
+        node.attr = PointAttr.all(node.attr.offset, (node.attr.size - diffSize) as Size);
       }
       for (var node in newList) {
-        node.attr = PointSize.all(node.attr.offset, node.attr.size + diffSize);
+        node.attr = PointAttr.all(node.attr.offset, node.attr.size + diffSize);
       }
       notifyLayoutUpdate();
       return;
     }
 
-    DiffUtil.diffUpdate<PointSize, PointData, PointNode>(
+    DiffUtil.diffUpdate<PointAttr, PointData, PointNode>(
       context,
       animation,
       oldList,
       newList,
       (data, node, isOld) {
         if (isOld) {
-          return PointSize.all(node.attr.offset, (node.attr.size - diffSize) as Size);
+          return PointAttr.all(node.attr.offset, (node.attr.size - diffSize) as Size);
         }
-        return PointSize.all(node.attr.offset, node.attr.size + diffSize);
+        return PointAttr.all(node.attr.offset, node.attr.size + diffSize);
       },
       (s, e, t) {
-        PointSize pSize = PointSize();
+        PointAttr pSize = PointAttr();
         pSize.offset = s.offset == e.offset ? e.offset : Offset.lerp(s.offset, e.offset, t)!;
         pSize.size = s.size == e.size ? e.size : Size.lerp(s.size, e.size, t)!;
         return pSize;
@@ -217,7 +227,7 @@ class PointHelper extends LayoutHelper<PointSeries> {
   PointNode? findNode(Offset offset) {
     var nodeList = this.nodeList;
     for (var node in nodeList) {
-      if (node.internal(offset)) {
+      if (node.contains(offset)) {
         return node;
       }
     }

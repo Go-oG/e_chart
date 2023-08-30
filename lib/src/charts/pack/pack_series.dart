@@ -57,6 +57,7 @@ class PackSeries extends RectSeries {
     }
     return context.option.theme.packTheme.getBorderStyle();
   }
+
   LabelStyle? getLabelStyle(Context context, PackNode node) {
     if (labelStyleFun != null) {
       return labelStyleFun?.call(node);

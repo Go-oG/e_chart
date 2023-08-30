@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-
 /// 从上到下
 class SliceLayout extends TreemapLayout {
   @override
@@ -20,8 +19,8 @@ class SliceLayout extends TreemapLayout {
     for (var node in nodeList) {
       double ratio = node.areaRatio / allValue;
       double h2 = ratio * h;
-      node.setPosition(Rect.fromLTWH(rect.left, topOffset, w, h2));
-      topOffset += node.getPosition().height;
+      node.attr.rect = Rect.fromLTWH(rect.left, topOffset, w, h2);
+      topOffset += node.attr.rect.height;
     }
   }
 }

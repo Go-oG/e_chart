@@ -12,7 +12,6 @@ class SankeyNode extends DataNode<Rect, BaseItemData> {
   double top = 0;
   double right = 0;
   double bottom = 0;
-  Rect rect = Rect.zero;
 
   ///布局过程中的标示量
   ///列位置索引
@@ -26,10 +25,29 @@ class SankeyNode extends DataNode<Rect, BaseItemData> {
 
   int index = 0;
 
-  SankeyNode(ItemData data, this.outLinks, this.inputLinks, int dataIndex) : super(data, dataIndex, 0, Rect.zero);
+  SankeyNode(
+    ItemData data,
+    this.outLinks,
+    this.inputLinks,
+    int dataIndex,
+    AreaStyle itemStyle,
+    LineStyle borderStyle,
+    LabelStyle labelStyle,
+  ) : super(data, dataIndex, 0, Rect.zero, itemStyle, borderStyle, labelStyle);
+
+  @override
+  bool contains(Offset offset) {
+    return attr.contains2(offset);
+  }
+
+  @override
+  void onDraw(Canvas canvas, Paint paint) {
+    itemStyle.drawRect(canvas, paint, attr);
+    borderStyle.drawRect(canvas, paint, attr);
+  }
 }
 
-class SankeyLink with ViewStateProvider {
+class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
   final SankeyNode source;
   final SankeyNode target;
   final num value;
@@ -39,9 +57,17 @@ class SankeyLink with ViewStateProvider {
   double targetY = 0; //在目标节点的起始Y坐标
   ///边宽度
   double width = 0;
-  late Area area;
 
-  SankeyLink(this.source, this.target, this.value);
+  SankeyLink(
+    this.source,
+    this.target,
+    this.value,
+    int dataIndex,
+    int groupIndex,
+    AreaStyle itemStyle,
+    LineStyle borderStyle,
+    LabelStyle labelStyle,
+  ) : super(Pair(source, target), dataIndex, groupIndex, Area([], []), itemStyle, borderStyle, labelStyle);
 
   void computeAreaPath(bool smooth) {
     Offset sourceTop = Offset(source.right, sourceY);
@@ -50,6 +76,18 @@ class SankeyLink with ViewStateProvider {
     Offset targetTop = Offset(target.left, targetY);
     Offset targetBottom = targetTop.translate(0, width);
 
-    area = Area([sourceTop, targetTop], [sourceBottom, targetBottom], upSmooth: smooth, downSmooth: smooth);
+    attr = Area([sourceTop, targetTop], [sourceBottom, targetBottom], upSmooth: smooth, downSmooth: smooth);
+  }
+
+  @override
+  bool contains(Offset offset) {
+    return attr.toPath(true).contains(offset);
+  }
+
+  @override
+  void onDraw(Canvas canvas, Paint paint) {
+    Path path = attr.toPath(true);
+    itemStyle.drawPath(canvas, paint, path);
+    borderStyle.drawPath(canvas, paint, path);
   }
 }

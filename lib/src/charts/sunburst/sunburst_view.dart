@@ -2,7 +2,8 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 import 'sunburst_helper.dart';
-import 'sunburst_tween.dart';
+import 'sunburst_node.dart';
+
 
 /// 旭日图
 class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
@@ -17,7 +18,7 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
     Offset center = computeCenter();
     offset = offset.translate(-center.dx, -center.dy);
     if (backNode != null) {
-      Arc arc = backNode!.cur.arc;
+      Arc arc = backNode!.attr.arc;
       if (offset.inSector(arc.innerRadius, arc.outRadius, arc.startAngle, arc.sweepAngle)) {
         back();
         return;
@@ -25,7 +26,7 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
     }
 
     SunburstNode? clickNode = _drawRoot.find((node, index, startNode) {
-      Arc arc = node.cur.arc;
+      Arc arc = node.attr.arc;
       return (offset.inSector(arc.innerRadius, arc.outRadius, arc.startAngle, arc.sweepAngle));
     });
     if (clickNode == null || clickNode == _drawRoot) {
@@ -48,24 +49,24 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
   void onHoverEnd() {}
 
   void _handleHoverMove(Offset local) {
-    Offset center = computeCenter();
-    Offset offset = local.translate(-center.dx, -center.dy);
-
-    SunburstNode? node;
-    _drawRoot.eachBefore((tmp, index, startNode) {
-      Arc arc = tmp.cur.arc;
-      if (offset.inSector(arc.innerRadius, arc.outRadius, arc.startAngle, arc.sweepAngle)) {
-        node = tmp;
-        return true;
-      }
-      return false;
-    });
-    if (node == null || node!.select) {
-      return;
-    }
-    _drawRoot.updateSelectStatus(false, mode: SelectedMode.group);
-    node!.updateSelectStatus(true, mode: series.selectedMode);
-    invalidate();
+    // Offset center = computeCenter();
+    // Offset offset = local.translate(-center.dx, -center.dy);
+    //
+    // SunburstNode? node;
+    // _drawRoot.eachBefore((tmp, index, startNode) {
+    //   Arc arc = tmp.attr.arc;
+    //   if (offset.inSector(arc.innerRadius, arc.outRadius, arc.startAngle, arc.sweepAngle)) {
+    //     node = tmp;
+    //     return true;
+    //   }
+    //   return false;
+    // });
+    // if (node == null || node!.select) {
+    //   return;
+    // }
+    // _drawRoot.updateSelectStatus(false, mode: SelectedMode.group);
+    // node!.updateSelectStatus(true, mode: series.selectedMode);
+    // invalidate();
   }
 
   ///前进
@@ -141,26 +142,26 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
   ChartTween? _oldTween;
 
   void executeTween(SunburstNode node, [SunburstNode? other]) {
-    _oldTween?.stop();
-    ChartDoubleTween tween = ChartDoubleTween(props: series.animation!);
-    SunburstTween tweenTmp = SunburstTween(node.start, node.end, props: series.animation!);
-    tween.addListener(() {
-      double percent = tween.value;
-      node.each((tmp, index, startNode) {
-        tweenTmp.changeValue(tmp.start, tmp.end);
-        tmp.cur = tweenTmp.safeGetValue(percent);
-        tmp.updatePath(series, percent);
-        return false;
-      });
-      if (other != null) {
-        tweenTmp.changeValue(other.start, other.end);
-        other.cur = tweenTmp.safeGetValue(percent);
-        other.updatePath(series, percent);
-      }
-      invalidate();
-    });
-    _oldTween = tween;
-    tween.start(context);
+    // _oldTween?.stop();
+    // ChartDoubleTween tween = ChartDoubleTween(props: series.animation!);
+    // SunburstTween tweenTmp = SunburstTween(node.start, node.end, props: series.animation!);
+    // tween.addListener(() {
+    //   double percent = tween.value;
+    //   node.each((tmp, index, startNode) {
+    //     tweenTmp.changeValue(tmp.attr, tmp.end);
+    //     tmp.attr = tweenTmp.safeGetValue(percent);
+    //     tmp.updatePath(series, percent);
+    //     return false;
+    //   });
+    //   if (other != null) {
+    //     tweenTmp.changeValue(other.start, other.end);
+    //     other.cur = tweenTmp.safeGetValue(percent);
+    //     other.updatePath(series, percent);
+    //   }
+    //   invalidate();
+    // });
+    // _oldTween = tween;
+    // tween.start(context);
   }
 
   @override
@@ -171,32 +172,32 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
   }
 
   void convertData() {
-    root = toTree<TreeData, SunburstNode>(
-      series.data,
-      (p0) => p0.children,
-      (p0, p1) => SunburstNode(p0, p1, value: p1.value),
-      sort: (a, b) {
-        if (series.sort == Sort.empty) {
-          return 0;
-        }
-        if (series.sort == Sort.asc) {
-          return a.data.value.compareTo(b.data.value);
-        } else {
-          return b.data.value.compareTo(a.data.value);
-        }
-      },
-    );
-    root.sum((p0) => p0.data.value);
-    if (series.matchParent) {
-      root.each((node, index, startNode) {
-        if (node.hasChild) {
-          node.value = 0;
-        }
-        return false;
-      });
-      root.sum();
-    }
-    root.computeHeight();
+    // root = toTree<TreeData, SunburstNode>(
+    //   series.data,
+    //   (p0) => p0.children,
+    //   (p0, p1) => SunburstNode(p0, p1, value: p1.value),
+    //   sort: (a, b) {
+    //     if (series.sort == Sort.empty) {
+    //       return 0;
+    //     }
+    //     if (series.sort == Sort.asc) {
+    //       return a.data.value.compareTo(b.data.value);
+    //     } else {
+    //       return b.data.value.compareTo(a.data.value);
+    //     }
+    //   },
+    // );
+    // root.sum((p0) => p0.data.value);
+    // if (series.matchParent) {
+    //   root.each((node, index, startNode) {
+    //     if (node.hasChild) {
+    //       node.value = 0;
+    //     }
+    //     return false;
+    //   });
+    //   root.sum();
+    // }
+    // root.computeHeight();
   }
 
   void runAnimator() {
@@ -238,13 +239,11 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
     if (node == root) {
       return;
     }
-    AreaStyle? style = series.areaStyleFun.call(node);
-    // style?.drawPath(canvas, mPaint, node.cur.shapePath!, colorOpacity: node.cur.alpha >= 1 ? null : node.cur.alpha);
-    style.drawPath(canvas, mPaint, node.cur.shapePath!);
+    node.onDraw(canvas, mPaint);
   }
 
   void _drawText(Canvas canvas, SunburstNode node) {
-    Arc arc = node.cur.arc;
+    Arc arc = node.attr.arc;
     if (node.data.label == null || node.data.label!.isEmpty) {
       return;
     }
@@ -253,10 +252,10 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
       return;
     }
     TextDrawInfo config = TextDrawInfo(
-      node.cur.textPosition,
+      node.attr.textPosition,
       align: Alignment.center,
       maxWidth: arc.outRadius - arc.innerRadius,
-      rotate: node.cur.textRotateAngle,
+      rotate: node.attr.textRotateAngle,
     );
     style.draw(canvas, mPaint, node.data.label!, config);
   }
@@ -266,7 +265,7 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
       return;
     }
     AreaStyle style = series.backStyle ?? const AreaStyle(color: Colors.grey);
-    style.drawPath(canvas, mPaint, backNode!.cur.arc.toPath(true));
+    style.drawPath(canvas, mPaint, backNode!.attr.arc.toPath(true));
   }
 
   Offset computeCenter() {

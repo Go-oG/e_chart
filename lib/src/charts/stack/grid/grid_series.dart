@@ -39,7 +39,7 @@ class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends S
   });
 
   @override
-  DataHelper<T, G, StackSeries<StackItemData, StackGroupData<StackItemData>>> buildHelper() {
+  DataHelper<T, G, StackSeries<T, G>> buildHelper(Context context) {
     if (realtimeSort && data.isNotEmpty) {
       if (data.length > 1) {
         throw ChartError("当启用了实时排序后，只支持一个数据组");
@@ -64,8 +64,18 @@ class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends S
       if (c != group.data.length) {
         group.data.removeRange(c, group.data.length);
       }
-      return DataHelper(this, [group], direction, true, sort);
+      return DataHelper(
+        context,
+        this,
+        [group],
+        direction,
+        true,
+        sort,
+        getAreaStyle,
+        getLineStyle,
+        getLabelStyle,
+      );
     }
-    return super.buildHelper();
+    return super.buildHelper(context);
   }
 }

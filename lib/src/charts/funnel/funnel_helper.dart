@@ -52,7 +52,15 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     for (int i = 0; i < list.length; i++) {
       var data = list[i];
       ItemData? preData = i == 0 ? null : list[i - 1];
-      nodeList.add(FunnelNode(i, preData, data, i));
+      nodeList.add(FunnelNode(
+        i,
+        preData,
+        data,
+        i,
+        getAreaStyle(context, series, data, i, null),
+        getBorderStyle(context, series, data, i, null),
+        getLabelStyle(context, series, data, i, null),
+      ));
     }
 
     ///直接降序处理
@@ -224,10 +232,11 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     Map<FunnelNode, LabelStyle> oldMap2 = {};
     FunnelNode? hoverNode;
     for (var node in nodeList) {
-      oldMap[node] = node.areaStyle!;
-      if (node.labelStyle != null) {
-        oldMap2[node] = node.labelStyle!;
+      oldMap[node] = node.itemStyle;
+      if(node.labelStyle.show){
+        oldMap2[node] = node.labelStyle;
       }
+
       if (node.path.contains(offset)) {
         hoverNode = node;
         if (node.addState(ViewState.hover)) {
@@ -261,42 +270,42 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
 
     var animator = series.animation;
     if (animator == null || animator.updateDuration.inMilliseconds <= 0) {
-      old?.textConfig = old.textConfig?.copyWith(scaleFactor: 1);
-      hoverNode?.textConfig = hoverNode.textConfig?.copyWith(scaleFactor: 1.5);
+      old?.labelConfig = old.labelConfig?.copyWith(scaleFactor: 1);
+      hoverNode?.labelConfig = hoverNode.labelConfig?.copyWith(scaleFactor: 1.5);
       notifyLayoutUpdate();
       return;
     }
 
     List<ChartTween> tl = [];
     if (old != null && oldMap.containsKey(old)) {
-      AreaStyle style = getAreaStyle(context, series, old);
+      AreaStyle style = getAreaStyle(context, series, old.data, old.dataIndex, old.status);
       AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, props: animator);
       tween.addListener(() {
-        old.areaStyle = tween.value;
+        old.itemStyle = tween.value;
         notifyLayoutUpdate();
       });
       tl.add(tween);
       ChartDoubleTween tween2 =
-          ChartDoubleTween.fromValue((old.textConfig?.scaleFactor ?? 1).toDouble(), 1, props: animator);
+          ChartDoubleTween.fromValue((old.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animator);
       tween2.addListener(() {
-        old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+        old.labelConfig = old.labelConfig?.copyWith(scaleFactor: tween2.value);
         notifyLayoutUpdate();
       });
       tl.add(tween2);
     }
     if (hoverNode != null) {
       var node = hoverNode;
-      AreaStyle style = getAreaStyle(context, series, node);
+      AreaStyle style = getAreaStyle(context, series, node.data, node.dataIndex, node.status);
       AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, props: animator);
       tween.addListener(() {
-        node.areaStyle = tween.value;
+        node.itemStyle = tween.value;
         notifyLayoutUpdate();
       });
       tl.add(tween);
       ChartDoubleTween tween2 =
-          ChartDoubleTween.fromValue((node.textConfig?.scaleFactor ?? 1).toDouble(), 1.5, props: animator);
+          ChartDoubleTween.fromValue((node.labelConfig?.scaleFactor ?? 1).toDouble(), 1.5, props: animator);
       tween2.addListener(() {
-        node.textConfig = node.textConfig?.copyWith(scaleFactor: tween2.value);
+        node.labelConfig = node.labelConfig?.copyWith(scaleFactor: tween2.value);
         notifyLayoutUpdate();
       });
       tl.add(tween2);
@@ -322,25 +331,25 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       old.removeState(ViewState.hover);
-      old.areaStyle = getAreaStyle(context, series, old).convert(old.status);
+      old.itemStyle = getAreaStyle(context, series, old.data,old.dataIndex,old.status);
       notifyLayoutUpdate();
       return;
     }
 
     List<ChartTween> tl = [];
-    var oldStyle = old.areaStyle!;
+    var oldStyle = old.itemStyle;
     old.removeState(ViewState.hover);
-    var style = getAreaStyle(context, series, old).convert(old.status);
+    var style = getAreaStyle(context, series, old.data,old.dataIndex,old.status);
     AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: animation);
     tween.addListener(() {
-      old.areaStyle = tween.value;
+      old.itemStyle = tween.value;
       notifyLayoutUpdate();
     });
     tl.add(tween);
     ChartDoubleTween tween2 =
-        ChartDoubleTween.fromValue((old.textConfig?.scaleFactor ?? 1).toDouble(), 1, props: animation);
+        ChartDoubleTween.fromValue((old.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animation);
     tween2.addListener(() {
-      old.textConfig = old.textConfig?.copyWith(scaleFactor: tween2.value);
+      old.labelConfig = old.labelConfig?.copyWith(scaleFactor: tween2.value);
     });
     tl.add(tween2);
     for (var tw in tl) {
@@ -348,12 +357,34 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     }
   }
 
-  static AreaStyle getAreaStyle(Context context, FunnelSeries series, FunnelNode node) {
-    return series.getAreaStyle(context, node.data, node.dataIndex);
+  static AreaStyle getAreaStyle(
+    Context context,
+    FunnelSeries series,
+    ItemData data,
+    int dataIndex,
+    Set<ViewState>? status,
+  ) {
+    return series.getAreaStyle(context, data, dataIndex, status);
   }
 
-  static LineStyle? getBorderStyle(Context context, FunnelSeries series, FunnelNode node) {
-    return series.getBorderStyle(context, node.data, node.dataIndex);
+  static LineStyle getBorderStyle(
+    Context context,
+    FunnelSeries series,
+    ItemData data,
+    int dataIndex,
+    Set<ViewState>? status,
+  ) {
+    return series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
+  }
+
+  static LabelStyle getLabelStyle(
+    Context context,
+    FunnelSeries series,
+    ItemData data,
+    int dataIndex,
+    Set<ViewState>? status,
+  ) {
+    return series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
   }
 
   @override

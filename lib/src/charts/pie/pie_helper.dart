@@ -3,6 +3,8 @@ import 'package:e_chart/src/charts/pie/pie_tween.dart';
 
 import 'package:flutter/material.dart';
 
+import 'pie_node.dart';
+
 ///饼图布局
 class PieHelper extends LayoutHelper<PieSeries> {
   List<PieNode> _nodeList = [];
@@ -28,7 +30,7 @@ class PieHelper extends LayoutHelper<PieSeries> {
     hoverNode = null;
     _preHandleRadius();
     List<PieNode> oldList = _nodeList;
-    List<PieNode> newList = _preHandleData(series.data);
+    List<PieNode> newList = convertData(series.data);
     layoutNode(newList);
 
     var animation = series.animation;
@@ -201,14 +203,24 @@ class PieHelper extends LayoutHelper<PieSeries> {
     }
   }
 
-  List<PieNode> _preHandleData(List<ItemData> list) {
+  List<PieNode> convertData(List<ItemData> list) {
     maxData = double.minPositive;
     minData = double.maxFinite;
     allData = 0;
 
     List<PieNode> nodeList = [];
+    Set<ViewState> es = {};
     each(list, (data, i) {
-      nodeList.add(PieNode(data, i, -1));
+      nodeList.add(
+        PieNode(
+            data,
+            i,
+            -1,
+            Arc(),
+            series.getAreaStyle(context, data, i, es) ?? AreaStyle.empty,
+            series.getBorderStyle(context, data, i, es) ?? LineStyle.empty,
+            series.getLabelStyle(context, data, i, es) ?? LabelStyle.empty),
+      );
       maxData = max([data.value, maxData]);
       minData = min([data.value, minData]);
       allData += data.value;
@@ -332,49 +344,4 @@ class PieHelper extends LayoutHelper<PieSeries> {
 
   @override
   SeriesType get seriesType => SeriesType.pie;
-}
-
-class PieNode extends DataNode<Arc, ItemData> {
-  PieNode(ItemData data, int dataIndex, int groupIndex) : super(data, dataIndex, groupIndex, Arc());
-
-  ///计算文字的位置
-  TextDrawInfo? textDrawConfig;
-  LabelStyle? labelStyle;
-
-  void updateTextPosition(PieSeries series) {
-    labelStyle = null;
-    textDrawConfig = null;
-    var label = data.label;
-    if (label == null || label.isEmpty) {
-      return;
-    }
-    labelStyle = series.labelStyleFun?.call(data);
-    if (labelStyle == null || !labelStyle!.show) {
-      return;
-    }
-    if (series.labelAlign == CircleAlign.center) {
-      textDrawConfig = TextDrawInfo(attr.center, align: Alignment.center);
-      return;
-    }
-    if (series.labelAlign == CircleAlign.inside) {
-      double radius = (attr.innerRadius + attr.outRadius) / 2;
-      double angle = attr.startAngle + attr.sweepAngle / 2;
-      Offset offset = circlePoint(radius, angle).translate(attr.center.dx, attr.center.dy);
-      textDrawConfig = TextDrawInfo(offset, align: Alignment.center);
-      return;
-    }
-    if (series.labelAlign == CircleAlign.outside) {
-      num expand = labelStyle!.guideLine?.length ?? 0;
-      double centerAngle = attr.startAngle + attr.sweepAngle / 2;
-      Offset offset = circlePoint(attr.outRadius + expand, centerAngle, attr.center);
-      Alignment align = toAlignment(centerAngle, false);
-      if (centerAngle >= 90 && centerAngle <= 270) {
-        align = Alignment.centerRight;
-      } else {
-        align = Alignment.centerLeft;
-      }
-      textDrawConfig = TextDrawInfo(offset, align: align);
-      return;
-    }
-  }
 }

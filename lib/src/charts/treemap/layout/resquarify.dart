@@ -20,7 +20,7 @@ class ResquareLayout extends TreemapLayout {
     int j = -1;
     int n;
     int m = rows.length;
-    double value = parent.value;
+    double value = parent.value.toDouble();
     while (++j < m) {
       row = rows[j];
       nodes = row.children;

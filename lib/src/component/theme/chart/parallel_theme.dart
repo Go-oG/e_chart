@@ -1,9 +1,6 @@
-import 'dart:ui';
 
-class ParallelTheme {
-  num lineWidth = 1;
-  bool smooth=false;
-  List<num> dash=[];
-  List<Color> colors=[];
+import 'package:e_chart/e_chart.dart';
+
+class ParallelTheme extends BorderTheme{
 }
 

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'pie_helper.dart';
+import 'pie_node.dart';
 
 /// 饼图
 class PieView extends SeriesView<PieSeries, PieHelper> {
@@ -11,12 +12,7 @@ class PieView extends SeriesView<PieSeries, PieHelper> {
   void onDraw(Canvas canvas) {
     List<PieNode> nodeList = layoutHelper.nodeList;
     each(nodeList, (node, i) {
-      Path path = node.attr.toPath(true);
-      getAreaStyle(node, i)?.drawPath(canvas, mPaint, path);
-      getBorderStyle(node, i)?.drawPath(canvas, mPaint, path);
-    });
-    each(nodeList, (node, i) {
-      drawText(canvas, node);
+    node.onDraw(canvas, mPaint);
     });
   }
 
@@ -61,25 +57,10 @@ class PieView extends SeriesView<PieSeries, PieHelper> {
     }
   }
 
-  AreaStyle? getAreaStyle(PieNode node, int index) {
-    if (series.areaStyleFun != null) {
-      return series.areaStyleFun?.call(node.data);
-    }
-    var chartTheme = context.option.theme;
-    Color fillColor = chartTheme.getColor(index);
-    return AreaStyle(color: fillColor);
-  }
-
-  LineStyle? getBorderStyle(PieNode node, int index) {
-    if (series.borderFun != null) {
-      return series.borderFun?.call(node.data);
-    }
-    var theme = context.option.theme.pieTheme;
-    return theme.getBorderStyle();
-  }
 
   @override
   PieHelper buildLayoutHelper() {
     return PieHelper(context, series);
   }
+
 }

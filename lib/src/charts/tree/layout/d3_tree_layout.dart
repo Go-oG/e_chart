@@ -1,8 +1,6 @@
+import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-
-import '../node.dart';
-import '../tree_layout.dart';
 
 class D3TreeLayout extends TreeLayout {
   ///分离函数，用于决定两个节点(一般为兄弟节点)之间的间距
@@ -21,7 +19,7 @@ class D3TreeLayout extends TreeLayout {
     super.levelGapFun,
     super.lineType,
     super.sizeFun,
-    super.center=const [SNumber.percent(50), SNumber.percent(0)],
+    super.center = const [SNumber.percent(50), SNumber.percent(0)],
     super.centerIsRoot,
     super.levelGapSize,
     super.nodeGapSize,
@@ -61,7 +59,6 @@ class D3TreeLayout extends TreeLayout {
         node.y = node.deep * ky;
         return false;
       });
-      double topOffset = 0;
     }
   }
 
@@ -201,7 +198,7 @@ class D3TreeLayout extends TreeLayout {
   }
 }
 
-class InnerNode extends TreeNode<InnerNode> {
+class InnerNode extends TreeNode<Offset, Offset, InnerNode> {
   TreeLayoutNode? node;
   int i;
   InnerNode? A; // default ancestor
@@ -214,7 +211,17 @@ class InnerNode extends TreeNode<InnerNode> {
   num x = 0;
   num y = 0;
 
-  InnerNode(super.parent, this.node, this.i) {
+  InnerNode(
+    InnerNode? parent,
+    this.node,
+    this.i,
+  ) : super(parent, Offset.zero, 0, Offset.zero, AreaStyle.empty, LineStyle.empty, LabelStyle.empty) {
     a = this;
   }
+
+  @override
+  bool contains(Offset offset) => false;
+
+  @override
+  void onDraw(Canvas canvas, Paint paint) {}
 }

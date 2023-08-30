@@ -11,26 +11,21 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
   List<Offset> pointList = [];
 
-  FunnelNode(this.index, this.preData, ItemData data, int dataIndex) : super(data, dataIndex, -1, []);
-
-  TextDrawInfo? textConfig;
-  List<Offset>? labelLine;
-
+  FunnelNode(
+    this.index,
+    this.preData,
+    ItemData data,
+    int dataIndex,
+    AreaStyle itemStyle,
+    LineStyle borderStyle,
+    LabelStyle labelStyle,
+  ) : super(data, dataIndex, 0, [], itemStyle, borderStyle, labelStyle);
 
   void update(Context context, FunnelSeries series) {
-    ChartTheme chartTheme = context.option.theme;
-    FunnelTheme theme = chartTheme.funnelTheme;
-    AreaStyle? areaStyle = FunnelHelper.getAreaStyle(context, series, this);
-    this.areaStyle = areaStyle;
-
-    LabelStyle? labelStyle = series.getLabelStyle(context, data);
-    if (labelStyle == null && series.labelStyleFun != null) {
-      labelStyle = theme.labelStyle;
-    }
-    this.labelStyle = labelStyle;
-
-    textConfig = computeTextPosition(series);
-    labelLine = computeLabelLineOffset(context, series, textConfig?.offset);
+    itemStyle = FunnelHelper.getAreaStyle(context, series, data, dataIndex, status);
+    labelStyle = FunnelHelper.getLabelStyle(context, series, data, dataIndex, status);
+    labelConfig = computeTextPosition(series);
+    labelLine = computeLabelLineOffset(context, series, labelConfig?.offset);
   }
 
   void updatePoint(Context context, FunnelSeries series, List<Offset> pl) {
@@ -67,8 +62,8 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   }
 
   TextDrawInfo? computeTextPosition(FunnelSeries series) {
-    LabelStyle? style = labelStyle;
-    if (style == null || !style.show) {
+    var style = labelStyle;
+    if (!style.show) {
       return null;
     }
     Offset p0 = pointList[0];
@@ -106,8 +101,8 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
       return null;
     }
 
-    LabelStyle? style = series.getLabelStyle(context, data);
-    if (style == null || !style.show) {
+    LabelStyle style =labelStyle;
+    if (!style.show) {
       return null;
     }
     GuideLine? guideLine = style.guideLine;
@@ -141,5 +136,30 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   @override
   List<Offset> getAttr() {
     return List.from(pointList);
+  }
+
+  @override
+  void onDraw(Canvas canvas, Paint paint) {
+    itemStyle.drawPath(canvas, paint, path);
+    borderStyle.drawPath(canvas, paint, path);
+    TextDrawInfo? config = labelConfig;
+    DynamicText? label = data.label;
+    if (label == null || label.isEmpty || config == null) {
+      return;
+    }
+    var style = labelStyle;
+    if (!style.show) {
+      return;
+    }
+    List<Offset>? ol = labelLine;
+    if (ol != null) {
+      style.guideLine?.style.drawPolygon(canvas, paint, ol);
+    }
+    style.draw(canvas, paint, label, config);
+  }
+
+  @override
+  bool contains(Offset offset) {
+    return path.contains(offset);
   }
 }

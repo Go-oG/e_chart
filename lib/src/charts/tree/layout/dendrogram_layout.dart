@@ -20,7 +20,7 @@ class DendrogramLayout extends TreeLayout {
   });
 
   @override
-  void onLayout2(TreeLayoutNode root){
+  void onLayout2(TreeLayoutNode root) {
     List<num> yList = List.filled(root.height + 1, 0);
     for (int i = 1; i <= root.height; i++) {
       num levelGap = getLevelGap(i - 1, i);
@@ -35,8 +35,10 @@ class DendrogramLayout extends TreeLayout {
       Direction2 d = direction == Direction2.v ? Direction2.ttb : Direction2.ltr;
       return _layoutNode(root, d, yList);
     }
-    TreeLayoutNode leftNode = TreeLayoutNode(null, root.data);
-    TreeLayoutNode rightNode = TreeLayoutNode(null, root.data);
+    TreeLayoutNode leftNode =
+        TreeLayoutNode(null, root.data, 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+    TreeLayoutNode rightNode =
+        TreeLayoutNode(null, root.data, 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
     int middle = c ~/ 2;
     each(root.children, (node, i) {
       node.parent = null;
@@ -122,7 +124,9 @@ class DendrogramLayout extends TreeLayout {
         node.y = offset + size.height / 2;
         offset += size.height + getNodeGap(preNode ?? node, node).dy;
       }
-      if (node.parent != null && (node.parent!.height - node.height).abs() == 1 && !preLeafSet.contains(node.parent!.data)) {
+      if (node.parent != null &&
+          (node.parent!.height - node.height).abs() == 1 &&
+          !preLeafSet.contains(node.parent!.data)) {
         preLeafList.add(node.parent!);
       }
     }

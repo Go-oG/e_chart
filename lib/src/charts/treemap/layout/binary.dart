@@ -15,7 +15,7 @@ class BinaryLayout extends TreemapLayout {
     _layoutChildren(area, binaryNode);
     for (var node in binaryNode.children) {
       Rect rect = Rect.fromCenter(center: node.center, width: node.size.width, height: node.size.height);
-      node.layoutNode.cur.position = rect;
+      node.layoutNode.attr.rect = rect;
     }
   }
 
@@ -26,7 +26,7 @@ class BinaryLayout extends TreemapLayout {
     }
     List<double> sumList = [0];
     for (var element in nodeList) {
-      sumList.add(element.props.value + sumList.last);
+      sumList.add(element.data.value + sumList.last);
     }
 
     _partition(
@@ -34,7 +34,7 @@ class BinaryLayout extends TreemapLayout {
       nodeList,
       0,
       nodeList.length,
-      parent.props.value,
+      parent.data.value,
       area.left,
       area.top,
       area.right,
@@ -43,7 +43,8 @@ class BinaryLayout extends TreemapLayout {
   }
 
   static BinaryNode _convertToBinaryNode(BinaryNode? parent, TreeMapNode layoutNode, bool exit) {
-    BinaryNode node = BinaryNode(parent, layoutNode.data, layoutNode);
+    BinaryNode node = BinaryNode(
+        parent, layoutNode.data, 0, Rect.zero, AreaStyle.empty, LineStyle.empty, LabelStyle.empty, layoutNode);
     if (!exit) {
       for (TreeMapNode element in layoutNode.children) {
         node.add(_convertToBinaryNode(node, element, true));
@@ -113,9 +114,26 @@ class BinaryLayout extends TreemapLayout {
   }
 }
 
-class BinaryNode extends TreeNode<BinaryNode> {
-  final TreeData props;
+class BinaryNode extends TreeNode<TreeData, Rect, BinaryNode> {
   final TreeMapNode layoutNode;
 
-  BinaryNode(super.parent, this.props, this.layoutNode, {super.deep, super.maxDeep, super.value});
+  BinaryNode(
+    super.parent,
+    super.data,
+    super.dataIndex,
+    super.attr,
+    super.itemStyle,
+    super.borderStyle,
+    super.labelStyle,
+    this.layoutNode, {
+    super.deep,
+    super.maxDeep,
+    super.value,
+  });
+
+  @override
+  bool contains(Offset offset) => false;
+
+  @override
+  void onDraw(Canvas canvas, Paint paint) {}
 }

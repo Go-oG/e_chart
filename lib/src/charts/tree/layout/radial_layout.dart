@@ -2,11 +2,6 @@ import 'dart:math' as math;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-import '../node.dart';
-import '../tree_layout.dart';
-import 'd3_tree_layout.dart';
-import 'd3_dendrogram_layout.dart';
-
 ///环形分布
 class RadialTreeLayout extends TreeLayout {
   ///旋转角度

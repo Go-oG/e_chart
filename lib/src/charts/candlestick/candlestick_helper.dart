@@ -19,7 +19,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
-      var data = node.data;
+      var data = node.originData;
       if (data == null) {
         continue;
       }
@@ -43,7 +43,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     node.extSet(_colRectK, colRect);
     Rect boxRect = Rect.fromPoints(highC.translate(-tx, 0), lowC.translate(tx, 0));
     Rect areaRect;
-    if (node.data!.isUp) {
+    if (node.originData!.isUp) {
       areaRect = Rect.fromPoints(closeC.translate(-tx, 0), openC.translate(tx, 0));
     } else {
       areaRect = Rect.fromPoints(openC.translate(-tx, 0), closeC.translate(tx, 0));
@@ -52,7 +52,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     List<List<Offset>> borderList = [];
     borderList
         .add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
-    if (node.data!.isUp) {
+    if (node.originData!.isUp) {
       borderList.add([lowC, openC]);
       borderList.add([closeC, highC]);
     } else {
@@ -72,7 +72,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
 
   @override
   StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
-    if (node.data == null) {
+    if (node.originData == null) {
       return StackAnimationNode();
     }
     if (diffType == DiffType.accessor) {

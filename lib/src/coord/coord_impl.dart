@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/view_port.dart';
 import 'package:flutter/material.dart';
 
 ///负责处理和布局所有的子View
@@ -12,11 +13,11 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   double get scaleY => scale.dy;
 
-  late final CoordScroll scroll;
+  late final ViewPort viewPort;
 
-  double get scrollX => scroll.dx;
+  double get scrollX => viewPort.scrollX;
 
-  double get scrollY => scroll.dy;
+  double get scrollY => viewPort.scrollY;
 
   ///存储内容的边界
   Rect contentBox = Rect.zero;
@@ -27,7 +28,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   CoordLayout(this.props) : super() {
     layoutParams = props.layoutParams;
     scale = CoordScale(props.id, props.coordSystem, 1, 1);
-    scroll = CoordScroll(props.id, props.coordSystem, 0, 0);
+    viewPort =ViewPort.zero();
   }
 
   @override
@@ -159,7 +160,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   Offset getScroll() {
-    return Offset(scroll.dx, scroll.dy);
+    return viewPort.getScroll();
   }
 
   ///获取滚动的最大量(都应该是整数)

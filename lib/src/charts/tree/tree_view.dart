@@ -67,7 +67,7 @@ class TreeView extends SeriesView<TreeSeries, TreeLayout> {
       pres = [];
     }
     series.layout.rootNode.each((node, index, startNode) {
-      drawSymbol(canvas, node);
+      node.onDraw(canvas, mPaint);
       return false;
     });
 
@@ -83,26 +83,12 @@ class TreeView extends SeriesView<TreeSeries, TreeLayout> {
     debugDraw(canvas, Offset(centerX, centerY));
   }
 
-  void drawSymbol(Canvas canvas, TreeLayoutNode node) {
-    Offset offset = node.center;
-    if (offset.dx.isNaN || offset.dy.isNaN) {
-      return;
-    }
-    Size nodeSize = node.size;
-    series.symbolFun.call(node, nodeSize).draw(canvas, mPaint, offset);
-    DynamicText label = node.data.label ?? DynamicText.empty;
-    if (label.isEmpty) {
-      return;
-    }
-    LabelStyle? style = series.labelStyleFun?.call(node);
-    TextDrawInfo config = TextDrawInfo(offset);
-    style?.draw(canvas, mPaint, label, config);
-  }
+  void drawSymbol(Canvas canvas, TreeLayoutNode node) {}
 
   void drawLine(Canvas canvas, TreeLayoutNode parent, TreeLayoutNode child) {
     Path? path = series.layout.getPath(parent, child);
     if (path != null) {
-      series.lineStyleFun.call(parent, child).drawPath(canvas, mPaint, path);
+      series.linkStyleFun.call(parent, child).drawPath(canvas, mPaint, path);
     }
   }
 

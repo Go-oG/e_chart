@@ -41,11 +41,13 @@ class LineSymbolNode extends SymbolNode<StackItemData> {
 
   LineSymbolNode(
     StackItemData data,
+    ChartSymbol symbol,
     int dataIndex,
     int groupIndex,
-    Offset attr,
     this.group,
-  ) : super(data, dataIndex, groupIndex, attr);
+  ) : super(symbol, dataIndex, groupIndex) {
+    originData = data;
+  }
 }
 
 class OptLinePath extends OptPath {

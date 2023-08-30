@@ -50,7 +50,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   Fun4<T?, G, Set<ViewState>, LineStyle?>? lineStyleFun;
 
   /// 标签转换
-  Fun5<dynamic,T, G, Set<ViewState>, DynamicText?>? labelFormatFun;
+  Fun5<dynamic, T, G, Set<ViewState>, DynamicText?>? labelFormatFun;
 
   /// 标签对齐
   Fun4<T, G, Set<ViewState>, ChartAlign>? labelAlignFun;
@@ -109,15 +109,25 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     super.z,
   }) : super(radarIndex: -1, parallelIndex: -1, calendarIndex: -1);
 
-  DataHelper<T, G, StackSeries>? _helper;
+  DataHelper<T, G, StackSeries<T, G>>? _helper;
 
-  DataHelper<T, G, StackSeries> get helper {
-    _helper ??= buildHelper();
+  DataHelper<T, G, StackSeries<T, G>> getHelper(Context context) {
+    _helper ??= buildHelper(context);
     return _helper!;
   }
 
-  DataHelper<T, G, StackSeries> buildHelper() {
-    return DataHelper(this, data, direction, realtimeSort, sort);
+  DataHelper<T, G, StackSeries<T, G>> buildHelper(Context context) {
+    return DataHelper(
+      context,
+      this,
+      data,
+      direction,
+      realtimeSort,
+      sort,
+      getAreaStyle,
+      getLineStyle,
+      getLabelStyle,
+    );
   }
 
   @override
@@ -129,9 +139,6 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   @override
   void notifyUpdateData() {
     _helper = null;
-    Future(() {
-      helper.getCrossExtreme(CoordType.polar, -1);
-    }).then((value) => super.notifyUpdateData());
   }
 
   List<MarkPoint> getMarkPoint(G group) {
@@ -154,27 +161,16 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     return [];
   }
 
-  LabelStyle? getLabelStyle(Context context, T data, G group, [Set<ViewState>? status]) {
-    if (labelStyleFun != null) {
-      return labelStyleFun?.call(data, group, status ?? {});
-    }
-    if (labelStyle != null) {
-      return labelStyle;
-    }
-    var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(status);
-   }
-
-  DynamicText? formatData(Context context, T data, G group, [Set<ViewState>? status]) {
+  DynamicText? formatData(Context context, T data, G group, Set<ViewState> status) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data,data, group, status ?? {});
+      return labelFormatFun?.call(data, data, group, status);
     }
     return formatNumber(data.stackUp).toText();
   }
 
-  AreaStyle? getAreaStyle(Context context, T? data, G group, int styleIndex, [Set<ViewState>? status]) {
+  AreaStyle? getAreaStyle(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group, status ?? {});
+      return areaStyleFun?.call(data, group, status);
     }
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
@@ -190,9 +186,9 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     return null;
   }
 
-  LineStyle? getLineStyle(Context context, T? data, G group, int styleIndex, [Set<ViewState>? status]) {
+  LineStyle? getLineStyle(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
     if (lineStyleFun != null) {
-      return lineStyleFun?.call(data, group, status ?? {});
+      return lineStyleFun?.call(data, group, status);
     }
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
@@ -204,9 +200,26 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     }
   }
 
-  ChartAlign getLabelAlign(Context context, T data, G group, [Set<ViewState>? status]) {
+  LabelStyle? getLabelStyle(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
+    if (data == null) {
+      return null;
+    }
+    if (labelStyleFun != null) {
+      return labelStyleFun?.call(data, group, status);
+    }
+    if (labelStyle != null) {
+      return labelStyle;
+    }
+    var theme = context.option.theme;
+    return theme.getLabelStyle()?.convert(status);
+  }
+
+  ChartAlign? getLabelAlign(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
+    if (data == null) {
+      return null;
+    }
     if (labelAlignFun != null) {
-      return labelAlignFun!.call(data, group, status ?? {});
+      return labelAlignFun!.call(data, group, status);
     }
     if (labelAlign != null) {
       return labelAlign!;

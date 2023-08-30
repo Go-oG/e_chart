@@ -20,28 +20,9 @@ class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
       canvas.clipRect(Rect.fromLTWH(tx.abs(), ty.abs(), width, height * ap));
     }
     for (var ele in nodeList) {
-      AreaStyle style = ele.areaStyle ?? layoutHelper.getStyle(ele);
-      style.drawPath(canvas, mPaint, ele.drawPath);
-    }
-
-    //这里拆分开是为了避免文字被遮挡
-    for (var element in nodeList) {
-      drawText(canvas, element);
+      ele.onDraw(canvas, mPaint);
     }
     canvas.restore();
-  }
-
-  void drawText(Canvas canvas, ThemeRiverNode node) {
-    var label = node.data.label;
-    var config=node.attr.textConfig;
-    if (config==null||label == null || label.isEmpty) {
-      return;
-    }
-    LabelStyle? style = node.labelStyle ?? layoutHelper.getLabelStyle(node);
-    if (style == null) {
-      return;
-    }
-    style.draw(canvas, mPaint, label, config);
   }
 
   @override

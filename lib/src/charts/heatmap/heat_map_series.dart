@@ -49,7 +49,7 @@ class HeatMapSeries extends RectSeries {
       return areaStyleFun!.call(data);
     }
     var theme = context.option.theme;
-    return AreaStyle(color: theme.colors[index % theme.colors.length]);
+    return AreaStyle(color: theme.colors[index % theme.colors.length]).convert(status);
   }
 
   LineStyle? getBorderStyle(Context context, HeatMapData data, int index, [Set<ViewState>? status]) {

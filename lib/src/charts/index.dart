@@ -41,7 +41,6 @@ export 'pack/pack_node.dart';
 
 export 'sankey/sankey_series.dart';
 export 'sankey/sankey_align.dart';
-export 'sankey/sort.dart';
 export 'sankey/sankey_node.dart';
 
 export 'sunburst/sunburst_series.dart';
@@ -65,6 +64,6 @@ export 'treemap/layout/resquarify.dart';
 export 'treemap/layout/slice.dart';
 export 'treemap/layout/slice_dice.dart';
 export 'treemap/layout/square.dart' hide Row;
-export 'treemap/node.dart';
+export 'treemap/treemap_node.dart';
 export 'treemap/treemap_series.dart';
 

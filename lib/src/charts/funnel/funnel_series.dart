@@ -15,12 +15,12 @@ class FunnelSeries extends RectSeries {
 
   LabelStyle? labelStyle;
 
-  Fun2<ItemData, AreaStyle>? areaStyleFun;
-  Fun2<ItemData, LineStyle?>? borderStyleFun;
-  Fun2<ItemData, LabelStyle>? labelStyleFun;
-  Fun2<ItemData, LineStyle>? labelLineStyleFun;
-  Fun2<ItemData, ChartAlign>? labelAlignFun;
-  Fun2<ItemData, DynamicText>? labelFormatFun;
+  Fun3<ItemData, Set<ViewState>, AreaStyle>? areaStyleFun;
+  Fun3<ItemData, Set<ViewState>, LineStyle?>? borderStyleFun;
+  Fun3<ItemData, Set<ViewState>, LabelStyle>? labelStyleFun;
+  Fun3<ItemData, Set<ViewState>, LineStyle>? labelLineStyleFun;
+  Fun3<ItemData, Set<ViewState>, ChartAlign>? labelAlignFun;
+  Fun3<ItemData, Set<ViewState>, DynamicText>? labelFormatFun;
 
   FunnelSeries(
     this.dataList, {
@@ -62,7 +62,7 @@ class FunnelSeries extends RectSeries {
 
   AreaStyle getAreaStyle(Context context, ItemData data, int index, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
-      return areaStyleFun!.call(data);
+      return areaStyleFun!.call(data, status ?? {});
     }
     var theme = context.option.theme.funnelTheme;
     if (theme.colors.isNotEmpty) {
@@ -74,15 +74,15 @@ class FunnelSeries extends RectSeries {
 
   LineStyle? getBorderStyle(Context context, ItemData data, int index, [Set<ViewState>? status]) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data);
+      return borderStyleFun!.call(data, status ?? {});
     }
     var theme = context.option.theme.funnelTheme;
     return theme.getBorderStyle();
   }
 
-  LabelStyle? getLabelStyle(Context context, ItemData data) {
+  LabelStyle? getLabelStyle(Context context, ItemData data, int index, [Set<ViewState>? status]) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data);
+      return labelStyleFun!.call(data, status ?? {});
     }
     if (labelStyle != null) {
       return labelStyle;
@@ -91,9 +91,9 @@ class FunnelSeries extends RectSeries {
     return theme.getLabelStyle();
   }
 
-  ChartAlign getLabelAlign(ItemData data) {
+  ChartAlign getLabelAlign(ItemData data, [Set<ViewState>? status]) {
     if (labelAlignFun != null) {
-      return labelAlignFun!.call(data);
+      return labelAlignFun!.call(data, status ?? {});
     }
     if (labelAlign != null) {
       return labelAlign!;
@@ -105,9 +105,9 @@ class FunnelSeries extends RectSeries {
     }
   }
 
-  DynamicText? formatData(Context context, ItemData data) {
+  DynamicText? formatData(Context context, ItemData data, [Set<ViewState>? status]) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data);
+      return labelFormatFun?.call(data, status ?? {});
     }
     return formatNumber(data.value).toText();
   }

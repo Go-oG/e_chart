@@ -1,18 +1,14 @@
-import 'dart:math';
+import 'dart:math' as m;
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-import '../link.dart';
-
-typedef TreeFun<T extends TreeNode<T>> = bool Function(T node, int index, T startNode);
+typedef TreeFun<D, A, T extends TreeNode<D, A, T>> = bool Function(T node, int index, T startNode);
 
 ///通用的树节点抽象表示
-class TreeNode<T extends TreeNode<T>> {
+abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D> {
   T? parent;
   final List<T> _childrenList = [];
-
-  ///当前节点的值(永远>=0)
-  num _value = 0;
 
   ///后代节点数
   int _count = 0;
@@ -26,16 +22,30 @@ class TreeNode<T extends TreeNode<T>> {
   ///树的逻辑高度
   int _height = 0;
 
-  bool _expand = true; //是否展开
-  bool select = false; //是否被选中
+  num _value = 0;
 
-  TreeNode(this.parent, {this.maxDeep = -1, int deep = 0, num value = 0}) {
-    _value = value;
+  bool _expand = true; //是否展开
+
+  TreeNode(
+    this.parent,
+    D data,
+    int dataIndex,
+    A attr,
+    AreaStyle itemStyle,
+    LineStyle borderStyle,
+    LabelStyle labelStyle, {
+    this.maxDeep = -1,
+    int deep = 0,
+    num value = 0,
+    int groupIndex = 0,
+  }) : super(data, dataIndex, groupIndex, attr, itemStyle, borderStyle, labelStyle) {
     this._deep = deep;
-    if (_value < 0) {
-      throw FlutterError('Value must >=0');
-    }
+    this._value = value;
   }
+
+  num get value => _value;
+
+  set value(num v) => _value = v;
 
   void removeChild(bool Function(T) filter) {
     _childrenList.removeWhere(filter);
@@ -98,15 +108,6 @@ class TreeNode<T extends TreeNode<T>> {
   int get height => _height;
 
   int get deep => _deep;
-
-  double get value => _value.toDouble();
-
-  set value(num v) {
-    if (v < 0) {
-      throw FlutterError('value 必须大于等于0¬');
-    }
-    _value = v;
-  }
 
   T childAt(int index) {
     return _childrenList[index];
@@ -188,7 +189,7 @@ class TreeNode<T extends TreeNode<T>> {
     return resultList;
   }
 
-  T each(TreeFun<T> callback) {
+  T each(TreeFun<D, A, T> callback) {
     int index = -1;
     for (var node in iterator()) {
       if (callback.call(node, ++index, this as T)) {
@@ -199,7 +200,7 @@ class TreeNode<T extends TreeNode<T>> {
   }
 
   ///先序遍历
-  T eachBefore(TreeFun<T> callback) {
+  T eachBefore(TreeFun<D, A, T> callback) {
     List<T> nodes = [this as T];
     List<T> children;
     int index = -1;
@@ -215,7 +216,7 @@ class TreeNode<T extends TreeNode<T>> {
   }
 
   ///后序遍历
-  T eachAfter(TreeFun<T> callback) {
+  T eachAfter(TreeFun<D, A, T> callback) {
     List<T> nodes = [this as T];
     List<T> next = [];
     List<T> children;
@@ -236,7 +237,7 @@ class TreeNode<T extends TreeNode<T>> {
   }
 
   ///在子节点中查找对应节点
-  T? findInChildren(TreeFun<T> callback) {
+  T? findInChildren(TreeFun<D, A, T> callback) {
     int index = -1;
     for (T node in _childrenList) {
       if (callback.call(node, ++index, this as T)) {
@@ -246,7 +247,7 @@ class TreeNode<T extends TreeNode<T>> {
     return null;
   }
 
-  T? find(TreeFun<T> callback) {
+  T? find(TreeFun<D, A, T> callback) {
     T? result;
     each((node, index, startNode) {
       if (callback.call(node, index, this as T)) {
@@ -387,22 +388,22 @@ class TreeNode<T extends TreeNode<T>> {
 
   /// 计算树的高度
   void computeHeight([int initHeight = 0]) {
-    List<List<T>> levelList=[];
+    List<List<T>> levelList = [];
     List<T> tmp = [this as T];
     List<T> next = [];
     while (tmp.isNotEmpty) {
       levelList.add(tmp);
-      next=[];
-     for(var c in tmp){
-       next.addAll(c.children);
-     }
-      tmp=next;
+      next = [];
+      for (var c in tmp) {
+        next.addAll(c.children);
+      }
+      tmp = next;
     }
-    int c=levelList.length;
-    for(int i=0;i<c;i++){
-     for (var node in levelList[i]) {
-       node._height=c-i-1;
-     }
+    int c = levelList.length;
+    for (int i = 0; i < c; i++) {
+      for (var node in levelList[i]) {
+        node._height = c - i - 1;
+      }
     }
   }
 
@@ -429,7 +430,7 @@ class TreeNode<T extends TreeNode<T>> {
   int findMaxDeep() {
     int i = 0;
     leaves().forEach((element) {
-      i = max(i, element.deep);
+      i = m.max(i, element.deep);
     });
     return i;
   }
@@ -487,10 +488,10 @@ class TreeNode<T extends TreeNode<T>> {
     num top = y;
     num bottom = y;
     this.each((node, index, startNode) {
-      left = min(left, node.x);
-      top = min(top, node.y);
-      right = max(right, node.x);
-      bottom = max(bottom, node.y);
+      left = m.min(left, node.x);
+      top = m.min(top, node.y);
+      right = m.max(right, node.x);
+      bottom = m.max(bottom, node.y);
       return false;
     });
     return Rect.fromLTRB(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble());
@@ -536,7 +537,6 @@ class TreeNode<T extends TreeNode<T>> {
     node._height = _height;
     node._count = _count;
     node._expand = _expand;
-    node.select = select;
     for (var ele in _childrenList) {
       node.add(ele._innerCopy(build, node, deep + 1));
     }
@@ -564,7 +564,7 @@ class TreeNode<T extends TreeNode<T>> {
   bool get isLeaf => childCount <= 0;
 
   ///返回 节点 a,b的最小公共祖先
-  static T? minCommonAncestor<T extends TreeNode<T>>(T a, T b) {
+  static T? minCommonAncestor<T extends TreeNode<dynamic, dynamic, T>>(T a, T b) {
     if (a == b) return a;
     var aNodes = a.ancestors();
     var bNodes = b.ancestors();
@@ -580,31 +580,24 @@ class TreeNode<T extends TreeNode<T>> {
   }
 }
 
-T toTree<D, T extends TreeNode<T>>(D data,
-    List<D> Function(D) childrenCallback,
-    T Function(T?, D) build, {
-      int deep = 0,
-      T? parent,
-      int Function(T, T)? sort,
-    }) {
+T toTree<D, A, T extends TreeNode<D, A, T>>(
+  D data,
+  List<D> Function(D) childrenCallback,
+  T Function(T?, D) build, {
+  int deep = 0,
+  T? parent,
+  int Function(T, T)? sort,
+}) {
   T root = build.call(parent, data);
   root._deep = deep;
   root.parent = parent;
   for (var child in childrenCallback.call(data)) {
-    root.add(toTree<D, T>(child, childrenCallback, build, deep: deep + 1, parent: root));
+    root.add(toTree<D, A, T>(child, childrenCallback, build, deep: deep + 1, parent: root));
   }
   if (sort != null) {
     root._childrenList.sort((a, b) {
       return sort.call(a, b);
     });
-  }
-  return root;
-}
-
-D convertTree<T extends TreeNode<T>, D extends TreeNode<D>>(T tree, D Function(D?, T) build, {D? parent}) {
-  D root = build.call(parent, tree);
-  for (var child in tree._childrenList) {
-    root.add(convertTree<T, D>(child, build, parent: root));
   }
   return root;
 }

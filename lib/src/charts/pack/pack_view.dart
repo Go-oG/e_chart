@@ -23,15 +23,7 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
     Matrix4 matrix4 = Matrix4.compose(Vector3(tx, ty, 0), Quaternion.identity(), Vector3(scale, scale, 1));
     canvas.transform(matrix4.storage);
     root.each((node, p1, p2) {
-      AreaStyle? style = series.getItemStyle(context, node);
-      var borderStyle = series.getBorderStyle(context, node);
-      if (style == null && borderStyle == null) {
-        return false;
-      }
-      Offset center = Offset(node.getAttr().x, node.getAttr().y);
-      double r = node.getAttr().r;
-      style?.drawCircle(canvas, mPaint, center, r);
-      borderStyle?.drawArc(canvas, mPaint, r - borderStyle.width / 2, 0, 360);
+      node.onDraw(canvas, mPaint);
       return false;
     });
     canvas.restore();

@@ -4,14 +4,15 @@ import 'parallel_view.dart';
 
 class ParallelSeries extends ChartSeries {
   List<ParallelGroup> data;
-  Fun4<ParallelGroup, int, Set<ViewState>, LineStyle>? styleFun;
-  Fun4<ParallelGroup, int, Set<ViewState>, ChartSymbol?>? symbolFun;
+  Fun4<ParallelGroup, int, Set<ViewState>, LineStyle>? borderStyleFun;
+  Fun4<ParallelGroup, int, Set<ViewState>, LabelStyle>? labelStyleFun;
+  Fun6<dynamic, ParallelGroup, int, int, Set<ViewState>?, ChartSymbol?>? symbolFun;
 
   bool connectNull;
 
   ParallelSeries({
     required this.data,
-    this.styleFun,
+    this.borderStyleFun,
     this.symbolFun,
     this.connectNull = true,
     super.animation,
@@ -26,6 +27,22 @@ class ParallelSeries extends ChartSeries {
   @override
   ChartView? toView() {
     return ParallelView(this);
+  }
+
+  LineStyle? getBorderStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
+    if (borderStyleFun != null) {
+      return borderStyleFun!.call(data, index, status ?? {});
+    }
+    var theme = context.option.theme.parallelTheme;
+    return theme.getStyle();
+  }
+
+  LabelStyle? getLabelStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
+    if (labelStyleFun != null) {
+      return labelStyleFun!.call(data, index, status ?? {});
+    }
+    var theme = context.option.theme;
+    return theme.getLabelStyle()?.convert(status);
   }
 }
 

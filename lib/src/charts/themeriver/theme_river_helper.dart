@@ -1,6 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
+import 'theme_river_node.dart';
+
 class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
   num maxTransX = 0, maxTransY = 0;
   List<ThemeRiverNode> nodeList = [];
@@ -12,8 +14,17 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
   void onLayout(LayoutType type) {
     tx = ty = 0;
     List<ThemeRiverNode> newList = [];
+    Set<ViewState> emptyVS = {};
     each(series.data, (d, i) {
-      ThemeRiverNode node = ThemeRiverNode(d, i, 0, ThemeRiverAttr.empty);
+      ThemeRiverNode node = ThemeRiverNode(
+        d,
+        i,
+        0,
+        ThemeRiverAttr.empty,
+        series.getAreaStyle(context, d, i, emptyVS) ?? AreaStyle.empty,
+        series.getBorderStyle(context, d, i, emptyVS) ?? LineStyle.empty,
+        series.getLabelStyle(context, d, i, emptyVS) ?? LabelStyle.empty,
+      );
       newList.add(node);
     });
     var animation = series.animation;
@@ -92,9 +103,8 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
           pList2.add(Offset(ele[i].py + ele[i].py0, ele[i].x));
         }
       }
-      node._buildPath(pList, pList2, series.smooth, series.direction);
+      node.update(pList, pList2, series.smooth, series.direction);
     }
-    //   adjust(newList, width, height);
   }
 
   @override
@@ -186,11 +196,11 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
     ChartDoubleTween tween = ChartDoubleTween(props: series.animation!);
     AreaStyleTween? selectTween;
     AreaStyleTween? unselectTween;
-    if (clickNode != null && clickNode.areaStyle != null) {
-      selectTween = AreaStyleTween(clickNode.areaStyle!, getStyle(clickNode));
+    if (clickNode != null) {
+      selectTween = AreaStyleTween(clickNode.itemStyle, getStyle(clickNode));
     }
-    if (oldNode != null && oldNode.areaStyle != null) {
-      unselectTween = AreaStyleTween(oldNode.areaStyle!, getStyle(oldNode));
+    if (oldNode != null) {
+      unselectTween = AreaStyleTween(oldNode.itemStyle, getStyle(oldNode));
     }
     nodeList.sort((a, b) {
       return a.attr.index.compareTo(b.attr.index);
@@ -198,10 +208,10 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
     tween.addListener(() {
       double p = tween.value;
       if (selectTween != null) {
-        clickNode!.areaStyle = selectTween.safeGetValue(p);
+        clickNode!.itemStyle = selectTween.safeGetValue(p);
       }
       if (unselectTween != null) {
-        oldNode!.areaStyle = unselectTween.safeGetValue(p);
+        oldNode!.itemStyle = unselectTween.safeGetValue(p);
       }
       notifyLayoutUpdate();
     });
@@ -210,7 +220,7 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
 
   ThemeRiverNode? findNode(Offset offset) {
     for (var node in nodeList) {
-      if (node.attr.area.toPath(true).contains(offset)) {
+      if (node.contains(offset)) {
         return node;
       }
     }
@@ -235,47 +245,6 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
     var theme = context.option.theme;
     return theme.getLabelStyle()?.convert(node.status);
   }
-}
-
-class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
-  ThemeRiverNode(super.data, super.dataIndex, super.groupIndex, super.attr);
-
-  void _buildPath(List<Offset> pList, List<Offset> pList2, bool smooth, Direction direction) {
-    Area area;
-    if (direction == Direction.vertical) {
-      area = Area.vertical(pList, pList2, upSmooth: smooth, downSmooth: smooth);
-    } else {
-      area = Area(pList, pList2, upSmooth: smooth, downSmooth: smooth);
-    }
-
-    List<Offset> polygonList = [];
-    polygonList.addAll(pList);
-    polygonList.addAll(pList2.reversed);
-
-    Offset o1 = polygonList.first;
-    Offset o2 = polygonList.last;
-    TextDrawInfo config;
-    if (direction == Direction.horizontal) {
-      Offset offset = Offset(o1.dx, (o1.dy + o2.dy) * 0.5);
-      config = TextDrawInfo(offset, align: Alignment.centerLeft);
-    } else {
-      Offset offset = Offset((o1.dx + o2.dx) / 2, o1.dy);
-      config = TextDrawInfo(offset, align: Alignment.topCenter);
-    }
-    attr = ThemeRiverAttr(polygonList, area, config);
-  }
-
-  Path get drawPath => attr.area.toPath(true);
-}
-
-class ThemeRiverAttr {
-  static final empty = ThemeRiverAttr([], Area([], []), null);
-  final List<Offset> polygonList;
-  final Area area;
-  final TextDrawInfo? textConfig;
-  int index = 0;
-
-  ThemeRiverAttr(this.polygonList, this.area, this.textConfig);
 }
 
 class _InnerNode {

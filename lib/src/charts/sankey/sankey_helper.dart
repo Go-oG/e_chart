@@ -28,8 +28,8 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     top = 0;
     right = width;
     bottom = height;
-    List<SankeyNode> nodes = buildNodes(series.data.data, series.data.links, 0);
-    List<SankeyLink> links = buildLink(nodes, series.data.links);
+    List<SankeyNode> nodes = dataToNode(series.data.data, series.data.links, 0);
+    List<SankeyLink> links = dataToLink(nodes, series.data.links);
     layoutNode(nodes, links);
     var animation = series.animation;
     if (animation != null && type == LayoutType.layout) {
@@ -65,41 +65,6 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   //   _computeLinkBreadths(nodes);
   //   _computeLinkPosition(links, nodes);
   // }
-
-  AreaStyle? getAreaStyle(SankeyNode node) {
-    var fun = series.areaStyleFun;
-    if (fun != null) {
-      return fun.call(node.data, node.dataIndex, node.status);
-    }
-    return context.option.theme.getAreaStyle(node.dataIndex).convert(node.status);
-  }
-
-  LineStyle? getBorderStyle(SankeyNode node) {
-    var fun = series.borderStyleFun;
-    if (fun != null) {
-      return fun.call(node.data, node.dataIndex, node.status);
-    }
-    return context.option.theme.sankeyTheme.getStyle()?.convert(node.status);
-  }
-
-  AreaStyle getLinkStyle(SankeyNode source, SankeyNode target) {
-    var fun = series.linkStyleFun;
-    if (fun != null) {
-      return fun.call(source.data, source.dataIndex, source.status, target.data, target.dataIndex, target.status);
-    }
-    var color = context.option.theme.sankeyTheme.linkColor;
-    if (color != null) {
-      return AreaStyle(color: context.option.theme.sankeyTheme.color);
-    }
-    var as = getAreaStyle(source)?.color;
-    var ae = getAreaStyle(target)?.color;
-    if (as != null && ae != null) {
-      if (!source.isDisabled && !target.isDisabled) {
-        return AreaStyle(shader: LineShader([as.withOpacity(0.5), ae.withOpacity(0.5)]));
-      }
-    }
-    return AreaStyle(color: Colors.grey.withOpacity(0.5));
-  }
 
   @override
   void onClick(Offset localOffset) {
@@ -177,16 +142,15 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   ///找到点击节点(优先节点而不是边)
   dynamic findEventNode(Offset offset) {
     for (var ele in _nodes) {
-      if (ele.rect.contains2(offset)) {
+      if (ele.contains(offset)) {
         return ele;
       }
     }
     for (var element in _links) {
-      if (element.area.toPath(true).contains(offset)) {
+      if (element.contains(offset)) {
         return element;
       }
     }
-
     return null;
   }
 
@@ -258,7 +222,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   /// 计算链接位置
   void _computeLinkPosition(List<SankeyLink> links, List<SankeyNode> nodes) {
     for (var node in nodes) {
-      node.rect = Rect.fromLTRB(node.left, node.top, node.right, node.bottom);
+      node.attr = Rect.fromLTRB(node.left, node.top, node.right, node.bottom);
     }
     for (var link in links) {
       link.computeAreaPath(series.smooth);
@@ -559,30 +523,55 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     return y;
   }
 
-  static List<SankeyNode> buildNodes(List<ItemData> dataList, List<SankeyLinkData> links, double nodeWidth) {
+  List<SankeyNode> dataToNode(List<ItemData> dataList, List<SankeyLinkData> links, double nodeWidth) {
     List<SankeyNode> resultList = [];
     Set<ItemData> dataSet = {};
+    int index = 0;
+    Set<ViewState> emptyVS = {};
     each(dataList, (data, i) {
       if (dataSet.contains(data)) {
         return;
       }
       dataSet.add(data);
-      SankeyNode layoutNode = SankeyNode(data, [], [], i);
+      SankeyNode layoutNode = SankeyNode(
+        data,
+        [],
+        [],
+        index,
+        series.getItemStyle(context, data, index, emptyVS) ?? AreaStyle.empty,
+        series.getBorderStyle(context, data, index, emptyVS) ?? LineStyle.empty,
+        series.getLabelStyle(context, data, index, emptyVS) ?? LabelStyle.empty,
+      );
       resultList.add(layoutNode);
+      index += 1;
     });
-
-    int index = dataList.length;
 
     for (var link in links) {
       if (!dataSet.contains(link.src)) {
         dataSet.add(link.src);
-        SankeyNode layoutNode = SankeyNode(link.src, [], [], index);
+        SankeyNode layoutNode = SankeyNode(
+          link.src,
+          [],
+          [],
+          index,
+          series.getItemStyle(context, link.src, index, emptyVS) ?? AreaStyle.empty,
+          series.getBorderStyle(context, link.src, index, emptyVS) ?? LineStyle.empty,
+          series.getLabelStyle(context, link.src, index, emptyVS) ?? LabelStyle.empty,
+        );
         index += 1;
         resultList.add(layoutNode);
       }
       if (!dataSet.contains(link.target)) {
         dataSet.add(link.target);
-        SankeyNode layoutNode = SankeyNode(link.target, [], [], index);
+        SankeyNode layoutNode = SankeyNode(
+          link.target,
+          [],
+          [],
+          index,
+          series.getItemStyle(context, link.target, index, emptyVS) ?? AreaStyle.empty,
+          series.getBorderStyle(context, link.target, index, emptyVS) ?? LineStyle.empty,
+          series.getLabelStyle(context, link.target, index, emptyVS) ?? LabelStyle.empty,
+        );
         index += 1;
         resultList.add(layoutNode);
       }
@@ -590,17 +579,31 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     return resultList;
   }
 
-  static List<SankeyLink> buildLink(List<SankeyNode> nodes, List<SankeyLinkData> links) {
+  List<SankeyLink> dataToLink(List<SankeyNode> nodes, List<SankeyLinkData> links) {
+    Set<ViewState> emptyVS = {};
     Map<String, SankeyNode> nodeMap = {};
     for (var element in nodes) {
       nodeMap[element.data.id] = element;
     }
     List<SankeyLink> resultList = [];
-    for (var link in links) {
+    each(links, (link, i) {
       SankeyNode srcNode = nodeMap[link.src.id]!;
       SankeyNode targetNode = nodeMap[link.target.id]!;
-      resultList.add(SankeyLink(srcNode, targetNode, link.value));
-    }
+      var src = link.src;
+      var srcIndex = srcNode.dataIndex;
+      var target = link.target;
+      var targetIndex = targetNode.dataIndex;
+      resultList.add(SankeyLink(
+        srcNode,
+        targetNode,
+        link.value,
+        i,
+        0,
+        series.getLinkStyle(context, src, srcIndex, target, targetIndex, i, emptyVS),
+        series.getLinkBorderStyle(context, src, srcIndex, target, targetIndex, i, emptyVS) ?? LineStyle.empty,
+        series.getLinkLabelStyle(context, src, srcIndex, target, targetIndex, i, emptyVS) ?? LabelStyle.empty,
+      ));
+    });
     return resultList;
   }
 }

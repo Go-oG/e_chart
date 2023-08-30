@@ -57,7 +57,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     final colRect = columnNode.rect;
     GridAxis xAxis = findGridCoord().getAxis(xIndex.axisIndex, true);
     for (var node in columnNode.nodeList) {
-      if (node.data == null) {
+      if (node.originData == null) {
         continue;
       }
       if (vertical) {
@@ -201,7 +201,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       if (data == null || off == null) {
         return;
       }
-      nodeMap[data] = LineSymbolNode(data, i, groupIndex, off, group);
+      var symbol = getSymbol(data, group, null);
+      if (symbol != null) {
+        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+      }
     });
     return LineNode(groupIndex, styleIndex, group, ol, borderList, areaList, nodeMap);
   }
@@ -213,8 +216,8 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     var group = curList.first.parent;
     final styleIndex = curList.first.groupIndex;
     StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = buildLineStyle(null, group, styleIndex, null);
-    bool smooth = stepType == null ? (lineStyle?.smooth ?? false) : false;
+    LineStyle? lineStyle = buildLineStyle(null, group, styleIndex, {});
+    bool smooth = stepType == null ? lineStyle.smooth : false;
 
     List<SingleNode<StackItemData, LineGroupData>> nodeList = List.from(nodeMap.values);
 
@@ -256,7 +259,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       if (data == null || off == null) {
         return;
       }
-      nodeMap[data] = LineSymbolNode(data, i, groupIndex, off, group);
+      var symbol = getSymbol(data, group, null);
+      if (symbol != null) {
+        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+      }
     });
 
     return LineNode(groupIndex, styleIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap);
@@ -274,18 +280,18 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     final styleIndex = curList.first.groupIndex;
     var preGroup = resultList[curIndex - 1].data;
     StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = buildLineStyle(null, group, styleIndex, null);
-    bool smooth = (stepType == null) ? (lineStyle?.smooth ?? false) : false;
+    LineStyle lineStyle = buildLineStyle(null, group, styleIndex, {});
+    bool smooth = (stepType == null) ? (lineStyle.smooth) : false;
     StepType? preStepType = series.stepLineFun?.call(preGroup);
-    LineStyle? preLineStyle = buildLineStyle(null, preGroup, resultList[curIndex - 1].styleIndex, null);
-    bool preSmooth = (preStepType == null) ? (preLineStyle?.smooth ?? false) : false;
+    LineStyle? preLineStyle = buildLineStyle(null, preGroup, resultList[curIndex - 1].styleIndex, {});
+    bool preSmooth = (preStepType == null) ? (preLineStyle.smooth) : false;
 
     List<List<List<Offset>>> splitResult = [];
     if (series.connectNulls) {
       List<Offset> topList = [];
       List<Offset> preList = [];
       each(curList, (p0, i) {
-        if (p0.data != null) {
+        if (p0.originData != null) {
           Offset offset = p0.position;
           topList.add(offset);
           Offset? preOffset = findBottomOffset(curIndex, resultList, i);
@@ -300,7 +306,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       List<Offset> topList = [];
       List<Offset> preList = [];
       each(curList, (p0, i) {
-        if (p0.data == null) {
+        if (p0.originData == null) {
           if (topList.length >= 2) {
             splitResult.add([topList, preList]);
             topList = [];
@@ -363,13 +369,13 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     List<OptLinePath> borderList = [];
     StepType? stepType = series.stepLineFun?.call(group);
     each(olList, (list, p1) {
-      LineStyle? style = buildLineStyle(null, group, group.styleIndex, null);
-      bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
+      LineStyle style = buildLineStyle(null, group, group.styleIndex, {});
+      bool smooth = stepType != null ? false : style.smooth;
       if (stepType == null) {
-        borderList.add(OptLinePath.build(list, smooth, style?.dash ?? []));
+        borderList.add(OptLinePath.build(list, smooth, style.dash));
       } else {
         Line line = _buildLine(list, stepType, false, []);
-        borderList.add(OptLinePath.build(line.pointList, smooth, style?.dash ?? []));
+        borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
       }
     });
     return borderList;
@@ -393,7 +399,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     List<List<Offset>> olList = [];
     List<Offset> tmpList = [];
     for (var node in nodeList) {
-      if (node.data != null) {
+      if (node.originData != null) {
         tmpList.add(node.position);
       } else {
         if (tmpList.isNotEmpty) {
@@ -412,7 +418,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   List<Offset?> _collectOffset(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
     List<Offset?> tmpList = [];
     for (var node in nodeList) {
-      if (node.data != null) {
+      if (node.originData != null) {
         tmpList.add(node.position);
       } else {
         tmpList.add(null);
@@ -428,4 +434,14 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
 
   @override
   SeriesType get seriesType => SeriesType.line;
+
+  ChartSymbol? getSymbol(StackItemData data, LineGroupData group, Set<ViewState>? status) {
+    if (series.symbolFun != null) {
+      return series.symbolFun?.call(data, group, status ?? {});
+    }
+    if (context.option.theme.lineTheme.showSymbol) {
+      return context.option.theme.lineTheme.symbol;
+    }
+    return null;
+  }
 }

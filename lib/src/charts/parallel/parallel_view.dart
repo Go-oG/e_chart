@@ -21,34 +21,10 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     canvas.clipRect(clipRect);
     var nodeList = layoutHelper.nodeList;
     for (var ele in nodeList) {
-      LineStyle? style = getLineStyle(ele);
-      if (style == null) {
-        continue;
-      }
-      var optPath = ele.attr.getPath(style.smooth, series.connectNull, style.dash);
-      for (var path in optPath.segmentList) {
-        if (!path.bound.overlaps(clipRect)) {
-          continue;
-        }
-        style.drawPath(canvas, mPaint, path.path, drawDash: false, needSplit: false);
-      }
+      ele.onDraw(canvas, mPaint);
     }
-    if (series.symbolFun != null) {
-      for (var ele in nodeList) {
-        var symbolStyle = getSymbol(ele);
-        if (symbolStyle == null) {
-          continue;
-        }
-        for (var symbol in ele.symbolList) {
-          if (symbol.data == null) {
-            continue;
-          }
-          if (!clipRect.contains2(symbol.attr)) {
-            break;
-          }
-          symbolStyle.draw(canvas, mPaint, symbol.attr);
-        }
-      }
+    for (var ele in nodeList) {
+      ele.onDrawSymbol(canvas, mPaint);
     }
     canvas.restore();
   }
@@ -73,32 +49,4 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     return ParallelHelper(context, series);
   }
 
-  LineStyle? getLineStyle(ParallelNode node) {
-    var fun = series.styleFun;
-    if (fun != null) {
-      return fun.call(node.data, node.dataIndex, node.status);
-    }
-    var theme = context.option.theme;
-    var ptheme = theme.parallelTheme;
-    num w = ptheme.lineWidth;
-    if (w <= 0) {
-      w = 1;
-    }
-    Color color;
-    int index = node.dataIndex;
-    if (ptheme.colors.isNotEmpty) {
-      color = ptheme.colors[index % ptheme.colors.length];
-    } else {
-      color = theme.getColor(index);
-    }
-    return LineStyle(color: color, width: w, smooth: ptheme.smooth, dash: ptheme.dash);
-  }
-
-  ChartSymbol? getSymbol(ParallelNode node) {
-    var fun = series.symbolFun;
-    if (fun != null) {
-      return fun.call(node.data, node.dataIndex, node.status);
-    }
-    return null;
-  }
 }

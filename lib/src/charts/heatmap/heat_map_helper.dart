@@ -37,7 +37,12 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
   List<HeatMapNode> convertData(List<HeatMapData> dataList) {
     List<HeatMapNode> rl = [];
     each(dataList, (e, i) {
-      rl.add(HeatMapNode(e, i));
+      rl.add(HeatMapNode(
+          e,
+          i,
+          series.getAreaStyle(context, e, i, null) ?? AreaStyle.empty,
+          series.getBorderStyle(context, e, i, null) ?? LineStyle.empty,
+          series.getLabelStyle(context, e, null) ?? LabelStyle.empty));
     });
 
     return rl;
@@ -97,6 +102,9 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
     offset = offset.translate(scroll.dx.abs(), scroll.dy.abs());
     var clickNode = findNode(offset);
     if (_hoverNode == clickNode) {
+      if (clickNode != null) {
+        click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
+      }
       return;
     }
 
@@ -106,12 +114,12 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
       sendHoverEndEvent2(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
     }
     if (clickNode != null) {
-      click
-          ? sendClickEvent(oldOffset, clickNode)
-          : sendHoverEvent(oldOffset, clickNode);
+      click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
     }
     oldNode?.removeState(ViewState.hover);
+    oldNode?.updateStyle(context, series);
     clickNode?.addState(ViewState.hover);
+    clickNode?.updateStyle(context, series);
     notifyLayoutUpdate();
   }
 

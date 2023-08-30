@@ -6,8 +6,9 @@ class ThemeRiverSeries extends RectSeries {
   Direction direction;
   SNumber? minInterval;
   bool smooth;
-  Fun4<GroupData,int ,Set<ViewState>, AreaStyle>? areaStyleFun;
-  Fun4<GroupData,int,Set<ViewState>, LabelStyle?>? labelStyleFun;
+  Fun4<GroupData, int, Set<ViewState>, AreaStyle>? areaStyleFun;
+  Fun4<GroupData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
+  Fun4<GroupData, int, Set<ViewState>, LabelStyle?>? labelStyleFun;
 
   ThemeRiverSeries(
     this.data, {
@@ -33,5 +34,28 @@ class ThemeRiverSeries extends RectSeries {
   @override
   ChartView? toView() {
     return ThemeRiverView(this);
+  }
+
+  AreaStyle? getAreaStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+    if (areaStyleFun != null) {
+      return areaStyleFun!.call(data, index, status);
+    }
+    var theme = context.option.theme;
+    return AreaStyle(color: theme.colors[index % theme.colors.length]).convert(status);
+  }
+
+  LineStyle? getBorderStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+    if (borderStyleFun != null) {
+      return borderStyleFun!.call(data, index, status);
+    }
+    return null;
+  }
+
+  LabelStyle? getLabelStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+    if (labelStyleFun != null) {
+      return labelStyleFun!.call(data, index, status);
+    }
+    var theme = context.option.theme;
+    return theme.getLabelStyle();
   }
 }

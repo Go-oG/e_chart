@@ -57,7 +57,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     final bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {
-      var data = node.data;
+      var data = node.originData;
       if (data == null) {
         return;
       }
@@ -151,7 +151,10 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       if (data == null || off == null) {
         return;
       }
-      nodeMap[data] = LineSymbolNode(data, i, groupIndex, off, group);
+      var symbol = getSymbol(data, group, null);
+      if (symbol != null) {
+        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+      }
     });
     return LineNode(groupIndex, styleIndex, group, ol, borderList, [], nodeMap);
   }
@@ -176,7 +179,10 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       if (data == null || off == null) {
         return;
       }
-      nodeMap[data] = LineSymbolNode(data, i, groupIndex, off, group);
+      var symbol = getSymbol(data, group, null);
+      if (symbol != null) {
+        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+      }
     });
 
     return LineNode(groupIndex, styleIndex, group, _collectOffset(nodeList), borderList, [], nodeMap);
@@ -194,13 +200,13 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     StepType? stepType = series.stepLineFun?.call(group);
 
     each(olList, (list, p1) {
-      LineStyle? style = buildLineStyle(null, group, group.styleIndex, null);
-      bool smooth = stepType != null ? false : (style == null ? false : style.smooth);
+      LineStyle style = buildLineStyle(null, group, group.styleIndex, {});
+      bool smooth = stepType != null ? false : style.smooth;
       if (stepType == null) {
-        borderList.add(OptLinePath.build(list, smooth, style?.dash ?? []));
+        borderList.add(OptLinePath.build(list, smooth, style.dash));
       } else {
         Line line = _buildLine(list, stepType, false, []);
-        borderList.add(OptLinePath.build(line.pointList, smooth, style?.dash ?? []));
+        borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
       }
     });
     return borderList;
@@ -224,7 +230,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     List<List<Offset>> olList = [];
     List<Offset> tmpList = [];
     for (var node in nodeList) {
-      if (node.data != null) {
+      if (node.originData != null) {
         tmpList.add(node.position);
       } else {
         if (tmpList.isNotEmpty) {
@@ -243,7 +249,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   List<Offset?> _collectOffset(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
     List<Offset?> tmpList = [];
     for (var node in nodeList) {
-      if (node.data != null) {
+      if (node.originData != null) {
         tmpList.add(node.position);
       } else {
         tmpList.add(null);
@@ -255,6 +261,16 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   @override
   double getAnimatorPercent() {
     return _animatorPercent;
+  }
+
+  ChartSymbol? getSymbol(StackItemData data, LineGroupData group, Set<ViewState>? status) {
+    if (series.symbolFun != null) {
+      return series.symbolFun?.call(data, group, status ?? {});
+    }
+    if (context.option.theme.lineTheme.showSymbol) {
+      return context.option.theme.lineTheme.symbol;
+    }
+    return null;
   }
 
   @override

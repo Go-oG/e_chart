@@ -29,7 +29,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   void onLayout(LayoutType type) {
-    var helper = series.helper;
+    var helper = series.getHelper(context);
     AxisGroup<T, P> axisGroup = helper.result;
     Map<AxisIndex, List<GroupNode<T, P>>> axisMap = axisGroup.groupMap;
 
@@ -45,10 +45,10 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       for (var cv in value) {
         for (var ele in cv.nodeList) {
           for (var node in ele.nodeList) {
-            if (node.data == null) {
+            if (node.originData == null) {
               continue;
             }
-            newNodeMap[node.data!] = node;
+            newNodeMap[node.originData!] = node;
           }
         }
       }
@@ -90,7 +90,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   ///计算需要布局的数据(默认全部)
   ///子类可以实现该方法从而实现高效的数据刷新
   List<GroupNode<T, P>> onComputeNeedLayoutData(
-      DataHelper<T, P, StackSeries> helper, AxisIndex index, List<GroupNode<T, P>> list) {
+      DataHelper<T, P, StackSeries<T, P>> helper, AxisIndex index, List<GroupNode<T, P>> list) {
     return list;
   }
 
@@ -98,7 +98,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     if (type != LayoutType.none) {
       return true;
     }
-    return showNodeMap[node.data!] == null || node.rect.isEmpty;
+    return showNodeMap[node.originData!] == null || node.attr.rect.isEmpty;
   }
 
   ///实现该方法从而布局单个Group(不需要布局其孩子)
@@ -203,7 +203,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       return node;
     }
     if (valueType != null) {
-      var info = series.helper.getValueInfo(group);
+      var info = series.getHelper(context).getValueInfo(group);
       if (info == null) {
         return null;
       }
@@ -222,13 +222,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
       var node = MarkPointNode(markPoint, data);
       if (coordSystem == CoordType.polar) {
-        var arc = snode.arc;
+        var arc = snode.attr.arc;
         node.offset = circlePoint(arc.outRadius, arc.centerAngle(), arc.center);
       } else {
         if (data.stackUp >= 0) {
-          node.offset = snode.rect.topCenter;
+          node.offset = snode.attr.rect.topCenter;
         } else {
-          node.offset = snode.rect.bottomCenter;
+          node.offset = snode.attr.rect.bottomCenter;
         }
       }
       return node;
@@ -280,7 +280,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
     ///动画
     DiffResult2<SingleNode<T, P>, StackAnimationNode, T> diffResult =
-        DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.data!, (b, c) {
+        DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.originData!, (b, c) {
       return onCreateAnimatorNode(b, c, type);
     });
     final startMap = diffResult.startMap;
@@ -289,8 +289,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     doubleTween.startListener = () {
       Map<T, SingleNode<T, P>> sm = {};
       startMap.forEach((key, value) {
-        if (key.data != null) {
-          sm[key.data!] = key;
+        if (key.originData != null) {
+          sm[key.originData!] = key;
         }
       });
       _nodeMap = sm;
@@ -301,8 +301,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       _nodeMap = newNodeMap;
       Map<T, SingleNode<T, P>> sm = {};
       startMap.forEach((key, value) {
-        if (key.data != null) {
-          sm[key.data!] = key;
+        if (key.originData != null) {
+          sm[key.originData!] = key;
         }
       });
       showNodeMap = sm;
@@ -355,15 +355,15 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       system = CoordType.polar;
     }
     if (series.isVertical && !isXAxis || (!series.isVertical && isXAxis)) {
-      return series.helper.getCrossExtreme(system, axisIndex);
+      return series.getHelper(context).getCrossExtreme(system, axisIndex);
     }
-    return series.helper.getMainExtreme(system, axisIndex);
+    return series.getHelper(context).getMainExtreme(system, axisIndex);
   }
 
   List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     List<dynamic> dl = [];
     showNodeMap.forEach((key, value) {
-      if (value.data == null) {
+      if (value.originData == null) {
         return;
       }
       var index = isXAxis ? value.parent.xAxisIndex : value.parent.yAxisIndex;
@@ -374,13 +374,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         return;
       }
       if (series.isVertical && !isXAxis || (!series.isVertical && isXAxis)) {
-        dl.add(value.data!.minValue);
-        dl.add(value.data!.maxValue);
+        dl.add(value.originData!.minValue);
+        dl.add(value.originData!.maxValue);
       } else {
         if (isXAxis) {
-          dl.add(value.data!.x);
+          dl.add(value.originData!.x);
         } else {
-          dl.add(value.data!.y);
+          dl.add(value.originData!.y);
         }
       }
     });
@@ -450,53 +450,49 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
     });
 
+    nodeMap.forEach((key, node) {
+      var originData = node.originData;
+      var parent = node.parent;
+      var styleIndex = node.styleIndex;
+      var status = node.status;
+      node.itemStyle = buildAreaStyle(originData, parent, styleIndex, status);
+      node.borderStyle = buildLineStyle(originData, parent, styleIndex, status);
+      node.labelStyle = buildLabelStyle(originData, parent, styleIndex, status);
+    });
+
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      nodeMap.forEach((key, node) {
-        node.areaStyle = buildAreaStyle(node.data, node.parent, node.styleIndex, node.status);
-        node.lineStyle = buildLineStyle(node.data, node.parent, node.styleIndex, node.status);
-      });
       notifyLayoutUpdate();
       return;
     }
 
-    Map<SingleNode<T, P>, AreaStyle?> oldAreStyleMap = {};
-    Map<SingleNode<T, P>, LineStyle?> oldLineStyleMap = {};
+    Map<SingleNode<T, P>, AreaStyle> oldAreStyleMap = {};
+    Map<SingleNode<T, P>, LineStyle> oldLineStyleMap = {};
 
-    Map<SingleNode<T, P>, AreaStyle?> newAreStyleMap = {};
-    Map<SingleNode<T, P>, LineStyle?> newLineStyleMap = {};
+    Map<SingleNode<T, P>, AreaStyle> newAreStyleMap = {};
+    Map<SingleNode<T, P>, LineStyle> newLineStyleMap = {};
 
     nodeMap.forEach((key, node) {
-      oldAreStyleMap[node] = node.areaStyle;
-      oldLineStyleMap[node] = node.lineStyle;
-      newAreStyleMap[node] = buildAreaStyle(node.data, node.parent, node.styleIndex, node.status);
-      newLineStyleMap[node] = buildLineStyle(node.data, node.parent, node.styleIndex, node.status);
-      node.areaStyle = null;
-      node.lineStyle = null;
+      oldAreStyleMap[node] = node.itemStyle;
+      oldLineStyleMap[node] = node.borderStyle;
+      newAreStyleMap[node] = buildAreaStyle(node.originData, node.parent, node.styleIndex, node.status);
+      newLineStyleMap[node] = buildLineStyle(node.originData, node.parent, node.styleIndex, node.status);
     });
 
     ChartDoubleTween doubleTween = ChartDoubleTween(props: animation);
-    AreaStyleTween areaTween = AreaStyleTween(const AreaStyle(), const AreaStyle());
-    LineStyleTween lineTween = LineStyleTween(const LineStyle(), const LineStyle());
+    AreaStyleTween areaTween = AreaStyleTween(AreaStyle.empty, AreaStyle.empty);
+    LineStyleTween lineTween = LineStyleTween(LineStyle.empty, LineStyle.empty);
     doubleTween.addListener(() {
       double t = doubleTween.value;
       nodeMap.forEach((key, node) {
-        var oa = oldAreStyleMap[node];
-        var ol = oldLineStyleMap[node];
-        var na = newAreStyleMap[node];
-        var nl = newLineStyleMap[node];
-        if (oa != null && na != null) {
-          areaTween.changeValue(oa, na);
-          node.areaStyle = areaTween.safeGetValue(t);
-        } else {
-          node.areaStyle = oa ?? na;
-        }
-        if (ol != null && nl != null) {
-          lineTween.changeValue(ol, nl);
-          node.lineStyle = lineTween.safeGetValue(t);
-        } else {
-          node.lineStyle = ol ?? nl;
-        }
+        var oa = oldAreStyleMap[node]!;
+        var ol = oldLineStyleMap[node]!;
+        var na = newAreStyleMap[node]!;
+        var nl = newLineStyleMap[node]!;
+        areaTween.changeValue(oa, na);
+        node.itemStyle = areaTween.safeGetValue(t);
+        lineTween.changeValue(ol, nl);
+        node.borderStyle = lineTween.safeGetValue(t);
       });
       notifyLayoutUpdate();
     });
@@ -517,11 +513,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
-        if (coordSystem == CoordType.grid && rectInPath(area.path, node.rect)) {
+        if (coordSystem == CoordType.grid && rectInPath(area.path, node.attr.rect)) {
           has = true;
           break;
         }
-        if (coordSystem == CoordType.polar && arcInPath(area.path, node.arc)) {
+        if (coordSystem == CoordType.polar && arcInPath(area.path, node.attr.arc)) {
           has = true;
           break;
         }
@@ -542,11 +538,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
-        if (coordSystem == CoordType.grid && rectInPath(area.path, node.rect)) {
+        if (coordSystem == CoordType.grid && rectInPath(area.path, node.attr.rect)) {
           has = true;
           break;
         }
-        if (coordSystem == CoordType.polar && arcInPath(area.path, node.arc)) {
+        if (coordSystem == CoordType.polar && arcInPath(area.path, node.attr.arc)) {
           has = true;
           break;
         }
@@ -600,18 +596,22 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   SingleNode<T, P>? findNode(Offset offset) {
     for (var ele in nodeMap.values) {
-      if (ele.rect.contains(offset)) {
+      if (ele.attr.rect.contains(offset)) {
         return ele;
       }
     }
     return null;
   }
 
-  AreaStyle? buildAreaStyle(T? data, P group, int styleIndex, Set<ViewState>? status) {
-    return series.getAreaStyle(context, data, group, styleIndex, status);
+  AreaStyle buildAreaStyle(T? data, P group, int styleIndex, Set<ViewState> status) {
+    return series.getAreaStyle(context, data, group, styleIndex, status) ?? AreaStyle.empty;
   }
 
-  LineStyle? buildLineStyle(T? data, P group, int styleIndex, Set<ViewState>? status) {
-    return series.getLineStyle(context, data, group, styleIndex, status);
+  LineStyle buildLineStyle(T? data, P group, int styleIndex, Set<ViewState> status) {
+    return series.getLineStyle(context, data, group, styleIndex, status) ?? LineStyle.empty;
+  }
+
+  LabelStyle buildLabelStyle(T? data, P group, int styleIndex, Set<ViewState> status) {
+    return series.getLabelStyle(context, data, group, styleIndex, status) ?? LabelStyle.empty;
   }
 }

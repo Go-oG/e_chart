@@ -7,12 +7,8 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
 
   @override
   void onDraw(Canvas canvas) {
-    LabelStyle labelStyle = LabelStyle(textStyle: TextStyle(fontSize: 18,color: Colors.black));
     for (var node in layoutHelper.nodeList) {
-      node.symbol.convert(node.status).draw2(canvas, mPaint, node.attr.offset, node.attr.size);
-      if (node.data.label != null) {
-        labelStyle.draw(canvas, mPaint, node.data.label!, TextDrawInfo(node.attr.offset));
-      }
+      node.onDraw(canvas, mPaint);
     }
   }
 

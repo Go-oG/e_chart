@@ -77,8 +77,8 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.borderList.isEmpty) {
       return;
     }
-    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, null);
-    if (ls == null) {
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, {});
+    if (ls.notDraw) {
       return;
     }
     lineNode.lineStyle = ls;
@@ -100,14 +100,16 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.borderList.isEmpty) {
       return [];
     }
-
-    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, null);
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, {});
     lineNode.lineStyle = ls;
+    if (ls.notDraw) {
+      return [];
+    }
     Set<LineSymbolNode> symbolSet = {};
     for (var border in lineNode.borderList) {
       var path = border.path.percentPath(percent);
       drawAreaForPolar(canvas, lineNode, path, theme);
-      ls?.drawPath(canvas, mPaint, path, needSplit: false);
+      ls.drawPath(canvas, mPaint, path, needSplit: false);
       if (!needSymbol) {
         continue;
       }
@@ -124,21 +126,20 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.areaList.isEmpty) {
       return;
     }
-    var style = layoutHelper.buildAreaStyle(null, lineNode.data, lineNode.styleIndex, null);
-    if (style == null) {
+    var style = layoutHelper.buildAreaStyle(null, lineNode.data, lineNode.styleIndex, {});
+    if (style.notDraw) {
       return;
     }
     lineNode.areaStyle = style;
-
     for (var area in lineNode.areaList) {
       style.drawPath(canvas, mPaint, area.originPath);
     }
   }
 
   void drawAreaForPolar(Canvas canvas, LineNode node, Path path, LineTheme theme) {
-    var style = layoutHelper.buildAreaStyle(null, node.data, node.styleIndex, null);
+    var style = layoutHelper.buildAreaStyle(null, node.data, node.styleIndex, {});
     node.areaStyle = style;
-    if (style == null) {
+    if (style .notDraw) {
       return;
     }
     Offset center = layoutHelper.findPolarCoord().getCenter();
@@ -152,23 +153,13 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
       if (!clipRect.contains2(node.attr)) {
         return;
       }
-      if (series.symbolFun != null) {
-        ChartSymbol? symbol = series.symbolFun?.call(node.data, node.group, node.status);
-        symbol?.draw(canvas, mPaint, node.attr);
-      } else if (theme.showSymbol) {
-        theme.symbol.draw(canvas, mPaint, node.attr);
-      }
+      node.onDraw(canvas, mPaint);
     });
   }
 
   void drawSymbolForPolar(Canvas canvas, List<LineSymbolNode> symbolList, LineTheme theme) {
     each(symbolList, (symbol, p1) {
-      if (series.symbolFun != null) {
-        ChartSymbol? cs = series.symbolFun?.call(symbol.data, symbol.group, symbol.status);
-        cs?.draw(canvas, mPaint, symbol.attr);
-      } else if (theme.showSymbol) {
-        theme.symbol.draw(canvas, mPaint, symbol.attr);
-      }
+      symbol.onDraw(canvas, mPaint);
     });
   }
 
@@ -214,8 +205,8 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis,BaseScale scale) {
-    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis,scale);
+  List getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
+    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis, scale);
   }
 
   @override

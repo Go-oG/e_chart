@@ -1,18 +1,47 @@
+import 'dart:ui';
+
+import 'package:e_chart/e_chart.dart';
+
 import '../../component/index.dart';
 import '../../core/view_state.dart';
 import '../../utils/diff.dart';
+import '../mixin_props.dart';
+import '../text_info.dart';
 
-class DataNode<P, D> with ViewStateProvider implements NodeAccessor<P, D> {
+///数据到绘图节点的映射
+abstract class DataNode<P, D> with ViewStateProvider, ExtProps implements NodeAccessor<P, D> {
   final int dataIndex;
-  final int? groupIndex;
+  final int groupIndex;
   final D data;
-  P attr;
+  late P _attr;
+  P get attr => _attr;
 
-  AreaStyle? areaStyle;
-  LineStyle? lineStyle;
-  LabelStyle? labelStyle;
+  set attr(P a) {
+    setAttr(a);
+  }
 
-  DataNode(this.data, this.dataIndex, this.groupIndex, this.attr);
+  ///绘制顺序
+  int drawIndex = 0;
+
+  DynamicText? label;
+  TextDrawInfo? labelConfig;
+  List<Offset>? labelLine;
+
+  AreaStyle itemStyle;
+  LineStyle borderStyle;
+  LabelStyle labelStyle;
+
+  DataNode(
+    this.data,
+    this.dataIndex,
+    this.groupIndex,
+    P attr,
+    this.itemStyle,
+    this.borderStyle,
+    this.labelStyle,
+  ) {
+    _attr = attr;
+  }
 
   @override
   bool operator ==(Object other) {
@@ -34,6 +63,12 @@ class DataNode<P, D> with ViewStateProvider implements NodeAccessor<P, D> {
 
   @override
   void setAttr(P po) {
-    attr = po;
+    _attr = po;
   }
+
+  void onDraw(Canvas canvas, Paint paint);
+
+  void onDrawSymbol(Canvas canvas, Paint paint) {}
+
+  bool contains(Offset offset);
 }

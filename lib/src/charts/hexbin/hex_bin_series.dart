@@ -11,8 +11,6 @@ class HexbinSeries extends RectSeries {
   LabelStyle? label;
   Fun3<ItemData, Set<ViewState>, LabelStyle>? labelStyleFun;
 
-  ///半径函数(可单独对某一个节点设置其大小)
-  Fun2<ItemData, num?>? radiusFun;
   bool clock = false;
 
   HexbinSeries(
@@ -47,7 +45,8 @@ class HexbinSeries extends RectSeries {
     return HexbinView(this);
   }
 
-  AreaStyle? getItemStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+  AreaStyle? getItemStyle(Context context, ItemData data, int dataIndex, Set<ViewState>? status) {
+    status ??= {};
     if (itemStyleFun != null) {
       return itemStyleFun?.call(data, status);
     }
@@ -58,7 +57,8 @@ class HexbinSeries extends RectSeries {
     return AreaStyle(color: theme.getColor(dataIndex)).convert(status);
   }
 
-  LineStyle? getBorderStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+  LineStyle? getBorderStyle(Context context, ItemData data, int dataIndex, Set<ViewState>? status) {
+    status ??= {};
     if (borderFun != null) {
       return borderFun?.call(data, status);
     }
@@ -69,7 +69,8 @@ class HexbinSeries extends RectSeries {
     return theme.hexbinTheme.getBorderStyle()?.convert(status);
   }
 
-  LabelStyle? getLabelStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+  LabelStyle? getLabelStyle(Context context, ItemData data, int dataIndex, Set<ViewState>? status) {
+    status ??= {};
     if (labelStyleFun != null) {
       return labelStyleFun?.call(data, status);
     }

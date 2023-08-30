@@ -1,8 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import '../node.dart';
-import '../tree_layout.dart';
+
 
 /// 生态树布局(D3版本)
 /// 布局时不考虑节点大小总是将其视作为1，
@@ -70,7 +69,7 @@ class D3DendrogramLayout extends TreeLayout {
     });
 
     ///进行坐标映射
-    TreeFun<TreeLayoutNode> fun;
+    TreeFun<TreeData,TreeAttr,TreeLayoutNode> fun;
     if (diff) {
       ///将坐标直接进行映射
       fun = (TreeLayoutNode node, b, c) {

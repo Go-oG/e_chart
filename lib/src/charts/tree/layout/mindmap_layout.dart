@@ -1,9 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 
-import '../node.dart';
-import '../tree_layout.dart';
-import 'compact_layout.dart';
-
 ///思维导图
 class MindMapLayout extends TreeLayout {
   MindMapLayout({
@@ -32,8 +28,10 @@ class MindMapLayout extends TreeLayout {
       l.onLayout2(root);
       return;
     }
-    TreeLayoutNode leftRoot = TreeLayoutNode(null, root.data);
-    TreeLayoutNode rightRoot = TreeLayoutNode(null, root.data);
+    TreeLayoutNode leftRoot =
+        TreeLayoutNode(null, root.data, 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+    TreeLayoutNode rightRoot =
+        TreeLayoutNode(null, root.data, 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
     int rightTreeSize = (root.childCount / 2).round();
     int i = 0;
     for (var node in root.children) {
