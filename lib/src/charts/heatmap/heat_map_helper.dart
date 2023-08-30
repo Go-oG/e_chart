@@ -103,13 +103,12 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
     var oldNode = _hoverNode;
     _hoverNode = clickNode;
     if (oldNode != null) {
-      sendHoverOutEvent(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
+      sendHoverEndEvent2(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
     }
     if (clickNode != null) {
       click
-          ? sendClickEvent(oldOffset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex)
-          : sendHoverInEvent(oldOffset, clickNode.data,
-              dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+          ? sendClickEvent(oldOffset, clickNode)
+          : sendHoverEvent(oldOffset, clickNode);
     }
     oldNode?.removeState(ViewState.hover);
     clickNode?.addState(ViewState.hover);

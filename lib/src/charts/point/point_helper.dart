@@ -141,7 +141,7 @@ class PointHelper extends LayoutHelper<PointSeries> {
     if (node == null) {
       return;
     }
-    sendHoverOutEvent(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+    sendHoverEndEvent2(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
     _runUpdateAnimation([node], [], series.animation);
   }
 
@@ -161,16 +161,12 @@ class PointHelper extends LayoutHelper<PointSeries> {
     List<PointNode> oldList = [];
     if (old != null) {
       oldList.add(old);
-      sendHoverOutEvent(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
+      sendHoverEndEvent2(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
     }
     List<PointNode> newList = [];
     if (clickNode != null) {
       newList.add(clickNode);
-      if (click) {
-        sendClickEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
-      } else {
-        sendHoverInEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
-      }
+      click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
     }
     _runUpdateAnimation(oldList, newList, series.animation);
   }

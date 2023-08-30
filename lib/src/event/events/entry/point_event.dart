@@ -3,9 +3,9 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class ClickEvent extends ChartEvent {
-  final Offset localOffset;
-  final Offset globalOffset;
-  final EventParams event;
+  final EventInfo event;
+  Offset localOffset;
+  Offset globalOffset;
 
   ClickEvent(this.localOffset, this.globalOffset, this.event);
 
@@ -18,7 +18,7 @@ class ClickEvent extends ChartEvent {
 class DoubleClickEvent extends ChartEvent {
   final Offset localOffset;
   final Offset globalOffset;
-  final EventParams event;
+  final EventInfo event;
 
   DoubleClickEvent(this.localOffset, this.globalOffset, this.event);
 
@@ -28,71 +28,34 @@ class DoubleClickEvent extends ChartEvent {
   }
 }
 
-class HoverInEvent extends ChartEvent {
-  final Offset localOffset;
-  final Offset globalOffset;
-  final EventParams event;
+class HoverEvent extends ChartEvent {
+  Offset localOffset;
+  Offset globalOffset;
+  final EventInfo event;
 
-  HoverInEvent(this.localOffset, this.globalOffset, this.event);
-
-  @override
-  String toString() {
-    return "$runtimeType\n$event";
-  }
-}
-
-class HoverOutEvent extends ChartEvent {
-  final EventParams event;
-
-  HoverOutEvent(this.event);
+  HoverEvent(this.localOffset, this.globalOffset, this.event);
 
   @override
   String toString() {
     return "$runtimeType\n$event";
-  }
-}
-
-class HoverStartEvent extends ChartEvent {
-  final Offset localOffset;
-  final Offset globalOffset;
-  final EventParams event;
-
-  HoverStartEvent(this.localOffset, this.globalOffset, this.event);
-
-  @override
-  String toString() {
-    return "$runtimeType\n$event\nLO:$localOffset\nGO:$globalOffset";
-  }
-}
-
-class HoverUpdateEvent extends ChartEvent {
-  final Offset localOffset;
-  final Offset globalOffset;
-  final EventParams event;
-
-  HoverUpdateEvent(this.localOffset, this.globalOffset, this.event);
-
-  @override
-  String toString() {
-    return "$runtimeType:$event LO:$localOffset GO:$globalOffset";
   }
 }
 
 class HoverEndEvent extends ChartEvent {
-  final EventParams event;
+  final EventInfo event;
 
   HoverEndEvent(this.event);
 
   @override
   String toString() {
-    return "$runtimeType:$event";
+    return "$runtimeType\n$event";
   }
 }
 
 class LongPressEvent extends ChartEvent {
-  final Offset localOffset;
-  final Offset globalOffset;
-  final EventParams event;
+  Offset localOffset;
+  Offset globalOffset;
+  final EventInfo event;
 
   LongPressEvent(this.localOffset, this.globalOffset, this.event);
 
@@ -102,8 +65,18 @@ class LongPressEvent extends ChartEvent {
   }
 }
 
+class LongPressEndEvent extends ChartEvent {
+  final EventInfo event;
+  LongPressEndEvent(this.event);
+  @override
+  String toString() {
+    return "$runtimeType:$event";
+  }
+
+}
+
 class ScrollEvent extends ChartEvent {
-  final Offset scroll;
+  Offset scroll;
   final CoordType? coordSystem;
   final String coordId;
 

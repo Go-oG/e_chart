@@ -127,7 +127,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
   void onClick(Offset localOffset) {
     PackNode? clickNode = findNode(localOffset);
     if (clickNode != null) {
-      sendClickEvent(localOffset, clickNode.data, dataIndex: clickNode.childIndex, groupIndex: 0);
+      sendClickEvent2(localOffset, clickNode.data, dataIndex: clickNode.childIndex, groupIndex: 0);
     }
     if (clickNode == null || clickNode == rootNode) {
       return;
@@ -179,7 +179,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
       return;
     }
     if (hoverNode != null) {
-      sendHoverInEvent(offset, hoverNode.data, dataIndex: hoverNode.childIndex, groupIndex: 0);
+      sendHoverEvent2(offset, hoverNode.data, dataIndex: hoverNode.childIndex, groupIndex: 0);
     }
     if (hoverNode == _oldHoverNode) {
       return;
@@ -188,7 +188,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
     _oldHoverNode?.removeState(ViewState.hover);
     var oldNode = _oldHoverNode;
     if (oldNode != null) {
-      sendHoverOutEvent(oldNode.data, dataIndex: oldNode.childIndex, groupIndex: 0);
+      sendHoverEndEvent2(oldNode.data, dataIndex: oldNode.childIndex, groupIndex: 0);
     }
     hoverNode?.addState(ViewState.hover);
     _oldHoverNode = hoverNode;

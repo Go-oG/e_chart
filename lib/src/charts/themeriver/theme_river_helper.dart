@@ -165,6 +165,9 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
     Offset offset = local.translate(-tx, -ty);
     var clickNode = findNode(offset);
     if (clickNode == _oldHoverNode) {
+      if (clickNode != null) {
+        sendHoverEvent(offset, clickNode);
+      }
       return;
     }
     var oldNode = _oldHoverNode;
@@ -172,10 +175,10 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
     oldNode?.removeStates([ViewState.hover, ViewState.selected]);
     clickNode?.addStates([ViewState.hover, ViewState.selected]);
     if (clickNode != null) {
-      click ? sendClickEvent2(offset, clickNode) : sendHoverInEvent2(offset, clickNode);
+      click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
     }
     if (oldNode != null) {
-      sendHoverOutEvent2(oldNode);
+      sendHoverEndEvent(oldNode);
     }
     oldNode?.attr.index = 0;
     clickNode?.attr.index = 100;
@@ -234,25 +237,9 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
   }
 }
 
-class _InnerNode {
-  final num value;
-  int index = 0;
-  double x = 0;
-  double py = 0;
-  double py0 = 0;
-
-  _InnerNode(this.value);
-
-  void setItemLayout(int index, double px, double py0, double py) {
-    this.index = index;
-    x = px;
-    this.py = py;
-    this.py0 = py0;
-  }
-}
-
 class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
   ThemeRiverNode(super.data, super.dataIndex, super.groupIndex, super.attr);
+
   void _buildPath(List<Offset> pList, List<Offset> pList2, bool smooth, Direction direction) {
     Area area;
     if (direction == Direction.vertical) {
@@ -277,6 +264,7 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
     }
     attr = ThemeRiverAttr(polygonList, area, config);
   }
+
   Path get drawPath => attr.area.toPath(true);
 }
 
@@ -288,4 +276,21 @@ class ThemeRiverAttr {
   int index = 0;
 
   ThemeRiverAttr(this.polygonList, this.area, this.textConfig);
+}
+
+class _InnerNode {
+  final num value;
+  int index = 0;
+  double x = 0;
+  double py = 0;
+  double py0 = 0;
+
+  _InnerNode(this.value);
+
+  void setItemLayout(int index, double px, double py0, double py) {
+    this.index = index;
+    x = px;
+    this.py = py;
+    this.py0 = py0;
+  }
 }

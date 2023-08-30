@@ -103,10 +103,10 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     oldNode?.removeState(ViewState.hover);
     oldNode?.removeState(ViewState.selected);
     if (node != null) {
-      click ? sendClickEvent2(offset, node) : sendHoverInEvent2(offset, node);
+      click ? sendClickEvent(offset, node) : sendHoverEvent(offset, node);
     }
     if (oldNode != null) {
-      sendHoverOutEvent2(oldNode);
+      sendHoverEndEvent(oldNode);
     }
     notifyLayoutUpdate();
   }

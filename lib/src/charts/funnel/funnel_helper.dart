@@ -245,11 +245,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
 
     if (_hoverNode == hoverNode) {
       if (hoverNode != null) {
-        if (click) {
-          sendClickEvent(offset, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
-        } else {
-          sendHoverInEvent(offset, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
-        }
+        click ? sendClickEvent2(offset, hoverNode) : sendHoverEvent(offset, hoverNode);
       }
       return;
     }
@@ -257,14 +253,10 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     final old = _hoverNode;
     _hoverNode = hoverNode;
     if (old != null) {
-      sendHoverOutEvent(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
+      sendHoverEndEvent(old);
     }
     if (hoverNode != null) {
-      if (click) {
-        sendClickEvent(offset, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
-      } else {
-        sendHoverInEvent(offset, hoverNode.data, dataIndex: hoverNode.dataIndex, groupIndex: hoverNode.groupIndex);
-      }
+      click ? sendClickEvent(offset, hoverNode) : sendHoverEvent(offset, hoverNode);
     }
 
     var animator = series.animation;
@@ -325,7 +317,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     if (old == null) {
       return;
     }
-    sendHoverOutEvent(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
+    sendHoverEndEvent2(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
 
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {

@@ -105,11 +105,7 @@ class PieHelper extends LayoutHelper<PieSeries> {
     PieNode? clickNode = findNode(offset);
     if (clickNode == hoverNode) {
       if (clickNode != null) {
-        if (click) {
-          sendClickEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
-        } else {
-          sendHoverInEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
-        }
+        click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
       }
       return;
     }
@@ -121,12 +117,10 @@ class PieHelper extends LayoutHelper<PieSeries> {
     clickNode?.addStates([ViewState.hover, ViewState.focused]);
 
     if (oldNode != null) {
-      sendHoverOutEvent(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
+      sendHoverEndEvent2(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
     }
     if (clickNode != null) {
-      click
-          ? sendClickEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex)
-          : sendHoverInEvent(offset, clickNode.data, dataIndex: clickNode.dataIndex, groupIndex: clickNode.groupIndex);
+      click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
     }
 
     var animator = series.animation;

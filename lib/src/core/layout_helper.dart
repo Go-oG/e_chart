@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///用于辅助布局相关的抽象类
+///其包含了事件分发和触摸事件处理
 ///一般情况下和SeriesView 配合使用
 abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command> {
   late Context context;
@@ -88,44 +89,72 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   void onDataZoom(DataZoomEvent event) {}
 
   ///==============事件发送============
-  void sendClickEvent(Offset offset, dynamic data,
+  ClickEvent? _lastClickEvent;
+
+  void sendClickEvent2(Offset offset, dynamic data,
       {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(ClickEvent(
+    var lastEvent = _lastClickEvent;
+    ClickEvent? event;
+    if (lastEvent != null) {
+      var old = lastEvent.event;
+      if (old.data == data && old.dataType == dataType && old.dataIndex == dataIndex && old.groupIndex == groupIndex) {
+        event = lastEvent;
+        event.localOffset = offset;
+        event.globalOffset = toGlobal(offset);
+      }
+    }
+    event ??= ClickEvent(
       offset,
       toGlobal(offset),
       buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
-    ));
+    );
+    _lastClickEvent = event;
+    context.dispatchEvent(event);
   }
 
-  void sendHoverInEvent(Offset offset, dynamic data,
+  void sendClickEvent(Offset offset, DataNode node) {
+    sendClickEvent2(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+  }
+
+  HoverEvent? _lastHoverEvent;
+
+  void sendHoverEvent2(Offset offset, dynamic data,
       {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(HoverInEvent(
+    var lastEvent = _lastHoverEvent;
+    HoverEvent? event;
+    if (lastEvent != null) {
+      var old = lastEvent.event;
+      if (old.data == data && old.dataType == dataType && old.dataIndex == dataIndex && old.groupIndex == groupIndex) {
+        event = lastEvent;
+        event.localOffset = offset;
+        event.globalOffset = toGlobal(offset);
+      }
+    }
+    event ??= HoverEvent(
       offset,
       toGlobal(offset),
       buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
-    ));
+    );
+    _lastHoverEvent = event;
+    context.dispatchEvent(event);
   }
 
-  void sendClickEvent2(Offset offset, DataNode node) {
-    sendClickEvent(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+  void sendHoverEvent(Offset offset, DataNode node) {
+    sendHoverEvent2(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
   }
 
-  void sendHoverInEvent2(Offset offset, DataNode node) {
-    sendHoverInEvent(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
-  }
-
-  void sendHoverOutEvent(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(HoverOutEvent(
+  void sendHoverEndEvent2(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    context.dispatchEvent(HoverEndEvent(
       buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
     ));
   }
 
-  void sendHoverOutEvent2(DataNode node) {
-    sendHoverOutEvent(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+  void sendHoverEndEvent(DataNode node) {
+    sendHoverEndEvent2(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
   }
 
-  EventParams buildEventParams(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    return EventParams(
+  EventInfo buildEventParams(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+    return EventInfo(
       componentType: ComponentType.series,
       data: data,
       dataIndex: dataIndex,
