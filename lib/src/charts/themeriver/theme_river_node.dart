@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 
 import '../../component/shape/area.dart';
+import '../../core/data_node.dart';
 import '../../model/index.dart';
 
 class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {

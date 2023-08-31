@@ -18,9 +18,8 @@ class PackHelper extends LayoutHelper<PackSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    var node = PackNode.fromPackData(context,series,series.data);
-    node.sum((p0) => p0.value);
-    node.computeHeight();
+    var node = convertData(series.data);
+
     var h = node.height;
     node.each((node, index, startNode) {
       node.maxDeep = h;
@@ -41,8 +40,8 @@ class PackHelper extends LayoutHelper<PackSeries> {
     }
 
     LCG random = DefaultLCG();
-    node.getAttr().x = _dx / 2;
-    node.getAttr().y = _dy / 2;
+    node.attr.x = _dx / 2;
+    node.attr.y = _dy / 2;
     if (_radiusFun != null) {
       node
           .eachBefore(_radiusLeaf(_radiusFun!))
@@ -54,15 +53,15 @@ class PackHelper extends LayoutHelper<PackSeries> {
           .eachAfter(_packChildrenRandom((e) {
             return 0;
           }, 1, random))
-          .eachAfter(_packChildrenRandom(_paddingFun, node.getAttr().r / m.min(_dx, _dy), random))
-          .eachBefore(_translateChild(m.min(_dx, _dy) / (2 * node.getAttr().r)));
+          .eachAfter(_packChildrenRandom(_paddingFun, node.attr.r / m.min(_dx, _dy), random))
+          .eachBefore(_translateChild(m.min(_dx, _dy) / (2 * node.attr.r)));
     }
 
     ///修正位置
     if (_rect.left != 0 || _rect.top != 0) {
       node.each((p0, p1, p2) {
-        p0.getAttr().x += _rect.left;
-        p0.getAttr().y += _rect.top;
+        p0.attr.x += _rect.left;
+        p0.attr.y += _rect.top;
         return false;
       });
     }
@@ -73,12 +72,12 @@ class PackHelper extends LayoutHelper<PackSeries> {
       return;
     }
 
-   var an= DiffUtil.diffLayout<PackAttr, TreeData, PackNode>(
+    var an = DiffUtil.diffLayout<PackAttr, TreeData, PackNode>(
       animation,
       oldRootNode?.descendants() ?? [],
       node.descendants(),
       (data, node, add) {
-        PackAttr attr = node.getAttr();
+        PackAttr attr = node.attr;
         return PackAttr(attr.x, attr.y, 0);
       },
       (s, e, t) {
@@ -94,6 +93,34 @@ class PackHelper extends LayoutHelper<PackSeries> {
       },
     );
     context.addAnimationToQueue(an);
+  }
+
+  PackNode convertData(TreeData data) {
+    int i = 0;
+    var rn = toTree<TreeData, PackAttr, PackNode>(data, (p0) => p0.children, (p0, p1) {
+      var node = PackNode(
+        p0,
+        p1,
+        i,
+        PackAttr(0, 0, 0),
+        AreaStyle.empty,
+        LineStyle.empty,
+        LabelStyle.empty,
+        value: p1.value,
+      );
+      i++;
+      return node;
+    });
+    rn.sum((p0) => p0.value);
+    rn.computeHeight();
+    rn.each((node, index, startNode) {
+      node.maxDeep=rn.height;
+      node.itemStyle = series.getItemStyle(context, node) ?? AreaStyle.empty;
+      node.borderStyle = series.getBorderStyle(context, node) ?? LineStyle.empty;
+      node.labelStyle = series.getLabelStyle(context, node) ?? LabelStyle.empty;
+      return false;
+    });
+    return rn;
   }
 
   @override
@@ -141,14 +168,14 @@ class PackHelper extends LayoutHelper<PackSeries> {
 
     ///计算新的缩放系数
     double oldScale = scale;
-    double newScale = m.min(width, height) * 0.5 / pn.getAttr().r;
+    double newScale = m.min(width, height) * 0.5 / pn.attr.r;
     double scaleDiff = newScale - oldScale;
 
     ///计算偏移变化值
     double oldTx = tx;
     double oldTy = ty;
-    double ntx = width / 2 - newScale * pn.getAttr().x;
-    double nty = height / 2 - newScale * pn.getAttr().y;
+    double ntx = width / 2 - newScale * pn.attr.x;
+    double nty = height / 2 - newScale * pn.attr.y;
     double diffTx = (ntx - oldTx);
     double diffTy = (nty - oldTy);
 
@@ -227,10 +254,10 @@ class PackHelper extends LayoutHelper<PackSeries> {
     PackNode? parent;
     while (rl.isNotEmpty) {
       PackNode node = rl.removeAt(0);
-      Offset center = Offset(node.getAttr().x, node.getAttr().y);
+      Offset center = Offset(node.attr.x, node.attr.y);
       center = center.scale(scale, scale);
       center = center.translate(tx, ty);
-      if (offset.inCircle(node.getAttr().r * scale, center: center)) {
+      if (offset.inCircle(node.attr.r * scale, center: center)) {
         parent = node;
         if (node.hasChild) {
           rl = [...node.children];
@@ -254,7 +281,7 @@ bool Function(PackNode, int, PackNode) _radiusLeaf(Fun2<PackNode, num> radiusFun
   return (PackNode node, int b, PackNode c) {
     if (node.notChild) {
       double r = m.max(0, radiusFun.call(node)).toDouble();
-      node.getAttr().r = r;
+      node.attr.r = r;
     }
     return false;
   };
@@ -268,16 +295,16 @@ bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> p
       num r = paddingFun(node) * k, e;
       if (r != 0) {
         for (i = 0; i < n; ++i) {
-          children[i].getAttr().r += r;
+          children[i].attr.r += r;
         }
       }
       e = Siblings.packSiblingsRandom(children, random);
       if (r != 0) {
         for (i = 0; i < n; ++i) {
-          children[i].getAttr().r -= r;
+          children[i].attr.r -= r;
         }
       }
-      node.getAttr().r = e + r.toDouble();
+      node.attr.r = e + r.toDouble();
     }
     return false;
   };
@@ -286,12 +313,11 @@ bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> p
 bool Function(PackNode, int, PackNode) _translateChild(num k) {
   return (PackNode node, int b, PackNode c) {
     var parent = node.parent;
-    node.getAttr().r *= k;
+    node.attr.r *= k;
     if (parent != null) {
-      node.getAttr().x = parent.getAttr().x + k * node.getAttr().x;
-      node.getAttr().y = parent.getAttr().y + k * node.getAttr().y;
+      node.attr.x = parent.attr.x + k * node.attr.x;
+      node.attr.y = parent.attr.y + k * node.attr.y;
     }
-
     return false;
   };
 }

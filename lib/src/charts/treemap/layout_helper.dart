@@ -81,7 +81,7 @@ class TreeMapLayoutHelper {
     var y1 = rect.bottom - p;
     if (x1 < x0) x0 = x1 = (x0 + x1) / 2;
     if (y1 < y0) y0 = y1 = (y0 + y1) / 2;
-    node.setAttr(TreeMapAttr(Rect.fromLTRB(x0, y0, x1, y1), node.attr.textConfig));
+    node.attr=TreeMapAttr(Rect.fromLTRB(x0, y0, x1, y1), node.attr.textConfig);
     rect = node.attr.rect;
     if (node.hasChild) {
       ///布局孩子
@@ -105,7 +105,7 @@ class TreeMapLayoutHelper {
       rect.right.roundToDouble(),
       rect.bottom.roundToDouble(),
     );
-    node.setAttr(TreeMapAttr(r2, node.attr.textConfig));
+    node.attr=TreeMapAttr(r2, node.attr.textConfig);
     return false;
   }
 

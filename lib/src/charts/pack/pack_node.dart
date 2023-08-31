@@ -17,27 +17,6 @@ class PackNode extends TreeNode<TreeData, PackAttr, PackNode> {
     super.groupIndex,
   });
 
-  static PackNode fromPackData(Context context, PackSeries series, TreeData data) {
-    int i = 0;
-    return toTree<TreeData, PackAttr, PackNode>(data, (p0) => p0.children, (p0, p1) {
-      var node = PackNode(
-        p0,
-        p1,
-        i,
-        PackAttr(0, 0, 0),
-        AreaStyle.empty,
-        LineStyle.empty,
-        LabelStyle.empty,
-        value: p1.value,
-      );
-      node.itemStyle = series.getItemStyle(context, node) ?? AreaStyle.empty;
-      node.borderStyle = series.getBorderStyle(context, node) ?? LineStyle.empty;
-      node.labelStyle = series.getLabelStyle(context, node) ?? LabelStyle.empty;
-
-      i++;
-      return node;
-    });
-  }
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
@@ -65,10 +44,6 @@ class PackAttr {
   double scale = 1;
 
   PackAttr(this.x, this.y, this.r);
-
-  PackAttr copy() {
-    return PackAttr(x, y, r);
-  }
 
   Offset center() => Offset(x, y);
 

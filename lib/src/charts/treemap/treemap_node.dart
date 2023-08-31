@@ -28,12 +28,12 @@ class TreeMapNode extends TreeNode<TreeData, TreeMapAttr, TreeMapNode> {
   }
 
   @override
-  void setAttr(TreeMapAttr po) {
-    super.setAttr(po);
-    var center = po.rect.center;
+  set attr(TreeMapAttr a) {
+    super.attr = a;
+    var center = a.rect.center;
     x = center.dx;
     y = center.dy;
-    size = po.rect.size;
+    size = a.rect.size;
   }
 
   @override
@@ -48,7 +48,7 @@ class TreeMapNode extends TreeNode<TreeData, TreeMapAttr, TreeMapNode> {
     var label = data.label;
     var config = attr.textConfig;
     var ls = labelStyle;
-    if (label == null || label.isNotEmpty || config == null ||  !ls.show) {
+    if (label == null || label.isNotEmpty || config == null || !ls.show) {
       return;
     }
 

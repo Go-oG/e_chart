@@ -36,13 +36,11 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
         if (labelStyle == null || !labelStyle.show) {
           return false;
         }
-        double r = node.getAttr().r;
-
+        double r = node.attr.r;
         if (series.optTextDraw && r * 2 * scale < label.length * (labelStyle.textStyle.fontSize ?? 8) * 0.5) {
           return false;
         }
-
-        Offset center = Offset(node.getAttr().x, node.getAttr().y);
+        Offset center = Offset(node.attr.x, node.attr.y);
         center = center.scale(scale, scale);
         center = center.translate(tx, ty);
         TextDrawInfo config = TextDrawInfo(

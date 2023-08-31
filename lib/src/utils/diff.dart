@@ -67,7 +67,7 @@ class DiffUtil {
     return DiffResult2(startMap, endMap, curList, finalList, removeSet, addSet, commonSet);
   }
 
-  static List<AnimationNode> diffLayout<P, D, N extends NodeAccessor<P, D>>(
+  static List<AnimationNode> diffLayout<P, D, N extends DataNode<P, D>>(
     AnimationAttrs attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
@@ -79,18 +79,18 @@ class DiffUtil {
   ]) {
     Map<D, N> oldMap = {};
     for (var n in oldList) {
-      oldMap[n.getData()] = n;
+      oldMap[n.data] = n;
     }
     Map<D, N> newMap = {};
     for (var n in newList) {
-      newMap[n.getData()] = n;
+      newMap[n.data] = n;
     }
 
     Set<D> removeSet = {};
     Set<D> addSet = {};
     Set<D> updateSet = {};
     for (var n in oldList) {
-      D key = n.getData();
+      D key = n.data;
       if (newMap.containsKey(key)) {
         updateSet.add(key);
       } else {
@@ -98,7 +98,7 @@ class DiffUtil {
       }
     }
     for (var n in newList) {
-      D key = n.getData();
+      D key = n.data;
       if (oldMap.containsKey(key)) {
         updateSet.add(key);
       } else {
@@ -108,11 +108,11 @@ class DiffUtil {
 
     Map<D, P> startMap = {};
     oldMap.forEach((key, value) {
-      startMap[key] = value.getAttr();
+      startMap[key] = value.attr;
     });
     Map<D, P> endMap = {};
     newMap.forEach((key, value) {
-      endMap[key] = value.getAttr();
+      endMap[key] = value.attr;
     });
     for (var d in removeSet) {
       endMap[d] = builder.call(d, oldMap[d] as N, false);
@@ -145,7 +145,7 @@ class DiffUtil {
           N node = (oldMap[d] ?? newMap[d])!;
           P s = startMap[d] as P;
           P e = endMap[d] as P;
-          node.setAttr(lerpFun.call(s, e, t));
+          node.attr = (lerpFun.call(s, e, t));
         }
         resultCall.call(nodeList);
       });
@@ -168,7 +168,7 @@ class DiffUtil {
       };
       removeTween.endListener = () {
         nodeList.removeWhere((e) {
-          return removeSet.contains(e.getData());
+          return removeSet.contains(e.data);
         });
         resultCall.call(nodeList);
         if (!hasCallEnd) {
@@ -182,7 +182,7 @@ class DiffUtil {
           N node = (oldMap[d] ?? newMap[d])!;
           P s = startMap[d] as P;
           P e = endMap[d] as P;
-          node.setAttr(lerpFun.call(s, e, t));
+          node.attr = lerpFun.call(s, e, t);
         }
         resultCall.call(nodeList);
       });
@@ -218,9 +218,9 @@ class DiffUtil {
         updateTween.addListener(() {
           double t = updateTween.value;
           for (var n in needUpdateList) {
-            P s = startMap[n.getData()] as P;
-            P e = endMap[n.getData()] as P;
-            n.setAttr(lerpFun.call(s, e, t));
+            P s = startMap[n.data] as P;
+            P e = endMap[n.data] as P;
+            n.attr = lerpFun.call(s, e, t);
           }
           resultCall.call(nodeList);
         });
@@ -240,7 +240,7 @@ class DiffUtil {
     return nl;
   }
 
-  static List<AnimationNode> diffLayout2<P, D, N extends NodeAccessor<P, D>>(
+  static List<AnimationNode> diffLayout2<P, D, N extends DataNode<P, D>>(
     AnimationAttrs attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
@@ -252,18 +252,18 @@ class DiffUtil {
   ]) {
     Map<D, N> oldMap = {};
     for (var n in oldList) {
-      oldMap[n.getData()] = n;
+      oldMap[n.data] = n;
     }
     Map<D, N> newMap = {};
     for (var n in newList) {
-      newMap[n.getData()] = n;
+      newMap[n.data] = n;
     }
 
     Set<D> removeSet = {};
     Set<D> addSet = {};
     Set<D> updateSet = {};
     for (var n in oldList) {
-      D key = n.getData();
+      D key = n.data;
       if (newMap.containsKey(key)) {
         updateSet.add(key);
       } else {
@@ -271,7 +271,7 @@ class DiffUtil {
       }
     }
     for (var n in newList) {
-      D key = n.getData();
+      D key = n.data;
       if (oldMap.containsKey(key)) {
         updateSet.add(key);
       } else {
@@ -281,11 +281,11 @@ class DiffUtil {
 
     Map<D, P> startMap = {};
     oldMap.forEach((key, value) {
-      startMap[key] = value.getAttr();
+      startMap[key] = value.attr;
     });
     Map<D, P> endMap = {};
     newMap.forEach((key, value) {
-      endMap[key] = value.getAttr();
+      endMap[key] = value.attr;
     });
     for (var d in removeSet) {
       endMap[d] = builder.call(d, oldMap[d] as N, false);
@@ -318,7 +318,7 @@ class DiffUtil {
           N node = (oldMap[d] ?? newMap[d])!;
           P s = startMap[d] as P;
           P e = endMap[d] as P;
-          node.setAttr(lerpFun.call(s, e, t, UpdateType.add));
+          node.attr = lerpFun.call(s, e, t, UpdateType.add);
         }
         resultCall.call(nodeList);
       });
@@ -341,7 +341,7 @@ class DiffUtil {
       };
       removeTween.endListener = () {
         nodeList.removeWhere((e) {
-          return removeSet.contains(e.getData());
+          return removeSet.contains(e.data);
         });
         resultCall.call(nodeList);
         if (!hasCallEnd) {
@@ -355,7 +355,7 @@ class DiffUtil {
           N node = (oldMap[d] ?? newMap[d])!;
           P s = startMap[d] as P;
           P e = endMap[d] as P;
-          node.setAttr(lerpFun.call(s, e, t, UpdateType.remove));
+          node.attr = lerpFun.call(s, e, t, UpdateType.remove);
         }
         resultCall.call(nodeList);
       });
@@ -391,9 +391,9 @@ class DiffUtil {
         updateTween.addListener(() {
           double t = updateTween.value;
           for (var n in needUpdateList) {
-            P s = startMap[n.getData()] as P;
-            P e = endMap[n.getData()] as P;
-            n.setAttr(lerpFun.call(s, e, t, UpdateType.update));
+            P s = startMap[n.data] as P;
+            P e = endMap[n.data] as P;
+            n.attr = lerpFun.call(s, e, t, UpdateType.update);
           }
           resultCall.call(nodeList);
         });
@@ -414,7 +414,7 @@ class DiffUtil {
   }
 
   ///用于在点击或者hover触发时执行diff动画
-  static void diffUpdate<P, D, N extends NodeAccessor<P, D>>(
+  static void diffUpdate<P, D, N extends DataNode<P, D>>(
     Context context,
     AnimationAttrs attrs,
     Iterable<N> oldList,
@@ -427,12 +427,12 @@ class DiffUtil {
     Map<D, P> endMap = {};
 
     each(oldList, (p0, p1) {
-      startMap[p0.getData()] = p0.getAttr();
-      endMap[p0.getData()] = builder.call(p0.getData(), p0, true);
+      startMap[p0.data] = p0.attr;
+      endMap[p0.data] = builder.call(p0.data, p0, true);
     });
     each(newList, (p0, p1) {
-      startMap[p0.getData()] = p0.getAttr();
-      endMap[p0.getData()] = builder.call(p0.getData(), p0, false);
+      startMap[p0.data] = p0.attr;
+      endMap[p0.data] = builder.call(p0.data, p0, false);
     });
     final List<N> nodeList = [...oldList, ...newList];
 
@@ -443,24 +443,14 @@ class DiffUtil {
     updateTween.addListener(() {
       double t = updateTween.value;
       for (var n in nodeList) {
-        P s = startMap[n.getData()] as P;
-        P e = endMap[n.getData()] as P;
-        n.setAttr(lerpFun.call(s, e, t));
+        P s = startMap[n.data] as P;
+        P e = endMap[n.data] as P;
+        n.attr = lerpFun.call(s, e, t);
       }
       callback.call();
     });
     updateTween.start(context, true);
   }
-}
-
-///属性访问器
-///用于访问节点的布局位置和数据
-abstract class NodeAccessor<P, D> {
-  P getAttr();
-
-  void setAttr(P attr);
-
-  D getData();
 }
 
 class DiffResult<N, D> {

@@ -2,25 +2,20 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import '../../component/index.dart';
-import '../../core/view_state.dart';
-import '../../utils/diff.dart';
-import '../mixin_props.dart';
-import '../text_info.dart';
-
 ///数据到绘图节点的映射
-abstract class DataNode<P, D> with ViewStateProvider, ExtProps implements NodeAccessor<P, D> {
+abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   final int dataIndex;
   final int groupIndex;
   final D data;
   late P _attr;
+
   P get attr => _attr;
 
   set attr(P a) {
-    setAttr(a);
+    _attr = a;
   }
 
-  ///绘制顺序
+  ///绘制顺序(从小到到绘制，最大的最后绘制)
   int drawIndex = 0;
 
   DynamicText? label;
@@ -53,22 +48,10 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps implements NodeAc
     return data.hashCode;
   }
 
-  @override
-  D getData() => data;
-
-  @override
-  P getAttr() {
-    return attr;
-  }
-
-  @override
-  void setAttr(P po) {
-    _attr = po;
-  }
-
   void onDraw(Canvas canvas, Paint paint);
 
   void onDrawSymbol(Canvas canvas, Paint paint) {}
+
 
   bool contains(Offset offset);
 }

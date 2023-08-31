@@ -441,6 +441,8 @@ abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D
   num x = 0;
   num y = 0;
   Size size = Size.zero;
+  ///缩放
+  double scale=1;
 
   ///找到一个节点是否在[offset]范围内
   T? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {

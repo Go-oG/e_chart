@@ -34,7 +34,7 @@ abstract class TreemapLayout extends LayoutHelper<TreeMapSeries> {
     _rootNode!.sum((p0) => p0.data.value);
     _rootNode!.removeWhere((p0) => p0.value <= 0, true);
     _rootNode!.computeHeight();
-    _rootNode!.setAttr(TreeMapAttr(Rect.fromLTWH(0, 0, width, height), null));
+    _rootNode!.attr = TreeMapAttr(Rect.fromLTWH(0, 0, width, height), null);
     onLayout2(_rootNode!, type);
   }
 

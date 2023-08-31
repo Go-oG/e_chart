@@ -42,7 +42,6 @@ export 'graph/graph_node.dart';
 export 'graph/edge.dart';
 export 'tree_data.dart';
 
-export 'node/data_node.dart';
 export 'node/symbol_node.dart';
 export 'node/tree_node.dart';
 

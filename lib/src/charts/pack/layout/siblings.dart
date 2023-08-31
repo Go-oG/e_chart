@@ -56,20 +56,20 @@ class Siblings {
     var aa, ca, sj, sk;
 
     // Place the first circle.
-    a = InnerNode(circles[0].getAttr());
+    a = InnerNode(circles[0].attr);
     a.x = 0;
     a.y = 0;
     if (!(n > 1)) return a.r;
 
     // Place the second circle.
-    b = InnerNode(circles[1].getAttr());
+    b = InnerNode(circles[1].attr);
     a.x = -b.r;
     b.x = a.r;
     b.y = 0;
     if (!(n > 2)) return a.r + b.r;
 
     // Place the third circle.
-    _place(b, a, c = InnerNode(circles[2].getAttr()));
+    _place(b, a, c = InnerNode(circles[2].attr));
 
     // Initialize the front-chain using the first three circles a, b and c.
     a = InnerNode(a.circle);
@@ -82,7 +82,7 @@ class Siblings {
     // Attempt to place each remaining circle…
     pack:
     for (i = 3; i < n; ++i) {
-      _place(a!, b!, c = InnerNode(circles[i].getAttr()));
+      _place(a!, b!, c = InnerNode(circles[i].attr));
       c = InnerNode(c.circle);
 
       j = b.next;
@@ -139,7 +139,7 @@ class Siblings {
 
     // Translate the circles to put the enclosing circle around the origin.
     for (i = 0; i < n; ++i) {
-      a = InnerNode(circles[i].getAttr());
+      a = InnerNode(circles[i].attr);
       a.x -= c.x;
       a.y -= c.y;
     }
