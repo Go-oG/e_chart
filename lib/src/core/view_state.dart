@@ -2,7 +2,6 @@ import 'package:flutter/painting.dart';
 
 ///https://m3.material.io/foundations/interaction/states/overview
 enum ViewState {
-  enabled,
   disabled,
   selected,
   hover,
@@ -15,7 +14,7 @@ enum ViewState {
 mixin ViewStateProvider {
   final Set<ViewState> _stateSet = {};
 
-  bool get isEnabled => _stateSet.contains(ViewState.enabled);
+  bool get isEnabled => !_stateSet.contains(ViewState.disabled);
 
   bool get isDisabled => _stateSet.contains(ViewState.disabled);
 
@@ -29,8 +28,16 @@ mixin ViewStateProvider {
 
   bool get isDragged => _stateSet.contains(ViewState.dragged);
 
+  bool _changed = false;
+
+  bool get changed {
+    var r = _changed;
+    _changed = false;
+    return r;
+  }
+
   bool addState(ViewState s) {
-    return _stateSet.add(s);
+    return _changed = _stateSet.add(s);
   }
 
   bool addStates(Iterable<ViewState> states) {
@@ -40,11 +47,11 @@ mixin ViewStateProvider {
         result = true;
       }
     }
-    return result;
+    return _changed = result;
   }
 
   bool removeState(ViewState s) {
-    return _stateSet.remove(s);
+    return _changed = _stateSet.remove(s);
   }
 
   bool removeStates(Iterable<ViewState> states) {
@@ -54,15 +61,15 @@ mixin ViewStateProvider {
         result = true;
       }
     }
-    return result;
+    return _changed = result;
   }
 
   bool cleanState() {
     if (_stateSet.isEmpty) {
-      return false;
+      return _changed = false;
     }
     _stateSet.clear();
-    return true;
+    return _changed = true;
   }
 
   Set<ViewState> get status => _stateSet;
@@ -73,7 +80,7 @@ abstract class ViewStateResolver<T> {
 }
 
 class ColorResolver extends ViewStateResolver<Color> {
-  final Color overlay;
+  Color overlay;
 
   ColorResolver(this.overlay);
 

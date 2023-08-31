@@ -34,7 +34,7 @@ class ParallelSeries extends ChartSeries {
       return borderStyleFun!.call(data, index, status ?? {});
     }
     var theme = context.option.theme.parallelTheme;
-    return theme.getStyle();
+    return theme.getItemStyle(context, index);
   }
 
   LabelStyle? getLabelStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {

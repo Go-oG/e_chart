@@ -1,15 +1,9 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'funnel_helper.dart';
-
 class FunnelNode extends DataNode<List<Offset>, ItemData> {
   final int index;
   final ItemData? preData;
-
-  ///标识顶点坐标
-  ///leftTop:[0];rightTop:[1];rightBottom:[2]; leftBottom:[3];
-  List<Offset> pointList = [];
 
   FunnelNode(
     this.index,
@@ -21,17 +15,10 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
     LabelStyle labelStyle,
   ) : super(data, dataIndex, 0, [], itemStyle, borderStyle, labelStyle);
 
-  void update(Context context, FunnelSeries series) {
-    itemStyle = FunnelHelper.getAreaStyle(context, series, data, dataIndex, status);
-    labelStyle = FunnelHelper.getLabelStyle(context, series, data, dataIndex, status);
-    labelConfig = computeTextPosition(series);
-    labelLine = computeLabelLineOffset(context, series, labelConfig?.offset);
-  }
-
   void updatePoint(Context context, FunnelSeries series, List<Offset> pl) {
-    pointList = pl;
+    attr = pl;
     _path = null;
-    update(context, series);
+    updateStyle(context, series);
   }
 
   Path? _path;
@@ -41,7 +28,7 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
       return _path!;
     }
     Path path = Path();
-    each(pointList, (p0, p1) {
+    each(attr, (p0, p1) {
       if (p1 == 0) {
         path.moveTo(p0.dx, p0.dy);
       } else {
@@ -55,7 +42,7 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   @override
   String toString() {
     String s = '';
-    for (var element in pointList) {
+    for (var element in attr) {
       s = '$s$element ';
     }
     return s;
@@ -66,14 +53,14 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
     if (!style.show) {
       return null;
     }
-    Offset p0 = pointList[0];
-    Offset p1 = pointList[1];
-    Offset p2 = pointList[2];
-    Offset p3 = pointList[3];
+    Offset p0 = attr[0];
+    Offset p1 = attr[1];
+    Offset p2 = attr[2];
+    Offset p3 = attr[3];
     double centerX = (p0.dx + p1.dx) / 2;
     double centerY = (p0.dy + p3.dy) / 2;
     double topW = (p1.dx - p0.dx).abs();
-    ChartAlign align = series.getLabelAlign(data);
+    ChartAlign align = series.getLabelAlign(data, status);
     double x = centerX + align.align.x * topW / 2;
     double y = centerY + align.align.y * (p1.dy - p2.dy).abs() / 2;
     if (!align.inside) {
@@ -96,12 +83,12 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   }
 
   List<Offset>? computeLabelLineOffset(Context context, FunnelSeries series, Offset? textOffset) {
-    ChartAlign align = series.getLabelAlign(data);
+    ChartAlign align = series.getLabelAlign(data, status);
     if (align.inside || textOffset == null) {
       return null;
     }
 
-    LabelStyle style =labelStyle;
+    LabelStyle style = labelStyle;
     if (!style.show) {
       return null;
     }
@@ -129,16 +116,6 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   }
 
   @override
-  void setAttr(List<Offset> po) {
-    pointList = po;
-  }
-
-  @override
-  List<Offset> getAttr() {
-    return List.from(pointList);
-  }
-
-  @override
   void onDraw(Canvas canvas, Paint paint) {
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
@@ -161,5 +138,13 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   @override
   bool contains(Offset offset) {
     return path.contains(offset);
+  }
+
+  @override
+  void updateStyle(Context context, FunnelSeries series) {
+    itemStyle = series.getAreaStyle(context, data, dataIndex, status);
+    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
+    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    labelConfig = computeTextPosition(series);
   }
 }

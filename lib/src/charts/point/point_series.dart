@@ -4,7 +4,7 @@ import 'point_view.dart';
 
 class PointSeries extends RectSeries {
   List<PointGroup> data;
-  Fun3<PointData, PointGroup, ChartSymbol> symbolFun;
+  Fun4<PointData, PointGroup,Set<ViewState>, ChartSymbol> symbolFun;
 
   PointSeries(
     this.data, {

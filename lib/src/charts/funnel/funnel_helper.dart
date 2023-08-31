@@ -1,19 +1,17 @@
-//漏斗图布局计算相关
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 import 'funnel_node.dart';
 
-class FunnelHelper extends LayoutHelper<FunnelSeries> {
-  List<FunnelNode> nodeList = [];
-
+//漏斗图布局计算相关
+class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
   num maxValue = 0;
 
   FunnelHelper(super.context, super.series);
 
   @override
   void onLayout(LayoutType type) {
-    _hoverNode = null;
+    oldHoverNode = null;
     List<FunnelNode> oldList = nodeList;
     List<FunnelNode> newList = convertData(series.dataList);
     layoutNode(newList);
@@ -24,7 +22,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     }
 
     var an = DiffUtil.diffLayout<List<Offset>, ItemData, FunnelNode>(animation, oldList, newList, (data, node, add) {
-      List<Offset> pl = node.pointList;
+      List<Offset> pl = node.attr;
       Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
       return [o0, o0, o0, o0];
     }, (s, e, t) {
@@ -35,7 +33,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
       return pl;
     }, (result) {
       for (var n in result) {
-        List<Offset> ol = List.from(n.pointList);
+        List<Offset> ol = List.from(n.attr);
         n.updatePoint(context, series, ol);
       }
       nodeList = List.from(result);
@@ -49,6 +47,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     if (list.isEmpty) {
       return nodeList;
     }
+    Set<ViewState> emptyVS = {};
     for (int i = 0; i < list.length; i++) {
       var data = list[i];
       ItemData? preData = i == 0 ? null : list[i - 1];
@@ -57,9 +56,9 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
         preData,
         data,
         i,
-        getAreaStyle(context, series, data, i, null),
-        getBorderStyle(context, series, data, i, null),
-        getLabelStyle(context, series, data, i, null),
+        series.getAreaStyle(context, data, i, emptyVS),
+        series.getBorderStyle(context, data, i, emptyVS) ?? LineStyle.empty,
+        series.getLabelStyle(context, data, i, emptyVS) ?? LabelStyle.empty,
       ));
     }
 
@@ -92,10 +91,10 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     } else {
       _layoutHorizontal(nodeList, itemSize);
     }
-
     for (var node in nodeList) {
-      node.update(context, series);
+      node.updateStyle(context, series);
     }
+
   }
 
   void _layoutVertical(List<FunnelNode> nodeList, double itemHeight) {
@@ -145,7 +144,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     }
     for (var node in nodeList) {
       FunnelProps props = propsMap[node]!;
-      node.pointList = [
+      node.attr = [
         props.p1,
         props.p1.translate(props.len1, 0),
         props.p2.translate(props.len2, 0),
@@ -200,7 +199,7 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     }
     for (var node in nodeList) {
       FunnelProps props = propsMap[node]!;
-      node.pointList = [
+      node.attr = [
         props.p1,
         props.p2,
         props.p2.translate(0, props.len2),
@@ -209,186 +208,52 @@ class FunnelHelper extends LayoutHelper<FunnelSeries> {
     }
   }
 
-  FunnelNode? _hoverNode;
-
-  @override
-  void onClick(Offset localOffset) {
-    handleHoverOrClick(localOffset, true);
-  }
-
-  @override
-  void onHoverStart(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  void handleHoverOrClick(Offset offset, bool click) {
-    bool result = false;
-    Map<FunnelNode, AreaStyle> oldMap = {};
-    Map<FunnelNode, LabelStyle> oldMap2 = {};
-    FunnelNode? hoverNode;
-    for (var node in nodeList) {
-      oldMap[node] = node.itemStyle;
-      if(node.labelStyle.show){
-        oldMap2[node] = node.labelStyle;
-      }
-
-      if (node.path.contains(offset)) {
-        hoverNode = node;
-        if (node.addState(ViewState.hover)) {
-          result = true;
-        }
-      } else {
-        if (node.removeState(ViewState.hover)) {
-          result = true;
-        }
-      }
-    }
-    if (!result) {
-      return;
-    }
-
-    if (_hoverNode == hoverNode) {
-      if (hoverNode != null) {
-        click ? sendClickEvent2(offset, hoverNode) : sendHoverEvent(offset, hoverNode);
-      }
-      return;
-    }
-
-    final old = _hoverNode;
-    _hoverNode = hoverNode;
-    if (old != null) {
-      sendHoverEndEvent(old);
-    }
-    if (hoverNode != null) {
-      click ? sendClickEvent(offset, hoverNode) : sendHoverEvent(offset, hoverNode);
-    }
-
-    var animator = series.animation;
-    if (animator == null || animator.updateDuration.inMilliseconds <= 0) {
-      old?.labelConfig = old.labelConfig?.copyWith(scaleFactor: 1);
-      hoverNode?.labelConfig = hoverNode.labelConfig?.copyWith(scaleFactor: 1.5);
-      notifyLayoutUpdate();
-      return;
-    }
-
-    List<ChartTween> tl = [];
-    if (old != null && oldMap.containsKey(old)) {
-      AreaStyle style = getAreaStyle(context, series, old.data, old.dataIndex, old.status);
-      AreaStyleTween tween = AreaStyleTween(oldMap[old]!, style, props: animator);
-      tween.addListener(() {
-        old.itemStyle = tween.value;
-        notifyLayoutUpdate();
-      });
-      tl.add(tween);
-      ChartDoubleTween tween2 =
-          ChartDoubleTween.fromValue((old.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animator);
-      tween2.addListener(() {
-        old.labelConfig = old.labelConfig?.copyWith(scaleFactor: tween2.value);
-        notifyLayoutUpdate();
-      });
-      tl.add(tween2);
-    }
-    if (hoverNode != null) {
-      var node = hoverNode;
-      AreaStyle style = getAreaStyle(context, series, node.data, node.dataIndex, node.status);
-      AreaStyleTween tween = AreaStyleTween(oldMap[node]!, style, props: animator);
-      tween.addListener(() {
-        node.itemStyle = tween.value;
-        notifyLayoutUpdate();
-      });
-      tl.add(tween);
-      ChartDoubleTween tween2 =
-          ChartDoubleTween.fromValue((node.labelConfig?.scaleFactor ?? 1).toDouble(), 1.5, props: animator);
-      tween2.addListener(() {
-        node.labelConfig = node.labelConfig?.copyWith(scaleFactor: tween2.value);
-        notifyLayoutUpdate();
-      });
-      tl.add(tween2);
-    }
-    if (tl.isEmpty) {
-      notifyLayoutUpdate();
-      return;
-    }
-    for (var tw in tl) {
-      tw.start(context, true);
-    }
-  }
-
-  @override
-  void onHoverEnd() {
-    var old = _hoverNode;
-    _hoverNode = null;
-    if (old == null) {
-      return;
-    }
-    sendHoverEndEvent2(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
-
-    var animation = series.animation;
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      old.removeState(ViewState.hover);
-      old.itemStyle = getAreaStyle(context, series, old.data,old.dataIndex,old.status);
-      notifyLayoutUpdate();
-      return;
-    }
-
-    List<ChartTween> tl = [];
-    var oldStyle = old.itemStyle;
-    old.removeState(ViewState.hover);
-    var style = getAreaStyle(context, series, old.data,old.dataIndex,old.status);
-    AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: animation);
-    tween.addListener(() {
-      old.itemStyle = tween.value;
-      notifyLayoutUpdate();
-    });
-    tl.add(tween);
-    ChartDoubleTween tween2 =
-        ChartDoubleTween.fromValue((old.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animation);
-    tween2.addListener(() {
-      old.labelConfig = old.labelConfig?.copyWith(scaleFactor: tween2.value);
-    });
-    tl.add(tween2);
-    for (var tw in tl) {
-      tw.start(context, true);
-    }
-  }
-
-  static AreaStyle getAreaStyle(
-    Context context,
-    FunnelSeries series,
-    ItemData data,
-    int dataIndex,
-    Set<ViewState>? status,
-  ) {
-    return series.getAreaStyle(context, data, dataIndex, status);
-  }
-
-  static LineStyle getBorderStyle(
-    Context context,
-    FunnelSeries series,
-    ItemData data,
-    int dataIndex,
-    Set<ViewState>? status,
-  ) {
-    return series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-  }
-
-  static LabelStyle getLabelStyle(
-    Context context,
-    FunnelSeries series,
-    ItemData data,
-    int dataIndex,
-    Set<ViewState>? status,
-  ) {
-    return series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
-  }
-
   @override
   SeriesType get seriesType => SeriesType.funnel;
+
+  @override
+  void onUpdateGestureAnimation(
+    FunnelNode? oldNode,
+    NodeAttr<dynamic>? oldAttr,
+    FunnelNode? newNode,
+    NodeAttr<dynamic>? newAttr,
+    AnimationAttrs animation,
+  ) {
+    List<ChartTween> tl = [];
+    if (oldNode != null) {
+      var oldStyle = oldAttr!.itemStyle;
+      var style = oldNode.itemStyle;
+      AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: animation);
+      tween.addListener(() {
+        oldNode.itemStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+      var tween2 = ChartDoubleTween.fromValue((oldAttr.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animation);
+      tween2.addListener(() {
+        oldNode.labelConfig = oldNode.labelConfig?.copyWith(scaleFactor: tween2.value);
+      });
+      tl.add(tween2);
+    }
+    if (newNode != null) {
+      var oldStyle = newAttr!.itemStyle;
+      var style = newNode.itemStyle;
+      var tween = AreaStyleTween(oldStyle, style, props: animation);
+      tween.addListener(() {
+        newNode.itemStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+      var tween2 = ChartDoubleTween.fromValue((newAttr.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animation);
+      tween2.addListener(() {
+        newNode.labelConfig = newNode.labelConfig?.copyWith(scaleFactor: tween2.value);
+      });
+      tl.add(tween2);
+    }
+    for (var tw in tl) {
+      tw.start(context, true);
+    }
+  }
 }
 
 class FunnelProps {

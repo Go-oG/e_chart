@@ -10,36 +10,24 @@ class PieNode extends DataNode<Arc, ItemData> {
     super.itemStyle,
     super.borderStyle,
     super.labelStyle,
-  ) ;
+  );
 
   ///计算文字的位置
-  bool showLabel = false;
   TextDrawInfo? textDrawConfig;
   Path? guidLinePath;
 
   void updateTextPosition(PieSeries series) {
     textDrawConfig = null;
     guidLinePath = null;
-
-    var label = data.label;
-    if (label == null || label.isEmpty) {
-      return;
-    }
-    if (!labelStyle.show) {
-      return;
-    }
+    var labelStyle = this.labelStyle;
     if (series.labelAlign == CircleAlign.center) {
       textDrawConfig = TextDrawInfo(attr.center, align: Alignment.center);
-      return;
-    }
-    if (series.labelAlign == CircleAlign.inside) {
+    } else if (series.labelAlign == CircleAlign.inside) {
       double radius = (attr.innerRadius + attr.outRadius) / 2;
       double angle = attr.startAngle + attr.sweepAngle / 2;
       Offset offset = circlePoint(radius, angle).translate(attr.center.dx, attr.center.dy);
       textDrawConfig = TextDrawInfo(offset, align: Alignment.center);
-      return;
-    }
-    if (series.labelAlign == CircleAlign.outside) {
+    } else if (series.labelAlign == CircleAlign.outside) {
       num expand = labelStyle.guideLine?.length ?? 0;
       double centerAngle = attr.startAngle + attr.sweepAngle / 2;
       Offset offset = circlePoint(attr.outRadius + expand, centerAngle, attr.center);
@@ -50,7 +38,26 @@ class PieNode extends DataNode<Arc, ItemData> {
         align = Alignment.centerLeft;
       }
       textDrawConfig = TextDrawInfo(offset, align: align);
+    }
+
+    var config = textDrawConfig;
+    if (config == null) {
       return;
+    }
+
+    if (series.labelAlign == CircleAlign.outside) {
+      Offset center = attr.center;
+      Offset tmpOffset = circlePoint(attr.outRadius, attr.startAngle + (attr.sweepAngle / 2), center);
+      Offset tmpOffset2 = circlePoint(
+        attr.outRadius + (labelStyle.guideLine?.length ?? 0),
+        attr.startAngle + (attr.sweepAngle / 2),
+        center,
+      );
+      Path path = Path();
+      path.moveTo(tmpOffset.dx, tmpOffset.dy);
+      path.lineTo(tmpOffset2.dx, tmpOffset2.dy);
+      path.lineTo(config.offset.dx, config.offset.dy);
+      guidLinePath = path;
     }
   }
 
@@ -64,18 +71,19 @@ class PieNode extends DataNode<Arc, ItemData> {
     Path path = attr.toPath(true);
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
-    if (!showLabel) {
-      return;
-    }
     var ls = labelStyle;
     var config = textDrawConfig;
     var label = data.label;
-    if (!ls.show || config == null || label == null || label.isEmpty) {
-      return;
-    }
-    ls.draw(canvas, paint, label, config);
     if (guidLinePath != null) {
       ls.guideLine?.style.drawPath(canvas, paint, guidLinePath!);
+    }
+
+    if (ls.show && config != null && label != null && label.isNotEmpty) {
+      if (attr.center == config.offset) {
+        if (isHover || isFocused || isActivated || isDragged || isPressed) {
+          ls.draw(canvas, paint, label, config);
+        }
+      }
     }
   }
 

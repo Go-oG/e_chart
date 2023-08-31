@@ -45,6 +45,12 @@ class SankeyNode extends DataNode<Rect, BaseItemData> {
     itemStyle.drawRect(canvas, paint, attr);
     borderStyle.drawRect(canvas, paint, attr);
   }
+
+  void updateStyle(Context context, SankeySeries series) {
+    itemStyle = series.getItemStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
+    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
+    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+  }
 }
 
 class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
@@ -89,5 +95,16 @@ class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
     Path path = attr.toPath(true);
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
+  }
+
+  void updateStyle(Context context, SankeySeries series) {
+    itemStyle =
+        series.getLinkStyle(context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status);
+    borderStyle = series.getLinkBorderStyle(
+            context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status) ??
+        LineStyle.empty;
+    labelStyle = series.getLinkLabelStyle(
+            context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status) ??
+        LabelStyle.empty;
   }
 }

@@ -76,6 +76,13 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     itemStyle.drawPath(canvas, paint, arc.toPath(true));
     borderStyle.drawPath(canvas, paint, arc.toPath(true), drawDash: true, needSplit: false);
   }
+
+  @override
+  void updateStyle(Context context, covariant StackSeries<T, P> series) {
+    itemStyle = series.getAreaStyle(context, data.data, data.parent, styleIndex, status) ?? AreaStyle.empty;
+    borderStyle = series.getLineStyle(context, data.data, data.parent, styleIndex, status) ?? LineStyle.empty;
+    labelStyle = series.getLabelStyle(context, data.data, data.parent, styleIndex, status) ?? LabelStyle.empty;
+  }
 }
 
 class SingleAttr {

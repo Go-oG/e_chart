@@ -25,19 +25,22 @@ class PieHelper extends LayoutHelper<PieSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    pieAngle = _adjustPieAngle(series.sweepAngle);
-    center = _computeCenterPoint(series.center);
+    pieAngle = adjustPieAngle(series.sweepAngle);
+    center = computeCenterPoint(series.center);
     hoverNode = null;
+
     _preHandleRadius();
+
     List<PieNode> oldList = _nodeList;
     List<PieNode> newList = convertData(series.data);
     layoutNode(newList);
 
     var animation = series.animation;
-    if (animation == null) {
+    if (animation == null || LayoutType.none == type) {
       _nodeList = newList;
       return;
     }
+
     PieTween arcTween = PieTween(Arc(), Arc(), props: animation);
     var an = DiffUtil.diffLayout<Arc, ItemData, PieNode>(
       animation,
@@ -46,18 +49,16 @@ class PieHelper extends LayoutHelper<PieSeries> {
       (data, node, add) {
         PieAnimatorStyle style = series.animatorStyle;
         Arc arc = node.attr;
-        if (add) {
-          if (style == PieAnimatorStyle.expandScale || style == PieAnimatorStyle.originExpandScale) {
-            arc = arc.copy(outRadius: arc.innerRadius);
-          }
-          if (style == PieAnimatorStyle.expand || style == PieAnimatorStyle.expandScale) {
-            arc = arc.copy(startAngle: series.offsetAngle);
-          }
-          arc = arc.copy(sweepAngle: 0);
-        } else {
-          arc = arc.copy(sweepAngle: 0, outRadius: arc.innerRadius);
+        if (!add) {
+          return arc.copy(sweepAngle: 0, outRadius: arc.innerRadius);
         }
-        return arc;
+        if (style == PieAnimatorStyle.expandScale || style == PieAnimatorStyle.originExpandScale) {
+          arc = arc.copy(outRadius: arc.innerRadius);
+        }
+        if (style == PieAnimatorStyle.expand || style == PieAnimatorStyle.expandScale) {
+          arc = arc.copy(startAngle: series.offsetAngle);
+        }
+        return arc.copy(sweepAngle: 0);
       },
       (s, e, t) {
         arcTween.changeValue(s, e);
@@ -79,6 +80,9 @@ class PieHelper extends LayoutHelper<PieSeries> {
       _layoutForNormal(nodeList);
     } else {
       _layoutForNightingale(nodeList);
+    }
+    for (var node in nodeList) {
+      node.updateTextPosition(series);
     }
   }
 
@@ -211,16 +215,10 @@ class PieHelper extends LayoutHelper<PieSeries> {
     List<PieNode> nodeList = [];
     Set<ViewState> es = {};
     each(list, (data, i) {
-      nodeList.add(
-        PieNode(
-            data,
-            i,
-            -1,
-            Arc(),
-            series.getAreaStyle(context, data, i, es) ?? AreaStyle.empty,
-            series.getBorderStyle(context, data, i, es) ?? LineStyle.empty,
-            series.getLabelStyle(context, data, i, es) ?? LabelStyle.empty),
-      );
+      var as = series.getAreaStyle(context, data, i, es) ?? AreaStyle.empty;
+      var bs = series.getBorderStyle(context, data, i, es) ?? LineStyle.empty;
+      var ls = series.getLabelStyle(context, data, i, es) ?? LabelStyle.empty;
+      nodeList.add(PieNode(data, i, -1, Arc(), as, bs, ls));
       maxData = max([data.value, maxData]);
       minData = min([data.value, minData]);
       allData += data.value;
@@ -315,13 +313,13 @@ class PieHelper extends LayoutHelper<PieSeries> {
     }
   }
 
-  Offset _computeCenterPoint(List<SNumber> center) {
+  Offset computeCenterPoint(List<SNumber> center) {
     double x = center[0].convert(width);
     double y = center[1].convert(height);
     return Offset(x, y);
   }
 
-  num _adjustPieAngle(num angle) {
+  num adjustPieAngle(num angle) {
     if (angle <= 0) {
       return 1;
     }

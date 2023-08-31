@@ -32,6 +32,11 @@ class PointNode extends DataNode<PointAttr, PointData> {
       labelStyle.draw(canvas, paint, label, labelConfig);
     }
   }
+
+  @override
+  void updateStyle(Context context, covariant PointSeries series) {
+    symbol = series.symbolFun.call(data, group, status);
+  }
 }
 
 class PointAttr {

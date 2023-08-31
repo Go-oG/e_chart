@@ -32,6 +32,13 @@ class LineStyle {
     this.align = Align2.center,
   });
 
+  Color? pickColor() {
+    if (shader != null) {
+      return shader!.pickColor();
+    }
+    return color;
+  }
+
   void fillPaint(Paint paint, [Rect? rect]) {
     paint.reset();
     paint.color = color;
@@ -204,7 +211,7 @@ class LineStyle {
 
     final Color color = ColorResolver(this.color).resolve(states)!;
 
-    final sd.ChartShader? shader = this.shader == null ? null : this.shader!.convert2(states);
+    final sd.ChartShader? shader = this.shader == null ? null : this.shader!.convert(states);
 
     final List<BoxShadow> shadow = [];
     for (var bs in this.shadow) {

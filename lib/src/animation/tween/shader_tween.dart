@@ -6,6 +6,6 @@ class ChartShaderTween extends ChartTween<ChartShader> {
 
   @override
   ChartShader convert(double animatorPercent) {
-    return begin.convert(begin, end, animatorPercent);
+    return begin.lerp(begin, end, animatorPercent);
   }
 }

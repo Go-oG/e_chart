@@ -15,7 +15,7 @@ class BinaryLayout extends TreemapLayout {
     _layoutChildren(area, binaryNode);
     for (var node in binaryNode.children) {
       Rect rect = Rect.fromCenter(center: node.center, width: node.size.width, height: node.size.height);
-      node.layoutNode.attr.rect = rect;
+      node.layoutNode.attr = rect;
     }
   }
 
@@ -136,4 +136,8 @@ class BinaryNode extends TreeNode<TreeData, Rect, BinaryNode> {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {}
+
+  @override
+  void updateStyle(Context context, covariant ChartSeries series) {
+  }
 }

@@ -25,5 +25,9 @@ class SymbolNode<T> extends DataNode<Offset, ChartSymbol> {
     return s.internal2(attr, s.size, offset);
   }
 
+  @override
+  void updateStyle(Context context, covariant ChartSeries series) {
+  }
+
 
 }

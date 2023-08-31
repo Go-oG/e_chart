@@ -19,8 +19,8 @@ class SliceLayout extends TreemapLayout {
     for (var node in nodeList) {
       double ratio = node.areaRatio / allValue;
       double h2 = ratio * h;
-      node.attr.rect = Rect.fromLTWH(rect.left, topOffset, w, h2);
-      topOffset += node.attr.rect.height;
+      node.attr = Rect.fromLTWH(rect.left, topOffset, w, h2);
+      topOffset += h2;
     }
   }
 }

@@ -48,6 +48,11 @@ class LineSymbolNode extends SymbolNode<StackItemData> {
   ) : super(symbol, dataIndex, groupIndex) {
     originData = data;
   }
+
+  @override
+  void updateStyle(Context context, covariant LineSeries series) {
+
+  }
 }
 
 class OptLinePath extends OptPath {

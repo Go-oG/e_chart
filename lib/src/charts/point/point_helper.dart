@@ -16,7 +16,7 @@ class PointHelper extends LayoutHelper<PointSeries> {
     each(series.data, (group, i) {
       each(group.data, (e, ci) {
         var node = PointNode(
-          series.symbolFun.call(e, group),
+          series.symbolFun.call(e, group,{}),
           group,
           e,
           ci,

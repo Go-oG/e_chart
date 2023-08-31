@@ -60,9 +60,9 @@ class FunnelSeries extends RectSeries {
     return FunnelView(this);
   }
 
-  AreaStyle getAreaStyle(Context context, ItemData data, int index, [Set<ViewState>? status]) {
+  AreaStyle getAreaStyle(Context context, ItemData data, int index, Set<ViewState> status) {
     if (areaStyleFun != null) {
-      return areaStyleFun!.call(data, status ?? {});
+      return areaStyleFun!.call(data, status);
     }
     var theme = context.option.theme.funnelTheme;
     if (theme.colors.isNotEmpty) {
@@ -72,17 +72,17 @@ class FunnelSeries extends RectSeries {
     return AreaStyle(color: ctheme.colors[index % ctheme.colors.length]).convert(status);
   }
 
-  LineStyle? getBorderStyle(Context context, ItemData data, int index, [Set<ViewState>? status]) {
+  LineStyle? getBorderStyle(Context context, ItemData data, int index, Set<ViewState> status) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, status ?? {});
+      return borderStyleFun!.call(data, status);
     }
     var theme = context.option.theme.funnelTheme;
     return theme.getBorderStyle();
   }
 
-  LabelStyle? getLabelStyle(Context context, ItemData data, int index, [Set<ViewState>? status]) {
+  LabelStyle? getLabelStyle(Context context, ItemData data, int index, Set<ViewState> status) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, status ?? {});
+      return labelStyleFun!.call(data, status);
     }
     if (labelStyle != null) {
       return labelStyle;
@@ -91,9 +91,9 @@ class FunnelSeries extends RectSeries {
     return theme.getLabelStyle();
   }
 
-  ChartAlign getLabelAlign(ItemData data, [Set<ViewState>? status]) {
+  ChartAlign getLabelAlign(ItemData data, Set<ViewState> status) {
     if (labelAlignFun != null) {
-      return labelAlignFun!.call(data, status ?? {});
+      return labelAlignFun!.call(data, status);
     }
     if (labelAlign != null) {
       return labelAlign!;
@@ -105,9 +105,9 @@ class FunnelSeries extends RectSeries {
     }
   }
 
-  DynamicText? formatData(Context context, ItemData data, [Set<ViewState>? status]) {
+  DynamicText? formatData(Context context, ItemData data, Set<ViewState> status) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data, status ?? {});
+      return labelFormatFun?.call(data, status);
     }
     return formatNumber(data.value).toText();
   }

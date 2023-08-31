@@ -69,6 +69,13 @@ class RadarGroupNode extends DataNode<Path, GroupData> {
       node.onDraw(canvas, paint);
     });
   }
+
+  @override
+  void updateStyle(Context context, covariant RadarSeries series) {
+    itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
+    borderStyle = series.getLineStyle(context, data, dataIndex, status) ?? LineStyle.empty;
+    labelStyle = LabelStyle.empty;
+  }
 }
 
 class RadarNode extends DataNode<Offset, ItemData> {
@@ -104,5 +111,10 @@ class RadarNode extends DataNode<Offset, ItemData> {
       return;
     }
     sb.draw(canvas, paint, attr);
+  }
+
+  @override
+  void updateStyle(Context context, covariant RadarSeries series) {
+    symbol = series.getSymbol(context, data, parent.data, dataIndex, status);
   }
 }

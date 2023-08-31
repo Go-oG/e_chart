@@ -105,7 +105,7 @@ class AreaStyle {
       return this;
     }
     final Color? color = this.color == null ? null : ColorResolver(this.color!).resolve(states);
-    final ChartShader? shader = this.shader == null ? null : this.shader!.convert2(states);
+    final ChartShader? shader = this.shader == null ? null : this.shader!.convert(states);
     final List<BoxShadow> shadow = [];
     for (var bs in this.shadow) {
       shadow.add(BoxShadow(
@@ -131,4 +131,10 @@ class AreaStyle {
     return !notDraw;
   }
 
+  Color? pickColor() {
+    if (shader != null) {
+      return shader!.pickColor();
+    }
+    return color;
+  }
 }

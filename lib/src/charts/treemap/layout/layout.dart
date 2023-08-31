@@ -14,19 +14,11 @@ abstract class TreemapLayout extends LayoutHelper<TreeMapSeries> {
     this.boxBound = boxBound;
     this.globalBoxBound = globalBoxBound;
     int i = 0;
-    _rootNode = toTree<TreeData, TreeMapAttr, TreeMapNode>(
+    _rootNode = toTree<TreeData, Rect, TreeMapNode>(
       series.data,
       (p0) => p0.children,
       (p0, p1) {
-        var node = TreeMapNode(
-          p0,
-          p1,
-          i,
-          TreeMapAttr.of(),
-          AreaStyle.empty,
-          LineStyle.empty,
-          LabelStyle.empty,
-        );
+        var node = TreeMapNode(p0, p1, i, Rect.zero, AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
         i += 1;
         return node;
       },
@@ -34,7 +26,7 @@ abstract class TreemapLayout extends LayoutHelper<TreeMapSeries> {
     _rootNode!.sum((p0) => p0.data.value);
     _rootNode!.removeWhere((p0) => p0.value <= 0, true);
     _rootNode!.computeHeight();
-    _rootNode!.attr = TreeMapAttr(Rect.fromLTWH(0, 0, width, height), null);
+    _rootNode!.attr = Rect.fromLTWH(0, 0, width, height);
     onLayout2(_rootNode!, type);
   }
 

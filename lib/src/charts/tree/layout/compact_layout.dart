@@ -5,7 +5,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../node.dart';
-import '../tree_layout.dart';
+import '../tree_helper.dart';
 
 ///紧凑树(不支持smooth)
 class CompactLayout extends TreeLayout {

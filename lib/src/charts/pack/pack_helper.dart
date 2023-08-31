@@ -147,9 +147,6 @@ class PackHelper extends LayoutHelper<PackSeries> {
     sendClickEvent(localOffset, clickNode);
     var parent = clickNode.parent;
     PackNode pn = parent ?? clickNode;
-    if (pn == showNode) {
-      return;
-    }
     showNode = pn;
 
     ///计算新的缩放系数

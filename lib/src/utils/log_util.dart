@@ -52,7 +52,6 @@ class Logger {
         return;
       }
     }
-
     List<String> list = _handleLog(_stringifyMessage(content), tag, stackTrace);
     for (var s in list) {
       print("${color.getStrPre()}$s${LogColor.ansiDefault}");

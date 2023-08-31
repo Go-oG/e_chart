@@ -3,7 +3,7 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-///Ref:https://github.com/d3/d3-sankey/blob/master/src/sankey.js
+///布局参考：Ref:https://github.com/d3/d3-sankey/blob/master/src/sankey.js
 class SankeyHelper extends LayoutHelper<SankeySeries> {
   /// 整个视图区域坐标坐标
   double left = 0, top = 0, right = 1, bottom = 1;
@@ -28,27 +28,30 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     top = 0;
     right = width;
     bottom = height;
+    _oldHoverNode = null;
+    _oldHoverLink = null;
     List<SankeyNode> nodes = dataToNode(series.data.data, series.data.links, 0);
     List<SankeyLink> links = dataToLink(nodes, series.data.links);
     layoutNode(nodes, links);
     var animation = series.animation;
-    if (animation != null && type == LayoutType.layout) {
-      ChartDoubleTween dt = ChartDoubleTween(props: animation);
-      animationProcess = 0;
-      dt.startListener = () {
-        _nodes = nodes;
-        _links = links;
-      };
-      dt.addListener(() {
-        animationProcess = dt.value;
-        notifyLayoutUpdate();
-      });
-      context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
-    } else {
+    if (animation == null || type == LayoutType.layout) {
       animationProcess = 1;
       _nodes = nodes;
       _links = links;
+      return;
     }
+
+    ChartDoubleTween dt = ChartDoubleTween(props: animation);
+    animationProcess = 0;
+    dt.startListener = () {
+      _nodes = nodes;
+      _links = links;
+    };
+    dt.addListener(() {
+      animationProcess = dt.value;
+      notifyLayoutUpdate();
+    });
+    context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
   }
 
   void layoutNode(List<SankeyNode> nodes, List<SankeyLink> links) {
@@ -60,11 +63,6 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     _computeLinkBreadths(nodes);
     _computeLinkPosition(links, nodes);
   }
-
-  // void update(List<SankeyNode> nodes) {
-  //   _computeLinkBreadths(nodes);
-  //   _computeLinkPosition(links, nodes);
-  // }
 
   @override
   void onClick(Offset localOffset) {
@@ -141,6 +139,16 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
   ///找到点击节点(优先节点而不是边)
   dynamic findEventNode(Offset offset) {
+    ///这里先从hover数据集中进行选择
+    var oldNode = _oldHoverNode;
+    if (oldNode != null && oldNode.contains(offset)) {
+      return oldNode;
+    }
+    var oldLink = _oldHoverLink;
+    if (oldLink != null && oldLink.contains(offset)) {
+      return oldLink;
+    }
+
     for (var ele in _nodes) {
       if (ele.contains(offset)) {
         return ele;
@@ -181,28 +189,27 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
     for (var ele in _links) {
       ele.cleanState();
-      if (!hasSelect) {
-        continue;
-      }
 
-      if (nodeSet.contains(ele.target) && nodeSet.contains(ele.source)) {
-        ele.addStates(status);
-      } else {
-        ele.addState(ViewState.disabled);
+      if (hasSelect) {
+        if (nodeSet.contains(ele.target) && nodeSet.contains(ele.source)) {
+          ele.addStates(status);
+        } else {
+          ele.addState(ViewState.disabled);
+        }
       }
+      ele.updateStyle(context, series);
     }
 
     for (var ele in _nodes) {
       ele.cleanState();
-      if (!hasSelect) {
-        continue;
+      if (hasSelect) {
+        if (nodeSet.contains(ele)) {
+          ele.addStates(status);
+        } else {
+          ele.addState(ViewState.disabled);
+        }
       }
-
-      if (nodeSet.contains(ele)) {
-        ele.addStates(status);
-      } else {
-        ele.addState(ViewState.disabled);
-      }
+      ele.updateStyle(context, series);
     }
   }
 
@@ -210,9 +217,11 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   void resetDataStatus() {
     for (var ele in _links) {
       ele.cleanState();
+      ele.updateStyle(context, series);
     }
     for (var ele in _nodes) {
       ele.cleanState();
+      ele.updateStyle(context, series);
     }
   }
 

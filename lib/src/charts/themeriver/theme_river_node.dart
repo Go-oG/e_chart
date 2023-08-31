@@ -1,8 +1,6 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 
-import '../../component/shape/area.dart';
-import '../../core/data_node.dart';
-import '../../model/index.dart';
 
 class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
   ThemeRiverNode(
@@ -58,6 +56,13 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
       return;
     }
     labelStyle.draw(canvas, paint, label, config);
+  }
+
+  @override
+  void updateStyle(Context context, covariant ThemeRiverSeries series) {
+    itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
+    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
+    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
   }
 }
 

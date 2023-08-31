@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class TreeMapNode extends TreeNode<TreeData, TreeMapAttr, TreeMapNode> {
+class TreeMapNode extends TreeNode<TreeData, Rect, TreeMapNode> {
   TreeMapNode(
     super.parent,
     super.data,
@@ -28,25 +28,25 @@ class TreeMapNode extends TreeNode<TreeData, TreeMapAttr, TreeMapNode> {
   }
 
   @override
-  set attr(TreeMapAttr a) {
+  set attr(Rect a) {
     super.attr = a;
-    var center = a.rect.center;
+    var center = a.center;
     x = center.dx;
     y = center.dy;
-    size = a.rect.size;
+    size = a.size;
   }
 
   @override
   bool contains(Offset offset) {
-    return attr.rect.contains2(offset);
+    return attr.contains2(offset);
   }
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    Rect rect = attr.rect;
+    Rect rect = attr;
     itemStyle.drawRect(canvas, paint, rect);
     var label = data.label;
-    var config = attr.textConfig;
+    var config = labelConfig;
     var ls = labelStyle;
     if (label == null || label.isNotEmpty || config == null || !ls.show) {
       return;
@@ -74,13 +74,11 @@ class TreeMapNode extends TreeNode<TreeData, TreeMapAttr, TreeMapNode> {
     //   ignoreOverText: true,
     // );
   }
+
+  @override
+  void updateStyle(Context context, covariant ChartSeries series) {
+
+  }
+
 }
 
-class TreeMapAttr {
-  Rect rect = Rect.zero;
-  TextDrawInfo? textConfig;
-
-  TreeMapAttr(this.rect, this.textConfig);
-
-  TreeMapAttr.of();
-}

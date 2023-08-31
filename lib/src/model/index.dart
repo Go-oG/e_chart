@@ -31,7 +31,6 @@ export 'corner.dart';
 export 'data.dart';
 export 'link.dart';
 export 'mixin_props.dart';
-export 'node_attr.dart';
 export 'optimun.dart';
 export 'range.dart';
 export 'range_info.dart';

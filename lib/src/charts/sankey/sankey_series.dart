@@ -53,7 +53,7 @@ class SankeySeries extends RectSeries {
     return SankeyView(this);
   }
 
-  AreaStyle? getItemStyle(Context context, ItemData data, int index, Set<ViewState> status) {
+  AreaStyle? getItemStyle(Context context, BaseItemData data, int index, Set<ViewState> status) {
     var fun = areaStyleFun;
     if (fun != null) {
       return fun.call(data, index, status);
@@ -61,7 +61,7 @@ class SankeySeries extends RectSeries {
     return context.option.theme.getAreaStyle(index).convert(status);
   }
 
-  LineStyle? getBorderStyle(Context context, ItemData data, int index, Set<ViewState> status) {
+  LineStyle? getBorderStyle(Context context, BaseItemData data, int index, Set<ViewState> status) {
     var fun = borderStyleFun;
     if (fun != null) {
       return fun.call(data, index, status);
@@ -69,7 +69,7 @@ class SankeySeries extends RectSeries {
     return context.option.theme.sankeyTheme.getStyle()?.convert(status);
   }
 
-  LabelStyle? getLabelStyle(Context context, ItemData data, int index, Set<ViewState> status) {
+  LabelStyle? getLabelStyle(Context context, BaseItemData data, int index, Set<ViewState> status) {
     var fun = labelStyleFun;
     if (fun != null) {
       return fun.call(data, index, status);
@@ -79,9 +79,9 @@ class SankeySeries extends RectSeries {
 
   AreaStyle getLinkStyle(
     Context context,
-    ItemData sourceData,
+    BaseItemData sourceData,
     int sourceIndex,
-    ItemData targetData,
+    BaseItemData targetData,
     int targetIndex,
     int index,
     Set<ViewState> status,
@@ -106,9 +106,9 @@ class SankeySeries extends RectSeries {
 
   LineStyle? getLinkBorderStyle(
     Context context,
-    ItemData sourceData,
+    BaseItemData sourceData,
     int sourceIndex,
-    ItemData targetData,
+    BaseItemData targetData,
     int targetIndex,
     int index,
     Set<ViewState> status,
@@ -122,9 +122,9 @@ class SankeySeries extends RectSeries {
 
   LabelStyle? getLinkLabelStyle(
     Context context,
-    ItemData sourceData,
+    BaseItemData sourceData,
     int sourceIndex,
-    ItemData targetData,
+    BaseItemData targetData,
     int targetIndex,
     int index,
     Set<ViewState> status,

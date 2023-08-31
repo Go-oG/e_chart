@@ -27,6 +27,13 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
     itemStyle.drawPath(canvas, paint, attr.shapePath!);
     borderStyle.drawPath(canvas, paint, attr.shapePath!);
   }
+
+  @override
+  void updateStyle(Context context, covariant SunburstSeries series) {
+    itemStyle = series.areaStyleFun.call(this);
+    // borderStyle=series.
+    labelStyle = series.labelStyleFun?.call(this) ?? LabelStyle.empty;
+  }
 }
 
 /// 存放位置数据

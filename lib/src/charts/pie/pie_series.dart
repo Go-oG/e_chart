@@ -97,7 +97,7 @@ class PieSeries extends RectSeries {
       return labelStyleFun!.call(data, dataIndex, status);
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(status);
+    return theme.getLabelStyle();
   }
 }
 

@@ -74,15 +74,15 @@ class TreeMapLayoutHelper {
     var p = _paddingStack[node.deep] ?? 0;
 
     ///处理自身的padding
-    var rect = node.attr.rect;
+    var rect = node.attr;
     var x0 = rect.left + p;
     var y0 = rect.top + p;
     var x1 = rect.right - p;
     var y1 = rect.bottom - p;
     if (x1 < x0) x0 = x1 = (x0 + x1) / 2;
     if (y1 < y0) y0 = y1 = (y0 + y1) / 2;
-    node.attr=TreeMapAttr(Rect.fromLTRB(x0, y0, x1, y1), node.attr.textConfig);
-    rect = node.attr.rect;
+    node.attr=Rect.fromLTRB(x0, y0, x1, y1);
+    rect = node.attr;
     if (node.hasChild) {
       ///布局孩子
       p = _paddingStack[node.deep + 1] = _paddingInner(node);
@@ -98,14 +98,14 @@ class TreeMapLayoutHelper {
   }
 
   bool roundNode(TreeMapNode node, int index, TreeMapNode other) {
-    var rect = node.attr.rect;
+    var rect = node.attr;
     var r2 = Rect.fromLTRB(
       rect.left.roundToDouble(),
       rect.top.roundToDouble(),
       rect.right.roundToDouble(),
       rect.bottom.roundToDouble(),
     );
-    node.attr=TreeMapAttr(r2, node.attr.textConfig);
+    node.attr=r2;
     return false;
   }
 

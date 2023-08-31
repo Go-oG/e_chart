@@ -52,6 +52,34 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
 
   void onDrawSymbol(Canvas canvas, Paint paint) {}
 
-
   bool contains(Offset offset);
+
+  NodeAttr toAttr() {
+    return NodeAttr(attr, drawIndex, label, labelConfig, labelLine, itemStyle, borderStyle, labelStyle);
+  }
+
+  void updateStyle(Context context, covariant ChartSeries series);
+}
+
+class NodeAttr<A> {
+  final A attr;
+  final int drawIndex;
+
+  final DynamicText? label;
+  final TextDrawInfo? labelConfig;
+  final List<Offset>? labelLine;
+  final AreaStyle itemStyle;
+  final LineStyle borderStyle;
+  final LabelStyle labelStyle;
+
+  const NodeAttr(
+    this.attr,
+    this.drawIndex,
+    this.label,
+    this.labelConfig,
+    this.labelLine,
+    this.itemStyle,
+    this.borderStyle,
+    this.labelStyle,
+  );
 }

@@ -41,6 +41,11 @@ class TreeLayoutNode extends TreeNode<TreeData, TreeAttr, TreeLayoutNode> {
     }
     ls.draw(canvas, paint, lb, config);
   }
+
+  @override
+  void updateStyle(Context context, covariant TreeSeries series) {
+
+  }
 }
 
 class TreeAttr {

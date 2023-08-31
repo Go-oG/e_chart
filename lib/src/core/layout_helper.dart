@@ -211,4 +211,118 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 }
 
+abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends LayoutHelper<S> {
+  List<N> nodeList = [];
+
+  LayoutHelper2(super.context, super.series);
+
+  @override
+  void onClick(Offset localOffset) {
+    onHandleHoverAndClick(localOffset, true);
+  }
+
+  @override
+  void onHoverStart(Offset localOffset) {
+    onHandleHoverAndClick(localOffset, false);
+  }
+
+  @override
+  void onHoverMove(Offset localOffset) {
+    onHandleHoverAndClick(localOffset, false);
+  }
+
+  @override
+  void onHoverEnd() {
+    var old = oldHoverNode;
+    oldHoverNode = null;
+    if (old == null) {
+      return;
+    }
+    sendHoverEndEvent(old);
+    var animation = series.animation;
+    var oldAttr = old.toAttr();
+    old.removeState(ViewState.hover);
+    onUpdateNodeStyle(old);
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      notifyLayoutUpdate();
+      return;
+    }
+    onUpdateGestureAnimation(old, oldAttr, null, null, animation);
+  }
+
+  N? oldHoverNode;
+
+  void onHandleHoverAndClick(Offset offset, bool click) {
+    var oldOffset = offset;
+    Offset scroll = getScroll();
+    offset = offset.translate(scroll.dx.abs(), scroll.dy.abs());
+    var clickNode = findNode(offset);
+    if (oldHoverNode == clickNode) {
+      if (clickNode != null) {
+        click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
+      }
+      return;
+    }
+    var oldNode = oldHoverNode;
+    oldHoverNode = clickNode;
+    if (oldNode != null) {
+      sendHoverEndEvent(oldNode);
+    }
+    if (clickNode != null) {
+      click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
+    }
+
+    if (oldNode != null) {
+      oldNode.removeState(ViewState.hover);
+      onUpdateNodeStyle(oldNode);
+    }
+    if (clickNode != null) {
+      clickNode.addState(ViewState.hover);
+      onUpdateNodeStyle(clickNode);
+    }
+
+    var animator = series.animation;
+    if (animator == null || animator.updateDuration.inMilliseconds <= 0) {
+      notifyLayoutUpdate();
+      return;
+    }
+    onUpdateGestureAnimation(oldNode, oldNode?.toAttr(), clickNode, clickNode?.toAttr(), animator);
+  }
+
+  void onUpdateNodeStyle(N node) {
+    node.updateStyle(context, series);
+  }
+
+  void onUpdateGestureAnimation(N? oldNode, NodeAttr? oldAttr, N? newNode, NodeAttr? newAttr, AnimationAttrs animation);
+
+  N? findNode(Offset offset) {
+    for (var node in nodeList) {
+      if (node.contains(offset)) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  Offset getScroll() {
+    var type = series.coordType;
+    if (type == CoordType.polar) {
+      return findParallelCoord().getScroll();
+    }
+    if (type == CoordType.calendar) {
+      return findCalendarCoord().getScroll();
+    }
+    if (type == CoordType.radar) {
+      return findRadarCoord().getScroll();
+    }
+    if (type == CoordType.parallel) {
+      return findParallelCoord().getScroll();
+    }
+    if (type == CoordType.grid) {
+      return findGridCoord().getScroll();
+    }
+    return Offset.zero;
+  }
+}
+
 enum LayoutType { none, layout, update }
