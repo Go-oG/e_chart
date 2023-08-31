@@ -2,7 +2,7 @@ import 'dart:math' as m;
 
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
-import 'siblings.dart';
+import 'layout/siblings.dart';
 
 class PackHelper extends LayoutHelper<PackSeries> {
   Fun2<PackNode, num>? _radiusFun;
@@ -40,8 +40,8 @@ class PackHelper extends LayoutHelper<PackSeries> {
     }
 
     LCG random = DefaultLCG();
-    node.attr.x = _dx / 2;
-    node.attr.y = _dy / 2;
+    node.x = _dx / 2;
+    node.y = _dy / 2;
     if (_radiusFun != null) {
       node
           .eachBefore(_radiusLeaf(_radiusFun!))
@@ -53,15 +53,15 @@ class PackHelper extends LayoutHelper<PackSeries> {
           .eachAfter(_packChildrenRandom((e) {
             return 0;
           }, 1, random))
-          .eachAfter(_packChildrenRandom(_paddingFun, node.attr.r / m.min(_dx, _dy), random))
-          .eachBefore(_translateChild(m.min(_dx, _dy) / (2 * node.attr.r)));
+          .eachAfter(_packChildrenRandom(_paddingFun, node.r / m.min(_dx, _dy), random))
+          .eachBefore(_translateChild(m.min(_dx, _dy) / (2 * node.r)));
     }
 
     ///修正位置
     if (_rect.left != 0 || _rect.top != 0) {
       node.each((p0, p1, p2) {
-        p0.attr.x += _rect.left;
-        p0.attr.y += _rect.top;
+        p0.x += _rect.left;
+        p0.y += _rect.top;
         return false;
       });
     }
@@ -72,18 +72,15 @@ class PackHelper extends LayoutHelper<PackSeries> {
       return;
     }
 
-    var an = DiffUtil.diffLayout<PackAttr, TreeData, PackNode>(
+    var an = DiffUtil.diffLayout<Rect, TreeData, PackNode>(
       animation,
       oldRootNode?.descendants() ?? [],
       node.descendants(),
       (data, node, add) {
-        PackAttr attr = node.attr;
-        return PackAttr(attr.x, attr.y, 0);
+        return Rect.fromCircle(center: node.center, radius: 0);
       },
       (s, e, t) {
-        var sr = s.r;
-        var er = e.r;
-        return PackAttr(e.x, e.y, lerpDouble(sr, er, t)!);
+        return Rect.lerp(s, e, t)!;
       },
       (resultList) {
         notifyLayoutUpdate();
@@ -97,12 +94,12 @@ class PackHelper extends LayoutHelper<PackSeries> {
 
   PackNode convertData(TreeData data) {
     int i = 0;
-    var rn = toTree<TreeData, PackAttr, PackNode>(data, (p0) => p0.children, (p0, p1) {
+    var rn = toTree<TreeData, Rect, PackNode>(data, (p0) => p0.children, (p0, p1) {
       var node = PackNode(
         p0,
         p1,
         i,
-        PackAttr(0, 0, 0),
+        Rect.zero,
         AreaStyle.empty,
         LineStyle.empty,
         LabelStyle.empty,
@@ -114,7 +111,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
     rn.sum((p0) => p0.value);
     rn.computeHeight();
     rn.each((node, index, startNode) {
-      node.maxDeep=rn.height;
+      node.maxDeep = rn.height;
       node.itemStyle = series.getItemStyle(context, node) ?? AreaStyle.empty;
       node.borderStyle = series.getBorderStyle(context, node) ?? LineStyle.empty;
       node.labelStyle = series.getLabelStyle(context, node) ?? LabelStyle.empty;
@@ -126,23 +123,6 @@ class PackHelper extends LayoutHelper<PackSeries> {
   @override
   SeriesType get seriesType => SeriesType.pack;
 
-  PackHelper radius(Fun2<PackNode, num> fun1) {
-    _radiusFun = fun1;
-    return this;
-  }
-
-  PackHelper size(Rect rect) {
-    _rect = rect;
-    _dx = rect.width;
-    _dy = rect.height;
-    return this;
-  }
-
-  PackHelper padding(Fun2<PackNode, num> fun1) {
-    _paddingFun = fun1;
-    return this;
-  }
-
   double tx = 0;
   double ty = 0;
   double scale = 1;
@@ -153,14 +133,20 @@ class PackHelper extends LayoutHelper<PackSeries> {
   @override
   void onClick(Offset localOffset) {
     PackNode? clickNode = findNode(localOffset);
-    if (clickNode != null) {
-      sendClickEvent2(localOffset, clickNode.data, dataIndex: clickNode.childIndex, groupIndex: 0);
+    if(clickNode!=_oldHoverNode){
+      var oldHover = _oldHoverNode;
+      _oldHoverNode = null;
+      if (oldHover != null) {
+        sendHoverEndEvent(oldHover);
+      }
     }
-    if (clickNode == null || clickNode == rootNode) {
+    if (clickNode == null) {
       return;
     }
 
-    PackNode pn = clickNode.parent == null ? clickNode : clickNode.parent!;
+    sendClickEvent(localOffset, clickNode);
+    var parent = clickNode.parent;
+    PackNode pn = parent ?? clickNode;
     if (pn == showNode) {
       return;
     }
@@ -168,31 +154,28 @@ class PackHelper extends LayoutHelper<PackSeries> {
 
     ///计算新的缩放系数
     double oldScale = scale;
-    double newScale = m.min(width, height) * 0.5 / pn.attr.r;
-    double scaleDiff = newScale - oldScale;
+    double newScale = m.min(width, height) * 0.5 / pn.r;
 
     ///计算偏移变化值
     double oldTx = tx;
     double oldTy = ty;
-    double ntx = width / 2 - newScale * pn.attr.x;
-    double nty = height / 2 - newScale * pn.attr.y;
-    double diffTx = (ntx - oldTx);
-    double diffTy = (nty - oldTy);
+    double ntx = width / 2 - newScale * pn.x;
+    double nty = height / 2 - newScale * pn.y;
 
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      scale = oldScale + scaleDiff;
-      tx = oldTx + diffTx;
-      ty = oldTy + diffTy;
+      scale = newScale;
+      tx = ntx;
+      ty = nty;
       notifyLayoutUpdate();
       return;
     }
     var tween = ChartDoubleTween(props: animation);
     tween.addListener(() {
       var t = tween.value;
-      scale = oldScale + scaleDiff * t;
-      tx = oldTx + diffTx * t;
-      ty = oldTy + diffTy * t;
+      scale = lerpDouble(oldScale, newScale, t)!;
+      tx = lerpDouble(oldTx, ntx, t)!;
+      ty = lerpDouble(oldTy, nty, t)!;
       notifyLayoutUpdate();
     });
     tween.start(context, true);
@@ -254,10 +237,10 @@ class PackHelper extends LayoutHelper<PackSeries> {
     PackNode? parent;
     while (rl.isNotEmpty) {
       PackNode node = rl.removeAt(0);
-      Offset center = Offset(node.attr.x, node.attr.y);
+      Offset center = node.center;
       center = center.scale(scale, scale);
       center = center.translate(tx, ty);
-      if (offset.inCircle(node.attr.r * scale, center: center)) {
+      if (offset.inCircle(node.r * scale, center: center)) {
         parent = node;
         if (node.hasChild) {
           rl = [...node.children];
@@ -271,6 +254,23 @@ class PackHelper extends LayoutHelper<PackSeries> {
     }
     return null;
   }
+
+  PackHelper radius(Fun2<PackNode, num> fun1) {
+    _radiusFun = fun1;
+    return this;
+  }
+
+  PackHelper size(Rect rect) {
+    _rect = rect;
+    _dx = rect.width;
+    _dy = rect.height;
+    return this;
+  }
+
+  PackHelper padding(Fun2<PackNode, num> fun1) {
+    _paddingFun = fun1;
+    return this;
+  }
 }
 
 double _defaultRadius(PackNode d) {
@@ -281,7 +281,7 @@ bool Function(PackNode, int, PackNode) _radiusLeaf(Fun2<PackNode, num> radiusFun
   return (PackNode node, int b, PackNode c) {
     if (node.notChild) {
       double r = m.max(0, radiusFun.call(node)).toDouble();
-      node.attr.r = r;
+      node.r = r;
     }
     return false;
   };
@@ -295,16 +295,16 @@ bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> p
       num r = paddingFun(node) * k, e;
       if (r != 0) {
         for (i = 0; i < n; ++i) {
-          children[i].attr.r += r;
+          children[i].r += r;
         }
       }
       e = Siblings.packSiblingsRandom(children, random);
       if (r != 0) {
         for (i = 0; i < n; ++i) {
-          children[i].attr.r -= r;
+          children[i].r -= r;
         }
       }
-      node.attr.r = e + r.toDouble();
+      node.r = e + r.toDouble();
     }
     return false;
   };
@@ -313,10 +313,10 @@ bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> p
 bool Function(PackNode, int, PackNode) _translateChild(num k) {
   return (PackNode node, int b, PackNode c) {
     var parent = node.parent;
-    node.attr.r *= k;
+    node.r *= k;
     if (parent != null) {
-      node.attr.x = parent.attr.x + k * node.attr.x;
-      node.attr.y = parent.attr.y + k * node.attr.y;
+      node.x = parent.x + k * node.x;
+      node.y = parent.y + k * node.y;
     }
     return false;
   };

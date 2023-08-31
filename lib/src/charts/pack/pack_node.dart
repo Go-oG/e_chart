@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class PackNode extends TreeNode<TreeData, PackAttr, PackNode> {
+class PackNode extends TreeNode<TreeData, Rect, PackNode> {
   PackNode(
     super.parent,
     super.data,
@@ -17,7 +17,6 @@ class PackNode extends TreeNode<TreeData, PackAttr, PackNode> {
     super.groupIndex,
   });
 
-
   @override
   void onDraw(Canvas canvas, Paint paint) {
     var style = itemStyle;
@@ -25,30 +24,17 @@ class PackNode extends TreeNode<TreeData, PackAttr, PackNode> {
     if (style.notDraw && bs.notDraw) {
       return;
     }
-    Offset center = attr.center();
-    double r = attr.r;
     style.drawCircle(canvas, paint, center, r);
     bs.drawArc(canvas, paint, r - bs.width / 2, 0, 360);
   }
 
   @override
   bool contains(Offset offset) {
-    return offset.inCircle(attr.r * attr.scale, center: center);
+    return offset.inCircle(r * scale, center: center);
   }
-}
 
-class PackAttr {
-  double x;
-  double y;
-  double r;
-  double scale = 1;
+  double get r => size.width / 2;
 
-  PackAttr(this.x, this.y, this.r);
+  set r(num radius) => size = Size.square(radius * 2);
 
-  Offset center() => Offset(x, y);
-
-  @override
-  String toString() {
-    return '[x:${x.toStringAsFixed(2)},y:${y.toStringAsFixed(2)},r:${r.toStringAsFixed(2)}]';
-  }
 }

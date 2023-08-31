@@ -5,45 +5,51 @@ import 'package:flutter/material.dart';
 import '../../graph/layout/force/lcg.dart';
 import '../pack_node.dart';
 
-PackAttr? packEncloseRandom(List<PackAttr> circles, LCG random) {
+extension PackNodeExt on PackNode {
+  toCircle() {
+    return PackCircle(x.toDouble(), y.toDouble(), r);
+  }
+}
+
+PackCircle packEncloseRandom(List<PackNode> circles, LCG random) {
   shuffle(circles, random);
   int i = 0, n = circles.length;
-  List<PackAttr> B = [];
-  PackAttr p;
-  PackAttr? e;
+  List<PackCircle> B = [];
+  PackCircle? e;
   while (i < n) {
-    p = circles[i];
-    if (e != null && enclosesWeak(e, p)) {
-      ++i;
+    PackNode p = circles[i];
+    var pc = p.toCircle();
+    if (e != null && enclosesWeak(e, pc)) {
+      i++;
     } else {
-      e = encloseBasis(B = extendBasis(B, p));
+      e = encloseBasis(B = extendBasis(B, pc));
       i = 0;
     }
   }
-  return e;
+  return e!;
 }
 
-List<PackAttr> extendBasis(List<PackAttr> B, PackAttr p) {
+List<PackCircle> extendBasis(List<PackCircle> B, PackCircle pc) {
   int i, j;
-  if (enclosesWeakAll(p, B)) {
-    return [p];
+  if (enclosesWeakAll(pc, B)) {
+    return [pc];
   }
 
   // If we get here then B must have at least one element.
   for (i = 0; i < B.length; ++i) {
-    if (enclosesNot(p, B[i]) && enclosesWeakAll(encloseBasis2(B[i], p), B)) {
-      return [B[i], p];
+    if (enclosesNot(pc, B[i]) && enclosesWeakAll(encloseBasis2(B[i], pc), B)) {
+      return [B[i], pc];
     }
   }
 
   // If we get here then B must have at least two elements.
   for (i = 0; i < B.length - 1; ++i) {
     for (j = i + 1; j < B.length; ++j) {
-      if (enclosesNot(encloseBasis2(B[i], B[j]), p) &&
-          enclosesNot(encloseBasis2(B[i], p), B[j]) &&
-          enclosesNot(encloseBasis2(B[j], p), B[i]) &&
-          enclosesWeakAll(encloseBasis3(B[i], B[j], p), B)) {
-        return [B[i], B[j], p];
+      if (enclosesNot(encloseBasis2(B[i], B[j]), pc) &&
+          enclosesNot(encloseBasis2(B[i], pc), B[j]) &&
+          enclosesNot(encloseBasis2(B[j], pc), B[i]) &&
+          enclosesWeakAll(encloseBasis3(B[i], B[j], pc), B)) {
+        return [B[i], B[j], pc];
       }
     }
   }
@@ -52,19 +58,19 @@ List<PackAttr> extendBasis(List<PackAttr> B, PackAttr p) {
   throw FlutterError('异常');
 }
 
-bool enclosesNot(PackAttr a, PackAttr b) {
+bool enclosesNot(PackCircle a, PackCircle b) {
   var dr = a.r - b.r, dx = b.x - a.x, dy = b.y - a.y;
   return dr < 0 || dr * dr < dx * dx + dy * dy;
 }
 
-bool enclosesWeak(PackAttr a, PackAttr b) {
+bool enclosesWeak(PackCircle a, PackCircle b) {
   num maxV = max(a.r, b.r);
   maxV = max(maxV, 1);
   var dr = a.r - b.r + maxV * 1e-9, dx = b.x - a.x, dy = b.y - a.y;
   return dr > 0 && dr * dr > dx * dx + dy * dy;
 }
 
-bool enclosesWeakAll(PackAttr a, B) {
+bool enclosesWeakAll(PackCircle a, List<PackCircle> B) {
   for (var i = 0; i < B.length; ++i) {
     if (!enclosesWeak(a, B[i])) {
       return false;
@@ -73,7 +79,7 @@ bool enclosesWeakAll(PackAttr a, B) {
   return true;
 }
 
-PackAttr? encloseBasis(B) {
+PackCircle? encloseBasis(List<PackCircle> B) {
   switch (B.length) {
     case 1:
       return encloseBasis1(B[0]);
@@ -85,11 +91,11 @@ PackAttr? encloseBasis(B) {
   return null;
 }
 
-PackAttr encloseBasis1(PackAttr a) {
-  return PackAttr(a.x, a.y, a.r);
+PackCircle encloseBasis1(PackCircle a) {
+  return PackCircle(a.x.toDouble(), a.y.toDouble(), a.r);
 }
 
-PackAttr encloseBasis2(PackAttr a, PackAttr b) {
+PackCircle encloseBasis2(PackCircle a, PackCircle b) {
   var x1 = a.x,
       y1 = a.y,
       r1 = a.r,
@@ -100,15 +106,14 @@ PackAttr encloseBasis2(PackAttr a, PackAttr b) {
       y21 = y2 - y1,
       r21 = r2 - r1,
       l = sqrt(x21 * x21 + y21 * y21);
-
-  PackAttr data = PackAttr(0,0,0);
-  data.r = (l + r1 + r2) / 2;
-  data.x=  (x1 + x2 + x21 / l * r21) / 2;
-  data.y= (y1 + y2 + y21 / l * r21) / 2;
-  return data;
+  return PackCircle(
+    (x1 + x2 + x21 / l * r21) / 2,
+    (y1 + y2 + y21 / l * r21) / 2,
+    (l + r1 + r2) / 2,
+  );
 }
 
-PackAttr encloseBasis3(PackAttr a, PackAttr b, PackAttr c) {
+PackCircle encloseBasis3(PackCircle a, PackCircle b, PackCircle c) {
   var x1 = a.x,
       y1 = a.y,
       r1 = a.r,
@@ -136,8 +141,15 @@ PackAttr encloseBasis3(PackAttr a, PackAttr b, PackAttr c) {
       B = 2 * (r1 + xa * xb + ya * yb),
       C = xa * xa + ya * ya - r1 * r1,
       r = -(A.abs() > 1e-6 ? (B + sqrt(B * B - 4 * A * C)) / (2 * A) : C / B);
+  return PackCircle(x1 + xa + xb * r, y1 + ya + yb * r, r);
+}
 
-  return PackAttr(x1 + xa + xb * r, y1 + ya + yb * r, r);
+class PackCircle {
+  double x;
+  double y;
+  double r;
+
+  PackCircle(this.x, this.y, this.r);
 }
 
 void shuffle(List array, LCG random) {

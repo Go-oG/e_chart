@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart';
-import 'layout/pack_helper.dart';
+import 'pack_helper.dart';
 
 class PackView extends SeriesView<PackSeries, PackHelper> {
   PackView(super.series);
@@ -36,11 +36,11 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
         if (labelStyle == null || !labelStyle.show) {
           return false;
         }
-        double r = node.attr.r;
+        double r = node.r;
         if (series.optTextDraw && r * 2 * scale < label.length * (labelStyle.textStyle.fontSize ?? 8) * 0.5) {
           return false;
         }
-        Offset center = Offset(node.attr.x, node.attr.y);
+        Offset center = node.center;
         center = center.scale(scale, scale);
         center = center.translate(tx, ty);
         TextDrawInfo config = TextDrawInfo(
