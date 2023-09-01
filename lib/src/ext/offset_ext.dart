@@ -6,8 +6,11 @@ import 'package:vector_math/vector_math.dart';
 extension OffsetExt on Offset {
   ///求两点之间的距离
   double distance2(Offset p) {
-    double a = (dx - p.dx).abs();
-    double b = (dy - p.dy).abs();
+   return distance3(p.dx, p.dy);
+  }
+  double distance3(num x,num y) {
+    double a = (dx - x).abs();
+    double b = (dy - y).abs();
     return m.sqrt(a * a + b * b);
   }
 

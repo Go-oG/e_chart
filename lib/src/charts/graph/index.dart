@@ -19,3 +19,6 @@ export 'layout/random_layout.dart';
 
 export 'graph_layout.dart';
 export 'graph_series.dart';
+export 'edge.dart';
+export 'graph.dart';
+export 'graph_node.dart';

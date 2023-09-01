@@ -14,8 +14,6 @@ class DagreLayout extends GraphLayout {
     this.multiGraph = false,
     this.compoundGraph = true,
     this.directedGraph = true,
-    super.sizeFun,
-    super.nodeSize,
     super.nodeSpaceFun,
     super.sort,
     super.workerThread,
@@ -42,7 +40,7 @@ class DagreLayout extends GraphLayout {
     Map<String, DagreNode> nodeMap = {};
     Map<String, GraphNode> nodeMap2 = {};
     for (var ele in graph.nodes) {
-      Size size = getNodeSize(ele);
+      Size size =ele.size;
       DagreNode node = DagreNode(ele.id, size.width, size.height);
       nodeList.add(node);
       nodeMap[ele.id] = node;

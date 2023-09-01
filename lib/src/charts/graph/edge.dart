@@ -1,10 +1,11 @@
 import 'dart:ui';
 
 import 'package:dart_dagre/dart_dagre.dart';
+import 'package:e_chart/e_chart.dart';
 
 import 'graph_node.dart';
 
-class Edge<T extends GraphNode> {
+class Edge<T extends GraphNode>{
   final String id;
   final T source;
   final T target;

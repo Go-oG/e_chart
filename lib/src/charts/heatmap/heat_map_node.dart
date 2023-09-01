@@ -28,7 +28,8 @@ class HeatMapNode extends DataNode<Rect, HeatMapData> {
     return attr.contains2(offset);
   }
 
-  void updateStyle(Context context, HeatMapSeries series) {
+  @override
+  void updateStyle(Context context,covariant HeatMapSeries series) {
     itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
     labelStyle = series.getLabelStyle(context, data, status) ?? LabelStyle.empty;

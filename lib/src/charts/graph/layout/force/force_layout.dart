@@ -24,8 +24,6 @@ class ForceLayout extends GraphLayout {
     this.alphaTarget = 0,
     this.velocityDecay = 0.1,
     this.optPerformance = false,
-    super.nodeSize,
-    super.sizeFun,
     super.nodeSpaceFun,
     super.sort,
     super.workerThread,
@@ -83,7 +81,7 @@ class ForceLayout extends GraphLayout {
   }
 
   @override
-  Offset getTranslationOffset(num width, num height) {
+  Offset getScroll() {
     return Offset(center[0].convert(width), center[1].convert(height));
   }
 
@@ -104,5 +102,4 @@ class ForceLayout extends GraphLayout {
     }
     return simulation;
   }
-
 }

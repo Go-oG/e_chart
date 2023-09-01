@@ -216,6 +216,18 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
   LayoutHelper2(super.context, super.series);
 
+  LayoutHelper2.lazy() : super.lazy();
+
+  double dragX = 0;
+  double dragY = 0;
+
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    dragX += diff.dx;
+    dragY += diff.dy;
+    notifyLayoutUpdate();
+  }
+
   @override
   void onClick(Offset localOffset) {
     onHandleHoverAndClick(localOffset, true);
@@ -255,7 +267,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
   void onHandleHoverAndClick(Offset offset, bool click) {
     var oldOffset = offset;
     Offset scroll = getScroll();
-    offset = offset.translate(scroll.dx.abs(), scroll.dy.abs());
+    offset = offset.translate2(scroll.invert);
     var clickNode = findNode(offset);
     if (oldHoverNode == clickNode) {
       if (clickNode != null) {
@@ -283,11 +295,15 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
     var animator = series.animation;
     if (animator == null || animator.updateDuration.inMilliseconds <= 0) {
+      onHandleHoverAndClickEnd(oldNode, clickNode);
       notifyLayoutUpdate();
       return;
     }
     onUpdateGestureAnimation(oldNode, oldNode?.toAttr(), clickNode, clickNode?.toAttr(), animator);
+    onHandleHoverAndClickEnd(oldNode, clickNode);
   }
+
+  void onHandleHoverAndClickEnd(N? oldNode, N? newNode) {}
 
   void onUpdateNodeStyle(N node) {
     node.updateStyle(context, series);
@@ -296,6 +312,10 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
   void onUpdateGestureAnimation(N? oldNode, NodeAttr? oldAttr, N? newNode, NodeAttr? newAttr, AnimationAttrs animation);
 
   N? findNode(Offset offset) {
+    var hoveNode = oldHoverNode;
+    if (hoveNode != null && hoveNode.contains(offset)) {
+      return hoveNode;
+    }
     for (var node in nodeList) {
       if (node.contains(offset)) {
         return node;

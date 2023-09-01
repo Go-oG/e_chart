@@ -21,8 +21,6 @@ class MDSLayout extends GraphLayout {
     this.distanceFun,
     this.linkDistance = 40,
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
-    super.nodeSize,
-    super.sizeFun,
     super.nodeSpaceFun,
     super.sort,
     super.workerThread,

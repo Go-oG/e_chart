@@ -4,9 +4,10 @@ import 'package:e_chart/e_chart.dart';
 
 ///数据到绘图节点的映射
 abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
-  final int dataIndex;
-  final int groupIndex;
   final D data;
+  int dataIndex;
+  int groupIndex;
+
   late P _attr;
 
   P get attr => _attr;

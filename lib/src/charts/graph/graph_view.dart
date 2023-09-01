@@ -6,7 +6,7 @@ class GraphView extends SeriesView<GraphSeries, GraphLayout> {
 
   @override
   void onDraw(Canvas canvas) {
-    Offset offset = series.layout.getTranslationOffset(width, height);
+    Offset offset = series.layout.getScroll();
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     for (var edge in series.graph.edges) {
@@ -25,9 +25,7 @@ class GraphView extends SeriesView<GraphSeries, GraphLayout> {
       style.drawPath(canvas, mPaint, line.toPath(false), drawDash: true);
     }
     for (var node in series.graph.nodes) {
-      Offset offset = Offset(node.x, node.y);
-      ChartSymbol symbol = series.symbolFun.call(node, series.layout.getNodeSize(node));
-      symbol.draw(canvas, mPaint, offset);
+      node.onDraw(canvas, mPaint);
     }
     canvas.restore();
   }

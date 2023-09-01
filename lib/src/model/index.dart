@@ -36,9 +36,6 @@ export 'range.dart';
 export 'range_info.dart';
 export 'string_number.dart';
 export 'text_info.dart';
-export 'graph/graph.dart';
-export 'graph/graph_node.dart';
-export 'graph/edge.dart';
 export 'tree_data.dart';
 
 export 'node/symbol_node.dart';

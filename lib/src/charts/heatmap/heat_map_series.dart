@@ -7,12 +7,12 @@ import 'package:flutter/painting.dart';
 class HeatMapSeries extends RectSeries {
   List<HeatMapData> data;
   LabelStyle? labelStyle;
-  Fun2<HeatMapData, LabelStyle>? labelStyleFun;
+  Fun3<HeatMapData, Set<ViewState>, LabelStyle>? labelStyleFun;
   Alignment? labelAlign;
   Fun2<HeatMapData, Alignment>? labelAlignFun;
   Fun2<HeatMapData, DynamicText?>? labelFormatFun;
-  Fun2<HeatMapData, AreaStyle?>? areaStyleFun;
-  Fun2<HeatMapData, LineStyle?>? borderStyleFun;
+  Fun4<HeatMapData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
+  Fun4<HeatMapData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
 
   HeatMapSeries(
     this.data, {
@@ -44,25 +44,25 @@ class HeatMapSeries extends RectSeries {
     return HeatMapView(this);
   }
 
-  AreaStyle? getAreaStyle(Context context, HeatMapData data, int index, [Set<ViewState>? status]) {
+  AreaStyle? getAreaStyle(Context context, HeatMapData data, int index, Set<ViewState> status) {
     if (areaStyleFun != null) {
-      return areaStyleFun!.call(data);
+      return areaStyleFun!.call(data, index, status);
     }
     var theme = context.option.theme;
     return AreaStyle(color: theme.colors[index % theme.colors.length]).convert(status);
   }
 
-  LineStyle? getBorderStyle(Context context, HeatMapData data, int index, [Set<ViewState>? status]) {
+  LineStyle? getBorderStyle(Context context, HeatMapData data, int index, Set<ViewState> status) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data);
+      return borderStyleFun!.call(data, index, status);
     }
     var theme = context.option.theme.funnelTheme;
     return theme.getBorderStyle();
   }
 
-  LabelStyle? getLabelStyle(Context context, HeatMapData data, [Set<ViewState>? status]) {
+  LabelStyle? getLabelStyle(Context context, HeatMapData data, Set<ViewState> status) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data);
+      return labelStyleFun!.call(data, status);
     }
     if (labelStyle != null) {
       return labelStyle;

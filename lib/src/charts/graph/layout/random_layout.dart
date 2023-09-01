@@ -12,8 +12,6 @@ class RandomLayout extends GraphLayout {
   RandomLayout({
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
     this.maxIterations = 30,
-    super.nodeSize,
-    super.sizeFun,
     super.nodeSpaceFun,
     super.sort,
     super.workerThread,
@@ -47,14 +45,13 @@ class RandomLayout extends GraphLayout {
 
     for (var node in nodes) {
       checkInterrupt();
-      double nr = getNodeRadius(node);
       num nspace = getNodeSpace(node);
       int c = maxIterations;
       while (c > 0) {
         checkInterrupt();
         double x = random.nextDouble() * width;
         double y = random.nextDouble() * height;
-        if (!hasCover(tree, x, y, nr, nspace) || c == 1) {
+        if (!hasCover(tree, x, y, node.r, nspace) || c == 1) {
           node.x = x;
           node.y = y;
           tree.add(node);
@@ -72,7 +69,7 @@ class RandomLayout extends GraphLayout {
     interrupt();
   }
 
-  bool hasCover(QuadTree<GraphNode> tree, double x, double y, double r, num space) {
+  bool hasCover(QuadTree<GraphNode> tree, double x, double y, num r, num space) {
     bool covered = false;
     tree.each((node, x1, y1, x2, y2) {
       if (covered) {
@@ -86,7 +83,7 @@ class RandomLayout extends GraphLayout {
       var dx = (data.x - x).abs();
       var dy = (data.y - y).abs();
       var dis = dx * dx + dy * dy;
-      var r1 = getNodeRadius(data, true);
+      var r1 =data.size.longestSide/2;
       var dis2 = r + r1 + space;
       dis2 *= dis2;
       if (dis < dis2) {

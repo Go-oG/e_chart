@@ -3,21 +3,17 @@ import 'package:flutter/animation.dart';
 
 import 'heat_map_node.dart';
 
-class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
-  List<HeatMapNode> _nodeList = [];
-
+class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
   HeatMapHelper(super.context, super.series);
-
-  List<HeatMapNode> get nodeList => _nodeList;
 
   @override
   void onLayout(LayoutType type) {
-    List<HeatMapNode> oldList = _nodeList;
+    List<HeatMapNode> oldList = nodeList;
     List<HeatMapNode> newList = convertData(series.data);
     layoutNode(newList);
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      _nodeList = newList;
+      nodeList = newList;
       return;
     }
     var an = DiffUtil.diffLayout<Rect, HeatMapData, HeatMapNode>(
@@ -27,7 +23,7 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
       (data, node, add) => Rect.fromCenter(center: node.attr.center, width: 0, height: 0),
       (s, e, t) => Rect.lerp(s, e, t)!,
       (resultList) {
-        _nodeList = resultList;
+        nodeList = resultList;
         notifyLayoutUpdate();
       },
     );
@@ -36,13 +32,14 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
 
   List<HeatMapNode> convertData(List<HeatMapData> dataList) {
     List<HeatMapNode> rl = [];
+    Set<ViewState> emptyVS = {};
     each(dataList, (e, i) {
       rl.add(HeatMapNode(
           e,
           i,
-          series.getAreaStyle(context, e, i, null) ?? AreaStyle.empty,
-          series.getBorderStyle(context, e, i, null) ?? LineStyle.empty,
-          series.getLabelStyle(context, e, null) ?? LabelStyle.empty));
+          series.getAreaStyle(context, e, i, emptyVS) ?? AreaStyle.empty,
+          series.getBorderStyle(context, e, i, emptyVS) ?? LineStyle.empty,
+          series.getLabelStyle(context, e, emptyVS) ?? LabelStyle.empty));
     });
 
     return rl;
@@ -72,66 +69,34 @@ class HeatMapHelper extends LayoutHelper<HeatMapSeries> {
   }
 
   @override
-  void onClick(Offset localOffset) {
-    handleHoverOrClick(localOffset, true);
-  }
-
-  @override
-  void onHoverStart(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  @override
-  void onHoverEnd() {}
-
-  HeatMapNode? _hoverNode;
-
-  void handleHoverOrClick(Offset offset, bool click) {
-    var oldOffset = offset;
-    Offset scroll;
-    if (series.coordType == CoordType.grid) {
-      scroll = findGridCoord().getScroll();
-    } else {
-      scroll = findCalendarCoord().getScroll();
-    }
-    offset = offset.translate(scroll.dx.abs(), scroll.dy.abs());
-    var clickNode = findNode(offset);
-    if (_hoverNode == clickNode) {
-      if (clickNode != null) {
-        click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
-      }
-      return;
-    }
-
-    var oldNode = _hoverNode;
-    _hoverNode = clickNode;
-    if (oldNode != null) {
-      sendHoverEndEvent2(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
-    }
-    if (clickNode != null) {
-      click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
-    }
-    oldNode?.removeState(ViewState.hover);
-    oldNode?.updateStyle(context, series);
-    clickNode?.addState(ViewState.hover);
-    clickNode?.updateStyle(context, series);
-    notifyLayoutUpdate();
-  }
-
-  HeatMapNode? findNode(Offset offset) {
-    for (var node in _nodeList) {
-      if (node.attr.contains2(offset)) {
-        return node;
-      }
-    }
-    return null;
-  }
-
-  @override
   SeriesType get seriesType => SeriesType.heatmap;
+
+  @override
+  void onUpdateGestureAnimation(HeatMapNode? oldNode, NodeAttr<dynamic>? oldAttr, HeatMapNode? newNode,
+      NodeAttr<dynamic>? newAttr, AnimationAttrs animation) {
+    List<ChartTween> tl = [];
+    if (oldNode != null) {
+      var oldStyle = oldAttr!.itemStyle;
+      var style = oldNode.itemStyle;
+      AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: animation);
+      tween.addListener(() {
+        oldNode.itemStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+    }
+    if (newNode != null) {
+      var oldStyle = newAttr!.itemStyle;
+      var style = newNode.itemStyle;
+      var tween = AreaStyleTween(oldStyle, style, props: animation);
+      tween.addListener(() {
+        newNode.itemStyle = tween.value;
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+    }
+    for (var tw in tl) {
+      tw.start(context, true);
+    }
+  }
 }

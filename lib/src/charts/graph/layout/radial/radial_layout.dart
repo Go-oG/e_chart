@@ -52,8 +52,6 @@ class RadialLayout extends GraphLayout {
     this.sortStrength = 10,
     this.sortByData = true,
     this.sortBy,
-    super.nodeSize,
-    super.sizeFun,
     super.nodeSpaceFun,
     super.workerThread = true,
   });
@@ -89,8 +87,6 @@ class RadialLayout extends GraphLayout {
 
     ///使用GridLayout预先布局一次
     GraphLayout gridLayout = GraphGridLayout(
-      nodeSize: nodeSize,
-      sizeFun: sizeFun,
       preventOverlap: true,
       workerThread: false,
       nodeSpaceFun: nodeSpaceFun,
@@ -164,10 +160,9 @@ class RadialLayout extends GraphLayout {
     //处理节点重叠
     if (preventOverlap) {
       ///使用的是径向力
-      num nodeSizeFunc(a) {
-        Size size = getNodeSize(a);
+      num nodeSizeFunc(GraphNode a) {
         num space = getNodeSpace(a);
-        return max([size.width, size.height]) + space;
+        return a.size.longestSide+space;
       }
 
       var params = RadialParam(

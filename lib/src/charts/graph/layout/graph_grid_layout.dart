@@ -26,8 +26,6 @@ class GraphGridLayout extends GraphLayout {
     this.begin = const [SNumber.number(0), SNumber.number(0)],
     this.fullCanvas = true,
     this.preventOverlap = false,
-    super.nodeSize,
-    super.sizeFun,
     super.nodeSpaceFun,
     super.sort,
     super.workerThread,
@@ -111,7 +109,7 @@ class GraphGridLayout extends GraphLayout {
       Fun2<GraphNode, num> spaceFun = nodeSpaceFun ?? (a) => 10;
       for (var node in layoutNodes) {
         checkInterrupt();
-        Size res = getNodeSize(node);
+        Size res =node.size;
         num nodeW;
         num nodeH;
         nodeW = res.width;

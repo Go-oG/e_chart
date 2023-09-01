@@ -5,13 +5,12 @@ import 'package:e_chart/e_chart.dart';
 
 ///正六边形布局
 /// https://www.redblobgames.com/grids/hexagons/implementation.html#rounding
-abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
+abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
   static const double _sqrt3 = 1.7320508; //sqrt(3)
   static const Orientation _pointy =
       Orientation(_sqrt3, _sqrt3 / 2.0, 0.0, 3.0 / 2.0, _sqrt3 / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0, 90);
   static const Orientation _flat =
       Orientation(3.0 / 2.0, 0.0, _sqrt3 / 2.0, _sqrt3, 2.0 / 3.0, 0.0, -1.0 / 3.0, _sqrt3 / 3.0, 0);
-  List<HexbinNode> nodeList = [];
 
   ///"中心点"的重心位置
   List<SNumber> center;
@@ -34,6 +33,7 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
   /// 子类一般情况下不应该重写改方法
   @override
   void doLayout(Rect rect, Rect globalBoxBound, LayoutType type) {
+    dragX=dragY=0;
     boxBound = rect;
     this.globalBoxBound = globalBoxBound;
     var oldNodeList = nodeList;
@@ -128,83 +128,29 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
   }
 
   @override
-  void onClick(Offset localOffset) {
-    handleHoverAndClick(localOffset, true);
+  void onHandleHoverAndClickEnd(HexbinNode? oldNode, HexbinNode? newNode) {
+    oldNode?.drawIndex = 0;
+    newNode?.drawIndex = 100;
+    if (newNode != null) {}
   }
 
   @override
-  void onHoverStart(Offset localOffset) {
-    handleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverEnd() {
-    var node = _oldNode;
-    _oldNode = null;
-    if (node == null) {
-      return;
-    }
-    sendHoverEndEvent2(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
-    node.drawIndex = 0;
-    _runUpdateAnimation(node, null, series.animation);
-  }
-
-  HexbinNode? _oldNode;
-
-  void handleHoverAndClick(Offset offset, bool click) {
-    Offset scroll = getScroll();
-    offset = offset.translate(-scroll.dx, -scroll.dy);
-    var clickNode = findNode(offset);
-    if (clickNode == _oldNode) {
-      if (clickNode != null) {
-        click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
-      }
-      return;
-    }
-
-    var old = _oldNode;
-    _oldNode = clickNode;
-    if (old != null) {
-      old.drawIndex = 0;
-      sendHoverEndEvent2(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
-    }
-    if (clickNode != null) {
-      clickNode.drawIndex = 100;
-      click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
-    }
+  void onUpdateGestureAnimation(
+      HexbinNode? oldNode, NodeAttr? oldAttr, HexbinNode? newNode, NodeAttr? newAttr, AnimationAttrs animation) {
+    oldNode?.drawIndex = 0;
+    newNode?.drawIndex = 100;
     nodeList.sort((a, b) => a.drawIndex.compareTo(b.drawIndex));
-
-    old?.removeState(ViewState.selected);
-    old?.removeState(ViewState.hover);
-    old?.updateStyle(context, series);
-    clickNode?.addState(ViewState.selected);
-    clickNode?.addState(ViewState.hover);
-    clickNode?.updateStyle(context, series);
-
-    _runUpdateAnimation(old, clickNode, series.animation);
-  }
-
-  void _runUpdateAnimation(HexbinNode? old, HexbinNode? newNode, AnimationAttrs? animation) {
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      notifyLayoutUpdate();
-      return;
-    }
-    var os = old?.attr;
-    var ns = newNode?.attr;
+    HexAttr? os = oldNode?.attr;
+    HexAttr? ns = newNode?.attr;
     final angleOffset = flat ? _flat.angle : _pointy.angle;
-    ChartDoubleTween tween = ChartDoubleTween(props: animation);
+    var tween = ChartDoubleTween(props: animation);
     tween.addListener(() {
       var t = tween.value;
-      if (old != null) {
+      if (oldNode != null) {
         var r = lerpDouble(os!.shape.r, radius, t)!;
         var angle = lerpDouble(os.shape.angleOffset, angleOffset, t)!;
         var sp = PositiveShape(center: os.center, r: r, angleOffset: angle, count: 6);
-        old.attr = HexAttr.all(os.hex, sp, sp.center);
+        oldNode.attr = HexAttr.all(os.hex, sp, sp.center);
       }
       if (newNode != null) {
         var r = lerpDouble(ns!.shape.r, radius * 1.2, t)!;
@@ -217,19 +163,9 @@ abstract class HexbinLayout extends LayoutHelper<HexbinSeries> {
     tween.start(context, true);
   }
 
-  ///获取滚动偏移量
-  ///是可以有正负的
+  @override
   Offset getScroll() {
-    return Offset.zero;
-  }
-
-  HexbinNode? findNode(Offset offset) {
-    for (var node in nodeList.reversed) {
-      if (node.attr.shape.contains(offset)) {
-        return node;
-      }
-    }
-    return null;
+    return Offset(dragX,dragY);
   }
 }
 

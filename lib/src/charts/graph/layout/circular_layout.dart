@@ -25,8 +25,6 @@ class CircularLayout extends GraphLayout {
     this.endRadius,
     this.startAngle = 90,
     this.sweepAngle = 360,
-    super.nodeSize,
-    super.sizeFun,
     super.nodeSpaceFun,
     super.sort,
     super.workerThread,

@@ -1,7 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-
 ///同心圆布局算法
 class ConcentricLayout extends GraphLayout {
   List<SNumber> center = const [SNumber(50, true), SNumber.percent(50)];
@@ -46,9 +45,7 @@ class ConcentricLayout extends GraphLayout {
     this.preventOverlap = true,
     this.maxIterations = 360,
     Fun2<GraphNode, num>? weightFun,
-    super.nodeSize,
     super.nodeSpaceFun,
-    super.sizeFun,
     super.workerThread,
   }) {
     if (weightFun != null) {
@@ -94,9 +91,9 @@ class ConcentricLayout extends GraphLayout {
     List<GraphNode> maxRadiusList = [];
     for (int i = 1; i < levelList.length; i++) {
       checkInterrupt();
-      maxRadiusList.add(maxBy<GraphNode>(levelList[i], (p0) => computeRadius(p0)));
+      maxRadiusList.add(maxBy<GraphNode>(levelList[i], (p0) => p0.r));
     }
-    num maxRadius = computeRadius(maxBy<GraphNode>(maxRadiusList, (p0) => computeRadius(p0)));
+    num maxRadius = maxBy2<GraphNode>(maxRadiusList, (p0) => p0.r);
 
     ///计算每个分层的半径大小
     for (int i = 0; i < levelList.length; i++) {
@@ -105,7 +102,7 @@ class ConcentricLayout extends GraphLayout {
       LevelInfo info = LevelInfo();
       levelInfoList.add(info);
       if (i == 0) {
-        info.r = computeRadius(level.first) + minRadiusGap;
+        info.r = level.first.r + minRadiusGap;
         lastRadius += info.r;
         continue;
       }
@@ -115,9 +112,8 @@ class ConcentricLayout extends GraphLayout {
         lastRadius = info.r + maxRadius;
       } else {
         GraphNode maxNode = maxRadiusList[i - 1];
-        num rr = computeRadius(maxNode);
-        info.r = lastRadius + rr + minRadiusGap;
-        lastRadius = info.r + rr;
+        info.r = lastRadius + maxNode.r + minRadiusGap;
+        lastRadius = info.r + maxNode.r;
       }
     }
 
@@ -141,7 +137,7 @@ class ConcentricLayout extends GraphLayout {
         Offset nc = circlePoint(rr, angleOffset, center);
         if (preventOverlap && j != 0) {
           Offset pre = Offset(level[j - 1].x, level[j - 1].y);
-          num sumRadius = computeRadius(node) + computeRadius(level[j - 1]) + minNodeSpacing;
+          num sumRadius = node.r + level[j - 1].r + minNodeSpacing;
           int c = max([maxIterations, 1]).toInt();
           while (nc.distance2(pre) < sumRadius && c > 0) {
             angleOffset += (sweepAngle < 0) ? -1 : 1;
@@ -206,17 +202,6 @@ class ConcentricLayout extends GraphLayout {
       }
     }
     return rl;
-  }
-
-  @override
-  Size getNodeSize(GraphNode node) {
-    Size size = super.getNodeSize(node);
-    double w = min([size.width, size.height]).toDouble();
-    return Size.square(w);
-  }
-
-  num computeRadius(GraphNode node) {
-    return getNodeSize(node).width * 0.5;
   }
 }
 
