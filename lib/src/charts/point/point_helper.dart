@@ -4,9 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 import 'point_node.dart';
 
-class PointHelper extends LayoutHelper<PointSeries> {
-  List<PointNode> nodeList = [];
-
+class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   PointHelper(super.context, super.series);
 
   @override
@@ -15,17 +13,7 @@ class PointHelper extends LayoutHelper<PointSeries> {
     List<PointNode> newList = [];
     each(series.data, (group, i) {
       each(group.data, (e, ci) {
-        var node = PointNode(
-          series.symbolFun.call(e, group,{}),
-          group,
-          e,
-          ci,
-          i,
-          PointAttr(),
-          AreaStyle.empty,
-          LineStyle.empty,
-          LabelStyle.empty,
-        );
+        var node = PointNode(series.symbolFun.call(e, group, {}), group, e, ci, i);
         newList.add(node);
       });
     });
@@ -104,7 +92,6 @@ class PointHelper extends LayoutHelper<PointSeries> {
       PolarPosition position = coord.dataToPosition(node.data.x, node.data.y);
       node.attr.offset = position.position;
       node.attr.size = node.symbol.size;
-      Logger.i("Polar:$position");
     }
   }
 
@@ -130,77 +117,32 @@ class PointHelper extends LayoutHelper<PointSeries> {
   }
 
   @override
-  void onClick(Offset localOffset) {
-    handleHoverAndClick(localOffset, true);
-  }
-
-  @override
-  void onHoverStart(Offset localOffset) {
-    handleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverEnd() {
-    var node = _oldNode;
-    _oldNode = null;
-    if (node == null) {
-      return;
+  Offset getScroll() {
+    if (CoordType.polar == series.coordType) {
+      return findPolarCoord().getScroll();
     }
-    sendHoverEndEvent2(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
-    _runUpdateAnimation([node], [], series.animation);
+    if (CoordType.calendar == series.coordType) {
+      return findCalendarCoord().getScroll();
+    }
+    if (CoordType.grid == series.coordType) {
+      return findGridCoord().getScroll();
+    }
+    throw ChartError("unSupport Coord");
   }
 
-  PointNode? _oldNode;
+  @override
+  SeriesType get seriesType => SeriesType.point;
 
-  void handleHoverAndClick(Offset offset, bool click) {
-    Offset scroll = getScroll();
-    offset = offset.translate(-scroll.dx, -scroll.dy);
-    PointNode? clickNode = findNode(offset);
-    if (clickNode == _oldNode) {
-      return;
-    }
-
-    var old = _oldNode;
-    _oldNode = clickNode;
-
+  @override
+  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
+    Offset diffSize = const Offset(4, 4);
     List<PointNode> oldList = [];
-    if (old != null) {
-      oldList.add(old);
-      sendHoverEndEvent2(old.data, dataIndex: old.dataIndex, groupIndex: old.groupIndex);
+    if (oldNode != null) {
+      oldList.add(oldNode);
     }
     List<PointNode> newList = [];
-    if (clickNode != null) {
-      newList.add(clickNode);
-      click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
-    }
-    _runUpdateAnimation(oldList, newList, series.animation);
-  }
-
-  void _runUpdateAnimation(List<PointNode> oldList, List<PointNode> newList, AnimationAttrs? animation) {
-    Offset diffSize = const Offset(4, 4);
-    for (var node in oldList) {
-      node.removeState(ViewState.selected);
-      node.removeState(ViewState.hover);
-    }
-    for (var node in newList) {
-      node.addState(ViewState.selected);
-      node.addState(ViewState.hover);
-    }
-
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      for (var node in oldList) {
-        node.attr = PointAttr.all(node.attr.offset, (node.attr.size - diffSize) as Size);
-      }
-      for (var node in newList) {
-        node.attr = PointAttr.all(node.attr.offset, node.attr.size + diffSize);
-      }
-      notifyLayoutUpdate();
-      return;
+    if (newNode != null) {
+      newList.add(newNode);
     }
 
     DiffUtil.diffUpdate<PointAttr, PointData, PointNode>(
@@ -223,32 +165,4 @@ class PointHelper extends LayoutHelper<PointSeries> {
       notifyLayoutUpdate,
     );
   }
-
-  PointNode? findNode(Offset offset) {
-    var nodeList = this.nodeList;
-    for (var node in nodeList) {
-      if (node.contains(offset)) {
-        return node;
-      }
-    }
-    return null;
-  }
-
-  ///获取滚动偏移量
-  ///是可以有正负的
-  Offset getScroll() {
-    if (CoordType.polar == series.coordType) {
-      return findPolarCoord().getScroll();
-    }
-    if (CoordType.calendar == series.coordType) {
-      return findCalendarCoord().getScroll();
-    }
-    if (CoordType.grid == series.coordType) {
-      return findGridCoord().getScroll();
-    }
-    throw ChartError("unsupport");
-  }
-
-  @override
-  SeriesType get seriesType => SeriesType.point;
 }

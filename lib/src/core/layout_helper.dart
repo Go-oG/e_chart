@@ -259,7 +259,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       notifyLayoutUpdate();
       return;
     }
-    onUpdateGestureAnimation(old, oldAttr, null, null, animation);
+    onRunUpdateAnimation(old, oldAttr, null, null, animation);
   }
 
   N? oldHoverNode;
@@ -299,7 +299,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       notifyLayoutUpdate();
       return;
     }
-    onUpdateGestureAnimation(oldNode, oldNode?.toAttr(), clickNode, clickNode?.toAttr(), animator);
+    onRunUpdateAnimation(oldNode, oldNode?.toAttr(), clickNode, clickNode?.toAttr(), animator);
     onHandleHoverAndClickEnd(oldNode, clickNode);
   }
 
@@ -309,7 +309,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     node.updateStyle(context, series);
   }
 
-  void onUpdateGestureAnimation(N? oldNode, NodeAttr? oldAttr, N? newNode, NodeAttr? newAttr, AnimationAttrs animation);
+  void onRunUpdateAnimation(N? oldNode, NodeAttr? oldAttr, N? newNode, NodeAttr? newAttr, AnimationAttrs animation);
 
   N? findNode(Offset offset) {
     var hoveNode = oldHoverNode;

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math.dart';
@@ -439,17 +440,27 @@ class Arc implements Shape {
   }
 
   static Arc lerp(Arc begin, Arc end, double t) {
-    double innerRadius = begin.innerRadius + (end.innerRadius - begin.innerRadius) * t;
-    double outerRadius = begin.outRadius + (end.outRadius - begin.outRadius) * t;
-    double startAngle = begin.startAngle + (end.startAngle - begin.startAngle) * t;
-    double sweepAngle = begin.sweepAngle + (end.sweepAngle - begin.sweepAngle) * t;
-    Offset center = Offset.lerp(begin.center, end.center, t)!;
+    double innerRadius =lerpDouble(begin.innerRadius, end.innerRadius, t)!;
+    double outerRadius =lerpDouble(begin.outRadius, end.outRadius, t)!;
+    double startAngle =lerpDouble(begin.startAngle, end.startAngle, t)!;
+    double sweepAngle =lerpDouble(begin.sweepAngle, end.sweepAngle, t)!;
+    num corner =lerpDouble(begin.cornerRadius, end.cornerRadius, t)!;
+    num padAngle =lerpDouble(begin.padAngle, end.padAngle, t)!;
+
+    Offset center;
+    if (begin.center == end.center) {
+      center = end.center;
+    } else {
+      center = Offset.lerp(begin.center, end.center, t)!;
+    }
     return Arc(
+      center: center,
+      cornerRadius: corner,
       innerRadius: innerRadius,
       outRadius: outerRadius,
-      sweepAngle: sweepAngle,
       startAngle: startAngle,
-      center: center,
+      sweepAngle: sweepAngle,
+      padAngle: padAngle,
     );
   }
 

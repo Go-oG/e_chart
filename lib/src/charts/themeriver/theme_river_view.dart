@@ -10,8 +10,8 @@ class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
   void onDraw(Canvas canvas) {
     var nodeList=layoutHelper.nodeList;
     canvas.save();
-    var tx=layoutHelper.tx;
-    var ty=layoutHelper.ty;
+    var tx=layoutHelper.dragX;
+    var ty=layoutHelper.dragY;
     var ap=layoutHelper.animatorPercent;
     canvas.translate(tx, ty);
     if (series.direction == Direction.horizontal) {

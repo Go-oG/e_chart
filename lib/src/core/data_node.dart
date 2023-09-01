@@ -62,8 +62,8 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   void updateStyle(Context context, covariant ChartSeries series);
 }
 
-class NodeAttr<A> {
-  final A attr;
+class NodeAttr {
+  final dynamic attr;
   final int drawIndex;
 
   final DynamicText? label;

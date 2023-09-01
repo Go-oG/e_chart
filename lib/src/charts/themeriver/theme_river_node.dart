@@ -1,7 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 
-
 class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
   ThemeRiverNode(
     super.data,

@@ -3,16 +3,15 @@ import 'package:flutter/widgets.dart';
 
 import 'theme_river_node.dart';
 
-class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
+class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
   num maxTransX = 0, maxTransY = 0;
-  List<ThemeRiverNode> nodeList = [];
   double animatorPercent = 1;
 
   ThemeRiverHelper(super.context, super.series);
 
   @override
   void onLayout(LayoutType type) {
-    tx = ty = 0;
+    dragX = dragY = 0;
     List<ThemeRiverNode> newList = [];
     Set<ViewState> emptyVS = {};
     each(series.data, (d, i) {
@@ -141,74 +140,37 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
         max = sum;
       }
     }
-
     return {'y0': y0, 'max': max};
   }
 
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHover(localOffset, false);
+  AreaStyle getStyle(ThemeRiverNode node) {
+    return series.getAreaStyle(context, node.data, node.dataIndex, node.status)??AreaStyle.empty;
+  }
+
+  LabelStyle? getLabelStyle(ThemeRiverNode node) {
+    return series.getLabelStyle(context, node.data, node.dataIndex, node.status);
   }
 
   @override
-  void onHoverStart(Offset localOffset) {
-    handleHover(localOffset, false);
-  }
-
-  @override
-  void onHoverEnd() {
-    _oldHoverNode?.removeState(ViewState.hover);
-    _oldHoverNode?.removeState(ViewState.selected);
-  }
-
-  @override
-  void onClick(Offset localOffset) {
-    handleHover(localOffset, true);
-  }
-
-  ThemeRiverNode? _oldHoverNode;
-  double tx = 0;
-  double ty = 0;
-
-  void handleHover(Offset local, bool click) {
-    var nodeList = this.nodeList;
-    Offset offset = local.translate(-tx, -ty);
-    var clickNode = findNode(offset);
-    if (clickNode == _oldHoverNode) {
-      if (clickNode != null) {
-        sendHoverEvent(offset, clickNode);
-      }
-      return;
-    }
-    var oldNode = _oldHoverNode;
-    _oldHoverNode = clickNode;
-    oldNode?.removeStates([ViewState.hover, ViewState.selected]);
-    clickNode?.addStates([ViewState.hover, ViewState.selected]);
-    if (clickNode != null) {
-      click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
-    }
-    if (oldNode != null) {
-      sendHoverEndEvent(oldNode);
-    }
+  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
     oldNode?.attr.index = 0;
-    clickNode?.attr.index = 100;
-
+    newNode?.attr.index = 100;
+    nodeList.sort((a, b) {
+      return a.attr.index.compareTo(b.attr.index);
+    });
     ChartDoubleTween tween = ChartDoubleTween(props: series.animation!);
     AreaStyleTween? selectTween;
     AreaStyleTween? unselectTween;
-    if (clickNode != null) {
-      selectTween = AreaStyleTween(clickNode.itemStyle, getStyle(clickNode));
+    if (newNode != null) {
+      selectTween = AreaStyleTween(newNode.itemStyle, getStyle(newNode));
     }
     if (oldNode != null) {
       unselectTween = AreaStyleTween(oldNode.itemStyle, getStyle(oldNode));
     }
-    nodeList.sort((a, b) {
-      return a.attr.index.compareTo(b.attr.index);
-    });
     tween.addListener(() {
       double p = tween.value;
       if (selectTween != null) {
-        clickNode!.itemStyle = selectTween.safeGetValue(p);
+        newNode!.itemStyle = selectTween.safeGetValue(p);
       }
       if (unselectTween != null) {
         oldNode!.itemStyle = unselectTween.safeGetValue(p);
@@ -216,34 +178,6 @@ class ThemeRiverHelper extends LayoutHelper<ThemeRiverSeries> {
       notifyLayoutUpdate();
     });
     tween.start(context);
-  }
-
-  ThemeRiverNode? findNode(Offset offset) {
-    for (var node in nodeList) {
-      if (node.contains(offset)) {
-        return node;
-      }
-    }
-    return null;
-  }
-
-  AreaStyle getStyle(ThemeRiverNode node) {
-    var fun = series.areaStyleFun;
-    if (fun != null) {
-      return fun.call(node.data, node.dataIndex, node.status);
-    }
-    int index = node.dataIndex;
-    var color = context.option.theme.getColor(index);
-    return AreaStyle(color: color).convert(node.status);
-  }
-
-  LabelStyle? getLabelStyle(ThemeRiverNode node) {
-    var fun = series.labelStyleFun;
-    if (fun != null) {
-      return fun.call(node.data, node.dataIndex, node.status);
-    }
-    var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(node.status);
   }
 }
 

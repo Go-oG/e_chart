@@ -135,7 +135,7 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
   }
 
   @override
-  void onUpdateGestureAnimation(
+  void onRunUpdateAnimation(
       HexbinNode? oldNode, NodeAttr? oldAttr, HexbinNode? newNode, NodeAttr? newAttr, AnimationAttrs animation) {
     oldNode?.drawIndex = 0;
     newNode?.drawIndex = 100;

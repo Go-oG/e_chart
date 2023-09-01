@@ -1,17 +1,11 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/pie/pie_tween.dart';
-
 import 'package:flutter/material.dart';
 
 import 'pie_node.dart';
 
 ///饼图布局
-class PieHelper extends LayoutHelper<PieSeries> {
-  List<PieNode> _nodeList = [];
-
+class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
   PieHelper(super.context, super.series);
-
-  List<PieNode> get nodeList => _nodeList;
 
   num maxData = double.minPositive;
   num minData = double.maxFinite;
@@ -27,21 +21,18 @@ class PieHelper extends LayoutHelper<PieSeries> {
   void onLayout(LayoutType type) {
     pieAngle = adjustPieAngle(series.sweepAngle);
     center = computeCenterPoint(series.center);
-    hoverNode = null;
-
+    oldHoverNode = null;
     _preHandleRadius();
-
-    List<PieNode> oldList = _nodeList;
+    List<PieNode> oldList = nodeList;
     List<PieNode> newList = convertData(series.data);
     layoutNode(newList);
 
     var animation = series.animation;
     if (animation == null || LayoutType.none == type) {
-      _nodeList = newList;
+      nodeList = newList;
       return;
     }
 
-    PieTween arcTween = PieTween(Arc(), Arc(), props: animation);
     var an = DiffUtil.diffLayout<Arc, ItemData, PieNode>(
       animation,
       oldList,
@@ -60,12 +51,9 @@ class PieHelper extends LayoutHelper<PieSeries> {
         }
         return arc.copy(sweepAngle: 0);
       },
-      (s, e, t) {
-        arcTween.changeValue(s, e);
-        return arcTween.safeGetValue(t);
-      },
+      (s, e, t) => Arc.lerp(s, e, t),
       (p0) {
-        _nodeList = p0;
+        nodeList = p0;
         notifyLayoutUpdate();
       },
     );
@@ -84,116 +72,6 @@ class PieHelper extends LayoutHelper<PieSeries> {
     for (var node in nodeList) {
       node.updateTextPosition(series);
     }
-  }
-
-  @override
-  void onClick(Offset localOffset) {
-    handleHoverOrClick(localOffset, true);
-  }
-
-  @override
-  void onHoverStart(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  PieNode? hoverNode;
-
-  void handleHoverOrClick(Offset offset, bool click) {
-    List<PieNode> nodeList = _nodeList;
-    if (nodeList.isEmpty) {
-      return;
-    }
-    PieNode? clickNode = findNode(offset);
-    if (clickNode == hoverNode) {
-      if (clickNode != null) {
-        click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
-      }
-      return;
-    }
-
-    var oldNode = hoverNode;
-    hoverNode = clickNode;
-
-    oldNode?.removeStates([ViewState.hover, ViewState.focused]);
-    clickNode?.addStates([ViewState.hover, ViewState.focused]);
-
-    if (oldNode != null) {
-      sendHoverEndEvent2(oldNode.data, dataIndex: oldNode.dataIndex, groupIndex: oldNode.groupIndex);
-    }
-    if (clickNode != null) {
-      click ? sendClickEvent(offset, clickNode) : sendHoverEvent(offset, clickNode);
-    }
-
-    var animator = series.animation;
-    if (animator == null || animator.updateDuration.inMilliseconds <= 0) {
-      hoverNode?.removeStates([ViewState.hover, ViewState.focused]);
-      clickNode?.addStates([ViewState.hover, ViewState.focused]);
-      return;
-    }
-    List<PieNode> oldList = [];
-    if (oldNode != null) {
-      oldList.add(oldNode);
-    }
-    List<PieNode> newList = [];
-    if (clickNode != null) {
-      newList.add(clickNode);
-    }
-    const double rDiff = 8;
-    PieTween tween = PieTween(Arc(), Arc(), props: animator);
-    DiffUtil.diffUpdate<Arc, ItemData, PieNode>(
-      context,
-      animator,
-      oldList,
-      newList,
-      (data, node, isOld) {
-        if (isOld) {
-          return node.attr.copy(outRadius: node.attr.outRadius - rDiff);
-        }
-        return node.attr.copy(outRadius: node.attr.outRadius + rDiff);
-      },
-      (s, e, t) {
-        tween.changeValue(s, e);
-        return tween.safeGetValue(t);
-      },
-      () {
-        notifyLayoutUpdate();
-      },
-    );
-  }
-
-  @override
-  void onHoverEnd() {
-    var node = hoverNode;
-    if (node == null) {
-      return;
-    }
-    hoverNode = null;
-    num or;
-    if (series.scaleExtend.percent) {
-      or = node.attr.outRadius / (1 + series.scaleExtend.percentRatio());
-    } else {
-      or = node.attr.outRadius - series.scaleExtend.number;
-    }
-
-    var animation = series.animation;
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      node.attr = node.attr.copy(outRadius: or);
-      notifyLayoutUpdate();
-      return;
-    }
-
-    PieTween tween = PieTween(node.attr, node.attr.copy(outRadius: or), props: animation);
-    tween.addListener(() {
-      node.attr = tween.value;
-      notifyLayoutUpdate();
-    });
-    tween.start(context, true);
-    return;
   }
 
   void _preHandleRadius() {
@@ -329,17 +207,26 @@ class PieHelper extends LayoutHelper<PieSeries> {
     return angle.abs();
   }
 
-  PieNode? findNode(Offset offset) {
-    PieNode? node;
-    for (var ele in nodeList) {
-      if (offset.inArc(ele.attr)) {
-        node = ele;
-        break;
-      }
-    }
-    return node;
-  }
-
   @override
   SeriesType get seriesType => SeriesType.pie;
+
+  @override
+  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
+    List<PieNode> oldList = [];
+    if (oldNode != null) {
+      oldList.add(oldNode);
+    }
+    List<PieNode> newList = [];
+    if (newNode != null) {
+      newList.add(newNode);
+    }
+    const double rDiff = 8;
+
+    DiffUtil.diffUpdate<Arc, ItemData, PieNode>(context, animation, oldList, newList, (data, node, isOld) {
+      if (isOld) {
+        return node.attr.copy(outRadius: node.attr.outRadius - rDiff);
+      }
+      return node.attr.copy(outRadius: node.attr.outRadius + rDiff);
+    }, (s, e, t) => Arc.lerp(s, e, t), notifyLayoutUpdate);
+  }
 }

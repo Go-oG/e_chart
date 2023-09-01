@@ -9,14 +9,10 @@ class PointNode extends DataNode<PointAttr, PointData> {
   PointNode(
     this.symbol,
     this.group,
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+    PointData data,
+    int dataIndex,
+    int groupIndex,
+  ) : super(data, dataIndex, groupIndex, PointAttr(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
 
   @override
   bool contains(Offset offset) {

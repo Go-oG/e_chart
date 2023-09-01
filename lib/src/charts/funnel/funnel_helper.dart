@@ -94,7 +94,6 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     for (var node in nodeList) {
       node.updateStyle(context, series);
     }
-
   }
 
   void _layoutVertical(List<FunnelNode> nodeList, double itemHeight) {
@@ -212,13 +211,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
   SeriesType get seriesType => SeriesType.funnel;
 
   @override
-  void onUpdateGestureAnimation(
-    FunnelNode? oldNode,
-    NodeAttr<dynamic>? oldAttr,
-    FunnelNode? newNode,
-    NodeAttr<dynamic>? newAttr,
-    AnimationAttrs animation,
-  ) {
+  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
     List<ChartTween> tl = [];
     if (oldNode != null) {
       var oldStyle = oldAttr!.itemStyle;

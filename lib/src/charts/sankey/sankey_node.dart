@@ -2,8 +2,8 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 
 class SankeyNode extends DataNode<Rect, BaseItemData> {
-  final List<SankeyLink> outLinks; //已当前节点为源的输出边(source)
-  final List<SankeyLink> inputLinks; // 已当前节点为尾的输入边(target)
+  final List<SankeyLink> outLinks; //以当前节点为源的输出边(source)
+  final List<SankeyLink> inputLinks; //以当前节点为尾的输入边(target)
   num? fixedValue;
   num value = 0;
 
@@ -46,6 +46,7 @@ class SankeyNode extends DataNode<Rect, BaseItemData> {
     borderStyle.drawRect(canvas, paint, attr);
   }
 
+  @override
   void updateStyle(Context context, SankeySeries series) {
     itemStyle = series.getItemStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
@@ -97,6 +98,7 @@ class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
     borderStyle.drawPath(canvas, paint, path);
   }
 
+  @override
   void updateStyle(Context context, SankeySeries series) {
     itemStyle =
         series.getLinkStyle(context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status);

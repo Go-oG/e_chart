@@ -87,6 +87,7 @@ class PieNode extends DataNode<Arc, ItemData> {
     }
   }
 
+  @override
   void updateStyle(Context context, PieSeries series) {
     itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;

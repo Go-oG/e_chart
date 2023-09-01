@@ -72,8 +72,7 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
   SeriesType get seriesType => SeriesType.heatmap;
 
   @override
-  void onUpdateGestureAnimation(HeatMapNode? oldNode, NodeAttr<dynamic>? oldAttr, HeatMapNode? newNode,
-      NodeAttr<dynamic>? newAttr, AnimationAttrs animation) {
+  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
     List<ChartTween> tl = [];
     if (oldNode != null) {
       var oldStyle = oldAttr!.itemStyle;
