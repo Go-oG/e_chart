@@ -17,7 +17,6 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
   SunburstNode? showRootNode;
 
   Map<TreeData, SunburstNode> _nodeMap = {};
-  Map<TreeData, TreeData> _parentMap = {};
 
   ///给定根节点和待布局的节点进行数据的布局
   @override
@@ -27,10 +26,8 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     minRadius = radiusList[0];
     maxRadius = radiusList[1];
     num radiusRange = radiusList[2];
-
     Map<TreeData, SunburstNode> nodeMap = {};
     Map<TreeData, TreeData> parentMap = {};
-
     SunburstNode newRoot = convertData(series.data);
     nodeMap[series.data] = newRoot;
     int maxDeep = newRoot.height;
@@ -53,7 +50,6 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     rootNode = newRoot;
     showRootNode = rootNode;
     _nodeMap = nodeMap;
-    _parentMap = parentMap;
   }
 
   SunburstNode convertData(TreeData rootData) {
@@ -131,16 +127,20 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     int gapCount = parent.childCount - 1;
     if (match) {
       gapCount = parent.childCount;
-      if (parent.parent != null && parent.parent is! SunburstVirtualNode) {
+      if (parent.parent != null) {
         gapCount -= 1;
+        if (parent.parent is SunburstVirtualNode) {
+          gapCount += 1;
+        }
       }
     }
+
     final int dir = series.sweepAngle < 0 ? -1 : 1;
-    final num remainAngle = parentArc.sweepAngle.abs() - series.angleGap.abs() * gapCount;
+    final num remainAngle = parentArc.sweepAngle.abs() - angleGap * gapCount;
 
     num childStartAngle = parentArc.startAngle;
-    if (match && parent.parent == null) {
-      childStartAngle += dir * angleGap / 2;
+    if (match &&(parent.parent == null||parent.parent is SunburstVirtualNode)) {
+      childStartAngle += dir * angleGap/2;
     }
 
     final num ir = parentArc.outRadius + radiusGap;
@@ -317,28 +317,50 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     }
     var first = bn.firstChild;
     first.parent = null;
-    bn.clear();
+
+    Map<SunburstNode, Arc> oldArcMap = {};
+    first.each((node, index, startNode) {
+      oldArcMap[node] = node.attr.arc;
+      return false;
+    });
 
     var parentData = first.data.parent?.parent;
+    SunburstNode parentNode;
     if (parentData == null) {
-      showRootNode = rootNode;
-      first.parent = rootNode;
-      var node = rootNode;
-      if (node != null) {
-        _layoutNodeIterator(node, node.maxDeep, false);
-      }
-      notifyLayoutUpdate();
-      return;
+      parentNode = rootNode!;
+      bn = rootNode!;
+      first.parent = bn;
+    } else {
+      parentData = first.data.parent!;
+      parentNode = _nodeMap[parentData]!;
+      parentNode.parent = null;
+      bn = SunburstVirtualNode(parentNode, SunburstAttr(buildBackArc(center, parentNode.height + 1)));
     }
-
-    parentData = first.data.parent!;
-    var parentNode = _nodeMap[parentData]!;
-    parentNode.parent = null;
-    bn = SunburstVirtualNode(parentNode, SunburstAttr(buildBackArc(center, parentNode.height + 1)));
     bn.updatePath(series, 1);
     _layoutNodeIterator(bn, parentNode.height + 1, false);
+    Map<SunburstNode, Arc> arcMap = {};
+    parentNode.each((node, index, startNode) {
+      var arc = node.attr.arc;
+      arcMap[node] = arc;
+      if (!oldArcMap.containsKey(node)) {
+        oldArcMap[node] = arc.copy(outRadius: arc.innerRadius);
+      }
+      return false;
+    });
+    var tween = ChartDoubleTween(props: series.animation!);
+    tween.addListener(() {
+      var t = tween.value;
+      parentNode.each((node, index, startNode) {
+        var e = arcMap[node]!;
+        var s = oldArcMap[node]!;
+        node.attr.arc = Arc.lerp(s, e, t);
+        node.updatePath(series, 1);
+        return false;
+      });
+      notifyLayoutUpdate();
+    });
+    tween.start(context, true);
     showRootNode = bn;
-    notifyLayoutUpdate();
   }
 
   @override
