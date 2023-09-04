@@ -70,6 +70,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       _layoutForNightingale(nodeList);
     }
     for (var node in nodeList) {
+      node.extSet("originR", node.attr.outRadius);
       node.updateTextPosition(series);
     }
   }
@@ -234,7 +235,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
           node.extSet("originR", originR);
         }
         if (node == oldNode) {
-          return node.attr.copy(outRadius: originR - rDiff);
+          return node.attr.copy(outRadius: originR);
         }
         return node.attr.copy(outRadius: originR + rDiff);
       },

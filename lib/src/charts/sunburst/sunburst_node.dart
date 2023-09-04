@@ -13,8 +13,8 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
     super.value,
   }) : super(parent, data, dataIndex, SunburstAttr.zero(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
 
-  void updatePath(SunburstSeries series, double animatorPercent) {
-    attr._updatePath(series, animatorPercent, this);
+  void updateTextPosition(SunburstSeries series) {
+    attr._updateTextPosition(series, this);
   }
 
   @override
@@ -24,11 +24,8 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    var path = attr.shapePath;
-    if (path != null) {
-      itemStyle.drawArc(canvas, paint, attr.arc);
-      borderStyle.drawPath(canvas, paint, attr.arc.toPath(true));
-    }
+    itemStyle.drawArc(canvas, paint, attr.arc);
+    borderStyle.drawPath(canvas, paint, attr.arc.toPath(true));
     labelStyle.draw(canvas, paint, "D$deep:${data.value}".toText(), TextDrawInfo(attr.arc.centroid()));
     // _drawText(canvas, paint);
   }
@@ -76,10 +73,8 @@ class SunburstVirtualNode extends SunburstNode {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    var path = attr.shapePath;
-    if (path != null) {
-      bs.drawPath(canvas, paint, path);
-    }
+    var path = attr.arc.toPath(true);
+    bs.drawPath(canvas, paint, path);
   }
 }
 
@@ -96,16 +91,8 @@ class SunburstAttr {
   double textRotateAngle = 0;
   double alpha = 1;
 
-  Path? shapePath;
-
   /// 更新绘制相关的Path
-  void _updatePath(SunburstSeries series, double animatorPercent, SunburstNode node) {
-    shapePath = _buildShapePath(animatorPercent);
-    _computeTextPosition(series, node);
-  }
-
-  /// 计算label的位置
-  void _computeTextPosition(SunburstSeries series, SunburstNode node) {
+  void _updateTextPosition(SunburstSeries series, SunburstNode node) {
     textPosition = Offset.zero;
     LabelStyle? style = series.labelStyleFun?.call(node);
     if (style == null) {
@@ -159,21 +146,6 @@ class SunburstAttr {
       rotateAngle = rotateMode;
     }
     textRotateAngle = rotateAngle;
-  }
-
-  /// 将布局后的图形转换为Path
-  Path _buildShapePath(double percent) {
-    num ir = arc.innerRadius;
-    num or = arc.innerRadius + (arc.outRadius - arc.innerRadius) * percent;
-    return Arc(
-      innerRadius: ir,
-      outRadius: or,
-      startAngle: arc.startAngle,
-      sweepAngle: arc.sweepAngle,
-      cornerRadius: arc.cornerRadius,
-      padAngle: arc.padAngle,
-      center: arc.center,
-    ).toPath(true);
   }
 
   SunburstAttr copy() {

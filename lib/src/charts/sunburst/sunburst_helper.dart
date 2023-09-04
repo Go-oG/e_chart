@@ -4,10 +4,10 @@ import 'package:e_chart/e_chart.dart';
 import 'sunburst_node.dart';
 
 /// 旭日图布局计算(以中心点为计算中心)
-class SunburstHelper extends LayoutHelper<SunburstSeries> {
+class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
   SunburstHelper(super.context, super.series);
 
-  ///布局中的临时量
+  ///存储布局中使用的临时量
   Offset center = Offset.zero;
   num minRadius = 0;
   num maxRadius = 0;
@@ -33,7 +33,7 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     int maxDeep = newRoot.height;
     radiusDiff = radiusRange / (maxDeep <= 0 ? 1 : maxDeep);
     newRoot.attr = SunburstAttr(buildRootArc(center, maxDeep));
-    newRoot.updatePath(series, 1);
+    newRoot.updateTextPosition(series);
     newRoot.eachBefore((tmp, index, startNode) {
       tmp.updateStyle(context, series);
       nodeMap[tmp.data] = tmp;
@@ -47,9 +47,40 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
       return false;
     });
 
-    rootNode = newRoot;
-    showRootNode = rootNode;
-    _nodeMap = nodeMap;
+    var animation = series.animation;
+    if (animation == null) {
+      rootNode = newRoot;
+      showRootNode = rootNode;
+      _nodeMap = nodeMap;
+      return;
+    }
+
+    ///执行动画
+    Map<SunburstNode, Arc> arcMap = {};
+    Map<SunburstNode, Arc> arcStartMap = {};
+    newRoot.each((node, index, startNode) {
+      arcMap[node] = node.attr.arc;
+      arcStartMap[node] = node.attr.arc.copy(outRadius: node.attr.arc.innerRadius);
+      return false;
+    });
+    var tween = ChartDoubleTween(props: animation);
+    tween.startListener = () {
+      rootNode = newRoot;
+      showRootNode = rootNode;
+      _nodeMap = nodeMap;
+    };
+    tween.addListener(() {
+      var t = tween.value;
+      newRoot.each((node, index, startNode) {
+        var s = arcStartMap[node]!;
+        var e = arcMap[node]!;
+        node.attr.arc = Arc.lerp(s, e, t);
+        node.updateTextPosition(series);
+        return false;
+      });
+      notifyLayoutUpdate();
+    });
+    context.addAnimationToQueue([AnimationNode(tween, animation, LayoutType.layout)]);
   }
 
   SunburstNode convertData(TreeData rootData) {
@@ -114,8 +145,12 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     final Arc parentArc = parent.attr.arc;
     if (parent.childCount == 1) {
       var ir = parentArc.outRadius + radiusGap;
-      parent.firstChild.attr.arc = parentArc.copy(innerRadius: ir, outRadius: ir + radiusDiff);
-      parent.firstChild.updatePath(series, 1);
+      parent.firstChild.attr.arc = parentArc.copy(
+        innerRadius: ir,
+        outRadius: ir + radiusDiff,
+        maxRadius: maxRadius,
+      );
+      parent.firstChild.updateTextPosition(series);
       return;
     }
 
@@ -139,8 +174,8 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     final num remainAngle = parentArc.sweepAngle.abs() - angleGap * gapCount;
 
     num childStartAngle = parentArc.startAngle;
-    if (match &&(parent.parent == null||parent.parent is SunburstVirtualNode)) {
-      childStartAngle += dir * angleGap/2;
+    if (match && (parent.parent == null || parent.parent is SunburstVirtualNode)) {
+      childStartAngle += dir * angleGap / 2;
     }
 
     final num ir = parentArc.outRadius + radiusGap;
@@ -159,8 +194,9 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
           sweepAngle: swa * dir,
           cornerRadius: corner,
           padAngle: angleGap,
+          maxRadius: maxRadius,
           center: center);
-      ele.updatePath(series, 1);
+      ele.updateTextPosition(series);
       childStartAngle += (swa + angleGap) * dir;
     });
   }
@@ -177,7 +213,13 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
     }
     num or = minRadius + diff;
     return Arc(
-        innerRadius: 0, outRadius: or, startAngle: series.startAngle, sweepAngle: series.sweepAngle, center: center);
+      innerRadius: 0,
+      outRadius: or,
+      startAngle: series.startAngle,
+      sweepAngle: series.sweepAngle,
+      center: center,
+      maxRadius: maxRadius,
+    );
   }
 
   ///构建返回节点布局属性
@@ -192,6 +234,7 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
       startAngle: series.startAngle,
       sweepAngle: series.sweepAngle,
       center: center,
+      maxRadius: maxRadius,
     );
   }
 
@@ -227,15 +270,8 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
 
   @override
   void onClick(Offset localOffset) {
-    var bn = showRootNode;
-    if (bn == null) {
-      return;
-    }
     Offset offset = localOffset;
-    SunburstNode? clickNode = bn.find((node, index, startNode) {
-      Arc arc = node.attr.arc;
-      return arc.contains(offset);
-    });
+    var clickNode = findNode(offset);
     if (clickNode == null || clickNode == rootNode) {
       return;
     }
@@ -249,6 +285,7 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
   void _forward(SunburstNode clickNode) {
     var oldBackNode = showRootNode;
     var hasBack = showRootNode is SunburstVirtualNode;
+    var animation = series.animation;
     if (hasBack && oldBackNode != null) {
       oldBackNode.clear();
       clickNode.parent = null;
@@ -264,13 +301,21 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
         center: center,
         startAngle: series.startAngle,
         sweepAngle: series.sweepAngle,
+        maxRadius: maxRadius,
       );
+      if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+        clickNode.attr.arc = e;
+        clickNode.updateTextPosition(series);
+        _layoutNodeIterator(clickNode, clickNode.height + 1, false);
+        notifyLayoutUpdate();
+        return;
+      }
 
-      var tween = ChartDoubleTween(props: series.animation!);
+      var tween = ChartDoubleTween(props: animation);
       tween.addListener(() {
         var t = tween.value;
         clickNode.attr.arc = Arc.lerp(s, e, t);
-        clickNode.updatePath(series, 1);
+        clickNode.updateTextPosition(series);
         _layoutNodeIterator(clickNode, clickNode.height + 1, false);
         notifyLayoutUpdate();
       });
@@ -292,16 +337,27 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
       innerRadius: ir,
       outRadius: ir + getRadiusDiff(1, clickNode.height + 1),
       center: center,
+      maxRadius: maxRadius,
     );
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      bn.attr.arc = be;
+      bn.updateTextPosition(series);
+      clickNode.attr.arc = ce;
+      clickNode.updateTextPosition(series);
+      _layoutNodeIterator(clickNode, clickNode.height + 1, false);
+      showRootNode = bn;
+      notifyLayoutUpdate();
+      return;
+    }
 
-    var tween = ChartDoubleTween(props: series.animation!);
+    var tween = ChartDoubleTween(props: animation);
     tween.addListener(() {
       var t = tween.value;
       bn.attr.arc = Arc.lerp(bs, be, t);
-      bn.updatePath(series, 1);
+      bn.updateTextPosition(series);
 
       clickNode.attr.arc = Arc.lerp(cs, ce, t);
-      clickNode.updatePath(series, 1);
+      clickNode.updateTextPosition(series);
       _layoutNodeIterator(clickNode, clickNode.height + 1, false);
       notifyLayoutUpdate();
     });
@@ -336,14 +392,22 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
       parentNode.parent = null;
       bn = SunburstVirtualNode(parentNode, SunburstAttr(buildBackArc(center, parentNode.height + 1)));
     }
-    bn.updatePath(series, 1);
+    bn.updateTextPosition(series);
     _layoutNodeIterator(bn, parentNode.height + 1, false);
+
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      showRootNode = bn;
+      notifyLayoutUpdate();
+      return;
+    }
+
     Map<SunburstNode, Arc> arcMap = {};
     parentNode.each((node, index, startNode) {
       var arc = node.attr.arc;
       arcMap[node] = arc;
       if (!oldArcMap.containsKey(node)) {
-        oldArcMap[node] = arc.copy(outRadius: arc.innerRadius);
+        oldArcMap[node] = arc.copy(outRadius: arc.innerRadius, maxRadius: maxRadius);
       }
       return false;
     });
@@ -354,7 +418,7 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
         var e = arcMap[node]!;
         var s = oldArcMap[node]!;
         node.attr.arc = Arc.lerp(s, e, t);
-        node.updatePath(series, 1);
+        node.updateTextPosition(series);
         return false;
       });
       notifyLayoutUpdate();
@@ -364,53 +428,32 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
   }
 
   @override
-  void onHoverStart(Offset localOffset) {
-    _handleHoverMove(localOffset);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    _handleHoverMove(localOffset);
-  }
-
-  SunburstNode? oldHoverNode;
-
-  void _handleHoverMove(Offset local) {
+  void onHandleHoverAndClick(Offset offset, bool click) {
     var sn = showRootNode;
     if (sn == null) {
       return;
     }
-
-    Offset offset = local.translate(-center.dx, -center.dy);
-    SunburstNode? hoverNode;
-    sn.eachBefore((tmp, index, startNode) {
-      Arc arc = tmp.attr.arc;
-      if (arc.contains(offset)) {
-        hoverNode = tmp;
-        return true;
-      }
-      return false;
-    });
-
+    var hoverNode = findNode(offset);
     var oldNode = oldHoverNode;
     oldHoverNode = hoverNode;
     if (hoverNode == oldNode) {
-      if (hoverNode != null) {
-        sendHoverEvent(offset, hoverNode!);
+      if (hoverNode != null && hoverNode is! SunburstVirtualNode) {
+        //   sendHoverEvent(offset, hoverNode);
       }
       return;
     }
 
     oldNode?.removeState(ViewState.hover);
     oldNode?.updateStyle(context, series);
-    if (oldNode != null) {
+    if (oldNode != null && oldNode is! SunburstVirtualNode) {
       sendHoverEndEvent(oldNode);
     }
-
-    hoverNode?.addState(ViewState.hover);
-    hoverNode?.updateStyle(context, series);
     if (hoverNode != null) {
-      sendHoverEvent(offset, hoverNode!);
+      hoverNode.addState(ViewState.hover);
+      hoverNode.updateStyle(context, series);
+      if (hoverNode is! SunburstVirtualNode) {
+        sendHoverEvent(offset, hoverNode);
+      }
     }
     notifyLayoutUpdate();
   }
@@ -421,5 +464,18 @@ class SunburstHelper extends LayoutHelper<SunburstSeries> {
       rd = series.radiusDiffFun!.call(deep, maxDeep, radiusDiff);
     }
     return rd;
+  }
+
+  @override
+  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
+    throw ChartError("Not Impl");
+  }
+
+  @override
+  SunburstNode? findNode(Offset offset) {
+    return showRootNode?.find((node, index, startNode) {
+      Arc arc = node.attr.arc;
+      return arc.contains(offset);
+    });
   }
 }
