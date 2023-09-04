@@ -1,16 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 
-class TreeData {
-  final String? id;
+class TreeData extends ItemData{
+  static final TreeData empty=TreeData(double.nan,id: "TE0101010101");
   List<TreeData> _children = [];
   TreeData? parent;
-  num value;
 
-  DynamicText? label;
-
-  TreeData(this.value, {this.label, this.id});
-
-  TreeData.label(this.label, {this.id}) : value = 0;
+  TreeData(super.value, {super.label, super.id});
 
   TreeData addData(TreeData data) {
     if (data.parent != null && data.parent != this) {
@@ -53,30 +48,6 @@ class TreeData {
   bool get notChild => !hasChild;
 
   List<TreeData> get children => _children;
-
-  @override
-  int get hashCode {
-    if (id == null || id!.isEmpty) {
-      return super.hashCode;
-    }
-    return id.hashCode;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) {
-      return true;
-    }
-    if (other is! TreeData) {
-      return false;
-    }
-    bool a = other.id == null || other.id!.isEmpty;
-    bool b = id == null || id!.isEmpty;
-    if (a != b) {
-      return false;
-    }
-    return a ? true : (other.id! == id!);
-  }
 
   @override
   String toString() {

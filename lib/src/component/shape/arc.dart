@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:e_chart/src/utils/platform_util.dart';
 import 'package:vector_math/vector_math.dart';
 
 import '../../ext/offset_ext.dart';
@@ -10,6 +10,7 @@ import '../../model/constans.dart';
 import 'chart_shape.dart';
 
 class Arc implements Shape {
+  static final zero = Arc();
   static const double circleMinAngle = 359.99;
   static const double cornerMin = 0.01;
   static const double innerMin = 0.001;
@@ -305,28 +306,21 @@ class Arc implements Shape {
     if (sweepAngle.abs() >= 360) {
       return true;
     }
-
-    Offset oA = circlePoint(d1, startAngle, center);
-    Vector2 vectorA = Vector2(oA.dx - center.dx, oA.dy - center.dy);
-    Offset oB = circlePoint(d1, startAngle + sweepAngle, center);
-    Vector2 vectorB = Vector2(oB.dx - center.dx, oB.dy - center.dy);
-    Vector2 vectorP = Vector2(offset.dx - center.dx, offset.dy - center.dy);
-
-    if (vectorP.x == 0 && vectorP.y == 0) {
-      return true;
+    num sa = startAngle;
+    num ea = startAngle + sweepAngle;
+    if (sa < 0) {
+      sa += 360;
     }
-
-    ///精度(4位小数)
-    var ab = (vectorA.angleToSigned(vectorB) * 1000).toInt();
-    var ap = (vectorA.angleToSigned(vectorP) * 1000).toInt();
-
-    bool result = ap <= ab;
-    if (ap < 0 && ab < 0) {
-      result = ap >= ab;
-    } else if (ab > 0 && ap < 0) {
-      result = false;
+    if (ea < 0) {
+      ea += 360;
     }
-    return result;
+    if (ea < sa) {
+      var t = ea;
+      ea = sa;
+      sa = t;
+    }
+    double angle = offset.angle(center);
+    return angle >= sa && angle <= ea;
   }
 
   Path arcOpen() {
@@ -338,7 +332,8 @@ class Arc implements Shape {
     Path path = Path();
     Offset op = circlePoint(r, startAngle, center);
     path.moveTo(op.dx, op.dy);
-    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * Constants.angleUnit, sweepAngle * Constants.angleUnit, false);
+    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * Constants.angleUnit,
+        sweepAngle * Constants.angleUnit, false);
     return path;
   }
 
@@ -357,7 +352,6 @@ class Arc implements Shape {
   InnerOffset _computeRB(num innerRadius, num corner, num angle) {
     return _computeCornerPoint(center, innerRadius, corner, angle, false, false);
   }
-
 
   @override
   String toString() {
@@ -418,34 +412,57 @@ class Arc implements Shape {
   }
 
   static Path _buildCircle(Offset center, num startAngle, double ir, double or, int direction) {
-    const double sweep = 1.99999 * pi;
+    double sweep = direction * (pi * 359.99 / 180);
 
     ///直接为圆相关的
     Path outPath = Path();
     Offset o1 = circlePoint(or, startAngle, center);
     Rect orRect = Rect.fromCircle(center: center, radius: or);
     outPath.moveTo(o1.dx, o1.dy);
-    outPath.arcTo(orRect, startAngle * Constants.angleUnit, sweep, false);
+    outPath.arcTo(orRect, startAngle * Constants.angleUnit, sweep, true);
     outPath.close();
     if (ir <= innerMin) {
       return outPath;
     }
 
-    Rect irRect = Rect.fromCircle(center: center, radius: ir);
-    Path innerPath = Path();
+    if (!isWeb) {
+      Rect irRect = Rect.fromCircle(center: center, radius: ir);
+      Path innerPath = Path();
+      o1 = circlePoint(ir, startAngle, center);
+      innerPath.moveTo(o1.dx, o1.dy);
+      innerPath.arcTo(irRect, startAngle * Constants.angleUnit, sweep, true);
+      innerPath.close();
+      return Path.combine(PathOperation.difference, outPath, innerPath);
+    }
+
+    ///由于Flutter中的Path.combine 在Web环境下会出现剪切错误的BUG，
+    ///因此这里我们自行实现一个路径
+    sweep = Constants.angleUnit * 359.9;
+    Path rp = Path();
+
+    ///Out
+    o1 = circlePoint(or, startAngle, center);
+    rp.moveTo(o1.dx, o1.dy);
+    Offset o2 = circlePoint(or, startAngle + 359.99, center);
+    rp.arcToPoint(o2, radius: Radius.circular(or), largeArc: true, clockwise: true);
+
+    ///Inner
     o1 = circlePoint(ir, startAngle, center);
-    innerPath.arcTo(irRect, startAngle * Constants.angleUnit, sweep, false);
-    innerPath.close();
-    return Path.combine(PathOperation.difference, outPath, innerPath);
+    rp.moveTo(o1.dx, o1.dy);
+    o2 = circlePoint(ir, startAngle + 359.99, center);
+    rp.arcToPoint(o2, radius: Radius.circular(ir), largeArc: true, clockwise: true);
+    rp.lineTo(o1.dx, o1.dy);
+    rp.close();
+    return rp;
   }
 
   static Arc lerp(Arc begin, Arc end, double t) {
-    double innerRadius =lerpDouble(begin.innerRadius, end.innerRadius, t)!;
-    double outerRadius =lerpDouble(begin.outRadius, end.outRadius, t)!;
-    double startAngle =lerpDouble(begin.startAngle, end.startAngle, t)!;
-    double sweepAngle =lerpDouble(begin.sweepAngle, end.sweepAngle, t)!;
-    num corner =lerpDouble(begin.cornerRadius, end.cornerRadius, t)!;
-    num padAngle =lerpDouble(begin.padAngle, end.padAngle, t)!;
+    double innerRadius = lerpDouble(begin.innerRadius, end.innerRadius, t)!;
+    double outerRadius = lerpDouble(begin.outRadius, end.outRadius, t)!;
+    double startAngle = lerpDouble(begin.startAngle, end.startAngle, t)!;
+    double sweepAngle = lerpDouble(begin.sweepAngle, end.sweepAngle, t)!;
+    num corner = lerpDouble(begin.cornerRadius, end.cornerRadius, t)!;
+    num padAngle = lerpDouble(begin.padAngle, end.padAngle, t)!;
 
     Offset center;
     if (begin.center == end.center) {
@@ -463,7 +480,6 @@ class Arc implements Shape {
       padAngle: padAngle,
     );
   }
-
 }
 
 class InnerOffset {

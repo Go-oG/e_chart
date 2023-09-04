@@ -423,6 +423,17 @@ class DiffUtil {
     P Function(P s, P e, double t) lerpFun,
     VoidCallback callback,
   ) {
+    diffUpdate2<P, D, N>(attrs, oldList, newList, builder, lerpFun, callback).first.start(context);
+  }
+
+  static List<AnimationNode> diffUpdate2<P, D, N extends DataNode<P, D>>(
+    AnimationAttrs attrs,
+    Iterable<N> oldList,
+    Iterable<N> newList,
+    P Function(D data, N node, bool isOld) builder,
+    P Function(P s, P e, double t) lerpFun,
+    VoidCallback callback,
+  ) {
     Map<D, P> startMap = {};
     Map<D, P> endMap = {};
 
@@ -449,7 +460,7 @@ class DiffUtil {
       }
       callback.call();
     });
-    updateTween.start(context, true);
+    return [AnimationNode(updateTween, attrs, LayoutType.update)];
   }
 }
 

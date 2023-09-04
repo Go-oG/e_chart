@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 
 class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
   SunburstNode(
-    super.parent,
-    super.data,
-    super.dataIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+    SunburstNode? parent,
+    TreeData data,
+    int dataIndex, {
+    super.maxDeep,
+    super.deep,
+    super.groupIndex,
+    super.value,
+  }) : super(parent, data, dataIndex, SunburstAttr.zero(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
 
-  updatePath(SunburstSeries series, double animatorPercent) {
+  void updatePath(SunburstSeries series, double animatorPercent) {
     attr._updatePath(series, animatorPercent, this);
   }
 
@@ -24,24 +24,73 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    itemStyle.drawPath(canvas, paint, attr.shapePath!);
-    borderStyle.drawPath(canvas, paint, attr.shapePath!);
+    var path = attr.shapePath;
+    if (path != null) {
+      itemStyle.drawArc(canvas, paint, attr.arc);
+      borderStyle.drawPath(canvas, paint, attr.arc.toPath(true));
+    }
+    labelStyle.draw(canvas, paint, "D$deep:${data.value}".toText(), TextDrawInfo(attr.arc.centroid()));
+    // _drawText(canvas, paint);
+  }
+
+  void _drawText(Canvas canvas, Paint paint) {
+    Arc arc = attr.arc;
+    var style = labelStyle;
+    var label = data.label;
+    var config = labelConfig;
+    if (config == null || label == null || label.isEmpty || !style.show || arc.sweepAngle.abs() <= style.minAngle) {
+      return;
+    }
+    style.draw(canvas, paint, label, config);
+    // TextDrawInfo config = TextDrawInfo(
+    //   node.attr.textPosition,
+    //   align: Alignment.center,
+    //   maxWidth: arc.outRadius - arc.innerRadius,
+    //   rotate: node.attr.textRotateAngle,
+    // );
   }
 
   @override
   void updateStyle(Context context, covariant SunburstSeries series) {
-    itemStyle = series.areaStyleFun.call(this);
-    // borderStyle=series.
-    labelStyle = series.labelStyleFun?.call(this) ?? LabelStyle.empty;
+    itemStyle = series.getAreaStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
+    labelStyle = series.getLabelStyle(context, this);
+  }
+
+  @override
+  String toString() {
+    var s = super.toString();
+    return "$s\nAttr:\n$attr";
+  }
+}
+
+class SunburstVirtualNode extends SunburstNode {
+  SunburstVirtualNode(SunburstNode child, SunburstAttr attr) : super(null, child.data, 0) {
+    child.parent = null;
+    add(child);
+    value = child.value;
+    this.attr = attr;
+  }
+
+  final AreaStyle bs = const AreaStyle(color: Colors.black);
+
+  @override
+  void onDraw(Canvas canvas, Paint paint) {
+    var path = attr.shapePath;
+    if (path != null) {
+      bs.drawPath(canvas, paint, path);
+    }
   }
 }
 
 /// 存放位置数据
 class SunburstAttr {
-  static SunburstAttr zero = SunburstAttr(Arc());
+  static final SunburstAttr empty = SunburstAttr(Arc());
   Arc arc;
 
   SunburstAttr(this.arc, {this.textPosition = Offset.zero, this.textRotateAngle = 0, this.alpha = 1});
+
+  SunburstAttr.zero() : arc = Arc();
 
   Offset textPosition = Offset.zero;
   double textRotateAngle = 0;
@@ -58,9 +107,6 @@ class SunburstAttr {
   /// 计算label的位置
   void _computeTextPosition(SunburstSeries series, SunburstNode node) {
     textPosition = Offset.zero;
-    if (node.data.label == null || node.data.label!.isEmpty) {
-      return;
-    }
     LabelStyle? style = series.labelStyleFun?.call(node);
     if (style == null) {
       return;
@@ -137,5 +183,10 @@ class SunburstAttr {
       textRotateAngle: textRotateAngle,
       alpha: alpha,
     );
+  }
+
+  @override
+  String toString() {
+    return "Arc:$arc";
   }
 }

@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../utils/platform_util.dart';
+
 /// 区域样式
 class AreaStyle {
   static const AreaStyle empty = AreaStyle();
@@ -98,6 +100,25 @@ class AreaStyle {
     }
     fillPaint(paint, path.getBounds());
     canvas.drawPath(path, paint);
+  }
+
+  void drawArc(Canvas canvas, Paint paint, Arc arc) {
+    if (!isWeb) {
+      drawPath(canvas, paint, arc.toPath(true));
+      return;
+    }
+
+    if (arc.sweepAngle.abs() >= Arc.circleMinAngle) {
+      if (arc.innerRadius <= 0) {
+        drawCircle(canvas, paint, arc.center, arc.outRadius);
+        return;
+      }
+      num r = (arc.outRadius - arc.innerRadius);
+      LineStyle style = LineStyle(color: color, shader: shader, shadow: shadow, width: r);
+      style.drawCircle(canvas, paint, arc.center, arc.outRadius - r / 2);
+    } else {
+      drawPath(canvas, paint, arc.toPath(true));
+    }
   }
 
   AreaStyle convert(Set<ViewState>? states) {

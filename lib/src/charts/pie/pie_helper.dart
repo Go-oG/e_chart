@@ -222,11 +222,24 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     }
     const double rDiff = 8;
 
-    DiffUtil.diffUpdate<Arc, ItemData, PieNode>(context, animation, oldList, newList, (data, node, isOld) {
-      if (isOld) {
-        return node.attr.copy(outRadius: node.attr.outRadius - rDiff);
-      }
-      return node.attr.copy(outRadius: node.attr.outRadius + rDiff);
-    }, (s, e, t) => Arc.lerp(s, e, t), notifyLayoutUpdate);
+    DiffUtil.diffUpdate<Arc, ItemData, PieNode>(
+      context,
+      animation,
+      oldList,
+      newList,
+      (data, node, isOld) {
+        num? originR = node.extGetNull("originR");
+        if (originR == null) {
+          originR = node.attr.outRadius;
+          node.extSet("originR", originR);
+        }
+        if (node == oldNode) {
+          return node.attr.copy(outRadius: originR - rDiff);
+        }
+        return node.attr.copy(outRadius: originR + rDiff);
+      },
+      (s, e, t) => Arc.lerp(s, e, t),
+      notifyLayoutUpdate,
+    );
   }
 }

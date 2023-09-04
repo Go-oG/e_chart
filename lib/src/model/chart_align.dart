@@ -6,6 +6,7 @@ import '../utils/align_util.dart';
 import 'enums/direction.dart';
 
 class ChartAlign {
+  static const center=ChartAlign();
   final Alignment align;
   final bool inside;
 

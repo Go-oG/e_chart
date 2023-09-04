@@ -1,130 +1,403 @@
-import 'dart:math' as m;
+import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 import 'sunburst_node.dart';
 
 /// 旭日图布局计算(以中心点为计算中心)
 class SunburstHelper extends LayoutHelper<SunburstSeries> {
+  SunburstHelper(super.context, super.series);
+
+  ///布局中的临时量
+  Offset center = Offset.zero;
   num minRadius = 0;
   num maxRadius = 0;
-  num radius = 0;
+  num radiusDiff = 0;
 
-  SunburstHelper(super.context, super.series);
+  SunburstNode? rootNode;
+  SunburstNode? showRootNode;
+
+  Map<TreeData, SunburstNode> _nodeMap = {};
+  Map<TreeData, TreeData> _parentMap = {};
 
   ///给定根节点和待布局的节点进行数据的布局
   @override
   void onLayout(LayoutType type) {
-    // List<num> radiusList = computeRadius(width, height);
-    // minRadius = radiusList[0];
-    // maxRadius = radiusList[1];
-    // radius = radiusList[2];
-    //
-    // int deep = root.height;
-    //
-    // ///深度
-    // if (node != root) {
-    //   deep += 1;
-    // }
-    //
-    // num diff = radius / deep;
-    // Arc arc = buildRootArc(root, node);
-    // node.cur = SunburstInfo(arc);
-    // node.start = node.cur.copy();
-    // node.end = node.cur.copy();
-    // node.updatePath(series, 1);
-    // int deepOffset = node == root ? 0 : 1;
-    // node.eachBefore((tmp, index, startNode) {
-    //   if (tmp.hasChild) {
-    //     num rd = diff;
-    //     if (series.radiusDiffFun != null) {
-    //       rd = series.radiusDiffFun!.call(node.height - tmp.height + deepOffset, deep, radius).convert(radius);
-    //     }
-    //     _layoutChildren(tmp, rd);
-    //   }
-    //   return false;
-    // });
+    center = Offset(series.center[0].convert(width), series.center[1].convert(height));
+    List<num> radiusList = computeRadius(width, height);
+    minRadius = radiusList[0];
+    maxRadius = radiusList[1];
+    num radiusRange = radiusList[2];
+
+    Map<TreeData, SunburstNode> nodeMap = {};
+    Map<TreeData, TreeData> parentMap = {};
+
+    SunburstNode newRoot = convertData(series.data);
+    nodeMap[series.data] = newRoot;
+    int maxDeep = newRoot.height;
+    radiusDiff = radiusRange / (maxDeep <= 0 ? 1 : maxDeep);
+    newRoot.attr = SunburstAttr(buildRootArc(center, maxDeep));
+    newRoot.updatePath(series, 1);
+    newRoot.eachBefore((tmp, index, startNode) {
+      tmp.updateStyle(context, series);
+      nodeMap[tmp.data] = tmp;
+      var p = tmp.data.parent;
+      if (p != null) {
+        parentMap[tmp.data] = p;
+      }
+      if (tmp.hasChild) {
+        _layoutChildren(tmp, getRadiusDiff(tmp.deep, maxDeep));
+      }
+      return false;
+    });
+
+    rootNode = newRoot;
+    showRootNode = rootNode;
+    _nodeMap = nodeMap;
+    _parentMap = parentMap;
+  }
+
+  SunburstNode convertData(TreeData rootData) {
+    int index = 0;
+    SunburstNode root = toTree<TreeData, SunburstAttr, SunburstNode>(
+      series.data,
+      (p0) => p0.children,
+      (p0, p1) {
+        p1.parent = p0?.data;
+        index++;
+        return SunburstNode(p0, p1, index - 1, value: p1.value);
+      },
+      sort: (a, b) {
+        if (series.sort == Sort.empty) {
+          return 0;
+        }
+        if (series.sort == Sort.asc) {
+          return a.data.value.compareTo(b.data.value);
+        } else {
+          return b.data.value.compareTo(a.data.value);
+        }
+      },
+    );
+    root.sum((p0) => p0.data.value);
+    if (series.matchParent) {
+      root.each((node, index, startNode) {
+        if (node.hasChild) {
+          node.value = 0;
+        }
+        return false;
+      });
+      root.sum();
+    }
+    root.computeHeight();
+    int maxDeep = root.height;
+    root.each((node, index, startNode) {
+      node.maxDeep = maxDeep;
+      return false;
+    });
+    return root;
+  }
+
+  void _layoutNodeIterator(SunburstNode parent, int maxDeep, bool updateStyle) {
+    parent.eachBefore((node, index, startNode) {
+      if (updateStyle) {
+        node.updateStyle(context, series);
+      }
+      if (node.hasChild) {
+        _layoutChildren(node, getRadiusDiff(node.deep, maxDeep));
+      }
+      return false;
+    });
   }
 
   void _layoutChildren(SunburstNode parent, num radiusDiff) {
-    int gapCount = (parent.childCount <= 1) ? 0 : parent.childCount - 1;
-    Arc arc = parent.attr.arc;
-    if (arc.sweepAngle.abs() >= 359.999) {
-      gapCount = 0;
+    if (parent.childCount == 0) {
+      return;
     }
-    int dir = series.clockwise ? 1 : -1;
-    final num remainAngle = arc.sweepAngle.abs() - series.angleGap.abs() * gapCount;
-    num childStartAngle = arc.startAngle;
-
     final corner = series.corner.abs();
     final angleGap = series.angleGap.abs();
     final radiusGap = series.radiusGap.abs();
-
-    for (var ele in parent.children) {
-      double percent = ele.value / parent.value;
-      percent = m.min(percent, 1);
-      double swa = remainAngle * percent * dir;
-      Arc childArc = Arc(
-          innerRadius: arc.outRadius + radiusGap,
-          outRadius: arc.outRadius + radiusGap + radiusDiff,
-          startAngle: childStartAngle,
-          sweepAngle: swa,
-          cornerRadius: corner,
-          padAngle: angleGap);
-      ele.attr = SunburstAttr(childArc);
-      ele.updatePath(series, 1);
-      childStartAngle += swa + angleGap * dir;
+    final Arc parentArc = parent.attr.arc;
+    if (parent.childCount == 1) {
+      var ir = parentArc.outRadius + radiusGap;
+      parent.firstChild.attr.arc = parentArc.copy(innerRadius: ir, outRadius: ir + radiusDiff);
+      parent.firstChild.updatePath(series, 1);
+      return;
     }
+
+    bool match = series.matchParent;
+    if (!match) {
+      num childAllValue = sumBy<SunburstNode>(parent.children, (p0) => p0.value);
+      match = childAllValue >= parent.value;
+    }
+    int gapCount = parent.childCount - 1;
+    if (match) {
+      gapCount = parent.childCount;
+      if (parent.parent != null && parent.parent is! SunburstVirtualNode) {
+        gapCount -= 1;
+      }
+    }
+    final int dir = series.sweepAngle < 0 ? -1 : 1;
+    final num remainAngle = parentArc.sweepAngle.abs() - series.angleGap.abs() * gapCount;
+
+    num childStartAngle = parentArc.startAngle;
+    if (match && parent.parent == null) {
+      childStartAngle += dir * angleGap / 2;
+    }
+
+    final num ir = parentArc.outRadius + radiusGap;
+    final num or = ir + radiusDiff;
+
+    each(parent.children, (ele, i) {
+      double percent = ele.value / parent.value;
+      if (percent > 1) {
+        throw ChartError("内部异常");
+      }
+      double swa = remainAngle * percent;
+      ele.attr.arc = Arc(
+          innerRadius: ir,
+          outRadius: or,
+          startAngle: childStartAngle,
+          sweepAngle: swa * dir,
+          cornerRadius: corner,
+          padAngle: angleGap,
+          center: center);
+      ele.updatePath(series, 1);
+      childStartAngle += (swa + angleGap) * dir;
+    });
   }
 
   @override
   SeriesType get seriesType => SeriesType.sunburst;
 
-  ///构建根节点的布局数据
-  Arc buildRootArc(SunburstNode root, SunburstNode node) {
-    int dir = series.clockwise ? 1 : -1;
-    num seriesAngle = series.sweepAngle.abs() * dir;
-    if (root == node) {
-      return Arc(
-        innerRadius: 0,
-        outRadius: minRadius,
-        startAngle: series.offsetAngle,
-        sweepAngle: seriesAngle,
-      );
+  ///构建根节点布局位置
+  Arc buildRootArc(Offset center, int maxDeep) {
+    num diff = radiusDiff;
+    var fun = series.radiusDiffFun;
+    if (fun != null) {
+      diff = fun.call(0, maxDeep, radiusDiff);
     }
-    num diff = radius / (node.height + 1);
-    if (series.radiusDiffFun != null) {
-      diff = series.radiusDiffFun!.call(0, node.height + 1, radius).convert(radius);
-    }
-    num innerRadius = minRadius + diff;
-    if (series.radiusDiffFun != null) {
-      diff = series.radiusDiffFun!.call(1, node.height + 1, radius).convert(radius);
-    }
+    num or = minRadius + diff;
     return Arc(
-        innerRadius: innerRadius,
-        outRadius: innerRadius + diff,
-        startAngle: series.offsetAngle,
-        sweepAngle: seriesAngle);
+        innerRadius: 0, outRadius: or, startAngle: series.startAngle, sweepAngle: series.sweepAngle, center: center);
   }
 
-  Arc buildBackArc(SunburstNode root, SunburstNode node) {
-    int dir = series.clockwise ? 1 : -1;
-    num diff = radius / (node.height + 1);
-    if (series.radiusDiffFun != null) {
-      diff = series.radiusDiffFun!.call(0, node.height + 1, radius).convert(radius);
+  ///构建返回节点布局属性
+  Arc buildBackArc(Offset center, int deepDiff) {
+    num or = minRadius;
+    if (or <= 0) {
+      or = getRadiusDiff(0, deepDiff);
     }
     return Arc(
-      innerRadius: minRadius,
-      outRadius: minRadius + diff,
-      startAngle: series.offsetAngle,
-      sweepAngle: series.sweepAngle.abs() * dir,
+      innerRadius: 0,
+      outRadius: or,
+      startAngle: series.startAngle,
+      sweepAngle: series.sweepAngle,
+      center: center,
     );
   }
 
   List<num> computeRadius(num width, num height) {
-    double minSize = min([width, height]) * 0.5;
-    double minRadius = series.innerRadius.convert(minSize);
-    double maxRadius = series.outerRadius.convert(minSize);
+    num size = min([width, height]);
+    num minRadius = 0;
+    num maxRadius = 0;
+    List<SNumber> radius = series.radius;
+    if (radius.isEmpty) {
+      maxRadius = const SNumber.percent(50).convert(size);
+    } else if (radius.length == 1) {
+      maxRadius = radius[0].convert(size);
+    } else {
+      minRadius = radius[0].convert(size);
+      maxRadius = radius.last.convert(size);
+    }
+    if (minRadius < 0) {
+      minRadius = 0;
+    }
+    if (maxRadius < 0) {
+      maxRadius = 0;
+    }
+    if (maxRadius < minRadius) {
+      num v = maxRadius;
+      maxRadius = minRadius;
+      minRadius = v;
+    }
+    if (maxRadius <= 0) {
+      maxRadius = const SNumber.percent(50).convert(size);
+    }
     return [minRadius, maxRadius, maxRadius - minRadius];
   }
-}
 
+  @override
+  void onClick(Offset localOffset) {
+    var bn = showRootNode;
+    if (bn == null) {
+      return;
+    }
+    Offset offset = localOffset;
+    SunburstNode? clickNode = bn.find((node, index, startNode) {
+      Arc arc = node.attr.arc;
+      return arc.contains(offset);
+    });
+    if (clickNode == null || clickNode == rootNode) {
+      return;
+    }
+    if (clickNode is SunburstVirtualNode) {
+      back();
+      return;
+    }
+    _forward(clickNode);
+  }
+
+  void _forward(SunburstNode clickNode) {
+    var oldBackNode = showRootNode;
+    var hasBack = showRootNode is SunburstVirtualNode;
+    if (hasBack && oldBackNode != null) {
+      oldBackNode.clear();
+      clickNode.parent = null;
+      oldBackNode.add(clickNode);
+      oldBackNode.value = clickNode.value;
+
+      var oldE = oldBackNode.attr.arc;
+      var s = clickNode.attr.arc;
+      var ir = oldE.outRadius + series.radiusGap;
+      var e = Arc(
+        innerRadius: ir,
+        outRadius: ir + getRadiusDiff(1, clickNode.height + 1),
+        center: center,
+        startAngle: series.startAngle,
+        sweepAngle: series.sweepAngle,
+      );
+
+      var tween = ChartDoubleTween(props: series.animation!);
+      tween.addListener(() {
+        var t = tween.value;
+        clickNode.attr.arc = Arc.lerp(s, e, t);
+        clickNode.updatePath(series, 1);
+        _layoutNodeIterator(clickNode, clickNode.height + 1, false);
+        notifyLayoutUpdate();
+      });
+      tween.start(context, true);
+      return;
+    }
+
+    ///拆分动画
+    ///返回节点
+    var be = buildBackArc(center, clickNode.height + 1);
+    var bs = be.copy(outRadius: be.innerRadius);
+    var bn = SunburstVirtualNode(clickNode, SunburstAttr(bs));
+
+    var cs = clickNode.attr.arc;
+    var ir = be.outRadius + series.radiusGap;
+    var ce = Arc(
+      startAngle: series.startAngle,
+      sweepAngle: series.sweepAngle,
+      innerRadius: ir,
+      outRadius: ir + getRadiusDiff(1, clickNode.height + 1),
+      center: center,
+    );
+
+    var tween = ChartDoubleTween(props: series.animation!);
+    tween.addListener(() {
+      var t = tween.value;
+      bn.attr.arc = Arc.lerp(bs, be, t);
+      bn.updatePath(series, 1);
+
+      clickNode.attr.arc = Arc.lerp(cs, ce, t);
+      clickNode.updatePath(series, 1);
+      _layoutNodeIterator(clickNode, clickNode.height + 1, false);
+      notifyLayoutUpdate();
+    });
+    showRootNode = bn;
+    tween.start(context, true);
+  }
+
+  void back() {
+    var bn = showRootNode;
+    showRootNode = null;
+    if (bn == null || bn is! SunburstVirtualNode) {
+      return;
+    }
+    var first = bn.firstChild;
+    first.parent = null;
+    bn.clear();
+
+    var parentData = first.data.parent?.parent;
+    if (parentData == null) {
+      showRootNode = rootNode;
+      first.parent = rootNode;
+      var node = rootNode;
+      if (node != null) {
+        _layoutNodeIterator(node, node.maxDeep, false);
+      }
+      notifyLayoutUpdate();
+      return;
+    }
+
+    parentData = first.data.parent!;
+    var parentNode = _nodeMap[parentData]!;
+    parentNode.parent = null;
+    bn = SunburstVirtualNode(parentNode, SunburstAttr(buildBackArc(center, parentNode.height + 1)));
+    bn.updatePath(series, 1);
+    _layoutNodeIterator(bn, parentNode.height + 1, false);
+    showRootNode = bn;
+    notifyLayoutUpdate();
+  }
+
+  @override
+  void onHoverStart(Offset localOffset) {
+    _handleHoverMove(localOffset);
+  }
+
+  @override
+  void onHoverMove(Offset localOffset) {
+    _handleHoverMove(localOffset);
+  }
+
+  SunburstNode? oldHoverNode;
+
+  void _handleHoverMove(Offset local) {
+    var sn = showRootNode;
+    if (sn == null) {
+      return;
+    }
+
+    Offset offset = local.translate(-center.dx, -center.dy);
+    SunburstNode? hoverNode;
+    sn.eachBefore((tmp, index, startNode) {
+      Arc arc = tmp.attr.arc;
+      if (arc.contains(offset)) {
+        hoverNode = tmp;
+        return true;
+      }
+      return false;
+    });
+
+    var oldNode = oldHoverNode;
+    oldHoverNode = hoverNode;
+    if (hoverNode == oldNode) {
+      if (hoverNode != null) {
+        sendHoverEvent(offset, hoverNode!);
+      }
+      return;
+    }
+
+    oldNode?.removeState(ViewState.hover);
+    oldNode?.updateStyle(context, series);
+    if (oldNode != null) {
+      sendHoverEndEvent(oldNode);
+    }
+
+    hoverNode?.addState(ViewState.hover);
+    hoverNode?.updateStyle(context, series);
+    if (hoverNode != null) {
+      sendHoverEvent(offset, hoverNode!);
+    }
+    notifyLayoutUpdate();
+  }
+
+  num getRadiusDiff(int deep, int maxDeep) {
+    num rd = radiusDiff;
+    if (series.radiusDiffFun != null) {
+      rd = series.radiusDiffFun!.call(deep, maxDeep, radiusDiff);
+    }
+    return rd;
+  }
+}

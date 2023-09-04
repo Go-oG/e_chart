@@ -441,8 +441,9 @@ abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D
   num x = 0;
   num y = 0;
   Size size = Size.zero;
+
   ///缩放
-  double scale=1;
+  double scale = 1;
 
   ///找到一个节点是否在[offset]范围内
   T? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {
@@ -564,6 +565,11 @@ abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D
   bool get expand => _expand;
 
   bool get isLeaf => childCount <= 0;
+
+  @override
+  String toString() {
+    return "$runtimeType:$data\ndeep:$deep height:$height maxDeep:$maxDeep\nchildCount:$childCount\n";
+  }
 
   ///返回 节点 a,b的最小公共祖先
   static T? minCommonAncestor<T extends TreeNode<dynamic, dynamic, T>>(T a, T b) {

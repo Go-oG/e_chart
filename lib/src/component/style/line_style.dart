@@ -7,7 +7,7 @@ import '../shader/shader.dart' as sd;
 class LineStyle {
   static const LineStyle empty = LineStyle(width: 0);
 
-  final Color color;
+  final Color? color;
   final num width;
   final StrokeCap cap;
   final StrokeJoin join;
@@ -41,7 +41,9 @@ class LineStyle {
 
   void fillPaint(Paint paint, [Rect? rect]) {
     paint.reset();
-    paint.color = color;
+    if (color != null) {
+      paint.color = color!;
+    }
     paint.strokeCap = cap;
     paint.strokeJoin = join;
     paint.style = PaintingStyle.stroke;
@@ -106,13 +108,12 @@ class LineStyle {
   }
 
   ///绘制一个圆弧部分(也可以绘制圆)
-  void drawArc(Canvas canvas, Paint paint, double radius, num startAngle, num sweepAngle,
-      [Offset center = Offset.zero]) {
+  void drawArc(Canvas canvas, Paint paint, num radius, num startAngle, num sweepAngle, [Offset center = Offset.zero]) {
     if (width <= 0) {
       return;
     }
     //优化绘制半径、消除
-    double r = radius;
+    double r = radius.toDouble();
     if (align == Align2.start) {
       r -= width / 2;
     } else if (align == Align2.end) {
@@ -132,6 +133,12 @@ class LineStyle {
       path = path.dashPath(dash);
     }
     canvas.drawPath(path, paint);
+  }
+
+  void drawCircle(Canvas canvas, Paint paint, Offset center, num radius) {
+    var rect = Rect.fromCircle(center: center, radius: radius.toDouble());
+    fillPaint(paint, rect);
+    canvas.drawCircle(center, radius.toDouble(), paint);
   }
 
   void drawRect(Canvas canvas, Paint paint, Rect rect, [Corner? corner]) {
@@ -208,8 +215,12 @@ class LineStyle {
     if (states == null || states.isEmpty) {
       return this;
     }
+    var c = this.color;
+    if (c == null) {
+      return this;
+    }
 
-    final Color color = ColorResolver(this.color).resolve(states)!;
+    final Color color = ColorResolver(c).resolve(states)!;
 
     final sd.ChartShader? shader = this.shader == null ? null : this.shader!.convert(states);
 
