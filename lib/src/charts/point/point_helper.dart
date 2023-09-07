@@ -5,6 +5,9 @@ import 'package:e_chart/e_chart.dart';
 import 'point_node.dart';
 
 class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
+  static const String _size = "originSize";
+  static const String _center = "originCenter";
+
   PointHelper(super.context, super.series);
 
   @override
@@ -18,6 +21,11 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       });
     });
     layoutNode(newList);
+    each(newList, (node, p1) {
+      node.extSet(_size, node.attr.size);
+      node.extSet(_center, node.attr.offset);
+    });
+
     var animation = series.animation;
     if (animation == null || type == LayoutType.none) {
       nodeList = newList;
@@ -151,17 +159,14 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       oldList,
       newList,
       (data, node, isOld) {
+        Offset offset = node.extGet(_center)!;
+        Size size = node.extGet(_size)!;
         if (isOld) {
-          return PointAttr.all(node.attr.offset, (node.attr.size - diffSize) as Size);
+          return PointAttr.all(offset, (size - diffSize) as Size);
         }
-        return PointAttr.all(node.attr.offset, node.attr.size + diffSize);
+        return PointAttr.all(offset, size + diffSize);
       },
-      (s, e, t) {
-        PointAttr pSize = PointAttr();
-        pSize.offset = s.offset == e.offset ? e.offset : Offset.lerp(s.offset, e.offset, t)!;
-        pSize.size = s.size == e.size ? e.size : Size.lerp(s.size, e.size, t)!;
-        return pSize;
-      },
+      PointAttr.lerp,
       notifyLayoutUpdate,
     );
   }

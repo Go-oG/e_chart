@@ -32,14 +32,10 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
 
   List<HeatMapNode> convertData(List<HeatMapData> dataList) {
     List<HeatMapNode> rl = [];
-    Set<ViewState> emptyVS = {};
     each(dataList, (e, i) {
-      rl.add(HeatMapNode(
-          e,
-          i,
-          series.getAreaStyle(context, e, i, emptyVS) ?? AreaStyle.empty,
-          series.getBorderStyle(context, e, i, emptyVS) ?? LineStyle.empty,
-          series.getLabelStyle(context, e, emptyVS) ?? LabelStyle.empty));
+      var node = HeatMapNode(e, i, AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+      node.updateStyle(context, series);
+      rl.add(node);
     });
 
     return rl;

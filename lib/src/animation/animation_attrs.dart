@@ -21,7 +21,7 @@ class AnimationAttrs {
     this.updateDelay = Duration.zero,
     this.threshold = 2000,
     this.behavior = AnimationBehavior.normal,
-    this.curve = Curves.easeOutCubic,
-    this.updateCurve = Curves.fastEaseInToSlowEaseOut,
+    this.curve = Curves.linear,
+    this.updateCurve = Curves.linear,
   });
 }

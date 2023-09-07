@@ -13,6 +13,7 @@ class HeatMapSeries extends RectSeries {
   Fun2<HeatMapData, DynamicText?>? labelFormatFun;
   Fun4<HeatMapData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
   Fun4<HeatMapData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
+  Fun4<HeatMapData, int, Set<ViewState>, ChartSymbol>? symbolFun;
 
   HeatMapSeries(
     this.data, {
@@ -22,6 +23,7 @@ class HeatMapSeries extends RectSeries {
     this.labelAlignFun,
     this.areaStyleFun,
     this.borderStyleFun,
+    this.symbolFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -58,6 +60,14 @@ class HeatMapSeries extends RectSeries {
     }
     var theme = context.option.theme.funnelTheme;
     return theme.getBorderStyle();
+  }
+
+  ChartSymbol? getSymbol(Context context, HeatMapData data, int index, Set<ViewState> status) {
+    var fun = symbolFun;
+    if (fun != null) {
+      return fun.call(data, index, status);
+    }
+    return null;
   }
 
   LabelStyle? getLabelStyle(Context context, HeatMapData data, Set<ViewState> status) {

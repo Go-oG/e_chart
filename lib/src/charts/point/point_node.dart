@@ -23,7 +23,7 @@ class PointNode extends DataNode<PointAttr, PointData> {
   void onDraw(Canvas canvas, Paint paint) {
     symbol.draw2(canvas, paint, attr.offset, attr.size);
     var label = data.label;
-    var labelConfig = attr.labelConfig;
+    var labelConfig = this.labelConfig;
     if (label != null && label.isNotEmpty && labelConfig != null) {
       labelStyle.draw(canvas, paint, label, labelConfig);
     }
@@ -38,7 +38,6 @@ class PointNode extends DataNode<PointAttr, PointData> {
 class PointAttr {
   Offset offset = Offset.zero;
   Size size = Size.zero;
-  TextDrawInfo? labelConfig;
 
   PointAttr();
 
@@ -47,5 +46,12 @@ class PointAttr {
   @override
   String toString() {
     return "$runtimeType offset:$offset size:$size";
+  }
+
+  static PointAttr lerp(PointAttr s,PointAttr e,double t){
+    PointAttr attr=PointAttr();
+    attr.offset = s.offset == e.offset ? e.offset : Offset.lerp(s.offset, e.offset, t)!;
+    attr.size = s.size == e.size ? e.size : Size.lerp(s.size, e.size, t)!;
+    return attr;
   }
 }

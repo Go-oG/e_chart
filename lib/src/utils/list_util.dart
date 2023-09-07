@@ -373,6 +373,16 @@ void eachRight<T>(Iterable<T> list, void Function(T, int) call) {
   }
 }
 
+void each2<T>(Iterable<Iterable<T>> list, void Function(T, int, int) call) {
+  int p = 0;
+  for (var pList in list) {
+    eachNull(pList, (p0, p1) {
+      call.call(p0 as T, p1, p);
+    });
+    p++;
+  }
+}
+
 ///返回一个由给定数据生成的唯一值的数组
 List<T> xor<T>(Iterable<Iterable<T>> list) {
   return xorBy<T, T>(list, (p0) => p0);

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -61,18 +62,19 @@ class Logger {
   //转为字符串
   static String _stringifyMessage(dynamic message) {
     final finalMessage = message is Function ? message() : message;
+    String result;
     if (finalMessage is Map || finalMessage is Iterable) {
-      return _encoder.convert(finalMessage);
+      result = _encoder.convert(finalMessage);
     } else {
-      return finalMessage.toString();
+      result = finalMessage.toString();
     }
+    return result;
   }
 
   //生成对应的行数据
   static List<String> _handleLog(String log, String? tag, StackTrace stackTrace) {
     List<String> contentList = _splitLargeLog(log, _config.lineMaxLength); //日志数据
     List<String> stackTraceList = _getStackInfo(stackTrace, _config.staticOffset, _config.methodCount); //帧栈数据
-
     //计算分割线的宽度
     int diverLength = 0;
     for (var element in contentList) {
@@ -195,10 +197,12 @@ class Logger {
   }
 
   //分割日志
+  static final _splitReg = RegExp('\n');
+  static final _splitReg2 = RegExp('\t');
+
   static List<String> _splitLargeLog(String log, int lineMax) {
-    List<String> lineList = List.empty(growable: true); //存储分割后处理的数据
-    List<String> tempList = log.split(RegExp('\n')); //先按照换行符分割数据
-    RegExp tabReg = RegExp("\t");
+    List<String> lineList = []; //存储分割后处理的数据
+    List<String> tempList = log.split(_splitReg); //先按照换行符分割数据
     int maxLength = 0; //记录日志中最长行的宽度
     for (var s in tempList) {
       int sl = s.length;
@@ -206,7 +210,7 @@ class Logger {
         lineList.add(s);
         if (sl > maxLength) {
           maxLength = sl;
-          Iterable<RegExpMatch> matchs = tabReg.allMatches(s);
+          Iterable<RegExpMatch> matchs = _splitReg2.allMatches(s);
           int tSize = matchs.length;
           maxLength += (tSize * 4); //Tab 长度4个字符
         }
@@ -229,7 +233,7 @@ class Logger {
         tempS = tempS.substring(sp.length);
         if (maxLength < tL[1]) {
           maxLength = tL[1];
-          Iterable<RegExpMatch> matchs = tabReg.allMatches(sp);
+          Iterable<RegExpMatch> matchs = _splitReg2.allMatches(sp);
           int tSize = matchs.length;
           maxLength += (tSize * 4);
         }
@@ -257,24 +261,21 @@ class Logger {
     int index = max ~/ 2 + 1;
     while (realLength < max && index < characters.length) {
       int remainCount = max - realLength;
+      if (remainCount <= 0) {
+        break;
+      }
       if (remainCount >= 2) {
         int oldIndex = index;
         index += (remainCount ~/ 2 + 1);
         String nodeStr = characters.getRange(oldIndex, index + 1).toString();
         realLength += _computeVirtualLength(nodeStr);
-      } else {
-        if (remainCount == 1) {
-          if (englishRegex.hasMatch(characters.elementAt(index + 1))) {
-            index += 1;
-            realLength += 1;
-            break;
-          } else {
-            break;
-          }
-        } else {
-          break;
-        }
+        continue;
       }
+      if (englishRegex.hasMatch(characters.elementAt(index + 1))) {
+        index += 1;
+        realLength += 1;
+      }
+      break;
     }
 
     if (index >= 0 && index < characters.length) {
