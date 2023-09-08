@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-
 ///半径轴
 class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, C> {
   RadiusAxisImpl(super.context, super.coord, super.axis);
@@ -15,14 +14,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
       if (style == null) {
         return;
       }
-      Arc arc = Arc(
-        innerRadius: 0,
-        outRadius: split.start.distance2(attrs.center),
-        startAngle: attrs.offsetAngle,
-        sweepAngle: 360,
-        center: attrs.center,
-      );
-      style.drawPath(canvas, paint, arc.toPath(false));
+      style.drawArc(canvas, paint, split.start.distance2(attrs.center), attrs.offsetAngle, 360, attrs.center);
     });
   }
 
@@ -41,7 +33,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
         sweepAngle: 360,
         center: attrs.center,
       );
-      style.drawPath(canvas, paint, arc.toPath(true));
+      style.drawArc(canvas, paint, arc);
     });
   }
 
@@ -97,7 +89,13 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
         center: attrs.center,
       );
     }
-    axisPointer.lineStyle.drawPath(canvas, paint, arc.toPath(true), drawDash: true, needSplit: false);
+    axisPointer.lineStyle.drawPath(
+      canvas,
+      paint,
+      arc.toPath(),
+      drawDash: true,
+      needSplit: false,
+    );
   }
 
   List<num> dataToRadius(dynamic data) {

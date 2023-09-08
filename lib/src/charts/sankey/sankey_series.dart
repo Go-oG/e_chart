@@ -11,7 +11,7 @@ class SankeySeries extends RectSeries {
   NodeSort? nodeSort;
   LinkSort? linkSort;
   Direction direction;
-  bool smooth;
+  num smooth;
   Fun4<BaseItemData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
 
   Fun4<BaseItemData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
@@ -33,7 +33,7 @@ class SankeySeries extends RectSeries {
     this.linkSort,
     this.areaStyleFun,
     this.linkStyleFun,
-    this.smooth = true,
+    this.smooth = 0.5,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,

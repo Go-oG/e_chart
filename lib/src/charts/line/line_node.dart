@@ -31,7 +31,7 @@ class AreaNode {
   late final Path originPath;
 
   AreaNode(this.area) {
-    originPath = area.toPath(true);
+    originPath = area.toPath();
     rect = originPath.getBounds();
   }
 }
@@ -40,26 +40,19 @@ class LineSymbolNode extends SymbolNode<StackItemData> {
   final LineGroupData group;
 
   LineSymbolNode(
-    StackItemData data,
-    ChartSymbol symbol,
-    int dataIndex,
-    int groupIndex,
     this.group,
-  ) : super(symbol, dataIndex, groupIndex) {
-    originData = data;
-  }
-
-  @override
-  void updateStyle(Context context, covariant LineSeries series) {
-
-  }
+    super.data,
+    super.symbol,
+    super.dataIndex,
+    super.groupIndex,
+  );
 }
 
 class OptLinePath extends OptPath {
   final List<Offset> offsetList;
 
-  static OptLinePath build(List<Offset> list, bool smooth, List<num> dash, [num splitLen = 500]) {
-    var path = Line(list, smooth: smooth, dashList: dash).toPath(false);
+  static OptLinePath build(List<Offset> list, num smooth, List<num> dash, [num splitLen = 500]) {
+    var path = Line(list, smooth: smooth, dashList: dash).toPath();
     return OptLinePath(list, path, splitLen);
   }
 

@@ -41,13 +41,14 @@ class ParallelNode extends DataNode<ParallelAttr, ParallelGroup> {
   void onDrawSymbol(Canvas canvas, Paint paint) {
     for (var ele in attr.symbolList) {
       var cr = clipRect;
-      if (cr != null && !cr.contains2(ele.attr)) {
+      if (cr != null && !cr.contains2(ele.center)) {
         break;
       }
       ele.onDraw(canvas, paint);
     }
   }
 
+  @override
   void updateStyle(Context context, ParallelSeries series) {
     itemStyle = AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
@@ -64,14 +65,14 @@ class ParallelAttr {
 
   ParallelAttr(this.symbolList, this.axisCount, this.direction, this.w, this.h);
 
-  bool _smooth = false;
+  num _smooth = 0;
   bool _connectNull = false;
   List<num> _dash = [];
 
   OptPath? _optPath;
   OptPath? _dashPath;
 
-  OptPath getPath(bool smooth, bool connectNull, List<num> dash) {
+  OptPath getPath(num smooth, bool connectNull, List<num> dash) {
     if (_optPath != null && smooth == _smooth && connectNull == _connectNull && equalList(_dash, dash)) {
       if (dash.isNotEmpty) {
         return _dashPath!;
@@ -97,8 +98,8 @@ class ParallelAttr {
       if (i < 1) {
         return;
       }
-      var pre = symbolList[i - 1].attr;
-      var cur = symbolList[i].attr;
+      var pre = symbolList[i - 1].center;
+      var cur = symbolList[i].center;
       dis = max([dis, cur.distance2(pre)]);
     });
 
@@ -117,19 +118,19 @@ class ParallelAttr {
     return _optPath!;
   }
 
-  Path _buildPath(bool smooth, bool connectNull) {
+  Path _buildPath(num smooth, bool connectNull) {
     List<List<Offset>> ol = [];
     if (connectNull) {
       List<Offset> tmp = [];
       for (var symbol in symbolList) {
-        tmp.add(symbol.attr);
+        tmp.add(symbol.center);
       }
       if (tmp.length >= 2) {
         ol.add(tmp);
       }
     } else {
       List<List<SymbolNode>> sl = splitListForNull(symbolList);
-      ol = List.from(sl.map((e) => List.from(e.map((e) => e.attr))));
+      ol = List.from(sl.map((e) => List.from(e.map((e) => e.center))));
     }
 
     var path = Path();
@@ -139,8 +140,8 @@ class ParallelAttr {
       }
       var first = list.first;
       path.moveTo(first.dx, first.dy);
-      if (smooth) {
-        Line(list, smooth: true).appendToPathEnd(path);
+      if (smooth>0) {
+        Line(list, smooth: smooth).appendToPathEnd(path);
       } else {
         for (int i = 1; i < list.length; i++) {
           path.lineTo(list[i].dx, list[i].dy);

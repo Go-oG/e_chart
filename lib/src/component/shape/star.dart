@@ -1,8 +1,7 @@
 import 'dart:math';
+import 'dart:ui';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
-import '../../ext/offset_ext.dart';
-import '../../model/constans.dart';
-import 'chart_shape.dart';
 
 ///N角星形图案
 class Star implements Shape {
@@ -38,12 +37,11 @@ class Star implements Shape {
   Path? _path;
 
   @override
-  Path toPath(bool close) {
+  Path toPath() {
     if (_path != null) {
       return _path!;
     }
-    _path = inside ? _buildInsidePath() : _buildOutPath();
-    return _path!;
+    return _path = inside ? _buildInsidePath() : _buildOutPath();
   }
 
   Path _buildInsidePath() {
@@ -91,6 +89,18 @@ class Star implements Shape {
 
   @override
   bool contains(Offset offset) {
-    return toPath(true).contains(offset);
+    return toPath().contains(offset);
+  }
+
+  @override
+  bool get isClosed => true;
+
+  static Star lerp(Star s, Star e, double t) {
+    var center = (s.center == e.center) ? e.center : Offset.lerp(s.center, e.center, t)!;
+    var count = lerpDouble(s.count, e.count, t)!;
+    num ir = lerpDouble(s.ir, e.ir, t)!;
+    num or = lerpDouble(s.or, e.or, t)!;
+    num angleOffset = lerpDouble(s.angleOffset, e.angleOffset, t)!;
+    return Star(center, count, ir, or, angleOffset: angleOffset, inside: e.inside);
   }
 }

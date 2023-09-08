@@ -9,7 +9,7 @@ class RadarTheme {
   num lineWidth = 2;
   List<num> dashList = [];
   bool showSymbol = true;
-  ChartSymbol symbol = CircleSymbol(outerRadius: 4);
+  ChartSymbol symbol = EmptySymbol();
   bool fill = false;
 
   ///用于坐标轴相关的

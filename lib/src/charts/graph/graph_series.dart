@@ -68,7 +68,6 @@ class GraphSeries extends RectSeries {
     if (fun != null) {
       return fun.call(node);
     }
-    return CircleSymbol(outerRadius: node.r, outerColor: context.option.theme.getColor(node.index))
-        .convert(node.status);
+    return CircleSymbol(radius: node.r).convert(node.status);
   }
 }

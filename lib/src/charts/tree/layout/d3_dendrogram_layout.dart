@@ -22,7 +22,7 @@ class D3DendrogramLayout extends TreeLayout {
     this.direction = Direction2.ttb,
     this.diff = false,
     super.lineType = LineType.line,
-    super.smooth = true,
+    super.smooth = 0.5,
     super.gapFun,
     super.levelGapFun,
     super.sizeFun,
@@ -46,7 +46,7 @@ class D3DendrogramLayout extends TreeLayout {
   Path? getPath(TreeLayoutNode parent, TreeLayoutNode child, [List<double>? dash]) {
     Line line = Line([parent.center, child.center]);
     line = Line(line.stepBefore(), dashList: dash, smooth:smooth);
-    return line.toPath(false);
+    return line.toPath();
   }
 
   void _innerLayout(TreeLayoutNode root, bool diff, num dx, num dy) {

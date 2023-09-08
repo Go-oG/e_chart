@@ -153,7 +153,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
     return LineNode(groupIndex, styleIndex, group, ol, borderList, [], nodeMap);
@@ -181,7 +181,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
 
@@ -201,18 +201,18 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
 
     each(olList, (list, p1) {
       LineStyle style = buildLineStyle(null, group, group.styleIndex, {});
-      bool smooth = stepType != null ? false : style.smooth;
+      num smooth = stepType != null ? 0 : style.smooth;
       if (stepType == null) {
         borderList.add(OptLinePath.build(list, smooth, style.dash));
       } else {
-        Line line = _buildLine(list, stepType, false, []);
+        Line line = _buildLine(list, stepType, 0, []);
         borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
       }
     });
     return borderList;
   }
 
-  Line _buildLine(List<Offset> offsetList, StepType? type, bool smooth, List<num> dash) {
+  Line _buildLine(List<Offset> offsetList, StepType? type, num smooth, List<num> dash) {
     Line line = Line(offsetList, smooth: smooth, dashList: dash);
     if (type != null) {
       if (type == StepType.step) {

@@ -68,9 +68,9 @@ class RadarCoordImpl extends RadarCoord {
       double r = rInterval * (i + 1);
       Path path;
       if (props.shape == RadarShape.circle) {
-        path = Circle(r: r, center: center).toPath(false);
+        path = Circle(r: r, center: center).toPath();
       } else {
-        path = PositiveShape(r: r, count: axisCount, center: center, angleOffset: props.offsetAngle).toPath(false);
+        path = PositiveShape(r: r, count: axisCount, center: center, angleOffset: props.offsetAngle).toPath();
       }
       if (lastPath == null) {
         lastPath = path;

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 class Corner {
   static const zero = Corner(0, 0, 0, 0);
   final double leftTop;
@@ -19,4 +21,13 @@ class Corner {
     this.rightTop = 0,
     this.rightBottom = 0,
   });
+
+  static Corner lerp(Corner s, Corner e, double t) {
+    return Corner(
+      lerpDouble(s.leftTop, e.leftTop, t)!,
+      lerpDouble(s.rightTop, e.rightTop, t)!,
+      lerpDouble(s.leftBottom, e.leftBottom, t)!,
+      lerpDouble(s.rightBottom, e.rightBottom, t)!,
+    );
+  }
 }

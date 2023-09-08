@@ -231,7 +231,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     int maxCount = layoutResult.splitList.length;
     each(layoutResult.splitList, (split, i) {
       AreaStyle? style = axis.getSplitAreaStyle(i, maxCount, theme);
-      style?.drawPath(canvas, paint, split.toPath(true));
+      style?.drawArc(canvas, paint, split);
     });
   }
 

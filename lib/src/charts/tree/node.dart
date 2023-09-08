@@ -23,7 +23,7 @@ class TreeLayoutNode extends TreeNode<TreeData, TreeAttr, TreeLayoutNode> {
 
   @override
   bool contains(Offset offset) {
-    return attr.symbol.internal2(center, size, offset);
+    return attr.symbol.contains(center, offset);
   }
 
   @override

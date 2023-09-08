@@ -1,16 +1,12 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/model/index.dart';
 import 'package:flutter/material.dart';
-
-import '../style/label.dart';
-import 'chart_symbol.dart';
 
 class IconSymbol extends ChartSymbol {
   final Icon icon;
   late final LabelStyle style;
 
-  IconSymbol(this.icon, {super.center}) {
+  IconSymbol(this.icon) {
     IconData data = icon.icon!;
     double? iconSize = icon.size ?? 8;
     double? iconFill = icon.fill;
@@ -42,21 +38,24 @@ class IconSymbol extends ChartSymbol {
   }
 
   @override
-  bool internal(Offset point) {
+  bool contains(Offset center, Offset point) {
     Size s = size;
     return Rect.fromCenter(center: center, width: s.width, height: s.height).contains(point);
   }
 
   @override
-  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
-    center = offset;
-    TextDrawInfo config = TextDrawInfo(center, align: Alignment.center);
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    TextDrawInfo config = TextDrawInfo(offset, align: Alignment.center);
     style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
   }
 
   @override
-  bool internal2(Offset center, Size size, Offset point) {
-    size = this.size;
-    return Rect.fromCenter(center: center, width: size.width, height: size.height).contains2(point);
+  ChartSymbol lerp(covariant ChartSymbol end, double t) {
+    throw ChartError("not Support");
+  }
+
+  @override
+  ChartSymbol copy(SymbolAttr? attr) {
+    return this;
   }
 }

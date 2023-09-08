@@ -3,8 +3,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import 'chart_shape.dart';
-
 class Circle implements Shape {
   final num r;
   final Offset center;
@@ -18,21 +16,21 @@ class Circle implements Shape {
   Path? _path;
 
   @override
-  Path toPath(bool close) {
+  Path toPath() {
     if (_path != null) {
       return _path!;
     }
     Path path = Path();
-    path.moveTo(center.dx+r, center.dy);
-    path.arcTo(Rect.fromCircle(center: center, radius: r.toDouble()), 0, 1.9999*pi, true);
+    path.moveTo(center.dx + r, center.dy);
+    path.arcTo(Rect.fromCircle(center: center, radius: r.toDouble()), 0, 1.9999 * pi, true);
     path.close();
     _path = path;
     return path;
   }
 
   @override
-  bool contains(Offset offset) {
-    return offset.inCircle(r,center: center);
-  }
+  bool contains(Offset offset) => offset.inCircle(r, center: center);
 
+  @override
+  bool get isClosed => true;
 }

@@ -34,7 +34,7 @@ class AreaStyle {
     paint.style = PaintingStyle.fill;
   }
 
-  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points, [bool smooth = false]) {
+  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points) {
     if (notDraw) {
       return;
     }
@@ -46,16 +46,16 @@ class AreaStyle {
       canvas.drawPoints(PointMode.points, points, paint);
       return;
     }
-    Line line = Line(points, smooth: smooth);
-    drawPath(canvas, paint, line.toPath(true));
+    Polygon polygon = Polygon(points, true);
+    drawPath(canvas, paint, polygon.toPath());
   }
 
-  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [bool smooth = false]) {
+  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [num smooth = 0]) {
     if (notDraw) {
       return;
     }
     Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth);
-    drawPath(canvas, paint, area.toPath(true));
+    drawPath(canvas, paint, area.toPath());
   }
 
   void drawRect(Canvas canvas, Paint paint, Rect rect, [Corner? corner]) {
@@ -104,7 +104,7 @@ class AreaStyle {
 
   void drawArc(Canvas canvas, Paint paint, Arc arc) {
     if (!isWeb) {
-      drawPath(canvas, paint, arc.toPath(true));
+      drawPath(canvas, paint, arc.toPath());
       return;
     }
 
@@ -117,7 +117,7 @@ class AreaStyle {
       LineStyle style = LineStyle(color: color, shader: shader, shadow: shadow, width: r);
       style.drawCircle(canvas, paint, arc.center, arc.outRadius - r / 2);
     } else {
-      drawPath(canvas, paint, arc.toPath(true));
+      drawPath(canvas, paint, arc.toPath());
     }
   }
 
@@ -157,5 +157,14 @@ class AreaStyle {
       return shader!.pickColor();
     }
     return color;
+  }
+
+  static AreaStyle? lerp(AreaStyle? start, AreaStyle? end, double t) {
+    var c = Color.lerp(start?.color, end?.color, t);
+    var ss = start?.shader;
+    var es = end?.shader;
+    var shader = ChartShader.lerpShader(ss, es, t);
+    var shadow = BoxShadow.lerpList(start?.shadow, end?.shadow, t) ?? [];
+    return AreaStyle(color: c, shader: shader, shadow: shadow);
   }
 }

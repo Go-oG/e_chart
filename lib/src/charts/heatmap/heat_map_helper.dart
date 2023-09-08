@@ -11,6 +11,11 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
     List<HeatMapNode> oldList = nodeList;
     List<HeatMapNode> newList = convertData(series.data);
     layoutNode(newList);
+
+    each(newList, (node, p1) {
+      node.updateStyle(context, series);
+    });
+
     var animation = series.animation;
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       nodeList = newList;
@@ -33,8 +38,7 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
   List<HeatMapNode> convertData(List<HeatMapData> dataList) {
     List<HeatMapNode> rl = [];
     each(dataList, (e, i) {
-      var node = HeatMapNode(e, i, AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
-      node.updateStyle(context, series);
+      var node = HeatMapNode(e, i);
       rl.add(node);
     });
 

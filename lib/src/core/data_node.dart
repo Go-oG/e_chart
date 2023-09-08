@@ -84,3 +84,22 @@ class NodeAttr {
     this.labelStyle,
   );
 }
+
+class SymbolNode<T> with ViewStateProvider, ExtProps {
+  T data;
+  ChartSymbol symbol = EmptySymbol();
+  int dataIndex;
+  int groupIndex;
+
+  Offset center = Offset.zero;
+
+  SymbolNode(this.data, this.symbol, this.dataIndex , this.groupIndex);
+
+  void onDraw(Canvas canvas, Paint paint) {
+    symbol.draw(canvas, paint, center);
+  }
+
+  bool contains(Offset offset) {
+    return symbol.contains(center, offset);
+  }
+}

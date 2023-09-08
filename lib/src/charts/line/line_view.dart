@@ -114,7 +114,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
         continue;
       }
       for (var symbol in lineNode.symbolMap.values) {
-        if (path.contains(symbol.attr)) {
+        if (path.contains(symbol.center)) {
           symbolSet.add(symbol);
         }
       }
@@ -150,7 +150,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
 
   void drawSymbol(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
     lineNode.symbolMap.forEach((key, node) {
-      if (!clipRect.contains2(node.attr)) {
+      if (!clipRect.contains2(node.center)) {
         return;
       }
       node.onDraw(canvas, mPaint);

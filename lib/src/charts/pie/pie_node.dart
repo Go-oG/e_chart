@@ -68,9 +68,9 @@ class PieNode extends DataNode<Arc, ItemData> {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    Path path = attr.toPath(true);
-    itemStyle.drawPath(canvas, paint, path);
-    borderStyle.drawPath(canvas, paint, path);
+    itemStyle.drawArc(canvas, paint, attr);
+    borderStyle.drawPath(canvas, paint, attr.toPath());
+
     var ls = labelStyle;
     var config = textDrawConfig;
     var label = data.label;
@@ -93,6 +93,4 @@ class PieNode extends DataNode<Arc, ItemData> {
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
     labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
   }
-
-
 }

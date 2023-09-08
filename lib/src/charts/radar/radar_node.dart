@@ -101,7 +101,7 @@ class RadarNode extends DataNode<Offset, ItemData> {
     if (sb == null) {
       return false;
     }
-    return sb.internal2(attr, sb.size, offset);
+    return sb.contains(attr,offset);
   }
 
   @override

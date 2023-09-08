@@ -1,29 +1,25 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 
 ///棱形
 class DiamondSymbol extends ChartSymbol {
-  num shortSide;
-  num longSide;
-  num rotate;
-  AreaStyle? style;
-  LineStyle? border;
+  final num shortSide;
+  final num longSide;
+  final num rotate;
   late Path path;
 
   DiamondSymbol({
-    this.style,
-    this.border,
     this.shortSide = 8,
     this.longSide = 8,
     this.rotate = 0,
+    super.borderStyle,
+    super.itemStyle,
   }) {
-    if (style == null || border == null) {
-      throw ChartError("Style 和border 不能同时为空");
-    }
     path = Path();
     path.moveTo(0, -shortSide / 2);
     path.lineTo(longSide / 2, 0);
-    path.lineTo(0, center.dy + shortSide / 2);
+    path.lineTo(0, shortSide / 2);
     path.lineTo(-longSide / 2, 0);
     path.close();
   }
@@ -31,34 +27,20 @@ class DiamondSymbol extends ChartSymbol {
   @override
   Size get size => Size(longSide.toDouble(), shortSide.toDouble());
 
-
   @override
-  bool internal2(Offset center, Size size, Offset point) {
-    double minSize = size.shortestSide / 2;
-    double maxSize = size.longestSide/ 2;
-    List<Offset> ol = [
-      Offset(0, -minSize),
-      Offset(maxSize, 0),
-      Offset(0,minSize),
-      Offset(-maxSize,0),
-      Offset(0, -minSize),
-    ];
-    return point.translate(-center.dx, -center.dy).inPolygon(ol);
+  bool contains(Offset center, Offset point) {
+    return path.contains(point.translate2(center.invert));
   }
 
   @override
-  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
-    center = offset;
-    if (size != this.size) {
-      shortSide = size.shortestSide;
-      longSide = size.longestSide;
-      path = buildPath(shortSide, longSide);
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    if (!checkStyle()) {
+      return;
     }
-    paint.reset();
     canvas.save();
-    canvas.translate(center.dx, center.dy);
-    style?.drawPath(canvas, paint, path);
-    border?.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
+    canvas.translate(offset.dx, offset.dy);
+    itemStyle?.drawPath(canvas, paint, path);
+    borderStyle?.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
     canvas.restore();
   }
 
@@ -72,5 +54,38 @@ class DiamondSymbol extends ChartSymbol {
     path.lineTo(-maxSize, 0);
     path.close();
     return path;
+  }
+
+  @override
+  DiamondSymbol lerp(covariant DiamondSymbol end, double t) {
+    var ss = lerpDouble(shortSide, end.shortSide, t)!;
+    var ls = lerpDouble(longSide, end.longSide, t)!;
+    var rotate = lerpDouble(this.rotate, end.rotate, t)!;
+    return DiamondSymbol(
+      shortSide: ss,
+      longSide: ls,
+      rotate: rotate,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+    );
+  }
+
+  @override
+  ChartSymbol copy(SymbolAttr? attr) {
+    if (attr == null || attr.isEmpty) {
+      return this;
+    }
+    var size = attr.size;
+    var ss = size?.shortestSide ?? shortSide;
+    var ls = size?.longestSide ?? longSide;
+    var r = attr.rotate ?? rotate;
+
+    return DiamondSymbol(
+      rotate: r,
+      shortSide: ss,
+      longSide: ls,
+      itemStyle: itemStyle,
+      borderStyle: borderStyle,
+    );
   }
 }

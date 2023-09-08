@@ -2,9 +2,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import '../../ext/offset_ext.dart';
-import 'chart_shape.dart';
-
 ///正多边形
 class PositiveShape implements Shape {
   final Offset center;
@@ -22,14 +19,15 @@ class PositiveShape implements Shape {
   Path? _path;
 
   @override
-  Path toPath(bool close) {
+  Path toPath() {
     if (_path != null) {
       return _path!;
     }
-    if (count <= 0) {
-      return Path();
-    }
     Path path = Path();
+    _path = path;
+    if (count <= 0 || r <= 0) {
+      return path;
+    }
     double singleAngle = 360 / count;
     for (int j = 0; j < count; j++) {
       num angle = angleOffset + j * singleAngle;
@@ -41,8 +39,6 @@ class PositiveShape implements Shape {
       }
     }
     path.close();
-
-    _path = path;
     return path;
   }
 
@@ -57,7 +53,7 @@ class PositiveShape implements Shape {
 
   @override
   bool contains(Offset offset) {
-    return toPath(true).contains(offset);
+    return toPath().contains(offset);
   }
 
   static PositiveShape lerp(PositiveShape s, PositiveShape e, double t) {
@@ -67,4 +63,7 @@ class PositiveShape implements Shape {
     var count = lerpInt(s.count, e.count, t);
     return PositiveShape(count: count, center: c, r: r, angleOffset: angle);
   }
+
+  @override
+  bool get isClosed => true;
 }

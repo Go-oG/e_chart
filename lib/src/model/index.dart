@@ -38,6 +38,5 @@ export 'string_number.dart';
 export 'text_info.dart';
 export 'tree_data.dart';
 
-export 'node/symbol_node.dart';
 export 'node/tree_node.dart';
 

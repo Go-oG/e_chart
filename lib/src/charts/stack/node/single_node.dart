@@ -73,8 +73,8 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
       borderStyle.drawRect(canvas, paint, rect, attr.corner);
       return;
     }
-    itemStyle.drawPath(canvas, paint, arc.toPath(true));
-    borderStyle.drawPath(canvas, paint, arc.toPath(true), drawDash: true, needSplit: false);
+    itemStyle.drawPath(canvas, paint, arc.toPath());
+    borderStyle.drawPath(canvas, paint, arc.toPath(), drawDash: true, needSplit: false);
   }
 
   @override

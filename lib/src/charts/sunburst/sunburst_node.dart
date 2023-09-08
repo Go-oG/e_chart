@@ -19,13 +19,13 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
 
   @override
   bool contains(Offset offset) {
-    return attr.arc.toPath(true).contains(offset);
+    return attr.arc.contains(offset);
   }
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
     itemStyle.drawArc(canvas, paint, attr.arc);
-    borderStyle.drawPath(canvas, paint, attr.arc.toPath(true));
+    borderStyle.drawPath(canvas, paint, attr.arc.toPath());
     labelStyle.draw(canvas, paint, "D$deep:${data.value}".toText(), TextDrawInfo(attr.arc.centroid()));
     // _drawText(canvas, paint);
   }
@@ -73,8 +73,7 @@ class SunburstVirtualNode extends SunburstNode {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    var path = attr.arc.toPath(true);
-    bs.drawPath(canvas, paint, path);
+    bs.drawArc(canvas, paint, attr.arc);
   }
 }
 
@@ -148,14 +147,7 @@ class SunburstAttr {
     textRotateAngle = rotateAngle;
   }
 
-  SunburstAttr copy() {
-    return SunburstAttr(
-      arc.copy(),
-      textPosition: textPosition,
-      textRotateAngle: textRotateAngle,
-      alpha: alpha,
-    );
-  }
+
 
   @override
   String toString() {

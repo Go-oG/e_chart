@@ -10,7 +10,7 @@ class IndentedLayout extends TreeLayout {
   IndentedLayout({
     this.direction = Direction2.ttb,
     super.lineType = LineType.stepBefore,
-    super.smooth = false,
+    super.smooth = 0,
     super.gapFun,
     super.levelGapFun,
     super.sizeFun,
@@ -37,14 +37,14 @@ class IndentedLayout extends TreeLayout {
   ///缩进树只支持stepAfter和StepBefore
   @override
   Path? getPath(TreeLayoutNode parent, TreeLayoutNode child, [List<double>? dash]) {
-    smooth = false;
+    smooth = 0;
     Line line = Line([parent.center, child.center]);
     if (lineType == LineType.stepAfter) {
       line = Line(line.stepAfter(), dashList: dash);
     } else {
       line = Line(line.stepBefore(), dashList: dash);
     }
-    return line.toPath(false);
+    return line.toPath();
   }
 
   void _layoutCenter(TreeLayoutNode root, num width, num height) {

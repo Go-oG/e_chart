@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vector_math/vector_math.dart';
@@ -21,7 +20,7 @@ abstract class ChartShader {
 
   ui.Shader toShader(Rect rect);
 
-  ChartShader lerp(covariant ChartShader begin, covariant ChartShader end, double animatorPercent);
+  ChartShader lerp(covariant ChartShader end, double t);
 
   ChartShader convert(Set<ViewState>? states);
 
@@ -50,7 +49,7 @@ abstract class ChartShader {
     return colorList;
   }
 
-  static List<double>? lerpDoubles(List<double>? begin, List<double>? end, double t) {
+  static List<double>? lerpDoubles(List<num>? begin, List<num>? end, double t) {
     if (begin == null && end == null) {
       return null;
     }
@@ -62,7 +61,7 @@ abstract class ChartShader {
         }
       } else {
         each(end, (value, i) {
-          double? sd;
+          num? sd;
           if (i < begin.length) {
             sd = begin[i];
           }
@@ -116,5 +115,68 @@ abstract class ChartShader {
     final Quaternion lerpRotation = (beginRotation.scaled(1.0 - t) + endRotation.scaled(t)).normalized();
     final Vector3 lerpScale = beginScale * (1.0 - t) + endScale * t;
     return Float64List.fromList(vm.Matrix4.compose(lerpTranslation, lerpRotation, lerpScale).storage);
+  }
+
+  static ChartShader? lerpShader(ChartShader? start, ChartShader? end, double t) {
+    if (start == null && end == null) {
+      return null;
+    }
+    if (start != null && end != null) {
+      if (start.runtimeType == end.runtimeType) {
+        return start.lerp(end, t);
+      }
+      if (t < 0.5) {
+        return _lerpShader2(start, t, true);
+      } else {
+        return _lerpShader2(end, t, false);
+      }
+    }
+
+    if (end != null) {
+      return _lerpShader2(end, t, false);
+    }
+    return _lerpShader2(start!, t, true);
+  }
+
+  static ChartShader _lerpShader2(ChartShader shader, double t, bool from) {
+    var cc = const ui.Color(0x00000000);
+    List<Color> cl = List.filled(shader.colors.length, cc);
+    List<Color> colorList;
+    if (from) {
+      colorList = lerpColors(shader.colors, cl, t);
+    } else {
+      colorList = lerpColors(cl, shader.colors, t);
+    }
+    if (shader is LineShader) {
+      return LineShader(
+        colorList,
+        from: shader.from,
+        to: shader.to,
+        colorStops: shader.colorStops,
+        tileMode: shader.tileMode,
+        matrix4: shader.matrix4,
+      );
+    }
+    if (shader is SweepShader) {
+      return SweepShader(
+        colorList,
+        startAngle: shader.startAngle,
+        endAngle: shader.endAngle,
+        colorStops: shader.colorStops,
+        tileMode: shader.tileMode,
+        matrix4: shader.matrix4,
+      );
+    }
+    if (shader is RadialShader) {
+      return RadialShader(
+        colorList,
+        focal: shader.focal,
+        focalRadius: shader.focalRadius,
+        colorStops: shader.colorStops,
+        tileMode: shader.tileMode,
+        matrix4: shader.matrix4,
+      );
+    }
+    throw ChartError("Not Support");
   }
 }

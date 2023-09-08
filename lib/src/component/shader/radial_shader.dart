@@ -29,18 +29,18 @@ class RadialShader extends ChartShader {
   }
 
   @override
-  ChartShader lerp(covariant RadialShader begin, covariant RadialShader end, double animatorPercent) {
-    List<Color> colorList = ChartShader.lerpColors(begin.colors, end.colors, animatorPercent);
-    List<double>? stepList = ChartShader.lerpDoubles(begin.colorStops, end.colorStops, animatorPercent);
-    Float64List? ma = ChartShader.lerpMatrix4(begin.matrix4, end.matrix4, animatorPercent);
+  ChartShader lerp( covariant RadialShader end, double t) {
+    List<Color> colorList = ChartShader.lerpColors(colors, end.colors, t);
+    List<double>? stepList = ChartShader.lerpDoubles(colorStops, end.colorStops, t);
+    Float64List? ma = ChartShader.lerpMatrix4(matrix4, end.matrix4, t);
 
     return RadialShader(
       colorList,
       colorStops: stepList,
-      tileMode: begin.tileMode == TileMode.clamp ? end.tileMode : begin.tileMode,
+      tileMode: tileMode == TileMode.clamp ? end.tileMode : tileMode,
       matrix4: ma,
-      focal: Offset.lerp(begin.focal, end.focal, animatorPercent),
-      focalRadius: lerpDouble(begin.focalRadius, end.focalRadius, animatorPercent)!,
+      focal: Offset.lerp(focal, end.focal, t),
+      focalRadius: lerpDouble(focalRadius, end.focalRadius, t)!,
     );
   }
 

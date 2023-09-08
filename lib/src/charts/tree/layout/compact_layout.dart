@@ -4,8 +4,6 @@ import 'dart:core';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../node.dart';
-import '../tree_helper.dart';
 
 ///紧凑树(不支持smooth)
 class CompactLayout extends TreeLayout {
@@ -16,7 +14,7 @@ class CompactLayout extends TreeLayout {
     this.levelAlign = Align2.start,
     this.direction = Direction2.ttb,
     super.lineType = LineType.line,
-    super.smooth = false,
+    super.smooth = 0,
     super.center = const [SNumber.percent(50), SNumber.percent(0)],
     super.centerIsRoot,
     super.gapFun,

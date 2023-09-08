@@ -11,7 +11,7 @@ class Prism implements Shape {
   Path? _path;
 
   @override
-  Path toPath(bool close) {
+  Path toPath() {
     if (_path != null) {
       return _path!;
     }
@@ -31,6 +31,9 @@ class Prism implements Shape {
 
   @override
   bool contains(Offset offset) {
-  return toPath(true).contains(offset);
+  return toPath().contains(offset);
   }
+
+  @override
+  bool get isClosed => true;
 }

@@ -1,12 +1,10 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 
 ///类似地图当前位置的形状
 ///TODO 后面优化(当前不可用)
 class PinSymbol extends ChartSymbol {
-  final LineStyle? border;
-  final AreaStyle? style;
   final double r;
   final num rotate;
   late final Path path;
@@ -14,30 +12,25 @@ class PinSymbol extends ChartSymbol {
   PinSymbol({
     this.r = 8,
     this.rotate = 0,
-    this.style = const AreaStyle(color: Colors.blue),
-    this.border,
+    super.borderStyle,
+    super.itemStyle,
   }) {
-    if (style == null && border == null) {
-      throw ChartError("style 和border不能同时为空");
-    }
+    path = buildPath(r);
   }
 
   @override
   Size get size => Size(r * 2, r * 2.5);
 
   @override
-  bool internal(Offset point) {
-    return path.contains(point.translate(center.dx, center.dy));
-  }
-
-  @override
-  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
-    center = offset;
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    if (!checkStyle()) {
+      return;
+    }
     canvas.save();
-    canvas.translate(center.dx, center.dy);
+    canvas.translate(offset.dx, offset.dy);
     canvas.rotate(rotate * pi / 180);
-    style?.drawPath(canvas, paint, path);
-    border?.drawPath(canvas, paint, path, needSplit: false, drawDash: true);
+    itemStyle?.drawPath(canvas, paint, path);
+    borderStyle?.drawPath(canvas, paint, path, needSplit: false, drawDash: true);
     canvas.restore();
   }
 
@@ -47,7 +40,6 @@ class PinSymbol extends ChartSymbol {
     p1.arcToPoint(Offset(r, 0), radius: Radius.circular(r), largeArc: true);
     p1.arcToPoint(Offset(-r, 0), radius: Radius.circular(r), largeArc: true);
     p1.close();
-
     Path p2 = Path();
     p2.moveTo(r, 0);
     Offset bottom = Offset(0, r * 1.2);
@@ -55,11 +47,51 @@ class PinSymbol extends ChartSymbol {
     p2.quadraticBezierTo(-r * 0.15, r * 0.77, -r, 0);
     p2.close();
     p1.addPath(p2, Offset.zero);
-    return p1.shift(center);
+    return p1;
   }
 
   @override
-  bool internal2(Offset center, Size size, Offset point) {
-    return false;
+  bool contains(Offset center, Offset point) {
+    return path.contains(point.translate(center.dx, center.dy));
+  }
+
+  @override
+  ChartSymbol lerp(covariant PinSymbol end, double t) {
+    var r1 = lerpDouble(r, end.r, t)!;
+    var rotate = lerpDouble(this.rotate, end.rotate, t)!;
+    return PinSymbol(
+      r: r1,
+      rotate: rotate,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+    );
+  }
+
+  @override
+  ChartSymbol copy(SymbolAttr? attr) {
+    if (attr == null || attr.isEmpty) {
+      return this;
+    }
+    var size = attr.size;
+    var r1 = r;
+    if (size != null) {
+      r1 = size.shortestSide;
+      if (r1 <= 0) {
+        r1 = size.longestSide;
+      }
+      if (r1 <= 0) {
+        r1 = r;
+      } else {
+        r1 *= 0.5;
+      }
+    }
+    var rotate = attr.rotate ?? this.rotate;
+
+    return PinSymbol(
+      rotate: rotate,
+      r: r1,
+      itemStyle: itemStyle,
+      borderStyle: borderStyle,
+    );
   }
 }

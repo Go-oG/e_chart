@@ -30,17 +30,17 @@ class LineShader extends ChartShader {
   }
 
   @override
-  ChartShader lerp(covariant LineShader begin, covariant LineShader end, double animatorPercent) {
-    List<Color> colorList = ChartShader.lerpColors(begin.colors, end.colors, animatorPercent);
-    List<double>? stepList = ChartShader.lerpDoubles(begin.colorStops, end.colorStops, animatorPercent);
-    Float64List? ma = ChartShader.lerpMatrix4(begin.matrix4, end.matrix4, animatorPercent);
+  ChartShader lerp(covariant LineShader end, double t) {
+    List<Color> colorList = ChartShader.lerpColors(colors, end.colors, t);
+    List<double>? stepList = ChartShader.lerpDoubles(colorStops, end.colorStops, t);
+    Float64List? ma = ChartShader.lerpMatrix4(matrix4, end.matrix4, t);
 
     return LineShader(
-      from: Offset.lerp(begin.from, end.from, animatorPercent)!,
-      to: Offset.lerp(begin.to, end.to, animatorPercent)!,
+      from: Offset.lerp(from, end.from, t)!,
+      to: Offset.lerp(to, end.to, t)!,
       colorList,
       colorStops: stepList,
-      tileMode: begin.tileMode == TileMode.clamp ? end.tileMode : begin.tileMode,
+      tileMode: tileMode == TileMode.clamp ? end.tileMode : tileMode,
       matrix4: ma,
     );
   }

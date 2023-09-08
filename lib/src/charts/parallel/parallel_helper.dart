@@ -35,14 +35,14 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
         if (type == LayoutType.update) {
           List<SymbolNode> ol = [];
           eachNull(node.attr.symbolList, (symbol, p1) {
-            var offset = symbol?.attr;
+            var offset = symbol?.center;
             if (offset == null) {
-              ol.add(SymbolNode(null, p1, node.groupIndex));
+              ol.add(SymbolNode(symbol!.data, symbol.symbol, p1, node.groupIndex));
             } else {
               double dx = direction == Direction.vertical ? 0 : offset.dx;
               double dy = direction == Direction.vertical ? offset.dy : height;
-              var node = SymbolNode(symbol!.data, symbol.dataIndex, symbol.groupIndex);
-              node.attr = Offset(dx, dy);
+              var node = SymbolNode(symbol!.data, symbol.symbol, symbol.dataIndex, symbol.groupIndex);
+              node.center = Offset(dx, dy);
               ol.add(node);
             }
           });
@@ -65,11 +65,11 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
         animationProcess = 1;
         List<SymbolNode> pl = [];
         for (int i = 0; i < s.symbolList.length; i++) {
-          var so = s.symbolList[i].attr;
-          var eo = e.symbolList[i].attr;
+          var so = s.symbolList[i].center;
+          var eo = e.symbolList[i].center;
           var ed = e.symbolList[i];
           var ro = Offset.lerp(so, eo, t)!;
-          pl.add(SymbolNode(ed.data, ed.dataIndex, ed.groupIndex)..attr = ro);
+          pl.add(SymbolNode(ed.data, ed.symbol, ed.dataIndex, ed.groupIndex)..center = ro);
         }
         return ParallelAttr(pl, axisCount, direction, width, height);
       },
@@ -87,10 +87,10 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
       eachNull(node.attr.symbolList, (symbol, i) {
         var data = node.data.data[i];
         if (data == null) {
-          node.attr.symbolList[i].symbol = null;
+          node.attr.symbolList[i].symbol = EmptySymbol.empty;
         } else {
           Offset c = coord.dataToPosition(i, data).center;
-          symbol?.attr = c;
+          symbol?.center = c;
         }
       });
     }
@@ -182,8 +182,8 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
       );
       nodeList.add(node);
       each(p0.data, (data, i) {
-        var node = SymbolNode(getSymbol(data, p0, i, p1), i, p1);
-        node.originData = data;
+        var node = SymbolNode(data, getSymbol(data, p0, i, p1) ?? EmptySymbol.empty, i, p1);
+        node.data = data;
         snl.add(node);
       });
     });

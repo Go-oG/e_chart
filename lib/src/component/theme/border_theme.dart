@@ -53,11 +53,11 @@ class BorderTheme {
     _style = null;
   }
 
-  bool _smooth = false;
+  num _smooth = 0;
 
-  bool get smooth => _smooth;
+  num get smooth => _smooth;
 
-  set smooth(bool b) {
+  set smooth(num b) {
     if (b == _smooth) {
       return;
     }
@@ -85,7 +85,7 @@ class BorderTheme {
     List<num> dash = const [],
     List<BoxShadow> shadow = const [],
     ChartShader? shader,
-    bool smooth = false,
+    num smooth = 0,
     Align2 align = Align2.center,
   }) {
     _color = color;

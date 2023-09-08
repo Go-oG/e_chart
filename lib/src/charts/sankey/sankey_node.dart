@@ -76,7 +76,7 @@ class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
     LabelStyle labelStyle,
   ) : super(Pair(source, target), dataIndex, groupIndex, Area([], []), itemStyle, borderStyle, labelStyle);
 
-  void computeAreaPath(bool smooth) {
+  void computeAreaPath(num smooth) {
     Offset sourceTop = Offset(source.right, sourceY);
     Offset sourceBottom = sourceTop.translate(0, width);
 
@@ -88,12 +88,12 @@ class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
 
   @override
   bool contains(Offset offset) {
-    return attr.toPath(true).contains(offset);
+    return attr.toPath().contains(offset);
   }
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    Path path = attr.toPath(true);
+    Path path = attr.toPath();
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
   }

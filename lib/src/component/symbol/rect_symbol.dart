@@ -2,58 +2,63 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class RectSymbol extends ChartSymbol {
-  LineStyle? border;
-  AreaStyle? style;
-  Size rectSize;
-  Corner corner;
-
-  late Rect rect;
+  final Size rectSize;
+  final Corner corner;
+  late final Rect rect;
 
   RectSymbol({
-    this.border,
-    this.style,
     this.rectSize = const Size(16, 16),
     this.corner = Corner.zero,
+    super.borderStyle,
+    super.itemStyle,
   }) {
-    rect = Rect.fromCenter(
-      center: Offset.zero,
-      width: rectSize.width,
-      height: rectSize.height,
-    );
+    rect = Rect.fromCenter(center: Offset.zero, width: rectSize.width, height: rectSize.height);
   }
 
   @override
   Size get size => rectSize;
 
   @override
-  bool internal(Offset point) {
+  bool contains(Offset center, Offset point) {
     return rect.contains2(point.translate(-center.dx, -center.dy));
   }
 
   @override
-  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
-    center = offset;
-    if (size != rectSize) {
-      rectSize = size;
-      rect = Rect.fromCenter(
-        center: Offset.zero,
-        width: size.width,
-        height: size.height,
-      );
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    if (!checkStyle()) {
+      return;
     }
     canvas.save();
-    canvas.translate(center.dx, center.dy);
-    style?.drawRect(canvas, paint, rect, corner);
-    border?.drawRect(canvas, paint, rect, corner);
+    canvas.translate(offset.dx, offset.dy);
+    itemStyle?.drawRect(canvas, paint, rect, corner);
+    borderStyle?.drawRect(canvas, paint, rect, corner);
     canvas.restore();
   }
 
   @override
-  bool internal2(Offset center, Size size, Offset point) {
-    return Rect.fromCenter(
-      center: center,
-      width: size.width,
-      height: size.height,
-    ).contains2(point);
+  RectSymbol lerp(covariant RectSymbol end, double t) {
+    Rect rect = Rect.lerp(this.rect, end.rect, t)!;
+    return RectSymbol(
+      rectSize: rect.size,
+      corner: Corner.lerp(corner, end.corner, t),
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+    );
+  }
+
+  @override
+  ChartSymbol copy(SymbolAttr? attr) {
+    if (attr == null || attr.isEmpty) {
+      return this;
+    }
+    if (attr.size == null && attr.corner == null) {
+      return this;
+    }
+    return RectSymbol(
+      rectSize: attr.size ?? rectSize,
+      corner: attr.corner ?? corner,
+      itemStyle: itemStyle,
+      borderStyle: borderStyle,
+    );
   }
 }

@@ -1,64 +1,57 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 
 class CircleSymbol extends ChartSymbol {
-  num outerRadius;
-  num innerRadius;
-  Color innerColor;
-  Color outerColor;
-  bool fill;
-  double strokeWidth;
+  final num radius;
 
-  CircleSymbol(
-      {this.innerRadius = 0,
-      this.outerRadius = 8,
-      this.innerColor = Colors.blueAccent,
-      this.outerColor = Colors.blueAccent,
-      this.fill = true,
-      this.strokeWidth = 1});
-
-  CircleSymbol.normal({
-    this.outerRadius = 8,
-    Color color = Colors.blueAccent,
-    super.center,
-  })  : innerRadius = 0,
-        innerColor = color,
-        outerColor = color,
-        fill = true,
-        strokeWidth = 0;
+  CircleSymbol({
+    this.radius = 8,
+    super.borderStyle,
+    super.itemStyle,
+  });
 
   @override
-  Size get size => Size.square(outerRadius * 2);
+  Size get size => Size.square(radius * 2);
 
   @override
-  bool internal2(Offset center, Size size, Offset point) {
+  bool contains(Offset center, Offset point) {
     double dis = point.distance2(center);
     return dis <= (size.longestSide / 2);
   }
 
   @override
-  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
-    if (innerRadius <= 0) {
-      innerRadius = 0;
-      outerRadius = size.longestSide / 2;
-    } else {
-      double p = innerRadius / outerRadius;
-      outerRadius = size.longestSide / 2;
-      innerRadius = p * outerRadius;
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    if (!checkStyle()) {
+      return;
     }
-    center = offset;
-    num or = outerRadius;
-    num ir = innerRadius;
-    paint.reset();
-    paint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    if (!fill) {
-      paint.strokeWidth = strokeWidth;
+    itemStyle?.drawCircle(canvas, paint, offset, radius);
+    borderStyle?.drawCircle(canvas, paint, offset, radius);
+  }
+
+  @override
+  CircleSymbol lerp(covariant CircleSymbol end, double t) {
+    var or = lerpDouble(radius, end.radius, t)!;
+    return CircleSymbol(
+      radius: or,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+    );
+  }
+
+  @override
+  ChartSymbol copy(SymbolAttr? attr) {
+    if (attr == null || attr.isEmpty || attr.size == null) {
+      return this;
     }
-    paint.color = outerColor;
-    canvas.drawCircle(center, or.toDouble(), paint);
-    if (ir > 0) {
-      paint.color = innerColor;
-      canvas.drawCircle(center, ir.toDouble(), paint);
+    num size = attr.size!.shortestSide;
+    if (size <= 0) {
+      size = attr.size!.longestSide;
     }
+    if (size <= 0) {
+      return this;
+    }
+
+    return CircleSymbol(radius: size, itemStyle: itemStyle, borderStyle: borderStyle);
   }
 }

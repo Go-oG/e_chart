@@ -7,9 +7,9 @@ class LineTheme {
   List<num> dashList = [];
   bool fill = false;
   double opacity = 0.5;
-  ChartSymbol symbol = CircleSymbol(outerRadius: 4);
+  ChartSymbol symbol = EmptySymbol();
   bool showSymbol = true;
-  bool smooth = false;
+  num smooth = 0;
 
   LineStyle getLineStyle(ChartTheme theme, int index) {
     return LineStyle(color: theme.getColor(index), width: lineWidth, dash: dashList, smooth: smooth);

@@ -6,11 +6,9 @@ import 'package:flutter/material.dart';
 class Area implements Shape {
   final List<Offset> upList;
   final List<Offset> downList;
-
-  final bool upSmooth;
-  final bool downSmooth;
+  final num upSmooth;
+  final num downSmooth;
   final num ratioStartX;
-
   final num ratioStartY;
   final num ratioEndX;
   final num ratioEndY;
@@ -18,8 +16,8 @@ class Area implements Shape {
   Area(
     this.upList,
     this.downList, {
-    this.upSmooth = true,
-    this.downSmooth = true,
+    this.upSmooth = 0,
+    this.downSmooth = 0,
     this.ratioStartX = 0.5,
     this.ratioStartY = 0,
     this.ratioEndX = 0.5,
@@ -29,8 +27,8 @@ class Area implements Shape {
   Area.vertical(
     this.upList,
     this.downList, {
-    this.upSmooth = true,
-    this.downSmooth = true,
+    this.upSmooth = 0,
+    this.downSmooth = 0,
     this.ratioStartX = 0,
     this.ratioStartY = 0.5,
     this.ratioEndX = 0,
@@ -40,12 +38,8 @@ class Area implements Shape {
   Path? _path;
 
   @override
-  Path toPath(bool close) {
-    if (_path != null) {
-      return _path!;
-    }
-    _path = buildPath();
-    return _path!;
+  Path toPath() {
+    return _path ??= buildPath();
   }
 
   Path buildPath() {
@@ -56,7 +50,7 @@ class Area implements Shape {
     }
 
     if (upList.length > 1) {
-      if (upSmooth) {
+      if (upSmooth > 0) {
         Offset first = upList.first;
         path.moveTo(first.dx, first.dy);
         final int len = upList.length - 1;
@@ -107,7 +101,7 @@ class Area implements Shape {
     } else {
       path.moveTo(end.dx, end.dy);
     }
-    if (!downSmooth) {
+    if (downSmooth <= 0) {
       for (int i = downList.length - 2; i >= 0; i--) {
         var off = downList[i];
         path.lineTo(off.dx, off.dy);
@@ -154,6 +148,9 @@ class Area implements Shape {
 
   @override
   bool contains(Offset offset) {
-    return toPath(true).contains(offset);
+    return toPath().contains(offset);
   }
+
+  @override
+  bool get isClosed => true;
 }

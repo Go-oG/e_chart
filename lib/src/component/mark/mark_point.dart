@@ -4,7 +4,7 @@ import '../../../e_chart.dart';
 
 class MarkPoint {
   MarkPointData data;
-  ChartSymbol symbol = CircleSymbol(outerRadius: 8);
+  ChartSymbol symbol = CircleSymbol();
   bool touch;
   LabelStyle? labelStyle;
   int precision; //精度

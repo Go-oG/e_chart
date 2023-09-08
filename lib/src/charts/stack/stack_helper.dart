@@ -567,7 +567,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   bool arcInPath(Path path, Arc arc) {
     Rect rect = path.getBounds();
-    return rectInPath(arc.toPath(true), rect);
+    return rectInPath(arc.toPath(), rect);
   }
 
   bool rectInPath(Path path, Rect rect) {

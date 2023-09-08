@@ -76,23 +76,10 @@ class Arc implements Shape {
   }
 
   Path? _closePath;
-  Path? _openPath;
 
   @override
-  Path toPath(bool close) {
-    if (close && _closePath != null) {
-      return _closePath!;
-    }
-    if (!close && _openPath != null) {
-      return _openPath!;
-    }
-
-    if (!close) {
-      _openPath = arcOpen();
-      return _openPath!;
-    }
-    _closePath = _arc();
-    return _closePath!;
+  Path toPath() {
+    return _closePath ??= _arc();
   }
 
   Path _arc() {
@@ -396,7 +383,7 @@ class Arc implements Shape {
     if (sweepAngle.abs() >= 360) {
       return true;
     }
-    return toPath(true).contains(offset);
+    return toPath().contains(offset);
   }
 
   Path arcOpen() {
@@ -512,6 +499,9 @@ class Arc implements Shape {
       maxRadius: end.maxRadius,
     );
   }
+
+  @override
+  bool get isClosed => true;
 }
 
 class InnerOffset {

@@ -203,7 +203,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
     return LineNode(groupIndex, styleIndex, group, ol, borderList, areaList, nodeMap);
@@ -217,7 +217,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     final styleIndex = curList.first.groupIndex;
     StepType? stepType = series.stepLineFun?.call(group);
     LineStyle? lineStyle = buildLineStyle(null, group, styleIndex, {});
-    bool smooth = stepType == null ? lineStyle.smooth : false;
+    num smooth = stepType == null ? lineStyle.smooth : 0;
 
     List<SingleNode<StackItemData, LineGroupData>> nodeList = List.from(nodeMap.values);
 
@@ -228,10 +228,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       Area area;
       var downList = [Offset(itemList.first.dx, height), Offset(itemList.last.dx, height)];
       if (stepType == null) {
-        area = Area(itemList, downList, upSmooth: smooth, downSmooth: false);
+        area = Area(itemList, downList, upSmooth: smooth, downSmooth: 0);
       } else {
-        Line line = _buildLine(itemList, stepType, false, []);
-        area = Area(line.pointList, downList, upSmooth: smooth, downSmooth: false);
+        Line line = _buildLine(itemList, stepType, 0, []);
+        area = Area(line.pointList, downList, upSmooth: smooth, downSmooth: 0);
       }
       areaList.add(AreaNode(area));
     }
@@ -261,7 +261,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(data, symbol, i, groupIndex, group)..attr = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
 
@@ -281,10 +281,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     var preGroup = resultList[curIndex - 1].data;
     StepType? stepType = series.stepLineFun?.call(group);
     LineStyle lineStyle = buildLineStyle(null, group, styleIndex, {});
-    bool smooth = (stepType == null) ? (lineStyle.smooth) : false;
+    num smooth = (stepType == null) ? (lineStyle.smooth) : 0;
     StepType? preStepType = series.stepLineFun?.call(preGroup);
     LineStyle? preLineStyle = buildLineStyle(null, preGroup, resultList[curIndex - 1].styleIndex, {});
-    bool preSmooth = (preStepType == null) ? (preLineStyle.smooth) : false;
+    num preSmooth = (preStepType == null) ? (preLineStyle.smooth) : 0;
 
     List<List<List<Offset>>> splitResult = [];
     if (series.connectNulls) {
@@ -330,11 +330,11 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     for (var list in splitResult) {
       var topList = list[0];
       if (stepType != null) {
-        topList = _buildLine(topList, stepType, false, []).pointList;
+        topList = _buildLine(topList, stepType, 0, []).pointList;
       }
       var preList = list[1];
       if (preStepType != null) {
-        preList = _buildLine(preList, preStepType, false, []).pointList;
+        preList = _buildLine(preList, preStepType, 0, []).pointList;
       }
       var area = Area(topList, preList, upSmooth: smooth, downSmooth: preSmooth);
       areaList.add(AreaNode(area));
@@ -370,18 +370,18 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     StepType? stepType = series.stepLineFun?.call(group);
     each(olList, (list, p1) {
       LineStyle style = buildLineStyle(null, group, group.styleIndex, {});
-      bool smooth = stepType != null ? false : style.smooth;
+      num smooth = stepType != null ? 0 : style.smooth;
       if (stepType == null) {
         borderList.add(OptLinePath.build(list, smooth, style.dash));
       } else {
-        Line line = _buildLine(list, stepType, false, []);
+        Line line = _buildLine(list, stepType, 0, []);
         borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
       }
     });
     return borderList;
   }
 
-  Line _buildLine(List<Offset> offsetList, StepType? type, bool smooth, List<num> dash) {
+  Line _buildLine(List<Offset> offsetList, StepType? type, num smooth, List<num> dash) {
     Line line = Line(offsetList, smooth: smooth, dashList: dash);
     if (type != null) {
       if (type == StepType.step) {

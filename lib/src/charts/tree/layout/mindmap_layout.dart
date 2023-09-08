@@ -7,7 +7,7 @@ class MindMapLayout extends TreeLayout {
     super.levelGapFun,
     super.sizeFun,
     super.lineType = LineType.line,
-    super.smooth = true,
+    super.smooth = 0.5,
     super.center = const [SNumber.percent(50), SNumber.percent(50)],
     super.centerIsRoot = true,
     super.levelGapSize,

@@ -22,7 +22,7 @@ class GraphView extends SeriesView<GraphSeries, GraphLayout> {
       } else {
         line = Line(edge.points);
       }
-      style.drawPath(canvas, mPaint, line.toPath(false), drawDash: true);
+      style.drawPath(canvas, mPaint, line.toPath(), drawDash: true);
     }
     for (var node in series.graph.nodes) {
       node.onDraw(canvas, mPaint);

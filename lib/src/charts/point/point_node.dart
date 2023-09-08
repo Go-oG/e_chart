@@ -16,12 +16,12 @@ class PointNode extends DataNode<PointAttr, PointData> {
 
   @override
   bool contains(Offset offset) {
-    return symbol.internal2(attr.offset, attr.size, offset);
+    return symbol.contains(attr.offset,  offset);
   }
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    symbol.draw2(canvas, paint, attr.offset, attr.size);
+    symbol.draw(canvas, paint, attr.offset);
     var label = data.label;
     var labelConfig = this.labelConfig;
     if (label != null && label.isNotEmpty && labelConfig != null) {

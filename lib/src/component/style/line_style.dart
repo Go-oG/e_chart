@@ -6,7 +6,6 @@ import '../shader/shader.dart' as sd;
 /// 线段样式
 class LineStyle {
   static const LineStyle empty = LineStyle(width: 0);
-
   final Color? color;
   final num width;
   final StrokeCap cap;
@@ -14,7 +13,7 @@ class LineStyle {
   final List<num> dash;
   final List<BoxShadow> shadow;
   final sd.ChartShader? shader;
-  final bool smooth;
+  final num smooth;
 
   ///因为Flutter绘制直线时是平分的，
   ///因此为了优化视觉效果，提供了一个对齐方式
@@ -28,7 +27,7 @@ class LineStyle {
     this.dash = const [],
     this.shadow = const [],
     this.shader,
-    this.smooth = false,
+    this.smooth = 0,
     this.align = Align2.center,
   });
 
@@ -68,7 +67,7 @@ class LineStyle {
       return;
     }
 
-    Path path = Line(points, smooth: false, dashList: dash).toPath(close);
+    Path path = Line(points, smooth: 0, dashList: dash).toPath();
     fillPaint(paint, path.getBounds());
 
     List<List<Offset>> olList = [];
@@ -96,13 +95,13 @@ class LineStyle {
         continue;
       }
 
-      if (!smooth && dash.isEmpty) {
+      if (smooth <= 0 && dash.isEmpty) {
         canvas.drawPoints(PointMode.polygon, ol, paint);
         continue;
       }
 
       Line line = Line(ol, smooth: smooth, dashList: dash);
-      Path p = line.toPath(false);
+      Path p = line.toPath();
       canvas.drawPath(p, paint);
     }
   }
@@ -250,4 +249,26 @@ class LineStyle {
   bool get notDraw => width <= 0;
 
   bool get canDraw => width > 0;
+
+  static LineStyle? lerp(LineStyle? start, LineStyle? end, double t) {
+    if (start == null && end == null) {
+      return null;
+    }
+    var c = Color.lerp(start?.color, end?.color, t);
+    var ss = start?.shader;
+    var es = end?.shader;
+    var shader = ChartShader.lerpShader(ss, es, t);
+    var shadow = BoxShadow.lerpList(start?.shadow, end?.shadow, t) ?? [];
+    return LineStyle(
+      color: c,
+      shader: shader,
+      shadow: shadow,
+      width: lerpDouble(start?.width, end?.width, t)!,
+      dash: ChartShader.lerpDoubles(start?.dash, end?.dash, t) ?? [],
+      smooth: lerpDouble(start?.smooth, end?.smooth, t)!,
+      cap: (end?.cap ?? start?.cap)!,
+      join: (end?.join ?? start?.join)!,
+      align: (end?.align ?? start?.align)!,
+    );
+  }
 }

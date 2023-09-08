@@ -1,14 +1,14 @@
 import 'dart:math' as m;
 import 'dart:ui';
 
-import '../../utils/math_util.dart';
-import 'base_line.dart';
+import 'package:e_chart/e_chart.dart';
 
 ///多边形
-class Polygon {
+class Polygon extends Shape {
   final List<Offset> points;
+  final bool pathUseAll;
 
-  Polygon(this.points);
+  Polygon(this.points, [this.pathUseAll = true]);
 
   ///多边形的面积
   ///如果多边形的顶点按逆时针顺序排列（假设坐标系的原点 ⟨0，0⟩ 位于左上角）
@@ -50,12 +50,13 @@ class Polygon {
     return Offset(x / k, y / k);
   }
 
-  bool contains(Offset point) {
+  @override
+  bool contains(Offset offset) {
     if (points.isEmpty) {
       return false;
     }
-    var dx = point.dx;
-    var dy = point.dy;
+    var dx = offset.dx;
+    var dy = offset.dy;
     if (points.length == 1) {
       Offset p1 = points[0];
       double a = (dx - p1.dx).abs();
@@ -63,9 +64,9 @@ class Polygon {
       return m.sqrt(a * a + b * b) <= 0.01;
     }
     if (points.length == 2) {
-      return _inLine(point, points[0], points[1], deviation: 0.05);
+      return _inLine(offset, points[0], points[1], deviation: 0.05);
     }
-    return inInner(point) || inBorder(point);
+    return inInner(offset) || inBorder(offset);
   }
 
   /// 返回一个点是否在一个多边形区域内
@@ -223,6 +224,29 @@ class Polygon {
       indexes[size++] = i;
     }
     return indexes.sublist(0, size);
+  }
+
+  @override
+  bool get isClosed => true;
+
+  Path? _path;
+
+  @override
+  Path toPath() {
+    if (_path != null) {
+      return _path!;
+    }
+    Path path = Path();
+    each(pathUseAll ? hull() : points, (p0, p1) {
+      if (p1 == 0) {
+        path.moveTo2(p0);
+      } else {
+        path.lineTo2(p0);
+      }
+    });
+    path.close();
+    _path = path;
+    return path;
   }
 }
 

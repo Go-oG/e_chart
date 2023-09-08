@@ -27,7 +27,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
       } else if (group.isHover) {
         style = s2;
       }
-      style?.drawPath(canvas, mPaint, group.arc.toPath(false));
+      style?.drawPath(canvas, mPaint, group.arc.toPath());
       rectSet.add(group);
     });
     canvas.restore();

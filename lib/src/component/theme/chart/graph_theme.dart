@@ -9,7 +9,7 @@ class GraphTheme {
   num lineWidth = 1;
   Color lineColor = const Color(0xFFAAAAAA);
   bool lineSmooth = false;
-  ChartSymbol symbol = CircleSymbol.normal();
+  ChartSymbol symbol = CircleSymbol();
   List<Color> colors = [
     const Color(0xFF5470c6),
     const Color(0xFF91cc75),

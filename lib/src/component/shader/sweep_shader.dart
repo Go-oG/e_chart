@@ -30,16 +30,16 @@ class SweepShader extends ChartShader {
   }
 
   @override
-  ChartShader lerp(covariant SweepShader begin, covariant SweepShader end, double animatorPercent) {
-    List<Color> colorList = ChartShader.lerpColors(begin.colors, end.colors, animatorPercent);
-    List<double>? stepList = ChartShader.lerpDoubles(begin.colorStops, end.colorStops, animatorPercent);
-    Float64List? ma = ChartShader.lerpMatrix4(begin.matrix4, end.matrix4, animatorPercent);
+  ChartShader lerp(covariant SweepShader end, double t) {
+    List<Color> colorList = ChartShader.lerpColors(colors, end.colors, t);
+    List<double>? stepList = ChartShader.lerpDoubles(colorStops, end.colorStops, t);
+    Float64List? ma = ChartShader.lerpMatrix4(matrix4, end.matrix4, t);
     return SweepShader(
       colorList,
       colorStops: stepList,
-      tileMode: begin.tileMode == TileMode.clamp ? end.tileMode : begin.tileMode,
-      startAngle: lerpDouble(begin.startAngle, end.startAngle, animatorPercent)!,
-      endAngle: lerpDouble(begin.endAngle, end.endAngle, animatorPercent)!,
+      tileMode: tileMode == TileMode.clamp ? end.tileMode : tileMode,
+      startAngle: lerpDouble(startAngle, end.startAngle, t)!,
+      endAngle: lerpDouble(endAngle, end.endAngle, t)!,
       matrix4: ma,
     );
   }

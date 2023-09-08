@@ -14,7 +14,7 @@ class HexbinNode extends DataNode<HexAttr, ItemData> {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    Path path = attr.shape.toPath(true);
+    Path path = attr.shape.toPath();
     itemStyle.drawPath(canvas, paint, path);
     var lineStyle = borderStyle;
     if (lineStyle.canDraw) {
@@ -40,9 +40,10 @@ class HexbinNode extends DataNode<HexAttr, ItemData> {
 
   @override
   bool contains(Offset offset) {
-    return attr.shape.toPath(true).contains(offset);
+    return attr.shape.toPath().contains(offset);
   }
 
+  @override
   void updateStyle(Context context, HexbinSeries series) {
     itemStyle = series.getItemStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;

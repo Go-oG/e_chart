@@ -8,31 +8,33 @@ import 'chart_shape.dart';
 
 class Line implements Shape {
   final List<Offset> _pointList = [];
-  final bool smooth;
+  final num smooth;
   final List<num> _dashList = [];
+  final num disDiff;
 
-  Line(List<Offset> list, {this.smooth = false, List<num>? dashList}) {
+  Line(
+    List<Offset> list, {
+    this.smooth = 0,
+    List<num>? dashList,
+    this.disDiff = 2,
+  }) {
     _pointList.addAll(list);
     if (dashList != null) {
       _dashList.addAll(dashList);
     }
   }
 
-  Path? _closePath;
-  Path? _openPath;
+  Path? _path;
 
   List<Offset> get pointList => _pointList;
 
   @override
-  Path toPath(bool close) {
-    if (close && _closePath != null) {
-      return _closePath!;
-    }
-    if (!close && _openPath != null) {
-      return _openPath!;
+  Path toPath() {
+    if (_path != null) {
+      return _path!;
     }
     Path path = Path();
-    if (smooth) {
+    if (smooth>0) {
       path = _smooth();
     } else {
       Offset first = _pointList.first;
@@ -42,18 +44,10 @@ class Line implements Shape {
         path.lineTo(p.dx, p.dy);
       }
     }
-    if (close) {
-      path.close();
-    }
     if (_dashList.isNotEmpty) {
       path = path.dashPath(_dashList);
     }
-
-    if (close) {
-      _closePath = path;
-    } else {
-      _openPath = path;
-    }
+    _path = path;
     return path;
   }
 
@@ -112,7 +106,9 @@ class Line implements Shape {
   ///返回平滑曲线路径(返回的路径是未封闭的)
   Path _smooth() {
     Path path = Path();
-    if(_pointList.isEmpty){return path;}
+    if (_pointList.isEmpty) {
+      return path;
+    }
     Offset firstPoint = _pointList.first;
     path.moveTo(firstPoint.dx, firstPoint.dy);
     for (int i = 0; i < _pointList.length - 1; i++) {
@@ -148,7 +144,10 @@ class Line implements Shape {
 
   @override
   bool contains(Offset offset) {
-    Path path = toPath(false);
+    Path path = toPath();
+    if (path.contains(offset)) {
+      return true;
+    }
     PathMetrics metrics = path.computeMetrics();
     for (PathMetric metric in metrics) {
       double i = 0;
@@ -156,7 +155,7 @@ class Line implements Shape {
         Tangent? tangent = metric.getTangentForOffset(i);
         if (tangent != null) {
           Offset p = tangent.position;
-          if (offset.distance2(p) <= 2) {
+          if (offset.distance2(p) <= disDiff) {
             return true;
           }
         }
@@ -168,7 +167,9 @@ class Line implements Shape {
 
   ///将该段线条追加到Path的后面
   void appendToPathEnd(Path path) {
-    if(_pointList.isEmpty){return;}
+    if (_pointList.isEmpty) {
+      return;
+    }
     Offset firstPoint = _pointList.first;
     path.lineTo(firstPoint.dx, firstPoint.dy);
     for (int i = 0; i < _pointList.length - 1; i++) {
@@ -183,6 +184,8 @@ class Line implements Shape {
         path.cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, next.dx, next.dy);
       }
     }
-
   }
+
+  @override
+  bool get isClosed => false;
 }

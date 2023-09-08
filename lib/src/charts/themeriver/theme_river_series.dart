@@ -5,7 +5,7 @@ class ThemeRiverSeries extends RectSeries {
   List<GroupData> data;
   Direction direction;
   SNumber? minInterval;
-  bool smooth;
+  num smooth;
   Fun4<GroupData, int, Set<ViewState>, AreaStyle>? areaStyleFun;
   Fun4<GroupData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
   Fun4<GroupData, int, Set<ViewState>, LabelStyle?>? labelStyleFun;
@@ -15,7 +15,7 @@ class ThemeRiverSeries extends RectSeries {
     this.direction = Direction.horizontal,
     this.minInterval,
     this.labelStyleFun,
-    this.smooth = true,
+    this.smooth = 0.5,
     this.areaStyleFun,
     super.leftMargin,
     super.topMargin,

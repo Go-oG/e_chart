@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'chart_symbol.dart';
 
 class EmptySymbol extends ChartSymbol {
+  static final empty = EmptySymbol();
 
   EmptySymbol();
 
@@ -9,10 +10,20 @@ class EmptySymbol extends ChartSymbol {
   Size get size => const Size(0, 0);
 
   @override
-  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {}
+  void draw(Canvas canvas, Paint paint, Offset offset) {}
 
   @override
-  bool internal2(Offset center, Size size, Offset point) {
+  bool contains(Offset center, Offset point) {
     return false;
+  }
+
+  @override
+  ChartSymbol lerp(covariant ChartSymbol end, double t) {
+    return empty;
+  }
+
+  @override
+  ChartSymbol copy(SymbolAttr? attr) {
+    return empty;
   }
 }

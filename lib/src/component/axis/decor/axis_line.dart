@@ -51,6 +51,6 @@ class AxisLine {
     if (color == null) {
       return null;
     }
-    return LineStyle(color: color, dash: dash, shadow: shadow, smooth: false);
+    return LineStyle(color: color, dash: dash, shadow: shadow, smooth: 0);
   }
 }

@@ -2,14 +2,16 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class HeatMapNode extends DataNode<Rect, HeatMapData> {
-  HeatMapNode(HeatMapData data, int dataIndex, AreaStyle itemStyle, LineStyle borderStyle, LabelStyle labelStyle)
-      : super(data, dataIndex, -1, Rect.zero, itemStyle, borderStyle, labelStyle);
+  HeatMapNode(
+    HeatMapData data,
+    int dataIndex,
+  ) : super(data, dataIndex, -1, Rect.zero, AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
   Alignment labelAlign = Alignment.center;
   ChartSymbol symbol = RectSymbol(rectSize: Size.zero);
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    symbol.draw2(canvas, paint, attr.center, attr.size);
+    symbol.draw(canvas, paint, attr.center);
     var label = data.label;
     if (label == null || label.isEmpty) {
       return;
@@ -31,7 +33,7 @@ class HeatMapNode extends DataNode<Rect, HeatMapData> {
       itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
       borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
       labelStyle = series.getLabelStyle(context, data, status) ?? LabelStyle.empty;
-      this.symbol = RectSymbol(border: borderStyle, style: itemStyle, rectSize: attr.size);
+      this.symbol = RectSymbol(borderStyle: borderStyle, itemStyle: itemStyle, rectSize: attr.size);
     }
   }
 }

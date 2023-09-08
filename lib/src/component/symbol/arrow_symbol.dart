@@ -5,14 +5,12 @@ import 'package:e_chart/e_chart.dart';
 
 ///小飞机图标(等边三角形实现)
 class ArrowSymbol extends ChartSymbol {
-  LineStyle? border;
-  AreaStyle style;
-  num sideLength;
-  double ratio;
-  num rotate;
+  final num sideLength;
+  final double ratio;
+  final num rotate;
   late Path path;
 
-  ArrowSymbol(this.style, {this.border, this.sideLength = 16, this.rotate = 0, this.ratio = 0.8}) {
+  ArrowSymbol({super.borderStyle, super.itemStyle, this.sideLength = 16, this.rotate = 0, this.ratio = 0.8}) {
     path = buildPath(sideLength, ratio);
   }
 
@@ -20,35 +18,20 @@ class ArrowSymbol extends ChartSymbol {
   Size get size => Size(sideLength * sqrt(3) / 3, sideLength * sqrt(3) / 3);
 
   @override
-  bool internal2(Offset center,Size size,Offset point) {
-    final double sqrt3 = sqrt(3);
-    double sideLength = size.longestSide;
-    double c = sideLength / 2;
-    double tt = sideLength * sqrt3 / 3;
-    double tt2 = sideLength * sqrt3 / 6;
-    double h = sideLength * sqrt3 / 2;
-    List<Offset> ol = [
-      Offset(0, -tt),
-      Offset(c, tt2),
-      Offset(0, tt2-h*(1-ratio)),
-      Offset(-c, tt2),
-      Offset(0, -tt),
-    ];
-    return point.translate(-center.dx, -center.dy).inPolygon(ol);
+  bool contains(Offset center, Offset point) {
+    return path.contains(point.translate2(center.invert));
   }
 
   @override
-  void draw2(Canvas canvas, Paint paint, Offset offset, Size size) {
-    if (this.size != size) {
-      sideLength = size.longestSide;
-      path = buildPath(sideLength, ratio);
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    if (!checkStyle()) {
+      return;
     }
-    center = offset;
-    AreaStyle style = this.style;
     canvas.save();
-    canvas.translate(center.dx, center.dy);
+    canvas.translate(offset.dx, offset.dy);
     canvas.rotate(rotate * pi / 180);
-    style.drawPath(canvas, paint, path);
+    itemStyle?.drawPath(canvas, paint, path);
+    borderStyle?.drawPath(canvas, paint, path);
     canvas.restore();
   }
 
@@ -65,5 +48,33 @@ class ArrowSymbol extends ChartSymbol {
     path.lineTo(-c, tt2);
     path.close();
     return path;
+  }
+
+  @override
+  ArrowSymbol lerp(covariant ArrowSymbol end, double t) {
+    var sl = lerpDouble(sideLength, end.sideLength, t)!;
+    var ratio = lerpDouble(this.ratio, end.ratio, t)!;
+    var rotate = lerpDouble(this.rotate, end.rotate, t)!;
+    return ArrowSymbol(
+      sideLength: sl,
+      rotate: rotate,
+      ratio: ratio,
+      itemStyle: end.itemStyle,
+      borderStyle: end.borderStyle,
+    );
+  }
+
+  @override
+  ChartSymbol copy(SymbolAttr? attr) {
+    if (attr == null || attr.isEmpty) {
+      return this;
+    }
+    return ArrowSymbol(
+      sideLength: attr.size == null ? sideLength : attr.size!.longestSide,
+      rotate: attr.rotate ?? rotate,
+      ratio: attr.ratio ?? ratio,
+      itemStyle: itemStyle,
+      borderStyle: borderStyle,
+    );
   }
 }

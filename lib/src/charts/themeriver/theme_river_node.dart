@@ -12,7 +12,7 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
     super.labelStyle,
   );
 
-  void update(List<Offset> pList, List<Offset> pList2, bool smooth, Direction direction) {
+  void update(List<Offset> pList, List<Offset> pList2, num smooth, Direction direction) {
     Area area;
     if (direction == Direction.vertical) {
       area = Area.vertical(pList, pList2, upSmooth: smooth, downSmooth: smooth);
@@ -37,7 +37,7 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
     attr = ThemeRiverAttr(polygonList, area, config);
   }
 
-  Path get drawPath => attr.area.toPath(true);
+  Path get drawPath => attr.area.toPath();
 
   @override
   bool contains(Offset offset) {
@@ -46,7 +46,7 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
 
   @override
   void onDraw(Canvas canvas, Paint paint) {
-    var path = attr.area.toPath(true);
+    var path = attr.area.toPath();
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
     var label = data.label;

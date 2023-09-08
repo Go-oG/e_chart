@@ -10,7 +10,7 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
   LineType lineType;
 
   ///是否平滑连接线
-  bool smooth;
+  num smooth;
 
   ///节点大小配置
   Size? nodeSize;
@@ -28,7 +28,7 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
   TreeLayout({
     this.center = const [SNumber.number(0), SNumber.percent(50)],
     this.lineType = LineType.line,
-    this.smooth = false,
+    this.smooth = 0,
     this.centerIsRoot = true,
     this.nodeSize,
     this.sizeFun,
@@ -131,7 +131,7 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
     } else {
       ol = [parent.center, child.center];
     }
-    return Line(ol, smooth: smooth, dashList: dash).toPath(false);
+    return Line(ol, smooth: smooth, dashList: dash).toPath();
   }
 
   ///折叠一个节点
