@@ -39,10 +39,10 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
       return;
     }
 
-    ChartDoubleTween tween = ChartDoubleTween(props: animation);
-    tween.startListener = () {
+    var tween = ChartDoubleTween(props: animation);
+    tween.addStartListener(() {
       nodeList = newList;
-    };
+    });
     tween.addListener(() {
       animatorPercent = tween.value;
       notifyLayoutUpdate();

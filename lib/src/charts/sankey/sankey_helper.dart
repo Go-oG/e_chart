@@ -43,10 +43,10 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
     ChartDoubleTween dt = ChartDoubleTween(props: animation);
     animationProcess = 0;
-    dt.startListener = () {
+    dt.addStartListener(() {
       _nodes = nodes;
       _links = links;
-    };
+    });
     dt.addListener(() {
       animationProcess = dt.value;
       notifyLayoutUpdate();

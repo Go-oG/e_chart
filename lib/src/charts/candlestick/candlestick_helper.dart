@@ -75,7 +75,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     if (node.originData == null) {
       return StackAnimationNode();
     }
-    if (diffType == DiffType.accessor) {
+    if (diffType == DiffType.update) {
       var an = StackAnimationNode();
       an.extSetAll(node.extGetAll());
       return an;

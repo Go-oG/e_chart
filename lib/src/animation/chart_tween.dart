@@ -20,8 +20,18 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     _allowCross = allowCross;
   }
 
-  VoidCallback? startListener;
-  VoidCallback? endListener;
+  List<VoidCallback> _starListenerList = [];
+  List<VoidCallback> _endListenerList = [];
+
+  void addStartListener(VoidCallback call) {
+    _starListenerList.remove(call);
+    _starListenerList.add(call);
+  }
+
+  void addEndListener(VoidCallback call) {
+    _endListenerList.remove(call);
+    _endListenerList.add(call);
+  }
 
   bool _hasCallStart = false;
   bool _cancelFlag = false;
@@ -40,11 +50,31 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     });
   }
 
+  void _callOnStart() {
+    for (var l in _starListenerList) {
+      try {
+        l.call();
+      } catch (e) {
+        Logger.e(e);
+      }
+    }
+  }
+
+  void _callOnEnd() {
+    for (var l in _endListenerList) {
+      try {
+        l.call();
+      } catch (e) {
+        Logger.e(e);
+      }
+    }
+  }
+
   void _startInner(Context context, [bool useUpdate = false]) {
     _hasCallStart = false;
     _cancelFlag = false;
     _controller = context.boundedAnimation(props, useUpdate);
-    CurvedAnimation curved = CurvedAnimation(parent: _controller!, curve: useUpdate ? props.updateCurve : props.curve);
+    var curved = CurvedAnimation(parent: _controller!, curve: useUpdate ? props.updateCurve : props.curve);
     curved.addListener(() {
       if (_cancelFlag) {
         stop();
@@ -52,17 +82,17 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
       }
       if (!_hasCallStart) {
         _hasCallStart = true;
-        startListener?.call();
+        _callOnStart();
       }
       value = _getValue(curved.value);
     });
-    if (endListener != null) {
-      curved.addStatusListener((status) {
-        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-          endListener?.call();
-        }
-      });
-    }
+
+    curved.addStatusListener((status) {
+      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+        _callOnEnd();
+      }
+    });
+
     _controller?.forward();
   }
 
@@ -83,8 +113,8 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   @override
   void dispose() {
     stop();
-    startListener = null;
-    endListener = null;
+    _starListenerList = [];
+    _endListenerList = [];
     super.dispose();
   }
 

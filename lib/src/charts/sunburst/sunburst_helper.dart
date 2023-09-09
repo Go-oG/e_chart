@@ -64,11 +64,11 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       return false;
     });
     var tween = ChartDoubleTween(props: animation);
-    tween.startListener = () {
+    tween.addStartListener(() {
       rootNode = newRoot;
       showRootNode = rootNode;
       _nodeMap = nodeMap;
-    };
+    });
     tween.addListener(() {
       var t = tween.value;
       newRoot.each((node, index, startNode) {

@@ -160,9 +160,9 @@ class TweenNode {
 
   void start(Context context) {
     running = true;
-    tween.endListener = () {
+    tween.addEndListener(() {
       running = false;
-    };
+    });
     tween.start(context);
   }
 

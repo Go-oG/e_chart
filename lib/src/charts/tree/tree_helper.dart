@@ -255,30 +255,26 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
     Map<TreeData, Size> sizeMap, [
     VoidCallback? endCallback,
   ]) {
-    ChartDoubleTween tween = ChartDoubleTween(props: series.animation!);
-    OffsetTween offsetTween = OffsetTween(Offset.zero, Offset.zero);
-    ChartSizeTween sizeTween = ChartSizeTween(Size.zero, Size.zero);
+    var tween = ChartDoubleTween(props: series.animation!);
     tween.addListener(() {
       double v = tween.value;
       root.each((node, index, startNode) {
         Offset begin = oldPositionMap[node.data] ?? node.center;
         Offset end = positionMap[node.data] ?? node.center;
-        offsetTween.changeValue(begin, end);
-        Offset p = offsetTween.safeGetValue(v);
+        Offset p =Offset.lerp(begin, end, v)!;
         node.x = p.dx;
         node.y = p.dy;
         Size beginSize = oldSizeMap[node.data] ?? Size.zero;
         Size endSize = sizeMap[node.data] ?? node.size;
-        sizeTween.changeValue(beginSize, endSize);
-        node.size = sizeTween.safeGetValue(v);
+        node.size=Size.lerp(beginSize, endSize, v)!;
         return false;
       });
       notifyLayoutUpdate();
     });
     if (endCallback != null) {
-      tween.endListener = () {
+      tween.addEndListener(() {
         endCallback.call();
-      };
+      });
     }
     tween.start(context, true);
   }

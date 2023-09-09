@@ -30,7 +30,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       nodeList = newList;
       return;
     }
-    var an = DiffUtil.diffLayout3(
+    var an = DiffUtil.diffLayout2(
       animation,
       oldList,
       newList,

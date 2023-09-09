@@ -38,7 +38,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
         List<Offset> ol = List.from(n.attr);
         n.updatePoint(context, series, ol);
       }
-      nodeList = List.from(result);
+      nodeList = result;
       notifyLayoutUpdate();
     });
     context.addAnimationToQueue(an);
@@ -232,7 +232,6 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     for (var tw in tl) {
       tw.start(context, true);
     }
-
   }
 }
 

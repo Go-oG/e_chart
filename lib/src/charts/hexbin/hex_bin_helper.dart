@@ -74,7 +74,7 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
       nodeList = newList;
       return;
     }
-    var an = DiffUtil.diffLayout3(
+    var an = DiffUtil.diffLayout2(
       animation,
       oldNodeList,
       newList,

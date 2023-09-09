@@ -42,11 +42,11 @@ class DiffUtil {
     Set<K> tmpList = {...removeSet, ...addSet, ...commonSet};
     Map<T, P> startMap = {};
     oldMap.forEach((key, value) {
-      startMap[value] = builder.call(value, DiffType.accessor);
+      startMap[value] = builder.call(value, DiffType.update);
     });
     Map<T, P> endMap = {};
     newMap.forEach((key, value) {
-      endMap[value] = builder.call(value, DiffType.accessor);
+      endMap[value] = builder.call(value, DiffType.update);
     });
     List<T> curList = [];
     for (var k in tmpList) {
@@ -73,347 +73,44 @@ class DiffUtil {
     Iterable<N> newList,
     P Function(D data, N node, bool add) builder,
     P Function(P s, P e, double t) lerpFun,
-    void Function(List<N> resultList) resultCall, [
+    void Function(List<N> resultList) updateCall, [
     VoidCallback? onStart,
     VoidCallback? onEnd,
   ]) {
-    Map<D, N> oldMap = {};
-    for (var n in oldList) {
-      oldMap[n.data] = n;
-    }
-    Map<D, N> newMap = {};
-    for (var n in newList) {
-      newMap[n.data] = n;
-    }
-
-    Set<D> removeSet = {};
-    Set<D> addSet = {};
-    Set<D> updateSet = {};
-    for (var n in oldList) {
-      D key = n.data;
-      if (newMap.containsKey(key)) {
-        updateSet.add(key);
-      } else {
-        removeSet.add(key);
-      }
-    }
-    for (var n in newList) {
-      D key = n.data;
-      if (oldMap.containsKey(key)) {
-        updateSet.add(key);
-      } else {
-        addSet.add(key);
-      }
-    }
-
-    Map<D, P> startMap = {};
-    oldMap.forEach((key, value) {
-      startMap[key] = value.attr;
-    });
-    Map<D, P> endMap = {};
-    newMap.forEach((key, value) {
-      endMap[key] = value.attr;
-    });
-    for (var d in removeSet) {
-      endMap[d] = builder.call(d, oldMap[d] as N, false);
-    }
-    for (var d in addSet) {
-      startMap[d] = builder.call(d, newMap[d] as N, true);
-    }
-    final List<N> nodeList = [];
-    for (var d in [...removeSet, ...addSet, ...updateSet]) {
-      N n = (oldMap[d] ?? newMap[d])!;
-      nodeList.add(n);
-    }
-
-    List<TweenWrap> tweenList = [];
-
-    bool hasCallStart = false;
-    bool hasCallEnd = false;
-
-    if (addSet.isNotEmpty) {
-      ChartDoubleTween addTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-      addTween.startListener = () {
-        if (!hasCallStart) {
-          hasCallStart = true;
-          onStart?.call();
+    return diffLayout3(
+      attrs,
+      oldList,
+      newList,
+      (node, type) {
+        Map<String, P> ms = {};
+        if (type == DiffType.add) {
+          ms["PPP"] = builder.call(node.data, node, true);
+        } else {
+          ms["PPP"] = node.attr;
         }
-      };
-      addTween.addListener(() {
-        double t = addTween.value;
-        for (var d in addSet) {
-          N node = (oldMap[d] ?? newMap[d])!;
-          P s = startMap[d] as P;
-          P e = endMap[d] as P;
-          node.attr = (lerpFun.call(s, e, t));
+        return ms;
+      },
+      (node, type) {
+        Map<String, P> ms = {};
+        if (type == DiffType.add) {
+          ms["PPP"] = node.attr;
+        } else {
+          ms["PPP"] = builder.call(node.data, node, false);
         }
-        resultCall.call(nodeList);
-      });
-      addTween.endListener = () {
-        if (!hasCallEnd) {
-          hasCallEnd = true;
-          onEnd?.call();
-        }
-        resultCall.call(nodeList);
-      };
-      tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
-    }
-    if (removeSet.isNotEmpty) {
-      ChartDoubleTween removeTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-      removeTween.startListener = () {
-        if (!hasCallStart) {
-          hasCallStart = true;
-          onStart?.call();
-        }
-      };
-      removeTween.endListener = () {
-        nodeList.removeWhere((e) {
-          return removeSet.contains(e.data);
-        });
-        resultCall.call(nodeList);
-        if (!hasCallEnd) {
-          hasCallEnd = true;
-          onEnd?.call();
-        }
-      };
-      removeTween.addListener(() {
-        double t = removeTween.value;
-        for (var d in removeSet) {
-          N node = (oldMap[d] ?? newMap[d])!;
-          P s = startMap[d] as P;
-          P e = endMap[d] as P;
-          node.attr = lerpFun.call(s, e, t);
-        }
-        resultCall.call(nodeList);
-      });
-      tweenList.add(TweenWrap(removeTween, TweenWrap.removeStatus));
-    }
-    if (updateSet.isNotEmpty) {
-      ///优化不需要更新的节点
-      final List<N> needUpdateList = [];
-      for (var d in updateSet) {
-        N node = (oldMap[d] ?? newMap[d])!;
-        P s = startMap[d] as P;
-        P e = endMap[d] as P;
-        if (s != e) {
-          needUpdateList.add(node);
-        }
-      }
-
-      if (needUpdateList.isNotEmpty) {
-        ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-        updateTween.startListener = () {
-          if (!hasCallStart) {
-            hasCallStart = true;
-            onStart?.call();
-          }
-        };
-        updateTween.endListener = () {
-          resultCall.call(nodeList);
-          if (!hasCallEnd) {
-            hasCallEnd = true;
-            onEnd?.call();
-          }
-        };
-        updateTween.addListener(() {
-          double t = updateTween.value;
-          for (var n in needUpdateList) {
-            P s = startMap[n.data] as P;
-            P e = endMap[n.data] as P;
-            n.attr = lerpFun.call(s, e, t);
-          }
-          resultCall.call(nodeList);
-        });
-        tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
-      }
-    }
-
-    List<AnimationNode> nl = [];
-    for (var wrap in tweenList) {
-      var status = wrap.status;
-      if (status == TweenWrap.updateStatus || status == TweenWrap.removeStatus) {
-        nl.add(AnimationNode(wrap.tween, attrs, LayoutType.update));
-      } else {
-        nl.add(AnimationNode(wrap.tween, attrs, LayoutType.layout));
-      }
-    }
-    return nl;
+        return ms;
+      },
+      (node, s, e, t, type) {
+        var sp = s["PPP"]! as P;
+        var ep = e["PPP"]! as P;
+        node.attr = lerpFun.call(sp, ep, t);
+      },
+      updateCall,
+      onStart,
+      onEnd,
+    );
   }
 
-  static List<AnimationNode> diffLayout2<P, D, N extends DataNode<P, D>>(
-    AnimationAttrs attrs,
-    Iterable<N> oldList,
-    Iterable<N> newList,
-    P Function(D data, N node, bool add) builder,
-    P Function(P s, P e, double t, UpdateType type) lerpFun,
-    void Function(List<N> resultList) resultCall, [
-    VoidCallback? onStart,
-    VoidCallback? onEnd,
-  ]) {
-    Map<D, N> oldMap = {};
-    for (var n in oldList) {
-      oldMap[n.data] = n;
-    }
-    Map<D, N> newMap = {};
-    for (var n in newList) {
-      newMap[n.data] = n;
-    }
-
-    Set<D> removeSet = {};
-    Set<D> addSet = {};
-    Set<D> updateSet = {};
-    for (var n in oldList) {
-      D key = n.data;
-      if (newMap.containsKey(key)) {
-        updateSet.add(key);
-      } else {
-        removeSet.add(key);
-      }
-    }
-    for (var n in newList) {
-      D key = n.data;
-      if (oldMap.containsKey(key)) {
-        updateSet.add(key);
-      } else {
-        addSet.add(key);
-      }
-    }
-
-    Map<D, P> startMap = {};
-    oldMap.forEach((key, value) {
-      startMap[key] = value.attr;
-    });
-    Map<D, P> endMap = {};
-    newMap.forEach((key, value) {
-      endMap[key] = value.attr;
-    });
-    for (var d in removeSet) {
-      endMap[d] = builder.call(d, oldMap[d] as N, false);
-    }
-    for (var d in addSet) {
-      startMap[d] = builder.call(d, newMap[d] as N, true);
-    }
-    final List<N> nodeList = [];
-    for (var d in [...removeSet, ...addSet, ...updateSet]) {
-      N n = (oldMap[d] ?? newMap[d])!;
-      nodeList.add(n);
-    }
-
-    List<TweenWrap> tweenList = [];
-
-    bool hasCallStart = false;
-    bool hasCallEnd = false;
-
-    if (addSet.isNotEmpty) {
-      ChartDoubleTween addTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-      addTween.startListener = () {
-        if (!hasCallStart) {
-          hasCallStart = true;
-          onStart?.call();
-        }
-      };
-      addTween.addListener(() {
-        double t = addTween.value;
-        for (var d in addSet) {
-          N node = (oldMap[d] ?? newMap[d])!;
-          P s = startMap[d] as P;
-          P e = endMap[d] as P;
-          node.attr = lerpFun.call(s, e, t, UpdateType.add);
-        }
-        resultCall.call(nodeList);
-      });
-      addTween.endListener = () {
-        if (!hasCallEnd) {
-          hasCallEnd = true;
-          onEnd?.call();
-        }
-        resultCall.call(nodeList);
-      };
-      tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
-    }
-    if (removeSet.isNotEmpty) {
-      ChartDoubleTween removeTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-      removeTween.startListener = () {
-        if (!hasCallStart) {
-          hasCallStart = true;
-          onStart?.call();
-        }
-      };
-      removeTween.endListener = () {
-        nodeList.removeWhere((e) {
-          return removeSet.contains(e.data);
-        });
-        resultCall.call(nodeList);
-        if (!hasCallEnd) {
-          hasCallEnd = true;
-          onEnd?.call();
-        }
-      };
-      removeTween.addListener(() {
-        double t = removeTween.value;
-        for (var d in removeSet) {
-          N node = (oldMap[d] ?? newMap[d])!;
-          P s = startMap[d] as P;
-          P e = endMap[d] as P;
-          node.attr = lerpFun.call(s, e, t, UpdateType.remove);
-        }
-        resultCall.call(nodeList);
-      });
-      tweenList.add(TweenWrap(removeTween, TweenWrap.removeStatus));
-    }
-    if (updateSet.isNotEmpty) {
-      ///优化不需要更新的节点
-      final List<N> needUpdateList = [];
-      for (var d in updateSet) {
-        N node = (oldMap[d] ?? newMap[d])!;
-        P s = startMap[d] as P;
-        P e = endMap[d] as P;
-        if (s != e) {
-          needUpdateList.add(node);
-        }
-      }
-
-      if (needUpdateList.isNotEmpty) {
-        ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-        updateTween.startListener = () {
-          if (!hasCallStart) {
-            hasCallStart = true;
-            onStart?.call();
-          }
-        };
-        updateTween.endListener = () {
-          resultCall.call(nodeList);
-          if (!hasCallEnd) {
-            hasCallEnd = true;
-            onEnd?.call();
-          }
-        };
-        updateTween.addListener(() {
-          double t = updateTween.value;
-          for (var n in needUpdateList) {
-            P s = startMap[n.data] as P;
-            P e = endMap[n.data] as P;
-            n.attr = lerpFun.call(s, e, t, UpdateType.update);
-          }
-          resultCall.call(nodeList);
-        });
-        tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
-      }
-    }
-
-    List<AnimationNode> nl = [];
-    for (var wrap in tweenList) {
-      var status = wrap.status;
-      if (status == TweenWrap.updateStatus || status == TweenWrap.removeStatus) {
-        nl.add(AnimationNode(wrap.tween, attrs, LayoutType.update));
-      } else {
-        nl.add(AnimationNode(wrap.tween, attrs, LayoutType.layout));
-      }
-    }
-    return nl;
-  }
-
-  static List<AnimationNode> diffLayout3<N extends DataNode>(
+  static List<AnimationNode> diffLayout2<N extends DataNode>(
     AnimationAttrs attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
@@ -424,159 +121,167 @@ class DiffUtil {
     VoidCallback? onStart,
     VoidCallback? onEnd,
   ]) {
-    Map<dynamic, N> oldMap = {};
-    for (var n in oldList) {
-      oldMap[n.data] = n;
-    }
-    Map<dynamic, N> newMap = {};
-    for (var n in newList) {
-      newMap[n.data] = n;
-    }
+    return diffLayout3(
+      attrs,
+      oldList,
+      newList,
+      (node, type) {
+        Map<String, double> ms = {};
+        ms["ppp"] = startFun.call(node, type == DiffType.add);
+        return ms;
+      },
+      (node, type) {
+        Map<String, double> ms = {};
+        ms["ppp"] = endFun.call(node, type == DiffType.add);
+        return ms;
+      },
+      (node, s, e, t, type) {
+        var sp = s['ppp'] as double;
+        var ep = e['ppp'] as double;
+        var tt = lerpDouble(sp, ep, t)!;
+        lerpFun.call(node, tt);
+      },
+      resultCall,
+      onStart,
+      onEnd,
+    );
+  }
 
-    Set<dynamic> removeSet = {};
-    Set<dynamic> addSet = {};
-    Set<dynamic> updateSet = {};
+  ///该方法适用于具有多个单一属性的Diff
+  static List<AnimationNode> diffLayout3<N extends DataNode>(
+    AnimationAttrs attrs,
+    Iterable<N> oldList,
+    Iterable<N> newList,
+    Map<String, dynamic> Function(N node, DiffType type) startFun,
+    Map<String, dynamic> Function(N node, DiffType type) endFun,
+    void Function(N node, Map<String, dynamic> s, Map<String, dynamic> e, double t, DiffType type) lerpFun,
+    void Function(List<N> resultList) updateCall, [
+    VoidCallback? onStart,
+    VoidCallback? onEnd,
+  ]) {
+    if (oldList.isEmpty && newList.isEmpty) {
+      onStart?.call();
+      updateCall.call([]);
+      onEnd?.call();
+      return [];
+    }
+    Set<dynamic> oldSet = Set.from(oldList.map((e) => e.data));
+    Set<dynamic> newSet = Set.from(newList.map((e) => e.data));
+
+    Map<dynamic, N> removeSet = {};
+    Map<dynamic, N> addSet = {};
+    Map<dynamic, N> updateSet = {};
     for (var n in oldList) {
       dynamic key = n.data;
-      if (newMap.containsKey(key)) {
-        updateSet.add(key);
+      if (newSet.contains(key)) {
+        updateSet[key] = n;
       } else {
-        removeSet.add(key);
+        removeSet[key] = n;
       }
     }
     for (var n in newList) {
       dynamic key = n.data;
-      if (oldMap.containsKey(key)) {
-        updateSet.add(key);
+      if (oldSet.contains(key)) {
+        updateSet[key] = n;
       } else {
-        addSet.add(key);
+        addSet[key] = n;
       }
     }
 
-    Map<dynamic, double> startMap = {};
-    Map<dynamic, double> endMap = {};
-
-    oldMap.forEach((key, value) {
-      startMap[key] = startFun.call(value, false);
+    Map<dynamic, Map<String, dynamic>> startMap = {};
+    Map<dynamic, Map<String, dynamic>> endMap = {};
+    addSet.forEach((key, value) {
+      startMap[key] = startFun.call(value, DiffType.add);
+      endMap[key] = endFun.call(value, DiffType.add);
     });
-    newMap.forEach((key, value) {
-      endMap[key] = endFun.call(value, true);
+    updateSet.forEach((key, value) {
+      startMap[key] = startFun.call(value, DiffType.update);
+      endMap[key] = endFun.call(value, DiffType.update);
+    });
+    removeSet.forEach((key, value) {
+      startMap[key] = startFun.call(value, DiffType.remove);
+      endMap[key] = endFun.call(value, DiffType.remove);
     });
 
-    for (var d in removeSet) {
-      endMap[d] = endFun.call(oldMap[d] as N, false);
-    }
+    final List<N> resultList = [...removeSet.values, ...addSet.values, ...updateSet.values];
 
-    for (var d in addSet) {
-      startMap[d] = startFun.call(newMap[d] as N, true);
-    }
-
-    final List<N> nodeList = [];
-    for (var d in [...removeSet, ...addSet, ...updateSet]) {
-      N n = (oldMap[d] ?? newMap[d])!;
-      nodeList.add(n);
-    }
     List<TweenWrap> tweenList = [];
 
-    bool hasCallStart = false;
-    bool hasCallEnd = false;
+    ChartTween? startTween;
+    ChartTween? endTween;
+    int endTime = 0;
 
     if (addSet.isNotEmpty) {
-      ChartDoubleTween addTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-      addTween.startListener = () {
-        if (!hasCallStart) {
-          hasCallStart = true;
-          onStart?.call();
-        }
-      };
+      var addTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
       addTween.addListener(() {
         double t = addTween.value;
-        for (var d in addSet) {
-          N node = (oldMap[d] ?? newMap[d])!;
-          double s = startMap[d] as double;
-          double e = endMap[d] as double;
-          lerpFun.call(node, lerpDouble(s, e, t)!);
-        }
-        resultCall.call(nodeList);
-      });
-      addTween.endListener = () {
-        if (!hasCallEnd) {
-          hasCallEnd = true;
-          onEnd?.call();
-        }
-        resultCall.call(nodeList);
-      };
-      tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
-    }
-    if (removeSet.isNotEmpty) {
-      ChartDoubleTween removeTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-      removeTween.startListener = () {
-        if (!hasCallStart) {
-          hasCallStart = true;
-          onStart?.call();
-        }
-      };
-      removeTween.endListener = () {
-        nodeList.removeWhere((e) {
-          return removeSet.contains(e.data);
+        addSet.forEach((key, value) {
+          var s = startMap[key]!;
+          var e = endMap[key]!;
+          lerpFun.call(value, s, e, t, DiffType.add);
         });
-        resultCall.call(nodeList);
-        if (!hasCallEnd) {
-          hasCallEnd = true;
-          onEnd?.call();
-        }
-      };
+        updateCall.call(resultList);
+      });
+      tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
+      startTween = addTween;
+      endTween = addTween;
+      endTime = attrs.duration.inMilliseconds;
+    }
+
+    if (removeSet.isNotEmpty) {
+      var removeTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+      removeTween.addEndListener(() {
+        resultList.removeWhere((e) {
+          return removeSet.containsKey(e.data);
+        });
+        updateCall.call(resultList);
+      });
       removeTween.addListener(() {
         double t = removeTween.value;
-        for (var d in removeSet) {
-          N node = (oldMap[d] ?? newMap[d])!;
-          var s = startMap[d] as double;
-          var e = endMap[d] as double;
-          lerpFun.call(node, lerpDouble(s, e, t)!);
-        }
-        resultCall.call(nodeList);
+        removeSet.forEach((key, value) {
+          var s = startMap[key]!;
+          var e = endMap[key]!;
+          lerpFun.call(value, s, e, t, DiffType.remove);
+        });
+        updateCall.call(resultList);
       });
       tweenList.add(TweenWrap(removeTween, TweenWrap.removeStatus));
+      startTween ??= removeTween;
+      endTween ??= removeTween;
+      endTime = attrs.duration.inMilliseconds;
     }
-    if (updateSet.isNotEmpty) {
-      ///优化不需要更新的节点
-      final List<N> needUpdateList = [];
-      for (var d in updateSet) {
-        N node = (oldMap[d] ?? newMap[d])!;
-        var s = startMap[d] as double;
-        var e = endMap[d] as double;
-        if (s != e) {
-          needUpdateList.add(node);
-        }
-      }
 
-      if (needUpdateList.isNotEmpty) {
-        ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-        updateTween.startListener = () {
-          if (!hasCallStart) {
-            hasCallStart = true;
-            onStart?.call();
-          }
-        };
-        updateTween.endListener = () {
-          resultCall.call(nodeList);
-          if (!hasCallEnd) {
-            hasCallEnd = true;
-            onEnd?.call();
-          }
-        };
-        updateTween.addListener(() {
-          double t = updateTween.value;
-          for (var n in needUpdateList) {
-            var s = startMap[n.data] as double;
-            var e = endMap[n.data] as double;
-            lerpFun.call(n, lerpDouble(s, e, t)!);
-          }
-          resultCall.call(nodeList);
+    if (updateSet.isNotEmpty) {
+      var updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+      updateTween.addListener(() {
+        double t = updateTween.value;
+        updateSet.forEach((key, value) {
+          var s = startMap[key]!;
+          var e = endMap[key]!;
+          lerpFun.call(value, s, e, t, DiffType.update);
         });
-        tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
+        updateCall.call(resultList);
+      });
+      tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
+      startTween ??= updateTween;
+      if (endTween != null) {
+        if (attrs.updateDuration.inMilliseconds > endTime) {
+          endTween = updateTween;
+          endTime = attrs.updateDuration.inMilliseconds;
+        }
+      } else {
+        endTween = updateTween;
+        endTime = attrs.updateDuration.inMilliseconds;
       }
     }
+
+    startTween?.addStartListener(() {
+      onStart?.call();
+    });
+
+    endTween?.addEndListener(() {
+      onEnd?.call();
+    });
 
     List<AnimationNode> nl = [];
     for (var wrap in tweenList) {
@@ -624,10 +329,10 @@ class DiffUtil {
     });
     final List<N> nodeList = [...oldList, ...newList];
 
-    ChartDoubleTween updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
-    updateTween.endListener = () {
+    var updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+    updateTween.addEndListener(() {
       callback.call();
-    };
+    });
     updateTween.addListener(() {
       double t = updateTween.value;
       for (var n in nodeList) {
@@ -698,7 +403,5 @@ class TweenWrap {
 enum DiffType {
   add,
   remove,
-  accessor,
+  update,
 }
-
-enum UpdateType { add, update, remove }

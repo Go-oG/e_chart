@@ -298,7 +298,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     final startMap = diffResult.startMap;
     final endMap = diffResult.endMap;
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animation!);
-    doubleTween.startListener = () {
+    doubleTween.addStartListener(() {
       Map<T, SingleNode<T, P>> map = {};
       diffResult.startMap.forEach((key, value) {
         if (key.originData != null) {
@@ -308,8 +308,8 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
       showNodeMap = map;
       updateNodeMap(map);
       onAnimatorStart(diffResult);
-    };
-    doubleTween.endListener = () {
+    });
+    doubleTween.addEndListener(() {
       Map<T, SingleNode<T, P>> map = {};
       for (var value in diffResult.endList) {
         if (value.originData != null) {
@@ -320,7 +320,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
       updateNodeMap(newNodeMap);
       onAnimatorEnd(diffResult);
       notifyLayoutEnd();
-    };
+    });
     doubleTween.addListener(() {
       double t = doubleTween.value;
       each(diffResult.startList, (node, p1) {
@@ -335,7 +335,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   @override
   StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
     final Rect rect = node.rect;
-    if (diffType == DiffType.accessor) {
+    if (diffType == DiffType.update) {
       return StackAnimationNode(rect: rect, offset: rect.center);
     }
 

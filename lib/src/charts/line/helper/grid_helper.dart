@@ -93,7 +93,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
 
   @override
   StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
-    if (diffType == DiffType.accessor) {
+    if (diffType == DiffType.update) {
       return StackAnimationNode(offset: node.position);
     }
     return StackAnimationNode(offset: Offset(node.position.dx, height));

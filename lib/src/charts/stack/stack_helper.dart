@@ -286,7 +286,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     final startMap = diffResult.startMap;
     final endMap = diffResult.endMap;
     ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: animation);
-    doubleTween.startListener = () {
+    doubleTween.addStartListener(() {
       Map<T, SingleNode<T, P>> sm = {};
       startMap.forEach((key, value) {
         if (key.originData != null) {
@@ -296,8 +296,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       _nodeMap = sm;
       showNodeMap = sm;
       onAnimatorStart(diffResult);
-    };
-    doubleTween.endListener = () {
+    });
+    doubleTween.addEndListener(() {
       _nodeMap = newNodeMap;
       Map<T, SingleNode<T, P>> sm = {};
       startMap.forEach((key, value) {
@@ -308,7 +308,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       showNodeMap = sm;
       onAnimatorEnd(diffResult);
       notifyLayoutEnd();
-    };
+    });
     doubleTween.addListener(() {
       double t = doubleTween.value;
       each(diffResult.startList, (node, p1) {
