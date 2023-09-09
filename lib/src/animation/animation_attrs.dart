@@ -15,7 +15,7 @@ class AnimationAttrs {
   const AnimationAttrs({
     this.duration = const Duration(milliseconds: 1200),
     this.updateDuration = const Duration(milliseconds: 400),
-    this.delay = const Duration(milliseconds: 30),
+    this.delay = Duration.zero,
 
     ///这里默认有个延迟是为了让动画更自然
     this.updateDelay = Duration.zero,

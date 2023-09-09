@@ -11,7 +11,7 @@ class PathSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void onDraw(Canvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }

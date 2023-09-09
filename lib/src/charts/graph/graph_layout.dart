@@ -28,7 +28,7 @@ abstract class GraphLayout extends LayoutHelper2<GraphNode, GraphSeries> {
   }
 
   @override
-  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
+  void onRunUpdateAnimation(var list, var animation) {
     notifyLayoutUpdate();
   }
 

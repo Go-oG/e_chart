@@ -28,9 +28,9 @@ class SectorSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
-    itemStyle?.drawArc(canvas, paint, arc);
-    borderStyle?.drawPath(canvas, paint, arc.toPath());
+  void onDraw(Canvas canvas, Paint paint) {
+    itemStyle.drawArc(canvas, paint, arc);
+    borderStyle.drawPath(canvas, paint, arc.toPath());
   }
 
   @override
@@ -38,8 +38,8 @@ class SectorSymbol extends ChartSymbol {
     return SectorSymbol(
       lerpDouble(ir, end.ir, t)!,
       lerpDouble(or, end.or, t)!,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t)??AreaStyle.empty,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t)??LineStyle.empty,
     );
   }
 

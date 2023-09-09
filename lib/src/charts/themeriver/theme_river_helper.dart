@@ -152,32 +152,14 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
   }
 
   @override
-  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
-    oldNode?.attr.index = 0;
-    newNode?.attr.index = 100;
+  void onRunUpdateAnimation(var list, var animation) {
+    for(var diff in list){
+      diff.node.attr.index=diff.old?0:100;
+    }
     nodeList.sort((a, b) {
       return a.attr.index.compareTo(b.attr.index);
     });
-    ChartDoubleTween tween = ChartDoubleTween(props: series.animation!);
-    AreaStyleTween? selectTween;
-    AreaStyleTween? unselectTween;
-    if (newNode != null) {
-      selectTween = AreaStyleTween(newNode.itemStyle, getStyle(newNode));
-    }
-    if (oldNode != null) {
-      unselectTween = AreaStyleTween(oldNode.itemStyle, getStyle(oldNode));
-    }
-    tween.addListener(() {
-      double p = tween.value;
-      if (selectTween != null) {
-        newNode!.itemStyle = selectTween.safeGetValue(p);
-      }
-      if (unselectTween != null) {
-        oldNode!.itemStyle = unselectTween.safeGetValue(p);
-      }
-      notifyLayoutUpdate();
-    });
-    tween.start(context);
+    super.onRunUpdateAnimation(list, animation);
   }
 }
 

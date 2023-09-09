@@ -21,12 +21,13 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
       nodeList = newList;
       return;
     }
-    var an = DiffUtil.diffLayout<Rect, HeatMapData, HeatMapNode>(
+    var an = DiffUtil.diffLayout3<HeatMapNode>(
       animation,
       oldList,
       newList,
-      (data, node, add) => Rect.fromCenter(center: node.attr.center, width: 0, height: 0),
-      (s, e, t) => Rect.lerp(s, e, t)!,
+      (node, add) => add ? 0 : node.symbol.scale,
+      (node, add) => add ? 1 : 0,
+      (node, t) => node.symbol.scale = t,
       (resultList) {
         nodeList = resultList;
         notifyLayoutUpdate();
@@ -41,7 +42,6 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
       var node = HeatMapNode(e, i);
       rl.add(node);
     });
-
     return rl;
   }
 
@@ -71,31 +71,5 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
   @override
   SeriesType get seriesType => SeriesType.heatmap;
 
-  @override
-  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
-    List<ChartTween> tl = [];
-    if (oldNode != null) {
-      var oldStyle = oldAttr!.itemStyle;
-      var style = oldNode.itemStyle;
-      AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: animation);
-      tween.addListener(() {
-        oldNode.itemStyle = tween.value;
-        notifyLayoutUpdate();
-      });
-      tl.add(tween);
-    }
-    if (newNode != null) {
-      var oldStyle = newAttr!.itemStyle;
-      var style = newNode.itemStyle;
-      var tween = AreaStyleTween(oldStyle, style, props: animation);
-      tween.addListener(() {
-        newNode.itemStyle = tween.value;
-        notifyLayoutUpdate();
-      });
-      tl.add(tween);
-    }
-    for (var tw in tl) {
-      tw.start(context, true);
-    }
-  }
+
 }

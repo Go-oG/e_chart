@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../utils/platform_util.dart';
@@ -17,6 +18,19 @@ class AreaStyle {
     this.shader,
     this.shadow = const [],
   });
+
+  @override
+  int get hashCode {
+    return Object.hashAll([color, shader, shadow]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! AreaStyle) {
+      return false;
+    }
+    return other.color == color && other.shader == shader && listEquals(other.shadow, shadow);
+  }
 
   @override
   String toString() {
@@ -122,7 +136,7 @@ class AreaStyle {
   }
 
   AreaStyle convert(Set<ViewState>? states) {
-    if (states == null || states.isEmpty) {
+    if (states == null || states.isEmpty || notDraw) {
       return this;
     }
     final Color? color = this.color == null ? null : ColorResolver(this.color!).resolve(states);
@@ -159,12 +173,22 @@ class AreaStyle {
     return color;
   }
 
-  static AreaStyle? lerp(AreaStyle? start, AreaStyle? end, double t) {
+  static AreaStyle lerp(AreaStyle? start, AreaStyle? end, double t) {
+    if (start == end) {
+      if (end == null) {
+        return AreaStyle.empty;
+      }
+      return end;
+    }
     var c = Color.lerp(start?.color, end?.color, t);
     var ss = start?.shader;
     var es = end?.shader;
     var shader = ChartShader.lerpShader(ss, es, t);
     var shadow = BoxShadow.lerpList(start?.shadow, end?.shadow, t) ?? [];
+
+    if (c == null && shader == null && shadow.isEmpty) {
+      return AreaStyle.empty;
+    }
     return AreaStyle(color: c, shader: shader, shadow: shadow);
   }
 }

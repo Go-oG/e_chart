@@ -9,10 +9,10 @@ import '../../core/view_state.dart';
 import 'shader.dart';
 
 class SweepShader extends ChartShader {
-  double startAngle;
-  double endAngle;
+  final double startAngle;
+  final double endAngle;
 
-  SweepShader(
+  const SweepShader(
     super.colors, {
     this.startAngle = 0,
     this.endAngle = 360,
@@ -20,6 +20,23 @@ class SweepShader extends ChartShader {
     super.tileMode = TileMode.clamp,
     super.matrix4,
   });
+
+  @override
+  int get hashCode {
+    int sp = super.hashCode;
+    return Object.hash(sp, startAngle, endAngle);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! SweepShader) {
+      return false;
+    }
+    if (other.startAngle != startAngle || other.endAngle != endAngle) {
+      return false;
+    }
+    return super == other;
+  }
 
   @override
   ui.Shader toShader(Rect rect) {

@@ -23,12 +23,11 @@ class ArrowSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void onDraw(Canvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }
     canvas.save();
-    canvas.translate(offset.dx, offset.dy);
     canvas.rotate(rotate * pi / 180);
     itemStyle?.drawPath(canvas, paint, path);
     borderStyle?.drawPath(canvas, paint, path);

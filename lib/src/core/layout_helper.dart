@@ -259,7 +259,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       notifyLayoutUpdate();
       return;
     }
-    onRunUpdateAnimation(old, oldAttr, null, null, animation);
+    onRunUpdateAnimation([NodeDiff(old, oldAttr, old.toAttr(), true)], animation);
   }
 
   N? oldHoverNode;
@@ -284,13 +284,20 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
     }
 
+    List<NodeDiff<N>> nl = [];
+
     if (oldNode != null) {
+      var oldAttr = oldNode.toAttr();
       oldNode.removeState(ViewState.hover);
       onUpdateNodeStyle(oldNode);
+      nl.add(NodeDiff(oldNode, oldAttr, oldNode.toAttr(), true));
     }
+
     if (clickNode != null) {
+      var newAttr = clickNode.toAttr();
       clickNode.addState(ViewState.hover);
       onUpdateNodeStyle(clickNode);
+      nl.add(NodeDiff(clickNode, newAttr, clickNode.toAttr(), false));
     }
 
     var animator = series.animation;
@@ -299,7 +306,9 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       notifyLayoutUpdate();
       return;
     }
-    onRunUpdateAnimation(oldNode, oldNode?.toAttr(), clickNode, clickNode?.toAttr(), animator);
+    if (nl.isNotEmpty) {
+      onRunUpdateAnimation(nl, animator);
+    }
     onHandleHoverAndClickEnd(oldNode, clickNode);
   }
 
@@ -309,7 +318,26 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     node.updateStyle(context, series);
   }
 
-  void onRunUpdateAnimation(N? oldNode, NodeAttr? oldAttr, N? newNode, NodeAttr? newAttr, AnimationAttrs animation);
+  void onRunUpdateAnimation(List<NodeDiff<N>> list, AnimationAttrs animation) {
+    List<ChartTween> tl = [];
+    for (var diff in list) {
+      var node = diff.node;
+      var s = diff.startAttr;
+      var e = diff.endAttr;
+      var tween = ChartDoubleTween(props: animation);
+      tween.addListener(() {
+        var t = tween.value;
+        node.itemStyle = AreaStyle.lerp(s.itemStyle, e.itemStyle, t);
+        node.borderStyle = LineStyle.lerp(s.borderStyle, e.borderStyle, t);
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+    }
+    for (var tw in tl) {
+      tw.start(context, true);
+    }
+
+  }
 
   N? findNode(Offset offset) {
     var hoveNode = oldHoverNode;
@@ -343,6 +371,15 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     }
     return Offset.zero;
   }
+}
+
+class NodeDiff<N extends DataNode> {
+  final N node;
+  final NodeAttr startAttr;
+  final NodeAttr endAttr;
+  final bool old;
+
+  const NodeDiff(this.node, this.startAttr, this.endAttr, this.old);
 }
 
 enum LayoutType { none, layout, update }

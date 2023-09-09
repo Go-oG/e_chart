@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../shader/shader.dart' as sd;
 
@@ -30,6 +31,31 @@ class LineStyle {
     this.smooth = 0,
     this.align = Align2.center,
   });
+
+  @override
+  int get hashCode {
+    return Object.hashAll(
+        [color, width, cap, join, Object.hashAll(dash), Object.hashAll(shadow), shader, smooth, align]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if(other is! LineStyle){
+      return false;
+    }
+    if(other.color!=color){return false;}
+    if(other.width!=width){return false;}
+    if(other.cap!=cap){return false;}
+    if(other.join!=join){return false;}
+    if(!listEquals(other.dash, dash)){
+      return false;
+    }
+    if(!listEquals(other.shadow, shadow)){return false;}
+    if(other.shader!=shader){return false;}
+    if(other.smooth!=smooth){return false;}
+    return other.align==align;
+
+  }
 
   Color? pickColor() {
     if (shader != null) {
@@ -250,20 +276,25 @@ class LineStyle {
 
   bool get canDraw => width > 0;
 
-  static LineStyle? lerp(LineStyle? start, LineStyle? end, double t) {
+  static LineStyle lerp(LineStyle? start, LineStyle? end, double t) {
     if (start == null && end == null) {
-      return null;
+      return LineStyle.empty;
     }
     var c = Color.lerp(start?.color, end?.color, t);
     var ss = start?.shader;
     var es = end?.shader;
     var shader = ChartShader.lerpShader(ss, es, t);
     var shadow = BoxShadow.lerpList(start?.shadow, end?.shadow, t) ?? [];
+    var w = lerpDouble(start?.width, end?.width, t)!;
+    if (w <= 0) {
+      return LineStyle.empty;
+    }
+
     return LineStyle(
       color: c,
       shader: shader,
       shadow: shadow,
-      width: lerpDouble(start?.width, end?.width, t)!,
+      width: w,
       dash: ChartShader.lerpDoubles(start?.dash, end?.dash, t) ?? [],
       smooth: lerpDouble(start?.smooth, end?.smooth, t)!,
       cap: (end?.cap ?? start?.cap)!,

@@ -1,10 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import '../shape/star.dart';
-import '../style/index.dart';
-import 'chart_symbol.dart';
-
 class StarSymbol extends ChartSymbol {
   final Star star;
 
@@ -15,15 +11,13 @@ class StarSymbol extends ChartSymbol {
   });
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void onDraw(Canvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
-    itemStyle?.drawPath(canvas, paint, star.toPath());
-    borderStyle?.drawPath(canvas, paint, star.toPath());
-    canvas.restore();
+
+    itemStyle.drawPath(canvas, paint, star.toPath());
+    borderStyle.drawPath(canvas, paint, star.toPath());
   }
 
   @override
@@ -38,8 +32,8 @@ class StarSymbol extends ChartSymbol {
   ChartSymbol lerp(covariant StarSymbol end, double t) {
     return StarSymbol(
       Star.lerp(star, end.star, t),
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ?? AreaStyle.empty,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t) ?? LineStyle.empty,
     );
   }
 

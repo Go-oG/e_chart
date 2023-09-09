@@ -5,9 +5,6 @@ import 'package:e_chart/e_chart.dart';
 import 'point_node.dart';
 
 class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
-  static const String _size = "originSize";
-  static const String _center = "originCenter";
-
   PointHelper(super.context, super.series);
 
   @override
@@ -16,15 +13,11 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     List<PointNode> newList = [];
     each(series.data, (group, i) {
       each(group.data, (e, ci) {
-        var node = PointNode(series.symbolFun.call(e, group, {}), group, e, ci, i);
+        var node = PointNode(series.getSymbol(context, e, ci, group, {}), group, e, ci, i);
         newList.add(node);
       });
     });
     layoutNode(newList);
-    each(newList, (node, p1) {
-      node.extSet(_size, node.attr.size);
-      node.extSet(_center, node.attr.offset);
-    });
 
     var animation = series.animation;
     if (animation == null || type == LayoutType.none) {
@@ -37,31 +30,23 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       nodeList = newList;
       return;
     }
-
-    var an = DiffUtil.diffLayout<PointAttr, PointData, PointNode>(
+    var an = DiffUtil.diffLayout3(
       animation,
       oldList,
       newList,
-      (data, node, add) => PointAttr.all(node.attr.offset, Size.zero),
-      (s, e, t) {
-        PointAttr size = PointAttr();
-        if (s.offset == e.offset) {
-          size.offset = e.offset;
-        } else {
-          size.offset = Offset.lerp(s.offset, e.offset, t)!;
-        }
-        if (s.size == e.size) {
-          size.size = e.size;
-        } else {
-          size.size = Size.lerp(s.size, e.size, t)!;
-        }
-        return size;
+      (node, add) {
+        return add ? 0 : node.symbol.scale;
+      },
+      (node, add) => add ? 1 : 0,
+      (node, t) {
+        node.symbol.scale = t;
       },
       (resultList) {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
     );
+
     context.addAnimationToQueue(an);
   }
 
@@ -90,16 +75,14 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       } else {
         throw ChartError('x 或y 必须有一个是DateTime');
       }
-      node.attr.offset = coord.dataToPosition(t).center;
-      node.attr.size = node.symbol.size;
+      node.attr = coord.dataToPosition(t).center;
     }
   }
 
   void _layoutForPolar(List<PointNode> nodeList, PolarCoord coord) {
     for (var node in nodeList) {
-      PolarPosition position = coord.dataToPosition(node.data.x, node.data.y);
-      node.attr.offset = position.position;
-      node.attr.size = node.symbol.size;
+      var position = coord.dataToPosition(node.data.x, node.data.y);
+      node.attr = position.position;
     }
   }
 
@@ -119,8 +102,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       } else {
         oy = (y.first.dy + y.last.dy) / 2;
       }
-      node.attr.offset = Offset(ox, oy);
-      node.attr.size = node.symbol.size;
+      node.attr = Offset(ox, oy);
     }
   }
 
@@ -142,32 +124,38 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   SeriesType get seriesType => SeriesType.point;
 
   @override
-  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
-    Offset diffSize = const Offset(4, 4);
+  void onRunUpdateAnimation(var list, var animation) {
     List<PointNode> oldList = [];
-    if (oldNode != null) {
-      oldList.add(oldNode);
-    }
     List<PointNode> newList = [];
-    if (newNode != null) {
-      newList.add(newNode);
+    for (var diff in list) {
+      diff.node.drawIndex = diff.old ? 0 : 100;
+      if (diff.old) {
+        oldList.add(diff.node);
+      } else {
+        newList.add(diff.node);
+      }
     }
+    nodeList.sort((a, b) {
+      return a.drawIndex.compareTo(b.drawIndex);
+    });
 
-    DiffUtil.diffUpdate<PointAttr, PointData, PointNode>(
-      context,
-      animation,
-      oldList,
-      newList,
-      (data, node, isOld) {
-        Offset offset = node.extGet(_center)!;
-        Size size = node.extGet(_size)!;
-        if (isOld) {
-          return PointAttr.all(offset, (size - diffSize) as Size);
-        }
-        return PointAttr.all(offset, size + diffSize);
-      },
-      PointAttr.lerp,
-      notifyLayoutUpdate,
-    );
+    List<ChartTween> tl = [];
+    for (var diff in list) {
+      var node = diff.node;
+      var scale = diff.startAttr.symbolScale;
+      var end = diff.old ? 1 : (1 + 8 / node.symbol.size.shortestSide);
+      var tw = ChartDoubleTween(props: animation);
+      tw.addListener(() {
+        var t = tw.value;
+        node.symbol.scale = lerpDouble(scale, end, t)!;
+        node.itemStyle = AreaStyle.lerp(diff.startAttr.itemStyle, diff.endAttr.itemStyle, t);
+        node.borderStyle = LineStyle.lerp(diff.startAttr.borderStyle, diff.endAttr.borderStyle, t);
+        notifyLayoutUpdate();
+      });
+      tl.add(tw);
+    }
+    for (var t in tl) {
+      t.start(context, true);
+    }
   }
 }

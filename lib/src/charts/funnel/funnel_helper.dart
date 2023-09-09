@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -211,41 +213,26 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
   SeriesType get seriesType => SeriesType.funnel;
 
   @override
-  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
+  void onRunUpdateAnimation(var list, var animation) {
     List<ChartTween> tl = [];
-    if (oldNode != null) {
-      var oldStyle = oldAttr!.itemStyle;
-      var style = oldNode.itemStyle;
-      AreaStyleTween tween = AreaStyleTween(oldStyle, style, props: animation);
-      tween.addListener(() {
-        oldNode.itemStyle = tween.value;
-        notifyLayoutUpdate();
-      });
-      tl.add(tween);
-      var tween2 = ChartDoubleTween.fromValue((oldAttr.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animation);
+    for (var diff in list) {
+      var node = diff.node;
+      var startAttr = diff.startAttr;
+      var endAttr = diff.endAttr;
+      var tween2 = ChartDoubleTween.fromValue(0, 1, props: animation);
+      var s = startAttr.labelConfig?.scaleFactor ?? 1;
       tween2.addListener(() {
-        oldNode.labelConfig = oldNode.labelConfig?.copyWith(scaleFactor: tween2.value);
-      });
-      tl.add(tween2);
-    }
-    if (newNode != null) {
-      var oldStyle = newAttr!.itemStyle;
-      var style = newNode.itemStyle;
-      var tween = AreaStyleTween(oldStyle, style, props: animation);
-      tween.addListener(() {
-        newNode.itemStyle = tween.value;
+        var t = tween2.value;
+        node.itemStyle = AreaStyle.lerp(startAttr.itemStyle, endAttr.itemStyle, t)!;
+        node.labelConfig = node.labelConfig?.copyWith(scaleFactor: lerpDouble(s, 1, t)!);
         notifyLayoutUpdate();
-      });
-      tl.add(tween);
-      var tween2 = ChartDoubleTween.fromValue((newAttr.labelConfig?.scaleFactor ?? 1).toDouble(), 1, props: animation);
-      tween2.addListener(() {
-        newNode.labelConfig = newNode.labelConfig?.copyWith(scaleFactor: tween2.value);
       });
       tl.add(tween2);
     }
     for (var tw in tl) {
       tw.start(context, true);
     }
+
   }
 }
 

@@ -10,7 +10,7 @@ class EmptySymbol extends ChartSymbol {
   Size get size => const Size(0, 0);
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {}
+  void onDraw(Canvas canvas, Paint paint) {}
 
   @override
   bool contains(Offset center, Offset point) {

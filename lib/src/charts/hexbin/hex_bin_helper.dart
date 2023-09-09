@@ -33,25 +33,26 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
   /// 子类一般情况下不应该重写改方法
   @override
   void doLayout(Rect rect, Rect globalBoxBound, LayoutType type) {
-    dragX=dragY=0;
+    dragX = dragY = 0;
     boxBound = rect;
     this.globalBoxBound = globalBoxBound;
     var oldNodeList = nodeList;
     List<HexbinNode> newList = [];
     each(series.data, (data, p1) {
-      newList.add(HexbinNode(
+      var node = HexbinNode(
+        PositiveSymbol.empty,
         data,
         p1,
         0,
         HexAttr.zero,
-        series.getItemStyle(context, data, p1, null) ?? AreaStyle.empty,
-        series.getBorderStyle(context, data, p1, null) ?? LineStyle.empty,
         series.getLabelStyle(context, data, p1, null) ?? LabelStyle.empty,
-      ));
+      );
+      node.itemStyle = series.getItemStyle(context, data, p1, null) ?? AreaStyle.empty;
+      node.borderStyle = series.getBorderStyle(context, data, p1, null) ?? LineStyle.empty;
+      newList.add(node);
     });
 
     onLayout2(newList, type);
-
     num angleOffset = flat ? _flat.angle : _pointy.angle;
     _zeroCenter = computeZeroCenter(series, width, height);
     Size size = Size.square(radius * 1);
@@ -59,29 +60,28 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
       var center = hexToPixel(_zeroCenter, node.attr.hex, size);
       node.attr.center = center;
       num r = radius;
-      node.attr.shape = PositiveShape(center: center, r: r, count: 6, angleOffset: angleOffset);
+      var symbol = node.symbol;
+      node.symbol = PositiveSymbol(
+        r: r,
+        count: 6,
+        rotate: angleOffset,
+        itemStyle: symbol.itemStyle,
+        borderStyle: symbol.borderStyle,
+      );
     });
     var animation = series.animation;
     if (animation == null) {
       nodeList = newList;
       return;
     }
-    var an = DiffUtil.diffLayout2<HexAttr, ItemData, HexbinNode>(
+    var an = DiffUtil.diffLayout3(
       animation,
       oldNodeList,
       newList,
-      (data, node, add) {
-        num angleOffset = flat ? _flat.angle : _pointy.angle;
-        var attr = HexAttr(node.attr.hex);
-        attr.center = node.attr.center;
-        attr.shape = PositiveShape(center: node.attr.center, count: 6, r: 0, angleOffset: angleOffset);
-        return attr;
-      },
-      (s, e, t, type) {
-        var attr = e.copy(alpha: 1);
-        attr.center = Offset.lerp(s.center, e.center, t)!;
-        attr.shape = PositiveShape.lerp(s.shape, e.shape, t);
-        return attr;
+      (node, add) => add ? 0 : node.symbol.scale,
+      (node, add) => add ? 1 : 0,
+      (node, t) {
+        node.symbol.scale = t;
       },
       (resultList) {
         nodeList = resultList;
@@ -135,37 +135,40 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
   }
 
   @override
-  void onRunUpdateAnimation(
-      HexbinNode? oldNode, NodeAttr? oldAttr, HexbinNode? newNode, NodeAttr? newAttr, AnimationAttrs animation) {
-    oldNode?.drawIndex = 0;
-    newNode?.drawIndex = 100;
+  void onRunUpdateAnimation(var list, var animation) {
+    for (var diff in list) {
+      diff.node.drawIndex = diff.old ? 0 : 100;
+    }
     nodeList.sort((a, b) => a.drawIndex.compareTo(b.drawIndex));
-    HexAttr? os = oldNode?.attr;
-    HexAttr? ns = newNode?.attr;
-    final angleOffset = flat ? _flat.angle : _pointy.angle;
-    var tween = ChartDoubleTween(props: animation);
-    tween.addListener(() {
-      var t = tween.value;
-      if (oldNode != null) {
-        var r = lerpDouble(os!.shape.r, radius, t)!;
-        var angle = lerpDouble(os.shape.angleOffset, angleOffset, t)!;
-        var sp = PositiveShape(center: os.center, r: r, angleOffset: angle, count: 6);
-        oldNode.attr = HexAttr.all(os.hex, sp, sp.center);
-      }
-      if (newNode != null) {
-        var r = lerpDouble(ns!.shape.r, radius * 1.2, t)!;
-        var angle = lerpDouble(ns.shape.angleOffset, angleOffset, t)!;
-        var sp = PositiveShape(center: ns.center, r: r, angleOffset: angle, count: 6);
-        newNode.attr = HexAttr.all(ns.hex, sp, sp.center);
-      }
-      notifyLayoutUpdate();
+
+    List<ChartTween> tl = [];
+    for (var diff in list) {
+      var tween = ChartDoubleTween(props: animation);
+      var node = diff.node;
+      var startAttr = diff.startAttr;
+      var endAttr = diff.endAttr;
+      tween.addListener(() {
+        var t = tween.value;
+        node.itemStyle = AreaStyle.lerp(startAttr.itemStyle, endAttr.itemStyle, t);
+        node.borderStyle = LineStyle.lerp(startAttr.borderStyle, endAttr.borderStyle, t);
+        if (diff.old) {
+          node.symbol.scale = lerpDouble(startAttr.symbolScale, 1, t)!;
+        } else {
+          node.symbol.scale = lerpDouble(startAttr.symbolScale, 1.1, t)!;
+        }
+        notifyLayoutUpdate();
+      });
+      tl.add(tween);
+      tween.start(context, true);
+    }
+    each(tl, (p0, p1) {
+      p0.start(context, true);
     });
-    tween.start(context, true);
   }
 
   @override
   Offset getScroll() {
-    return Offset(dragX,dragY);
+    return Offset(dragX, dragY);
   }
 }
 

@@ -56,22 +56,66 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   bool contains(Offset offset);
 
   NodeAttr toAttr() {
-    return NodeAttr(attr, drawIndex, label, labelConfig, labelLine, itemStyle, borderStyle, labelStyle);
+    return NodeAttr(attr, drawIndex, label, labelConfig, labelLine, itemStyle, borderStyle, labelStyle, 1);
   }
 
   void updateStyle(Context context, covariant ChartSeries series);
+
+  ///更新当前符号的大小
+  void updateSymbolSize(Size size) {}
+}
+
+abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
+  S symbol;
+
+  DataNode2(
+    this.symbol,
+    D data,
+    int dataIndex,
+    int groupIndex,
+    P attr,
+    LabelStyle labelStyle,
+  ) : super(data, dataIndex, groupIndex, attr, symbol.itemStyle, symbol.borderStyle, labelStyle);
+
+  @override
+  set itemStyle(AreaStyle style) {
+    super.itemStyle = style;
+    symbol.itemStyle = style;
+  }
+
+  @override
+  set borderStyle(LineStyle style) {
+    super.borderStyle = style;
+    symbol.borderStyle = style;
+  }
+
+  void setSymbol(S symbol, bool styleUseSymbol) {
+    if (styleUseSymbol) {
+      itemStyle = symbol.itemStyle;
+      borderStyle = symbol.borderStyle;
+    } else {
+      symbol.borderStyle = borderStyle;
+      symbol.itemStyle = itemStyle;
+    }
+    this.symbol = symbol;
+  }
+
+  @override
+  NodeAttr toAttr() {
+    return NodeAttr(attr, drawIndex, label, labelConfig, labelLine, itemStyle, borderStyle, labelStyle, symbol.scale);
+  }
 }
 
 class NodeAttr {
   final dynamic attr;
   final int drawIndex;
-
   final DynamicText? label;
   final TextDrawInfo? labelConfig;
   final List<Offset>? labelLine;
   final AreaStyle itemStyle;
   final LineStyle borderStyle;
   final LabelStyle labelStyle;
+  final double symbolScale;
 
   const NodeAttr(
     this.attr,
@@ -82,6 +126,7 @@ class NodeAttr {
     this.itemStyle,
     this.borderStyle,
     this.labelStyle,
+    this.symbolScale,
   );
 }
 
@@ -93,7 +138,7 @@ class SymbolNode<T> with ViewStateProvider, ExtProps {
 
   Offset center = Offset.zero;
 
-  SymbolNode(this.data, this.symbol, this.dataIndex , this.groupIndex);
+  SymbolNode(this.data, this.symbol, this.dataIndex, this.groupIndex);
 
   void onDraw(Canvas canvas, Paint paint) {
     symbol.draw(canvas, paint, center);

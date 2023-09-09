@@ -33,14 +33,13 @@ class DiamondSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void onDraw(Canvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }
     canvas.save();
-    canvas.translate(offset.dx, offset.dy);
-    itemStyle?.drawPath(canvas, paint, path);
-    borderStyle?.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
+    itemStyle.drawPath(canvas, paint, path);
+    borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
     canvas.restore();
   }
 
@@ -65,8 +64,8 @@ class DiamondSymbol extends ChartSymbol {
       shortSide: ss,
       longSide: ls,
       rotate: rotate,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t)??AreaStyle.empty,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t)??LineStyle.empty,
     );
   }
 

@@ -212,14 +212,15 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
   SeriesType get seriesType => SeriesType.pie;
 
   @override
-  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
+  void onRunUpdateAnimation(var list, var animation) {
     List<PieNode> oldList = [];
-    if (oldNode != null) {
-      oldList.add(oldNode);
-    }
     List<PieNode> newList = [];
-    if (newNode != null) {
-      newList.add(newNode);
+    for (var diff in list) {
+      if (diff.old) {
+        oldList.add(diff.node);
+      } else {
+        newList.add(diff.node);
+      }
     }
     const double rDiff = 8;
 
@@ -234,7 +235,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
           originR = node.attr.outRadius;
           node.extSet("originR", originR);
         }
-        if (node == oldNode) {
+        if (isOld) {
           return node.attr.copy(outRadius: originR);
         }
         return node.attr.copy(outRadius: originR + rDiff);

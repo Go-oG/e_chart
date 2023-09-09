@@ -26,14 +26,22 @@ class HeatMapNode extends DataNode<Rect, HeatMapData> {
 
   @override
   void updateStyle(Context context, covariant HeatMapSeries series) {
-    var symbol = series.getSymbol(context, data, dataIndex, status);
+    var symbol = series.getSymbol(context, data, dataIndex, attr.size, status);
     if (symbol != null) {
       this.symbol = symbol;
+      itemStyle=symbol.itemStyle;
+      borderStyle=symbol.borderStyle;
     } else {
       itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
       borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-      labelStyle = series.getLabelStyle(context, data, status) ?? LabelStyle.empty;
       this.symbol = RectSymbol(borderStyle: borderStyle, itemStyle: itemStyle, rectSize: attr.size);
     }
+    labelStyle = series.getLabelStyle(context, data, status) ?? LabelStyle.empty;
   }
+
+  @override
+  void updateSymbolSize(Size size) {
+    symbol = symbol.copyBySize(size);
+  }
+
 }

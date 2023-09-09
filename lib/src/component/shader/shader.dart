@@ -6,17 +6,35 @@ import 'package:vector_math/vector_math.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 abstract class ChartShader {
-  List<Color> colors;
-  List<double>? colorStops;
-  TileMode tileMode;
-  Float64List? matrix4;
+  final List<Color> colors;
+  final List<double>? colorStops;
+  final TileMode tileMode;
+  final Float64List? matrix4;
 
-  ChartShader(
+  const ChartShader(
     this.colors, {
     this.colorStops,
     this.tileMode = TileMode.clamp,
     this.matrix4,
   });
+
+  @override
+  int get hashCode {
+    var h = colorStops == null ? 2011 : Object.hashAll(colorStops!);
+    return Object.hash(Object.hashAll(colors), h, tileMode, matrix4);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if(other is! ChartShader){
+      return false;
+    }
+    if(!listEquals(other.colors, colors)){
+      return false;
+    }
+    if(!listEquals(colorStops, other.colorStops)){return false;}
+    return other.tileMode==tileMode&&other.matrix4==matrix4;
+  }
 
   ui.Shader toShader(Rect rect);
 

@@ -8,10 +8,10 @@ import 'shader.dart';
 
 class LineShader extends ChartShader {
   /// 表示渐变的偏移量dx,dy取值范围从从[0,1]
-  Offset from;
-  Offset to;
+  final Offset from;
+  final Offset to;
 
-  LineShader(
+  const LineShader(
     super.colors, {
     this.from = const Offset(0, 0.5),
     this.to = const Offset(1, 0.5),
@@ -19,6 +19,23 @@ class LineShader extends ChartShader {
     super.tileMode,
     super.matrix4,
   });
+
+  @override
+  int get hashCode {
+    int sp = super.hashCode;
+    return Object.hash(sp, from, to);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! LineShader) {
+      return false;
+    }
+    if (other.from != from || other.to != to) {
+      return false;
+    }
+    return super == other;
+  }
 
   @override
   ui.Shader toShader(Rect rect) {

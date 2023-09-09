@@ -7,12 +7,24 @@ abstract class ChartSymbol {
 
   Size get size;
 
-  AreaStyle? itemStyle;
-  LineStyle? borderStyle;
+  AreaStyle itemStyle;
+  LineStyle borderStyle;
+  double scale = 1;
 
-  ChartSymbol({this.itemStyle, this.borderStyle});
+  ChartSymbol({this.itemStyle = AreaStyle.empty, this.borderStyle = LineStyle.empty});
 
-  void draw(Canvas canvas, Paint paint, Offset offset);
+  void draw(Canvas canvas, Paint paint, Offset offset) {
+    if (scale <= 0) {
+      return;
+    }
+    canvas.save();
+    canvas.translate(offset.dx, offset.dy);
+    canvas.scale(scale);
+    onDraw(canvas, paint);
+    canvas.restore();
+  }
+
+  void onDraw(Canvas canvas, Paint paint);
 
   bool contains(Offset center, Offset point);
 
@@ -24,10 +36,14 @@ abstract class ChartSymbol {
 
   ChartSymbol copy(SymbolAttr? attr);
 
+  ChartSymbol copyBySize(Size size) {
+    return copy(SymbolAttr(size: size));
+  }
+
   bool checkStyle() {
     var bs = borderStyle;
     var iss = itemStyle;
-    if ((bs == null || bs.notDraw) && (iss == null || iss.notDraw)) {
+    if (bs.notDraw && (iss.notDraw)) {
       return false;
     }
     return true;

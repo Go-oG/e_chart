@@ -9,10 +9,10 @@ import '../../core/view_state.dart';
 import 'shader.dart';
 
 class RadialShader extends ChartShader {
-  Offset? focal;
-  double focalRadius;
+  final Offset? focal;
+  final double focalRadius;
 
-  RadialShader(
+  const RadialShader(
     super.colors, {
     super.colorStops,
     super.tileMode = ui.TileMode.clamp,
@@ -22,6 +22,23 @@ class RadialShader extends ChartShader {
   });
 
   @override
+  int get hashCode {
+    int sp = super.hashCode;
+    return Object.hash(sp, focal, focalRadius);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! RadialShader) {
+      return false;
+    }
+    if (other.focal != focal || other.focalRadius != focalRadius) {
+      return false;
+    }
+    return super == other;
+  }
+
+  @override
   ui.Shader toShader(Rect rect) {
     Offset center = Offset(rect.left + rect.width / 2, rect.top + rect.height / 2);
     double radius = max(rect.width, rect.height) * 0.5;
@@ -29,7 +46,7 @@ class RadialShader extends ChartShader {
   }
 
   @override
-  ChartShader lerp( covariant RadialShader end, double t) {
+  ChartShader lerp(covariant RadialShader end, double t) {
     List<Color> colorList = ChartShader.lerpColors(colors, end.colors, t);
     List<double>? stepList = ChartShader.lerpDoubles(colorStops, end.colorStops, t);
     Float64List? ma = ChartShader.lerpMatrix4(matrix4, end.matrix4, t);

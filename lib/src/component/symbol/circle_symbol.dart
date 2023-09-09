@@ -17,16 +17,16 @@ class CircleSymbol extends ChartSymbol {
   @override
   bool contains(Offset center, Offset point) {
     double dis = point.distance2(center);
-    return dis <= (size.longestSide / 2);
+    return dis <= (scale*size.longestSide / 2);
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void onDraw(Canvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }
-    itemStyle?.drawCircle(canvas, paint, offset, radius);
-    borderStyle?.drawCircle(canvas, paint, offset, radius);
+    itemStyle.drawCircle(canvas, paint, Offset.zero, radius);
+    borderStyle.drawCircle(canvas, paint, Offset.zero, radius);
   }
 
   @override
@@ -34,8 +34,8 @@ class CircleSymbol extends ChartSymbol {
     var or = lerpDouble(radius, end.radius, t)!;
     return CircleSymbol(
       radius: or,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t)??AreaStyle.empty,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t)??LineStyle.empty,
     );
   }
 

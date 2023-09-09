@@ -4,11 +4,11 @@ import 'point_view.dart';
 
 class PointSeries extends RectSeries {
   List<PointGroup> data;
-  Fun4<PointData, PointGroup,Set<ViewState>, ChartSymbol> symbolFun;
+  Fun4<PointData, PointGroup, Set<ViewState>,  ChartSymbol>? symbolFun;
 
   PointSeries(
     this.data, {
-    required this.symbolFun,
+    this.symbolFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -30,5 +30,18 @@ class PointSeries extends RectSeries {
   @override
   ChartView? toView() {
     return PointView(this);
+  }
+
+  ChartSymbol getSymbol(
+      Context context, PointData data, int index, PointGroup group,  Set<ViewState> status) {
+    var fun = symbolFun;
+    if (fun != null) {
+      return fun.call(data, group, status);
+    }
+
+    return CircleSymbol(
+      radius: 10,
+      itemStyle: AreaStyle(color: context.option.theme.getColor(index)).convert(status),
+    );
   }
 }

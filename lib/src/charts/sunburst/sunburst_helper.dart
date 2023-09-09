@@ -442,20 +442,31 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       }
       return;
     }
-
-    oldNode?.removeState(ViewState.hover);
-    oldNode?.updateStyle(context, series);
-    if (oldNode != null && oldNode is! SunburstVirtualNode) {
-      sendHoverEndEvent(oldNode);
+    List<NodeDiff<SunburstNode>> nl = [];
+    if (oldNode != null) {
+      var attr = oldNode.toAttr();
+      oldNode.removeState(ViewState.hover);
+      oldNode.updateStyle(context, series);
+      nl.add(NodeDiff(oldNode, attr, oldNode.toAttr(), true));
+      if (oldNode is! SunburstVirtualNode) {
+        sendHoverEndEvent(oldNode);
+      }
     }
     if (hoverNode != null) {
+      var attr = hoverNode.toAttr();
       hoverNode.addState(ViewState.hover);
       hoverNode.updateStyle(context, series);
+      nl.add(NodeDiff(hoverNode, attr, hoverNode.toAttr(), false));
       if (hoverNode is! SunburstVirtualNode) {
         sendHoverEvent(offset, hoverNode);
       }
     }
-    notifyLayoutUpdate();
+    var animation = series.animation;
+    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+      notifyLayoutUpdate();
+      return;
+    }
+    onRunUpdateAnimation(nl, animation);
   }
 
   num getRadiusDiff(int deep, int maxDeep) {
@@ -464,11 +475,6 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       rd = series.radiusDiffFun!.call(deep, maxDeep, radiusDiff);
     }
     return rd;
-  }
-
-  @override
-  void onRunUpdateAnimation(var oldNode, var oldAttr, var newNode, var newAttr, var animation) {
-    throw ChartError("Not Impl");
   }
 
   @override

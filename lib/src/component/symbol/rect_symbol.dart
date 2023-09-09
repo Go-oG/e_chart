@@ -24,15 +24,12 @@ class RectSymbol extends ChartSymbol {
   }
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void onDraw(Canvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
-    itemStyle?.drawRect(canvas, paint, rect, corner);
-    borderStyle?.drawRect(canvas, paint, rect, corner);
-    canvas.restore();
+    itemStyle.drawRect(canvas, paint, rect, corner);
+    borderStyle.drawRect(canvas, paint, rect, corner);
   }
 
   @override
@@ -41,8 +38,8 @@ class RectSymbol extends ChartSymbol {
     return RectSymbol(
       rectSize: rect.size,
       corner: Corner.lerp(corner, end.corner, t),
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ?? AreaStyle.empty,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t) ?? LineStyle.empty,
     );
   }
 

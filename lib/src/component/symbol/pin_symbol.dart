@@ -22,15 +22,14 @@ class PinSymbol extends ChartSymbol {
   Size get size => Size(r * 2, r * 2.5);
 
   @override
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void onDraw(Canvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }
     canvas.save();
-    canvas.translate(offset.dx, offset.dy);
     canvas.rotate(rotate * pi / 180);
-    itemStyle?.drawPath(canvas, paint, path);
-    borderStyle?.drawPath(canvas, paint, path, needSplit: false, drawDash: true);
+    itemStyle.drawPath(canvas, paint, path);
+    borderStyle.drawPath(canvas, paint, path, needSplit: false, drawDash: true);
     canvas.restore();
   }
 
@@ -62,8 +61,8 @@ class PinSymbol extends ChartSymbol {
     return PinSymbol(
       r: r1,
       rotate: rotate,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t)??AreaStyle.empty,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t)??LineStyle.empty,
     );
   }
 
