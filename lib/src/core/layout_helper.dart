@@ -339,6 +339,17 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
   }
 
+  void sortList(List<N> nodeList){
+    nodeList.sort((a, b) {
+      if (a.drawIndex == 0 && b.drawIndex == 0) {
+        return a.dataIndex.compareTo(b.dataIndex);
+      }
+      if (a.drawIndex != 0) {
+        return 1;
+      }
+      return 0;
+    });
+  }
   N? findNode(Offset offset) {
     var hoveNode = oldHoverNode;
     if (hoveNode != null && hoveNode.contains(offset)) {
@@ -371,6 +382,8 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     }
     return Offset.zero;
   }
+
+
 }
 
 class NodeDiff<N extends DataNode> {

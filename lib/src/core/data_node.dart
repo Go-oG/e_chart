@@ -66,21 +66,25 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
 }
 
 abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
-  S symbol;
+  late S _symbol;
+
+  S get symbol => _symbol;
 
   DataNode2(
-    this.symbol,
+    S symbol,
     D data,
     int dataIndex,
     int groupIndex,
     P attr,
     LabelStyle labelStyle,
-  ) : super(data, dataIndex, groupIndex, attr, symbol.itemStyle, symbol.borderStyle, labelStyle);
+  ) : super(data, dataIndex, groupIndex, attr, symbol.itemStyle, symbol.borderStyle, labelStyle) {
+    _symbol = symbol;
+  }
 
   @override
   set itemStyle(AreaStyle style) {
     super.itemStyle = style;
-    symbol.itemStyle = style;
+    _symbol.itemStyle = style;
   }
 
   @override
@@ -97,7 +101,7 @@ abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
       symbol.borderStyle = borderStyle;
       symbol.itemStyle = itemStyle;
     }
-    this.symbol = symbol;
+    this._symbol = symbol;
   }
 
   @override

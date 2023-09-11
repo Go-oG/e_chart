@@ -47,11 +47,8 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
         HexAttr.zero,
         series.getLabelStyle(context, data, p1, null) ?? LabelStyle.empty,
       );
-      node.itemStyle = series.getItemStyle(context, data, p1, null) ?? AreaStyle.empty;
-      node.borderStyle = series.getBorderStyle(context, data, p1, null) ?? LineStyle.empty;
       newList.add(node);
     });
-
     onLayout2(newList, type);
     num angleOffset = flat ? _flat.angle : _pointy.angle;
     _zeroCenter = computeZeroCenter(series, width, height);
@@ -59,29 +56,82 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
     each(newList, (node, i) {
       var center = hexToPixel(_zeroCenter, node.attr.hex, size);
       node.attr.center = center;
-      num r = radius;
-      var symbol = node.symbol;
-      node.symbol = PositiveSymbol(
-        r: r,
+      var s = PositiveSymbol(
+        r: radius,
         count: 6,
         rotate: angleOffset,
-        itemStyle: symbol.itemStyle,
-        borderStyle: symbol.borderStyle,
+        itemStyle: AreaStyle.empty,
+        borderStyle:LineStyle.empty,
       );
+      node.setSymbol(s, false);
+      node.updateStyle(context, series);
+
     });
     var animation = series.animation;
     if (animation == null) {
       nodeList = newList;
       return;
     }
-    var an = DiffUtil.diffLayout2(
+    var an = DiffUtil.diffLayout3(
       animation,
       oldNodeList,
       newList,
-      (node, add) => add ? 0 : node.symbol.scale,
-      (node, add) => add ? 1 : 0,
-      (node, t) {
-        node.symbol.scale = t;
+      (node, type) {
+        Map<String, dynamic> dm = {};
+        dm['rotate'] = node.symbol.rotate;
+        if (type == DiffType.add) {
+          dm['scale'] = 0;
+        } else if (type == DiffType.remove) {
+          dm['scale'] = node.symbol.scale;
+        } else {
+          dm['size'] = node.symbol.r;
+          dm['center'] = node.attr.center;
+        }
+        return dm;
+      },
+      (node, type) {
+        Map<String, dynamic> dm = {};
+        dm['rotate'] = node.symbol.rotate;
+        if (type == DiffType.add) {
+          dm['scale'] = 1;
+        } else if (type == DiffType.remove) {
+          dm['scale'] = 0;
+        } else {
+          dm['size'] = node.symbol.r;
+          dm['center'] = node.attr.center;
+        }
+        return dm;
+      },
+      (node, s, e, t, type) {
+        num sr = s['rotate']!;
+        num er = e['rotate']!;
+        if (type == DiffType.add || type == DiffType.remove) {
+          node.symbol.scale = lerpDouble(s['scale']!, e['scale']!, t)!;
+        } else {
+          Size ss = s['size']!;
+          Size es = e['size']!;
+          Offset sc = s['center']!;
+          Offset ec = e['center']!;
+          double p = es.shortestSide / ss.shortestSide;
+          p = lerpDouble(1, p, t)!;
+          node.symbol.scale = p;
+          if (sc != ec) {
+            node.attr.center = Offset.lerp(sc, ec, t)!;
+          }
+        }
+        if (sr != er) {
+          var symbol = node.symbol;
+          node.setSymbol(
+              PositiveSymbol(
+                count: 6,
+                r: symbol.r,
+                rotate: lerpDouble(sr, er, t)!,
+                borderStyle: symbol.borderStyle,
+                itemStyle: symbol.itemStyle,
+              ),
+              true);
+          node.symbol.scale = symbol.scale;
+        }
       },
       (resultList) {
         nodeList = resultList;
@@ -139,7 +189,7 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
     for (var diff in list) {
       diff.node.drawIndex = diff.old ? 0 : 100;
     }
-    nodeList.sort((a, b) => a.drawIndex.compareTo(b.drawIndex));
+    sortList(nodeList);
 
     List<ChartTween> tl = [];
     for (var diff in list) {

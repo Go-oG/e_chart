@@ -135,10 +135,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
         newList.add(diff.node);
       }
     }
-    nodeList.sort((a, b) {
-      return a.drawIndex.compareTo(b.drawIndex);
-    });
-
+    sortList(nodeList);
     List<ChartTween> tl = [];
     for (var diff in list) {
       var node = diff.node;

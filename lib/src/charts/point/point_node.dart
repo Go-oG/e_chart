@@ -30,10 +30,7 @@ class PointNode extends DataNode2<Offset, PointData, ChartSymbol> {
 
   @override
   void updateStyle(Context context, covariant PointSeries series) {
-    symbol = series.getSymbol(context, data, dataIndex, group,  status);
-    itemStyle = symbol.itemStyle;
-    borderStyle=symbol.borderStyle;
-    borderStyle = symbol.borderStyle;
+    setSymbol(series.getSymbol(context, data, dataIndex, group, status), true);
   }
 
   @override

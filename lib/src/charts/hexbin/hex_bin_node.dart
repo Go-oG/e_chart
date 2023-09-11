@@ -33,9 +33,11 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
 
   @override
   void updateStyle(Context context, HexbinSeries series) {
-    itemStyle = series.getItemStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
+    itemStyle = series.getItemStyle(context, data, dataIndex, status)??AreaStyle.empty;
+    borderStyle = series.getBorderStyle(context, data, dataIndex, status)??LineStyle.empty;
     labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    symbol.itemStyle=itemStyle;
+    symbol.borderStyle=borderStyle;
   }
 }
 
