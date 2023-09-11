@@ -17,6 +17,7 @@ class SeriesType {
   static const SeriesType themeriver=SeriesType("themeriver");
   static const SeriesType tree=SeriesType("tree");
   static const SeriesType treemap=SeriesType("treemap");
+  static const SeriesType circle=SeriesType("circle");
 
   final String type;
 

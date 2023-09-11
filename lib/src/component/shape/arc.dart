@@ -20,6 +20,27 @@ class Arc implements Shape {
   final num padAngle;
   late final num maxRadius;
 
+  @override
+  int get hashCode {
+    return Object.hash(innerRadius, outRadius, startAngle, sweepAngle, cornerRadius, center, padAngle, maxRadius);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is Arc &&
+        other.innerRadius == innerRadius &&
+        other.outRadius == outRadius &&
+        other.startAngle == startAngle &&
+        other.sweepAngle == sweepAngle &&
+        other.cornerRadius == cornerRadius &&
+        other.center == center &&
+        other.padAngle == padAngle &&
+        other.maxRadius == maxRadius;
+  }
+
   Arc({
     this.innerRadius = 0,
     this.outRadius = 0,
@@ -481,20 +502,18 @@ class Arc implements Shape {
     return Offset(x1, y1);
   }
 
-  static Arc lerp(Arc begin, Arc end, double t) {
-    double innerRadius = lerpDouble(begin.innerRadius, end.innerRadius, t)!;
-    double outerRadius = lerpDouble(begin.outRadius, end.outRadius, t)!;
-    double startAngle = lerpDouble(begin.startAngle, end.startAngle, t)!;
-    double sweepAngle = lerpDouble(begin.sweepAngle, end.sweepAngle, t)!;
-    num corner = lerpDouble(begin.cornerRadius, end.cornerRadius, t)!;
-    num padAngle = lerpDouble(begin.padAngle, end.padAngle, t)!;
-
-    Offset center;
-    if (begin.center == end.center) {
-      center = end.center;
-    } else {
-      center = Offset.lerp(begin.center, end.center, t)!;
+  static Arc lerp(Arc s, Arc e, double t) {
+    if (s == e) {
+      return e;
     }
+    var innerRadius = lerpDouble(s.innerRadius, e.innerRadius, t)!;
+    var outerRadius = lerpDouble(s.outRadius, e.outRadius, t)!;
+    var startAngle = lerpDouble(s.startAngle, e.startAngle, t)!;
+    var sweepAngle = lerpDouble(s.sweepAngle, e.sweepAngle, t)!;
+    num corner = lerpDouble(s.cornerRadius, e.cornerRadius, t)!;
+    num padAngle = lerpDouble(s.padAngle, e.padAngle, t)!;
+
+    var center = s.center == e.center ? s.center : Offset.lerp(s.center, e.center, t)!;
     return Arc(
       center: center,
       cornerRadius: corner,
@@ -503,7 +522,7 @@ class Arc implements Shape {
       startAngle: startAngle,
       sweepAngle: sweepAngle,
       padAngle: padAngle,
-      maxRadius: end.maxRadius,
+      maxRadius: e.maxRadius,
     );
   }
 

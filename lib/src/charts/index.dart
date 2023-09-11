@@ -7,6 +7,9 @@ export 'calendar/calendar_series.dart';
 
 export 'candlestick/candlestick_series.dart';
 
+export 'circle/circle_series.dart';
+export 'circle/circle_node.dart';
+
 export 'funnel/funnel_series.dart';
 
 export 'heatmap/heat_map_series.dart';
