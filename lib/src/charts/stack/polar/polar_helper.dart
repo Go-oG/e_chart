@@ -195,7 +195,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   Offset getTranslation() {
-    return findPolarCoord().getScroll();
+    return findPolarCoord().getTranslation();
   }
   @override
   Offset getMaxTranslation() {

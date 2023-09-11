@@ -314,7 +314,7 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    Offset old = viewPort.getScroll();
+    Offset old = viewPort.getTranslation();
     Offset sc = viewPort.scroll(diff);
     bool hasChange = false;
     if (sc.dx != old.dx) {
@@ -345,7 +345,7 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onDragEnd() {
-    var cs = CoordScroll(props.id, props.coordSystem, viewPort.getScroll());
+    var cs = CoordScroll(props.id, props.coordSystem, viewPort.getTranslation());
     for (var child in children) {
       if (child is CoordChildView) {
         child.onCoordScrollEnd(cs);

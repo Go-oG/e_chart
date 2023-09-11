@@ -18,4 +18,14 @@ class ChartOffset {
   double distance2(Offset o2) {
     return toOffset().distance2(o2);
   }
+
+  void add(Offset other) {
+    x += other.dx;
+    y += other.dy;
+  }
+
+  void sub(Offset other) {
+    x -= other.dx;
+    y -= other.dy;
+  }
 }

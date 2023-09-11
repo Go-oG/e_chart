@@ -43,7 +43,7 @@ class ViewPort {
     return Offset(scrollX.toDouble(), scrollY.toDouble());
   }
 
-  Offset getScroll() {
+  Offset getTranslation() {
     return Offset(scrollX,scrollY);
   }
 

@@ -33,7 +33,6 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
   /// 子类一般情况下不应该重写改方法
   @override
   void doLayout(Rect rect, Rect globalBoxBound, LayoutType type) {
-    dragX = dragY = 0;
     boxBound = rect;
     this.globalBoxBound = globalBoxBound;
     var oldNodeList = nodeList;
@@ -61,11 +60,10 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
         count: 6,
         rotate: angleOffset,
         itemStyle: AreaStyle.empty,
-        borderStyle:LineStyle.empty,
+        borderStyle: LineStyle.empty,
       );
       node.setSymbol(s, false);
       node.updateStyle(context, series);
-
     });
     var animation = series.animation;
     if (animation == null) {
@@ -217,8 +215,8 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
   }
 
   @override
-  Offset getScroll() {
-    return Offset(dragX, dragY);
+  Offset getTranslation() {
+    return translation.toOffset();
   }
 }
 

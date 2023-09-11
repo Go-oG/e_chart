@@ -291,7 +291,7 @@ class CalendarCoordImpl extends CalendarCoord {
   @override
   void onDragMove(Offset offset, Offset diff) {
     super.onDragMove(offset, diff);
-    var old = viewPort.getScroll();
+    var old = viewPort.getTranslation();
     Offset sc = viewPort.scroll(diff);
     if (old.dx != sc.dx || old.dy != sc.dy) {
       invalidate();

@@ -5,7 +5,6 @@ abstract class ChartEvent {}
 class EventInfo {
   ///当前图形元素所属的组件名称，
   final ComponentType componentType;
-
   ///系列类型。值可能为：'line'、'bar'、'pie' 等。
   ///当 componentType 为 'series' 时有意义。
   final SeriesType? seriesType;
@@ -19,6 +18,7 @@ class EventInfo {
 
   ///传入的原始数据项
   final dynamic data;
+  final dynamic node;
 
   /// sankey、graph 等图表同时含有 nodeData 和 edgeData 两种 data，
   /// dataType 的值会是 'node' 或者 'edge'，表示当前点击在 node 还是 edge 上。
@@ -30,10 +30,29 @@ class EventInfo {
     required this.data,
     required this.dataIndex,
     required this.dataType,
+    required this.node,
     this.groupIndex,
     this.seriesType,
     this.seriesIndex,
   });
+
+  @override
+  int get hashCode {
+    return Object.hash(componentType, data, dataType, dataIndex, node, groupIndex, seriesIndex, seriesType);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is EventInfo &&
+        other.seriesIndex == seriesIndex &&
+        other.componentType == componentType &&
+        other.data == data &&
+        other.dataType == dataType &&
+        other.dataIndex == dataIndex &&
+        other.node == node &&
+        other.groupIndex == groupIndex &&
+        other.seriesType == seriesType;
+  }
 
   @override
   String toString() {

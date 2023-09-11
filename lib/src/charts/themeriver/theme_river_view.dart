@@ -3,22 +3,17 @@ import 'package:flutter/material.dart';
 import 'theme_river_helper.dart';
 
 class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
-
   ThemeRiverView(super.series);
 
   @override
   void onDraw(Canvas canvas) {
-    var nodeList=layoutHelper.nodeList;
+    var nodeList = layoutHelper.nodeList;
+    var tx = layoutHelper.translationX;
+    var ty = layoutHelper.translationY;
+    var ap = layoutHelper.animatorPercent;
     canvas.save();
-    var tx=layoutHelper.dragX;
-    var ty=layoutHelper.dragY;
-    var ap=layoutHelper.animatorPercent;
     canvas.translate(tx, ty);
-    if (series.direction == Direction.horizontal) {
-      canvas.clipRect(Rect.fromLTWH(tx.abs(), ty.abs(), width * ap, height));
-    } else {
-      canvas.clipRect(Rect.fromLTWH(tx.abs(), ty.abs(), width, height * ap));
-    }
+    canvas.clipRect(layoutHelper.getClipRect(series.direction,ap));
     for (var ele in nodeList) {
       ele.onDraw(canvas, mPaint);
     }

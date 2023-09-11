@@ -10,8 +10,9 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinLayout> {
   @override
   void onDraw(Canvas canvas) {
     debugDrawRect(canvas, selfBoxBound);
+    var tr = layoutHelper.getTranslation();
     canvas.save();
-    canvas.translate(layoutHelper.dragX, layoutHelper.dragY);
+    canvas.translate(tr.dx, tr.dy);
     for (var node in layoutHelper.nodeList) {
       node.onDraw(canvas, mPaint);
     }
@@ -24,5 +25,4 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinLayout> {
     series.layout.series = series;
     return series.layout;
   }
-
 }

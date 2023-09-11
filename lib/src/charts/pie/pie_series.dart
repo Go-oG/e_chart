@@ -12,7 +12,7 @@ class PieSeries extends RectSeries {
   //外圆最大半径(<=0时为圆)
   SNumber outerRadius;
 
-  ///饼图扫过的角度(范围为(0,360]默认为360)
+  ///饼图扫过的角度(范围最大为360，如果为负数则为逆时针)
   num sweepAngle;
 
   //偏移角度默认为0
@@ -23,9 +23,6 @@ class PieSeries extends RectSeries {
 
   //角度间距(默认为0)
   double angleGap;
-
-  //是否为顺时针
-  bool clockWise;
 
   //动画缩放扩大系数
   SNumber scaleExtend;
@@ -54,7 +51,6 @@ class PieSeries extends RectSeries {
     this.roseType = RoseType.radius,
     this.angleGap = 0,
     this.labelStyleFun,
-    this.clockWise = true,
     this.labelAlign = CircleAlign.inside,
     this.animatorStyle = PieAnimatorStyle.expandScale,
     this.areaStyleFun,

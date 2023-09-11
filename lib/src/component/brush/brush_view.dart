@@ -167,7 +167,7 @@ class BrushView extends ChartView {
     if (!brush.enable) {
       return;
     }
-    var scroll = coord.getScroll();
+    var scroll = coord.getTranslation();
     offset = offset.translate(scroll.dx.abs(), scroll.dy);
     if (brush.removeOnClick && !brush.supportMulti && brushList.isNotEmpty) {
       var first = brushList.first;
@@ -180,7 +180,7 @@ class BrushView extends ChartView {
   }
 
   void onDragStart(Offset offset) {
-    var scroll = coord.getScroll();
+    var scroll = coord.getTranslation();
     offset = offset.translate(scroll.dx.abs(), scroll.dy);
     _ol.clear();
     _first = null;
@@ -196,7 +196,7 @@ class BrushView extends ChartView {
       _first = null;
       return;
     }
-    var scroll = coord.getScroll();
+    var scroll = coord.getTranslation();
     offset = offset.translate(scroll.dx.abs(), scroll.dy);
 
     var first = _first;
@@ -244,7 +244,7 @@ class BrushView extends ChartView {
   }
 
   List<Offset> buildArea(Offset first, Offset offset) {
-    var scroll = coord.getScroll();
+    var scroll = coord.getTranslation();
     if (brush.type == BrushType.rect) {
       return [
         first,

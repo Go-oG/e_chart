@@ -31,7 +31,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
       this.calendarIndex = 0,
       this.radarIndex = 0,
       this.parallelIndex = 0,
-      this.animation = const AnimationAttrs(),
+      this.animation,
       this.coordType,
       this.tooltip,
       this.z = 0,
@@ -60,6 +60,31 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   }
 
   ChartView? toView() {
+    return null;
+  }
+
+  ///获取动画参数
+  ///[threshold]动画执行上限,超过该值则不执行 设置为<=0则不执行任何动画
+  AnimationAttrs? getAnimation(LayoutType type, [int threshold = -1]) {
+    var attr = animation;
+    if (type == LayoutType.none || attr == null) {
+      return null;
+    }
+    if (threshold > 0 && threshold > attr.threshold && attr.threshold > 0) {
+      return null;
+    }
+    if (type == LayoutType.layout) {
+      if (attr.duration.inMilliseconds <= 0) {
+        return null;
+      }
+      return attr;
+    }
+    if (type == LayoutType.update) {
+      if (attr.duration.inMilliseconds <= 0) {
+        return null;
+      }
+      return attr;
+    }
     return null;
   }
 }

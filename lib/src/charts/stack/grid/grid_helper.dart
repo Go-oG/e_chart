@@ -427,7 +427,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
   @override
   Offset getTranslation() {
-    return findGridCoord().getScroll();
+    return findGridCoord().getTranslation();
   }
 
   @override

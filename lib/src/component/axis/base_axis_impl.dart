@@ -66,7 +66,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   final stopWatch = Stopwatch();
 
   void draw(Canvas canvas, Paint paint, Rect coord) {
-    Offset offset = this.coord.getScroll();
+    Offset offset = this.coord.getTranslation();
     onDrawAxisSplitArea(canvas, paint, offset);
     onDrawAxisSplitLine(canvas, paint, offset);
     onDrawAxisTick(canvas, paint, offset);

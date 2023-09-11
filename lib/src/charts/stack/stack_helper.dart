@@ -422,14 +422,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     }
     if (node != null) {
       if (click) {
-        sendClickEvent2(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+        sendClickEvent(offset, node);
       } else {
-        sendHoverEvent2(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+        sendHoverEvent(offset, node);
       }
     }
     if (oldHoverNode != null && !click) {
-      sendHoverEvent2(offset, oldHoverNode!.data,
-          dataIndex: oldHoverNode!.dataIndex, groupIndex: oldHoverNode!.groupIndex);
+      sendHoverEvent(offset, oldHoverNode!);
     }
 
     onHandleHoverEnd(oldHoverNode, node);

@@ -15,11 +15,16 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
   num maxRadius = 0;
 
   num pieAngle = 0;
+  int dir = 1;
   Offset center = Offset.zero;
 
   @override
   void onLayout(LayoutType type) {
-    pieAngle = adjustPieAngle(series.sweepAngle);
+    pieAngle = series.sweepAngle.abs();
+    if (pieAngle > 360) {
+      pieAngle = 360;
+    }
+    dir = series.sweepAngle >= 0 ? 1 : -1;
     center = computeCenterPoint(series.center);
     oldHoverNode = null;
     _preHandleRadius();
@@ -121,9 +126,8 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     }
 
     num startAngle = series.offsetAngle;
-    int direction = series.clockWise ? 1 : -1;
-    remainAngle *= direction;
-    num angleGap = series.angleGap * direction;
+    remainAngle *= dir;
+    num angleGap = series.angleGap * dir;
 
     each(nodeList, (node, i) {
       var pieData = node.data;
@@ -160,11 +164,10 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       remainAngle = 1;
     }
     double startAngle = series.offsetAngle;
-    int direction = series.clockWise ? 1 : -1;
-    double angleGap = series.angleGap.abs() * direction;
+    double angleGap = series.angleGap.abs() * dir;
     if (series.roseType == RoseType.area) {
       // 所有扇区圆心角相同，通过半径展示数据大小
-      double itemAngle = direction * remainAngle / count;
+      double itemAngle = dir * remainAngle / count;
       each(nodeList, (node, i) {
         var pieData = node.data;
         double percent = pieData.value / maxData;
@@ -191,8 +194,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       each(nodeList, (node, i) {
         var pieData = node.data;
         num or = maxRadius * pieData.value / maxData;
-        double sweepAngle = direction * remainAngle * pieData.value / allData;
-
+        double sweepAngle = dir * remainAngle * pieData.value / allData;
         Offset c = center;
         double off = series.getOffset(context, pieData);
         if (off.abs() > 1e-6) {
@@ -220,10 +222,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
   }
 
   num adjustPieAngle(num angle) {
-    if (angle <= 0) {
-      return 1;
-    }
-    if (angle > 360) {
+    if (angle.abs() > 360) {
       return 360;
     }
     return angle.abs();

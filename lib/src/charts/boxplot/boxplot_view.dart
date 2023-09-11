@@ -9,7 +9,7 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
 
   @override
   void onDrawBar(Canvas canvas) {
-    var of = context.findGridCoord().getScroll();
+    var of = context.findGridCoord().getTranslation();
     canvas.save();
     canvas.translate(of.dx, of.dy);
     layoutHelper.showNodeMap.forEach((key, node) {

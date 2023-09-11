@@ -6,12 +6,48 @@ import 'package:e_chart/e_chart.dart';
 ///其包含了事件分发和触摸事件处理
 ///一般情况下和SeriesView 配合使用
 abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command> {
-  late Context context;
-  late S series;
+  Context? _context;
+
+  Context get context {
+    var c = _context;
+    if (c == null) {
+      throw ChartError("Context is Null, This LayoutHelper($runtimeType) maybe dispose");
+    }
+    return c;
+  }
+
+  set context(Context c) => _context = c;
+
+  Context? get contextNull => _context;
+
+  S? _series;
+
+  set series(S s) => _series = s;
+
+  S get series {
+    var s = _series;
+    if (s == null) {
+      throw ChartError("Series is Null, This LayoutHelper($runtimeType) maybe dispose");
+    }
+    return s;
+  }
+
+  S? get seriesNull => _series;
+
+  ///布局边界
   Rect boxBound = Rect.zero;
   Rect globalBoxBound = Rect.zero;
 
-  LayoutHelper(this.context, this.series, {bool equalsObject = false}) : super(Command.none, equalsObject);
+  ///手势相关的中间量
+
+  ///记录平移量(区分正负)
+  ChartOffset translation = ChartOffset(0, 0);
+
+  ///构造函数
+  LayoutHelper(Context context, S series, {bool equalsObject = false}) : super(Command.none, equalsObject) {
+    _context = context;
+    _series = series;
+  }
 
   ///该构造方法用于在无法马上初始化时使用
   ///一般用于Graph等存在多个Layout方式的视图中
@@ -89,42 +125,30 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   void onDataZoom(DataZoomEvent event) {}
 
   ///==============事件发送============
-  ClickEvent? _lastClickEvent;
-
-  void sendClickEvent2(Offset offset, dynamic data,
-      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    var lastEvent = _lastClickEvent;
-    ClickEvent? event;
-    if (lastEvent != null) {
-      var old = lastEvent.event;
-      if (old.data == data && old.dataType == dataType && old.dataIndex == dataIndex && old.groupIndex == groupIndex) {
-        event = lastEvent;
-        event.localOffset = offset;
-        event.globalOffset = toGlobal(offset);
-      }
-    }
-    event ??= ClickEvent(
-      offset,
-      toGlobal(offset),
-      buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
-    );
-    _lastClickEvent = event;
+  void sendClickEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
+    var event = ClickEvent(offset, toGlobal(offset), buildEvent(node, componentType));
     context.dispatchEvent(event);
   }
 
-  void sendClickEvent(Offset offset, DataNode node) {
-    sendClickEvent2(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+  bool equalsEvent(EventInfo old, DataNode node, ComponentType type) {
+    return old.seriesIndex == series.seriesIndex &&
+        old.componentType == type &&
+        old.data == node.data &&
+        old.dataType == node.dataType &&
+        old.dataIndex == node.dataIndex &&
+        old.node == node &&
+        old.groupIndex == node.groupIndex &&
+        old.seriesType == seriesType;
   }
 
   HoverEvent? _lastHoverEvent;
 
-  void sendHoverEvent2(Offset offset, dynamic data,
-      {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+  void sendHoverEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
     var lastEvent = _lastHoverEvent;
     HoverEvent? event;
     if (lastEvent != null) {
       var old = lastEvent.event;
-      if (old.data == data && old.dataType == dataType && old.dataIndex == dataIndex && old.groupIndex == groupIndex) {
+      if (equalsEvent(old, node, componentType)) {
         event = lastEvent;
         event.localOffset = offset;
         event.globalOffset = toGlobal(offset);
@@ -133,33 +157,24 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     event ??= HoverEvent(
       offset,
       toGlobal(offset),
-      buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
+      buildEvent(node, componentType),
     );
     _lastHoverEvent = event;
     context.dispatchEvent(event);
   }
 
-  void sendHoverEvent(Offset offset, DataNode node) {
-    sendHoverEvent2(offset, node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
+  void sendHoverEndEvent(DataNode node, [ComponentType componentType = ComponentType.series]) {
+    context.dispatchEvent(HoverEndEvent(buildEvent(node, componentType)));
   }
 
-  void sendHoverEndEvent2(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
-    context.dispatchEvent(HoverEndEvent(
-      buildEventParams(data, dataType: dataType, dataIndex: dataIndex, groupIndex: groupIndex),
-    ));
-  }
-
-  void sendHoverEndEvent(DataNode node) {
-    sendHoverEndEvent2(node.data, dataIndex: node.dataIndex, groupIndex: node.groupIndex);
-  }
-
-  EventInfo buildEventParams(dynamic data, {DataType dataType = DataType.nodeData, int? dataIndex, int? groupIndex}) {
+  EventInfo buildEvent(DataNode node, [ComponentType componentType = ComponentType.series]) {
     return EventInfo(
-      componentType: ComponentType.series,
-      data: data,
-      dataIndex: dataIndex,
-      dataType: dataType,
-      groupIndex: groupIndex,
+      componentType: componentType,
+      data: node.data,
+      node: node,
+      dataIndex: node.dataIndex,
+      dataType: node.dataType,
+      groupIndex: node.groupIndex,
       seriesType: seriesType,
       seriesIndex: series.seriesIndex,
     );
@@ -209,6 +224,77 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   Offset toGlobal(Offset local) {
     return Offset(local.dx + globalBoxBound.left, local.dy + globalBoxBound.top);
   }
+
+  ///获取平移偏移量
+  Offset getTranslation() {
+    var type = series.coordType;
+    if (type == CoordType.polar) {
+      return findParallelCoord().getTranslation();
+    }
+    if (type == CoordType.calendar) {
+      return findCalendarCoord().getTranslation();
+    }
+    if (type == CoordType.radar) {
+      return findRadarCoord().getTranslation();
+    }
+    if (type == CoordType.parallel) {
+      return findParallelCoord().getTranslation();
+    }
+    if (type == CoordType.grid) {
+      return findGridCoord().getTranslation();
+    }
+    return translation.toOffset();
+  }
+
+  double get translationX => translation.x.toDouble();
+
+  set translationX(num x) => translation.x = x;
+
+  double get translationY => translation.y.toDouble();
+
+  set translationY(num y) => translation.y = y;
+
+  void resetTranslation() => translation.x = translation.y = 0;
+
+  ///获取裁剪路径
+  Rect getClipRect(Direction direction, [double animationPercent = 1]) {
+    if (animationPercent > 1) {
+      animationPercent = 1;
+    }
+    if (animationPercent < 0) {
+      animationPercent = 0;
+    }
+    if (direction == Direction.horizontal) {
+      return Rect.fromLTWH(translationX.abs(), translationY.abs(), width * animationPercent, height);
+    } else {
+      return Rect.fromLTWH(translationX.abs(), translationY.abs(), width, height * animationPercent);
+    }
+  }
+
+  ///获取动画运行配置(可以为空)
+  AnimationAttrs? getAnimation(LayoutType type, [int threshold = -1]) {
+    var attr = series.animation ?? context.option.animation;
+    if (type == LayoutType.none || attr == null) {
+      return null;
+    }
+    if (threshold > 0 && threshold > attr.threshold && attr.threshold > 0) {
+      return null;
+    }
+    if (type == LayoutType.layout) {
+      if (attr.duration.inMilliseconds <= 0) {
+        return null;
+      }
+      return attr;
+    }
+    if (type == LayoutType.update) {
+      if (attr.duration.inMilliseconds <= 0) {
+        return null;
+      }
+      return attr;
+    }
+    return null;
+  }
+
 }
 
 abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends LayoutHelper<S> {
@@ -218,13 +304,9 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
   LayoutHelper2.lazy() : super.lazy();
 
-  double dragX = 0;
-  double dragY = 0;
-
   @override
   void onDragMove(Offset offset, Offset diff) {
-    dragX += diff.dx;
-    dragY += diff.dy;
+    translation.add(diff);
     notifyLayoutUpdate();
   }
 
@@ -266,7 +348,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
   void onHandleHoverAndClick(Offset offset, bool click) {
     var oldOffset = offset;
-    Offset scroll = getScroll();
+    Offset scroll = getTranslation();
     offset = offset.translate2(scroll.invert);
     var clickNode = findNode(offset);
     if (oldHoverNode == clickNode) {
@@ -336,10 +418,9 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     for (var tw in tl) {
       tw.start(context, true);
     }
-
   }
 
-  void sortList(List<N> nodeList){
+  void sortList(List<N> nodeList) {
     nodeList.sort((a, b) {
       if (a.drawIndex == 0 && b.drawIndex == 0) {
         return a.dataIndex.compareTo(b.dataIndex);
@@ -350,6 +431,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       return 0;
     });
   }
+
   N? findNode(Offset offset) {
     var hoveNode = oldHoverNode;
     if (hoveNode != null && hoveNode.contains(offset)) {
@@ -362,28 +444,6 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     }
     return null;
   }
-
-  Offset getScroll() {
-    var type = series.coordType;
-    if (type == CoordType.polar) {
-      return findParallelCoord().getScroll();
-    }
-    if (type == CoordType.calendar) {
-      return findCalendarCoord().getScroll();
-    }
-    if (type == CoordType.radar) {
-      return findRadarCoord().getScroll();
-    }
-    if (type == CoordType.parallel) {
-      return findParallelCoord().getScroll();
-    }
-    if (type == CoordType.grid) {
-      return findGridCoord().getScroll();
-    }
-    return Offset.zero;
-  }
-
-
 }
 
 class NodeDiff<N extends DataNode> {
@@ -395,4 +455,15 @@ class NodeDiff<N extends DataNode> {
   const NodeDiff(this.node, this.startAttr, this.endAttr, this.old);
 }
 
-enum LayoutType { none, layout, update }
+enum LayoutType {
+  ///该布局方式将拒绝所有的动画，
+  none,
+
+  ///该布局方式表示触发类型为全量布局
+  ///使用的动画参数类型为普通参数
+  layout,
+
+  ///该布局方式表示是更新布局
+  ///使用的动画参数为带update的前缀
+  update,
+}

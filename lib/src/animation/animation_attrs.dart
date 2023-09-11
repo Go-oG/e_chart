@@ -10,6 +10,8 @@ class AnimationAttrs {
   final Curve updateCurve;
 
   final AnimationBehavior behavior;
+
+  ///动画的阈值(超过该值将不会执行动画)
   final int threshold;
 
   const AnimationAttrs({

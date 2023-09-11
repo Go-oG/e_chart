@@ -186,7 +186,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
       return;
     }
     if (hoverNode != null) {
-      sendHoverEvent2(offset, hoverNode.data, dataIndex: hoverNode.childIndex, groupIndex: 0);
+      sendHoverEvent(offset, hoverNode);
     }
     if (hoverNode == _oldHoverNode) {
       return;
@@ -195,7 +195,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
     _oldHoverNode?.removeState(ViewState.hover);
     var oldNode = _oldHoverNode;
     if (oldNode != null) {
-      sendHoverEndEvent2(oldNode.data, dataIndex: oldNode.childIndex, groupIndex: 0);
+      sendHoverEndEvent(oldNode);
     }
     hoverNode?.addState(ViewState.hover);
     _oldHoverNode = hoverNode;

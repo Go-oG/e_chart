@@ -159,8 +159,8 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     return Offset(scale.dx, scale.dy);
   }
 
-  Offset getScroll() {
-    return viewPort.getScroll();
+  Offset getTranslation() {
+    return viewPort.getTranslation();
   }
 
   ///获取滚动的最大量(都应该是整数)

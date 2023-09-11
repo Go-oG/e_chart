@@ -11,7 +11,7 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    dragX = dragY = 0;
+   resetTranslation();
     List<ThemeRiverNode> newList = [];
     Set<ViewState> emptyVS = {};
     each(series.data, (d, i) {

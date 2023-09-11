@@ -10,7 +10,7 @@ class ChartOption {
   List<Parallel> parallelList;
   List<Calendar> calendarList;
   List<ChartSeries> series;
-  AnimationAttrs animation;
+  AnimationAttrs? animation;
   ToolTip? toolTip;
   ChartTheme theme = ChartTheme();
   VoidFun1<ChartEvent>? eventCall;

@@ -63,6 +63,8 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
 
   ///更新当前符号的大小
   void updateSymbolSize(Size size) {}
+
+  DataType get dataType=>DataType.nodeData;
 }
 
 abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {

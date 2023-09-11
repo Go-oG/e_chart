@@ -109,4 +109,7 @@ class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
             context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status) ??
         LabelStyle.empty;
   }
+
+  @override
+  DataType get dataType => DataType.edgeData;
 }
