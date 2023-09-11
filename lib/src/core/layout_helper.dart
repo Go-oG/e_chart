@@ -287,7 +287,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
       return attr;
     }
     if (type == LayoutType.update) {
-      if (attr.duration.inMilliseconds <= 0) {
+      if (attr.updateDuration.inMilliseconds <= 0) {
         return null;
       }
       return attr;

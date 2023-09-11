@@ -47,7 +47,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       return false;
     });
 
-    var animation = series.animation;
+    var animation =getAnimation(type);
     if (animation == null) {
       rootNode = newRoot;
       showRootNode = rootNode;

@@ -32,14 +32,8 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     List<PieNode> newList = convertData(series.data);
     layoutNode(newList);
 
-    var animation = series.animation;
-    if (animation == null || LayoutType.none == type) {
-      nodeList = newList;
-      return;
-    }
-
     var an = DiffUtil.diffLayout<Arc, ItemData, PieNode>(
-      animation,
+      getAnimation(type,oldList.length+newList.length),
       oldList,
       newList,
       (data, node, add) {

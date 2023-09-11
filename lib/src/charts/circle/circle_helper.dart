@@ -21,16 +21,9 @@ class CircleHelper extends LayoutHelper2<CircleNode, CircleSeries> {
 
     var newList = convert2Node(series.data);
     layoutNode(newList);
-    var animation = series.animation;
-    if (animation == null) {
-      nodeList = newList;
-      return;
-    }
-    var oldList = nodeList;
-
     var an = DiffUtil.diffLayout3(
-      animation,
-      oldList,
+      getAnimation(type),
+      nodeList,
       newList,
       (node, type) {
         if (type == DiffType.remove || type == DiffType.update) {

@@ -26,19 +26,14 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
       );
       newList.add(node);
     });
-    var animation = series.animation;
-    if (animation == null || type == LayoutType.none) {
-      nodeList = newList;
-      return;
-    }
     layoutNode(newList);
 
-    if (type != LayoutType.layout) {
-      nodeList = newList;
-      animatorPercent = 1;
-      return;
-    }
-
+   var animation = getAnimation(type,newList.length);
+   if (animation == null) {
+     nodeList = newList;
+     animatorPercent=1;
+     return;
+   }
     var tween = ChartDoubleTween(props: animation);
     tween.addStartListener(() {
       nodeList = newList;

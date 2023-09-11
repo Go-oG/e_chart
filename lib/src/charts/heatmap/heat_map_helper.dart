@@ -16,13 +16,8 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
       node.updateStyle(context, series);
     });
 
-    var animation = series.animation;
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      nodeList = newList;
-      return;
-    }
     var an = DiffUtil.diffLayout2<HeatMapNode>(
-      animation,
+      getAnimation(type,oldList.length+newList.length),
       oldList,
       newList,
       (node, add) => add ? 0 : node.symbol.scale,

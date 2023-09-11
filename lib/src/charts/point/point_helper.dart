@@ -19,19 +19,8 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     });
     layoutNode(newList);
 
-    var animation = series.animation;
-    if (animation == null || type == LayoutType.none) {
-      nodeList = newList;
-      return;
-    }
-
-    var duration = type == LayoutType.layout ? animation.duration : animation.updateDuration;
-    if (duration.inMilliseconds <= 0) {
-      nodeList = newList;
-      return;
-    }
     var an = DiffUtil.diffLayout2(
-      animation,
+      getAnimation(type,oldList.length+newList.length),
       oldList,
       newList,
       (node, add) {

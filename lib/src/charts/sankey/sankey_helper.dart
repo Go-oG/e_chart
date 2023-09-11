@@ -33,15 +33,15 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     List<SankeyNode> nodes = dataToNode(series.data.data, series.data.links, 0);
     List<SankeyLink> links = dataToLink(nodes, series.data.links);
     layoutNode(nodes, links);
-    var animation = series.animation;
-    if (animation == null || type == LayoutType.layout) {
+    var animation = getAnimation(type, nodes.length + links.length);
+    if (animation == null) {
       animationProcess = 1;
       _nodes = nodes;
       _links = links;
       return;
     }
 
-    ChartDoubleTween dt = ChartDoubleTween(props: animation);
+    var dt = ChartDoubleTween(props: animation);
     animationProcess = 0;
     dt.addStartListener(() {
       _nodes = nodes;

@@ -40,7 +40,6 @@ class TreeSeries extends RectSeries {
     return symbolFun.call(node);
   }
 
-
   LineStyle getLinkStyle(Context context, TreeLayoutNode source,TreeLayoutNode target) {
     return linkStyleFun.call(source,target);
   }

@@ -1,3 +1,4 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 class AnimationAttrs {
@@ -26,4 +27,20 @@ class AnimationAttrs {
     this.curve = Curves.linear,
     this.updateCurve = Curves.linear,
   });
+
+  bool check(LayoutType type,[int threshold=-1]){
+    if (type == LayoutType.none) {
+      return false;
+    }
+    if (threshold > 0 && threshold > threshold && threshold > 0) {
+      return false;
+    }
+    if (type == LayoutType.layout) {
+      return duration.inMilliseconds>0;
+    }
+    if (type == LayoutType.update) {
+      return updateDuration.inMilliseconds>0;
+    }
+    return false;
+  }
 }
