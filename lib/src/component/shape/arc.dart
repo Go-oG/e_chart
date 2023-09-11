@@ -8,8 +8,8 @@ import 'package:e_chart/src/utils/platform_util.dart';
 class Arc implements Shape {
   static final zero = Arc();
   static const double circleMinAngle = 359.99;
-  static const double cornerMin = 0.0001;
-  static const double innerMin = 0.0001;
+  static const double cornerMin = 0.001;
+  static const double innerMin = 0.01;
 
   final num innerRadius;
   final num outRadius;
@@ -340,7 +340,9 @@ class Arc implements Shape {
     double padAngle,
     double maxRadius,
   ) {
-    List<num> il = adjustAngle(ir, startAngle, sweepAngle, padAngle, maxRadius);
+    List<num> il = [startAngle, startAngle + sweepAngle];
+    il = adjustAngle(ir, startAngle, sweepAngle, padAngle, maxRadius);
+
     List<num> ol = adjustAngle(or, startAngle, sweepAngle, padAngle, maxRadius);
     return [...il, ...ol];
   }
@@ -350,12 +352,17 @@ class Arc implements Shape {
     final gap = maxRadius * sin(radian);
     var sa = startAngle, ea = startAngle + sweepAngle;
     final dis = r * sin(radian);
-    var diff = asin(gap / r);
-    diff = dis > gap ? radian - diff : diff - radian;
-    diff *= 180 / pi;
     if (dis == gap) {
       return [sa, ea];
     }
+    var diff = asin(gap / r);
+    if (diff.isNaN) {
+      var s = startAngle + sweepAngle / 2;
+      return [s, s];
+    }
+
+    diff = dis > gap ? radian - diff : diff - radian;
+    diff *= 180 / pi;
     bool b1 = dis > gap;
     bool b2 = sweepAngle >= 0;
     if (b1 == b2) {

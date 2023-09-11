@@ -85,7 +85,6 @@ class TextDrawInfo {
         maxLines: maxLines,
         textAlign: textAlign,
         textDirection: textDirection,
-        textScaleFactor: scaleFactor.toDouble(),
         states: states);
   }
 
@@ -94,7 +93,6 @@ class TextDrawInfo {
         text: text,
         textAlign: textAlign,
         textDirection: textDirection,
-        textScaleFactor: scaleFactor.toDouble(),
         maxLines: maxLines,
         ellipsis: ellipsis);
   }

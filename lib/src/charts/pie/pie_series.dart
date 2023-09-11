@@ -39,6 +39,9 @@ class PieSeries extends RectSeries {
   Fun4<ItemData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
   Fun4<ItemData, int, Set<ViewState>, LineStyle?>? borderFun;
 
+  ///用于实现偏移
+  Fun2<ItemData, num>? offsetFun;
+
   PieSeries(
     this.data, {
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
@@ -56,6 +59,7 @@ class PieSeries extends RectSeries {
     this.animatorStyle = PieAnimatorStyle.expandScale,
     this.areaStyleFun,
     this.borderFun,
+    this.offsetFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -98,6 +102,13 @@ class PieSeries extends RectSeries {
     }
     var theme = context.option.theme;
     return theme.getLabelStyle();
+  }
+
+  double getOffset(Context context, ItemData data) {
+    if (offsetFun == null) {
+      return 0;
+    }
+    return offsetFun!.call(data).toDouble();
   }
 }
 

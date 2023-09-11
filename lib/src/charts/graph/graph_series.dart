@@ -6,7 +6,6 @@ import 'package:e_chart/src/charts/graph/graph_view.dart';
 class GraphSeries extends RectSeries {
   Graph graph;
   GraphLayout layout;
-
   Size? nodeSize;
   Fun2<GraphNode, Size>? sizeFun;
 
@@ -68,6 +67,8 @@ class GraphSeries extends RectSeries {
     if (fun != null) {
       return fun.call(node);
     }
-    return CircleSymbol(radius: node.r).convert(node.status);
+    var as = context.option.theme.getAreaStyle(node.dataIndex);
+    var bs = context.option.theme.graphTheme.getStyle() ?? LineStyle.empty;
+    return CircleSymbol(radius: node.r, itemStyle: as, borderStyle: bs).convert(node.status);
   }
 }

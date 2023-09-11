@@ -1,8 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
-
 import 'funnel_node.dart';
 
 //漏斗图布局计算相关
@@ -221,10 +219,11 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       var endAttr = diff.endAttr;
       var tween2 = ChartDoubleTween.fromValue(0, 1, props: animation);
       var s = startAttr.labelConfig?.scaleFactor ?? 1;
+      var e = diff.old ? 1 : 1.1;
       tween2.addListener(() {
         var t = tween2.value;
-        node.itemStyle = AreaStyle.lerp(startAttr.itemStyle, endAttr.itemStyle, t)!;
-        node.labelConfig = node.labelConfig?.copyWith(scaleFactor: lerpDouble(s, 1, t)!);
+        node.itemStyle = AreaStyle.lerp(startAttr.itemStyle, endAttr.itemStyle, t);
+        node.labelConfig = node.labelConfig?.copyWith(scaleFactor: lerpDouble(s, e, t)!);
         notifyLayoutUpdate();
       });
       tl.add(tween2);

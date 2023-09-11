@@ -21,10 +21,9 @@ abstract class GraphLayout extends LayoutHelper2<GraphNode, GraphSeries> {
       node.index=p1;
       node.dataIndex=p1;
       node.size=series.getNodeSize(node);
-      node.symbol=series.getSymbol(context, node);
+      node.setSymbol(series.getSymbol(context, node), true);
     });
     super.doLayout(boxBound, globalBoxBound, type);
-
   }
 
   @override

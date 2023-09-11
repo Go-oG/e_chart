@@ -2,23 +2,13 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class GraphNode extends DataNode<GraphAttr, BaseItemData> {
-  ChartSymbol symbol;
-
-  GraphNode(
-    BaseItemData data,
-    int dataIndex,
-    this.symbol,
-  ) : super(data, dataIndex, 0, GraphAttr(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
-
-  @override
-  String toString() {
-    return 'x:${x.toStringAsFixed(0)} y:${y.toStringAsFixed(0)} r:${r.toStringAsFixed(2)} w:${width.toStringAsFixed(2)} h:${height.toStringAsFixed(2)}';
-  }
+class GraphNode extends DataNode2<GraphAttr, BaseItemData, ChartSymbol> {
+  GraphNode(BaseItemData data, int dataIndex)
+      : super(EmptySymbol.empty, data, dataIndex, 0, GraphAttr(), LabelStyle.empty);
 
   @override
   bool contains(Offset offset) {
-    return offset.distance3(attr.x, attr.y) <= r;
+    return symbol.contains(Offset(x, y), offset);
   }
 
   @override
@@ -28,7 +18,7 @@ class GraphNode extends DataNode<GraphAttr, BaseItemData> {
 
   @override
   void updateStyle(Context context, covariant GraphSeries series) {
-    symbol = series.getSymbol(context, this);
+    setSymbol(series.getSymbol(context, this), true);
   }
 
   ///下面是对Attr的访问封装

@@ -72,7 +72,10 @@ class LabelStyle {
     Offset center = leftTop.translate(painter.width * 0.5, painter.height * 0.5);
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    if (rotate != 0) {
+    if (config.scaleFactor != 1) {
+      canvas.scale(config.scaleFactor.toDouble());
+    }
+    if (rotate % 360 != 0) {
       canvas.rotate(rotate * pi / 180);
     }
     if (decoration != null) {
@@ -96,7 +99,10 @@ class LabelStyle {
     Offset center = leftTop.translate(w * 0.5, h * 0.5);
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    if (rotate != 0) {
+    if (config.scaleFactor != 1) {
+      canvas.scale(config.scaleFactor.toDouble());
+    }
+    if (rotate % 360 != 0) {
       canvas.rotate(rotate * pi / 180);
     }
     if (decoration != null) {
