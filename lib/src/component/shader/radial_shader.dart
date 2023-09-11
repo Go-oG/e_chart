@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
@@ -9,14 +8,18 @@ import '../../core/view_state.dart';
 import 'shader.dart';
 
 class RadialShader extends ChartShader {
-  final Offset? focal;
+  final Alignment center;
+  final Alignment? focal;
+
+  ///[0,1]
   final double focalRadius;
 
   const RadialShader(
     super.colors, {
+    this.center = Alignment.center,
     super.colorStops,
     super.tileMode = ui.TileMode.clamp,
-    super.matrix4,
+    super.transform,
     this.focal,
     this.focalRadius = 0.0,
   });
@@ -40,23 +43,29 @@ class RadialShader extends ChartShader {
 
   @override
   ui.Shader toShader(Rect rect) {
-    Offset center = Offset(rect.left + rect.width / 2, rect.top + rect.height / 2);
     double radius = max(rect.width, rect.height) * 0.5;
-    return ui.Gradient.radial(center, radius, colors, colorStops, tileMode, matrix4, focal, focalRadius);
+    return ui.Gradient.radial(
+      center.withinRect(rect),
+      radius,
+      colors,
+      colorStops,
+      tileMode,
+      resolveTransform(rect),
+      focal == null ? null : focal!.withinRect(rect),
+      focalRadius * rect.shortestSide,
+    );
   }
 
   @override
   ChartShader lerp(covariant RadialShader end, double t) {
     List<Color> colorList = ChartShader.lerpColors(colors, end.colors, t);
     List<double>? stepList = ChartShader.lerpDoubles(colorStops, end.colorStops, t);
-    Float64List? ma = ChartShader.lerpMatrix4(matrix4, end.matrix4, t);
-
     return RadialShader(
       colorList,
       colorStops: stepList,
-      tileMode: tileMode == TileMode.clamp ? end.tileMode : tileMode,
-      matrix4: ma,
-      focal: Offset.lerp(focal, end.focal, t),
+      tileMode: t >= 0.5 ? end.tileMode : tileMode,
+      transform: t < 0.5 ? transform : end.transform,
+      focal: Alignment.lerp(focal, end.focal, t),
       focalRadius: lerpDouble(focalRadius, end.focalRadius, t)!,
     );
   }
@@ -78,7 +87,7 @@ class RadialShader extends ChartShader {
       tileMode: tileMode,
       focal: focal,
       focalRadius: focalRadius,
-      matrix4: matrix4,
+      transform: transform,
     );
   }
 }

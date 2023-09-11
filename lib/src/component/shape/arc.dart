@@ -103,6 +103,13 @@ class Arc implements Shape {
     return _closePath ??= _arc();
   }
 
+  Rect getBound(bool useCircleRect){
+    if(useCircleRect){
+      return Rect.fromCircle(center: center, radius: outRadius.toDouble());
+    }
+    return toPath().getBounds();
+  }
+
   Path _arc() {
     final double ir = innerRadius <= 0.001 ? 0 : innerRadius.toDouble();
     final double or = outRadius.toDouble();

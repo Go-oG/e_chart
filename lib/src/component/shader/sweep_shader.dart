@@ -1,30 +1,29 @@
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/view_state.dart';
-import 'shader.dart';
-
 class SweepShader extends ChartShader {
+  final Alignment center;
   final double startAngle;
   final double endAngle;
 
   const SweepShader(
     super.colors, {
+    this.center = Alignment.center,
     this.startAngle = 0,
     this.endAngle = 360,
     super.colorStops,
     super.tileMode = TileMode.clamp,
-    super.matrix4,
+    super.transform,
   });
 
   @override
   int get hashCode {
     int sp = super.hashCode;
-    return Object.hash(sp, startAngle, endAngle);
+    return Object.hash(sp, startAngle, endAngle, center);
   }
 
   @override
@@ -32,7 +31,7 @@ class SweepShader extends ChartShader {
     if (other is! SweepShader) {
       return false;
     }
-    if (other.startAngle != startAngle || other.endAngle != endAngle) {
+    if (other.startAngle != startAngle || other.endAngle != endAngle || other.center != center) {
       return false;
     }
     return super == other;
@@ -40,24 +39,23 @@ class SweepShader extends ChartShader {
 
   @override
   ui.Shader toShader(Rect rect) {
-    Offset center = Offset(rect.left + rect.width / 2, rect.top + rect.height / 2);
     double sa = pi * startAngle / 180.0;
     double ea = pi * endAngle / 180.0;
-    return ui.Gradient.sweep(center, colors, colorStops, tileMode, sa, ea, matrix4);
+    var c = center.withinRect(rect);
+    return ui.Gradient.sweep(c, colors, colorStops, tileMode, sa, ea, resolveTransform(rect));
   }
 
   @override
   ChartShader lerp(covariant SweepShader end, double t) {
     List<Color> colorList = ChartShader.lerpColors(colors, end.colors, t);
     List<double>? stepList = ChartShader.lerpDoubles(colorStops, end.colorStops, t);
-    Float64List? ma = ChartShader.lerpMatrix4(matrix4, end.matrix4, t);
     return SweepShader(
       colorList,
       colorStops: stepList,
-      tileMode: tileMode == TileMode.clamp ? end.tileMode : tileMode,
+      tileMode: t < 0.5 ? tileMode : end.tileMode,
       startAngle: lerpDouble(startAngle, end.startAngle, t)!,
       endAngle: lerpDouble(endAngle, end.endAngle, t)!,
-      matrix4: ma,
+      transform: t < 0.5 ? transform : end.transform,
     );
   }
 
@@ -78,7 +76,7 @@ class SweepShader extends ChartShader {
       tileMode: tileMode,
       startAngle: startAngle,
       endAngle: endAngle,
-      matrix4: matrix4,
+      transform: transform,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
@@ -84,7 +85,7 @@ class AreaStyle {
       path.addRRect(rect.toRRect(corner));
       path.close();
     }
-    drawPath(canvas, paint, path);
+    drawPath(canvas, paint, path,rect);
   }
 
   void drawRRect(Canvas canvas, Paint paint, RRect rect) {
@@ -93,32 +94,35 @@ class AreaStyle {
     }
     Path path = Path();
     path.addRRect(rect);
-    drawPath(canvas, paint, path);
+    drawPath(canvas, paint, path,rect.outerRect);
   }
 
   void drawCircle(Canvas canvas, Paint paint, Offset center, num radius) {
     if (notDraw) {
       return;
     }
+    var rect = Rect.fromCircle(center: center, radius: radius.toDouble());
     Path path = Path();
-    path.addOval(Rect.fromCircle(center: center, radius: radius.toDouble()));
-    drawPath(canvas, paint, path);
+    path.moveTo2(circlePoint(radius, 0, center));
+    path.arcTo(rect, 0, 2 * pi - 0.0001, false);
+    path.close();
+    drawPath(canvas, paint, path, rect);
   }
 
-  void drawPath(Canvas canvas, Paint paint, Path path) {
+  void drawPath(Canvas canvas, Paint paint, Path path, [Rect? bound]) {
     if (notDraw) {
       return;
     }
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
-    fillPaint(paint, path.getBounds());
+    fillPaint(paint, bound ?? path.getBounds());
     canvas.drawPath(path, paint);
   }
 
-  void drawArc(Canvas canvas, Paint paint, Arc arc) {
+  void drawArc(Canvas canvas, Paint paint, Arc arc, [bool useCircleRect = false]) {
     if (!isWeb) {
-      drawPath(canvas, paint, arc.toPath());
+      drawPath(canvas, paint, arc.toPath(), arc.getBound(useCircleRect));
       return;
     }
 
@@ -131,7 +135,7 @@ class AreaStyle {
       LineStyle style = LineStyle(color: color, shader: shader, shadow: shadow, width: r);
       style.drawCircle(canvas, paint, arc.center, arc.outRadius - r / 2);
     } else {
-      drawPath(canvas, paint, arc.toPath());
+      drawPath(canvas, paint, arc.toPath(), arc.getBound(useCircleRect));
     }
   }
 
