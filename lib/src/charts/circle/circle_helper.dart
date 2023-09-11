@@ -45,7 +45,7 @@ class CircleHelper extends LayoutHelper2<CircleNode, CircleSeries> {
         if (type == DiffType.add || type == DiffType.update) {
           return {'arc': node.attr};
         }
-        return {'arc': node.attr.copy(sweepAngle: 0)};
+        return {'arc': node.attr.copy(sweepAngle: 0, outRadius: node.attr.innerRadius)};
       },
       (node, s, e, t, type) {
         var sa = s['arc'] as Arc;
@@ -105,7 +105,7 @@ class CircleHelper extends LayoutHelper2<CircleNode, CircleSeries> {
       return fun.call(data, index, ir, maxRadius);
     }
     var r = series.radiusGap;
-    return r.convert(maxRadius-ir);
+    return r.convert(maxRadius - ir);
   }
 
   List<CircleNode> convert2Node(List<CircleItemData> list) {
