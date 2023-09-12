@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 import 'radar_helper.dart';
 
 /// 雷达图
@@ -7,7 +6,7 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
   RadarView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     var nodeList = layoutHelper.groupNodeList;
     each(nodeList, (group, i) {
       group.onDraw(canvas, mPaint);

@@ -8,7 +8,7 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
   ParallelView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     var direction = layoutHelper.findParallelCoord().direction;
     Rect clipRect;
     var ap = layoutHelper.animationProcess;

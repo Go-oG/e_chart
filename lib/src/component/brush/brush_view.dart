@@ -143,7 +143,7 @@ class BrushView extends ChartView {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     if (!brush.enable) {
       return;
     }

@@ -45,7 +45,7 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     var path = attr.area.toPath();
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);

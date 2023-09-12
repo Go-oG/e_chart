@@ -173,7 +173,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
     var splitArea = axis.splitArea;
     if (splitArea == null || !splitArea.show) {
       return;
@@ -203,7 +203,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
       return;
@@ -252,7 +252,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return;
@@ -280,7 +280,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
     canvas.save();
     if (direction == Direction.horizontal) {
@@ -333,7 +333,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
       return;
@@ -411,7 +411,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
     var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;

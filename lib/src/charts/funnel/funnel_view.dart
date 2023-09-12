@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 
 import 'funnel_node.dart';
 import 'funnel_helper.dart';
@@ -9,7 +8,7 @@ class FunnelView extends SeriesView<FunnelSeries, FunnelHelper> {
   FunnelView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     List<FunnelNode> nodeList = layoutHelper.nodeList;
     if (nodeList.isEmpty) {
       return;

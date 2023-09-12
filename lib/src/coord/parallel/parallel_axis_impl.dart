@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import '../../component/index.dart';
+import '../../core/render/ccanvas.dart';
 import '../../model/enums/direction.dart';
 import 'parallel_axis.dart';
 import 'parallel_coord.dart';
@@ -13,10 +14,10 @@ class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, ParallelAxisAttrs, Par
   ParallelAxisImpl(super.context, super.coord, super.axis, this.direction, {super.axisIndex});
 
   @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {}
 
   @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {}
 }
 
 class ParallelAxisAttrs extends LineAxisAttrs {

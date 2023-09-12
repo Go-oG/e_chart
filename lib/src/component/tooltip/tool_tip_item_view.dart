@@ -39,7 +39,7 @@ class ToolTipItemView extends GestureView {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     double c = layoutParams.padding.top + height / 2;
     double left = layoutParams.padding.left;
     if (item.symbol != null) {
@@ -49,7 +49,8 @@ class ToolTipItemView extends GestureView {
     }
     item.titleStyle.draw(canvas, mPaint, item.title, TextDrawInfo(Offset(left, c), align: Alignment.centerLeft));
     if (_subSize != null && item.desc != null) {
-      (item.descStyle ?? _defaultSubStyle).draw(canvas, mPaint, item.desc!, TextDrawInfo(Offset(width, c), align: Alignment.centerRight));
+      (item.descStyle ?? _defaultSubStyle)
+          .draw(canvas, mPaint, item.desc!, TextDrawInfo(Offset(width, c), align: Alignment.centerRight));
     }
   }
 }

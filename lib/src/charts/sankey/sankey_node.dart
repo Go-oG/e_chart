@@ -41,7 +41,7 @@ class SankeyNode extends DataNode<Rect, BaseItemData> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     itemStyle.drawRect(canvas, paint, attr);
     borderStyle.drawRect(canvas, paint, attr);
   }
@@ -92,7 +92,7 @@ class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     Path path = attr.toPath();
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);

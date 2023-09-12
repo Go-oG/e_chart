@@ -50,7 +50,7 @@ class TreeView extends SeriesView<TreeSeries, TreeLayout> {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     canvas.save();
     canvas.translate(transOffset.dx, transOffset.dy);
 
@@ -83,9 +83,9 @@ class TreeView extends SeriesView<TreeSeries, TreeLayout> {
     debugDraw(canvas, Offset(centerX, centerY));
   }
 
-  void drawSymbol(Canvas canvas, TreeLayoutNode node) {}
+  void drawSymbol(CCanvas canvas, TreeLayoutNode node) {}
 
-  void drawLine(Canvas canvas, TreeLayoutNode parent, TreeLayoutNode child) {
+  void drawLine(CCanvas canvas, TreeLayoutNode parent, TreeLayoutNode child) {
     Path? path = series.layout.getPath(parent, child);
     if (path != null) {
       series.linkStyleFun.call(parent, child).drawPath(canvas, mPaint, path);

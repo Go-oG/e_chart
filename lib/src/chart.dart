@@ -35,4 +35,5 @@ class ChartOption {
       this.theme = theme;
     }
   }
+
 }

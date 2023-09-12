@@ -81,7 +81,7 @@ class LineStyle {
   ///绘制多边形(或者线段)
   ///下方这样写是为了改善Flutter上Path过长时
   ///绘制效率低下的问题
-  void drawPolygon(Canvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
+  void drawPolygon(CCanvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
     if (width <= 0) {
       return;
     }
@@ -133,7 +133,7 @@ class LineStyle {
   }
 
   ///绘制一个圆弧部分(也可以绘制圆)
-  void drawArc(Canvas canvas, Paint paint, num radius, num startAngle, num sweepAngle, [Offset center = Offset.zero]) {
+  void drawArc(CCanvas canvas, Paint paint, num radius, num startAngle, num sweepAngle, [Offset center = Offset.zero]) {
     if (width <= 0) {
       return;
     }
@@ -160,13 +160,13 @@ class LineStyle {
     canvas.drawPath(path, paint);
   }
 
-  void drawCircle(Canvas canvas, Paint paint, Offset center, num radius) {
+  void drawCircle(CCanvas canvas, Paint paint, Offset center, num radius) {
     var rect = Rect.fromCircle(center: center, radius: radius.toDouble());
     fillPaint(paint, rect);
     canvas.drawCircle(center, radius.toDouble(), paint);
   }
 
-  void drawRect(Canvas canvas, Paint paint, Rect rect, [Corner? corner]) {
+  void drawRect(CCanvas canvas, Paint paint, Rect rect, [Corner? corner]) {
     if (width <= 0) {
       return;
     }
@@ -209,7 +209,7 @@ class LineStyle {
   ///请注意该方法在Path 路径过长时会出现
   ///此时应该将needSplit 指定为true进行优化
   ///绘制效率严重低下的问题
-  void drawPath(Canvas canvas, Paint paint, Path path,
+  void drawPath(CCanvas canvas, Paint paint, Path path,
       {bool drawDash = false, bool needSplit = true, num splitLength = 200}) {
     if (width <= 0) {
       return;

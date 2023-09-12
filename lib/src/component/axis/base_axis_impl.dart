@@ -65,7 +65,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   final stopWatch = Stopwatch();
 
-  void draw(Canvas canvas, Paint paint, Rect coord) {
+  void draw(CCanvas canvas, Paint paint, Rect coord) {
     Offset offset = this.coord.getTranslation();
     onDrawAxisSplitArea(canvas, paint, offset);
     onDrawAxisSplitLine(canvas, paint, offset);
@@ -75,11 +75,11 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     onDrawAxisName(canvas, paint);
   }
 
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {}
 
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {}
 
-  void onDrawAxisName(Canvas canvas, Paint paint) {
+  void onDrawAxisName(CCanvas canvas, Paint paint) {
     var name = titleNode.name?.name;
     if (name == null || name.isEmpty) {
       return;
@@ -87,14 +87,14 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     axis.axisName?.labelStyle.draw(canvas, paint, name, titleNode.config);
   }
 
-  void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {}
 
-  void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {}
 
-  void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {}
 
   ///绘制坐标轴指示器，该方法在[draw]之后调用
-  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {}
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {}
 
   List<DynamicText> obtainLabel() {
     if (scale is CategoryScale) {

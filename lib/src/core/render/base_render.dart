@@ -1,15 +1,8 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewParent {
+abstract class BaseRender extends ChartNotifier<Command> implements ViewParent {
   late final Context context;
-
-  ///控制是使用saveLayer 还是 clipRect
-  bool useSaveLayer = false;
-
-  ///标识是否在布局
-  bool _inLayout = false;
 
   ///标识是否在绘制
   bool _inDrawing = false;
@@ -23,69 +16,23 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     ChartOption config,
     TickerProvider tickerProvider, [
     double devicePixelRatio = 1,
-  ]) {
+  ]) : super(Command.none) {
     context = Context(this, config, tickerProvider, devicePixelRatio);
     context.onCreate();
   }
 
-  @override
-  SemanticsBuilderCallback? get semanticsBuilder => null;
-
-  @override
-  bool shouldRebuildSemantics(covariant CustomPainter oldDelegate) => false;
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    for (var c in context.coordList) {
-      if (c.isDirty) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  final Stopwatch _stopwatch = Stopwatch();
-
-  @protected
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (_inLayout) {
-      return;
-    }
-
-    if (_boundRect.height != size.height || _boundRect.width != size.width) {
-      if(kDebugMode){
-        _stopwatch.start();
-      }
-      _inLayout = true;
-      _boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
-      try {
-        onMeasure(size.width, size.height);
-        onLayout(size.width, size.height);
-      } catch (e) {
-        rethrow;
-      } finally {
-        _inLayout = false;
-      }
-      if(kDebugMode){
-        _stopwatch.stop();
-        Logger.i('$runtimeType Layout总耗时:${_stopwatch.elapsedMilliseconds}ms');
-      }
-    }
-    if (_inDrawing) {
-      return;
-    }
+  void draw(CCanvas canvas, Size size) {
     _inDrawing = true;
     try {
       ///限制绘制范围在当前控件之内
-      if (useSaveLayer) {
-        canvas.saveLayer(_boundRect, Paint());
-      } else {
-        canvas.save();
-        canvas.clipRect(_boundRect);
-      }
+      // if (useSaveLayer) {
+      //   canvas.saveLayer(_boundRect, Paint());
+      // } else {
+      //   canvas.save();
+      //   canvas.clipRect(_boundRect);
+      // }
       onDraw(canvas);
-      canvas.restore();
+    //  canvas.restore();
     } catch (e) {
       rethrow;
     } finally {
@@ -101,13 +48,16 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     }
   }
 
+  void onMeasure(double parentWidth, double parentHeight);
+
+  void onLayout(double width, double height);
+
+  void onDraw(CCanvas canvas);
+
   @override
   Rect getGlobalAreaBounds() {
     return _boundRect;
   }
-
-  @override
-  bool? hitTest(Offset position) => true;
 
   @override
   void parentInvalidate() {
@@ -116,19 +66,16 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
 
   @override
   void requestLayout() {
-    if (_inLayout) {
-      return;
-    }
     _boundRect = Rect.zero;
-    updateUI();
+    value = Command.reLayout;
   }
 
-  void updateUI({bool animator = false}) {
-    if (_inDrawing || _inLayout) {
-      debugPrint('阻挡绘制 $_inDrawing  $_inLayout');
+  void updateUI() {
+    if (_inDrawing) {
+      debugPrint('阻挡绘制 $_inDrawing');
       return;
     }
-    notifyListeners();
+    value = Command.invalidate;
   }
 
   void onStart() {
@@ -144,10 +91,4 @@ abstract class BaseRender extends ChangeNotifier implements CustomPainter, ViewP
     context.destroy();
     super.dispose();
   }
-
-  void onMeasure(double parentWidth, double parentHeight);
-
-  void onLayout(double width, double height);
-
-  void onDraw(Canvas canvas);
 }

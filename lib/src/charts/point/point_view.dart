@@ -6,7 +6,7 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   PointView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     for (var node in layoutHelper.nodeList) {
       node.onDraw(canvas,mPaint);
     }

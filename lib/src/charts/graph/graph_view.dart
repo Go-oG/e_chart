@@ -7,7 +7,7 @@ class GraphView extends SeriesView<GraphSeries, GraphLayout> {
   GraphView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     Offset offset = series.layout.getScroll();
     canvas.save();
     canvas.translate(offset.dx, offset.dy);

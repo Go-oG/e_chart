@@ -15,7 +15,7 @@ class CircleNode extends DataNode<Arc, CircleItemData> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     backgroundStyle.drawArc(canvas, paint, backgroundArc,true);
     itemStyle.drawArc(canvas, paint, attr,true);
     borderStyle.drawPath(canvas, paint, attr.toPath());

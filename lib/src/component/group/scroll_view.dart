@@ -26,7 +26,7 @@ class ScrollLayout extends ChartViewGroup {
   }
 
   @override
-  bool drawSelf(Canvas canvas, ChartViewGroup parent) {
+  bool drawSelf(CCanvas canvas, ChartViewGroup parent) {
     canvas.save();
     canvas.translate(left, top + _dy);
     canvas.clipRect(Rect.fromLTWH(0, _dy.abs(), width, height));

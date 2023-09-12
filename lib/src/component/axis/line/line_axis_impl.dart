@@ -3,6 +3,7 @@ import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/material.dart';
 
 import '../../../coord/coord_impl.dart';
+import '../../../core/render/ccanvas.dart';
 import '../../../model/index.dart';
 import '../../../utils/index.dart';
 import '../../index.dart';
@@ -198,7 +199,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   }
 
   @override
-  void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {
     AxisTheme theme = getAxisTheme();
     int c = layoutResult.split.length;
     canvas.save();
@@ -211,7 +212,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   }
 
   @override
-  void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
     int maxCount = layoutResult.tick.length;
     canvas.save();
@@ -234,7 +235,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   }
 
   @override
-  void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
     int maxCount = layoutResult.label.length;
     canvas.save();

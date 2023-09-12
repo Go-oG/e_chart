@@ -1,15 +1,14 @@
 import 'package:e_chart/src/ext/date_time_ext.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/view.dart';
+import '../../core/index.dart';
 import 'calendar_series.dart';
 import 'date_range.dart';
 import 'item_style.dart';
 import 'font_style.dart' as cf;
 import 'shape.dart';
 
-
-class CalendarView extends  ChartView {
+class CalendarView extends ChartView {
   late final CalenderSeries _props;
   final List<DateTime> _oldSelectSet = [];
   final Set<String> _selectSet = {};
@@ -33,7 +32,7 @@ class CalendarView extends  ChartView {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     if (_needComputeData || _globalMap.isEmpty) {
       _globalMap.clear();
       _globalMap.addAll(_fetchDateNode(_props.year, _props.month, width, height));
@@ -42,7 +41,7 @@ class CalendarView extends  ChartView {
     _draw(canvas, width, height);
   }
 
-  void _draw(Canvas canvas, num width, num height) {
+  void _draw(CCanvas canvas, num width, num height) {
     _mPaint.style = PaintingStyle.fill;
     _mPaint.color = _props.backgroundColor ?? Colors.white;
     canvas.drawRect(Rect.fromLTRB(0, 0, width.toDouble(), height.toDouble()), _mPaint);
@@ -50,7 +49,7 @@ class CalendarView extends  ChartView {
     _drawDate(canvas, width);
   }
 
-  void _drawWeek(Canvas canvas, num w, num h) {
+  void _drawWeek(CCanvas canvas, num w, num h) {
     var size = _computeContentSize(w, h, (_globalMap.length / 7).floor());
     var space = (w - size[0] * 7) / 7;
     var pointY = _adjustHeaderHeight() / 2;
@@ -62,16 +61,20 @@ class CalendarView extends  ChartView {
 
       TextSpan textSpan;
       if (style != null) {
-        textSpan =
-            TextSpan(text: text, style: TextStyle(color: style.color, fontSize: style.fontSize.toDouble(), fontWeight: style.fontWeight));
+        textSpan = TextSpan(
+            text: text,
+            style: TextStyle(color: style.color, fontSize: style.fontSize.toDouble(), fontWeight: style.fontWeight));
       } else {
         textSpan = TextSpan(
             text: text,
-            style:
-                TextStyle(color: weekTextStyle.color, fontSize: weekTextStyle.fontSize.toDouble(), fontWeight: weekTextStyle.fontWeight));
+            style: TextStyle(
+                color: weekTextStyle.color,
+                fontSize: weekTextStyle.fontSize.toDouble(),
+                fontWeight: weekTextStyle.fontWeight));
       }
 
-      final TextPainter textPainter = TextPainter(text: textSpan, textDirection: TextDirection.ltr, textAlign: TextAlign.center);
+      final TextPainter textPainter =
+          TextPainter(text: textSpan, textDirection: TextDirection.ltr, textAlign: TextAlign.center);
 
       var left = i * (space + size[0]);
       var right = left + space + size[0];
@@ -80,12 +83,12 @@ class CalendarView extends  ChartView {
       textPainter.layout(minWidth: 0, maxWidth: (right - left));
       final centerY = pointY - textPainter.height / 2;
       final offset = Offset(centerX - textPainter.width / 2.0, centerY);
-      textPainter.paint(canvas, offset);
+      textPainter.paint(canvas.canvas, offset);
     }
   }
 
   // 绘制日期和分割线
-  void _drawDate(Canvas canvas, num w) {
+  void _drawDate(CCanvas canvas, num w) {
     var dividerHeight = _adjustDividerHeight();
     if (dividerHeight > 0) {
       _mPaint.color = _props.dividerColor ?? const Color(0xFFFCFCFC);
@@ -135,7 +138,7 @@ class CalendarView extends  ChartView {
   /// @param position 包含了个体的绘制区域范围等信息,这里的信息全部应该换算成PX
   /// @param type -1 普通数据 0选中数据的起始点 1连续数据中间点 2连续数据结尾点
   /// @param chosen 表示是否选中
-  void _drawNode(Canvas canvas, _DateNode node, _Position position, _NodeType type, bool chosen) {
+  void _drawNode(CCanvas canvas, _DateNode node, _Position position, _NodeType type, bool chosen) {
     double top = node.position.top.toDouble();
     double left = node.position.left.toDouble();
     double width = node.position.width.toDouble();
@@ -226,7 +229,7 @@ class CalendarView extends  ChartView {
     final textPainter = TextPainter(text: textSpan, textDirection: TextDirection.ltr, textAlign: TextAlign.center);
     textPainter.layout(minWidth: 0, maxWidth: width);
     final offset = Offset(centerX - textPainter.width / 2.0, centerY - textPainter.height / 2.0);
-    textPainter.paint(canvas, offset);
+    textPainter.paint(canvas.canvas, offset);
   }
 
   /// 绘制圆角矩形
@@ -236,9 +239,10 @@ class CalendarView extends  ChartView {
   /// @param width 矩形宽度
   /// @param height 矩形高度
   /// @param radius 圆角半径
-  void _drawRoundRect(Canvas cxt, num x, num y, num width, num height, num radius, Paint paint) {
+  void _drawRoundRect(CCanvas cxt, num x, num y, num width, num height, num radius, Paint paint) {
     cxt.drawRRect(
-        RRect.fromLTRBR(x.toDouble(), y.toDouble(), (x + width).toDouble(), (y + height).toDouble(), Radius.circular(radius.toDouble())),
+        RRect.fromLTRBR(x.toDouble(), y.toDouble(), (x + width).toDouble(), (y + height).toDouble(),
+            Radius.circular(radius.toDouble())),
         paint);
   }
 
@@ -642,7 +646,8 @@ class CalendarView extends  ChartView {
   CalendarItemStyle _getItemStyle(_DateNode node, _NodeType type, bool chosen, num shapeSize) {
     CalendarItemStyle? style;
     if (_props.styleGenerator != null) {
-      style = _props.styleGenerator!(node.year, node.month, node.day, chosen, node.isToday, node.isLastMonth, node.isNextMonth);
+      style = _props.styleGenerator!(
+          node.year, node.month, node.day, chosen, node.isToday, node.isLastMonth, node.isNextMonth);
     }
     style ??= CalendarItemStyle();
 
@@ -650,7 +655,8 @@ class CalendarView extends  ChartView {
     var chooseStyle = _props.selectFontStyle ?? const cf.FontStyle(14, Colors.white, fontWeight: FontWeight.normal);
     var textStyle = _props.fontStyle;
     var subTextStyle = _props.subFontStyle ?? const cf.FontStyle(14, Color(0xFF8a8a8a), fontWeight: FontWeight.normal);
-    var forbidStyle = _props.forbidFontStyle ?? const cf.FontStyle(14, Color(0xFF8a8a8a), fontWeight: FontWeight.normal);
+    var forbidStyle =
+        _props.forbidFontStyle ?? const cf.FontStyle(14, Color(0xFF8a8a8a), fontWeight: FontWeight.normal);
 
     if (style.drawNode == null) {
       if (node.isLastMonth) {
@@ -1116,10 +1122,10 @@ int _sortFun(_DateNode a, _DateNode b) {
 
 // 根据两个日期点 返回两个日期点之间的日期
 List<DateTime> _fetchRangeDate(
-    _DateNode start,
-    _DateNode end,
-    bool include,
-    ) {
+  _DateNode start,
+  _DateNode end,
+  bool include,
+) {
   DateTime firstDate = DateTime(start.year, start.month, start.day, 0, 0, 0);
 
   int dayDiff = _computeDateNodeDiff(start, end);

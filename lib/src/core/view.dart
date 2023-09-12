@@ -188,7 +188,7 @@ abstract class ChartView {
 
   void onLayoutEnd() {}
 
-  void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
+  void debugDraw(CCanvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
     if (!kDebugMode) {
       return;
     }
@@ -198,7 +198,7 @@ abstract class ChartView {
     canvas.drawCircle(offset, r.toDouble(), mPaint);
   }
 
-  void debugDrawRect(Canvas canvas, Rect rect, {Color color = Colors.deepPurple, bool fill = false}) {
+  void debugDrawRect(CCanvas canvas, Rect rect, {Color color = Colors.deepPurple, bool fill = false}) {
     if (!kDebugMode) {
       return;
     }
@@ -209,7 +209,7 @@ abstract class ChartView {
     canvas.drawRect(rect, mPaint);
   }
 
-  void debugDrawRulerLine(Canvas canvas, {Color color = Colors.black}) {
+  void debugDrawRulerLine(CCanvas canvas, {Color color = Colors.black}) {
     if (!kDebugMode) {
       return;
     }
@@ -221,7 +221,7 @@ abstract class ChartView {
     canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
   }
 
-  void debugDrawPath(Canvas canvas, Path path, {Color color = Colors.deepPurple, bool fill = false}) {
+  void debugDrawPath(CCanvas canvas, Path path, {Color color = Colors.deepPurple, bool fill = false}) {
     if (!kDebugMode) {
       return;
     }
@@ -233,7 +233,7 @@ abstract class ChartView {
   }
 
   @mustCallSuper
-  void draw(Canvas canvas) {
+  void draw(CCanvas canvas) {
     inDrawing = true;
     if (notShow) {
       inDrawing = false;
@@ -250,7 +250,7 @@ abstract class ChartView {
   }
 
   @protected
-  bool drawSelf(Canvas canvas, ChartViewGroup parent) {
+  bool drawSelf(CCanvas canvas, ChartViewGroup parent) {
     if (notShow) {
       return false;
     }
@@ -274,23 +274,23 @@ abstract class ChartView {
 
   bool? get clipSelf => null;
 
-  void onDrawBackground(Canvas canvas) {}
+  void onDrawBackground(CCanvas canvas) {}
 
   ///绘制时最先调用的方法，可以在这里面更改相关属性从而实现动画视觉效果
   void onDrawPre() {}
 
-  void onDraw(Canvas canvas) {}
+  void onDraw(CCanvas canvas) {}
 
-  void onDrawEnd(Canvas canvas) {}
+  void onDrawEnd(CCanvas canvas) {}
 
   ///用于ViewGroup覆写
-  void dispatchDraw(Canvas canvas) {}
+  void dispatchDraw(CCanvas canvas) {}
 
   /// 覆写实现重绘高亮相关的
-  void onDrawHighlight(Canvas canvas) {}
+  void onDrawHighlight(CCanvas canvas) {}
 
   ///实现绘制前景色
-  void onDrawForeground(Canvas canvas) {}
+  void onDrawForeground(CCanvas canvas) {}
 
   ViewParent? get parent {
     return _parent;
@@ -300,15 +300,8 @@ abstract class ChartView {
     if (inDrawing) {
       return;
     }
-    markDirty(); //标记为需要重绘
-    if (_parent == null) {
-      debugPrint('重绘失败：Paren is NULL');
-    }
+    markDirty();
     _parent?.parentInvalidate();
-  }
-
-  void invalidateWithAnimator() {
-    invalidate();
   }
 
   void requestLayout() {
@@ -323,9 +316,12 @@ abstract class ChartView {
     layout(left, top, right, bottom);
   }
 
+
   void markDirty() {
     _dirty = true;
   }
+
+  bool get isDirty => _dirty;
 
   void clearDirty() {
     _dirty = false;
@@ -457,10 +453,6 @@ abstract class ChartView {
 
   Offset toGlobal(Offset local) {
     return Offset(local.dx + _globalBoundRect.left, local.dy + _globalBoundRect.top);
-  }
-
-  bool get isDirty {
-    return _dirty;
   }
 
   ///分配索引
@@ -689,7 +681,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   }
 
   @override
-  void onDrawBackground(Canvas canvas) {
+  void onDrawBackground(CCanvas canvas) {
     Color? color = series.backgroundColor;
     if (color != null) {
       mPaint.reset();
@@ -697,18 +689,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
       mPaint.style = PaintingStyle.fill;
       canvas.drawRect(selfBoxBound, mPaint);
     }
-  }
-
-  @override
-  void onInitGesture(ChartGesture gesture) {
-    if (series is SeriesGesture && (series as SeriesGesture).enableSeriesGesture) {
-      gesture.clear();
-      context.removeGesture(gesture);
-      context.addGesture(gesture);
-      (series as SeriesGesture).bindGesture(this, gesture);
-      return;
-    }
-    super.onInitGesture(gesture);
   }
 
   @override
@@ -821,7 +801,6 @@ abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> ext
 
   @override
   bool get enableScale => false;
-
 }
 
 class LayoutParams {

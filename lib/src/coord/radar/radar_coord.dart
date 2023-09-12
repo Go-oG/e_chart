@@ -102,12 +102,12 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     _drawShape(canvas);
     _drawAxis(canvas);
   }
 
-  void _drawShape(Canvas canvas) {
+  void _drawShape(CCanvas canvas) {
     var theme = context.option.theme.radarTheme;
     each(splitList, (sp, i) {
       AreaStyle? style;
@@ -128,7 +128,7 @@ class RadarCoordImpl extends RadarCoord {
     });
   }
 
-  void _drawAxis(Canvas canvas) {
+  void _drawAxis(CCanvas canvas) {
     ///绘制主轴
     axisMap.forEach((key, value) {
       value.draw(canvas, mPaint, boxBounds);

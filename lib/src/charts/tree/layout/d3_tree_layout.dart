@@ -223,7 +223,7 @@ class InnerNode extends TreeNode<Offset, Offset, InnerNode> {
   bool contains(Offset offset) => false;
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {}
+  void onDraw(CCanvas canvas, Paint paint) {}
 
   @override
   void updateStyle(Context context, covariant ChartSeries series) {

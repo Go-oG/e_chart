@@ -17,7 +17,7 @@ class TitleView extends ChartView {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     var option = TextDrawInfo(Offset.zero, align: Alignment.topLeft);
     style.draw(canvas, mPaint, title, option);
   }

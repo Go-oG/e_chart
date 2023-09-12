@@ -2,12 +2,12 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class ClickEvent extends ChartEvent {
+class UserClickEvent extends ChartEvent {
   final EventInfo event;
   Offset localOffset;
   Offset globalOffset;
 
-  ClickEvent(this.localOffset, this.globalOffset, this.event);
+  UserClickEvent(this.localOffset, this.globalOffset, this.event);
 
   @override
   String toString() {
@@ -15,12 +15,12 @@ class ClickEvent extends ChartEvent {
   }
 }
 
-class DoubleClickEvent extends ChartEvent {
+class UserDoubleClickEvent extends ChartEvent {
   final Offset localOffset;
   final Offset globalOffset;
   final EventInfo event;
 
-  DoubleClickEvent(this.localOffset, this.globalOffset, this.event);
+  UserDoubleClickEvent(this.localOffset, this.globalOffset, this.event);
 
   @override
   String toString() {
@@ -28,12 +28,12 @@ class DoubleClickEvent extends ChartEvent {
   }
 }
 
-class HoverEvent extends ChartEvent {
+class UserHoverEvent extends ChartEvent {
   Offset localOffset;
   Offset globalOffset;
   final EventInfo event;
 
-  HoverEvent(this.localOffset, this.globalOffset, this.event);
+  UserHoverEvent(this.localOffset, this.globalOffset, this.event);
 
   @override
   String toString() {
@@ -41,10 +41,10 @@ class HoverEvent extends ChartEvent {
   }
 }
 
-class HoverEndEvent extends ChartEvent {
+class UserHoverEndEvent extends ChartEvent {
   final EventInfo event;
 
-  HoverEndEvent(this.event);
+  UserHoverEndEvent(this.event);
 
   @override
   String toString() {
@@ -52,12 +52,12 @@ class HoverEndEvent extends ChartEvent {
   }
 }
 
-class LongPressEvent extends ChartEvent {
+class UserLongPressEvent extends ChartEvent {
   Offset localOffset;
   Offset globalOffset;
   final EventInfo event;
 
-  LongPressEvent(this.localOffset, this.globalOffset, this.event);
+  UserLongPressEvent(this.localOffset, this.globalOffset, this.event);
 
   @override
   String toString() {
@@ -65,9 +65,9 @@ class LongPressEvent extends ChartEvent {
   }
 }
 
-class LongPressEndEvent extends ChartEvent {
+class UserLongPressEndEvent extends ChartEvent {
   final EventInfo event;
-  LongPressEndEvent(this.event);
+  UserLongPressEndEvent(this.event);
   @override
   String toString() {
     return "$runtimeType:$event";
@@ -75,12 +75,12 @@ class LongPressEndEvent extends ChartEvent {
 
 }
 
-class ScrollEvent extends ChartEvent {
+class UserScrollEvent extends ChartEvent {
   Offset scroll;
   final CoordType? coordSystem;
   final String coordId;
 
-  ScrollEvent(
+  UserScrollEvent(
     this.coordId,
     this.scroll, {
     this.coordSystem,

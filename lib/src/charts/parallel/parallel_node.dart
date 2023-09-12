@@ -21,7 +21,7 @@ class ParallelNode extends DataNode<ParallelAttr, ParallelGroup> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     var style = borderStyle;
     if (style.notDraw) {
       return;
@@ -38,7 +38,7 @@ class ParallelNode extends DataNode<ParallelAttr, ParallelGroup> {
   }
 
   @override
-  void onDrawSymbol(Canvas canvas, Paint paint) {
+  void onDrawSymbol(CCanvas canvas, Paint paint) {
     for (var ele in attr.symbolList) {
       var cr = clipRect;
       if (cr != null && !cr.contains2(ele.center)) {

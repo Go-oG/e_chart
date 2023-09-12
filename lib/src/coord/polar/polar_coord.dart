@@ -86,7 +86,7 @@ class PolarCoordImpl extends PolarCoord {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     _angleAxis.draw(canvas, mPaint, selfBoxBound);
     _radiusAxis.draw(canvas, mPaint, selfBoxBound);
   }

@@ -27,7 +27,7 @@ class LabelStyle {
     this.minAngle = 0,
   });
 
-  Size draw(Canvas canvas, Paint paint, DynamicText text, TextDrawInfo config, [Set<ViewState>? states]) {
+  Size draw(CCanvas canvas, Paint paint, DynamicText text, TextDrawInfo config, [Set<ViewState>? states]) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
@@ -40,7 +40,7 @@ class LabelStyle {
     return drawParagraph(canvas, paint, text.text as Paragraph, config);
   }
 
-  Size drawText(Canvas canvas, Paint paint, String text, TextDrawInfo config, [Set<ViewState>? states]) {
+  Size drawText(CCanvas canvas, Paint paint, String text, TextDrawInfo config, [Set<ViewState>? states]) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
@@ -51,7 +51,7 @@ class LabelStyle {
     return drawTextSpan(canvas, paint, TextSpan(text: text, style: style), config);
   }
 
-  Size drawTextSpan(Canvas canvas, Paint paint, TextSpan text, TextDrawInfo config) {
+  Size drawTextSpan(CCanvas canvas, Paint paint, TextSpan text, TextDrawInfo config) {
     if (!show || (text.text?.isEmpty ?? true)) {
       return Size.zero;
     }
@@ -85,12 +85,12 @@ class LabelStyle {
     }
 
     Offset textOffset = Offset(-painter.width * 0.5, -painter.height * 0.5);
-    painter.paint(canvas, textOffset);
+    painter.paint(canvas.canvas, textOffset);
     canvas.restore();
     return Size(painter.width, painter.height);
   }
 
-  Size drawParagraph(Canvas canvas, Paint paint, Paragraph paragraph, TextDrawInfo config) {
+  Size drawParagraph(CCanvas canvas, Paint paint, Paragraph paragraph, TextDrawInfo config) {
     ParagraphConstraints constraints = ParagraphConstraints(width: config.maxWidth.toDouble());
     paragraph.layout(constraints);
     double w = paragraph.width;

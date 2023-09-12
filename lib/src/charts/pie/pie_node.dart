@@ -67,7 +67,7 @@ class PieNode extends DataNode<Arc, ItemData> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     itemStyle.drawArc(canvas, paint, attr);
     borderStyle.drawPath(canvas, paint, attr.toPath());
 

@@ -126,7 +126,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   ///==============事件发送============
   void sendClickEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
-    var event = ClickEvent(offset, toGlobal(offset), buildEvent(node, componentType));
+    var event = UserClickEvent(offset, toGlobal(offset), buildEvent(node, componentType));
     context.dispatchEvent(event);
   }
 
@@ -141,11 +141,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
         old.seriesType == seriesType;
   }
 
-  HoverEvent? _lastHoverEvent;
+  UserHoverEvent? _lastHoverEvent;
 
   void sendHoverEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
     var lastEvent = _lastHoverEvent;
-    HoverEvent? event;
+    UserHoverEvent? event;
     if (lastEvent != null) {
       var old = lastEvent.event;
       if (equalsEvent(old, node, componentType)) {
@@ -154,7 +154,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
         event.globalOffset = toGlobal(offset);
       }
     }
-    event ??= HoverEvent(
+    event ??= UserHoverEvent(
       offset,
       toGlobal(offset),
       buildEvent(node, componentType),
@@ -164,7 +164,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   void sendHoverEndEvent(DataNode node, [ComponentType componentType = ComponentType.series]) {
-    context.dispatchEvent(HoverEndEvent(buildEvent(node, componentType)));
+    context.dispatchEvent(UserHoverEndEvent(buildEvent(node, componentType)));
   }
 
   EventInfo buildEvent(DataNode node, [ComponentType componentType = ComponentType.series]) {

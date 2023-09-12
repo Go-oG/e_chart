@@ -16,7 +16,7 @@ class MarkLine {
     this.precision = 2,
   });
 
-  void draw(Canvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
+  void draw(CCanvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end]);
     this.start.draw(canvas, paint, start);
     this.end.draw(canvas, paint, end);

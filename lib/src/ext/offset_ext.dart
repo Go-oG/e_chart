@@ -6,9 +6,10 @@ import 'package:vector_math/vector_math.dart';
 extension OffsetExt on Offset {
   ///求两点之间的距离
   double distance2(Offset p) {
-   return distance3(p.dx, p.dy);
+    return distance3(p.dx, p.dy);
   }
-  double distance3(num x,num y) {
+
+  double distance3(num x, num y) {
     double a = (dx - x).abs();
     double b = (dy - y).abs();
     return m.sqrt(a * a + b * b);
@@ -41,28 +42,13 @@ extension OffsetExt on Offset {
     if (sweepAngle.abs() >= 360) {
       return true;
     }
-
-    Offset oA = circlePoint(d1, startAngle, center);
-    Vector2 vectorA = Vector2(oA.dx - center.dx, oA.dy - center.dy);
-    Offset oB = circlePoint(d1, startAngle + sweepAngle, center);
-    Vector2 vectorB = Vector2(oB.dx - center.dx, oB.dy - center.dy);
-    Vector2 vectorP = Vector2(dx - center.dx, dy - center.dy);
-
-    if (vectorP.x == 0 && vectorP.y == 0) {
-      return true;
-    }
-
-    ///精度(4位小数)
-    var ab = (vectorA.angleToSigned(vectorB) * 1000).toInt();
-    var ap = (vectorA.angleToSigned(vectorP) * 1000).toInt();
-
-    bool result = ap <= ab;
-    if (ap < 0 && ab < 0) {
-      result = ap >= ab;
-    } else if (ab > 0 && ap < 0) {
-      result = false;
-    }
-    return result;
+    return inArc(Arc(
+      innerRadius: innerRadius,
+      outRadius: outerRadius,
+      sweepAngle: sweepAngle,
+      startAngle: startAngle,
+      center: center,
+    ));
   }
 
   bool inArc(Arc arc) {

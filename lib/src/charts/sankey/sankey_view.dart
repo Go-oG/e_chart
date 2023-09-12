@@ -8,7 +8,7 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
   SankeyView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     canvas.save();
     var ap=layoutHelper.animationProcess;
     Rect clipRect;
@@ -28,7 +28,7 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
     canvas.restore();
   }
 
-  void _drawLink(Canvas canvas,Rect clipRect) {
+  void _drawLink(CCanvas canvas,Rect clipRect) {
     for (var link in layoutHelper.links) {
       link.onDraw(canvas, mPaint);
     }

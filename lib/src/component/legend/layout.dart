@@ -40,7 +40,7 @@ class LegendItemView extends ChartView {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
     Position p = item.position;

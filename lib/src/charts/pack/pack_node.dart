@@ -18,7 +18,7 @@ class PackNode extends TreeNode<TreeData, Rect, PackNode> {
   });
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     var style = itemStyle;
     var bs = borderStyle;
     if (style.notDraw && bs.notDraw) {

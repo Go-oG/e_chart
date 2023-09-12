@@ -10,7 +10,7 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
   bool get enableDrag => true;
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     var root = layoutHelper.rootNode;
     if (root == null) {
       return;

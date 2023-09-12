@@ -49,9 +49,9 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
     return data.hashCode;
   }
 
-  void onDraw(Canvas canvas, Paint paint);
+  void onDraw(CCanvas canvas, Paint paint);
 
-  void onDrawSymbol(Canvas canvas, Paint paint) {}
+  void onDrawSymbol(CCanvas canvas, Paint paint) {}
 
   bool contains(Offset offset);
 
@@ -112,6 +112,25 @@ abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
   }
 }
 
+class SymbolNode<T> with ViewStateProvider, ExtProps {
+  T data;
+  ChartSymbol symbol = EmptySymbol();
+  int dataIndex;
+  int groupIndex;
+
+  Offset center = Offset.zero;
+
+  SymbolNode(this.data, this.symbol, this.dataIndex, this.groupIndex);
+
+  void onDraw(CCanvas canvas, Paint paint) {
+    symbol.draw(canvas, paint, center);
+  }
+
+  bool contains(Offset offset) {
+    return symbol.contains(center, offset);
+  }
+}
+
 class NodeAttr {
   final dynamic attr;
   final int drawIndex;
@@ -124,33 +143,14 @@ class NodeAttr {
   final double symbolScale;
 
   const NodeAttr(
-    this.attr,
-    this.drawIndex,
-    this.label,
-    this.labelConfig,
-    this.labelLine,
-    this.itemStyle,
-    this.borderStyle,
-    this.labelStyle,
-    this.symbolScale,
-  );
-}
-
-class SymbolNode<T> with ViewStateProvider, ExtProps {
-  T data;
-  ChartSymbol symbol = EmptySymbol();
-  int dataIndex;
-  int groupIndex;
-
-  Offset center = Offset.zero;
-
-  SymbolNode(this.data, this.symbol, this.dataIndex, this.groupIndex);
-
-  void onDraw(Canvas canvas, Paint paint) {
-    symbol.draw(canvas, paint, center);
-  }
-
-  bool contains(Offset offset) {
-    return symbol.contains(center, offset);
-  }
+      this.attr,
+      this.drawIndex,
+      this.label,
+      this.labelConfig,
+      this.labelLine,
+      this.itemStyle,
+      this.borderStyle,
+      this.labelStyle,
+      this.symbolScale,
+      );
 }

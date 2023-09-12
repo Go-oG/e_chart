@@ -11,7 +11,7 @@ class StarSymbol extends ChartSymbol {
   });
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }

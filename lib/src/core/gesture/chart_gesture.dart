@@ -8,29 +8,23 @@ import 'gesture_event.dart';
 typedef EventCallback<T> = void Function(T);
 
 abstract class ChartGesture {
-  EventCallback<NormalEvent>? click;
-
-  EventCallback<NormalEvent>? doubleClick;
-
-  EventCallback<NormalEvent>? longPressStart;
-  EventCallback<LongPressMoveEvent>? longPressMove;
+  EventCallback<TapEvent>? click;
+  EventCallback<TapEvent>? doubleClick;
+  EventCallback<TapEvent>? longPressStart;
+  EventCallback<MoveEvent>? longPressMove;
   VoidCallback? longPressEnd;
-
-  EventCallback<NormalEvent>? hoverStart;
-  EventCallback<NormalEvent>? hoverMove;
-  EventCallback<NormalEvent>? hoverEnd;
-
-  EventCallback<NormalEvent>? dragStart;
-  EventCallback<NormalEvent>? dragMove;
+  EventCallback<TapEvent>? hoverStart;
+  EventCallback<TapEvent>? hoverMove;
+  EventCallback<TapEvent>? hoverEnd;
+  EventCallback<TapEvent>? dragStart;
+  EventCallback<TapEvent>? dragMove;
   VoidCallback? dragEnd;
-
-  EventCallback<NormalEvent>? scaleStart;
+  EventCallback<TapEvent>? scaleStart;
   EventCallback<ScaleEvent>? scaleUpdate;
   VoidCallback? scaleEnd;
-
   Fun2<Offset, bool>? edgeFun;
 
-  bool isInArea(Offset globalOffset);
+  bool contains(Offset globalOffset);
 
   void clear() {
     click = null;
@@ -57,7 +51,7 @@ class RectGesture extends ChartGesture {
   Rect rect = Rect.zero;
 
   @override
-  bool isInArea(Offset globalOffset) {
+  bool contains(Offset globalOffset) {
     if (edgeFun != null) {
       return edgeFun!.call(globalOffset);
     }
@@ -73,7 +67,7 @@ class ArcGesture extends ChartGesture {
   Offset center = Offset.zero;
 
   @override
-  bool isInArea(Offset globalOffset) {
+  bool contains(Offset globalOffset) {
     if (edgeFun != null) {
       return edgeFun!.call(globalOffset);
     }

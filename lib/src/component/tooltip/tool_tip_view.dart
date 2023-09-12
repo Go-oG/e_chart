@@ -104,7 +104,7 @@ class ToolTipView extends LinearLayout {
   bool? get clipSelf => true;
 
   @override
-  void onDrawBackground(Canvas canvas) {
+  void onDrawBackground(CCanvas canvas) {
     if (!toolTip.show) {
       return;
     }

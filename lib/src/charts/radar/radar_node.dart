@@ -55,7 +55,7 @@ class RadarGroupNode extends DataNode<Path, GroupData> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     if (!data.show) {
       return;
     }
@@ -105,7 +105,7 @@ class RadarNode extends DataNode<Offset, ItemData> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     var sb = symbol;
     if (sb == null) {
       return;

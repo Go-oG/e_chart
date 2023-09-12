@@ -218,7 +218,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
     var splitArea = axis.splitArea;
     if (splitArea != null && !splitArea.show) {
       return;
@@ -236,7 +236,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
@@ -254,7 +254,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisLine(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return;
@@ -268,7 +268,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisTick(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
     var axisTick = axis.axisTick;
     if (!axisTick.show) {
@@ -300,7 +300,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisLabel(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
 
     var axisLabel = axis.axisLabel;
@@ -329,7 +329,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
     var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;

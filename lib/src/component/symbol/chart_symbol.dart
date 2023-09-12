@@ -13,7 +13,7 @@ abstract class ChartSymbol {
 
   ChartSymbol({this.itemStyle = AreaStyle.empty, this.borderStyle = LineStyle.empty});
 
-  void draw(Canvas canvas, Paint paint, Offset offset) {
+  void draw(CCanvas canvas, Paint paint, Offset offset) {
     if (scale <= 0) {
       return;
     }
@@ -24,7 +24,7 @@ abstract class ChartSymbol {
     canvas.restore();
   }
 
-  void onDraw(Canvas canvas, Paint paint);
+  void onDraw(CCanvas canvas, Paint paint);
 
   bool contains(Offset center, Offset point);
 

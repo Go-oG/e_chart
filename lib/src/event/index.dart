@@ -21,8 +21,3 @@ export 'events/entry/rendered.dart';
 export 'events/entry/tree.dart';
 export 'events/chart_event.dart';
 export 'events/chart_event_dispatcher.dart';
-
-export 'gesture/chart_gesture.dart';
-export 'gesture/gesture_dispatcher.dart';
-export 'gesture/gesture_event.dart';
-export 'gesture/series_gesture.dart';

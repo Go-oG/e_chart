@@ -9,7 +9,7 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   HeatMapView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     var coord = layoutHelper.findCalendarCoord();
     var to = coord.getTranslation();
     canvas.save();

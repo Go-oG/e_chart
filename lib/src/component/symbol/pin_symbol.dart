@@ -22,7 +22,7 @@ class PinSymbol extends ChartSymbol {
   Size get size => Size(r * 2, r * 2.5);
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     if (!checkStyle()) {
       return;
     }

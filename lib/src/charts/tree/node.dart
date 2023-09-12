@@ -27,7 +27,7 @@ class TreeLayoutNode extends TreeNode<TreeData, TreeAttr, TreeLayoutNode> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     Offset offset = center;
     if (offset.dx.isNaN || offset.dy.isNaN) {
       return;

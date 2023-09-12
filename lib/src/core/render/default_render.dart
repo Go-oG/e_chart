@@ -7,6 +7,7 @@ import '../../component/index.dart';
 import '../../model/index.dart';
 import 'base_render.dart';
 import '../view.dart';
+import 'ccanvas.dart';
 
 class DefaultRender extends BaseRender {
   DefaultRender(super.config, super.tickerProvider, [super.devicePixelRatio]);
@@ -148,7 +149,7 @@ class DefaultRender extends BaseRender {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     Paint mPaint = Paint();
     mPaint.color = context.option.theme.backgroundColor;
     mPaint.style = PaintingStyle.fill;

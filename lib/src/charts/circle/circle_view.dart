@@ -12,7 +12,7 @@ class CircleView extends SeriesView<CircleSeries, CircleHelper> {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     each(layoutHelper.nodeList, (p0, p1) {
       p0.onDraw(canvas, mPaint);
     });

@@ -285,7 +285,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     xMap.forEach((key, value) {
       value.draw(canvas, mPaint, contentBox);
     });
@@ -295,7 +295,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onDrawEnd(Canvas canvas) {
+  void onDrawEnd(CCanvas canvas) {
     super.onDrawEnd(canvas);
     var offset = _axisPointerOffset;
     if (offset == null) {

@@ -28,7 +28,7 @@ class SectorSymbol extends ChartSymbol {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     itemStyle.drawArc(canvas, paint, arc);
     borderStyle.drawPath(canvas, paint, arc.toPath());
   }

@@ -92,7 +92,7 @@ class CalendarCoordImpl extends CalendarCoord {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     canvas.save();
     canvas.translate(scrollX, scrollY);
     canvas.clipRect(boxBounds);

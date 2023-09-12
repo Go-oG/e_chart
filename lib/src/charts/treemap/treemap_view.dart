@@ -97,7 +97,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
     canvas.translate(tx, ty);
@@ -107,7 +107,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
     canvas.restore();
   }
 
-  void _drawNode(Canvas canvas, TreeMapNode node) {
+  void _drawNode(CCanvas canvas, TreeMapNode node) {
     AreaStyle? style = series.areaStyleFun.call(node);
     if (style == null) {
       return;

@@ -163,7 +163,7 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     for (var ele in axisMap.entries) {
       ele.value.draw(canvas, mPaint, Rect.zero);
     }

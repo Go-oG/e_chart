@@ -44,7 +44,7 @@ class IconSymbol extends ChartSymbol {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     TextDrawInfo config = TextDrawInfo(Offset.zero, align: Alignment.center);
     style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
   }

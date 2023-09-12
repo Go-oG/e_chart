@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../event/index.dart';
 import '../utils/log_util.dart';
-import 'context.dart';
-import 'view.dart';
+import 'index.dart';
 
 /// ViewGroup
 abstract class ChartViewGroup extends GestureView implements ViewParent {
@@ -170,7 +169,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   }
 
   @override
-  void dispatchDraw(Canvas canvas) {
+  void dispatchDraw(CCanvas canvas) {
     for (var child in children) {
       int count = canvas.getSaveCount();
       drawChild(child, canvas);
@@ -185,13 +184,13 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
     if (inDrawing) {
       return;
     }
-    markDirty(); //标记为需要重绘
+    markDirty();
     parent?.parentInvalidate();
   }
 
   /// 负责绘制单独的一个ChildView，同时负责Canvas的坐标的正确转换
   /// 如果在方法中调用了[invalidate]则返回true
-  bool drawChild(ChartView child, Canvas canvas) {
+  bool drawChild(ChartView child, CCanvas canvas) {
     return child.drawSelf(canvas, this);
   }
 

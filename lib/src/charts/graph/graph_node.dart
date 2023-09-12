@@ -12,7 +12,7 @@ class GraphNode extends DataNode2<GraphAttr, BaseItemData, ChartSymbol> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, Offset(x, y));
   }
 

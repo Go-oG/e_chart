@@ -67,7 +67,7 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     if (coord == CoordType.grid) {
       itemStyle.drawRect(canvas, paint, rect, attr.corner);
       borderStyle.drawRect(canvas, paint, rect, attr.corner);

@@ -19,7 +19,7 @@ class PointNode extends DataNode2<Offset, PointData, ChartSymbol> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, attr);
     var label = data.label;
     var labelConfig = this.labelConfig;

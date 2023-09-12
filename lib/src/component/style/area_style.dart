@@ -9,7 +9,6 @@ import '../../utils/platform_util.dart';
 /// 区域样式
 class AreaStyle {
   static const AreaStyle empty = AreaStyle();
-
   final Color? color;
   final ChartShader? shader;
   final List<BoxShadow> shadow;
@@ -49,7 +48,7 @@ class AreaStyle {
     paint.style = PaintingStyle.fill;
   }
 
-  void drawPolygonArea(Canvas canvas, Paint paint, List<Offset> points) {
+  void drawPolygonArea(CCanvas canvas, Paint paint, List<Offset> points) {
     if (notDraw) {
       return;
     }
@@ -65,7 +64,7 @@ class AreaStyle {
     drawPath(canvas, paint, polygon.toPath());
   }
 
-  void drawArea(Canvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [num smooth = 0]) {
+  void drawArea(CCanvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [num smooth = 0]) {
     if (notDraw) {
       return;
     }
@@ -73,7 +72,7 @@ class AreaStyle {
     drawPath(canvas, paint, area.toPath());
   }
 
-  void drawRect(Canvas canvas, Paint paint, Rect rect, [Corner? corner]) {
+  void drawRect(CCanvas canvas, Paint paint, Rect rect, [Corner? corner]) {
     if (notDraw) {
       return;
     }
@@ -88,7 +87,7 @@ class AreaStyle {
     drawPath(canvas, paint, path,rect);
   }
 
-  void drawRRect(Canvas canvas, Paint paint, RRect rect) {
+  void drawRRect(CCanvas canvas, Paint paint, RRect rect) {
     if (notDraw) {
       return;
     }
@@ -97,7 +96,7 @@ class AreaStyle {
     drawPath(canvas, paint, path,rect.outerRect);
   }
 
-  void drawCircle(Canvas canvas, Paint paint, Offset center, num radius) {
+  void drawCircle(CCanvas canvas, Paint paint, Offset center, num radius) {
     if (notDraw) {
       return;
     }
@@ -109,7 +108,7 @@ class AreaStyle {
     drawPath(canvas, paint, path, rect);
   }
 
-  void drawPath(Canvas canvas, Paint paint, Path path, [Rect? bound]) {
+  void drawPath(CCanvas canvas, Paint paint, Path path, [Rect? bound]) {
     if (notDraw) {
       return;
     }
@@ -120,7 +119,7 @@ class AreaStyle {
     canvas.drawPath(path, paint);
   }
 
-  void drawArc(Canvas canvas, Paint paint, Arc arc, [bool useCircleRect = false]) {
+  void drawArc(CCanvas canvas, Paint paint, Arc arc, [bool useCircleRect = false]) {
     if (!isWeb) {
       drawPath(canvas, paint, arc.toPath(), arc.getBound(useCircleRect));
       return;

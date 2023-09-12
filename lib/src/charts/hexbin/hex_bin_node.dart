@@ -12,7 +12,7 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
   );
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, attr.center);
 
     DynamicText? s = data.label;

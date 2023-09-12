@@ -7,7 +7,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
   RadiusAxisImpl(super.context, super.coord, super.axis);
 
   @override
-  void onDrawAxisSplitLine(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
     each(layoutResult.split, (split, i) {
       LineStyle? style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
@@ -19,7 +19,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
   }
 
   @override
-  void onDrawAxisSplitArea(Canvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
     each(layoutResult.split, (split, i) {
       AreaStyle? style = axis.getSplitAreaStyle(split.index, split.maxIndex, theme);
@@ -38,7 +38,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
   }
 
   @override
-  void onDrawAxisPointer(Canvas canvas, Paint paint, Offset offset) {
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
     var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;

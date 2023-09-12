@@ -116,7 +116,7 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
     TextDrawInfo? config = labelConfig;

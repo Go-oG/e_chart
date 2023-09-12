@@ -20,7 +20,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     if (series.coordType == CoordType.polar) {
       drawForPolar(canvas);
     } else {
@@ -28,7 +28,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     }
   }
 
-  void drawForGrid(Canvas canvas) {
+  void drawForGrid(CCanvas canvas) {
     Offset offset = layoutHelper.getTranslation();
     Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
     double t = helper.getAnimatorPercent();
@@ -52,7 +52,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     drawMakeLineAndMarkPoint(canvas, clipRect);
   }
 
-  void drawForPolar(Canvas canvas) {
+  void drawForPolar(CCanvas canvas) {
     double t = helper.getAnimatorPercent();
     if (t == 0) {
       return;
@@ -73,7 +73,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     drawMakeLineAndMarkPoint(canvas, null);
   }
 
-  void drawLine(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
+  void drawLine(CCanvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
     if (lineNode.borderList.isEmpty) {
       return;
     }
@@ -96,7 +96,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   List<LineSymbolNode> drawLineForPolar(
-      Canvas canvas, LineNode lineNode, LineTheme theme, double percent, bool needSymbol) {
+      CCanvas canvas, LineNode lineNode, LineTheme theme, double percent, bool needSymbol) {
     if (lineNode.borderList.isEmpty) {
       return [];
     }
@@ -122,7 +122,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     return List.from(symbolSet);
   }
 
-  void drawArea(Canvas canvas, LineNode lineNode, Rect clipRect, Offset scroll, LineTheme theme) {
+  void drawArea(CCanvas canvas, LineNode lineNode, Rect clipRect, Offset scroll, LineTheme theme) {
     if (lineNode.areaList.isEmpty) {
       return;
     }
@@ -136,10 +136,10 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     }
   }
 
-  void drawAreaForPolar(Canvas canvas, LineNode node, Path path, LineTheme theme) {
+  void drawAreaForPolar(CCanvas canvas, LineNode node, Path path, LineTheme theme) {
     var style = layoutHelper.buildAreaStyle(null, node.data, node.styleIndex, {});
     node.areaStyle = style;
-    if (style .notDraw) {
+    if (style.notDraw) {
       return;
     }
     Offset center = layoutHelper.findPolarCoord().getCenter();
@@ -148,7 +148,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     style.drawPath(canvas, mPaint, path);
   }
 
-  void drawSymbol(Canvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
+  void drawSymbol(CCanvas canvas, LineNode lineNode, Rect clipRect, LineTheme theme) {
     lineNode.symbolMap.forEach((key, node) {
       if (!clipRect.contains2(node.center)) {
         return;
@@ -157,14 +157,14 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     });
   }
 
-  void drawSymbolForPolar(Canvas canvas, List<LineSymbolNode> symbolList, LineTheme theme) {
+  void drawSymbolForPolar(CCanvas canvas, List<LineSymbolNode> symbolList, LineTheme theme) {
     each(symbolList, (symbol, p1) {
       symbol.onDraw(canvas, mPaint);
     });
   }
 
   /// 绘制标记线和点
-  void drawMakeLineAndMarkPoint(Canvas canvas, Rect? clipRect) {
+  void drawMakeLineAndMarkPoint(CCanvas canvas, Rect? clipRect) {
     var markLineFun = series.markLineFun;
     var markPointFun = series.markPointFun;
     var markPoint = series.markPoint;

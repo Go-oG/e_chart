@@ -3,8 +3,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../core/render/ccanvas.dart';
+
 extension PathExt on Path {
-  void drawShadows(Canvas canvas, Path path, List<BoxShadow> shadows) {
+  void drawShadows(CCanvas canvas, Path path, List<BoxShadow> shadows) {
     for (final BoxShadow shadow in shadows) {
       final Paint shadowPainter = shadow.toPaint();
       if (shadow.spreadRadius == 0) {

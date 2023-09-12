@@ -8,7 +8,7 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinLayout> {
   bool get enableDrag => true;
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     debugDrawRect(canvas, selfBoxBound);
     var tr = layoutHelper.getTranslation();
     canvas.save();

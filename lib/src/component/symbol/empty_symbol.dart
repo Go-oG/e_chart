@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../core/render/ccanvas.dart';
 import 'chart_symbol.dart';
 
 class EmptySymbol extends ChartSymbol {
@@ -10,7 +11,7 @@ class EmptySymbol extends ChartSymbol {
   Size get size => const Size(0, 0);
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {}
+  void onDraw(CCanvas canvas, Paint paint) {}
 
   @override
   bool contains(Offset center, Offset point) {

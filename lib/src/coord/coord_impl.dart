@@ -82,7 +82,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   @override
-  void dispatchDraw(Canvas canvas) {
+  void dispatchDraw(CCanvas canvas) {
     List<ChartView> vl = [];
     for (var child in children) {
       int count = canvas.getSaveCount();
@@ -105,7 +105,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   @override
-  void onDrawBackground(Canvas canvas) {
+  void onDrawBackground(CCanvas canvas) {
     Color? color = props.backgroundColor;
     if (color == null) {
       return;

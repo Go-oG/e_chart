@@ -9,7 +9,7 @@ class PieView extends SeriesView<PieSeries, PieHelper> {
   PieView(super.series);
 
   @override
-  void onDraw(Canvas canvas) {
+  void onDraw(CCanvas canvas) {
     List<PieNode> nodeList = layoutHelper.nodeList;
     each(nodeList, (node, i) {
       node.onDraw(canvas, mPaint);

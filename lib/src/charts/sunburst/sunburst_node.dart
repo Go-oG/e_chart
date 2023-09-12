@@ -23,14 +23,14 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     itemStyle.drawArc(canvas, paint, attr.arc);
     borderStyle.drawPath(canvas, paint, attr.arc.toPath());
     labelStyle.draw(canvas, paint, "D$deep:${data.value}".toText(), TextDrawInfo(attr.arc.centroid()));
     // _drawText(canvas, paint);
   }
 
-  void _drawText(Canvas canvas, Paint paint) {
+  void _drawText(CCanvas canvas, Paint paint) {
     Arc arc = attr.arc;
     var style = labelStyle;
     var label = data.label;
@@ -72,7 +72,7 @@ class SunburstVirtualNode extends SunburstNode {
   final AreaStyle bs = const AreaStyle(color: Colors.black);
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     bs.drawArc(canvas, paint, attr.arc);
   }
 }

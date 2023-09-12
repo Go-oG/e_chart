@@ -42,7 +42,7 @@ class TreeMapNode extends TreeNode<TreeData, Rect, TreeMapNode> {
   }
 
   @override
-  void onDraw(Canvas canvas, Paint paint) {
+  void onDraw(CCanvas canvas, Paint paint) {
     Rect rect = attr;
     itemStyle.drawRect(canvas, paint, rect);
     var label = data.label;
