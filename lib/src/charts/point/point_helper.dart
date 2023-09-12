@@ -95,19 +95,6 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     }
   }
 
-  @override
-  Offset getScroll() {
-    if (CoordType.polar == series.coordType) {
-      return findPolarCoord().getTranslation();
-    }
-    if (CoordType.calendar == series.coordType) {
-      return findCalendarCoord().getTranslation();
-    }
-    if (CoordType.grid == series.coordType) {
-      return findGridCoord().getTranslation();
-    }
-    throw ChartError("unSupport Coord");
-  }
 
   @override
   SeriesType get seriesType => SeriesType.point;

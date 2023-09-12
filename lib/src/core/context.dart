@@ -244,8 +244,16 @@ class Context {
 
   /// 坐标系查找相关函数
   GridCoord findGridCoord([int gridIndex = 0]) {
-    if (option.gridList.isEmpty) {
+    var r = findGridCoordNull(gridIndex);
+    if (r == null) {
       throw FlutterError('暂无Grid坐标系');
+    }
+    return r;
+  }
+
+  GridCoord? findGridCoordNull([int gridIndex = 0]) {
+    if (option.gridList.isEmpty) {
+      return null;
     }
     if (gridIndex < 0) {
       gridIndex = 0;
@@ -253,12 +261,20 @@ class Context {
     if (gridIndex > option.polarList.length) {
       gridIndex = option.polarList.length - 1;
     }
-    return _coordMap[option.gridList[gridIndex]]! as GridCoord;
+    return _coordMap[option.gridList[gridIndex]] as GridCoord?;
   }
 
   PolarCoord findPolarCoord([int polarIndex = 0]) {
+    var r = findPolarCoordNull(polarIndex);
+    if (r == null) {
+      throw ChartError('暂无Polar坐标系');
+    }
+    return r;
+  }
+
+  PolarCoord? findPolarCoordNull([int polarIndex = 0]) {
     if (option.polarList.isEmpty) {
-      throw FlutterError('暂无Polar坐标系');
+      return null;
     }
     if (polarIndex < 0) {
       polarIndex = 0;
@@ -266,41 +282,66 @@ class Context {
     if (polarIndex > option.polarList.length) {
       polarIndex = 0;
     }
-    return _coordMap[option.polarList[polarIndex]]! as PolarCoord;
+    return _coordMap[option.polarList[polarIndex]] as PolarCoord?;
   }
 
   RadarCoord findRadarCoord([int radarIndex = 0]) {
+    var r = findRadarCoordNull(radarIndex);
+    if (r == null) {
+      throw ChartError('暂无Radar坐标系');
+    }
+    return r;
+  }
+
+  RadarCoord? findRadarCoordNull([int radarIndex = 0]) {
+    if (option.radarList.isEmpty) {
+      return null;
+    }
     if (radarIndex > option.radarList.length) {
       radarIndex = 0;
     }
-    if (option.radarList.isEmpty) {
-      throw FlutterError('暂无Radar坐标系');
-    }
-    return _coordMap[option.radarList[radarIndex]]! as RadarCoord;
+    return _coordMap[option.radarList[radarIndex]] as RadarCoord?;
   }
 
   ParallelCoord findParallelCoord([int parallelIndex = 0]) {
+    var r = findParallelCoordNull(parallelIndex);
+    if (r == null) {
+      throw ChartError('当前未配置Parallel 坐标系无法查找');
+    }
+    return r;
+  }
+
+  ParallelCoord? findParallelCoordNull([int parallelIndex = 0]) {
+    if (option.parallelList.isEmpty) {
+      return null;
+    }
     int index = parallelIndex;
     if (index > option.parallelList.length) {
       index = 0;
     }
-    if (option.parallelList.isEmpty) {
-      throw FlutterError('当前未配置Parallel 坐标系无法查找');
-    }
     Parallel parallel = option.parallelList[index];
-    return _coordMap[parallel]! as ParallelCoord;
+    return _coordMap[parallel] as ParallelCoord?;
   }
 
   CalendarCoord findCalendarCoord([int calendarIndex = 0]) {
+    var r = findCalendarCoordNull(calendarIndex);
+    if (r == null) {
+      throw FlutterError('当前未配置Calendar 坐标系无法查找');
+    }
+    return r;
+  }
+
+  CalendarCoord? findCalendarCoordNull([int calendarIndex = 0]) {
+    if (option.calendarList.isEmpty) {
+      return null;
+    }
     int index = calendarIndex;
     if (index > option.calendarList.length) {
       index = 0;
     }
-    if (option.calendarList.isEmpty) {
-      throw FlutterError('当前未配置Calendar 坐标系无法查找');
-    }
+
     Calendar calendar = option.calendarList[index];
-    return _coordMap[calendar]! as CalendarCoord;
+    return _coordMap[calendar] as CalendarCoord?;
   }
 
   ///=======手势监听处理===============

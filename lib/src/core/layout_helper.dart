@@ -187,6 +187,10 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return context.findGridCoord(series.gridIndex);
   }
 
+  GridCoord? findGridCoordNull() {
+    return context.findGridCoordNull(series.gridIndex);
+  }
+
   GridAxis findGridAxis(int index, bool isXAxis) {
     return findGridCoord().getAxis(index, isXAxis);
   }
@@ -195,16 +199,32 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return context.findPolarCoord(series.polarIndex);
   }
 
+  PolarCoord? findPolarCoordNull() {
+    return context.findPolarCoordNull(series.polarIndex);
+  }
+
   CalendarCoord findCalendarCoord() {
     return context.findCalendarCoord(series.calendarIndex);
+  }
+
+  CalendarCoord? findCalendarCoordNull() {
+    return context.findCalendarCoordNull(series.calendarIndex);
   }
 
   ParallelCoord findParallelCoord() {
     return context.findParallelCoord(series.parallelIndex);
   }
 
+  ParallelCoord? findParallelCoordNull() {
+    return context.findParallelCoordNull(series.parallelIndex);
+  }
+
   RadarCoord findRadarCoord() {
     return context.findRadarCoord(series.radarIndex);
+  }
+
+  RadarCoord? findRadarCoordNull() {
+    return context.findRadarCoordNull(series.radarIndex);
   }
 
   ///========通知布局节点刷新=======
@@ -228,20 +248,20 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   ///获取平移偏移量
   Offset getTranslation() {
     var type = series.coordType;
+    Offset? offset;
     if (type == CoordType.polar) {
-      return findParallelCoord().getTranslation();
+      offset = findParallelCoordNull()?.getTranslation();
+    } else if (type == CoordType.calendar) {
+      offset = findCalendarCoordNull()?.getTranslation();
+    } else if (type == CoordType.radar) {
+      offset = findRadarCoordNull()?.getTranslation();
+    } else if (type == CoordType.parallel) {
+      offset = findParallelCoordNull()?.getTranslation();
+    } else if (type == CoordType.grid) {
+      offset = findGridCoordNull()?.getTranslation();
     }
-    if (type == CoordType.calendar) {
-      return findCalendarCoord().getTranslation();
-    }
-    if (type == CoordType.radar) {
-      return findRadarCoord().getTranslation();
-    }
-    if (type == CoordType.parallel) {
-      return findParallelCoord().getTranslation();
-    }
-    if (type == CoordType.grid) {
-      return findGridCoord().getTranslation();
+    if (offset != null) {
+      return offset;
     }
     return translation.toOffset();
   }
@@ -272,12 +292,12 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   ///获取动画运行配置(可以为空)
-  AnimationAttrs? getAnimation(LayoutType type, [int threshold = -1]) {
+  AnimationAttrs? getAnimation(LayoutType type, [int count = -1]) {
     var attr = series.animation ?? context.option.animation;
     if (type == LayoutType.none || attr == null) {
       return null;
     }
-    if (threshold > 0 && threshold > attr.threshold && attr.threshold > 0) {
+    if (count > 0 && count > attr.threshold && attr.threshold > 0) {
       return null;
     }
     if (type == LayoutType.layout) {
@@ -294,7 +314,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     }
     return null;
   }
-
 }
 
 abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends LayoutHelper<S> {
@@ -333,11 +352,12 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       return;
     }
     sendHoverEndEvent(old);
-    var animation = series.animation;
     var oldAttr = old.toAttr();
     old.removeState(ViewState.hover);
     onUpdateNodeStyle(old);
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+    var animation = getAnimation(LayoutType.update, 2);
+
+    if (animation == null) {
       notifyLayoutUpdate();
       return;
     }
@@ -382,8 +402,8 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       nl.add(NodeDiff(clickNode, newAttr, clickNode.toAttr(), false));
     }
 
-    var animator = series.animation;
-    if (animator == null || animator.updateDuration.inMilliseconds <= 0) {
+    var animator = getAnimation(LayoutType.update, 2);
+    if (animator == null) {
       onHandleHoverAndClickEnd(oldNode, clickNode);
       notifyLayoutUpdate();
       return;
