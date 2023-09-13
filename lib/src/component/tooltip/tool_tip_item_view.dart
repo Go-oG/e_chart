@@ -11,6 +11,11 @@ class ToolTipItemView extends GestureView {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
+    padding.left = layoutParams.leftPadding.convert(parentWidth);
+    padding.top = layoutParams.topPadding.convert(parentHeight);
+    padding.right = layoutParams.rightPadding.convert(parentWidth);
+    padding.bottom = layoutParams.bottomPadding.convert(parentHeight);
+
     Size symbolSize = item.symbol?.size ?? Size.zero;
     num w = symbolSize.width;
     num h = symbolSize.height;
@@ -33,18 +38,18 @@ class ToolTipItemView extends GestureView {
       w += 16;
     }
 
-    w += layoutParams.padding.horizontal;
-    h += layoutParams.padding.vertical;
+    w +=padding.horizontal;
+    h += padding.vertical;
     return Size(w.toDouble(), h.toDouble());
   }
 
   @override
   void onDraw(CCanvas canvas) {
-    double c = layoutParams.padding.top + height / 2;
-    double left = layoutParams.padding.left;
+    double c = padding.top + height / 2;
+    double left = padding.left;
     if (item.symbol != null) {
       Size s = item.symbol!.size;
-      item.symbol?.draw(canvas, mPaint, Offset(layoutParams.padding.left + s.width / 2, c));
+      item.symbol?.draw(canvas, mPaint, Offset(padding.left + s.width / 2, c));
       left += s.width + 8;
     }
     item.titleStyle.draw(canvas, mPaint, item.title, TextDrawInfo(Offset(left, c), align: Alignment.centerLeft));

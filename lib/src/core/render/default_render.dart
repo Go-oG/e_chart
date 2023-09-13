@@ -45,14 +45,12 @@ class DefaultRender extends BaseRender {
         v.layout(r2.left, r2.top, r2.right, r2.bottom);
         continue;
       }
-      var lp = v.props.layoutParams;
-      double lm = lp.margin.left;
-      double tm = lp.margin.top;
+      var margin = v.margin;
       v.layout(
-        rect.left + lm,
-        rect.top + tm,
-        rect.left + lm + v.width,
-        rect.top + tm + v.height,
+        rect.left + margin.left,
+        rect.top + margin.top,
+        rect.left + margin.left + v.width,
+        rect.top + margin.top + v.height,
       );
     }
   }

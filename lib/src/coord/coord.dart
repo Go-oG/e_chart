@@ -18,7 +18,12 @@ abstract class Coord extends ChartNotifier<Command> {
   Coord({
     this.show = true,
     String? id,
-    this.layoutParams = const LayoutParams.matchAll(padding: EdgeInsets.all(32)),
+    this.layoutParams = const LayoutParams.matchAll(
+      leftPadding: SNumber.number(32),
+      topPadding: SNumber.number(32),
+      rightPadding: SNumber.number(32),
+      bottomPadding: SNumber.number(32),
+    ),
     this.brush,
     this.toolTip,
     this.backgroundColor,
@@ -42,6 +47,7 @@ abstract class Coord extends ChartNotifier<Command> {
     value = Command.configChange;
   }
 
-  CoordLayout? toCoord(){return null;}
-
+  CoordLayout? toCoord() {
+    return null;
+  }
 }

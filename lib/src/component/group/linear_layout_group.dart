@@ -8,20 +8,21 @@ class LinearLayout extends ChartViewGroup {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    var lp = layoutParams;
-    var padding = lp.padding;
-    double w = 0, h = 0;
-    if (lp.width.isNormal) {
-      w = lp.width.convert(parentWidth) - padding.horizontal;
-    } else {
-      w = parentWidth - padding.horizontal;
+    if (layoutParams.width.isNormal) {
+      parentWidth = layoutParams.width.convert(parentWidth);
+    }
+    if (layoutParams.height.isNormal) {
+      parentHeight = layoutParams.height.convert(parentHeight);
     }
 
-    if (lp.height.isNormal) {
-      h = lp.height.convert(parentHeight) - padding.vertical;
-    } else {
-      h = parentHeight - padding.vertical;
-    }
+    padding.left = layoutParams.getLeftPadding(parentWidth);
+    padding.right = layoutParams.getRightPadding(parentWidth);
+    padding.top = layoutParams.getTopPadding(parentHeight);
+    padding.bottom = layoutParams.getBottomPadding(parentHeight);
+
+    var lp = layoutParams;
+    double w = parentWidth - padding.horizontal;
+    double h = parentHeight - padding.vertical;
 
     for (var c in children) {
       c.measure(w, h);
@@ -63,24 +64,23 @@ class LinearLayout extends ChartViewGroup {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    var lp = layoutParams.padding;
-    double offset = direction == Direction.vertical ? lp.top : lp.left;
+    double offset = direction == Direction.vertical ? padding.top : padding.left;
     for (var c in children) {
-      var cm = c.layoutParams.margin;
+      var cm = c.margin;
       if (direction == Direction.vertical) {
         c.layout(
-          lp.left + cm.left,
+          padding.left + cm.left,
           offset + cm.top,
-          lp.left + cm.left + c.width,
+          padding.left + cm.left + c.width,
           offset + cm.top + c.height,
         );
         offset += c.height + cm.top;
       } else {
         c.layout(
           offset + cm.left,
-          lp.top + cm.top,
+          padding.top + cm.top,
           offset + cm.left + c.width,
-          lp.top + cm.top + c.height,
+          padding.top + cm.top + c.height,
         );
         offset += c.width + cm.left;
       }

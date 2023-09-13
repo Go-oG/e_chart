@@ -1,9 +1,7 @@
 import 'dart:math' as m;
-import 'dart:ui';
 import 'package:flutter/rendering.dart';
 
 import '../../event/index.dart';
-import '../../model/chart_error.dart';
 import '../../utils/log_util.dart';
 import '../index.dart';
 
@@ -11,7 +9,7 @@ import '../index.dart';
 abstract class ChartViewGroup extends GestureView implements ViewParent {
   final List<ChartView> _children = [];
 
-  ChartViewGroup():super();
+  ChartViewGroup() : super();
 
   @override
   void create(Context context, ViewParent parent) {
@@ -117,57 +115,88 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   ///=========布局测量相关============
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    double maxHeight = 0;
-    double maxWidth = 0;
-    num php = layoutParams.padding.horizontal;
-    num pvp = layoutParams.padding.vertical;
-    double pw = parentWidth - php;
-    double ph = parentHeight - pvp;
-    for (var child in children) {
-      child.measure(pw, ph);
-      final LayoutParams lp = child.layoutParams;
-      num hp = lp.margin.horizontal;
-      num vp = lp.margin.vertical;
-      maxWidth = m.max(maxWidth, child.width + hp);
-      maxHeight = m.max(maxHeight, child.height + vp);
+    var oldW = parentWidth;
+    var oldH = parentHeight;
+    if (layoutParams.width.isNormal) {
+      parentWidth = layoutParams.width.convert(parentWidth);
+    }
+    if (layoutParams.height.isNormal) {
+      parentHeight = layoutParams.height.convert(parentHeight);
     }
 
+    double maxHeight = 0;
+    double maxWidth = 0;
+    padding.left = layoutParams.getLeftPadding(parentWidth);
+    padding.right = layoutParams.getRightPadding(parentWidth);
+    padding.top = layoutParams.getTopPadding(parentHeight);
+    padding.bottom = layoutParams.getBottomPadding(parentHeight);
+    var pw = parentWidth - padding.horizontal;
+    var ph = parentHeight - padding.vertical;
 
-    maxWidth += php;
-    maxHeight += pvp;
-    maxWidth = m.min(maxWidth, parentWidth);
-    maxHeight = m.min(maxHeight, parentHeight);
-
-    php = layoutParams.padding.horizontal;
-    pvp = layoutParams.padding.vertical;
-    pw = maxWidth - php;
-    ph = maxHeight - pvp;
+    ///第一次测量
     for (var child in children) {
-      final LayoutParams lp = child.layoutParams;
-      num hm = lp.margin.horizontal;
-      num vm = lp.margin.vertical;
-      double childWidth = child.width;
-      if (lp.width.isMatch) {
-        childWidth = m.max(0, pw - hm);
+      child.measure(pw, ph);
+      var childLP = child.layoutParams;
+      child.margin.left = childLP.getLeftMargin(pw);
+      child.margin.right = childLP.getRightMargin(pw);
+      child.margin.top = childLP.getTopMargin(ph);
+      child.margin.bottom = childLP.getBottomMargin(ph);
+      maxWidth = m.max(maxWidth, child.width + child.margin.horizontal);
+      maxHeight = m.max(maxHeight, child.height + child.margin.vertical);
+    }
+    maxWidth += padding.horizontal;
+    maxHeight += padding.vertical;
+
+    var oldMaxWidth = maxWidth;
+    var oldMaxHeight = maxHeight;
+
+    if (layoutParams.width.isNormal) {
+      maxWidth = layoutParams.width.convert(oldW);
+    } else if (layoutParams.width.isMatch) {
+      maxWidth = oldW;
+    }
+    if (layoutParams.height.isNormal) {
+      maxHeight = layoutParams.height.convert(oldH);
+    } else if (layoutParams.height.isMatch) {
+      maxHeight = oldH;
+    }
+    if (oldMaxHeight == maxHeight && oldMaxWidth == maxWidth) {
+      return Size(maxWidth, maxHeight);
+    }
+
+    padding.left = layoutParams.getLeftPadding(maxWidth);
+    padding.right = layoutParams.getRightPadding(maxWidth);
+    padding.top = layoutParams.getTopPadding(maxHeight);
+    padding.bottom = layoutParams.getBottomPadding(maxHeight);
+    pw = maxWidth - padding.horizontal;
+    ph = maxHeight - padding.vertical;
+    for (var child in children) {
+      var childLP = child.layoutParams;
+      child.margin.left = childLP.getLeftMargin(pw);
+      child.margin.right = childLP.getRightMargin(pw);
+      child.margin.top = childLP.getTopMargin(ph);
+      child.margin.bottom = childLP.getBottomMargin(ph);
+      double childWidth = pw;
+      if (childLP.width.isMatch) {
+        childWidth = m.max(0, pw - child.margin.horizontal);
       }
-      double childHeight = child.height;
-      if (lp.height.isMatch) {
-        childHeight = m.max(0, ph - vm);
+      double childHeight = ph;
+      if (childLP.height.isMatch) {
+        childHeight = m.max(0, ph - child.margin.vertical);
       }
       child.measure(childWidth, childHeight);
     }
-
     return Size(maxWidth, maxHeight);
   }
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    double parentLeft = layoutParams.padding.left;
-    double parentTop = layoutParams.padding.top;
+    var parentLeft = padding.left;
+    var parentTop = padding.top;
     for (var child in children) {
-      LayoutParams lp = child.layoutParams;
-      double childLeft = parentLeft + lp.margin.left;
-      double childTop = parentTop + lp.margin.top;
+      var margin = child.margin;
+      double childLeft = parentLeft + margin.left;
+      double childTop = parentTop + margin.top;
       child.layout(childLeft, childTop, childLeft + child.width, childTop + child.height);
     }
   }

@@ -18,7 +18,12 @@ class Grid extends Coord {
     this.baseXScale = 1,
     this.baseYScale = 1,
     super.brush,
-    super.layoutParams = const LayoutParams.matchAll(padding: EdgeInsets.all(64)),
+    super.layoutParams = const LayoutParams.matchAll(
+      leftPadding: SNumber.number(32),
+      topPadding: SNumber.number(32),
+      rightPadding: SNumber.number(32),
+      bottomPadding: SNumber.number(32),
+    ),
     super.toolTip,
     super.backgroundColor,
     super.id,

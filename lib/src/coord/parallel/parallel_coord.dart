@@ -78,11 +78,10 @@ class ParallelCoordImpl extends ParallelCoord {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    var lp = props.layoutParams.padding;
-    final double leftOffset = lp.left;
-    final double topOffset = lp.top;
-    final double rightOffset = lp.right;
-    final double bottomOffset = lp.bottom;
+    final double leftOffset = padding.left;
+    final double topOffset = padding.top;
+    final double rightOffset = padding.right;
+    final double bottomOffset = padding.bottom;
 
     double w = width - leftOffset - rightOffset;
     double h = height - topOffset - bottomOffset;
@@ -212,7 +211,7 @@ abstract class ParallelCoord extends CoordLayout<Parallel> {
 
   Direction get direction => props.direction;
 
-  int getAxisCount()=>props.axisList.length;
+  int getAxisCount() => props.axisList.length;
 }
 
 class ParallelPosition {

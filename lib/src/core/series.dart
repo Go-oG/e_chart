@@ -92,18 +92,18 @@ abstract class ChartSeries extends ChartNotifier<Command> {
 abstract class RectSeries extends ChartSeries {
   /// 定义布局的上下左右间距或者宽高，
   /// 宽高的优先级大于上下间距的优先级(如果定义了)
-  num leftMargin;
-  num topMargin;
-  num rightMargin;
-  num bottomMargin;
+  SNumber leftMargin;
+  SNumber topMargin;
+  SNumber rightMargin;
+  SNumber bottomMargin;
   SNumber? width;
   SNumber? height;
 
   RectSeries({
-    this.leftMargin = 0,
-    this.topMargin = 0,
-    this.rightMargin = 0,
-    this.bottomMargin = 0,
+    this.leftMargin = SNumber.zero,
+    this.topMargin = SNumber.zero,
+    this.rightMargin = SNumber.zero,
+    this.bottomMargin = SNumber.zero,
     this.width,
     this.height,
     super.coordType,
@@ -134,12 +134,13 @@ abstract class RectSeries extends ChartSeries {
       h = const SizeParams.match();
     }
 
-    return LayoutParams(w, h,
-        margin: EdgeInsets.only(
-          left: leftMargin.toDouble(),
-          top: topMargin.toDouble(),
-          right: rightMargin.toDouble(),
-          bottom: bottomMargin.toDouble(),
-        ));
+    return LayoutParams(
+      w,
+      h,
+      leftMargin: leftMargin,
+      topMargin: topMargin,
+      rightMargin: rightMargin,
+      bottomMargin: bottomMargin,
+    );
   }
 }

@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/model/chart_edgeinset.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
@@ -17,6 +16,9 @@ abstract class ChartView {
   set layoutParams(LayoutParams p) {
     _layoutParams = p;
   }
+
+  ChartEdgeInset margin = ChartEdgeInset();
+  ChartEdgeInset padding = ChartEdgeInset();
 
   ///索引层次
   int zLevel = -1;
@@ -128,32 +130,27 @@ abstract class ChartView {
       return;
     }
     oldBoundRect = boundRect;
+    margin.clear();
+    padding.clear();
     Size size = onMeasure(parentWidth, parentHeight);
     boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
     measureCompleted = true;
   }
 
   Size onMeasure(double parentWidth, double parentHeight) {
-    double w = 0;
-    double h = 0;
     LayoutParams lp = layoutParams;
-
-    if (lp.width.isMatch) {
-      w = parentWidth;
-    } else if (lp.width.isWrap) {
-      w = 0;
-    } else {
-      w = lp.width.convert(parentWidth);
+    double w = lp.width.convert(parentWidth);
+    double h = lp.height.convert(parentHeight);
+    if (lp.width.isWrap) {
+      padding.left = lp.getLeftPadding(parentWidth);
+      padding.right = lp.getRightPadding(parentWidth);
+      w += padding.horizontal;
     }
-    if (lp.height.isMatch) {
-      h = parentHeight;
-    } else if (lp.height.isWrap) {
-      h = 0;
-    } else {
-      h = lp.height.convert(parentHeight);
+    if (lp.height.isWrap) {
+      padding.top = lp.getTopPadding(parentHeight);
+      padding.bottom = lp.getBottomPadding(parentHeight);
+      h += padding.vertical;
     }
-    w += lp.padding.horizontal;
-    h += lp.padding.vertical;
     return Size(w, h);
   }
 
@@ -529,27 +526,100 @@ class LayoutParams {
   final SizeParams width;
   final SizeParams height;
 
-  final EdgeInsets margin;
-  final EdgeInsets padding;
+  final SNumber leftMargin;
+  final SNumber topMargin;
+  final SNumber rightMargin;
+  final SNumber bottomMargin;
+
+  final SNumber leftPadding;
+  final SNumber topPadding;
+  final SNumber rightPadding;
+  final SNumber bottomPadding;
 
   const LayoutParams(
     this.width,
     this.height, {
-    this.margin = EdgeInsets.zero,
-    this.padding = EdgeInsets.zero,
+    this.leftMargin = SNumber.zero,
+    this.topMargin = SNumber.zero,
+    this.rightMargin = SNumber.zero,
+    this.bottomMargin = SNumber.zero,
+    this.leftPadding = SNumber.zero,
+    this.topPadding = SNumber.zero,
+    this.rightPadding = SNumber.zero,
+    this.bottomPadding = SNumber.zero,
   });
 
   const LayoutParams.matchAll({
-    this.margin = EdgeInsets.zero,
-    this.padding = EdgeInsets.zero,
+    this.leftMargin = SNumber.zero,
+    this.topMargin = SNumber.zero,
+    this.rightMargin = SNumber.zero,
+    this.bottomMargin = SNumber.zero,
+    this.leftPadding = SNumber.zero,
+    this.topPadding = SNumber.zero,
+    this.rightPadding = SNumber.zero,
+    this.bottomPadding = SNumber.zero,
   })  : width = const SizeParams.match(),
         height = const SizeParams.match();
 
   const LayoutParams.wrapAll({
-    this.margin = EdgeInsets.zero,
-    this.padding = EdgeInsets.zero,
+    this.leftMargin = SNumber.zero,
+    this.topMargin = SNumber.zero,
+    this.rightMargin = SNumber.zero,
+    this.bottomMargin = SNumber.zero,
+    this.leftPadding = SNumber.zero,
+    this.topPadding = SNumber.zero,
+    this.rightPadding = SNumber.zero,
+    this.bottomPadding = SNumber.zero,
   })  : width = const SizeParams.wrap(),
         height = const SizeParams.wrap();
+
+  double getLeftPadding(num size) {
+    return leftPadding.convert(size);
+  }
+
+  double getTopPadding(num size) {
+    return topPadding.convert(size);
+  }
+
+  double getRightPadding(num size) {
+    return rightPadding.convert(size);
+  }
+
+  double getBottomPadding(num size) {
+    return bottomPadding.convert(size);
+  }
+
+  double hPadding(num size) {
+    return getLeftPadding(size) + getRightPadding(size);
+  }
+
+  double vPadding(num size) {
+    return getTopPadding(size) + getBottomPadding(size);
+  }
+
+  double getLeftMargin(num size) {
+    return leftMargin.convert(size);
+  }
+
+  double getTopMargin(num size) {
+    return topMargin.convert(size);
+  }
+
+  double getRightMargin(num size) {
+    return rightMargin.convert(size);
+  }
+
+  double getBottomMargin(num size) {
+    return bottomMargin.convert(size);
+  }
+
+  double hMargin(num size) {
+    return getLeftMargin(size) + getRightMargin(size);
+  }
+
+  double vMargin(num size) {
+    return getTopMargin(size) + getBottomMargin(size);
+  }
 }
 
 class SizeParams {
@@ -592,6 +662,13 @@ class SizeParams {
   }
 
   double convert(num n) {
-    return size.convert(n);
+    if (isNormal) {
+      return size.convert(n);
+    }
+    if (isWrap) {
+      return 0;
+    }
+
+    return n.toDouble();
   }
 }

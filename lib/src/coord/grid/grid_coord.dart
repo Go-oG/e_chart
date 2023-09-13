@@ -27,9 +27,8 @@ class GridCoordImpl extends GridCoord {
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     Size size = Size(parentWidth, parentHeight);
-    var lp = layoutParams.padding;
-    double w = parentWidth - lp.horizontal;
-    double h = parentHeight - lp.vertical;
+    double w = parentWidth - padding.horizontal;
+    double h = parentHeight - padding.vertical;
     xMap.forEach((key, value) {
       value.doMeasure(w, h);
     });
@@ -44,11 +43,10 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    var lp = layoutParams.padding;
-    double topOffset = lp.top;
-    double bottomOffset = lp.bottom;
-    double leftOffset = lp.left;
-    double rightOffset = lp.right;
+    double topOffset = padding.top;
+    double bottomOffset = padding.bottom;
+    double leftOffset = padding.left;
+    double rightOffset = padding.right;
 
     ///计算所有X轴在竖直方向上的占用的高度
     List<XAxisImpl> topList = [];
