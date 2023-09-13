@@ -1,7 +1,8 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/utils/platform_util.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 abstract class ChartView {
   Context? _context;
@@ -28,6 +29,9 @@ abstract class ChartView {
 
   ///记录其全局位置
   Rect _globalBoundRect = Rect.zero;
+
+  ///绘图缓存(可以优化绘制效率)
+  LayerHandle<PictureLayer> layerHandle = LayerHandle();
 
   ViewParent? _parent;
   Paint mPaint = Paint();
@@ -100,6 +104,7 @@ abstract class ChartView {
   ///当该方法被调用时标志着当前View即将被销毁
   ///你可以在这里进行资源释放等操作
   void destroy() {
+    layerHandle.layer == null;
     unBindSeries();
     onDestroy();
     _context = null;
@@ -188,50 +193,6 @@ abstract class ChartView {
 
   void onLayoutEnd() {}
 
-  void debugDraw(CCanvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    canvas.drawCircle(offset, r.toDouble(), mPaint);
-  }
-
-  void debugDrawRect(CCanvas canvas, Rect rect, {Color color = Colors.deepPurple, bool fill = false}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawRect(rect, mPaint);
-  }
-
-  void debugDrawRulerLine(CCanvas canvas, {Color color = Colors.black}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawLine(Offset(width / 2, 0), Offset(width / 2, height), mPaint);
-    canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
-  }
-
-  void debugDrawPath(CCanvas canvas, Path path, {Color color = Colors.deepPurple, bool fill = false}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawPath(path, mPaint);
-  }
-
   @mustCallSuper
   void draw(CCanvas canvas) {
     inDrawing = true;
@@ -254,23 +215,85 @@ abstract class ChartView {
     if (notShow) {
       return false;
     }
-    canvas.save();
-    canvas.translate(left, top);
-    bool? clip = clipSelf;
-    if (clip == null) {
-      if (_series != null) {
-        clip = _series!.clip;
-      } else {
-        clip = false;
-      }
-    }
-    if (clip) {
-      canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
-    }
-    draw(canvas);
-    canvas.restore();
+
+    _drawInner(canvas, Offset(left, top));
+
+    // var layer = layerHandle.layer;
+    // if (useSingleLayer && layer != null && layer.picture != null && this is! ChartViewGroup && !isDirty) {
+    //   canvas.paintContext.addLayer(layer);
+    //   return true;
+    // }
+    //
+    // layerHandle.layer = null;
+    //
+    // if (!useSingleLayer) {
+    //   _drawInner(canvas, Offset(left, top));
+    //   return false;
+    // }
+    //
+    // if (this is ChartViewGroup) {
+    //   var offsetLayer = OffsetLayer();
+    //   canvas.paintContext.pushLayer(offsetLayer, (context, offset) {
+    //     _drawInner(CCanvas(context), offset);
+    //   }, globalBoxBound.topLeft);
+    // } else {
+    //   var record = PictureRecorder();
+    //   _drawInner(CCanvas(canvas.paintContext, Canvas(record)), Offset(left, top));
+    //   var pic = PictureLayer(selfBoxBound);
+    //   pic.isComplexHint = true;
+    //   layerHandle.layer = pic;
+    //   pic.picture = record.endRecording();
+    //   pic.willChangeHint = true;
+    //   canvas.paintContext.addLayer(pic);
+    // }
     return false;
   }
+
+  void _drawInner(CCanvas canvas, Offset offset) {
+    int old = canvas.getSaveCount();
+    canvas.save();
+    canvas.translate(offset.dx, offset.dy);
+    canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
+    draw(canvas);
+    canvas.restore();
+    int nc = canvas.getSaveCount();
+    if (nc != old) {
+      throw ChartError("$runtimeType Canvas SaveCount error(old:$old new:$nc)");
+    }
+  }
+
+  void invalidate() {
+    markDirty();
+    if (inDrawing) {
+      return;
+    }
+    _parent?.parentInvalidate();
+  }
+
+  void markDirty() {
+    _dirty = true;
+    layerHandle.layer = null;
+  }
+
+  void requestLayout() {
+    markDirty();
+    if (inLayout) {
+      return;
+    }
+    parent?.requestLayout();
+  }
+
+  void layoutSelf() {
+    markDirty();
+    if (inLayout) {
+      return;
+    }
+    _forceLayout = true;
+    layout(left, top, right, bottom);
+    invalidate();
+  }
+
+  bool get useSingleLayer => false;
 
   bool? get clipSelf => null;
 
@@ -294,31 +317,6 @@ abstract class ChartView {
 
   ViewParent? get parent {
     return _parent;
-  }
-
-  void invalidate() {
-    if (inDrawing) {
-      return;
-    }
-    markDirty();
-    _parent?.parentInvalidate();
-  }
-
-  void requestLayout() {
-    if (inLayout) {
-      return;
-    }
-    parent?.requestLayout();
-  }
-
-  void layoutSelf() {
-    _forceLayout = true;
-    layout(left, top, right, bottom);
-  }
-
-
-  void markDirty() {
-    _dirty = true;
   }
 
   bool get isDirty => _dirty;
@@ -480,327 +478,51 @@ abstract class ChartView {
   void onCoordScaleEnd(CoordScale scale) {}
 
   void onLayoutByParent(LayoutType type) {}
-}
 
-///实现了一个简易的手势识别器
-abstract class GestureView extends ChartView {
-  late ChartGesture _gesture;
-
-  @mustCallSuper
-  @override
-  void onCreate() {
-    super.onCreate();
-    _gesture = buildGesture;
-  }
-
-  @mustCallSuper
-  @override
-  void onLayoutEnd() {
-    super.onLayoutEnd();
-    onInitGesture(_gesture);
-  }
-
-  ChartGesture get buildGesture {
-    return RectGesture();
-  }
-
-  Offset _lastHover = Offset.zero;
-  Offset _lastDrag = Offset.zero;
-  Offset _lastLongPress = Offset.zero;
-
-  void onInitGesture(ChartGesture gesture) {
-    gesture.clear();
-    context.removeGesture(gesture);
-    context.addGesture(gesture);
-    if (enableClick) {
-      gesture.click = (e) {
-        onClick(toLocal(e.globalPosition));
-      };
+  ///=====Debug 相关方法===============
+  void debugDraw(CCanvas canvas, Offset offset, {Color color = const Color(0xFF673AB7), bool fill = true, num r = 6}) {
+    if (!kDebugMode) {
+      return;
     }
-    if (enableDoubleClick) {
-      gesture.doubleClick = (e) {
-        onDoubleClick(toLocal(e.globalPosition));
-      };
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    canvas.drawCircle(offset, r.toDouble(), mPaint);
+  }
+
+  void debugDrawRect(CCanvas canvas, Rect rect, {Color color = const Color(0xFF673AB7), bool fill = false}) {
+    if (!kDebugMode) {
+      return;
     }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawRect(rect, mPaint);
+  }
 
-    if (enableHover) {
-      gesture.hoverStart = (e) {
-        _lastHover = toLocal(e.globalPosition);
-        onHoverStart(_lastHover);
-      };
-      gesture.hoverMove = (e) {
-        Offset of = toLocal(e.globalPosition);
-        onHoverMove(of, _lastHover);
-        _lastHover = of;
-      };
-      gesture.hoverEnd = (e) {
-        _lastHover = Offset.zero;
-        onHoverEnd();
-      };
+  void debugDrawRulerLine(CCanvas canvas, {Color color = const Color(0xFF000000)}) {
+    if (!kDebugMode) {
+      return;
     }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawLine(Offset(width / 2, 0), Offset(width / 2, height), mPaint);
+    canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
+  }
 
-    if (enableLongPress) {
-      gesture.longPressStart = (e) {
-        _lastLongPress = toLocal(e.globalPosition);
-        onLongPressStart(_lastLongPress);
-      };
-      gesture.longPressMove = (e) {
-        var offset = toLocal(e.globalPosition);
-        var dx = offset.dx - _lastLongPress.dx;
-        var dy = offset.dy - _lastLongPress.dy;
-        _lastLongPress = offset;
-        onLongPressMove(offset, Offset(dx, dy));
-      };
-      gesture.longPressEnd = () {
-        _lastLongPress = Offset.zero;
-        onLongPressEnd();
-      };
+  void debugDrawPath(CCanvas canvas, Path path, {Color color = const Color(0xFF673AB7), bool fill = false}) {
+    if (!kDebugMode) {
+      return;
     }
-
-    if (enableDrag) {
-      gesture.dragStart = (e) {
-        var offset = toLocal(e.globalPosition);
-        _lastDrag = offset;
-        onDragStart(offset);
-      };
-      gesture.dragMove = (e) {
-        var offset = toLocal(e.globalPosition);
-        var dx = offset.dx - _lastDrag.dx;
-        var dy = offset.dy - _lastDrag.dy;
-        _lastDrag = offset;
-        onDragMove(offset, Offset(dx, dy));
-      };
-      gesture.dragEnd = () {
-        _lastDrag = Offset.zero;
-        onDragEnd();
-      };
-    }
-
-    if (enableScale) {
-      gesture.scaleStart = (e) {
-        onScaleStart(toLocal(e.globalPosition));
-      };
-      gesture.scaleUpdate = (e) {
-        onScaleUpdate(toLocal(e.focalPoint), e.rotation, e.scale, false);
-      };
-      gesture.scaleEnd = () {
-        onScaleEnd();
-      };
-    }
-
-    if (gesture is RectGesture) {
-      (gesture).rect = globalBoxBound;
-    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawPath(path, mPaint);
   }
-
-  bool get enableClick => true;
-
-  bool get enableDoubleClick => false;
-
-  bool get enableLongPress => false;
-
-  bool get enableHover => isWeb;
-
-  bool get enableDrag => false;
-
-  bool get enableScale => false;
-
-  void onClick(Offset offset) {}
-
-  void onDoubleClick(Offset offset) {}
-
-  void onHoverStart(Offset offset) {}
-
-  void onHoverMove(Offset offset, Offset last) {}
-
-  void onHoverEnd() {}
-
-  void onLongPressStart(Offset offset) {}
-
-  void onLongPressMove(Offset offset, Offset diff) {}
-
-  void onLongPressEnd() {}
-
-  void onDragStart(Offset offset) {}
-
-  void onDragMove(Offset offset, Offset diff) {}
-
-  void onDragEnd() {}
-
-  void onScaleStart(Offset offset) {}
-
-  void onScaleUpdate(Offset offset, double rotation, double scale, bool doubleClick) {}
-
-  void onScaleEnd() {}
-}
-
-///强制要求提供一个Series和Layout;
-///并简单实现了相关的手势操作
-abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends GestureView {
-  final T series;
-  late L layoutHelper;
-
-  SeriesView(this.series);
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    layoutHelper = buildLayoutHelper();
-  }
-
-  @override
-  void onDestroy() {
-    series.dispose();
-    super.onDestroy();
-  }
-
-  L buildLayoutHelper();
-
-  @override
-  void bindSeries(covariant T series) {
-    if (series != this.series) {
-      throw FlutterError('Not allow binding different series ');
-    }
-    super.bindSeries(series);
-  }
-
-  @override
-  void onUpdateDataCommand(covariant Command c) {
-    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.update);
-  }
-
-  @override
-  void onSeriesConfigChangeCommand(covariant Command c) {
-    layoutHelper = buildLayoutHelper();
-    super.onSeriesConfigChangeCommand(c);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
-  }
-
-  @override
-  void onDrawBackground(CCanvas canvas) {
-    Color? color = series.backgroundColor;
-    if (color != null) {
-      mPaint.reset();
-      mPaint.color = color;
-      mPaint.style = PaintingStyle.fill;
-      canvas.drawRect(selfBoxBound, mPaint);
-    }
-  }
-
-  @override
-  void onClick(Offset offset) {
-    layoutHelper.onClick(offset);
-  }
-
-  @override
-  void onHoverStart(Offset offset) {
-    layoutHelper.onHoverStart(offset);
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    layoutHelper.onHoverMove(offset);
-  }
-
-  @override
-  void onHoverEnd() {
-    layoutHelper.onHoverEnd();
-  }
-
-  @override
-  void onDragStart(Offset offset) {
-    layoutHelper.onDragStart(offset);
-  }
-
-  @override
-  void onDragMove(Offset offset, Offset diff) {
-    layoutHelper.onDragMove(offset, diff);
-  }
-
-  @override
-  void onDragEnd() {
-    layoutHelper.onDragEnd();
-  }
-
-  @mustCallSuper
-  @override
-  void onStart() {
-    super.onStart();
-    layoutHelper.removeListener(invalidate);
-    layoutHelper.addListener(invalidate);
-  }
-
-  @mustCallSuper
-  @override
-  void onStop() {
-    layoutHelper.removeListener(invalidate);
-    super.onStop();
-  }
-
-  ///事件转发
-  @override
-  void onBrushEvent(BrushEvent event) {
-    layoutHelper.onBrushEvent(event);
-  }
-
-  @override
-  void onBrushClearEvent(BrushClearEvent event) {
-    layoutHelper.onBrushClearEvent(event);
-  }
-
-  @override
-  void onBrushEndEvent(BrushEndEvent event) {
-    layoutHelper.onBrushEndEvent(event);
-  }
-
-  @override
-  void onCoordScaleUpdate(CoordScale scale) {
-    layoutHelper.onCoordScaleUpdate(scale);
-  }
-
-  @override
-  void onCoordScaleStart(CoordScale scale) {
-    layoutHelper.onCoordScaleStart(scale);
-  }
-
-  @override
-  void onCoordScaleEnd(CoordScale scale) {
-    layoutHelper.onCoordScaleEnd(scale);
-  }
-
-  @override
-  void onCoordScrollStart(CoordScroll scroll) {
-    layoutHelper.onCoordScrollUpdate(scroll);
-  }
-
-  @override
-  void onCoordScrollUpdate(CoordScroll scroll) {
-    layoutHelper.onCoordScrollUpdate(scroll);
-  }
-
-  @override
-  void onCoordScrollEnd(CoordScroll scroll) {
-    layoutHelper.onCoordScrollEnd(scroll);
-  }
-
-  @override
-  void onLayoutByParent(LayoutType type) {
-    layoutHelper.onLayoutByParent(type);
-  }
-}
-
-abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> extends SeriesView<T, L> {
-  CoordChildView(super.series);
-
-  @override
-  bool get enableDrag => false;
-
-  @override
-  bool get enableScale => false;
 }
 
 class LayoutParams {
@@ -831,28 +553,38 @@ class LayoutParams {
 }
 
 class SizeParams {
-  static const _wrapType = -2;
-  static const _matchType = -1;
+  static const wrapType = -2;
+  static const matchType = -1;
   static const _normal = 0;
   final SNumber size;
   final int _type;
 
+  static SizeParams from(SNumber sn) {
+    if (sn.number == wrapType) {
+      return const SizeParams.wrap();
+    }
+    if (sn.number == SizeParams.matchType || sn.number <= 0) {
+      return const SizeParams.match();
+    }
+    return SizeParams(sn);
+  }
+
   const SizeParams(this.size) : _type = _normal;
 
   const SizeParams.wrap()
-      : _type = _wrapType,
+      : _type = wrapType,
         size = SNumber.zero;
 
   const SizeParams.match()
-      : _type = _matchType,
+      : _type = matchType,
         size = SNumber.zero;
 
   bool get isWrap {
-    return _type == _wrapType;
+    return _type == wrapType;
   }
 
   bool get isMatch {
-    return _type == _matchType;
+    return _type == matchType;
   }
 
   bool get isNormal {

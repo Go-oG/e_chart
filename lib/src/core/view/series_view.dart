@@ -1,0 +1,179 @@
+import 'dart:ui';
+
+import 'package:e_chart/src/ext/paint_ext.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
+
+import '../../event/index.dart';
+import '../../model/index.dart';
+import '../command.dart';
+import '../layout_helper.dart';
+import '../render/ccanvas.dart';
+import '../series.dart';
+import 'gesture_view.dart';
+
+///强制要求提供一个Series和Layout;并简单包装了部分手势操作
+///除此之外，每个SeriesView 默认添加一个Layer
+abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends GestureView {
+  final T series;
+  late L layoutHelper;
+
+  SeriesView(this.series) {
+    if (series is RectSeries) {
+      layoutParams = (series as RectSeries).toLayoutParams();
+    }
+  }
+
+  @override
+  void onCreate() {
+    super.onCreate();
+    layoutHelper = buildLayoutHelper();
+  }
+
+  @override
+  void onDestroy() {
+    series.dispose();
+    super.onDestroy();
+  }
+
+  L buildLayoutHelper();
+
+  @override
+  void bindSeries(covariant T series) {
+    if (series != this.series) {
+      throw FlutterError('Not allow binding different series ');
+    }
+    super.bindSeries(series);
+  }
+
+  @override
+  void onUpdateDataCommand(covariant Command c) {
+    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.update);
+  }
+
+  @override
+  void onSeriesConfigChangeCommand(covariant Command c) {
+    layoutHelper = buildLayoutHelper();
+    super.onSeriesConfigChangeCommand(c);
+  }
+
+  @override
+  void onLayout(double left, double top, double right, double bottom) {
+    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
+  }
+
+  @override
+  void onDrawBackground(CCanvas canvas) {
+    Color? color = series.backgroundColor;
+    if (color != null) {
+      mPaint.reset();
+      mPaint.color = color;
+      mPaint.style = PaintingStyle.fill;
+      canvas.drawRect(selfBoxBound, mPaint);
+    }
+  }
+
+  @override
+  void onClick(Offset offset) {
+    layoutHelper.onClick(offset);
+  }
+
+  @override
+  void onHoverStart(Offset offset) {
+    layoutHelper.onHoverStart(offset);
+  }
+
+  @override
+  void onHoverMove(Offset offset, Offset last) {
+    layoutHelper.onHoverMove(offset);
+  }
+
+  @override
+  void onHoverEnd() {
+    layoutHelper.onHoverEnd();
+  }
+
+  @override
+  void onDragStart(Offset offset) {
+    layoutHelper.onDragStart(offset);
+  }
+
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    layoutHelper.onDragMove(offset, diff);
+  }
+
+  @override
+  void onDragEnd() {
+    layoutHelper.onDragEnd();
+  }
+
+  @mustCallSuper
+  @override
+  void onStart() {
+    super.onStart();
+    layoutHelper.removeListener(invalidate);
+    layoutHelper.addListener(invalidate);
+  }
+
+  @mustCallSuper
+  @override
+  void onStop() {
+    layoutHelper.removeListener(invalidate);
+    super.onStop();
+  }
+
+  ///事件转发
+  @override
+  void onBrushEvent(BrushEvent event) {
+    layoutHelper.onBrushEvent(event);
+  }
+
+  @override
+  void onBrushClearEvent(BrushClearEvent event) {
+    layoutHelper.onBrushClearEvent(event);
+  }
+
+  @override
+  void onBrushEndEvent(BrushEndEvent event) {
+    layoutHelper.onBrushEndEvent(event);
+  }
+
+  @override
+  void onCoordScaleUpdate(CoordScale scale) {
+    layoutHelper.onCoordScaleUpdate(scale);
+  }
+
+  @override
+  void onCoordScaleStart(CoordScale scale) {
+    layoutHelper.onCoordScaleStart(scale);
+  }
+
+  @override
+  void onCoordScaleEnd(CoordScale scale) {
+    layoutHelper.onCoordScaleEnd(scale);
+  }
+
+  @override
+  void onCoordScrollStart(CoordScroll scroll) {
+    layoutHelper.onCoordScrollUpdate(scroll);
+  }
+
+  @override
+  void onCoordScrollUpdate(CoordScroll scroll) {
+    layoutHelper.onCoordScrollUpdate(scroll);
+  }
+
+  @override
+  void onCoordScrollEnd(CoordScroll scroll) {
+    layoutHelper.onCoordScrollEnd(scroll);
+  }
+
+  @override
+  void onLayoutByParent(LayoutType type) {
+    layoutHelper.onLayoutByParent(type);
+  }
+
+  @override
+  bool get useSingleLayer => true;
+}

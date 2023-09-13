@@ -33,7 +33,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     layoutNode(newList);
 
     var an = DiffUtil.diffLayout<Arc, ItemData, PieNode>(
-      getAnimation(type,oldList.length+newList.length),
+      getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
       (data, node, add) {
@@ -79,9 +79,9 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     minRadius = series.innerRadius.convert(maxSize);
     maxRadius = series.outerRadius.convert(maxSize);
     if (maxRadius < minRadius) {
-      num a = maxRadius;
-      maxRadius = minRadius;
-      minRadius = a;
+      num a = minRadius;
+      minRadius = maxRadius;
+      maxRadius = a;
     }
   }
 
@@ -96,7 +96,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       var as = series.getAreaStyle(context, data, i, es) ?? AreaStyle.empty;
       var bs = series.getBorderStyle(context, data, i, es) ?? LineStyle.empty;
       var ls = series.getLabelStyle(context, data, i, es) ?? LabelStyle.empty;
-      nodeList.add(PieNode(data, i, -1, Arc(), as, bs, ls));
+      nodeList.add(PieNode(data, i, -1, Arc.zero, as, bs, ls));
       maxData = max([data.value, maxData]);
       minData = min([data.value, minData]);
       allData += data.value;
@@ -115,24 +115,19 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     int count = nodeList.length;
     num gapAllAngle = (count <= 1 ? 0 : count) * series.angleGap.abs();
     num remainAngle = pieAngle - gapAllAngle;
-    if (remainAngle < 0) {
+    if (remainAngle <= 0) {
       remainAngle = 1;
     }
-
     num startAngle = series.offsetAngle;
-    remainAngle *= dir;
     num angleGap = series.angleGap * dir;
-
     each(nodeList, (node, i) {
       var pieData = node.data;
-      num sw = remainAngle * pieData.value / allData;
-
+      num sw = dir * remainAngle * pieData.value / allData;
       Offset c = center;
       double off = series.getOffset(context, pieData);
       if (off.abs() > 1e-6) {
         c = circlePoint(off, startAngle + sw / 2, c);
       }
-
       node.attr = Arc(
         center: c,
         innerRadius: minRadius,
@@ -162,20 +157,18 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     if (series.roseType == RoseType.area) {
       // 所有扇区圆心角相同，通过半径展示数据大小
       double itemAngle = dir * remainAngle / count;
+      num radiusDiff = maxRadius - minRadius;
       each(nodeList, (node, i) {
         var pieData = node.data;
-        double percent = pieData.value / maxData;
-
         Offset c = center;
         double off = series.getOffset(context, pieData);
         if (off.abs() > 1e-6) {
           c = circlePoint(off, startAngle + itemAngle / 2, c);
         }
-
         node.attr = Arc(
           center: c,
           innerRadius: minRadius,
-          outRadius: maxRadius * percent,
+          outRadius: minRadius + radiusDiff * pieData.value / maxData,
           cornerRadius: series.corner,
           startAngle: startAngle,
           sweepAngle: itemAngle,
@@ -187,14 +180,13 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       //扇区圆心角展示数据百分比，半径表示数据大小
       each(nodeList, (node, i) {
         var pieData = node.data;
-        num or = maxRadius * pieData.value / maxData;
+        num or = minRadius + (maxRadius - minRadius) * pieData.value / maxData;
         double sweepAngle = dir * remainAngle * pieData.value / allData;
         Offset c = center;
         double off = series.getOffset(context, pieData);
         if (off.abs() > 1e-6) {
           c = circlePoint(off, startAngle + sweepAngle / 2, c);
         }
-
         node.attr = Arc(
           center: center,
           innerRadius: minRadius,

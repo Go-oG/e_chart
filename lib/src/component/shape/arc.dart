@@ -56,6 +56,9 @@ class Arc implements Shape {
     } else {
       this.maxRadius = outRadius;
     }
+    if(innerRadius>outRadius){
+      throw ChartError("参数违法");
+    }
   }
 
   Arc copy({

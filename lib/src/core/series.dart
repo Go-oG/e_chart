@@ -92,18 +92,18 @@ abstract class ChartSeries extends ChartNotifier<Command> {
 abstract class RectSeries extends ChartSeries {
   /// 定义布局的上下左右间距或者宽高，
   /// 宽高的优先级大于上下间距的优先级(如果定义了)
-  SNumber leftMargin;
-  SNumber topMargin;
-  SNumber rightMargin;
-  SNumber bottomMargin;
+  num leftMargin;
+  num topMargin;
+  num rightMargin;
+  num bottomMargin;
   SNumber? width;
   SNumber? height;
 
   RectSeries({
-    this.leftMargin = SNumber.zero,
-    this.topMargin = SNumber.zero,
-    this.rightMargin = SNumber.zero,
-    this.bottomMargin = SNumber.zero,
+    this.leftMargin = 0,
+    this.topMargin = 0,
+    this.rightMargin = 0,
+    this.bottomMargin = 0,
     this.width,
     this.height,
     super.coordType,
@@ -120,63 +120,26 @@ abstract class RectSeries extends ChartSeries {
     super.id,
   });
 
-  /// 从当前
-  Rect computePositionBySelf(double left, double top, double right, double bottom) {
-    return computePosition(0, 0, right - left, bottom - top);
-  }
-
-  /// 计算内容区域
-  Rect computePosition(double left, double top, double right, double bottom) {
-    double nw = right - left;
-    double nh = bottom - top;
-    double leftOffset = _computeLeftOffset(nw);
-    double topOffset = _computeTopOffset(nh);
-    double rightOffset = _computeRightOffset(nw);
-    double bottomOffset = _computeBottomOffset(nh);
-    return Rect.fromLTRB(left + leftOffset, top + topOffset, right - rightOffset, bottom - bottomOffset);
-  }
-
-  double _computeLeftOffset(double width) {
-    if (this.width != null) {
-      double w = this.width!.convert(width);
-      if (w > width) {
-        w = width;
-      }
-      return (width - w) * 0.5;
+  LayoutParams toLayoutParams() {
+    SizeParams w;
+    if (width != null) {
+      w = SizeParams.from(width!);
+    } else {
+      w = const SizeParams.match();
     }
-    return leftMargin.convert(width);
-  }
-
-  double _computeTopOffset(double height) {
-    if (this.height != null) {
-      double h = this.height!.convert(height);
-      if (h > height) {
-        h = height;
-      }
-      return (height - h) * 0.5;
+    SizeParams h;
+    if (height != null) {
+      h = SizeParams.from(height!);
+    } else {
+      h = const SizeParams.match();
     }
-    return topMargin.convert(height);
-  }
 
-  double _computeRightOffset(double width) {
-    if (this.width != null) {
-      double w = this.width!.convert(width);
-      if (w > width) {
-        w = width;
-      }
-      return (width - w) * 0.5;
-    }
-    return rightMargin.convert(width);
-  }
-
-  double _computeBottomOffset(double height) {
-    if (this.height != null) {
-      double h = this.height!.convert(height);
-      if (h > height) {
-        h = height;
-      }
-      return (height - h) * 0.5;
-    }
-    return bottomMargin.convert(height);
+    return LayoutParams(w, h,
+        margin: EdgeInsets.only(
+          left: leftMargin.toDouble(),
+          top: topMargin.toDouble(),
+          right: rightMargin.toDouble(),
+          bottom: bottomMargin.toDouble(),
+        ));
   }
 }

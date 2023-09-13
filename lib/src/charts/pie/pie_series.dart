@@ -43,7 +43,7 @@ class PieSeries extends RectSeries {
     this.data, {
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
     this.innerRadius = const SNumber.percent(15),
-    this.outerRadius = const SNumber.percent(90),
+    this.outerRadius = const SNumber.percent(45),
     this.scaleExtend = const SNumber.number(16),
     this.sweepAngle = 360,
     this.offsetAngle = 0,

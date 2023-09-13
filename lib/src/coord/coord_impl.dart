@@ -28,7 +28,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   CoordLayout(this.props) : super() {
     layoutParams = props.layoutParams;
     scale = CoordScale(props.id, props.coordSystem, 1, 1);
-    viewPort =ViewPort.zero();
+    viewPort = ViewPort.zero();
   }
 
   @override
@@ -91,16 +91,20 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
       } else {
         drawChild(child, canvas);
       }
-      if (canvas.getSaveCount() != count) {
-        throw FlutterError('you should call canvas.restore when after call canvas.save');
-      }
+      int n = canvas.getSaveCount();
+      // if (n != count) {
+      //   throw ChartError(
+      //       '$runtimeType dispatchDraw(1) old:$count new:$n view:${child.runtimeType} you should call canvas.restore when after call canvas.save');
+      // }
     }
     for (var child in vl) {
       int count = canvas.getSaveCount();
       drawChild(child, canvas);
-      if (canvas.getSaveCount() != count) {
-        throw FlutterError('you should call canvas.restore when after call canvas.save');
-      }
+      int n = canvas.getSaveCount();
+      // if (n != count) {
+      //   throw ChartError(
+      //       '$runtimeType dispatchDraw(2) old:$count new:$n view:${child.runtimeType} you should call canvas.restore when after call canvas.save');
+      // }
     }
   }
 

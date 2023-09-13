@@ -1,5 +1,5 @@
 import '../series.dart';
-import '../view.dart';
+import '../view/view.dart';
 
 class SeriesFactory {
   static final SeriesFactory _instance = SeriesFactory._();

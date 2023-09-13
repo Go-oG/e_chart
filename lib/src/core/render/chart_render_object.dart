@@ -124,27 +124,27 @@ class ChartRenderObject extends RenderBox {
   @override
   bool get sizedByParent => true;
 
+  @override
+  bool get alwaysNeedsCompositing => true;
+
   void didUpdateRender(BaseRender? newRender, BaseRender? oldRender) {
-    if (newRender == null) {
-      markNeedsPaint();
-    } else if (oldRender == null || newRender.runtimeType != oldRender.runtimeType) {
-      markNeedsPaint();
+    if (!attached) {
+      return;
     }
-    if (attached) {
-      oldRender?.clearListener();
-      newRender?.clearListener();
-      newRender?.addListener(() {
-        var c = newRender.value;
-        if (c.code == Command.invalidate.code) {
-          markNeedsPaint();
-        } else if (c.code == Command.reLayout.code) {
-          markNeedsLayout();
-        } else {}
-      });
-      newRender?.context.gestureDispatcher.enable();
-      markNeedsSemanticsUpdate();
-      markNeedsPaint();
-    }
+    oldRender?.clearListener();
+    newRender?.clearListener();
+    newRender?.addListener(() {
+      var c = newRender.value;
+      if (c.code == Command.invalidate.code) {
+        markNeedsPaint();
+      } else if (c.code == Command.reLayout.code) {
+        markNeedsLayout();
+      }
+    });
+    newRender?.context.gestureDispatcher.enable();
+    markNeedsSemanticsUpdate();
+    markNeedsCompositingBitsUpdate();
+    markNeedsPaint();
   }
 
   @override

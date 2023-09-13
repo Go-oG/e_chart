@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 import '../../component/index.dart';
 import '../../model/index.dart';
 import 'base_render.dart';
-import '../view.dart';
+import '../view/view.dart';
 import 'ccanvas.dart';
 
 class DefaultRender extends BaseRender {

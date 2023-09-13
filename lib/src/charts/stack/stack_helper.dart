@@ -437,6 +437,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onHandleHoverEnd(SingleNode<T, P>? oldNode, SingleNode<T, P>? newNode) {
     var states = [ViewState.focused, ViewState.hover, ViewState.disabled];
     var states2 = [ViewState.focused, ViewState.hover];
+    final nodeMap = this.nodeMap;
     nodeMap.forEach((key, ele) {
       nodeMap[ele]?.removeStates(states);
       if (newNode == null) {

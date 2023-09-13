@@ -1,16 +1,17 @@
-import 'dart:math';
+import 'dart:math' as m;
+import 'dart:ui';
+import 'package:flutter/rendering.dart';
 
-import 'package:flutter/material.dart';
-
-import '../event/index.dart';
-import '../utils/log_util.dart';
-import 'index.dart';
+import '../../event/index.dart';
+import '../../model/chart_error.dart';
+import '../../utils/log_util.dart';
+import '../index.dart';
 
 /// ViewGroup
 abstract class ChartViewGroup extends GestureView implements ViewParent {
   final List<ChartView> _children = [];
 
-  ChartViewGroup();
+  ChartViewGroup():super();
 
   @override
   void create(Context context, ViewParent parent) {
@@ -127,13 +128,16 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
       final LayoutParams lp = child.layoutParams;
       num hp = lp.margin.horizontal;
       num vp = lp.margin.vertical;
-      maxWidth = max(maxWidth, child.width + hp);
-      maxHeight = max(maxHeight, child.height + vp);
+      maxWidth = m.max(maxWidth, child.width + hp);
+      maxHeight = m.max(maxHeight, child.height + vp);
     }
+
+
     maxWidth += php;
     maxHeight += pvp;
-    maxWidth = min(maxWidth, parentWidth);
-    maxHeight = min(maxHeight, parentHeight);
+    maxWidth = m.min(maxWidth, parentWidth);
+    maxHeight = m.min(maxHeight, parentHeight);
+
     php = layoutParams.padding.horizontal;
     pvp = layoutParams.padding.vertical;
     pw = maxWidth - php;
@@ -144,14 +148,15 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
       num vm = lp.margin.vertical;
       double childWidth = child.width;
       if (lp.width.isMatch) {
-        childWidth = max(0, pw - hm);
+        childWidth = m.max(0, pw - hm);
       }
       double childHeight = child.height;
       if (lp.height.isMatch) {
-        childHeight = max(0, ph - vm);
+        childHeight = m.max(0, ph - vm);
       }
       child.measure(childWidth, childHeight);
     }
+
     return Size(maxWidth, maxHeight);
   }
 
@@ -159,7 +164,6 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   void onLayout(double left, double top, double right, double bottom) {
     double parentLeft = layoutParams.padding.left;
     double parentTop = layoutParams.padding.top;
-
     for (var child in children) {
       LayoutParams lp = child.layoutParams;
       double childLeft = parentLeft + lp.margin.left;
@@ -171,12 +175,15 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   @override
   void dispatchDraw(CCanvas canvas) {
     for (var child in children) {
-      int count = canvas.getSaveCount();
       drawChild(child, canvas);
-      if (canvas.getSaveCount() != count) {
-        throw FlutterError('you should call canvas.restore when after call canvas.save');
-      }
     }
+  }
+
+  /// 负责绘制单独的一个ChildView，同时负责Canvas的坐标的正确转换
+  /// 如果在方法中调用了[invalidate]则返回true
+  bool drawChild(ChartView child, CCanvas canvas) {
+    child.drawSelf(canvas, this);
+    return false;
   }
 
   @override
@@ -186,12 +193,6 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
     }
     markDirty();
     parent?.parentInvalidate();
-  }
-
-  /// 负责绘制单独的一个ChildView，同时负责Canvas的坐标的正确转换
-  /// 如果在方法中调用了[invalidate]则返回true
-  bool drawChild(ChartView child, CCanvas canvas) {
-    return child.drawSelf(canvas, this);
   }
 
   ///========================管理子View相关方法=======================
@@ -216,6 +217,14 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   List<ChartView> get children {
     return _children;
   }
+
+  int get childCount => _children.length;
+
+  bool get hasChild => childCount > 0;
+
+  ChartView get firstChild => _children.first;
+
+  ChartView get lastChild => _children.last;
 
   bool hasChildView(ChartView view) {
     for (var element in _children) {

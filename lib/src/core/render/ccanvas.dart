@@ -7,8 +7,8 @@ class CCanvas {
   final PaintingContext paintContext;
   late final Canvas canvas;
 
-  CCanvas(this.paintContext) {
-    canvas = paintContext.canvas;
+  CCanvas(this.paintContext, [Canvas? canvas]) {
+    this.canvas = canvas ?? paintContext.canvas;
   }
 
   void save() => canvas.save();

@@ -2,8 +2,8 @@ import 'dart:math' as m;
 
 import 'package:flutter/material.dart';
 
-import '../../core/view.dart';
-import '../../core/view_group.dart';
+import '../../core/view/view.dart';
+import '../../core/view/view_group.dart';
 import '../../model/enums/align2.dart';
 import '../../model/enums/direction.dart';
 import '../../utils/math_util.dart';

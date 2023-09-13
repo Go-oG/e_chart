@@ -1,6 +1,4 @@
-import '../../model/enums/coordinate.dart';
-import '../coord_impl.dart';
-import '../coord.dart';
+import 'package:e_chart/e_chart.dart';
 
 ///用于包装child
 class SingleCoordImpl extends CoordLayout {
@@ -20,11 +18,10 @@ class SingleCoordImpl extends CoordLayout {
 class SingleConfig extends Coord {
   SingleConfig({
     super.toolTip,
-    super.layoutParams,
     super.backgroundColor,
     super.id,
     super.show,
-  });
+  }) : super(layoutParams: const LayoutParams.wrapAll());
 
   @override
   CoordType get coordSystem => CoordType.single;
