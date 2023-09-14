@@ -139,6 +139,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   @override
   void notifyUpdateData() {
     _helper = null;
+    super.notifyUpdateData();
   }
 
   List<MarkPoint> getMarkPoint(G group) {

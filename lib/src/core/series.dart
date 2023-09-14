@@ -1,12 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'view/render_node.dart';
-
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
 abstract class ChartSeries extends ChartNotifier<Command> {
   late final String id;
+
   int seriesIndex = -1;
   String name;
 
@@ -26,22 +25,24 @@ abstract class ChartSeries extends ChartNotifier<Command> {
 
   bool clip; // 是否裁剪
   int z; //z轴索引
+  bool useSingleLayer;
 
-  ChartSeries(
-      {this.gridIndex = 0,
-      this.polarIndex = 0,
-      this.calendarIndex = 0,
-      this.radarIndex = 0,
-      this.parallelIndex = 0,
-      this.animation,
-      this.coordType,
-      this.tooltip,
-      this.z = 0,
-      this.clip = true,
-      this.backgroundColor,
-      this.name = '',
-      String? id})
-      : super(Command.none) {
+  ChartSeries({
+    this.gridIndex = 0,
+    this.polarIndex = 0,
+    this.calendarIndex = 0,
+    this.radarIndex = 0,
+    this.parallelIndex = 0,
+    this.animation,
+    this.coordType,
+    this.tooltip,
+    this.z = 0,
+    this.clip = true,
+    this.backgroundColor,
+    this.name = '',
+    String? id,
+    this.useSingleLayer = true,
+  }) : super(Command.none) {
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {

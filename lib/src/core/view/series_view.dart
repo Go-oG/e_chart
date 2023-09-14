@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -39,17 +40,9 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   L buildLayoutHelper();
 
   @override
-  void bindSeries(covariant T series) {
-    if (series != this.series) {
-      throw ChartError('Not allow binding different series ');
-    }
-    super.bindSeries(series);
-  }
-
-  @override
   void onUpdateDataCommand(covariant Command c) {
     layoutHelper.doLayout(selfBoxBound, globalBound, LayoutType.update);
-    invalidate();
+    super.onUpdateDataCommand(c);
   }
 
   @override
@@ -113,13 +106,14 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   @override
   void onStart() {
     super.onStart();
-    layoutHelper.removeListener(invalidate);
+    bindSeries(series);
     layoutHelper.addListener(invalidate);
   }
 
   @mustCallSuper
   @override
   void onStop() {
+    unBindSeries();
     layoutHelper.removeListener(invalidate);
     super.onStop();
   }
@@ -176,5 +170,5 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   }
 
   @override
-  bool get useSingleLayer => true;
+  bool get useSingleLayer => series.useSingleLayer;
 }

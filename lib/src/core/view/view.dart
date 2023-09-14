@@ -292,7 +292,9 @@ abstract class ChartView extends RenderNode {
     requestLayoutSelf();
   }
 
-  void onUpdateDataCommand(covariant Command c) {}
+  void onUpdateDataCommand(covariant Command c) {
+    invalidate();
+  }
 
   ///分配索引
   ///返回值表示消耗了好多的索引

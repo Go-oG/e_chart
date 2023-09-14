@@ -12,7 +12,7 @@ class AnimationManager {
   AnimationManager();
 
   ///存储已经创建的控制器
-  final Map<String, AnimationController> _map = {};
+  Map<String, AnimationController> _map = {};
 
   AnimationController bounded(TickerProvider provider, AnimationAttrs props, {String? key, bool useUpdate = false}) {
     _collate();
@@ -98,14 +98,17 @@ class AnimationManager {
     _animatorQueue.addAll(nodes);
   }
 
-  void dispose() {
-    _map.forEach((key, value) {
+  void cancelAllAnimator() {
+    var map = _map;
+    _map = {};
+    map.forEach((key, value) {
       try {
         value.dispose();
-      } catch (e) {
-        Logger.e("Animator dispose: $e");
-      }
+      } catch (_) {}
     });
-    _map.clear();
+  }
+
+  void dispose() {
+    cancelAllAnimator();
   }
 }

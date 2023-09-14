@@ -7,6 +7,14 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T>, S
   StackView(super.series);
 
   @override
+  bool get useSingleLayer {
+    if (series.realtimeSort || series.dynamicRange || series.dynamicLabel) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
   Size onMeasure(double parentWidth, double parentHeight) {
     layoutHelper.doMeasure(parentWidth, parentHeight);
     return super.onMeasure(parentWidth, parentHeight);

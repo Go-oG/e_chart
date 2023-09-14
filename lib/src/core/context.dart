@@ -123,7 +123,6 @@ class Context {
         _coordList.add(layout);
       }
       view.create(this, layout);
-      view.bindSeries(key);
       layout.addView(view);
     });
 
@@ -171,6 +170,7 @@ class Context {
   }
 
   void onStop() {
+    _animationManager.cancelAllAnimator();
     _legend?.onStop();
     _title?.onStop();
     for (var coord in coordList) {
