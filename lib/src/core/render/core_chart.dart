@@ -1,10 +1,8 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/render/base_render.dart';
-import 'package:flutter/gestures.dart';
+import 'package:e_chart/src/core/render/chart_render.dart';
 import 'package:flutter/material.dart';
-import '../../utils/platform_util.dart';
 import 'default_render.dart';
-import 'chart_render_object.dart';
+import 'render_adapter.dart';
 
 class Chart extends StatefulWidget {
   final ChartOption option;
@@ -18,7 +16,7 @@ class Chart extends StatefulWidget {
 }
 
 class ChartState extends State<Chart> with TickerProviderStateMixin {
-  BaseRender? render;
+  ChartRender? render;
 
   @override
   void initState() {
@@ -53,23 +51,23 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 }
 
 class _InnerWidget extends LeafRenderObjectWidget {
-  final BaseRender render;
+  final ChartRender render;
   final Size? size;
 
   const _InnerWidget(this.render, this.size, {super.key});
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return ChartRenderObject(render, size);
+    return RenderAdapter(render, size);
   }
 
   @override
-  void updateRenderObject(BuildContext context, ChartRenderObject renderObject) {
+  void updateRenderObject(BuildContext context, RenderAdapter renderObject) {
     renderObject.render = render;
   }
 
   @override
-  void didUnmountRenderObject(ChartRenderObject renderObject) {
+  void didUnmountRenderObject(RenderAdapter renderObject) {
     renderObject.render = null;
   }
 }

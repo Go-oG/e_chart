@@ -65,7 +65,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
     ///直接布局测量全部
-    helper.layout(boxBounds, globalBoxBound);
+    helper.layout(boxBound, globalBound);
     showStack.clear();
     showStack.add(rootNode);
     adjustDrawList();

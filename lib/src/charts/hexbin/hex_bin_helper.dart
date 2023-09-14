@@ -102,11 +102,11 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
         if (type == DiffType.add || type == DiffType.remove) {
           node.symbol.scale = lerpDouble(s['scale']!, e['scale']!, t)!;
         } else {
-          Size ss = s['size']!;
-          Size es = e['size']!;
+          double ss = s['size']!;
+          double es = e['size']!;
           Offset sc = s['center']!;
           Offset ec = e['center']!;
-          double p = es.shortestSide / ss.shortestSide;
+          double p = es / ss;
           p = lerpDouble(1, p, t)!;
           node.symbol.scale = p;
           if (sc != ec) {

@@ -112,7 +112,7 @@ abstract class GestureView extends ChartView {
     }
 
     if (gesture is RectGesture) {
-      (gesture).rect = globalBoxBound;
+      (gesture).rect = globalBound;
     }
   }
 

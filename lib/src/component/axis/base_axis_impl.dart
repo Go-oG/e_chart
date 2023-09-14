@@ -66,7 +66,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   final stopWatch = Stopwatch();
 
   void draw(CCanvas canvas, Paint paint, Rect coord) {
-    Offset offset = this.coord.getTranslation();
+    Offset offset = this.coord.translation;
     onDrawAxisSplitArea(canvas, paint, offset);
     onDrawAxisSplitLine(canvas, paint, offset);
     onDrawAxisTick(canvas, paint, offset);
@@ -286,7 +286,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
       scaleFactor = 1;
     }
     int spn = axis.splitNumber;
-    if (spn <2) {
+    if (spn < 2) {
       spn = 2;
     }
     spn = (spn * scaleFactor).round();

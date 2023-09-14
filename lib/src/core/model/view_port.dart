@@ -1,11 +1,13 @@
 import 'dart:ui';
 
-///帮助计算一个可见区域内能够最大滚动的偏移量
+///可视区域的表示
 class ViewPort {
-  num width = 0;
-  num height = 0;
-  num contentWidth = 0;
-  num contentHeight = 0;
+  double width = 0;
+  double height = 0;
+
+  double contentWidth = 0;
+  double contentHeight = 0;
+
   double scrollX = 0;
   double scrollY = 0;
 
@@ -14,12 +16,12 @@ class ViewPort {
   ViewPort.zero();
 
   Offset scroll(Offset scroll) {
-    return scroll2(scroll.dx, scroll.dy);
+    return scrollTo(scroll.dx, scroll.dy);
   }
 
-  Offset scroll2(double dx, double dy) {
+  Offset scrollTo(double dx, double dy) {
     if (dx != 0) {
-      var maxX = getMaxScrollX();
+      var maxX = maxScrollX;
       var sx = scrollX + dx;
       if (sx.abs() > maxX) {
         sx = -maxX;
@@ -31,7 +33,7 @@ class ViewPort {
     }
     if (dy != 0) {
       var sy = scrollY + dy;
-      var maxY = getMaxScrollY();
+      var maxY = maxScrollY;
       if (sy.abs() > maxY) {
         sy = maxY;
       }
@@ -43,18 +45,16 @@ class ViewPort {
     return Offset(scrollX.toDouble(), scrollY.toDouble());
   }
 
-  Offset getTranslation() {
-    return Offset(scrollX,scrollY);
-  }
+  Offset get translation => Offset(scrollX, scrollY);
 
-  double getMaxScrollX() {
+  double get maxScrollX {
     if (contentWidth <= width) {
       return 0;
     }
     return (contentWidth - width).toDouble();
   }
 
-  double getMaxScrollY() {
+  double get maxScrollY {
     if (contentHeight <= height) {
       return 0;
     }

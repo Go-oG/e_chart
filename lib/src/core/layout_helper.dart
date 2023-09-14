@@ -250,15 +250,15 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     var type = series.coordType;
     Offset? offset;
     if (type == CoordType.polar) {
-      offset = findParallelCoordNull()?.getTranslation();
+      offset = findParallelCoordNull()?.translation;
     } else if (type == CoordType.calendar) {
-      offset = findCalendarCoordNull()?.getTranslation();
+      offset = findCalendarCoordNull()?.translation;
     } else if (type == CoordType.radar) {
-      offset = findRadarCoordNull()?.getTranslation();
+      offset = findRadarCoordNull()?.translation;
     } else if (type == CoordType.parallel) {
-      offset = findParallelCoordNull()?.getTranslation();
+      offset = findParallelCoordNull()?.translation;
     } else if (type == CoordType.grid) {
-      offset = findGridCoordNull()?.getTranslation();
+      offset = findGridCoordNull()?.translation;
     }
     if (offset != null) {
       return offset;

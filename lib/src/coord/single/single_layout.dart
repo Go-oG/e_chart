@@ -1,5 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
+import '../../core/view/render_node.dart';
+
 ///用于包装child
 class SingleCoordImpl extends CoordLayout {
   SingleCoordImpl() : super(SingleConfig());

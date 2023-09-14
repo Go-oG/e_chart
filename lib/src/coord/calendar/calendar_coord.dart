@@ -94,8 +94,8 @@ class CalendarCoordImpl extends CalendarCoord {
   @override
   void onDraw(CCanvas canvas) {
     canvas.save();
-    canvas.translate(scrollX, scrollY);
-    canvas.clipRect(boxBounds);
+    canvas.translate(viewPort.scrollX, viewPort.scrollY);
+    canvas.clipRect(boxBound);
     if (props.gridLineStyle != null) {
       var style = props.gridLineStyle!;
       for (int i = 0; i < columnCount; i++) {
@@ -291,7 +291,7 @@ class CalendarCoordImpl extends CalendarCoord {
   @override
   void onDragMove(Offset offset, Offset diff) {
     super.onDragMove(offset, diff);
-    var old = viewPort.getTranslation();
+    var old = viewPort.translation;
     Offset sc = viewPort.scroll(diff);
     if (old.dx != sc.dx || old.dy != sc.dy) {
       invalidate();
@@ -300,12 +300,12 @@ class CalendarCoordImpl extends CalendarCoord {
 
   @override
   double getMaxXScroll() {
-    return viewPort.getMaxScrollX();
+    return viewPort.maxScrollX;
   }
 
   @override
   double getMaxYScroll() {
-    return viewPort.getMaxScrollY();
+    return viewPort.maxScrollY;
   }
 
   @override

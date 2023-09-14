@@ -418,7 +418,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     final bool vertical = direction == Direction.horizontal;
     Rect rect = coord.contentBox;
-    Offset scroll = coord.getTranslation();
+    Offset scroll = coord.translation;
     final pointerDis = computeAxisPointerDis(axisPointer, offset);
     final double paintOffset = axisPointer.lineStyle.width * 0.5;
 
@@ -462,7 +462,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   ///计算AxisPointer的距离
   double computeAxisPointerDis(AxisPointer axisPointer, Offset offset) {
-    Offset scroll = coord.getTranslation();
+    Offset scroll = coord.translation;
     offset = offset.translate(-scroll.dx, -scroll.dy);
 
     bool vertical = direction == Direction.horizontal;

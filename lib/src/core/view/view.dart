@@ -1,95 +1,23 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/model/chart_edgeinset.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
-abstract class ChartView {
+abstract class ChartView extends RenderNode {
   Context? _context;
 
   Context get context => _context!;
 
-  ///存储当前节点的布局方式
-  LayoutParams _layoutParams = const LayoutParams.matchAll();
-
-  LayoutParams get layoutParams => _layoutParams;
-
-  set layoutParams(LayoutParams p) {
-    _layoutParams = p;
-  }
-
-  ChartEdgeInset margin = ChartEdgeInset();
-  ChartEdgeInset padding = ChartEdgeInset();
-
-  ///索引层次
-  int zLevel = -1;
-
-  ///存储当前视图在父视图中的位置属性
-  Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
-
-  ///记录旧的边界位置，可用于动画相关的计算
-  Rect oldBoundRect = const Rect.fromLTRB(0, 0, 0, 0);
-
-  ///记录其全局位置
-  Rect _globalBoundRect = Rect.zero;
-
   ///绘图缓存(可以优化绘制效率)
-  LayerHandle<PictureLayer> layerHandle = LayerHandle();
+  LayerHandle<Layer> cacheLayer = LayerHandle();
 
-  ViewParent? _parent;
-  Paint mPaint = Paint();
-  bool inLayout = false;
-  bool inDrawing = false;
-  bool _dirty = false; // 标记视图区域是否 需要重绘
+  ///=========生命周期回调方法开始==================
+  ///所有的生命周期函数都是由Context进行调用
 
-  @protected
-  bool layoutCompleted = false;
-
-  @protected
-  bool measureCompleted = false;
-
-  bool _forceLayout = false;
-
-  bool get forceLayout => _forceLayout;
-
-  void setForceLayout() {
-    _forceLayout = true;
-  }
-
-  @protected
-  bool forceMeasure = false;
-
-  final String id = randomId();
-
-  ChartView();
-
-  bool _show = true;
-
-  bool get isShow => _show;
-
-  bool get notShow => !_show;
-
-  void show() {
-    if (_show) {
-      return;
-    }
-    _show = true;
-    invalidate();
-  }
-
-  void hide() {
-    if (!_show) {
-      _show = false;
-      invalidate();
-    }
-  }
-
-  //=========生命周期回调方法开始==================
-  ///由Context负责回调
   ///该回调只会发生在视图创建后，且只会回调一次
   ///绝大部分子类都不应该覆写该方法
-  void create(Context context, ViewParent parent) {
+  void create(Context context, RenderNode parent) {
     _context = context;
-    _parent = parent;
+    this.parent = parent;
     onCreate();
   }
 
@@ -106,7 +34,9 @@ abstract class ChartView {
   ///当该方法被调用时标志着当前View即将被销毁
   ///你可以在这里进行资源释放等操作
   void destroy() {
-    layerHandle.layer == null;
+    if (cacheLayer.layer != null) {
+      cacheLayer.layer == null;
+    }
     unBindSeries();
     onDestroy();
     _context = null;
@@ -114,27 +44,24 @@ abstract class ChartView {
 
   void onDestroy() {}
 
-  ///=======Brush事件通知=======
-  void onBrushEvent(BrushEvent event) {}
-
-  void onBrushEndEvent(BrushEndEvent event) {}
-
-  void onBrushClearEvent(BrushClearEvent event) {}
-
-  //=======布局测量相关方法==============
+  ///=======布局测量相关方法==============
+  @override
   void measure(double parentWidth, double parentHeight) {
-    bool force = forceMeasure || forceLayout;
-    bool minDiff =
-        (boundRect.width - parentWidth).abs() <= 0.00001 && (boundRect.height - parentHeight).abs() <= 0.00001;
-    if (measureCompleted && minDiff && !force) {
+    if (inMeasure || inLayout) {
       return;
     }
-    oldBoundRect = boundRect;
+    inMeasure = true;
+    bool minDiff = (boxBound.width - parentWidth).abs() <= 0.00001 && (boxBound.height - parentHeight).abs() <= 0.00001;
+    if (minDiff && !forceLayout) {
+      inMeasure = false;
+      return;
+    }
+    oldBound = boxBound;
     margin.clear();
     padding.clear();
     Size size = onMeasure(parentWidth, parentHeight);
     boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
-    measureCompleted = true;
+    inMeasure = false;
   }
 
   Size onMeasure(double parentWidth, double parentHeight) {
@@ -154,36 +81,31 @@ abstract class ChartView {
     return Size(w, h);
   }
 
+  @override
   void layout(double left, double top, double right, double bottom) {
-    if (layoutCompleted && !forceLayout) {
-      bool b1 = (left - boundRect.left).abs() < 1;
-      bool b2 = (top - boundRect.top).abs() < 1;
-      bool b3 = (right - boundRect.right).abs() < 1;
-      bool b4 = (bottom - boundRect.bottom).abs() < 1;
-      if (b1 && b2 && b3 && b4) {
-        return;
-      }
-    }
     if (inLayout) {
+      Logger.i("$runtimeType layout inLayout:$inLayout  inMeasure:$inMeasure");
       return;
     }
     inLayout = true;
-    oldBoundRect = boundRect;
-    boundRect = Rect.fromLTRB(left, top, right, bottom);
-
-    if (parent == null) {
-      _globalBoundRect = boundRect;
-    } else {
-      Rect parentRect = parent!.getGlobalAreaBounds();
-      double l = parentRect.left + boundRect.left;
-      double t = parentRect.top + boundRect.top;
-      _globalBoundRect = Rect.fromLTWH(l, t, boundRect.width, boundRect.height);
+    if (!forceLayout && boxBound.width > 0 && boxBound.height > 0) {
+      bool b1 = (left - boxBound.left).abs() < 1;
+      bool b2 = (top - boxBound.top).abs() < 1;
+      bool b3 = (right - boxBound.right).abs() < 1;
+      bool b4 = (bottom - boxBound.bottom).abs() < 1;
+      if (b1 && b2 && b3 && b4) {
+        inLayout = false;
+        return;
+      }
     }
+
+    oldBound = boxBound;
+    boundRect = Rect.fromLTRB(left, top, right, bottom);
+    globalBound = getGlobalBounds();
     onLayout(left, top, right, bottom);
-    inLayout = false;
-    _forceLayout = false;
-    layoutCompleted = true;
     onLayoutEnd();
+    inLayout = false;
+    forceLayout = false;
   }
 
   void onLayout(double left, double top, double right, double bottom) {}
@@ -191,10 +113,12 @@ abstract class ChartView {
   void onLayoutEnd() {}
 
   @mustCallSuper
+  @override
   void draw(CCanvas canvas) {
     inDrawing = true;
     if (notShow) {
       inDrawing = false;
+      clearDirty();
       return;
     }
     onDrawPre();
@@ -205,6 +129,7 @@ abstract class ChartView {
     onDrawHighlight(canvas);
     onDrawForeground(canvas);
     inDrawing = false;
+    clearDirty();
   }
 
   @protected
@@ -212,82 +137,48 @@ abstract class ChartView {
     if (notShow) {
       return false;
     }
+    var layer = cacheLayer.layer;
+    if (useSingleLayer && layer != null && !isDirty) {
+      canvas.paintContext.addLayer(layer);
+      return true;
+    }
 
-    _drawInner(canvas, Offset(left, top));
+    if (!useSingleLayer) {
+      _drawInner(canvas, Offset(left, top), true);
+      return false;
+    }
 
-    // var layer = layerHandle.layer;
-    // if (useSingleLayer && layer != null && layer.picture != null && this is! ChartViewGroup && !isDirty) {
-    //   canvas.paintContext.addLayer(layer);
-    //   return true;
-    // }
-    //
-    // layerHandle.layer = null;
-    //
-    // if (!useSingleLayer) {
-    //   _drawInner(canvas, Offset(left, top));
-    //   return false;
-    // }
-    //
-    // if (this is ChartViewGroup) {
-    //   var offsetLayer = OffsetLayer();
-    //   canvas.paintContext.pushLayer(offsetLayer, (context, offset) {
-    //     _drawInner(CCanvas(context), offset);
-    //   }, globalBoxBound.topLeft);
-    // } else {
-    //   var record = PictureRecorder();
-    //   _drawInner(CCanvas(canvas.paintContext, Canvas(record)), Offset(left, top));
-    //   var pic = PictureLayer(selfBoxBound);
-    //   pic.isComplexHint = true;
-    //   layerHandle.layer = pic;
-    //   pic.picture = record.endRecording();
-    //   pic.willChangeHint = true;
-    //   canvas.paintContext.addLayer(pic);
-    // }
+    cacheLayer.layer = canvas.paintContext.pushClipRect(
+      true,
+      globalBound.topLeft,
+      Rect.fromLTWH(0, 0, width, height),
+      (context, offset) {
+        _drawInner(CCanvas(context), offset, true);
+      },
+      oldLayer: cacheLayer.layer as ClipRectLayer?,
+    );
     return false;
   }
 
-  void _drawInner(CCanvas canvas, Offset offset) {
-    int old = canvas.getSaveCount();
+  void _drawInner(CCanvas canvas, Offset offset, bool clip) {
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
+    if (clip) {
+      canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
+    }
     draw(canvas);
     canvas.restore();
-    int nc = canvas.getSaveCount();
-    if (nc != old) {
-      throw ChartError("$runtimeType Canvas SaveCount error(old:$old new:$nc)");
-    }
   }
 
-  void invalidate() {
-    markDirty();
-    if (inDrawing) {
-      return;
-    }
-    _parent?.parentInvalidate();
+  void clearCacheLayer() {
+    cacheLayer.layer = null;
+    cacheLayer = LayerHandle();
   }
 
+  @override
   void markDirty() {
-    _dirty = true;
-    layerHandle.layer = null;
-  }
-
-  void requestLayout() {
-    markDirty();
-    if (inLayout) {
-      return;
-    }
-    parent?.requestLayout();
-  }
-
-  void layoutSelf() {
-    markDirty();
-    if (inLayout) {
-      return;
-    }
-    _forceLayout = true;
-    layout(left, top, right, bottom);
-    invalidate();
+    clearCacheLayer();
+    super.markDirty();
   }
 
   bool get useSingleLayer => false;
@@ -311,16 +202,6 @@ abstract class ChartView {
 
   ///实现绘制前景色
   void onDrawForeground(CCanvas canvas) {}
-
-  ViewParent? get parent {
-    return _parent;
-  }
-
-  bool get isDirty => _dirty;
-
-  void clearDirty() {
-    _dirty = false;
-  }
 
   ///=============处理Series和其绑定时相关的操作=============
   ChartSeries? _series;
@@ -406,49 +287,12 @@ abstract class ChartView {
 
   void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
-    _forceLayout = true;
     onStop();
     onStart();
-    layout(left, top, right, bottom);
-    invalidate();
+    requestLayoutSelf();
   }
 
   void onUpdateDataCommand(covariant Command c) {}
-
-  /// ====================普通属性函数=======================================
-
-  double get width => boundRect.width;
-
-  double get height => boundRect.height;
-
-  // 返回当前View在父Parent中的位置坐标
-  double get left => boundRect.left;
-
-  double get top => boundRect.top;
-
-  double get right => boundRect.right;
-
-  double get bottom => boundRect.bottom;
-
-  // 返回自身的中心点坐标
-  double get centerX => width / 2.0;
-
-  double get centerY => height / 2.0;
-
-  //返回其矩形边界
-  Rect get boxBounds => boundRect;
-
-  Rect get globalBoxBound => _globalBoundRect;
-
-  Rect get selfBoxBound => Rect.fromLTWH(0, 0, width, height);
-
-  Offset toLocal(Offset global) {
-    return Offset(global.dx - _globalBoundRect.left, global.dy - _globalBoundRect.top);
-  }
-
-  Offset toGlobal(Offset local) {
-    return Offset(local.dx + _globalBoundRect.left, local.dy + _globalBoundRect.top);
-  }
 
   ///分配索引
   ///返回值表示消耗了好多的索引
@@ -460,6 +304,13 @@ abstract class ChartView {
   bool ignoreAllocateDataIndex() {
     return false;
   }
+
+  ///=======Brush事件通知=======
+  void onBrushEvent(BrushEvent event) {}
+
+  void onBrushEndEvent(BrushEndEvent event) {}
+
+  void onBrushClearEvent(BrushClearEvent event) {}
 
   ///=======由坐标系回调=========
   void onCoordScrollStart(CoordScroll scroll) {}
@@ -475,200 +326,4 @@ abstract class ChartView {
   void onCoordScaleEnd(CoordScale scale) {}
 
   void onLayoutByParent(LayoutType type) {}
-
-  ///=====Debug 相关方法===============
-  void debugDraw(CCanvas canvas, Offset offset, {Color color = const Color(0xFF673AB7), bool fill = true, num r = 6}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    canvas.drawCircle(offset, r.toDouble(), mPaint);
-  }
-
-  void debugDrawRect(CCanvas canvas, Rect rect, {Color color = const Color(0xFF673AB7), bool fill = false}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawRect(rect, mPaint);
-  }
-
-  void debugDrawRulerLine(CCanvas canvas, {Color color = const Color(0xFF000000)}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawLine(Offset(width / 2, 0), Offset(width / 2, height), mPaint);
-    canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
-  }
-
-  void debugDrawPath(CCanvas canvas, Path path, {Color color = const Color(0xFF673AB7), bool fill = false}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawPath(path, mPaint);
-  }
-}
-
-class LayoutParams {
-  final SizeParams width;
-  final SizeParams height;
-
-  final SNumber leftMargin;
-  final SNumber topMargin;
-  final SNumber rightMargin;
-  final SNumber bottomMargin;
-
-  final SNumber leftPadding;
-  final SNumber topPadding;
-  final SNumber rightPadding;
-  final SNumber bottomPadding;
-
-  const LayoutParams(
-    this.width,
-    this.height, {
-    this.leftMargin = SNumber.zero,
-    this.topMargin = SNumber.zero,
-    this.rightMargin = SNumber.zero,
-    this.bottomMargin = SNumber.zero,
-    this.leftPadding = SNumber.zero,
-    this.topPadding = SNumber.zero,
-    this.rightPadding = SNumber.zero,
-    this.bottomPadding = SNumber.zero,
-  });
-
-  const LayoutParams.matchAll({
-    this.leftMargin = SNumber.zero,
-    this.topMargin = SNumber.zero,
-    this.rightMargin = SNumber.zero,
-    this.bottomMargin = SNumber.zero,
-    this.leftPadding = SNumber.zero,
-    this.topPadding = SNumber.zero,
-    this.rightPadding = SNumber.zero,
-    this.bottomPadding = SNumber.zero,
-  })  : width = const SizeParams.match(),
-        height = const SizeParams.match();
-
-  const LayoutParams.wrapAll({
-    this.leftMargin = SNumber.zero,
-    this.topMargin = SNumber.zero,
-    this.rightMargin = SNumber.zero,
-    this.bottomMargin = SNumber.zero,
-    this.leftPadding = SNumber.zero,
-    this.topPadding = SNumber.zero,
-    this.rightPadding = SNumber.zero,
-    this.bottomPadding = SNumber.zero,
-  })  : width = const SizeParams.wrap(),
-        height = const SizeParams.wrap();
-
-  double getLeftPadding(num size) {
-    return leftPadding.convert(size);
-  }
-
-  double getTopPadding(num size) {
-    return topPadding.convert(size);
-  }
-
-  double getRightPadding(num size) {
-    return rightPadding.convert(size);
-  }
-
-  double getBottomPadding(num size) {
-    return bottomPadding.convert(size);
-  }
-
-  double hPadding(num size) {
-    return getLeftPadding(size) + getRightPadding(size);
-  }
-
-  double vPadding(num size) {
-    return getTopPadding(size) + getBottomPadding(size);
-  }
-
-  double getLeftMargin(num size) {
-    return leftMargin.convert(size);
-  }
-
-  double getTopMargin(num size) {
-    return topMargin.convert(size);
-  }
-
-  double getRightMargin(num size) {
-    return rightMargin.convert(size);
-  }
-
-  double getBottomMargin(num size) {
-    return bottomMargin.convert(size);
-  }
-
-  double hMargin(num size) {
-    return getLeftMargin(size) + getRightMargin(size);
-  }
-
-  double vMargin(num size) {
-    return getTopMargin(size) + getBottomMargin(size);
-  }
-}
-
-class SizeParams {
-  static const wrapType = -2;
-  static const matchType = -1;
-  static const _normal = 0;
-  final SNumber size;
-  final int _type;
-
-  static SizeParams from(SNumber sn) {
-    if (sn.number == wrapType) {
-      return const SizeParams.wrap();
-    }
-    if (sn.number == SizeParams.matchType || sn.number <= 0) {
-      return const SizeParams.match();
-    }
-    return SizeParams(sn);
-  }
-
-  const SizeParams(this.size) : _type = _normal;
-
-  const SizeParams.wrap()
-      : _type = wrapType,
-        size = SNumber.zero;
-
-  const SizeParams.match()
-      : _type = matchType,
-        size = SNumber.zero;
-
-  bool get isWrap {
-    return _type == wrapType;
-  }
-
-  bool get isMatch {
-    return _type == matchType;
-  }
-
-  bool get isNormal {
-    return _type == _normal;
-  }
-
-  double convert(num n) {
-    if (isNormal) {
-      return size.convert(n);
-    }
-    if (isWrap) {
-      return 0;
-    }
-
-    return n.toDouble();
-  }
 }

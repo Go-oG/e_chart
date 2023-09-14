@@ -8,11 +8,16 @@ export 'gesture/gesture_event.dart';
 export 'render/ccanvas.dart';
 export 'render/core_chart.dart';
 
-export 'view/view.dart';
-export 'view/view_group.dart';
 export 'view/coord_child_view.dart';
 export 'view/gesture_view.dart';
+export 'model/layout_params.dart';
+export 'view/render_node.dart';
 export 'view/series_view.dart';
+export 'model/size_params.dart';
+export 'view/view.dart';
+export 'view/view_group.dart';
+export 'model/view_size.dart';
+export 'model/view_port.dart';
 
 export 'chart_notifier.dart';
 export 'command.dart';

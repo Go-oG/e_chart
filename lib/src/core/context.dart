@@ -1,5 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/title/title_view.dart';
+import 'package:e_chart/src/core/view/render_node.dart';
 import 'package:flutter/widgets.dart';
 import 'package:e_chart/e_chart.dart' as ec;
 
@@ -8,7 +9,7 @@ import 'package:e_chart/e_chart.dart' as ec;
 ///每个Context各包含一个 TickerProvider
 /// GestureDispatcher、AnimationManager、EventDispatcher、ActionDispatcher
 class Context {
-  final ViewParent root;
+  final RenderNode root;
   final ChartOption option;
 
   ///这里不将其暴露出去是为了能更好的管理动画的生命周期

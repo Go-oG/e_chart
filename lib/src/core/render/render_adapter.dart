@@ -1,17 +1,18 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
-import 'base_render.dart';
+import 'chart_render.dart';
 
-class ChartRenderObject extends RenderBox {
+///该类负责将Flutter原生的布局、渲染流程映射到我们的ChartRender中
+class RenderAdapter extends RenderBox {
   Size? defaultSize;
   BoxConstraints? oldConstraints;
   Size oldSize = Size.zero;
-  BaseRender? _render;
+  ChartRender? _render;
 
-  BaseRender get render => _render!;
+  ChartRender get render => _render!;
 
-  set render(BaseRender? r) {
+  set render(ChartRender? r) {
     if (_render == r) {
       markNeedsPaint();
       return;
@@ -24,7 +25,7 @@ class ChartRenderObject extends RenderBox {
     didUpdateRender(r, old);
   }
 
-  ChartRenderObject(BaseRender render, this.defaultSize) {
+  RenderAdapter(ChartRender render, this.defaultSize) {
     _render = render;
   }
 
@@ -96,11 +97,11 @@ class ChartRenderObject extends RenderBox {
   void onMeasure() {
     double w = size.width;
     double h = size.height;
-    _render?.onMeasure(w, h);
+    _render?.measure(w, h);
   }
 
   void onLayout() {
-    _render?.onLayout(size.width, size.height);
+    _render?.layout(0, 0, size.width, size.height);
   }
 
   @override
@@ -112,10 +113,7 @@ class ChartRenderObject extends RenderBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    CCanvas cc = CCanvas(context);
-    _render?.draw(cc, size);
-    context.setIsComplexHint();
-    context.setWillChangeHint();
+    _render?.draw(CCanvas(context));
   }
 
   @override
@@ -127,7 +125,7 @@ class ChartRenderObject extends RenderBox {
   @override
   bool get alwaysNeedsCompositing => true;
 
-  void didUpdateRender(BaseRender? newRender, BaseRender? oldRender) {
+  void didUpdateRender(ChartRender? newRender, ChartRender? oldRender) {
     if (!attached) {
       return;
     }

@@ -396,6 +396,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   void onCoordScrollUpdate(CoordScroll scroll) {
     onLayout(LayoutType.none);
     if (!series.dynamicRange) {
+      notifyLayoutUpdate();
       return;
     }
     if (series.isVertical) {
@@ -403,6 +404,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     } else {
       findGridCoord().onAdjustAxisDataRange(AdjustAttr(true));
     }
+    notifyLayoutUpdate();
   }
 
   @override
@@ -427,7 +429,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
 
   @override
   Offset getTranslation() {
-    return findGridCoord().getTranslation();
+    return findGridCoord().translation;
   }
 
   @override

@@ -5,15 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import '../../component/index.dart';
 import '../../model/index.dart';
-import 'base_render.dart';
+import '../../utils/log_util.dart';
+import 'chart_render.dart';
 import '../view/view.dart';
 import 'ccanvas.dart';
 
-class DefaultRender extends BaseRender {
+class DefaultRender extends ChartRender {
   DefaultRender(super.config, super.tickerProvider, [super.devicePixelRatio]);
 
   @override
-  void onMeasure(double parentWidth, double parentHeight) {
+  void measure(double parentWidth, double parentHeight) {
     double w = parentWidth;
     double h = parentHeight;
     if (context.title != null) {
@@ -26,7 +27,6 @@ class DefaultRender extends BaseRender {
       legendView.measure(w, h);
       h -= legendView.height;
     }
-
     List<ChartView> renderList = context.coordList;
     for (var v in renderList) {
       v.measure(parentWidth, parentHeight);
@@ -34,7 +34,9 @@ class DefaultRender extends BaseRender {
   }
 
   @override
-  void onLayout(double width, double height) {
+  void layout(double left, double top, double right, double bottom) {
+    double width = right - left;
+    double height = bottom - top;
     Rect rect = layoutTitleAndLegend(width, height);
     for (var v in context.coordList) {
       if (v is CircleCoordLayout) {
@@ -151,12 +153,19 @@ class DefaultRender extends BaseRender {
     Paint mPaint = Paint();
     mPaint.color = context.option.theme.backgroundColor;
     mPaint.style = PaintingStyle.fill;
-    canvas.drawRect(getGlobalAreaBounds(), mPaint);
+    canvas.drawRect(selfBoxBound, mPaint);
     for (var v in context.coordList) {
-      canvas.save();
-      canvas.translate(v.left, v.top);
-      v.draw(canvas);
-      canvas.restore();
+      try {
+        canvas.save();
+        canvas.translate(v.left, v.top);
+        v.draw(canvas);
+        canvas.restore();
+      } catch (e) {
+        debugPrint('$e');
+        Logger.e(e);
+        rethrow;
+      }
     }
+
   }
 }

@@ -1,16 +1,6 @@
 import 'package:flutter/painting.dart';
 
 ///https://m3.material.io/foundations/interaction/states/overview
-enum ViewState {
-  disabled,
-  selected,
-  hover,
-  focused,
-  activated,
-  pressed,
-  dragged,
-}
-
 mixin ViewStateProvider {
   final Set<ViewState> _stateSet = {};
 
@@ -123,4 +113,14 @@ class ColorResolver extends ViewStateResolver<Color> {
 
     return overlay;
   }
+}
+
+enum ViewState {
+  disabled,
+  selected,
+  hover,
+  focused,
+  activated,
+  pressed,
+  dragged,
 }

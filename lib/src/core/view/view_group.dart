@@ -6,13 +6,13 @@ import '../../utils/log_util.dart';
 import '../index.dart';
 
 /// ViewGroup
-abstract class ChartViewGroup extends GestureView implements ViewParent {
+abstract class ChartViewGroup extends GestureView  {
   final List<ChartView> _children = [];
 
   ChartViewGroup() : super();
 
   @override
-  void create(Context context, ViewParent parent) {
+  void create(Context context, RenderNode parent) {
     super.create(context, parent);
     for (var c in _children) {
       c.create(context, this);
@@ -52,12 +52,13 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   }
 
   @override
-  void setForceLayout() {
-    super.setForceLayout();
+  set forceLayout(bool f) {
+    super.forceLayout = f;
     for (var c in children) {
-      c.setForceLayout();
+      c.forceLayout=f;
     }
   }
+
 
   void changeChildToFront(ChartView child) {
     int index = children.indexOf(child);
@@ -215,14 +216,6 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
     return false;
   }
 
-  @override
-  void parentInvalidate() {
-    if (inDrawing) {
-      return;
-    }
-    markDirty();
-    parent?.parentInvalidate();
-  }
 
   ///========================管理子View相关方法=======================
   void addView(ChartView view, {int index = -1}) {
@@ -288,17 +281,6 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   }
 
   @override
-  Rect getGlobalAreaBounds() {
-    if (parent == null) {
-      return boundRect;
-    }
-    Rect parentRect = parent!.getGlobalAreaBounds();
-    double l = parentRect.left + boundRect.left;
-    double t = parentRect.top + boundRect.top;
-    return Rect.fromLTWH(l, t, boundRect.width, boundRect.height);
-  }
-
-  @override
   bool get enableClick => false;
 
   @override
@@ -321,12 +303,4 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
     }
     return u;
   }
-}
-
-abstract class ViewParent {
-  void parentInvalidate();
-
-  void requestLayout();
-
-  Rect getGlobalAreaBounds();
 }

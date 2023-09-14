@@ -4,6 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/title/title_view.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/view/render_node.dart';
 import '../group/scroll_view.dart';
 import 'tool_tip_item_view.dart';
 

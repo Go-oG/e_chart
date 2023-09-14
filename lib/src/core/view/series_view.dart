@@ -41,14 +41,15 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   @override
   void bindSeries(covariant T series) {
     if (series != this.series) {
-      throw FlutterError('Not allow binding different series ');
+      throw ChartError('Not allow binding different series ');
     }
     super.bindSeries(series);
   }
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.update);
+    layoutHelper.doLayout(selfBoxBound, globalBound, LayoutType.update);
+    invalidate();
   }
 
   @override
@@ -59,7 +60,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(selfBoxBound, globalBound, LayoutType.layout);
   }
 
   @override

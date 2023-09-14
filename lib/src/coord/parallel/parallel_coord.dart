@@ -152,7 +152,7 @@ class ParallelCoordImpl extends ParallelCoord {
         end = rect.topRight.translate(-textSize[1].width, 0);
       }
 
-      var attrs = ParallelAxisAttrs(1, scrollX, rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
+      var attrs = ParallelAxisAttrs(1, translationX, rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
       node.doLayout(attrs, dataSet);
     }
 

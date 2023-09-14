@@ -1,6 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'view/render_node.dart';
+
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
 abstract class ChartSeries extends ChartNotifier<Command> {

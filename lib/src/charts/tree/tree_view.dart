@@ -45,7 +45,7 @@ class TreeView extends SeriesView<TreeSeries, TreeLayout> {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    layoutHelper.doLayout(selfBoxBound, globalBoxBound, LayoutType.layout);
+    layoutHelper.doLayout(selfBoxBound, globalBound, LayoutType.layout);
     transOffset = layoutHelper.translationOffset;
   }
 

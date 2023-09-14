@@ -54,7 +54,7 @@ class RadarCoordImpl extends RadarCoord {
       var axis = axisMap[p0]!;
       double angle = oa + i * itemAngle;
       Offset o = circlePoint(radius, angle, center);
-      var attrs = LineAxisAttrs(scaleX, scrollX, Rect.zero, center, o);
+      var attrs = LineAxisAttrs(scaleX, translationX, Rect.zero, center, o);
       axis.doLayout(attrs, collectChildData(i));
     });
 
@@ -131,7 +131,7 @@ class RadarCoordImpl extends RadarCoord {
   void _drawAxis(CCanvas canvas) {
     ///绘制主轴
     axisMap.forEach((key, value) {
-      value.draw(canvas, mPaint, boxBounds);
+      value.draw(canvas, mPaint, boxBound);
     });
   }
 

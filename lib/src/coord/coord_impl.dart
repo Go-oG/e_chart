@@ -1,23 +1,12 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/view_port.dart';
 import 'package:flutter/material.dart';
 
 ///负责处理和布局所有的子View
 ///包括了Brush、ToolTip相关组件
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
-
-  late final CoordScale scale;
-
-  double get scaleX => scale.dx;
-
-  double get scaleY => scale.dy;
-
-  late final ViewPort viewPort;
-
-  double get scrollX => viewPort.scrollX;
-
-  double get scrollY => viewPort.scrollY;
+  final ViewPort viewPort = ViewPort.zero();
+  late final CoordScale coordScale;
 
   ///存储内容的边界
   Rect contentBox = Rect.zero;
@@ -27,8 +16,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   CoordLayout(this.props) : super() {
     layoutParams = props.layoutParams;
-    scale = CoordScale(props.id, props.coordSystem, 1, 1);
-    viewPort = ViewPort.zero();
+    coordScale = CoordScale(props.id, props.coordSystem, 1, 1);
   }
 
   @override
@@ -77,34 +65,21 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    setForceLayout();
-    this.layout(left, top, right, bottom);
+    requestLayoutSelf();
   }
 
   @override
   void dispatchDraw(CCanvas canvas) {
     List<ChartView> vl = [];
     for (var child in children) {
-      int count = canvas.getSaveCount();
       if (child is BrushView || child is ToolTipView) {
         vl.add(child);
       } else {
         drawChild(child, canvas);
       }
-      int n = canvas.getSaveCount();
-      // if (n != count) {
-      //   throw ChartError(
-      //       '$runtimeType dispatchDraw(1) old:$count new:$n view:${child.runtimeType} you should call canvas.restore when after call canvas.save');
-      // }
     }
     for (var child in vl) {
-      int count = canvas.getSaveCount();
       drawChild(child, canvas);
-      int n = canvas.getSaveCount();
-      // if (n != count) {
-      //   throw ChartError(
-      //       '$runtimeType dispatchDraw(2) old:$count new:$n view:${child.runtimeType} you should call canvas.restore when after call canvas.save');
-      // }
     }
   }
 
@@ -158,14 +133,6 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   @override
   bool get enableLongPress => true;
-
-  Offset getScaleFactor() {
-    return Offset(scale.dx, scale.dy);
-  }
-
-  Offset getTranslation() {
-    return viewPort.getTranslation();
-  }
 
   ///获取滚动的最大量(都应该是整数)
   Offset getMaxScroll() {
