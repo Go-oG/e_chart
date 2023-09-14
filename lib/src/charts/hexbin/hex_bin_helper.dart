@@ -189,7 +189,7 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
 
     List<ChartTween> tl = [];
     for (var diff in list) {
-      var tween = ChartDoubleTween(props: animation);
+      var tween = ChartDoubleTween(option: animation);
       var node = diff.node;
       var startAttr = diff.startAttr;
       var endAttr = diff.endAttr;

@@ -297,7 +297,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     });
     final startMap = diffResult.startMap;
     final endMap = diffResult.endMap;
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: series.animation!);
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, option: series.animation!);
     doubleTween.addStartListener(() {
       Map<T, SingleNode<T, P>> map = {};
       diffResult.startMap.forEach((key, value) {

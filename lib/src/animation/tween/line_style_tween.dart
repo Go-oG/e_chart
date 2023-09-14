@@ -8,7 +8,7 @@ import 'shader_tween.dart';
 class LineStyleTween extends ChartTween<LineStyle> {
   ChartShaderTween? _shaderTween;
 
-  LineStyleTween(super.begin, super.end, {super.allowCross, super.props}) {
+  LineStyleTween(super.begin, super.end, {super.allowCross, super.option}) {
     changeValue(begin, end);
   }
 

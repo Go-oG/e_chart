@@ -20,7 +20,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   int parallelIndex;
 
   Color? backgroundColor;
-  AnimationAttrs? animation; //动画
+  AnimatorOption? animation; //动画
   ToolTip? tooltip;
 
   bool clip; // 是否裁剪
@@ -68,7 +68,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
 
   ///获取动画参数
   ///[threshold]动画执行上限,超过该值则不执行 设置为<=0则不执行任何动画
-  AnimationAttrs? getAnimation(LayoutType type, [int threshold = -1]) {
+  AnimatorOption? getAnimation(LayoutType type, [int threshold = -1]) {
     var attr = animation;
     if (type == LayoutType.none || attr == null) {
       return null;

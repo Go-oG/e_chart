@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
-class AnimationAttrs {
+class AnimatorOption {
   final Duration duration;
   final Duration updateDuration;
   final Duration delay;
@@ -15,7 +15,7 @@ class AnimationAttrs {
   ///动画的阈值(超过该值将不会执行动画)
   final int threshold;
 
-  const AnimationAttrs({
+  const AnimatorOption({
     this.duration = const Duration(milliseconds: 1200),
     this.updateDuration = const Duration(milliseconds: 400),
     this.delay = Duration.zero,

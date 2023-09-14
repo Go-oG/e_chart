@@ -355,7 +355,7 @@ class Context {
   }
 
   ///=========动画管理==================
-  AnimationController boundedAnimation(AnimationAttrs props, [bool useUpdate = false]) {
+  AnimationController boundedAnimation(AnimatorOption props, [bool useUpdate = false]) {
     return _animationManager.bounded(_provider, props, useUpdate: useUpdate);
   }
 

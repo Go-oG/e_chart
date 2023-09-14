@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 /// 抽象的补间动画
 abstract class ChartTween<T> extends ValueNotifier<T> {
-  final AnimationAttrs props;
+  final AnimatorOption option;
   AnimationController? _controller;
   T _begin;
   T _end;
@@ -15,7 +15,7 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     this._begin,
     this._end, {
     bool allowCross = true,
-    this.props = const AnimationAttrs(),
+    this.option = const AnimatorOption(),
   }) : super(_begin) {
     _allowCross = allowCross;
   }
@@ -38,7 +38,7 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   Timer? _waitTimer;
 
   void start(Context context, [bool useUpdate = false]) {
-    var delay = useUpdate ? props.updateDelay : props.delay;
+    var delay = useUpdate ? option.updateDelay : option.delay;
     if (delay.inMilliseconds <= 0) {
       _startInner(context, useUpdate);
       return;
@@ -73,8 +73,8 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   void _startInner(Context context, [bool useUpdate = false]) {
     _hasCallStart = false;
     _cancelFlag = false;
-    _controller = context.boundedAnimation(props, useUpdate);
-    var curved = CurvedAnimation(parent: _controller!, curve: useUpdate ? props.updateCurve : props.curve);
+    _controller = context.boundedAnimation(option, useUpdate);
+    var curved = CurvedAnimation(parent: _controller!, curve: useUpdate ? option.updateCurve : option.curve);
     curved.addListener(() {
       if (_cancelFlag) {
         stop();

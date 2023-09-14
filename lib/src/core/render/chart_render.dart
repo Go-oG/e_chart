@@ -7,11 +7,11 @@ abstract class ChartRender extends RenderNode {
   final ChartNotifier<Command> _notifier = ChartNotifier(Command.none);
 
   ChartRender(
-    ChartOption config,
+    ChartOption option,
     TickerProvider tickerProvider, [
     double devicePixelRatio = 1,
   ]) {
-    context = Context(this, config, tickerProvider, devicePixelRatio);
+    context = Context(this, option, tickerProvider, devicePixelRatio);
     context.onCreate();
   }
 

@@ -7,7 +7,7 @@ class AreaStyleTween extends ChartTween<AreaStyle> {
     super.begin,
     super.end, {
     super.allowCross,
-    super.props,
+    super.option,
   }) {
     changeValue(begin, end);
   }

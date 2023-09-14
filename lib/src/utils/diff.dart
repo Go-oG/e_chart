@@ -72,7 +72,7 @@ class DiffUtil {
   }
 
   static List<AnimationNode> diffLayout<P, D, N extends DataNode<P, D>>(
-    AnimationAttrs? attrs,
+    AnimatorOption? attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
     P Function(D data, N node, bool add) builder,
@@ -115,7 +115,7 @@ class DiffUtil {
   }
 
   static List<AnimationNode> diffLayout2<N extends DataNode>(
-    AnimationAttrs? attrs,
+    AnimatorOption? attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
     double Function(N node, bool add) startFun,
@@ -153,7 +153,7 @@ class DiffUtil {
 
   ///该方法适用于具有多个单一属性的Diff
   static List<AnimationNode> diffLayout3<N extends DataNode>(
-    AnimationAttrs? attrs,
+    AnimatorOption? attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
     Map<String, dynamic> Function(N node, DiffType type) startFun,
@@ -229,7 +229,7 @@ class DiffUtil {
 
     if (addSet.isNotEmpty) {
       if (attrs.check(LayoutType.layout, startMap.length)) {
-        var addTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+        var addTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
         addTween.addListener(() {
           double t = addTween.value;
           addSet.forEach((key, value) {
@@ -250,7 +250,7 @@ class DiffUtil {
 
     if (removeSet.isNotEmpty) {
       if (attrs.check(LayoutType.layout, startMap.length)) {
-        var removeTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+        var removeTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
         removeTween.addListener(() {
           double t = removeTween.value;
           removeSet.forEach((key, value) {
@@ -271,7 +271,7 @@ class DiffUtil {
 
     if (updateSet.isNotEmpty) {
       if (attrs.check(LayoutType.update, startMap.length)) {
-        var updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+        var updateTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
         updateTween.addListener(() {
           double t = updateTween.value;
           updateSet.forEach((key, value) {
@@ -352,7 +352,7 @@ class DiffUtil {
   ///用于在点击或者hover触发时执行diff动画
   static void diffUpdate<P, D, N extends DataNode<P, D>>(
     Context context,
-    AnimationAttrs? attrs,
+    AnimatorOption? attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
     P Function(D data, N node, bool isOld) builder,
@@ -363,7 +363,7 @@ class DiffUtil {
   }
 
   static List<AnimationNode> diffUpdate2<P, D, N extends DataNode<P, D>>(
-    AnimationAttrs? attrs,
+    AnimatorOption? attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
     P Function(D data, N node, bool isOld) builder,
@@ -393,7 +393,7 @@ class DiffUtil {
       return [];
     }
 
-    var updateTween = ChartDoubleTween.fromValue(0, 1, props: attrs);
+    var updateTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
     updateTween.addEndListener(() {
       callback.call();
     });

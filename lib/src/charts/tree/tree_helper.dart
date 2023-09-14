@@ -255,7 +255,7 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
     Map<TreeData, Size> sizeMap, [
     VoidCallback? endCallback,
   ]) {
-    var tween = ChartDoubleTween(props: series.animation!);
+    var tween = ChartDoubleTween(option: series.animation!);
     tween.addListener(() {
       double v = tween.value;
       root.each((node, index, startNode) {

@@ -297,7 +297,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   ///获取动画运行配置(可以为空)
-  AnimationAttrs? getAnimation(LayoutType type, [int count = -1]) {
+  AnimatorOption? getAnimation(LayoutType type, [int count = -1]) {
     var attr = series.animation ?? context.option.animation;
     if (type == LayoutType.none || attr == null) {
       return null;
@@ -425,13 +425,13 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     node.updateStyle(context, series);
   }
 
-  void onRunUpdateAnimation(List<NodeDiff<N>> list, AnimationAttrs animation) {
+  void onRunUpdateAnimation(List<NodeDiff<N>> list, AnimatorOption animation) {
     List<ChartTween> tl = [];
     for (var diff in list) {
       var node = diff.node;
       var s = diff.startAttr;
       var e = diff.endAttr;
-      var tween = ChartDoubleTween(props: animation);
+      var tween = ChartDoubleTween(option: animation);
       tween.addListener(() {
         var t = tween.value;
         node.itemStyle = AreaStyle.lerp(s.itemStyle, e.itemStyle, t);

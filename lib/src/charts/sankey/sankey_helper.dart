@@ -41,7 +41,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
       return;
     }
 
-    var dt = ChartDoubleTween(props: animation);
+    var dt = ChartDoubleTween(option: animation);
     animationProcess = 0;
     dt.addStartListener(() {
       _nodes = nodes;

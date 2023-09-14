@@ -8,13 +8,14 @@ class TapEvent extends MotionEvent {
   final int pointer;
   final Offset localPos;
   final Offset position;
+
   const TapEvent(this.localPos, this.position, this.pointer);
 
   static from(PointerEvent event) {
     return TapEvent(event.localPosition, event.position, event.pointer);
   }
 
-  Offset get globalPosition=>localPos;
+  Offset get globalPosition => localPos;
 }
 
 class ScaleEvent extends MotionEvent {
@@ -30,7 +31,7 @@ class LongPressMoveEvent extends MotionEvent {
   final Offset localOffsetFromOrigin;
   final Offset offsetFromOrigin;
 
-  LongPressMoveEvent(
+  const LongPressMoveEvent(
     this.globalPosition,
     this.localOffsetFromOrigin,
     this.offsetFromOrigin,

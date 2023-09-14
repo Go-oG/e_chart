@@ -285,7 +285,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     });
     final startMap = diffResult.startMap;
     final endMap = diffResult.endMap;
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, props: animation);
+    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, option: animation);
     doubleTween.addStartListener(() {
       Map<T, SingleNode<T, P>> sm = {};
       startMap.forEach((key, value) {
@@ -477,7 +477,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       newLineStyleMap[node] = buildLineStyle(node.originData, node.parent, node.styleIndex, node.status);
     });
 
-    ChartDoubleTween doubleTween = ChartDoubleTween(props: animation);
+    ChartDoubleTween doubleTween = ChartDoubleTween(option: animation);
     AreaStyleTween areaTween = AreaStyleTween(AreaStyle.empty, AreaStyle.empty);
     LineStyleTween lineTween = LineStyleTween(LineStyle.empty, LineStyle.empty);
     doubleTween.addListener(() {

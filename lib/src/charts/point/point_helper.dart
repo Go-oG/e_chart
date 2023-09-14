@@ -118,7 +118,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       var node = diff.node;
       var scale = diff.startAttr.symbolScale;
       var end = diff.old ? 1 : (1 + 8 / node.symbol.size.shortestSide);
-      var tw = ChartDoubleTween(props: animation);
+      var tw = ChartDoubleTween(option: animation);
       tw.addListener(() {
         var t = tw.value;
         node.symbol.scale = lerpDouble(scale, end, t)!;

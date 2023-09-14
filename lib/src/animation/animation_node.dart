@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 class AnimationNode {
   final ChartTween tween;
-  final AnimationAttrs attrs;
+  final AnimatorOption attrs;
   final LayoutType type;
 
   const AnimationNode(this.tween, this.attrs, this.type);

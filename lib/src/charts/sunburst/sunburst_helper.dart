@@ -63,7 +63,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       arcStartMap[node] = node.attr.arc.copy(outRadius: node.attr.arc.innerRadius);
       return false;
     });
-    var tween = ChartDoubleTween(props: animation);
+    var tween = ChartDoubleTween(option: animation);
     tween.addStartListener(() {
       inAnimation = true;
       rootNode = newRoot;
@@ -315,7 +315,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         return;
       }
 
-      var tween = ChartDoubleTween(props: animation);
+      var tween = ChartDoubleTween(option: animation);
       tween.addListener(() {
         var t = tween.value;
         clickNode.attr.arc = Arc.lerp(s, e, t);
@@ -354,7 +354,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       return;
     }
 
-    var tween = ChartDoubleTween(props: animation);
+    var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
       var t = tween.value;
       bn.attr.arc = Arc.lerp(bs, be, t);
@@ -415,7 +415,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       }
       return false;
     });
-    var tween = ChartDoubleTween(props: series.animation!);
+    var tween = ChartDoubleTween(option: series.animation!);
     tween.addListener(() {
       var t = tween.value;
       parentNode.each((node, index, startNode) {

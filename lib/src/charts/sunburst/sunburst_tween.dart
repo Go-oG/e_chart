@@ -1,6 +1,5 @@
 
 import 'package:e_chart/e_chart.dart';
-import 'sunburst_helper.dart';
 import 'sunburst_node.dart';
 
 class SunburstTween extends ChartTween<SunburstAttr> {
@@ -8,7 +7,7 @@ class SunburstTween extends ChartTween<SunburstAttr> {
     super.begin,
     super.end, {
     bool allowCross = false,
-    super.props,
+    super.option,
   });
 
   @override

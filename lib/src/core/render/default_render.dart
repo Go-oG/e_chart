@@ -11,7 +11,7 @@ import '../view/view.dart';
 import 'ccanvas.dart';
 
 class DefaultRender extends ChartRender {
-  DefaultRender(super.config, super.tickerProvider, [super.devicePixelRatio]);
+  DefaultRender(super.option, super.tickerProvider, [super.devicePixelRatio]);
 
   @override
   void measure(double parentWidth, double parentHeight) {

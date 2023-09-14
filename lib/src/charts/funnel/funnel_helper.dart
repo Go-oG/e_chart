@@ -220,7 +220,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       var node = diff.node;
       var startAttr = diff.startAttr;
       var endAttr = diff.endAttr;
-      var tween2 = ChartDoubleTween.fromValue(0, 1, props: animation);
+      var tween2 = ChartDoubleTween.fromValue(0, 1, option: animation);
       var s = startAttr.labelConfig?.scaleFactor ?? 1;
       var e = diff.old ? 1 : 1.1;
       tween2.addListener(() {

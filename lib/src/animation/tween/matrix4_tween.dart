@@ -3,7 +3,7 @@ import 'package:vector_math/vector_math.dart';
 import '../chart_tween.dart';
 
 class ChartMatrix4Tween extends ChartTween<Matrix4> {
-  ChartMatrix4Tween(super.begin, super.end,{super.allowCross,super.props});
+  ChartMatrix4Tween(super.begin, super.end,{super.allowCross,super.option});
   @override
   Matrix4 convert(double animatorPercent) {
     double t = animatorPercent;

@@ -290,7 +290,7 @@ class GestureDispatcher {
 }
 
 class _Inner {
-  List<GTouch> touches = [];
+  List<_GTouch> touches = [];
   double initScaleDistance = 1.0;
   _State state = _State.unknown;
   Timer? doubleTapTimer;
@@ -309,7 +309,7 @@ class _Inner {
   }
 
   void onPointerDown(PointerDownEvent event) {
-    touches.add(GTouch(event.pointer, event.localPosition));
+    touches.add(_GTouch(event.pointer, event.localPosition));
     if (touchCount == 1) {
       state = _State.pointerDown;
       startLongPressTimer(TapEvent.from(event));
@@ -368,13 +368,13 @@ class _Inner {
     }
   }
 
-  void switch2MoveStartState(GTouch touch, PointerMoveEvent event) {
+  void switch2MoveStartState(_GTouch touch, PointerMoveEvent event) {
     state = _State.moveStart;
     touch.startOffset = event.localPosition;
     dispatcher.onMoveStart.call(MoveEvent(event.localPosition, event.localPosition, event.pointer));
   }
 
-  double angleBetweenLines(GTouch f, GTouch s) {
+  double angleBetweenLines(_GTouch f, _GTouch s) {
     double angle1 = math.atan2(f.startOffset.dy - s.startOffset.dy, f.startOffset.dx - s.startOffset.dx);
     double angle2 = math.atan2(f.currentOffset.dy - s.currentOffset.dy, f.currentOffset.dx - s.currentOffset.dx);
 
@@ -437,7 +437,7 @@ class _Inner {
     }
   }
 
-  bool inLongPressRange(GTouch touch) {
+  bool inLongPressRange(_GTouch touch) {
     return (touch.currentOffset - touch.startOffset).distanceSquared < dispatcher.longPressMaxDistance;
   }
 
@@ -473,12 +473,12 @@ class _Inner {
   get touchCount => touches.length;
 }
 
-class GTouch {
+class _GTouch {
   int id;
   Offset startOffset;
   late Offset currentOffset;
 
-  GTouch(this.id, this.startOffset) {
+  _GTouch(this.id, this.startOffset) {
     currentOffset = startOffset;
   }
 }

@@ -167,7 +167,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
       notifyLayoutUpdate();
       return;
     }
-    var tween = ChartDoubleTween(props: animation);
+    var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
       var t = tween.value;
       scale = lerpDouble(oldScale, newScale, t)!;

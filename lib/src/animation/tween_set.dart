@@ -149,7 +149,7 @@ class TweenNode {
     if (parent == null) {
       _animationStartTime = DateTime.now().millisecondsSinceEpoch;
     } else {
-      _animationStartTime = parent!.computeStartTime() + parent!.tween.props.duration.inMilliseconds;
+      _animationStartTime = parent!.computeStartTime() + parent!.tween.option.duration.inMilliseconds;
     }
     if (delay.inMilliseconds > 0) {
       _animationStartTime += delay.inMilliseconds;

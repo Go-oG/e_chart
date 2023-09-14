@@ -4,7 +4,7 @@ import '../chart_tween.dart';
 import 'package:flutter/animation.dart';
 
 class ChartColorTween extends ChartTween<Color> {
-  ChartColorTween(super.begin, super.end,{super.allowCross,super.props});
+  ChartColorTween(super.begin, super.end,{super.allowCross,super.option});
 
   @override
   Color convert(double animatorPercent) {

@@ -14,7 +14,7 @@ class AnimationManager {
   ///存储已经创建的控制器
   Map<String, AnimationController> _map = {};
 
-  AnimationController bounded(TickerProvider provider, AnimationAttrs props, {String? key, bool useUpdate = false}) {
+  AnimationController bounded(TickerProvider provider, AnimatorOption props, {String? key, bool useUpdate = false}) {
     _collate();
     AnimationController c = AnimationController(
       vsync: provider,
