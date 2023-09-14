@@ -55,6 +55,8 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
         nodeList = p0;
         notifyLayoutUpdate();
       },
+      () => inAnimation = true,
+      () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }

@@ -20,7 +20,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     layoutNode(newList);
 
     var an = DiffUtil.diffLayout2(
-      getAnimation(type,oldList.length+newList.length),
+      getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
       (node, add) {
@@ -34,6 +34,8 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
+      () => inAnimation = true,
+      () => inAnimation = false,
     );
 
     context.addAnimationToQueue(an);
@@ -94,7 +96,6 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       node.attr = Offset(ox, oy);
     }
   }
-
 
   @override
   SeriesType get seriesType => SeriesType.point;

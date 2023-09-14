@@ -15,7 +15,7 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
     List<ThemeRiverNode> newList = [];
     Set<ViewState> emptyVS = {};
     each(series.data, (d, i) {
-      ThemeRiverNode node = ThemeRiverNode(
+      var node = ThemeRiverNode(
         d,
         i,
         0,
@@ -36,12 +36,14 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
    }
     var tween = ChartDoubleTween(props: animation);
     tween.addStartListener(() {
+      inAnimation=true;
       nodeList = newList;
     });
     tween.addListener(() {
       animatorPercent = tween.value;
       notifyLayoutUpdate();
     });
+    tween.addEndListener(() {inAnimation=false;});
     context.addAnimationToQueue([AnimationNode(tween, animation, type)]);
   }
 

@@ -131,6 +131,8 @@ abstract class HexbinLayout extends LayoutHelper2<HexbinNode, HexbinSeries> {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
+      () => inAnimation = true,
+      () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }

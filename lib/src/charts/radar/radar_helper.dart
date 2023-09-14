@@ -53,14 +53,8 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       newList.addAll(groupNode.nodeList);
     });
 
-    var animation = series.animation;
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      _nodeList = newList;
-      return;
-    }
-
     var an = DiffUtil.diffLayout(
-      animation,
+      getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
       (data, node, add) => center,
@@ -74,6 +68,8 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
         _groupNodeList = gl;
         notifyLayoutUpdate();
       },
+      () => inAnimation = true,
+      () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }

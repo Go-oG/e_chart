@@ -38,6 +38,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   Rect boxBound = Rect.zero;
   Rect globalBoxBound = Rect.zero;
 
+  ///标识是否在运行动画
+  bool inAnimation=false;
+  ///控制在动画期间是否允许手势
+  bool allowGestureInAnimation=false;
+
   ///手势相关的中间量
 
   ///记录平移量(区分正负)

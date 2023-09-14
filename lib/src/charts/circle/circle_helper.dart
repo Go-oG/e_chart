@@ -49,6 +49,8 @@ class CircleHelper extends LayoutHelper2<CircleNode, CircleSeries> {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
+      () => inAnimation = true,
+      () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }

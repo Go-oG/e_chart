@@ -17,7 +17,7 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
     });
 
     var an = DiffUtil.diffLayout2<HeatMapNode>(
-      getAnimation(type,oldList.length+newList.length),
+      getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
       (node, add) => add ? 0 : node.symbol.scale,
@@ -27,6 +27,8 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
+      () => inAnimation = true,
+      () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }
@@ -65,6 +67,4 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
 
   @override
   SeriesType get seriesType => SeriesType.heatmap;
-
-
 }

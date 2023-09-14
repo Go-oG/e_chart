@@ -1,17 +1,8 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-
-import '../../event/index.dart';
-import '../../model/index.dart';
-import '../command.dart';
-import '../layout_helper.dart';
-import '../render/ccanvas.dart';
-import '../series.dart';
-import 'gesture_view.dart';
 
 ///强制要求提供一个Series和Layout;并简单包装了部分手势操作
 ///除此之外，每个SeriesView 默认添加一个Layer
@@ -69,36 +60,57 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   @override
   void onClick(Offset offset) {
+    if (layoutHelper.inAnimation && !layoutHelper.allowGestureInAnimation) {
+      return;
+    }
     layoutHelper.onClick(offset);
   }
 
   @override
   void onHoverStart(Offset offset) {
+    if (layoutHelper.inAnimation && !layoutHelper.allowGestureInAnimation) {
+      return;
+    }
     layoutHelper.onHoverStart(offset);
   }
 
   @override
   void onHoverMove(Offset offset, Offset last) {
+    if (layoutHelper.inAnimation && !layoutHelper.allowGestureInAnimation) {
+      return;
+    }
     layoutHelper.onHoverMove(offset);
   }
 
   @override
   void onHoverEnd() {
+    if (layoutHelper.inAnimation && !layoutHelper.allowGestureInAnimation) {
+      return;
+    }
     layoutHelper.onHoverEnd();
   }
 
   @override
   void onDragStart(Offset offset) {
+    if (layoutHelper.inAnimation && !layoutHelper.allowGestureInAnimation) {
+      return;
+    }
     layoutHelper.onDragStart(offset);
   }
 
   @override
   void onDragMove(Offset offset, Offset diff) {
+    if (layoutHelper.inAnimation && !layoutHelper.allowGestureInAnimation) {
+      return;
+    }
     layoutHelper.onDragMove(offset, diff);
   }
 
   @override
   void onDragEnd() {
+    if (layoutHelper.inAnimation && !layoutHelper.allowGestureInAnimation) {
+      return;
+    }
     layoutHelper.onDragEnd();
   }
 

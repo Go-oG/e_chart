@@ -47,7 +47,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       return false;
     });
 
-    var animation =getAnimation(type);
+    var animation = getAnimation(type);
     if (animation == null) {
       rootNode = newRoot;
       showRootNode = rootNode;
@@ -65,6 +65,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     });
     var tween = ChartDoubleTween(props: animation);
     tween.addStartListener(() {
+      inAnimation = true;
       rootNode = newRoot;
       showRootNode = rootNode;
       _nodeMap = nodeMap;
@@ -79,6 +80,9 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         return false;
       });
       notifyLayoutUpdate();
+    });
+    tween.addEndListener(() {
+      inAnimation = false;
     });
     context.addAnimationToQueue([AnimationNode(tween, animation, LayoutType.layout)]);
   }

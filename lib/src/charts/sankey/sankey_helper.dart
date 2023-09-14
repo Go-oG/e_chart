@@ -46,11 +46,13 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     dt.addStartListener(() {
       _nodes = nodes;
       _links = links;
+      inAnimation=true;
     });
     dt.addListener(() {
       animationProcess = dt.value;
       notifyLayoutUpdate();
     });
+    dt.addEndListener(() { inAnimation=false;});
     context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
   }
 
