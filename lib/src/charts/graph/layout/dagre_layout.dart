@@ -20,27 +20,16 @@ class DagreLayout extends GraphLayout {
   });
 
   @override
-  void onLayout(LayoutType type) {
-    if (workerThread) {
-      Future.doWhile(() {
-        runLayout(context, series.graph, width, height);
-        return false;
-      });
-    } else {
-      runLayout(context, series.graph, width, height);
-    }
-  }
-
-  void runLayout(Context context, Graph graph, num width, num height) {
+  void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
     if (graph.nodes.isEmpty) {
-      notifyLayoutEnd();
       return;
     }
+
     List<DagreNode> nodeList = [];
     Map<String, DagreNode> nodeMap = {};
     Map<String, GraphNode> nodeMap2 = {};
     for (var ele in graph.nodes) {
-      Size size =ele.size;
+      Size size = ele.size;
       DagreNode node = DagreNode(ele.id, size.width, size.height);
       nodeList.add(node);
       nodeMap[ele.id] = node;
@@ -48,19 +37,19 @@ class DagreLayout extends GraphLayout {
     }
 
     List<DagreEdge> edgeList = [];
-    Map<String, Edge<GraphNode>> edgeMap = {};
+    Map<String, Edge> edgeMap = {};
 
     for (var e in graph.edges) {
       edgeMap[e.id] = e;
       var source = nodeMap[e.source.id];
       if (source == null) {
-        throw FlutterError('无法找到Source');
+        throw ChartError('无法找到Source');
       }
       var target = nodeMap[e.target.id];
       if (target == null) {
-        throw FlutterError('无法找到Target');
+        throw ChartError('无法找到Target');
       }
-      DagreEdge edge = DagreEdge(
+      var edge = DagreEdge(
         e.id,
         source,
         target,
@@ -94,11 +83,10 @@ class DagreLayout extends GraphLayout {
 
     result.edgePosMap.forEach((key, value) {
       var edge = edgeMap[key]!;
-      edge.points.clear();
-      edge.points.addAll(value.points);
+      edge.points = value.points;
       edge.x = value.x;
       edge.y = value.y;
     });
-    notifyLayoutEnd();
   }
+
 }

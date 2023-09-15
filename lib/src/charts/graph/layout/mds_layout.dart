@@ -5,7 +5,6 @@ import 'package:ml_linalg/axis.dart' as ml;
 import 'package:ml_linalg/matrix.dart';
 import 'package:scidart/numdart.dart' as sv;
 
-
 ///高维数据降维算法布局
 ///Ref:https://github.com/antvis/layout/blob/master/src/layout/mds.ts
 class MDSLayout extends GraphLayout {
@@ -26,33 +25,19 @@ class MDSLayout extends GraphLayout {
     super.workerThread,
   });
 
+  Offset _center = Offset.zero;
+
   @override
-  void onLayout( LayoutType type){
-    stopLayout();
-    clearInterrupt();
-    if (workerThread) {
-      Future.doWhile(() {
-        runLayout(context, series.graph, width, height);
-        return false;
-      });
-    } else {
-      runLayout(context, series.graph, width, height);
-    }
-
-  }
-
-  void runLayout(Context context, Graph graph, num width, num height) {
+  void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
     clear();
+    _center = Offset(center[0].convert(params.width), center[1].convert(params.height));
     List<GraphNode> nodes = graph.nodes;
     if (nodes.isEmpty) {
-      notifyLayoutEnd();
       return;
     }
-    Offset centerOffset = Offset(center[0].convert(width), center[1].convert(height));
     if (nodes.length == 1) {
-      nodes[0].x = centerOffset.dx;
-      nodes[0].y = centerOffset.dy;
-      notifyLayoutEnd();
+      nodes[0].x = _center.dx;
+      nodes[0].y = _center.dy;
       return;
     }
 
@@ -61,7 +46,6 @@ class MDSLayout extends GraphLayout {
     if (distanceFun != null) {
       distances = [];
       for (var c in graph.nodes) {
-        checkInterrupt();
         List<double> dl = [];
         for (var n in graph.nodes) {
           dl.add(distanceFun!.call(c, n).toDouble());
@@ -82,19 +66,11 @@ class MDSLayout extends GraphLayout {
     List<ChartOffset> positions = runMDS(scaledDistances);
     this.positions = positions;
     for (int i = 0; i < positions.length; i++) {
-      checkInterrupt();
       var node = nodes[i];
       var p = positions[i];
-      node.x = p.x + centerOffset.dx;
-      node.y = p.y + centerOffset.dy;
+      node.x = p.x + _center.dx;
+      node.y = p.y + _center.dy;
     }
-    notifyLayoutEnd();
-  }
-
-  @override
-  void stopLayout() {
-    super.stopLayout();
-    interrupt();
   }
 
   void clear() {
@@ -118,7 +94,6 @@ class MDSLayout extends GraphLayout {
       ///提取SVD
       List<sv.Array> arrayList = [];
       for (var element in matrix.rows) {
-        checkInterrupt();
         arrayList.add(sv.Array(element.toList()));
       }
       var ret = sv.SVD(sv.Array2d(arrayList));
@@ -126,24 +101,20 @@ class MDSLayout extends GraphLayout {
       eigenMatrix = eigenMatrix.pow(0.5);
       List<double> eigenValues = [];
       for (int i = 0; i < eigenMatrix.rowCount; i++) {
-        checkInterrupt();
         eigenValues.add(eigenMatrix[i][i]);
       }
       sv.Array2d u = ret.U();
       List<List<double>> leftSingularVectors = [];
       for (var uc in u) {
-        checkInterrupt();
         leftSingularVectors.add(uc.toList());
       }
       var mulM = Matrix.fromList([eigenValues]);
       List<List<double>> resultList = List.from(leftSingularVectors.map<List<double>>((row) {
-        checkInterrupt();
         Matrix tm = Matrix.fromList([row]).multiply(mulM);
         return tm.getRow(0).toList().sublist(0, dimension);
       }));
       List<ChartOffset> rl = [];
       for (var t in resultList) {
-        checkInterrupt();
         rl.add(ChartOffset(t[0], t[1]));
       }
       return rl;
@@ -151,7 +122,6 @@ class MDSLayout extends GraphLayout {
       List<ChartOffset> res = [];
       Random random = Random();
       for (int i = 0; i < distanceList.length; i++) {
-        checkInterrupt();
         var x = random.nextDouble() * linkDistance;
         var y = random.nextDouble() * linkDistance;
         res.add(ChartOffset(x, y));
@@ -163,9 +133,7 @@ class MDSLayout extends GraphLayout {
   void _handleInfinity(List<List<double>> distances) {
     double maxDistance = -99999999;
     for (var row in distances) {
-      checkInterrupt();
       for (var value in row) {
-        checkInterrupt();
         if (value.isInfinite) {
           continue;
         }
@@ -189,7 +157,7 @@ class MDSLayout extends GraphLayout {
 
 List<List<double>> getAdjMatrix(Graph graph, bool directed) {
   List<GraphNode> nodes = graph.nodes;
-  List<Edge<GraphNode>> edges = graph.edges;
+  List<Edge> edges = graph.edges;
   List<List<double>> matrix = [];
   Map<String, int> nodeMap = {};
 

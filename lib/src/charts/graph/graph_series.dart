@@ -4,18 +4,23 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/graph/graph_view.dart';
 
 class GraphSeries extends RectSeries {
-  Graph graph;
+  List<GraphItemData> nodes;
+  List<EdgeItemData> edges;
   GraphLayout layout;
-  Size? nodeSize;
-  Fun2<GraphNode, Size>? sizeFun;
 
-  Fun2<GraphNode, ChartSymbol>? symbolFun;
-  Fun3<GraphNode, GraphNode, LineStyle>? lineFun;
+  bool enableDrag;
+  bool onlyDragNode;
+
+  Fun2<GraphItemData, Size>? sizeFun;
+  Fun5<GraphItemData, int, Size, Set<ViewState>, ChartSymbol>? symbolFun;
+  Fun4<GraphItemData, GraphItemData, Set<ViewState>, LineStyle>? lineFun;
 
   GraphSeries(
-    this.graph,
+    this.nodes,
+    this.edges,
     this.layout, {
-    this.nodeSize,
+    this.enableDrag = true,
+    this.onlyDragNode = true,
     this.sizeFun,
     this.symbolFun,
     this.lineFun,
@@ -39,36 +44,38 @@ class GraphSeries extends RectSeries {
   });
 
   @override
-  void dispose() {
-    layout.dispose();
-    super.dispose();
-  }
-
-  @override
   ChartView? toView() {
     return GraphView(this);
   }
 
   ///给定一个节点返回节点的大小
-  final _defaultSize = const Size.square(8);
+  final _defaultSize = const Size.square(16);
 
-  Size getNodeSize(GraphNode node) {
-    if (sizeFun != null) {
-      return sizeFun!.call(node);
+  Size getNodeSize(GraphItemData data) {
+    var fun = sizeFun;
+    if (fun != null) {
+      return fun.call(data);
     }
-    if (nodeSize != null) {
-      return nodeSize!;
+    double w = 16, h = 16;
+    if (data.width != null && data.width! > 0) {
+      w = data.width!.toDouble();
     }
-    return _defaultSize;
+    if (data.height != null && data.height! > 0) {
+      h = data.height!.toDouble();
+    }
+    if (w == _defaultSize.width && h == _defaultSize.height) {
+      return _defaultSize;
+    }
+    return Size(w, h);
   }
 
-  ChartSymbol getSymbol(Context context, GraphNode node) {
+  ChartSymbol getSymbol(Context context, GraphItemData data, int dataIndex, Size size, Set<ViewState> status) {
     var fun = symbolFun;
     if (fun != null) {
-      return fun.call(node);
+      return fun.call(data, dataIndex, size, status);
     }
-    var as = context.option.theme.getAreaStyle(node.dataIndex);
+    var as = context.option.theme.getAreaStyle(dataIndex).convert(status);
     var bs = context.option.theme.graphTheme.getStyle() ?? LineStyle.empty;
-    return CircleSymbol(radius: node.r, itemStyle: as, borderStyle: bs).convert(node.status);
+    return CircleSymbol(radius: size.shortestSide / 2, itemStyle: as, borderStyle: bs).convert(status);
   }
 }

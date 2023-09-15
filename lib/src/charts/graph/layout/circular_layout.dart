@@ -30,40 +30,27 @@ class CircularLayout extends GraphLayout {
     super.workerThread,
   });
 
-  @override
-  void onLayout(LayoutType type) {
-    stopLayout();
-    clearInterrupt();
-    if (workerThread) {
-      Future.doWhile(() {
-        runLayout(context, series.graph, width, height);
-        return false;
-      });
-    } else {
-      runLayout(context, series.graph, width, height);
-    }
-  }
+  Offset _center = Offset.zero;
 
   @override
-  void stopLayout() {
-    super.stopLayout();
-    interrupt();
-  }
+  void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
+    var width = params.width;
+    var height = params.height;
+    _center = Offset(center[0].convert(width), center[1].convert(height));
 
-  void runLayout(Context context, Graph graph, num width, num height) {
     var nodes = graph.nodes;
     int nodeCount = nodes.length;
     if (nodeCount == 0) {
-      notifyLayoutEnd();
       return;
     }
-    Offset center = Offset(this.center[0].convert(width), this.center[1].convert(height));
+
     if (nodeCount == 1) {
-      nodes[0].x = center.dx;
-      nodes[0].y = center.dy;
+      nodes[0].x = _center.dx;
+      nodes[0].y = _center.dy;
       notifyLayoutEnd();
       return;
     }
+
     List<num> radiusList = computeRadius(graph, width, height);
 
     ///角度递增量
@@ -73,11 +60,10 @@ class CircularLayout extends GraphLayout {
     List<GraphNode> layoutNodes = nodes;
     sortNode(graph, layoutNodes);
     each(layoutNodes, (node, i) {
-      checkInterrupt();
       num r = radiusList[0] + radiusList[2] * i;
       num tmp = angleStep * i;
       num angle = startAngle + tmp;
-      Offset off = circlePoint(r, angle, center);
+      Offset off = circlePoint(r, angle, _center);
       node.x = off.dx;
       node.y = off.dy;
     });
@@ -88,9 +74,9 @@ class CircularLayout extends GraphLayout {
   void sortNode(Graph graph, List<GraphNode> list, [bool asc = false]) {
     Map<GraphNode, num> sortMap;
     if (sort != null) {
-      sortMap = sort!.call(graph, list);
+      sortMap = sort!.call(list);
     } else {
-      sortMap = _defaultSort(graph, list);
+      sortMap = _defaultSort(graph);
     }
     list.sort((a, b) {
       num av = sortMap[a] ?? 0;
@@ -101,6 +87,7 @@ class CircularLayout extends GraphLayout {
 
   ///计算半径
   List<num> computeRadius(Graph graph, num width, num height) {
+    var nodes = graph.nodes;
     num startR;
     num endR;
     num rStep;
@@ -125,17 +112,17 @@ class CircularLayout extends GraphLayout {
         endR = startR;
         startR = t;
       }
-      if (graph.nodes.length <= 1) {
+      if (nodes.length <= 1) {
         rStep = 1;
       } else {
-        rStep = (endR - startR) / (graph.nodes.length - 1);
+        rStep = (endR - startR) / (nodes.length - 1);
       }
     }
     return [startR, endR, rStep];
   }
 }
 
-Map<GraphNode, num> _defaultSort(Graph graph, List<GraphNode> list, [int type = 0]) {
+Map<GraphNode, num> _defaultSort(Graph graph, [int type = 0]) {
   ///按照度排列
   Map<GraphNode, Degree> degreeMap = {};
   for (var element in graph.edges) {

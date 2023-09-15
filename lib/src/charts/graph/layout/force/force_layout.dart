@@ -1,7 +1,8 @@
 import 'dart:ui';
 
-import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
+import '../../../../core/index.dart';
+import '../../../../model/string_number.dart';
+import '../../index.dart';
 import 'force_simulation.dart';
 
 class ForceLayout extends GraphLayout {
@@ -26,13 +27,7 @@ class ForceLayout extends GraphLayout {
     this.optPerformance = false,
     super.nodeSpaceFun,
     super.sort,
-    super.workerThread,
-  });
-
-  ForceLayout stop() {
-    _simulation?.stop();
-    return this;
-  }
+  }) : super(workerThread: false);
 
   ForceLayout start() {
     _simulation?.start();
@@ -44,33 +39,35 @@ class ForceLayout extends GraphLayout {
     return this;
   }
 
+  Offset _center = Offset.zero;
+
   @override
-  void onLayout(LayoutType type) {
-    stop();
+  Offset getTranslation() => _center;
+
+  @override
+  void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
+    _center = Offset(
+      center[0].convert(params.width),
+      center[1].convert(params.height),
+    );
     if (_simulation == null) {
-      _simulation = _initSimulation(context, series.graph, width, height);
+      _simulation = _initSimulation(params.context, graph, params.width, params.height);
       _simulation?.addListener(() {
-        if (hasInterrupted) {
-          stop();
-          return;
-        }
         notifyLayoutUpdate();
       });
       _simulation?.onEnd = () {
-        if (hasInterrupted) {
-          stop();
-          return;
-        }
         notifyLayoutEnd();
       };
     }
-    clearInterrupt();
     start();
   }
 
   @override
   void stopLayout() {
-    stop();
+    _simulation?.stop();
+    _simulation?.dispose();
+    _simulation = null;
+    super.stopLayout();
   }
 
   @override
@@ -78,11 +75,6 @@ class ForceLayout extends GraphLayout {
     _simulation?.dispose();
     _simulation = null;
     super.dispose();
-  }
-
-  @override
-  Offset getScroll() {
-    return Offset(center[0].convert(width), center[1].convert(height));
   }
 
   ForceSimulation _initSimulation(Context context, Graph graph, num width, num height) {

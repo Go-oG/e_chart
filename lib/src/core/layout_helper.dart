@@ -67,6 +67,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
       : super(Command.none, equalsObject) {
     _context = context;
     _series = series;
+    _view = view;
   }
 
   ///该构造方法用于在无法马上初始化时使用
@@ -283,7 +284,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     if (offset != null) {
       return offset;
     }
-    return viewNull?.translation??Offset.zero;
+    return viewNull?.translation ?? Offset.zero;
   }
 
   double get translationX => view.translationX;
@@ -474,6 +475,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     }
   }
 
+  ///按照节点的绘制顺序排序
   void sortList(List<N> nodeList) {
     nodeList.sort((a, b) {
       if (a.drawIndex == 0 && b.drawIndex == 0) {
@@ -486,12 +488,20 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     });
   }
 
-  N? findNode(Offset offset) {
+  ///查找节点数据
+  ///如果overlap为 true，那么说明可能会存在重叠的View
+  ///此时我们需要进行更加精确的判断
+  ///父类默认没有实现该方法
+  N? findNode(Offset offset, [bool overlap = false]) {
     var hoveNode = oldHoverNode;
     if (hoveNode != null && hoveNode.contains(offset)) {
       return hoveNode;
     }
-    for (var node in nodeList) {
+
+    ///这里倒序查找是因为当绘制顺序不一致时需要从最后查找
+    var list = nodeList;
+    for (int i = list.length - 1; i >= 0; i--) {
+      var node = list[i];
       if (node.contains(offset)) {
         return node;
       }

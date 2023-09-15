@@ -1,9 +1,10 @@
 import 'dart:ui';
+import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
 
-class GraphNode extends DataNode2<GraphAttr, BaseItemData, ChartSymbol> {
-  GraphNode(BaseItemData data, int dataIndex)
+class GraphNode extends DataNode2<GraphAttr, GraphItemData, ChartSymbol> {
+  GraphNode(GraphItemData data, int dataIndex)
       : super(EmptySymbol.empty, data, dataIndex, 0, GraphAttr(), LabelStyle.empty);
 
   @override
@@ -18,11 +19,11 @@ class GraphNode extends DataNode2<GraphAttr, BaseItemData, ChartSymbol> {
 
   @override
   void updateStyle(Context context, covariant GraphSeries series) {
-    setSymbol(series.getSymbol(context, this), true);
+    setSymbol(series.getSymbol(context, data, dataIndex, size, status), true);
+
   }
 
   ///下面是对Attr的访问封装
-
   double get x => attr.x;
 
   set x(double v) => attr.x = v;
@@ -47,13 +48,16 @@ class GraphNode extends DataNode2<GraphAttr, BaseItemData, ChartSymbol> {
 
   set height(double v) => attr.height = v;
 
-  num get r => attr.size.shortestSide / 2;
+  num get r => m.min(attr.width, attr.height) / 2;
 
-  set r(num v) => attr.size = Size.square(v * 2);
+  set r(num v) => attr.width = attr.height = v * 2;
 
-  set size(Size s) => attr.size = s;
+  set size(Size s) {
+    attr.width = s.width;
+    attr.height = s.height;
+  }
 
-  Size get size => attr.size;
+  Size get size => Size(attr.width, attr.height);
 
   /// 当前X方向速度分量
   double get vx => attr.vx;
@@ -75,6 +79,7 @@ class GraphNode extends DataNode2<GraphAttr, BaseItemData, ChartSymbol> {
   int get index => attr.index;
 
   set index(int v) => attr.index = v;
+
 }
 
 class GraphAttr {
@@ -93,9 +98,6 @@ class GraphAttr {
   ///宽高
   double width = 0;
   double height = 0;
-
-  ///半径
-  Size size = Size.zero;
 
   /// 当前X方向速度分量
   double vx = 0;

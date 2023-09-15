@@ -482,7 +482,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
   }
 
   @override
-  SunburstNode? findNode(Offset offset) {
+  SunburstNode? findNode(Offset offset,[bool overlap=false]) {
     return showRootNode?.find((node, index, startNode) {
       Arc arc = node.attr.arc;
       return arc.contains(offset);

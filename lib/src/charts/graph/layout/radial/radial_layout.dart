@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:math' as m;
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'radia_param.dart';
@@ -56,61 +57,45 @@ class RadialLayout extends GraphLayout {
     super.workerThread = true,
   });
 
-  @override
-  void onLayout(LayoutType type) {
-    if (workerThread) {
-      Future.doWhile(() {
-        runLayout(context, series.graph, width, height);
-        return false;
-      });
-    } else {
-      runLayout(context, series.graph, width, height);
-    }
-  }
+  Offset _center = Offset.zero;
 
-  void runLayout(Context context, Graph graph, num width, num height) {
+  @override
+  void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
+    var width = params.width;
+    var height = params.height;
+    _center = Offset(center[0].convert(width), center[1].convert(height));
+
     var nodes = graph.nodes;
     if (nodes.isEmpty) {
-      notifyLayoutEnd();
       return;
     }
-    LayoutProps props = LayoutProps();
-    props.width = width;
-    props.height = height;
-    props.center = Offset(center[0].convert(width), center[1].convert(height));
+
+    var props = LayoutProps(_center, width, height);
     if (nodes.length == 1) {
       nodes[0].x = props.center.dx;
       nodes[0].y = props.center.dy;
-      notifyLayoutEnd();
       return;
     }
 
     ///使用GridLayout预先布局一次
-    GraphLayout gridLayout = GraphGridLayout(
-      preventOverlap: true,
-      workerThread: false,
-      nodeSpaceFun: nodeSpaceFun,
-    );
-    gridLayout.doLayout(boxBound, globalBoxBound, LayoutType.none);
+    var gridLayout = GraphGridLayout(preventOverlap: true, workerThread: false, nodeSpaceFun: nodeSpaceFun);
+    gridLayout.doLayout(graph, params, LayoutType.none);
 
-    // 计算focusNode和其索引
+    ///计算focusNode和其索引
     GraphNode focusNode = this.focusNode ?? nodes.first;
-    int focusIndex = nodes.indexOf(focusNode);
-    if (focusIndex < 0) {
-      focusIndex = 0;
-    }
+    int focusIndex = m.min(nodes.indexOf(focusNode), 0);
     props.focusIndex = focusIndex;
     props.focusNode = nodes[focusIndex];
 
-    // 计算节点之间的间距
+    /// 计算节点之间的间距
     List<List<double>> adjMatrix = getAdjMatrix(graph, false);
     props.distances = floydWarshall(adjMatrix);
     num maxDistance = _maxToFocus(props.distances, focusIndex);
 
-    //将未连接节点中的第一个节点替换为圆（maxDistance+1）
+    ///将未连接节点中的第一个节点替换为圆（maxDistance+1）
     _handleInfinity(props.distances, focusIndex, maxDistance + 1);
 
-    //从每个节点到focusNode的最短路径距离
+    ///从每个节点到focusNode的最短路径距离
     List<double> focusNodeD = props.distances[focusIndex];
     num semiWidth = width - props.center.dx > props.center.dx ? props.center.dx : width - props.center.dx;
     num semiHeight = height - props.center.dy > props.center.dy ? props.center.dy : height - props.center.dy;
@@ -162,7 +147,7 @@ class RadialLayout extends GraphLayout {
       ///使用的是径向力
       num nodeSizeFunc(GraphNode a) {
         num space = getNodeSpace(a);
-        return a.size.longestSide+space;
+        return a.size.longestSide + space;
       }
 
       var params = RadialParam(
@@ -178,15 +163,13 @@ class RadialLayout extends GraphLayout {
         maxPreventOverlapIteration,
         props.positions.length / 4.5,
       );
-      var force = rp.RadialForce(params);
-      props.positions = force.layout();
+      props.positions = rp.RadialForce(params).layout();
     }
     // 移动节点到中心
     each(props.positions, (p, i) {
       nodes[i].x = p.x + props.center.dx;
       nodes[i].y = p.y + props.center.dy;
     });
-    notifyLayoutEnd();
   }
 
   void runStep(LayoutProps props, num param) {
@@ -341,4 +324,6 @@ class LayoutProps {
   num width = 0;
   num height = 0;
   Offset center = Offset.zero;
+
+  LayoutProps(this.center, this.width, this.height);
 }

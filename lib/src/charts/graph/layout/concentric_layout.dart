@@ -53,31 +53,22 @@ class ConcentricLayout extends GraphLayout {
     }
   }
 
-  @override
-  void onLayout(LayoutType type) {
-    stopLayout();
-    clearInterrupt();
-    if (workerThread) {
-      Future.doWhile(() {
-        runLayout(context, series.graph, width, height);
-        return false;
-      });
-    } else {
-      runLayout(context, series.graph, width, height);
-    }
-  }
+  Offset _center = Offset.zero;
 
-  void runLayout(Context context, Graph graph, num width, num height) {
+  @override
+  void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
+    _center = Offset(
+      center[0].convert(params.width),
+      center[1].convert(params.height),
+    );
     if (graph.nodes.isEmpty) {
-      notifyLayoutEnd();
       return;
     }
     List<GraphNode> nodes = graph.nodes;
     int n = graph.nodes.length;
-    Offset center = Offset(this.center[0].convert(width), this.center[1].convert(height));
     if (n == 1) {
-      nodes[0].x = center.dx;
-      nodes[0].y = center.dy;
+      nodes[0].x = _center.dx;
+      nodes[0].y = _center.dy;
       notifyLayoutEnd();
       return;
     }
@@ -90,14 +81,12 @@ class ConcentricLayout extends GraphLayout {
     ///计算每层最大半径的节点
     List<GraphNode> maxRadiusList = [];
     for (int i = 1; i < levelList.length; i++) {
-      checkInterrupt();
       maxRadiusList.add(maxBy<GraphNode>(levelList[i], (p0) => p0.r));
     }
     num maxRadius = maxBy2<GraphNode>(maxRadiusList, (p0) => p0.r);
 
     ///计算每个分层的半径大小
     for (int i = 0; i < levelList.length; i++) {
-      checkInterrupt();
       var level = levelList[i];
       LevelInfo info = LevelInfo();
       levelInfoList.add(info);
@@ -119,11 +108,10 @@ class ConcentricLayout extends GraphLayout {
 
     ///布局
     each(levelList, (level, i) {
-      checkInterrupt();
       if (i == 0) {
         var node = level.first;
-        node.x = center.dx;
-        node.y = center.dy;
+        node.x = _center.dx;
+        node.y = _center.dy;
         return;
       }
 
@@ -133,15 +121,14 @@ class ConcentricLayout extends GraphLayout {
       num angleOffset = startAngle;
 
       each(level, (node, j) {
-        checkInterrupt();
-        Offset nc = circlePoint(rr, angleOffset, center);
+        Offset nc = circlePoint(rr, angleOffset, _center);
         if (preventOverlap && j != 0) {
           Offset pre = Offset(level[j - 1].x, level[j - 1].y);
           num sumRadius = node.r + level[j - 1].r + minNodeSpacing;
           int c = max([maxIterations, 1]).toInt();
           while (nc.distance2(pre) < sumRadius && c > 0) {
             angleOffset += (sweepAngle < 0) ? -1 : 1;
-            nc = circlePoint(rr, angleOffset, center);
+            nc = circlePoint(rr, angleOffset, _center);
             c -= 1;
           }
         }
@@ -150,20 +137,12 @@ class ConcentricLayout extends GraphLayout {
         node.y = nc.dy;
       });
     });
-    notifyLayoutEnd();
-  }
-
-  @override
-  void stopLayout() {
-    super.stopLayout();
-    interrupt();
   }
 
   ///对数据分层
   List<List<GraphNode>> levelData(Graph graph) {
     Map<GraphNode, num> weightMap = {};
     for (var c in graph.nodes) {
-      checkInterrupt();
       num w = weightFun.call(c);
       if (w < 0) {
         throw FlutterError('权重必须>=0');
@@ -173,7 +152,6 @@ class ConcentricLayout extends GraphLayout {
 
     List<GraphNode> nodes = List.from(graph.nodes);
     nodes.sort((a, b) {
-      checkInterrupt();
       return weightMap[b]!.compareTo(weightMap[a]!);
     });
 
@@ -187,7 +165,6 @@ class ConcentricLayout extends GraphLayout {
     List<List<GraphNode>> rl = [];
     rl.add([nodes.removeAt(0)]);
     for (var c in nodes) {
-      checkInterrupt();
       if (rl.length == 1) {
         rl.add([c]);
         continue;

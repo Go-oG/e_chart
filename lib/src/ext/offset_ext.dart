@@ -87,6 +87,10 @@ extension OffsetExt on Offset {
   Offset get invert {
     return Offset(-dx, -dy);
   }
+
+  Offset get abs {
+    return Offset(dx.abs(), dy.abs());
+  }
 }
 
 ///给定一个半径和圆心计算给定角度对应的位置坐标

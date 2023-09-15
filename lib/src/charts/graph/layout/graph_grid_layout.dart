@@ -31,28 +31,15 @@ class GraphGridLayout extends GraphLayout {
     super.workerThread,
   });
 
-  ///============布局使用的数值======
-
   @override
-  void onLayout(LayoutType type) {
-    stopLayout();
-    clearInterrupt();
-    if (workerThread) {
-      Future.doWhile(() {
-        runLayout(context, series.graph, width, height);
-        return false;
-      });
-    } else {
-      runLayout(context, series.graph, width, height);
-    }
-  }
-
-  void runLayout(Context context, Graph graph, num width, num height) {
+  void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
     int nodeCount = graph.nodes.length;
     if (nodeCount == 0) {
-      notifyLayoutEnd();
       return;
     }
+    var width = params.width;
+    var height = params.height;
+
     LayoutProps props = LayoutProps();
     props.begin = Offset(begin[0].convert(width), begin[1].convert(height));
     if (nodeCount == 1) {
@@ -85,7 +72,6 @@ class GraphGridLayout extends GraphLayout {
       }
     } else {
       while (props.cols * props.rows < props.cells) {
-        checkInterrupt();
         int sm = small(props, null)!;
         int lg = large(props, null)!;
         if ((lg + 1) * sm >= props.cells) {
@@ -108,8 +94,7 @@ class GraphGridLayout extends GraphLayout {
     if (preventOverlap || nodeSpaceFun != null) {
       Fun2<GraphNode, num> spaceFun = nodeSpaceFun ?? (a) => 10;
       for (var node in layoutNodes) {
-        checkInterrupt();
-        Size res =node.size;
+        Size res = node.size;
         num nodeW;
         num nodeH;
         nodeW = res.width;
@@ -127,7 +112,6 @@ class GraphGridLayout extends GraphLayout {
     props.id2manPos = {};
 
     for (var node in layoutNodes) {
-      checkInterrupt();
       m.Point<int>? rcPos;
 
       ///固定位置处理
@@ -142,12 +126,6 @@ class GraphGridLayout extends GraphLayout {
       computePosition(props, node);
     }
     notifyLayoutEnd();
-  }
-
-  @override
-  void stopLayout() {
-    super.stopLayout();
-    interrupt();
   }
 
   int? small(LayoutProps props, int? val) {
@@ -244,6 +222,7 @@ class GraphGridLayout extends GraphLayout {
     props.rows = m.max(props.rows, 1);
     props.cols = m.max(props.cols, 1);
   }
+
 }
 
 class InnerPos {

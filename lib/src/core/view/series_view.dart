@@ -43,6 +43,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   void onSeriesConfigChangeCommand(covariant Command c) {
     _layoutHelper = buildLayoutHelper(_layoutHelper);
     super.onSeriesConfigChangeCommand(c);
+
   }
 
   @override

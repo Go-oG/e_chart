@@ -1,44 +1,37 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class GraphView extends SeriesView<GraphSeries, GraphLayout> {
+class GraphView extends SeriesView<GraphSeries, GraphHelper> {
   GraphView(super.series);
 
   @override
   void onDraw(CCanvas canvas) {
-    Offset offset = series.layout.getScroll();
+    var graph = layoutHelper.graph;
+    Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    for (var edge in series.graph.edges) {
-      var source = edge.source;
-      var target = edge.target;
-      LineStyle? style = series.lineFun?.call(source, target);
-      if (style == null) {
-        continue;
-      }
-      Line line;
-      if (edge.points.length <= 2) {
-        line = Line([Offset(source.x, source.y), Offset(target.x, target.y)]);
-      } else {
-        line = Line(edge.points);
-      }
-      style.drawPath(canvas, mPaint, line.toPath(), drawDash: true);
+    for (var edge in graph.edges) {
+      edge.onDraw(canvas, mPaint);
     }
-    for (var node in series.graph.nodes) {
+    for (var node in layoutHelper.nodeList) {
       node.onDraw(canvas, mPaint);
     }
     canvas.restore();
   }
 
   @override
-  GraphLayout buildLayoutHelper(var oldHelper) {
-    if (oldHelper != series.layout) {
-      oldHelper?.clearListener();
-      oldHelper?.clearRef();
+  GraphHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearListener();
+    oldHelper?.clearRef();
+    if (oldHelper != null) {
+      oldHelper.context = context;
+      oldHelper.view = this;
+      oldHelper.series = series;
+      return oldHelper;
     }
-    series.layout.context = context;
-    series.layout.series = series;
-    series.layout.view = this;
-    return series.layout;
+    return GraphHelper(context, this, series);
   }
+
+  @override
+  bool get enableDrag => series.enableDrag;
 }
