@@ -14,7 +14,7 @@ class TextDrawInfo {
   final num minWidth;
   final num maxHeight;
   final num rotate; //文本相对于水平旋转的角度
-  final num scaleFactor; //文本缩放参数
+  num scaleFactor; //文本缩放参数
   final TextAlign textAlign;
   final TextDirection textDirection;
   final int? maxLines;
@@ -81,27 +81,19 @@ class TextDrawInfo {
 
   TextPainter toPainter(String text, TextStyle textStyle, [Set<ViewState>? states]) {
     return textStyle.toPainter(text,
-        ellipsis: ellipsis,
-        maxLines: maxLines,
-        textAlign: textAlign,
-        textDirection: textDirection,
-        states: states);
+        ellipsis: ellipsis, maxLines: maxLines, textAlign: textAlign, textDirection: textDirection, states: states);
   }
 
   TextPainter toPainter2(TextSpan text) {
     return TextPainter(
-        text: text,
-        textAlign: textAlign,
-        textDirection: textDirection,
-        maxLines: maxLines,
-        ellipsis: ellipsis);
+        text: text, textAlign: textAlign, textDirection: textDirection, maxLines: maxLines, ellipsis: ellipsis);
   }
 
-  static TextDrawInfo fromRect(Rect rect, Alignment align,[bool inside=true]) {
+  static TextDrawInfo fromRect(Rect rect, Alignment align, [bool inside = true]) {
     return fromAlign(rect.topLeft, rect.topRight, rect.bottomLeft, rect.bottomRight, align);
   }
 
-  static TextDrawInfo fromAlign(Offset lt, Offset rt, Offset lb, Offset rb, Alignment align,[bool inside=true]) {
+  static TextDrawInfo fromAlign(Offset lt, Offset rt, Offset lb, Offset rb, Alignment align, [bool inside = true]) {
     Offset p0 = lt;
     Offset p1 = rt;
     Offset p2 = rb;

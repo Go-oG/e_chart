@@ -20,7 +20,13 @@ class FunnelView extends SeriesView<FunnelSeries, FunnelHelper> {
 
   @override
   FunnelHelper buildLayoutHelper(var oldHelper) {
-    oldHelper?.dispose();
+    oldHelper?.clearRef();
+    if (oldHelper != null) {
+      oldHelper.context = context;
+      oldHelper.view = this;
+      oldHelper.series = series;
+      return oldHelper;
+    }
     return FunnelHelper(context, this, series);
   }
 }

@@ -3,17 +3,17 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'funnel_node.dart';
 
-//漏斗图布局计算相关
+///漏斗图布局计算相关
 class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
   num maxValue = 0;
 
-  FunnelHelper(super.context,super.view, super.series);
+  FunnelHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
     oldHoverNode = null;
-    List<FunnelNode> oldList = nodeList;
-    List<FunnelNode> newList = convertData(series.dataList);
+    var oldList = nodeList;
+    var newList = convertData(series.dataList);
     layoutNode(newList);
     var an = DiffUtil.diffLayout<List<Offset>, ItemData, FunnelNode>(
       getAnimation(type),
@@ -215,25 +215,21 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
 
   @override
   void onRunUpdateAnimation(var list, var animation) {
-    List<ChartTween> tl = [];
-    for (var diff in list) {
-      var node = diff.node;
-      var startAttr = diff.startAttr;
-      var endAttr = diff.endAttr;
-      var tween2 = ChartDoubleTween.fromValue(0, 1, option: animation);
-      var s = startAttr.labelConfig?.scaleFactor ?? 1;
-      var e = diff.old ? 1 : 1.1;
-      tween2.addListener(() {
-        var t = tween2.value;
+    var tween2 = ChartDoubleTween(option: animation);
+    tween2.addListener(() {
+      var t = tween2.value;
+      for (var diff in list) {
+        var node = diff.node;
+        var startAttr = diff.startAttr;
+        var endAttr = diff.endAttr;
+        var s = startAttr.labelConfig?.scaleFactor ?? 1;
+        var e = diff.old ? 1 : 1.1;
         node.itemStyle = AreaStyle.lerp(startAttr.itemStyle, endAttr.itemStyle, t);
-        node.labelConfig = node.labelConfig?.copyWith(scaleFactor: lerpDouble(s, e, t)!);
-        notifyLayoutUpdate();
-      });
-      tl.add(tween2);
-    }
-    for (var tw in tl) {
-      tw.start(context, true);
-    }
+        node.labelConfig?.scaleFactor = lerpDouble(s, e, t)!;
+      }
+      notifyLayoutUpdate();
+    });
+    tween2.start(context, true);
   }
 }
 

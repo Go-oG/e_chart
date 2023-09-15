@@ -283,7 +283,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     if (offset != null) {
       return offset;
     }
-    return view.translation;
+    return viewNull?.translation??Offset.zero;
   }
 
   double get translationX => view.translationX;
