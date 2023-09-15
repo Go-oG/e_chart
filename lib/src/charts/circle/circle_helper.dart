@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class CircleHelper extends LayoutHelper2<CircleNode, CircleSeries> {
-  CircleHelper(super.context, super.series);
+  CircleHelper(super.context, super.view, super.series);
 
   Offset center = Offset.zero;
   double ir = 0;

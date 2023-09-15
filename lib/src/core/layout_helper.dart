@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/cupertino.dart';
 
 ///用于辅助布局相关的抽象类
 ///其包含了事件分发和触摸事件处理
@@ -34,22 +35,36 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   S? get seriesNull => _series;
 
+  ChartView? _view;
+
+  ChartView get view => _view!;
+
+  ChartView? get viewNull => _view;
+
+  set view(ChartView? v) => _view = v;
+
+  void clearRef() {
+    clearListener();
+    _series = null;
+    _context = null;
+    _view = null;
+  }
+
   ///布局边界
   Rect boxBound = Rect.zero;
   Rect globalBoxBound = Rect.zero;
 
   ///标识是否在运行动画
-  bool inAnimation=false;
+  bool inAnimation = false;
+
   ///控制在动画期间是否允许手势
-  bool allowGestureInAnimation=false;
+  bool allowGestureInAnimation = false;
 
   ///手势相关的中间量
 
-  ///记录平移量(区分正负)
-  ChartOffset translation = ChartOffset(0, 0);
-
   ///构造函数
-  LayoutHelper(Context context, S series, {bool equalsObject = false}) : super(Command.none, equalsObject) {
+  LayoutHelper(Context context, ChartView view, S series, {bool equalsObject = false})
+      : super(Command.none, equalsObject) {
     _context = context;
     _series = series;
   }
@@ -268,18 +283,18 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     if (offset != null) {
       return offset;
     }
-    return translation.toOffset();
+    return view.translation;
   }
 
-  double get translationX => translation.x.toDouble();
+  double get translationX => view.translationX;
 
-  set translationX(num x) => translation.x = x;
+  set translationX(num x) => view.translationX = x.toDouble();
 
-  double get translationY => translation.y.toDouble();
+  double get translationY => view.translationY;
 
-  set translationY(num y) => translation.y = y;
+  set translationY(num y) => view.translationY = y.toDouble();
 
-  void resetTranslation() => translation.x = translation.y = 0;
+  void resetTranslation() => view.translationX = view.translationY = 0;
 
   ///获取裁剪路径
   Rect getClipRect(Direction direction, [double animationPercent = 1]) {
@@ -319,18 +334,32 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     }
     return null;
   }
+
+  @override
+  void dispose() {
+    _view = null;
+    _series = null;
+    _context = null;
+    super.dispose();
+  }
+
+  ///子类可以覆写该方法实现部分绘制
+  bool needDraw<T>(T node) {
+    return true;
+  }
 }
 
 abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends LayoutHelper<S> {
   List<N> nodeList = [];
 
-  LayoutHelper2(super.context, super.series);
+  LayoutHelper2(super.context, super.view, super.series);
 
   LayoutHelper2.lazy() : super.lazy();
 
   @override
   void onDragMove(Offset offset, Offset diff) {
-    translation.add(diff);
+    view.translationX += diff.dx;
+    view.translationY += diff.dy;
     notifyLayoutUpdate();
   }
 

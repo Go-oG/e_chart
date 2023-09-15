@@ -23,16 +23,21 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
     Matrix4 matrix4 = Matrix4.compose(Vector3(tx, ty, 0), Quaternion.identity(), Vector3(scale, scale, 1));
     canvas.transform(matrix4.storage);
     root.each((node, p1, p2) {
-      node.onDraw(canvas, mPaint);
+      if (layoutHelper.needDraw(node)) {
+        node.onDraw(canvas, mPaint);
+      }
       return false;
     });
     canvas.restore();
 
     ///这里分开绘制是为了优化当存在textScaleFactory时文字高度计算有问题
     root.each((node, p1, p2) {
+      if (!layoutHelper.needDraw(node)) {
+        return false;
+      }
       var label = node.data.label;
       if (label != null && label.isNotEmpty) {
-        LabelStyle? labelStyle = series.getLabelStyle(context, node);
+        var labelStyle = series.getLabelStyle(context, node);
         if (labelStyle == null || !labelStyle.show) {
           return false;
         }
@@ -65,7 +70,8 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
   }
 
   @override
-  PackHelper buildLayoutHelper() {
-    return PackHelper(context, series);
+  PackHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
+    return PackHelper(context, this, series);
   }
 }

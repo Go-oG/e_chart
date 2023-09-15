@@ -6,7 +6,7 @@ import 'package:flutter/animation.dart';
 ///帮助在极坐标系中进行布局
 abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends StackHelper<T, P, S> {
-  PolarHelper(super.context, super.series);
+  PolarHelper(super.context, super.view, super.series);
 
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
@@ -197,6 +197,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   Offset getTranslation() {
     return findPolarCoord().translation;
   }
+
   @override
   Offset getMaxTranslation() {
     return findPolarCoord().getMaxScroll();

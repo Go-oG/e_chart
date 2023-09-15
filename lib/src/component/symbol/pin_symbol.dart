@@ -6,12 +6,12 @@ import 'package:e_chart/e_chart.dart';
 ///TODO 后面优化(当前不可用)
 class PinSymbol extends ChartSymbol {
   final double r;
-  final num rotate;
+  final num fixRotate;
   late final Path path;
 
   PinSymbol({
     this.r = 8,
-    this.rotate = 0,
+    this.fixRotate = 0,
     super.borderStyle,
     super.itemStyle,
   }) {
@@ -27,7 +27,7 @@ class PinSymbol extends ChartSymbol {
       return;
     }
     canvas.save();
-    canvas.rotate(rotate * pi / 180);
+    canvas.rotate(fixRotate * pi / 180);
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path, needSplit: false, drawDash: true);
     canvas.restore();
@@ -57,12 +57,12 @@ class PinSymbol extends ChartSymbol {
   @override
   ChartSymbol lerp(covariant PinSymbol end, double t) {
     var r1 = lerpDouble(r, end.r, t)!;
-    var rotate = lerpDouble(this.rotate, end.rotate, t)!;
+    var rotate = lerpDouble(fixRotate, end.fixRotate, t)!;
     return PinSymbol(
       r: r1,
-      rotate: rotate,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t)??AreaStyle.empty,
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t)??LineStyle.empty,
+      fixRotate: rotate,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
     );
   }
 
@@ -84,10 +84,10 @@ class PinSymbol extends ChartSymbol {
         r1 *= 0.5;
       }
     }
-    var rotate = attr.rotate ?? this.rotate;
+    var rotate = attr.rotate ?? fixRotate;
 
     return PinSymbol(
-      rotate: rotate,
+      fixRotate: rotate,
       r: r1,
       itemStyle: itemStyle,
       borderStyle: borderStyle,

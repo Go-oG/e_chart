@@ -30,7 +30,7 @@ export 'radar/radar_series.dart';
 
 export 'graph/index.dart';
 
-export 'hexbin/hex_bin_helper.dart' hide Orientation;
+export 'hexbin/layout/hex_bin_layout.dart';
 export 'hexbin/layout/hex_hexagons_layout.dart';
 export 'hexbin/layout/hex_parallel_layout.dart';
 export 'hexbin/layout/hex_rect_layout.dart';
@@ -69,4 +69,3 @@ export 'treemap/layout/slice_dice.dart';
 export 'treemap/layout/square.dart' hide Row;
 export 'treemap/treemap_node.dart';
 export 'treemap/treemap_series.dart';
-

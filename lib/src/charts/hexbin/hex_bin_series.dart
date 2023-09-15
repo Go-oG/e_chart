@@ -1,20 +1,31 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/hexbin/hex_bin_view.dart';
+import 'package:e_chart/src/charts/hexbin/layout/hex_bin_layout.dart';
 
 class HexbinSeries extends RectSeries {
   HexbinLayout layout = HexagonsLayout();
   List<ItemData> data;
+  List<SNumber> center;
+
+  ///是否为平角在上
+  bool flat;
+
+  ///形状的大小(由外接圆半径描述)
+  num radius;
+
   LineStyle? border;
   Fun3<ItemData, Set<ViewState>, LineStyle?>? borderFun;
   AreaStyle? itemStyle;
   Fun3<ItemData, Set<ViewState>, AreaStyle?>? itemStyleFun;
   LabelStyle? label;
   Fun3<ItemData, Set<ViewState>, LabelStyle>? labelStyleFun;
-
   bool clock = false;
 
   HexbinSeries(
     this.data, {
+    this.center = const [SNumber.percent(50), SNumber.percent(50)],
+    this.flat = true,
+    this.radius = 24,
     this.border,
     this.borderFun,
     this.itemStyle,

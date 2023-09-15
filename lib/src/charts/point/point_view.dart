@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/point/point_helper.dart';
-import 'package:flutter/material.dart';
 
 class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild, CalendarChild, GridChild {
   PointView(super.series);
@@ -69,7 +68,8 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   }
 
   @override
-  PointHelper buildLayoutHelper() {
-    return PointHelper(context, series);
+  PointHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
+    return PointHelper(context,this, series);
   }
 }

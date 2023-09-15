@@ -8,7 +8,9 @@ import 'package:flutter/rendering.dart';
 ///除此之外，每个SeriesView 默认添加一个Layer
 abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends GestureView {
   final T series;
-  late L layoutHelper;
+  L? _layoutHelper;
+
+  L get layoutHelper => _layoutHelper!;
 
   SeriesView(this.series) {
     if (series is RectSeries) {
@@ -19,16 +21,17 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   @override
   void onCreate() {
     super.onCreate();
-    layoutHelper = buildLayoutHelper();
+    _layoutHelper = buildLayoutHelper(_layoutHelper);
   }
 
   @override
   void onDestroy() {
+    _layoutHelper?.dispose();
     series.dispose();
     super.onDestroy();
   }
 
-  L buildLayoutHelper();
+  L buildLayoutHelper(L? oldHelper);
 
   @override
   void onUpdateDataCommand(covariant Command c) {
@@ -38,7 +41,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   @override
   void onSeriesConfigChangeCommand(covariant Command c) {
-    layoutHelper = buildLayoutHelper();
+    _layoutHelper = buildLayoutHelper(_layoutHelper);
     super.onSeriesConfigChangeCommand(c);
   }
 

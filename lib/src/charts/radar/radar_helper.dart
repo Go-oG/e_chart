@@ -8,7 +8,7 @@ import 'radar_node.dart';
 class RadarHelper extends LayoutHelper<RadarSeries> {
   List<RadarGroupNode> _groupNodeList = [];
 
-  RadarHelper(super.context, super.series);
+  RadarHelper(super.context,super.view, super.series);
 
   List<RadarGroupNode> get groupNodeList => _groupNodeList;
 

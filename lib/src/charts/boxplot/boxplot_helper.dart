@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries> {
-  BoxplotHelper(super.context, super.series);
+  BoxplotHelper(super.context, super.view, super.series);
 
   static const String _borderListK = "borderList";
   static const String _boxRectK = "boxRectK";
@@ -53,7 +53,8 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  StackAnimationNode onCreateAnimatorNode(SingleNode<BoxplotData, BoxplotGroup> node, DiffType diffType, LayoutType type) {
+  StackAnimationNode onCreateAnimatorNode(
+      SingleNode<BoxplotData, BoxplotGroup> node, DiffType diffType, LayoutType type) {
     if (diffType == DiffType.update) {
       var an = StackAnimationNode();
       an.extSetAll(node.extGetAll());

@@ -34,7 +34,8 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
   }
 
   @override
-  BoxplotHelper buildLayoutHelper() {
-    return BoxplotHelper(context, series);
+  BoxplotHelper buildLayoutHelper(BoxplotHelper? oldHelper) {
+    oldHelper?.dispose();
+    return BoxplotHelper(context, this, series);
   }
 }

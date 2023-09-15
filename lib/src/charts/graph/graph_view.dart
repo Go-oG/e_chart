@@ -2,8 +2,6 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class GraphView extends SeriesView<GraphSeries, GraphLayout> {
-  GraphLayout? _oldLayout;
-
   GraphView(super.series);
 
   @override
@@ -33,14 +31,14 @@ class GraphView extends SeriesView<GraphSeries, GraphLayout> {
   }
 
   @override
-  GraphLayout buildLayoutHelper() {
-    if (_oldLayout != series.layout) {
-      var l = _oldLayout;
-      l?.clearListener();
+  GraphLayout buildLayoutHelper(var oldHelper) {
+    if (oldHelper != series.layout) {
+      oldHelper?.clearListener();
+      oldHelper?.clearRef();
     }
     series.layout.context = context;
     series.layout.series = series;
-    _oldLayout = series.layout;
+    series.layout.view = this;
     return series.layout;
   }
 }

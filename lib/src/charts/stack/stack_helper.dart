@@ -25,7 +25,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   List<MarkLineNode> markLineList = [];
 
-  StackHelper(super.context, super.series);
+  StackHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {

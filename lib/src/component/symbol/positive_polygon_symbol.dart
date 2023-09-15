@@ -6,20 +6,20 @@ class PositiveSymbol extends ChartSymbol {
   static final empty = PositiveSymbol(count: 0, r: 0);
   final num r;
   final int count;
-  final num rotate;
+  final num fixRotate;
   late final Path path;
 
   PositiveSymbol({
     this.count = 3,
     this.r = 8,
-    this.rotate = 0,
+    this.fixRotate = 0,
     super.borderStyle,
     super.itemStyle,
   }) {
     if (count <= 0 || r <= 0) {
       path = Path();
     } else {
-      PositiveShape shape = PositiveShape(center: Offset.zero, r: r, count: count, angleOffset: rotate);
+      PositiveShape shape = PositiveShape(center: Offset.zero, r: r, count: count, angleOffset: fixRotate);
       path = shape.toPath();
     }
   }
@@ -54,9 +54,9 @@ class PositiveSymbol extends ChartSymbol {
   PositiveSymbol lerp(covariant PositiveSymbol end, double t) {
     var r = lerpDouble(this.r, end.r, t)!;
     var c = lerpInt(count, end.count, t);
-    var ro = lerpDouble(rotate, end.rotate, t)!;
+    var ro = lerpDouble(fixRotate, end.fixRotate, t)!;
     return PositiveSymbol(
-      rotate: ro,
+      fixRotate: ro,
       r: r,
       count: c,
       itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ?? AreaStyle.empty,
@@ -84,7 +84,7 @@ class PositiveSymbol extends ChartSymbol {
     }
 
     return PositiveSymbol(
-      rotate: attr.rotate ?? rotate,
+      fixRotate: attr.rotate ?? fixRotate,
       r: r1,
       count: attr.borderCount ?? count,
       itemStyle: itemStyle,

@@ -9,7 +9,12 @@ abstract class ChartSymbol {
 
   AreaStyle itemStyle;
   LineStyle borderStyle;
+
+  ///附加的缩放参数
   double scale = 1;
+
+  ///附加的旋转参数(单位为角度)
+  double rotate = 0;
 
   ChartSymbol({this.itemStyle = AreaStyle.empty, this.borderStyle = LineStyle.empty});
 
@@ -19,6 +24,7 @@ abstract class ChartSymbol {
     }
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
+    canvas.rotate(rotate*Constants.angleUnit);
     canvas.scale(scale);
     onDraw(canvas, paint);
     canvas.restore();

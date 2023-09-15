@@ -6,7 +6,7 @@ import 'parallel_node.dart';
 class ParallelHelper extends LayoutHelper<ParallelSeries> {
   List<ParallelNode> nodeList = [];
 
-  ParallelHelper(super.context, super.series);
+  ParallelHelper(super.context,super.view, super.series);
 
   double animationProcess = 1;
 

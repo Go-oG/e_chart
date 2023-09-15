@@ -220,13 +220,14 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   @override
-  StackHelper<StackItemData, LineGroupData, LineSeries> buildLayoutHelper() {
+  StackHelper<StackItemData, LineGroupData, LineSeries> buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
     if (series.coordType == CoordType.polar) {
-      var h = LinePolarHelper(context, series);
+      var h = LinePolarHelper(context, this, series);
       helper = h;
       return h;
     } else {
-      var h = LineGridHelper(context, series);
+      var h = LineGridHelper(context, this, series);
       helper = h;
       return h;
     }

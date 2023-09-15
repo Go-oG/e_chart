@@ -17,7 +17,7 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
     canvas.clipRect(Rect.fromLTWH(of.dx.abs() == 0 ? -10 : 0, 0, w, height));
     canvas.translate(of.dx, of.dy);
     each(layoutHelper.showNodeMap.values, (node, index) {
-      var data=node.originData;
+      var data = node.originData;
       if (data == null) {
         return;
       }
@@ -39,8 +39,9 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
   }
 
   @override
-  CandlestickHelper buildLayoutHelper() {
-    return CandlestickHelper(context, series);
+  CandlestickHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.dispose();
+    return CandlestickHelper(context, this, series);
   }
 
   @override

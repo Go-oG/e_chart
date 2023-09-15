@@ -2,6 +2,8 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
+import 'hex_bin_layout.dart';
+
 class HexagonsLayout extends HexbinLayout {
   int ringStartIndex;
   bool clockwise;
@@ -9,17 +11,15 @@ class HexagonsLayout extends HexbinLayout {
   HexagonsLayout({
     this.ringStartIndex = 4,
     this.clockwise = true,
-    super.center,
-    super.flat,
-    super.radius,
   }) {
     if (ringStartIndex < 0 || ringStartIndex >= 6) {
-      throw FlutterError('ringStartIndex must  >= 0 && < 6');
+      throw ChartError('ringStartIndex must  >= 0 && < 6');
     }
   }
 
   @override
-  void onLayout2(List<HexbinNode> data, LayoutType type) {
+  void onLayout(List<HexbinNode> data, LayoutType type,HexbinLayoutParams params) {
+
     int level = computeMinLevel(data.length);
     List<Hex> hexList = hexagons(level);
     each(data, (node, i) {

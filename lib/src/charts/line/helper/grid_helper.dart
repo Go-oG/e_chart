@@ -8,7 +8,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   List<LineNode> _lineList = [];
   List<LineNode>? _cacheLineList;
 
-  LineGridHelper(super.context, super.series);
+  LineGridHelper(super.context,super.view, super.series);
 
   List<LineNode> get lineList => _lineList;
 

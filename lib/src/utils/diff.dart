@@ -181,23 +181,31 @@ class DiffUtil {
 
     Map<dynamic, N> removeSet = {};
     Map<dynamic, N> addSet = {};
-    Map<dynamic, N> updateSet = {};
+
+    Map<dynamic, N> oldUpdateSet = {};
+    Map<dynamic, N> newUpdateSet = {};
+
     for (var n in oldList) {
       dynamic key = n.data;
       if (newSet.contains(key)) {
-        updateSet[key] = n;
+        oldUpdateSet[key] = n;
       } else {
         removeSet[key] = n;
       }
     }
+
     for (var n in newList) {
       dynamic key = n.data;
       if (oldSet.contains(key)) {
-        updateSet[key] = n;
+        newUpdateSet[key] = n;
       } else {
         addSet[key] = n;
       }
     }
+    if (oldUpdateSet.length != newUpdateSet.length) {
+      throw ChartError('状态异常');
+    }
+
 
     Map<dynamic, Map<String, dynamic>> startMap = {};
     Map<dynamic, Map<String, dynamic>> endMap = {};
@@ -205,97 +213,29 @@ class DiffUtil {
       startMap[key] = startFun.call(value, DiffType.add);
       endMap[key] = endFun.call(value, DiffType.add);
     });
-    updateSet.forEach((key, value) {
+
+    oldUpdateSet.forEach((key, value) {
       startMap[key] = startFun.call(value, DiffType.update);
+    });
+
+    newUpdateSet.forEach((key, value) {
       endMap[key] = endFun.call(value, DiffType.update);
     });
+
     removeSet.forEach((key, value) {
       startMap[key] = startFun.call(value, DiffType.remove);
       endMap[key] = endFun.call(value, DiffType.remove);
     });
 
-    final List<N> resultList = [...removeSet.values, ...addSet.values, ...updateSet.values];
-    final List<N> endList = [...addSet.values, ...updateSet.values];
+    final List<N> resultList = [...removeSet.values, ...addSet.values, ...newUpdateSet.values];
+    final List<N> endList = [...addSet.values, ...newUpdateSet.values];
 
     List<TweenWrap> tweenList = [];
-
-    ChartTween? startTween;
-    ChartTween? endTween;
-    int endTime = 0;
 
     bool needCallAdd = false;
     bool needCallRemove = false;
     bool needCallUpdate = false;
-
-    if (addSet.isNotEmpty) {
-      if (attrs.check(LayoutType.layout, startMap.length)) {
-        var addTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
-        addTween.addListener(() {
-          double t = addTween.value;
-          addSet.forEach((key, value) {
-            var s = startMap[key]!;
-            var e = endMap[key]!;
-            lerpFun.call(value, s, e, t, DiffType.add);
-          });
-          updateCall.call(resultList);
-        });
-        tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
-        startTween = addTween;
-        endTween = addTween;
-        endTime = attrs.duration.inMilliseconds;
-      } else {
-        needCallAdd = true;
-      }
-    }
-
-    if (removeSet.isNotEmpty) {
-      if (attrs.check(LayoutType.layout, startMap.length)) {
-        var removeTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
-        removeTween.addListener(() {
-          double t = removeTween.value;
-          removeSet.forEach((key, value) {
-            var s = startMap[key]!;
-            var e = endMap[key]!;
-            lerpFun.call(value, s, e, t, DiffType.remove);
-          });
-          updateCall.call(resultList);
-        });
-        tweenList.add(TweenWrap(removeTween, TweenWrap.removeStatus));
-        startTween ??= removeTween;
-        endTween ??= removeTween;
-        endTime = attrs.duration.inMilliseconds;
-      } else {
-        needCallRemove = true;
-      }
-    }
-
-    if (updateSet.isNotEmpty) {
-      if (attrs.check(LayoutType.update, startMap.length)) {
-        var updateTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
-        updateTween.addListener(() {
-          double t = updateTween.value;
-          updateSet.forEach((key, value) {
-            var s = startMap[key]!;
-            var e = endMap[key]!;
-            lerpFun.call(value, s, e, t, DiffType.update);
-          });
-          updateCall.call(resultList);
-        });
-        tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
-        startTween ??= updateTween;
-        if (endTween != null) {
-          if (attrs.updateDuration.inMilliseconds > endTime) {
-            endTween = updateTween;
-            endTime = attrs.updateDuration.inMilliseconds;
-          }
-        } else {
-          endTween = updateTween;
-          endTime = attrs.updateDuration.inMilliseconds;
-        }
-      } else {
-        needCallUpdate = true;
-      }
-    }
+    int endCount = 0;
 
     void innerRun() {
       if (needCallAdd) {
@@ -313,11 +253,85 @@ class DiffUtil {
         });
       }
       if (needCallUpdate) {
-        updateSet.forEach((key, value) {
+        newUpdateSet.forEach((key, value) {
           var s = startMap[key]!;
           var e = endMap[key]!;
           lerpFun.call(value, s, e, 1, DiffType.update);
         });
+      }
+    }
+
+    void handleEnd() {
+      if (endCount >= tweenList.length && tweenList.isNotEmpty) {
+        innerRun();
+        updateCall.call(endList);
+        onEnd?.call();
+      }
+    }
+
+    if (addSet.isNotEmpty) {
+      if (attrs.check(LayoutType.layout, startMap.length)) {
+        var addTween = ChartDoubleTween(option: attrs);
+        addTween.addListener(() {
+          double t = addTween.value;
+          addSet.forEach((key, value) {
+            var s = startMap[key]!;
+            var e = endMap[key]!;
+            lerpFun.call(value, s, e, t, DiffType.add);
+          });
+          updateCall.call(resultList);
+        });
+        addTween.addEndListener(() {
+          endCount += 1;
+          handleEnd();
+        });
+        tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
+      } else {
+        needCallAdd = true;
+      }
+    }
+
+    if (removeSet.isNotEmpty) {
+      if (attrs.check(LayoutType.layout, startMap.length)) {
+        var removeTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
+        removeTween.addListener(() {
+          double t = removeTween.value;
+          removeSet.forEach((key, value) {
+            var s = startMap[key]!;
+            var e = endMap[key]!;
+            lerpFun.call(value, s, e, t, DiffType.remove);
+          });
+          updateCall.call(resultList);
+        });
+        removeTween.addEndListener(() {
+          endCount += 1;
+          handleEnd();
+        });
+        tweenList.add(TweenWrap(removeTween, TweenWrap.removeStatus));
+      } else {
+        needCallRemove = true;
+      }
+    }
+
+    if (newUpdateSet.isNotEmpty) {
+      if (attrs.check(LayoutType.update, startMap.length)) {
+        var updateTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
+        updateTween.addListener(() {
+          double t = updateTween.value;
+          newUpdateSet.forEach((key, value) {
+            var s = startMap[key]!;
+            var e = endMap[key]!;
+            lerpFun.call(value, s, e, t, DiffType.update);
+          });
+          updateCall.call(resultList);
+        });
+        updateTween.addEndListener(() {
+          endCount += 1;
+          handleEnd();
+        });
+        tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
+      } else {
+        needCallUpdate = true;
       }
     }
 
@@ -329,14 +343,11 @@ class DiffUtil {
       return [];
     }
 
-    startTween?.addStartListener(() {
+    tweenList.first.tween.addStartListener(() {
       onStart?.call();
       innerRun();
     });
-    endTween?.addEndListener(() {
-      updateCall.call(endList);
-      onEnd?.call();
-    });
+
     List<AnimationNode> nl = [];
     for (var wrap in tweenList) {
       var status = wrap.status;
@@ -346,6 +357,7 @@ class DiffUtil {
         nl.add(AnimationNode(wrap.tween, attrs, LayoutType.layout));
       }
     }
+
     return nl;
   }
 

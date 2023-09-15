@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
 
+import 'hex_bin_layout.dart';
 
 ///平行四边形布局
 class HexParallelLayout extends HexbinLayout {
@@ -13,10 +14,10 @@ class HexParallelLayout extends HexbinLayout {
   int row = 0;
   int col = 0;
 
-  HexParallelLayout({this.type = 0, super.center, super.flat, super.radius});
+  HexParallelLayout({this.type = 0});
 
   @override
-  void onLayout2(List<HexbinNode> data, LayoutType type) {
+  void onLayout(List<HexbinNode> data, LayoutType type,HexbinLayoutParams params) {
     row = computeRow(data.length);
     col=data.length~/row;
     if(row*col<data.length){
@@ -38,7 +39,6 @@ class HexParallelLayout extends HexbinLayout {
       node.attr=HexAttr(hexList[i]);
     });
   }
-
 
   int computeRow(int nodeSize) {
     int sq = sqrt(nodeSize).floor();

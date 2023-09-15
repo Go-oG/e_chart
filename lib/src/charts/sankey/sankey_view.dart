@@ -10,17 +10,17 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
   @override
   void onDraw(CCanvas canvas) {
     canvas.save();
-    var ap=layoutHelper.animationProcess;
+    var ap = layoutHelper.animationProcess;
     Rect clipRect;
     if (series.direction == Direction.horizontal) {
-      clipRect=Rect.fromLTWH(0, 0, width * ap, height);
+      clipRect = Rect.fromLTWH(0, 0, width * ap, height);
     } else {
-      clipRect=Rect.fromLTWH(0, 0, width, height * ap);
+      clipRect = Rect.fromLTWH(0, 0, width, height * ap);
     }
     canvas.clipRect(clipRect);
-    _drawLink(canvas,clipRect);
+    _drawLink(canvas, clipRect);
     for (var node in layoutHelper.nodes) {
-      if(!node.attr.overlaps(clipRect)){
+      if (!node.attr.overlaps(clipRect)) {
         continue;
       }
       node.onDraw(canvas, mPaint);
@@ -28,15 +28,15 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
     canvas.restore();
   }
 
-  void _drawLink(CCanvas canvas,Rect clipRect) {
+  void _drawLink(CCanvas canvas, Rect clipRect) {
     for (var link in layoutHelper.links) {
       link.onDraw(canvas, mPaint);
     }
   }
 
   @override
-  SankeyHelper buildLayoutHelper() {
-    return SankeyHelper(context, series);
+  SankeyHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
+    return SankeyHelper(context, this, series);
   }
-
 }

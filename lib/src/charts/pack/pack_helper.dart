@@ -14,7 +14,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
   };
   PackNode? rootNode;
 
-  PackHelper(super.context, super.series);
+  PackHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
@@ -133,7 +133,7 @@ class PackHelper extends LayoutHelper<PackSeries> {
   @override
   void onClick(Offset localOffset) {
     PackNode? clickNode = findNode(localOffset);
-    if(clickNode!=_oldHoverNode){
+    if (clickNode != _oldHoverNode) {
       var oldHover = _oldHoverNode;
       _oldHoverNode = null;
       if (oldHover != null) {

@@ -13,7 +13,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   static const String _highK = "high";
   static const String _lowK = "low";
 
-  CandlestickHelper(super.context, super.series);
+  CandlestickHelper(super.context,super.view, super.series);
 
   @override
   void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {

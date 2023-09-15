@@ -7,7 +7,7 @@ import 'funnel_node.dart';
 class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
   num maxValue = 0;
 
-  FunnelHelper(super.context, super.series);
+  FunnelHelper(super.context,super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {

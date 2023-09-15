@@ -64,6 +64,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   @override
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
+
     ///直接布局测量全部
     helper.layout(boxBound, globalBound);
     showStack.clear();
@@ -252,9 +253,11 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   }
 
   @override
-  TreemapLayout buildLayoutHelper() {
+  TreemapLayout buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
     series.layout.context = context;
     series.layout.series = series;
+    series.layout.view = this;
     return series.layout;
   }
 }

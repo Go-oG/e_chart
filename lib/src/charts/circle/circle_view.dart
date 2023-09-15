@@ -7,8 +7,9 @@ class CircleView extends SeriesView<CircleSeries, CircleHelper> {
   CircleView(super.series);
 
   @override
-  CircleHelper buildLayoutHelper() {
-    return CircleHelper(context, series);
+  CircleHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.dispose();
+    return CircleHelper(context, this, series);
   }
 
   @override

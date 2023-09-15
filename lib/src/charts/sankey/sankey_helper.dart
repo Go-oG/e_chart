@@ -18,7 +18,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
   num _nodeGap = 0;
 
-  SankeyHelper(super.context, super.series) {
+  SankeyHelper(super.context, super.view, super.series) {
     _nodeGap = series.gap;
   }
 
@@ -46,13 +46,15 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     dt.addStartListener(() {
       _nodes = nodes;
       _links = links;
-      inAnimation=true;
+      inAnimation = true;
     });
     dt.addListener(() {
       animationProcess = dt.value;
       notifyLayoutUpdate();
     });
-    dt.addEndListener(() { inAnimation=false;});
+    dt.addEndListener(() {
+      inAnimation = false;
+    });
     context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
   }
 

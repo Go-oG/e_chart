@@ -5,7 +5,8 @@ class BarGridView extends GridView<StackItemData, BarGroupData, BarSeries, BarGr
   BarGridView(super.series);
 
   @override
-  BarGridHelper buildLayoutHelper() {
-    return BarGridHelper(context, series);
+  BarGridHelper buildLayoutHelper(BarGridHelper? oldHelper) {
+    oldHelper?.dispose();
+    return BarGridHelper(context,this, series);
   }
 }

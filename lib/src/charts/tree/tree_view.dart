@@ -93,9 +93,11 @@ class TreeView extends SeriesView<TreeSeries, TreeLayout> {
   }
 
   @override
-  TreeLayout buildLayoutHelper() {
+  TreeLayout buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
     series.layout.context = context;
     series.layout.series = series;
+    series.layout.view = this;
     return series.layout;
   }
 }

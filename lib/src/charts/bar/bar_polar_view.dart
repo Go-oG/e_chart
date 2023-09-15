@@ -6,7 +6,8 @@ class BarPolarView extends PolarView<StackItemData, BarGroupData, BarSeries, Bar
   BarPolarView(super.series);
 
   @override
-  BarPolarHelper buildLayoutHelper() {
-    return BarPolarHelper(context, series);
+  BarPolarHelper buildLayoutHelper(BarPolarHelper? oldHelper) {
+    oldHelper?.dispose();
+    return BarPolarHelper(context,this, series);
   }
 }

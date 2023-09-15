@@ -12,7 +12,7 @@ class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
     var ap = layoutHelper.animatorPercent;
     canvas.save();
     canvas.translate(tx, ty);
-    canvas.clipRect(layoutHelper.getClipRect(series.direction,ap));
+    canvas.clipRect(layoutHelper.getClipRect(series.direction, ap));
     for (var ele in nodeList) {
       ele.onDraw(canvas, mPaint);
     }
@@ -20,7 +20,8 @@ class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
   }
 
   @override
-  ThemeRiverHelper buildLayoutHelper() {
-    return ThemeRiverHelper(context, series);
+  ThemeRiverHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
+    return ThemeRiverHelper(context, this, series);
   }
 }

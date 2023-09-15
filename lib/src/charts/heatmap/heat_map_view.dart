@@ -12,12 +12,12 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   void onDraw(CCanvas canvas) {
     var coord = layoutHelper.findCalendarCoord();
     var to = coord.translation;
+    var sRect = Rect.fromLTWH(to.dx.abs(), to.dy.abs(), width, height);
     canvas.save();
     canvas.translate(to.dx, to.dy);
-    Rect sRect=Rect.fromLTWH(to.dx.abs(), to.dy.abs(), width, height);
     each(layoutHelper.nodeList, (node, index) {
-      Rect rect=node.attr;
-      if(!rect.overlaps(sRect)){
+      Rect rect = node.attr;
+      if (!rect.overlaps(sRect)) {
         return;
       }
       node.onDraw(canvas, mPaint);
@@ -44,8 +44,9 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   }
 
   @override
-  HeatMapHelper buildLayoutHelper() {
-    return HeatMapHelper(context, series);
+  HeatMapHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.dispose();
+    return HeatMapHelper(context, this, series);
   }
 
   @override

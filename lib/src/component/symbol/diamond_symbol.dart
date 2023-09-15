@@ -6,13 +6,13 @@ import 'package:e_chart/e_chart.dart';
 class DiamondSymbol extends ChartSymbol {
   final num shortSide;
   final num longSide;
-  final num rotate;
+  final num fixRotate;
   late Path path;
 
   DiamondSymbol({
     this.shortSide = 8,
     this.longSide = 8,
-    this.rotate = 0,
+    this.fixRotate = 0,
     super.borderStyle,
     super.itemStyle,
   }) {
@@ -38,6 +38,7 @@ class DiamondSymbol extends ChartSymbol {
       return;
     }
     canvas.save();
+    canvas.rotate(fixRotate*Constants.angleUnit);
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
     canvas.restore();
@@ -59,13 +60,13 @@ class DiamondSymbol extends ChartSymbol {
   DiamondSymbol lerp(covariant DiamondSymbol end, double t) {
     var ss = lerpDouble(shortSide, end.shortSide, t)!;
     var ls = lerpDouble(longSide, end.longSide, t)!;
-    var rotate = lerpDouble(this.rotate, end.rotate, t)!;
+    var rotate = lerpDouble(fixRotate, end.fixRotate, t)!;
     return DiamondSymbol(
       shortSide: ss,
       longSide: ls,
-      rotate: rotate,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t)??AreaStyle.empty,
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t)??LineStyle.empty,
+      fixRotate: rotate,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
     );
   }
 
@@ -77,10 +78,10 @@ class DiamondSymbol extends ChartSymbol {
     var size = attr.size;
     var ss = size?.shortestSide ?? shortSide;
     var ls = size?.longestSide ?? longSide;
-    var r = attr.rotate ?? rotate;
+    var r = attr.rotate ?? fixRotate;
 
     return DiamondSymbol(
-      rotate: r,
+      fixRotate: r,
       shortSide: ss,
       longSide: ls,
       itemStyle: itemStyle,

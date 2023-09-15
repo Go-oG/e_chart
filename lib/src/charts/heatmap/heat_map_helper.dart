@@ -4,18 +4,16 @@ import 'package:flutter/animation.dart';
 import 'heat_map_node.dart';
 
 class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
-  HeatMapHelper(super.context, super.series);
+  HeatMapHelper(super.context,super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
     List<HeatMapNode> oldList = nodeList;
     List<HeatMapNode> newList = convertData(series.data);
     layoutNode(newList);
-
     each(newList, (node, p1) {
       node.updateStyle(context, series);
     });
-
     var an = DiffUtil.diffLayout2<HeatMapNode>(
       getAnimation(type, oldList.length + newList.length),
       oldList,

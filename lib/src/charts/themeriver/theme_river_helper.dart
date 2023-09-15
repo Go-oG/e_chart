@@ -7,7 +7,7 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
   num maxTransX = 0, maxTransY = 0;
   double animatorPercent = 1;
 
-  ThemeRiverHelper(super.context, super.series);
+  ThemeRiverHelper(super.context,super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {

@@ -7,10 +7,10 @@ import 'package:e_chart/e_chart.dart';
 class ArrowSymbol extends ChartSymbol {
   final num sideLength;
   final double ratio;
-  final num rotate;
+  final num fixRotate;
   late Path path;
 
-  ArrowSymbol({super.borderStyle, super.itemStyle, this.sideLength = 16, this.rotate = 0, this.ratio = 0.8}) {
+  ArrowSymbol({super.borderStyle, super.itemStyle, this.sideLength = 16, this.fixRotate = 0, this.ratio = 0.8}) {
     path = buildPath(sideLength, ratio);
   }
 
@@ -28,7 +28,7 @@ class ArrowSymbol extends ChartSymbol {
       return;
     }
     canvas.save();
-    canvas.rotate(rotate * pi / 180);
+    canvas.rotate(fixRotate * Constants.angleUnit);
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
     canvas.restore();
@@ -53,10 +53,10 @@ class ArrowSymbol extends ChartSymbol {
   ArrowSymbol lerp(covariant ArrowSymbol end, double t) {
     var sl = lerpDouble(sideLength, end.sideLength, t)!;
     var ratio = lerpDouble(this.ratio, end.ratio, t)!;
-    var rotate = lerpDouble(this.rotate, end.rotate, t)!;
+    var rotate = lerpDouble(fixRotate, end.fixRotate, t)!;
     return ArrowSymbol(
       sideLength: sl,
-      rotate: rotate,
+      fixRotate: rotate,
       ratio: ratio,
       itemStyle: end.itemStyle,
       borderStyle: end.borderStyle,
@@ -70,7 +70,7 @@ class ArrowSymbol extends ChartSymbol {
     }
     return ArrowSymbol(
       sideLength: attr.size == null ? sideLength : attr.size!.longestSide,
-      rotate: attr.rotate ?? rotate,
+      fixRotate: attr.rotate ?? fixRotate,
       ratio: attr.ratio ?? ratio,
       itemStyle: itemStyle,
       borderStyle: borderStyle,

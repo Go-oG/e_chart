@@ -15,7 +15,8 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
   }
 
   @override
-  SunburstHelper buildLayoutHelper() {
-    return SunburstHelper(context, series);
+  SunburstHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
+    return SunburstHelper(context,this, series);
   }
 }

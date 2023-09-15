@@ -45,8 +45,8 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
   int get parallelIndex => series.parallelIndex;
 
   @override
-  ParallelHelper buildLayoutHelper() {
-    return ParallelHelper(context, series);
+  ParallelHelper buildLayoutHelper(var oldHelper) {
+    oldHelper?.clearRef();
+    return ParallelHelper(context, this, series);
   }
-
 }

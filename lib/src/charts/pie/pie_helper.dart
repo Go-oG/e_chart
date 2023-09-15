@@ -5,7 +5,7 @@ import 'pie_node.dart';
 
 ///饼图布局
 class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
-  PieHelper(super.context, super.series);
+  PieHelper(super.context,super.view, super.series);
 
   num maxData = double.minPositive;
   num minData = double.maxFinite;

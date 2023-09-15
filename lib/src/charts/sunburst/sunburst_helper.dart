@@ -5,7 +5,7 @@ import 'sunburst_node.dart';
 
 /// 旭日图布局计算(以中心点为计算中心)
 class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
-  SunburstHelper(super.context, super.series);
+  SunburstHelper(super.context, super.view, super.series);
 
   ///存储布局中使用的临时量
   Offset center = Offset.zero;

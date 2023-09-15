@@ -1,5 +1,6 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/hexbin/layout/hex_bin_layout.dart';
 import 'package:flutter/widgets.dart';
 
 ///三角形布局
@@ -7,33 +8,23 @@ import 'package:flutter/widgets.dart';
 class HexTriangleLayout extends HexbinLayout {
   Direction2 direction;
 
-  HexTriangleLayout({
-    this.direction = Direction2.ttb,
-    super.center = const [SNumber.percent(50), SNumber.percent(50)],
-    super.flat,
-    super.radius,
-  });
+  HexTriangleLayout({this.direction = Direction2.ttb});
 
   int _level = 0;
 
-  void checkFlat() {
+  bool checkFlat() {
     Direction2 direction = this.direction;
     if (direction == Direction2.v) {
       direction = Direction2.ttb;
     } else if (direction == Direction2.h) {
       direction = Direction2.ltr;
     }
-    flat = !(direction == Direction2.ttb || direction == Direction2.btt);
+    return !(direction == Direction2.ttb || direction == Direction2.btt);
   }
 
   @override
-  void doLayout(Rect rect, Rect globalBoxBound, LayoutType type) {
-    checkFlat();
-    super.doLayout(rect, globalBoxBound, type);
-  }
-
-  @override
-  void onLayout2(List<HexbinNode> data, LayoutType type) {
+  void onLayout(List<HexbinNode> data, LayoutType type, HexbinLayoutParams params) {
+    params.flat = checkFlat();
     Direction2 direction = this.direction;
     if (direction == Direction2.v) {
       direction = Direction2.ttb;
@@ -48,15 +39,19 @@ class HexTriangleLayout extends HexbinLayout {
   }
 
   @override
-  Offset computeZeroCenter(HexbinSeries series, num width, num height) {
+  Offset computeZeroCenter(HexbinLayoutParams params) {
+    var offset = super.computeZeroCenter(params);
+    double x = offset.dx;
+    double y = offset.dy;
+
     Direction2 direction = this.direction;
     if (direction == Direction2.v) {
       direction = Direction2.ttb;
     } else if (direction == Direction2.h) {
       direction = Direction2.ltr;
     }
-    double x = center[0].convert(width);
-    double y = center[1].convert(height);
+
+    var radius = params.radius;
     if (direction == Direction2.ttb || direction == Direction2.btt) {
       ///竖直
       double h = radius * 2;
