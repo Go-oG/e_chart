@@ -44,7 +44,6 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   @override
   void onStart() {
     super.onStart();
-    context.addEventCall(dispatchEvent);
     context.addActionCall(dispatchAction);
     registerCommandHandler();
     props.addListener(_handleCommand);
@@ -56,7 +55,6 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   @override
   void onStop() {
-    context.removeEventCall(dispatchEvent);
     context.removeActionCall(dispatchAction);
     props.removeListener(_handleCommand);
     unregisterCommandHandler();
@@ -93,30 +91,6 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     mPaint.color = color;
     mPaint.style = PaintingStyle.fill;
     canvas.drawRect(selfBoxBound, mPaint);
-  }
-
-  @override
-  void onBrushEvent(BrushEvent event) {
-    if (_brushView == null || event.brushId != _brushView?.brush.id || event.coord != props.coordSystem) {
-      return;
-    }
-    super.onBrushEvent(event);
-  }
-
-  @override
-  void onBrushEndEvent(BrushEndEvent event) {
-    if (_brushView == null || event.brushId != _brushView?.brush.id || event.coord != props.coordSystem) {
-      return;
-    }
-    super.onBrushEndEvent(event);
-  }
-
-  @override
-  void onBrushClearEvent(BrushClearEvent event) {
-    if (_brushView == null || event.brushId != _brushView?.brush.id || event.coord != props.coordSystem) {
-      return;
-    }
-    super.onBrushClearEvent(event);
   }
 
   @override

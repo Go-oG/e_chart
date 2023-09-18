@@ -1,8 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import '../../core/view/render_node.dart';
-
 ///框选
 ///BrushView 只能在坐标系中出现
 ///覆盖在单个坐标系的最顶层(比TooltipView 低)
@@ -108,7 +106,7 @@ class BrushView extends ChartView {
     if (redraw) {
       invalidate();
     }
-    BrushEvent event = BrushEvent(coord.props.coordSystem, brush.id, data: brushList);
+    var event = BrushEvent(coord.props.coordSystem, brush.id, data: brushList);
     context.dispatchEvent(event);
   }
 
@@ -116,7 +114,7 @@ class BrushView extends ChartView {
     if (redraw) {
       invalidate();
     }
-    BrushEndEvent event = BrushEndEvent(coord.props.coordSystem, brush.id, brushList);
+    var event = BrushEndEvent(coord.props.coordSystem, brush.id, brushList);
     context.dispatchEvent(event);
   }
 

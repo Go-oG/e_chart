@@ -23,7 +23,11 @@ export 'chart_notifier.dart';
 export 'command.dart';
 export 'context.dart';
 
-export 'layout_helper.dart';
+export 'layout/layout_helper.dart';
+export 'layout/layout_helper2.dart';
+export 'layout/layout_type.dart';
+export 'layout/node_diff.dart';
+
 export 'series.dart';
 export 'view_state.dart';
 export 'data_node.dart';

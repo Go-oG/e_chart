@@ -3,9 +3,8 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 
-///用于辅助布局相关的抽象类
-///其包含了事件分发和触摸事件处理
-///一般情况下和SeriesView 配合使用
+///用于辅助布局相关的抽象类，通常和SeriesView 配合使用
+///其包含了Chart事件分发、处理以及手势相关的处理
 abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command> {
   Context? _context;
 
@@ -90,11 +89,20 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onMeasure() {}
 
-  void stopLayout() {}
+  void stopLayout() {
+    unregisterBrushListener();
+    unregisterLegendListener();
+  }
 
-  double get width => boxBound.width;
-
-  double get height => boxBound.height;
+  @override
+  void dispose() {
+    unregisterLegendListener();
+    unregisterBrushListener();
+    _view = null;
+    _series = null;
+    _context = null;
+    super.dispose();
+  }
 
   ///=========手势处理================
   void onClick(Offset localOffset) {}
@@ -111,23 +119,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onDragEnd() {}
 
-  ///=========事件通知========
-  ///Brush
-  void onBrushEvent(BrushEvent event) {}
-
-  void onBrushEndEvent(BrushEndEvent event) {}
-
-  void onBrushClearEvent(BrushClearEvent event) {}
-
-  ///Legend
-  void onLegendSelectedEvent(LegendSelectedEvent event) {}
-
-  void onLegendUnSelectedEvent(LegendUnSelectedEvent event) {}
-
-  void onLegendSelectChangeEvent(LegendSelectChangeEvent event) {}
-
-  void onLegendScrollEvent(LegendScrollEvent event) {}
-
+  ///=========坐标系相关事件处理========
   void onCoordScrollStart(CoordScroll scroll) {}
 
   void onCoordScrollUpdate(CoordScroll scroll) {}
@@ -297,6 +289,10 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void resetTranslation() => view.translationX = view.translationY = 0;
 
+  double get width => boxBound.width;
+
+  double get height => boxBound.height;
+
   ///获取裁剪路径
   Rect getClipRect(Direction direction, [double animationPercent = 1]) {
     if (animationPercent > 1) {
@@ -336,198 +332,81 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return null;
   }
 
-  @override
-  void dispose() {
-    _view = null;
-    _series = null;
-    _context = null;
-    super.dispose();
-  }
-
   ///子类可以覆写该方法实现部分绘制
   bool needDraw<T>(T node) {
     return true;
   }
-}
 
-abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends LayoutHelper<S> {
-  List<N> nodeList = [];
+  ///注册Brush组件 Event监听器
+  VoidFun1<ChartEvent>? _brushListener;
 
-  LayoutHelper2(super.context, super.view, super.series);
-
-  LayoutHelper2.lazy() : super.lazy();
-
-  @override
-  void onDragMove(Offset offset, Offset diff) {
-    view.translationX += diff.dx;
-    view.translationY += diff.dy;
-    notifyLayoutUpdate();
-  }
-
-  @override
-  void onClick(Offset localOffset) {
-    onHandleHoverAndClick(localOffset, true);
-  }
-
-  @override
-  void onHoverStart(Offset localOffset) {
-    onHandleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    onHandleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverEnd() {
-    var old = oldHoverNode;
-    oldHoverNode = null;
-    if (old == null) {
-      return;
-    }
-    sendHoverEndEvent(old);
-    var oldAttr = old.toAttr();
-    old.removeState(ViewState.hover);
-    onUpdateNodeStyle(old);
-    var animation = getAnimation(LayoutType.update, 2);
-
-    if (animation == null) {
-      notifyLayoutUpdate();
-      return;
-    }
-    onRunUpdateAnimation([NodeDiff(old, oldAttr, old.toAttr(), true)], animation);
-  }
-
-  N? oldHoverNode;
-
-  void onHandleHoverAndClick(Offset offset, bool click) {
-    var oldOffset = offset;
-    Offset scroll = getTranslation();
-    offset = offset.translate2(scroll.invert);
-    var clickNode = findNode(offset);
-    if (oldHoverNode == clickNode) {
-      if (clickNode != null) {
-        click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
+  void registerBrushListener() {
+    _context?.removeEventCall(_brushListener);
+    _brushListener = (event) {
+      if (event is BrushEvent) {
+        onBrushEvent(event);
+        return;
       }
-      return;
-    }
-    var oldNode = oldHoverNode;
-    oldHoverNode = clickNode;
-    if (oldNode != null) {
-      sendHoverEndEvent(oldNode);
-    }
-    if (clickNode != null) {
-      click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
-    }
-
-    List<NodeDiff<N>> nl = [];
-
-    if (oldNode != null) {
-      var oldAttr = oldNode.toAttr();
-      oldNode.removeState(ViewState.hover);
-      onUpdateNodeStyle(oldNode);
-      nl.add(NodeDiff(oldNode, oldAttr, oldNode.toAttr(), true));
-    }
-
-    if (clickNode != null) {
-      var newAttr = clickNode.toAttr();
-      clickNode.addState(ViewState.hover);
-      onUpdateNodeStyle(clickNode);
-      nl.add(NodeDiff(clickNode, newAttr, clickNode.toAttr(), false));
-    }
-
-    var animator = getAnimation(LayoutType.update, 2);
-    if (animator == null) {
-      onHandleHoverAndClickEnd(oldNode, clickNode);
-      notifyLayoutUpdate();
-      return;
-    }
-    if (nl.isNotEmpty) {
-      onRunUpdateAnimation(nl, animator);
-    }
-    onHandleHoverAndClickEnd(oldNode, clickNode);
-  }
-
-  void onHandleHoverAndClickEnd(N? oldNode, N? newNode) {}
-
-  void onUpdateNodeStyle(N node) {
-    node.updateStyle(context, series);
-  }
-
-  void onRunUpdateAnimation(List<NodeDiff<N>> list, AnimatorOption animation) {
-    List<ChartTween> tl = [];
-    for (var diff in list) {
-      var node = diff.node;
-      var s = diff.startAttr;
-      var e = diff.endAttr;
-      var tween = ChartDoubleTween(option: animation);
-      tween.addListener(() {
-        var t = tween.value;
-        node.itemStyle = AreaStyle.lerp(s.itemStyle, e.itemStyle, t);
-        node.borderStyle = LineStyle.lerp(s.borderStyle, e.borderStyle, t);
-        notifyLayoutUpdate();
-      });
-      tl.add(tween);
-    }
-    for (var tw in tl) {
-      tw.start(context, true);
-    }
-  }
-
-  ///按照节点的绘制顺序排序
-  void sortList(List<N> nodeList) {
-    nodeList.sort((a, b) {
-      if (a.drawIndex == 0 && b.drawIndex == 0) {
-        return a.dataIndex.compareTo(b.dataIndex);
+      if (event is BrushClearEvent) {
+        onBrushClearEvent(event);
+        return;
       }
-      if (a.drawIndex != 0) {
-        return 1;
+      if (event is BrushClearEvent) {
+        onBrushClearEvent(event);
+        return;
       }
-      return 0;
-    });
+    };
+    _context?.addEventCall(_brushListener);
   }
 
-  ///查找节点数据
-  ///如果overlap为 true，那么说明可能会存在重叠的View
-  ///此时我们需要进行更加精确的判断
-  ///父类默认没有实现该方法
-  N? findNode(Offset offset, [bool overlap = false]) {
-    var hoveNode = oldHoverNode;
-    if (hoveNode != null && hoveNode.contains(offset)) {
-      return hoveNode;
-    }
-
-    ///这里倒序查找是因为当绘制顺序不一致时需要从最后查找
-    var list = nodeList;
-    for (int i = list.length - 1; i >= 0; i--) {
-      var node = list[i];
-      if (node.contains(offset)) {
-        return node;
-      }
-    }
-    return null;
+  void unregisterBrushListener() {
+    _context?.removeEventCall(_brushListener);
+    _brushListener = null;
   }
-}
 
-class NodeDiff<N extends DataNode> {
-  final N node;
-  final NodeAttr startAttr;
-  final NodeAttr endAttr;
-  final bool old;
+  void onBrushEvent(BrushEvent event) {}
 
-  const NodeDiff(this.node, this.startAttr, this.endAttr, this.old);
-}
+  void onBrushEndEvent(BrushEndEvent event) {}
 
-enum LayoutType {
-  ///该布局方式将拒绝所有的动画，
-  none,
+  void onBrushClearEvent(BrushClearEvent event) {}
 
-  ///该布局方式表示触发类型为全量布局
-  ///使用的动画参数类型为普通参数
-  layout,
+  /// 注册Legend组件事件
+  VoidFun1<ChartEvent>? _legendListener;
 
-  ///该布局方式表示是更新布局
-  ///使用的动画参数为带update的前缀
-  update,
+  void registerLegendListener() {
+    _context?.removeEventCall(_legendListener);
+    _legendListener = (event) {
+      if (event is LegendSelectedEvent) {
+        onLegendSelectedEvent(event);
+        return;
+      }
+      if (event is LegendUnSelectedEvent) {
+        onLegendUnSelectedEvent(event);
+        return;
+      }
+      if (event is LegendSelectChangeEvent) {
+        onLegendSelectChangeEvent(event);
+        return;
+      }
+      if (event is LegendScrollEvent) {
+        onLegendScrollEvent(event);
+        return;
+      }
+    };
+    _context?.addEventCall(_legendListener);
+  }
+
+  void onLegendSelectedEvent(LegendSelectedEvent event) {}
+
+  void onLegendUnSelectedEvent(LegendUnSelectedEvent event) {}
+
+  void onLegendSelectChangeEvent(LegendSelectChangeEvent event) {}
+
+  void onLegendScrollEvent(LegendScrollEvent event) {}
+
+  void unregisterLegendListener() {}
+//========Legend 结束================
+
+
+
 }

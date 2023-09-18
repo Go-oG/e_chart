@@ -28,6 +28,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   StackHelper(super.context, super.view, super.series);
 
   @override
+  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
+    registerBrushListener();
+    registerLegendListener();
+    super.doLayout(boxBound, globalBoxBound, type);
+  }
+
+  @override
   void onLayout(LayoutType type) {
     var helper = series.getHelper(context);
     AxisGroup<T, P> axisGroup = helper.result;

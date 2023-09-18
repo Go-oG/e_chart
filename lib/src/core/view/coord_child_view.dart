@@ -1,4 +1,4 @@
-import '../layout_helper.dart';
+import '../layout/layout_helper.dart';
 import '../series.dart';
 import 'series_view.dart';
 

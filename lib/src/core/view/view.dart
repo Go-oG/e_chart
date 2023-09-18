@@ -307,13 +307,6 @@ abstract class ChartView extends RenderNode {
     return false;
   }
 
-  ///=======Brush事件通知=======
-  void onBrushEvent(BrushEvent event) {}
-
-  void onBrushEndEvent(BrushEndEvent event) {}
-
-  void onBrushClearEvent(BrushClearEvent event) {}
-
   ///=======由坐标系回调=========
   void onCoordScrollStart(CoordScroll scroll) {}
 

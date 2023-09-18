@@ -78,48 +78,10 @@ abstract class ChartViewGroup extends GestureView  {
   }
 
   ///=========Event和Action分发处理==================
-  void dispatchEvent(ChartEvent event) {
-    if (event is BrushEvent) {
-      onBrushEvent(event);
-      return;
-    }
-    if (event is BrushEndEvent) {
-      onBrushEndEvent(event);
-      return;
-    }
-    if (event is BrushClearEvent) {
-      onBrushClearEvent(event);
-      return;
-    }
-  }
-
   bool dispatchAction(ChartAction action) {
     return false;
   }
 
-  @override
-  void onBrushEvent(BrushEvent event) {
-    for (var v in children) {
-      v.onBrushEvent(event);
-    }
-    invalidate();
-  }
-
-  @override
-  void onBrushEndEvent(BrushEndEvent event) {
-    for (var v in children) {
-      v.onBrushEndEvent(event);
-    }
-    invalidate();
-  }
-
-  @override
-  void onBrushClearEvent(BrushClearEvent event) {
-    for (var v in children) {
-      v.onBrushClearEvent(event);
-    }
-    invalidate();
-  }
 
   ///=========布局测量相关============
   @override

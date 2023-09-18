@@ -390,11 +390,15 @@ class Context {
 
   ///=======Event分发和监听
 
-  void addEventCall(VoidFun1<ChartEvent> call) {
+  void addEventCall(VoidFun1<ChartEvent>? call) {
+    if(call==null){return;}
     _eventDispatcher.addCall(call);
   }
 
-  void removeEventCall(VoidFun1<ChartEvent> call) {
+  void removeEventCall(VoidFun1<ChartEvent>? call) {
+    if (call == null) {
+      return;
+    }
     _eventDispatcher.removeCall(call);
   }
 

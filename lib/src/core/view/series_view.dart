@@ -43,7 +43,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   void onSeriesConfigChangeCommand(covariant Command c) {
     _layoutHelper = buildLayoutHelper(_layoutHelper);
     super.onSeriesConfigChangeCommand(c);
-
   }
 
   @override
@@ -134,22 +133,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     super.onStop();
   }
 
-  ///事件转发
-  @override
-  void onBrushEvent(BrushEvent event) {
-    layoutHelper.onBrushEvent(event);
-  }
-
-  @override
-  void onBrushClearEvent(BrushClearEvent event) {
-    layoutHelper.onBrushClearEvent(event);
-  }
-
-  @override
-  void onBrushEndEvent(BrushEndEvent event) {
-    layoutHelper.onBrushEndEvent(event);
-  }
-
   @override
   void onCoordScaleUpdate(CoordScale scale) {
     layoutHelper.onCoordScaleUpdate(scale);
@@ -187,4 +170,5 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   @override
   bool get useSingleLayer => series.useSingleLayer;
+
 }
