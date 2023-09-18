@@ -18,7 +18,7 @@ extension OffsetExt on Offset {
   /// 判断点Q是否在由 p1 p2组成的线段上 允许偏移值
   /// [deviation] 偏差值必须大于等于0
   bool inLine(Offset p1, Offset p2, {double deviation = 4}) {
-    return BaseLine(p1, p2).inLine(this, deviation: deviation);
+    return Segment(p1, p2).contains(this, deviation: deviation);
   }
 
   //判断点是否在多边形内部(包含边界)

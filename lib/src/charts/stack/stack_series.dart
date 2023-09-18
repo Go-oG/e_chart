@@ -50,7 +50,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   Fun4<T?, G, Set<ViewState>, LineStyle?>? lineStyleFun;
 
   /// 标签转换
-  Fun5<dynamic, T, G, Set<ViewState>, DynamicText?>? labelFormatFun;
+  Fun4<dynamic, G, Set<ViewState>, DynamicText?>? labelFormatFun;
 
   /// 标签对齐
   Fun4<T, G, Set<ViewState>, ChartAlign>? labelAlignFun;
@@ -117,17 +117,7 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   }
 
   DataHelper<T, G, StackSeries<T, G>> buildHelper(Context context) {
-    return DataHelper(
-      context,
-      this,
-      data,
-      direction,
-      realtimeSort,
-      sort,
-      getAreaStyle,
-      getLineStyle,
-      getLabelStyle,
-    );
+    return DataHelper(context, this, data, direction, realtimeSort, sort);
   }
 
   @override
@@ -162,9 +152,9 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     return [];
   }
 
-  DynamicText? formatData(Context context, T data, G group, Set<ViewState> status) {
+  DynamicText? formatData(Context context, dynamic, data, G group, Set<ViewState> status) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data, data, group, status);
+      return labelFormatFun?.call(data, group, status);
     }
     return formatNumber(data.stackUp).toText();
   }
@@ -215,9 +205,9 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     return theme.getLabelStyle()?.convert(status);
   }
 
-  ChartAlign? getLabelAlign(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
+  ChartAlign getLabelAlign(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
     if (data == null) {
-      return null;
+      return ChartAlign.center;
     }
     if (labelAlignFun != null) {
       return labelAlignFun!.call(data, group, status);

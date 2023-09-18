@@ -9,9 +9,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   final Direction direction;
   final bool realSort;
   final Sort sort;
-  final Fun6<Context, T?, P, int, Set<ViewState>, AreaStyle?> itemStyleFun;
-  final Fun6<Context, T?, P, int, Set<ViewState>, LineStyle?> borderStyleFun;
-  final Fun6<Context, T?, P, int, Set<ViewState>, LabelStyle?> labelStyleFun;
   final Map<T, SingleNode<T, P>> _nodeMap = {};
 
   SingleNode<T, P>? findNode(T t) {
@@ -24,17 +21,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     return _result;
   }
 
-  DataHelper(
-    this.context,
-    this._series,
-    this._dataList,
-    this.direction,
-    this.realSort,
-    this.sort,
-    this.itemStyleFun,
-    this.borderStyleFun,
-    this.labelStyleFun,
-  ) {
+  DataHelper(this.context, this._series, this._dataList, this.direction, this.realSort, this.sort) {
     _result = _parse();
     _result.groupMap.forEach((key, value) {
       for (var gn in value) {
@@ -179,8 +166,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     }
     List<GroupNode<T, P>> groupNodeList = List.generate(barGroupCount, (index) => GroupNode(axisIndex, index, []));
 
-    final Set<ViewState> emptyVS = {};
-
     ///合并数据
     each(groupDataSetList, (group, index) {
       GroupNode<T, P> groupNode = groupNodeList[index];
@@ -204,34 +189,16 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         }
       });
 
-      CoordType coord = _series.coordType == CoordType.polar ? CoordType.polar : CoordType.grid;
-
+      var coord = _series.coordType == CoordType.polar ? CoordType.polar : CoordType.grid;
       singleNodeMap.forEach((key, value) {
         ColumnNode<T, P> column = ColumnNode(groupNode, [], true, value.first.parent.strategy);
-        List<SingleNode<T, P>> dl = List.from(value.map((e) => SingleNode(
-              coord,
-              column,
-              e,
-              true,
-              itemStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? AreaStyle.empty,
-              borderStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LineStyle.empty,
-              labelStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LabelStyle.empty,
-            )));
+        List<SingleNode<T, P>> dl = List.from(value.map((e) => SingleNode(coord, column, e, true)));
         column.nodeList.addAll(dl);
         groupNode.nodeList.add(column);
       });
       each(singleNodeList, (e, i) {
         ColumnNode<T, P> column = ColumnNode(groupNode, [], false, StackStrategy.all);
-        var singleNode = SingleNode(
-          coord,
-          column,
-          e,
-          false,
-          itemStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? AreaStyle.empty,
-          borderStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LineStyle.empty,
-          labelStyleFun.call(context, e.data, e.parent, e.styleIndex, emptyVS) ?? LabelStyle.empty,
-        );
-        column.nodeList.add(singleNode);
+        column.nodeList.add(SingleNode(coord, column, e, false));
         groupNode.nodeList.add(column);
       });
     });

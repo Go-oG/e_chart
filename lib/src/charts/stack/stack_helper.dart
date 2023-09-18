@@ -90,6 +90,12 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     List<SingleNode<T, P>> oldNodeList = List.from(_nodeMap.values);
     var oldNodeMap = _nodeMap;
     final List<SingleNode<T, P>> newNodeList = List.from(newNodeMap.values, growable: false);
+
+    each(newNodeList, (p0, p1) {
+      p0.updateTextPosition(context, series);
+      p0.updateStyle(context, series);
+    });
+
     _onLayoutMarkPointAndLine(series.data, newNodeList, newNodeMap);
     onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
   }

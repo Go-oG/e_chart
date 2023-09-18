@@ -61,10 +61,7 @@ class Polygon extends Shape {
       Offset p1 = points[0];
       double a = (dx - p1.dx).abs();
       double b = (dy - p1.dy).abs();
-      return m.sqrt(a * a + b * b) <= 0.01;
-    }
-    if (points.length == 2) {
-      return _inLine(offset, points[0], points[1], deviation: 0.05);
+      return a * a + b * b <= 0.0001;
     }
     return inInner(offset) || inBorder(offset);
   }
@@ -125,10 +122,6 @@ class Polygon extends Shape {
       }
     }
     return false;
-  }
-
-  bool _inLine(Offset point, Offset p1, Offset p2, {double deviation = 4}) {
-    return BaseLine(p1, p2).inLine(point, deviation: deviation);
   }
 
   ///多边形周长

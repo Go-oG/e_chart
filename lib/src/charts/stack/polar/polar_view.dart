@@ -59,27 +59,10 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     map.forEach((key, node) {
-      if (node.originData == null) {
-        return;
-      }
       if (node.attr.arc.isEmpty) {
         return;
       }
-      var data = node.originData!;
-      var group = node.parent;
-      LabelStyle? style = node.labelStyle;
-      var config = node.labelConfig;
-      if (!style.show || config == null) {
-        return;
-      }
-      DynamicText? text = series.formatData(context, data, group,node.status);
-      if (text == null || text.isEmpty) {
-        return;
-      }
-
-      // ChartAlign align =node. series.getLabelAlign(context, data, group);
-      // TextDrawInfo drawInfo = align.convert(node.attr.rect, style, series.direction);
-      style.draw(canvas, mPaint, text, config);
+      node.onDrawText(canvas, mPaint);
     });
     canvas.restore();
   }

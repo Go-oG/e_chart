@@ -52,7 +52,7 @@ class Context {
   ///Title(全局只会存在一个)
   TitleView? _title;
 
-  TitleView get title => _title!;
+  TitleView? get title => _title;
 
   ///图例(全局一个实例)
   LegendComponent? _legend;
@@ -63,7 +63,7 @@ class Context {
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
     ///图例
-    _legend = LegendComponent(option.legend!);
+    _legend = LegendComponent(option.legend);
     _legend!.create(this, root);
 
     ///title

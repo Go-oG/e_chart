@@ -63,31 +63,10 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     map.forEach((key, node) {
-      if (node.originData == null || node.rect.isEmpty) {
+      if (node.rect.isEmpty) {
         return;
       }
-      var data = node.originData!;
-      var group = node.parent;
-      var style = node.labelStyle;
-      var config = node.labelConfig;
-      var label = node.label;
-      if (!style.show || config == null || label == null || label.isEmpty) {
-        return;
-      }
-      //TODO 文字处理
-      //
-      // DynamicText? text;
-      // if (node.dynamicLabel != null) {
-      //   text = formatData(node.dynamicLabel!, data, group, node.status);
-      // } else {
-      //   text = series.formatData(context, data, group,node.status);
-      // }
-      // if (text == null || text.isEmpty) {
-      //   return;
-      // }
-      // ChartAlign align = series.getLabelAlign(context, data, group);
-      // TextDrawInfo drawInfo = align.convert(node.rect, style, series.direction);
-      style.draw(canvas, mPaint, label, config);
+      node.onDrawText(canvas, mPaint);
     });
     canvas.restore();
   }
@@ -111,25 +90,5 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
   @override
   List getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis, scale);
-  }
-
-  DynamicText? formatData(dynamic data, T node, G group, Set<ViewState> status) {
-    if (data is DynamicText) {
-      return data;
-    }
-    if (series.labelFormatFun != null) {
-      return series.labelFormatFun?.call(data, node, group, status);
-    }
-
-    if (data is String) {
-      return DynamicText(data);
-    }
-    if (data is DateTime) {
-      return data.toString().toText();
-    }
-    if (data is num) {
-      return DynamicText.fromString(formatNumber(data, 2));
-    }
-    return data.toString().toText();
   }
 }

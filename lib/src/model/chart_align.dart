@@ -1,12 +1,8 @@
-import 'package:e_chart/src/model/text_info.dart';
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 
-import '../component/style/index.dart';
-import '../utils/align_util.dart';
-import 'enums/direction.dart';
-
 class ChartAlign {
-  static const center=ChartAlign();
+  static const center = ChartAlign();
   final Alignment align;
   final bool inside;
 
@@ -33,5 +29,12 @@ class ChartAlign {
       textAlign = Alignment(-textAlign.x, -textAlign.y);
     }
     return TextDrawInfo(offset, align: textAlign);
+  }
+
+  TextDrawInfo convert2(Arc arc, LabelStyle style, Direction direction) {
+    var angle = (arc.startAngle + arc.sweepAngle / 2) + align.x * arc.sweepAngle.abs();
+    num diff = arc.outRadius - arc.innerRadius;
+    var radius = (arc.innerRadius + diff / 2) + align.y * diff;
+    return TextDrawInfo(circlePoint(radius, angle, arc.center), align: Alignment.center);
   }
 }

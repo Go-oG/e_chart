@@ -7,7 +7,7 @@ import 'package:flutter/animation.dart';
 abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends StackHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
-  GridHelper(super.context,super.view, super.series) {
+  GridHelper(super.context, super.view, super.series) {
     series.addListener(handleCommand);
   }
 
@@ -373,23 +373,25 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     if (s == null || e == null) {
       return;
     }
-    Rect r;
     if (series.animatorStyle == GridAnimatorStyle.expand) {
-      r = Rect.lerp(s, e, t)!;
+      node.rect = Rect.lerp(s, e, t)!;
     } else {
       if (series.isVertical) {
-        r = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
+        node.rect = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
       } else {
-        r = Rect.fromLTWH(e.left, e.top, e.width * t, e.height);
+        node.rect = Rect.fromLTWH(e.left, e.top, e.width * t, e.height);
       }
     }
+
     if (series.realtimeSort && series.dynamicLabel) {
       var axisIndex = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
-      node.dynamicLabel = findGridCoord().pxToData(axisIndex, !series.isVertical, series.isVertical ? r.top : r.right);
+      node.attr.dynamicLabel =
+          findGridCoord().pxToData(axisIndex, !series.isVertical, series.isVertical ? node.rect.top : node.rect.right);
     } else {
-      node.dynamicLabel = null;
+      node.attr.dynamicLabel = null;
     }
-    node.rect = r;
+
+    node.updateTextPosition(context, series);
   }
 
   @override
@@ -399,11 +401,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
       notifyLayoutUpdate();
       return;
     }
-    if (series.isVertical) {
-      findGridCoord().onAdjustAxisDataRange(AdjustAttr(false));
-    } else {
-      findGridCoord().onAdjustAxisDataRange(AdjustAttr(true));
-    }
+    findGridCoord().onAdjustAxisDataRange(AdjustAttr(!series.isVertical));
     notifyLayoutUpdate();
   }
 

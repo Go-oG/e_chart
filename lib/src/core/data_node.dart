@@ -19,13 +19,13 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   ///绘制顺序(从小到到绘制，最大的最后绘制)
   int drawIndex = 0;
 
-  DynamicText? label;
+  DynamicText label = DynamicText.empty;
   TextDrawInfo? labelConfig;
-  List<Offset>? labelLine;
+  List<Offset> labelLine = [];
 
-  AreaStyle itemStyle;
-  LineStyle borderStyle;
-  LabelStyle labelStyle;
+  late AreaStyle itemStyle;
+  late LineStyle borderStyle;
+  late LabelStyle labelStyle;
 
   DataNode(
     this.data,
@@ -36,6 +36,13 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
     this.borderStyle,
     this.labelStyle,
   ) {
+    _attr = attr;
+  }
+
+  DataNode.empty(this.data, this.dataIndex, this.groupIndex, P attr) {
+    itemStyle = AreaStyle.empty;
+    borderStyle = LineStyle.empty;
+    labelStyle = LabelStyle.empty;
     _attr = attr;
   }
 
@@ -64,7 +71,7 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   ///更新当前符号的大小
   void updateSymbolSize(Size size) {}
 
-  DataType get dataType=>DataType.nodeData;
+  DataType get dataType => DataType.nodeData;
 }
 
 abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
@@ -143,14 +150,14 @@ class NodeAttr {
   final double symbolScale;
 
   const NodeAttr(
-      this.attr,
-      this.drawIndex,
-      this.label,
-      this.labelConfig,
-      this.labelLine,
-      this.itemStyle,
-      this.borderStyle,
-      this.labelStyle,
-      this.symbolScale,
-      );
+    this.attr,
+    this.drawIndex,
+    this.label,
+    this.labelConfig,
+    this.labelLine,
+    this.itemStyle,
+    this.borderStyle,
+    this.labelStyle,
+    this.symbolScale,
+  );
 }

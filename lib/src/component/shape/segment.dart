@@ -4,12 +4,14 @@ import 'dart:ui';
 import 'package:e_chart/src/ext/offset_ext.dart';
 
 import '../../model/chart_error.dart';
+import '../../utils/log_util.dart';
 
-class BaseLine {
+///线段
+class Segment {
   final Offset start;
   final Offset end;
 
-  BaseLine(this.start, this.end);
+  const Segment(this.start, this.end);
 
   /// 求点Q到直线的距离
   double distance(Offset p) {
@@ -24,9 +26,11 @@ class BaseLine {
     return ((A * dx + B * dy + C) / (sqrt(A * A + B * B))).abs();
   }
 
-  bool inLine(Offset p, {double deviation = 4}) {
+  ///判断给定点是否在当前线段上
+  bool contains(Offset p, {double deviation = 4}) {
     if (deviation < 0) {
-      throw ChartError('偏差值必须大于等于0');
+      Logger.w('deviation must >= 0');
+      deviation = 0;
     }
     var dx = p.dx;
     var dy = p.dy;
@@ -38,5 +42,4 @@ class BaseLine {
     }
     return distance(p) <= deviation;
   }
-
 }

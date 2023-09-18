@@ -77,7 +77,6 @@ class BaseItemData {
   }
 }
 
-
 ///动态文本
 ///只接受String、TextSpan、
 class DynamicText {

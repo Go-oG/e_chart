@@ -64,17 +64,7 @@ class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends S
       if (c != group.data.length) {
         group.data.removeRange(c, group.data.length);
       }
-      return DataHelper(
-        context,
-        this,
-        [group],
-        direction,
-        true,
-        sort,
-        getAreaStyle,
-        getLineStyle,
-        getLabelStyle,
-      );
+      return DataHelper(context, this, [group], direction, true, sort);
     }
     return super.buildHelper(context);
   }
