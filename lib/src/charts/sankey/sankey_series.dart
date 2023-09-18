@@ -135,6 +135,17 @@ class SankeySeries extends RectSeries {
     }
     return context.option.theme.getLabelStyle();
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) => [];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data.data, (p0, p1) {
+      p0.styleIndex = p1 + start;
+    });
+    return data.data.length;
+  }
 }
 
 class SankeyData {
@@ -148,7 +159,7 @@ class SankeyLinkData extends ItemData {
   final ItemData src;
   final ItemData target;
 
-  SankeyLinkData(this.src, this.target, super.value, {super.label, super.id});
+  SankeyLinkData(this.src, this.target, super.value, {super.name, super.id});
 
   @override
   int get hashCode {

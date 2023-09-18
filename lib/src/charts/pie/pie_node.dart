@@ -73,7 +73,7 @@ class PieNode extends DataNode<Arc, ItemData> {
 
     var ls = labelStyle;
     var config = textDrawConfig;
-    var label = data.label;
+    var label = data.name;
     if (guidLinePath != null) {
       ls.guideLine?.style.drawPath(canvas, paint, guidLinePath!);
     }

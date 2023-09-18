@@ -44,4 +44,22 @@ class TreeSeries extends RectSeries {
     return linkStyleFun.call(source,target);
   }
 
+  @override
+  List<LegendItem> getLegendItem(Context context) =>[];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    int c = 0;
+    List<TreeData> dl = [data];
+    List<TreeData> next = [];
+    while (dl.isNotEmpty) {
+      each(dl, (p0, p1) {
+        p0.styleIndex = c;
+        c++;
+      });
+      next.addAll(dl);
+      dl = next;
+    }
+    return c;
+  }
 }

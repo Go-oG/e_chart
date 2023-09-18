@@ -78,4 +78,15 @@ class GraphSeries extends RectSeries {
     var bs = context.option.theme.graphTheme.getStyle() ?? LineStyle.empty;
     return CircleSymbol(radius: size.shortestSide / 2, itemStyle: as, borderStyle: bs).convert(status);
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) => [];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(nodes, (p0, p1) {
+      p0.styleIndex = p1 + start;
+    });
+    return nodes.length;
+  }
 }

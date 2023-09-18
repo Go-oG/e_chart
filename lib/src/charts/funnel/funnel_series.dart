@@ -111,4 +111,25 @@ class FunnelSeries extends RectSeries {
     }
     return formatNumber(data.value).toText();
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) {
+    List<LegendItem> list = [];
+    each(dataList, (item, i) {
+      var name = item.name;
+      if (name == null || name.isEmpty) {
+        return;
+      }
+      list.add(LegendItem(name, RectSymbol()..itemStyle = getAreaStyle(context, item, i, {}), seriesId: id));
+    });
+    return list;
+  }
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(dataList, (p0, p1) {
+      p0.styleIndex = p1 + start;
+    });
+    return dataList.length;
+  }
 }

@@ -44,8 +44,33 @@ class ParallelSeries extends ChartSeries {
     var theme = context.option.theme;
     return theme.getLabelStyle()?.convert(status);
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) {
+    List<LegendItem> list = [];
+    each(data, (item, i) {
+      var name = item.name;
+      if (name == null || name.isEmpty) {
+        return;
+      }
+      var color = context.option.theme.getColor(i);
+      list.add(LegendItem(
+        name,
+        RectSymbol()..itemStyle = AreaStyle(color: color),
+        seriesId: id,
+      ));
+    });
+    return list;
+  }
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data, (p0, p1) {
+      p0.styleIndex=p1+start;
+    });
+    return data.length;
+  }
 }
 
 class ParallelGroup extends BaseGroupData<dynamic> {
-  ParallelGroup(super.data, {super.id, super.label});
+  ParallelGroup(super.data, {super.id, super.name});
 }

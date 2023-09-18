@@ -54,8 +54,6 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
 
   set position(Offset o) => attr.position = o;
 
-  int get styleIndex => data.styleIndex;
-
   @override
   bool contains(Offset offset) {
     return false;
@@ -87,13 +85,13 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
 
   @override
   void updateStyle(Context context, covariant StackSeries<T, P> series) {
-    itemStyle = series.getAreaStyle(context, data.data, data.parent, styleIndex, status) ?? AreaStyle.empty;
-    borderStyle = series.getLineStyle(context, data.data, data.parent, styleIndex, status) ?? LineStyle.empty;
-    labelStyle = series.getLabelStyle(context, data.data, data.parent, styleIndex, status) ?? LabelStyle.empty;
+    itemStyle = series.getAreaStyle(context, data.data, data.parent, status);
+    borderStyle = series.getLineStyle(context, data.data, data.parent, status);
+    labelStyle = series.getLabelStyle(context, data.data, data.parent, status);
   }
 
   void updateTextPosition(Context context, covariant StackSeries<T, P> series) {
-    var align = series.getLabelAlign(context, data.data, data.parent, styleIndex, status);
+    var align = series.getLabelAlign(context, data.data, data.parent, status);
     if (coord == CoordType.polar) {
       labelConfig = align.convert2(arc, labelStyle, series.direction);
     } else {

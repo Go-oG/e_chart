@@ -21,15 +21,16 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
       if (data == null) {
         return;
       }
-      var as = series.getAreaStyle(context, data, node.parent, node.styleIndex, node.status);
-      var ls = series.getLineStyle(context, data, node.parent, node.styleIndex, node.status);
-      if (ls == null) {
-        throw ChartError("Candlestick LineStyle must not null");
+      var as = series.getAreaStyle(context, data, node.parent, node.status);
+      var ls = series.getLineStyle(context, data, node.parent, node.status);
+      if (ls.notDraw) {
+        Logger.w("Candlestick LineStyle must not null");
+        return;
       }
       double xo = -ls.width / 2.toDouble();
       canvas.save();
       canvas.translate(xo, 0);
-      as?.drawRect(canvas, mPaint, layoutHelper.getAreaRect(node));
+      as.drawRect(canvas, mPaint, layoutHelper.getAreaRect(node));
       for (var bl in layoutHelper.getBorderList(node)) {
         ls.drawPolygon(canvas, mPaint, bl);
       }

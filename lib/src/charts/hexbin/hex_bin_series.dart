@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/hexbin/hex_bin_view.dart';
-import 'package:e_chart/src/charts/hexbin/layout/hex_bin_layout.dart';
 
 class HexbinSeries extends RectSeries {
   HexbinLayout layout = HexagonsLayout();
@@ -90,5 +89,16 @@ class HexbinSeries extends RectSeries {
     }
     var theme = context.option.theme;
     return theme.hexbinTheme.labelStyle?.convert(status);
+  }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) =>[];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data, (p0, p1) {
+      p0.styleIndex=p1+start;
+    });
+    return data.length;
   }
 }

@@ -93,7 +93,7 @@ class FlexLayout extends ChartViewGroup {
         }
       }
 
-      if (direction == Direction.vertical) {
+      if (direction == Direction.horizontal) {
         l += maxW;
         y = crossDirection == VerticalDirection.up ? height : 0;
       } else {

@@ -464,11 +464,10 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       var originData = node.originData;
       var parent = node.parent;
-      var styleIndex = node.styleIndex;
       var status = node.status;
-      node.itemStyle = buildAreaStyle(originData, parent, styleIndex, status);
-      node.borderStyle = buildLineStyle(originData, parent, styleIndex, status);
-      node.labelStyle = buildLabelStyle(originData, parent, styleIndex, status);
+      node.itemStyle = buildAreaStyle(originData, parent, status);
+      node.borderStyle = buildLineStyle(originData, parent, status);
+      node.labelStyle = buildLabelStyle(originData, parent, status);
     });
 
     var animation = series.animation;
@@ -486,8 +485,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       oldAreStyleMap[node] = node.itemStyle;
       oldLineStyleMap[node] = node.borderStyle;
-      newAreStyleMap[node] = buildAreaStyle(node.originData, node.parent, node.styleIndex, node.status);
-      newLineStyleMap[node] = buildLineStyle(node.originData, node.parent, node.styleIndex, node.status);
+      newAreStyleMap[node] = buildAreaStyle(node.originData, node.parent, node.status);
+      newLineStyleMap[node] = buildLineStyle(node.originData, node.parent, node.status);
     });
 
     ChartDoubleTween doubleTween = ChartDoubleTween(option: animation);
@@ -614,15 +613,15 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return null;
   }
 
-  AreaStyle buildAreaStyle(T? data, P group, int styleIndex, Set<ViewState> status) {
-    return series.getAreaStyle(context, data, group, styleIndex, status) ?? AreaStyle.empty;
+  AreaStyle buildAreaStyle(T? data, P group, Set<ViewState> status) {
+    return series.getAreaStyle(context, data, group, status);
   }
 
-  LineStyle buildLineStyle(T? data, P group, int styleIndex, Set<ViewState> status) {
-    return series.getLineStyle(context, data, group, styleIndex, status) ?? LineStyle.empty;
+  LineStyle buildLineStyle(T? data, P group, Set<ViewState> status) {
+    return series.getLineStyle(context, data, group, status);
   }
 
-  LabelStyle buildLabelStyle(T? data, P group, int styleIndex, Set<ViewState> status) {
-    return series.getLabelStyle(context, data, group, styleIndex, status) ?? LabelStyle.empty;
+  LabelStyle buildLabelStyle(T? data, P group, Set<ViewState> status) {
+    return series.getLabelStyle(context, data, group, status);
   }
 }

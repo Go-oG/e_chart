@@ -20,6 +20,6 @@ class EdgeItemData extends BaseItemData {
     this.weight = 1,
     this.labelPos = LabelPosition.center,
     super.id,
-    super.label,
+    super.name,
   });
 }

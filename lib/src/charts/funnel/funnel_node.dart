@@ -120,7 +120,7 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
     TextDrawInfo? config = labelConfig;
-    DynamicText? label = data.label;
+    DynamicText? label = data.name;
     if (label == null || label.isEmpty || config == null) {
       return;
     }

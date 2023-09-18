@@ -115,7 +115,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
     }
     Rect rect = node.attr;
     style.drawRect(canvas, mPaint, rect);
-    DynamicText label = node.data.label ?? DynamicText.empty;
+    DynamicText label = node.data.name ?? DynamicText.empty;
     if (label.isEmpty) {
       return;
     }

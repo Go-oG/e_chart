@@ -44,4 +44,15 @@ class PointSeries extends RectSeries {
       itemStyle: AreaStyle(color: context.option.theme.getColor(index)).convert(status),
     );
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) =>[];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data, (p0, p1) {
+      p0.styleIndex=p1+start;
+    });
+    return data.length;
+  }
 }

@@ -15,7 +15,7 @@ class PointGroup extends BaseGroupData<PointData> {
     this.polarIndex = -1,
     this.calendarIndex = 0,
     super.id,
-    super.label,
+    super.name,
   });
 }
 
@@ -24,7 +24,7 @@ class PointData extends BaseItemData {
   dynamic y;
   dynamic value;
 
-  PointData(this.x, this.y, this.value, {super.label, super.id}) {
+  PointData(this.x, this.y, this.value, {super.name, super.id}) {
     checkDataType(x);
     checkDataType(y);
   }

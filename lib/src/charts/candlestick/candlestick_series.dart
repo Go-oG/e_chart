@@ -4,7 +4,8 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/candlestick/candlestick_view.dart';
 
 class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
-  CandleStickSeries(super.data, {
+  CandleStickSeries(
+    super.data, {
     super.dynamicRange = true,
     super.gridIndex = 0,
     super.areaStyleFun,
@@ -24,18 +25,18 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
     super.markPoint,
     super.markPointFun,
     super.animation =
-    const AnimatorOption(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
+        const AnimatorOption(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
     super.tooltip,
     super.backgroundColor,
     super.id,
     super.clip,
     super.z,
   }) : super(
-      coordType: CoordType.grid,
-      polarIndex: -1,
-      direction: Direction.vertical,
-      realtimeSort: false,
-      selectedMode: SelectedMode.single);
+            coordType: CoordType.grid,
+            polarIndex: -1,
+            direction: Direction.vertical,
+            realtimeSort: false,
+            selectedMode: SelectedMode.single);
 
   @override
   ChartView? toView() {
@@ -43,30 +44,28 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
   }
 
   @override
-  AreaStyle? getAreaStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex,
-      [Set<ViewState>? status]) {
+  AreaStyle getAreaStyle(Context context, CandleStickData? data, CandleStickGroup group, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group, status ?? {});
+      return areaStyleFun?.call(data, group, status ?? {}) ?? AreaStyle.empty;
     }
     if (data == null) {
-      return null;
+      return AreaStyle.empty;
     }
     var theme = context.option.theme.kLineTheme;
     if (theme.fill) {
       Color color = data.isUp ? theme.upColor : theme.downColor;
       return AreaStyle(color: color).convert(status);
     }
-    return null;
+    return AreaStyle.empty;
   }
 
   @override
-  LineStyle? getLineStyle(Context context, CandleStickData? data, CandleStickGroup group, int styleIndex,
-      [Set<ViewState>? status]) {
+  LineStyle getLineStyle(Context context, CandleStickData? data, CandleStickGroup group, [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
-      return lineStyleFun!.call(data, group, status ?? {});
+      return lineStyleFun!.call(data, group, status ?? {}) ?? LineStyle.empty;
     }
     if (data == null) {
-      return null;
+      return LineStyle.empty;
     }
     var theme = context.option.theme.kLineTheme;
     Color color = data.isUp ? theme.upColor : theme.downColor;
@@ -75,12 +74,13 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
 }
 
 class CandleStickGroup extends StackGroupData<CandleStickData> {
-  CandleStickGroup(super.data, {
+  CandleStickGroup(
+    super.data, {
     super.xAxisIndex = 0,
     super.yAxisIndex = 0,
     super.barMaxSize,
     super.barMinSize,
-    super.barSize=const SNumber.percent(80),
+    super.barSize = const SNumber.percent(80),
     super.id,
     super.styleIndex,
   });

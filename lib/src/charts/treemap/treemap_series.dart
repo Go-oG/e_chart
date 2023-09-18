@@ -73,4 +73,23 @@ class TreeMapSeries extends RectSeries {
   ChartView? toView() {
     return TreeMapView(this);
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) => [];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    int c = 0;
+    List<TreeData> dl = [data];
+    List<TreeData> next = [];
+    while (dl.isNotEmpty) {
+      each(dl, (p0, p1) {
+        p0.styleIndex = c;
+        c++;
+      });
+      next.addAll(dl);
+      dl = next;
+    }
+    return c;
+  }
 }

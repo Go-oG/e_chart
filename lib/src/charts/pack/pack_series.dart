@@ -64,4 +64,12 @@ class PackSeries extends RectSeries {
     }
     return null;
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) => [];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    return 0;
+  }
 }

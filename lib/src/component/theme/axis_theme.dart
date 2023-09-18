@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 ///坐标轴主题
 class AxisTheme {
   bool showAxisLine = true;
-  Color axisLineColor = const Color(0xFF6E7079);
+  Color axisLineColor = const Color(0xFF000000);
   num axisLineWidth = 1;
 
   MainTick? tick = MainTick();
   MinorTick? minorTick;
 
   bool showLabel = true;
-  Color labelColor = const Color(0xFF6E7079);
+  Color labelColor = const Color(0xFF000000);
   num labelSize = 13;
 
   bool showMinorLabel = false;
-  Color minorLabelColor = const Color(0xFF6E7079);
+  Color minorLabelColor = const Color(0xFF000000);
   num minorLabelSize = 13;
 
   bool showSplitLine = false;

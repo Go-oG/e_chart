@@ -12,7 +12,7 @@ class HeatMapNode extends DataNode<Rect, HeatMapData> {
   @override
   void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, attr.center);
-    var label = data.label;
+    var label = data.name;
     if (label == null || label.isEmpty) {
       return;
     }

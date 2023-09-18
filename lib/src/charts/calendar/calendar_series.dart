@@ -81,7 +81,8 @@ class CalenderSeries extends ChartSeries {
 
   FontStyle Function(int weekIndex)? weekStyleGenerator;
 
-  CalendarItemStyle Function(int year, int month, int date, bool chosen, bool isToday, bool isLastMonth, bool isNextMonth)? styleGenerator;
+  CalendarItemStyle Function(
+      int year, int month, int date, bool chosen, bool isToday, bool isLastMonth, bool isNextMonth)? styleGenerator;
 
   void Function(List<DateTime> values)? onChange;
 
@@ -135,5 +136,15 @@ class CalenderSeries extends ChartSeries {
   @override
   ChartView? toView() {
     return CalendarView(this);
+  }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) {
+    return [];
+  }
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    return 0;
   }
 }

@@ -58,7 +58,6 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   /// 标签样式
   LabelStyle? labelStyle;
   Fun4<T, G, Set<ViewState>, LabelStyle?>? labelStyleFun;
-
   Fun4<T, G, Set<ViewState>, Corner>? cornerFun;
 
   /// 背景样式
@@ -68,7 +67,6 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   /// 标记点、线相关的
   MarkLine? markLine;
   MarkPoint? markPoint;
-
   Fun2<G, List<MarkPoint>>? markPointFun;
   Fun2<G, List<MarkLine>>? markLineFun;
 
@@ -132,6 +130,14 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     super.notifyUpdateData();
   }
 
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data, (p0, p1) {
+      p0.styleIndex = start + p1;
+    });
+    return data.length;
+  }
+
   List<MarkPoint> getMarkPoint(G group) {
     if (markPointFun != null) {
       return markPointFun!.call(group);
@@ -159,53 +165,56 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     return formatNumber(data.stackUp).toText();
   }
 
-  AreaStyle? getAreaStyle(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
-    if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group, status);
+  AreaStyle getAreaStyle(Context context, T? data, G group, Set<ViewState> status) {
+    var fun = areaStyleFun;
+    if (fun != null) {
+      return fun.call(data, group, status) ?? AreaStyle.empty;
     }
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
       var theme = chartTheme.lineTheme;
       if (theme.fill) {
-        Color fillColor = chartTheme.getColor(styleIndex).withOpacity(theme.opacity);
+        var fillColor = chartTheme.getColor(group.styleIndex).withOpacity(theme.opacity);
         return AreaStyle(color: fillColor).convert(status);
       }
     } else {
-      Color fillColor = chartTheme.getColor(styleIndex);
-      return AreaStyle(color: fillColor).convert(status);
+      return chartTheme.getAreaStyle(group.styleIndex).convert(status);
     }
-    return null;
+    return AreaStyle.empty;
   }
 
-  LineStyle? getLineStyle(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
-    if (lineStyleFun != null) {
-      return lineStyleFun?.call(data, group, status);
+  LineStyle getLineStyle(Context context, T? data, G group, Set<ViewState> status) {
+    var fun = lineStyleFun;
+    if (fun != null) {
+      return fun.call(data, group, status) ?? LineStyle.empty;
     }
+
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
       var theme = chartTheme.lineTheme;
-      return theme.getLineStyle(chartTheme, styleIndex).convert(status);
+      return theme.getLineStyle(chartTheme, group.styleIndex).convert(status);
     } else {
-      var barTheme = context.option.theme.barTheme;
-      return barTheme.getBorderStyle();
+      return context.option.theme.barTheme.getBorderStyle() ?? LineStyle.empty;
     }
   }
 
-  LabelStyle? getLabelStyle(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
+  LabelStyle getLabelStyle(Context context, T? data, G group, Set<ViewState> status) {
     if (data == null) {
-      return null;
+      return LabelStyle.empty;
     }
-    if (labelStyleFun != null) {
-      return labelStyleFun?.call(data, group, status);
+    var fun = labelStyleFun;
+    if (fun != null) {
+      return fun.call(data, group, status) ?? LabelStyle.empty;
     }
     if (labelStyle != null) {
-      return labelStyle;
+      return labelStyle!;
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(status);
+
+    return (theme.getLabelStyle()?.convert(status)) ?? LabelStyle.empty;
   }
 
-  ChartAlign getLabelAlign(Context context, T? data, G group, int styleIndex, Set<ViewState> status) {
+  ChartAlign getLabelAlign(Context context, T? data, G group, Set<ViewState> status) {
     if (data == null) {
       return ChartAlign.center;
     }
@@ -223,6 +232,25 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
   }
 
   bool get isVertical => direction == Direction.vertical;
+
+  @override
+  List<LegendItem> getLegendItem(Context context) {
+    List<LegendItem> list = [];
+    each(data, (group, i) {
+      var name = group.name;
+      if (name.isEmpty) {
+        return;
+      }
+      //  var fillColor = context.option.theme.getColor(group.styleIndex);
+      var fillColor = context.option.theme.getColor(i);
+      list.add(LegendItem(
+        name.toText(),
+        RectSymbol()..itemStyle = AreaStyle(color: fillColor),
+        seriesId: id,
+      ));
+    });
+    return list;
+  }
 }
 
 ///动画样式

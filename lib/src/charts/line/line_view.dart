@@ -77,7 +77,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.borderList.isEmpty) {
       return;
     }
-    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, {});
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, {});
     if (ls.notDraw) {
       return;
     }
@@ -100,7 +100,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.borderList.isEmpty) {
       return [];
     }
-    var ls = layoutHelper.buildLineStyle(null, lineNode.data, lineNode.styleIndex, {});
+    var ls = layoutHelper.buildLineStyle(null, lineNode.data, {});
     lineNode.lineStyle = ls;
     if (ls.notDraw) {
       return [];
@@ -126,7 +126,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (lineNode.areaList.isEmpty) {
       return;
     }
-    var style = layoutHelper.buildAreaStyle(null, lineNode.data, lineNode.styleIndex, {});
+    var style = layoutHelper.buildAreaStyle(null, lineNode.data, {});
     if (style.notDraw) {
       return;
     }
@@ -137,7 +137,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   void drawAreaForPolar(CCanvas canvas, LineNode node, Path path, LineTheme theme) {
-    var style = layoutHelper.buildAreaStyle(null, node.data, node.styleIndex, {});
+    var style = layoutHelper.buildAreaStyle(null, node.data, {});
     node.areaStyle = style;
     if (style.notDraw) {
       return;

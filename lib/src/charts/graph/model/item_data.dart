@@ -20,7 +20,7 @@ class GraphItemData extends BaseItemData {
     this.fy,
     this.weight = 1,
     super.id,
-    super.label,
+    super.name,
     this.groupId,
   });
 }

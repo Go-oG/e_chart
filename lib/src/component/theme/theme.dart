@@ -42,6 +42,7 @@ class ChartTheme {
 
   final LabelTheme _labelStyle=LabelTheme.of(const Color(0xDD000000), 13);
   bool showLabel = true;
+
   LabelStyle? getLabelStyle() {
     if (!showLabel) {
       return null;

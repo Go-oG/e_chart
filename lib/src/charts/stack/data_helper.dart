@@ -109,7 +109,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       Map<int, WrapData<T, P>> childMap = dataMap[group] ?? {};
       dataMap[group] = childMap;
       each(group.data, (childData, i) {
-        childMap[i] = WrapData(childData, group, groupIndex, i, group.styleIndex);
+        childMap[i] = WrapData(childData, group, groupIndex, i);
       });
     });
     return OriginInfo(sortMap, dataMap);

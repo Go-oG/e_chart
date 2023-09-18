@@ -59,6 +59,18 @@ class Context {
 
   LegendComponent get legend => _legend!;
 
+  ///分配索引
+  void allocateIndex() {
+    //给Series 分配索引
+    //同时包含了样式索引
+    int styleIndex=0;
+    each(option.series, (series, i){
+      series.seriesIndex = i;
+      styleIndex+=series.onAllocateStyleIndex(styleIndex);
+    });
+
+  }
+
   /// 创建Chart组件
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
@@ -391,7 +403,9 @@ class Context {
   ///=======Event分发和监听
 
   void addEventCall(VoidFun1<ChartEvent>? call) {
-    if(call==null){return;}
+    if (call == null) {
+      return;
+    }
     _eventDispatcher.addCall(call);
   }
 

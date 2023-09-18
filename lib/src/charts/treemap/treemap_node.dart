@@ -45,7 +45,7 @@ class TreeMapNode extends TreeNode<TreeData, Rect, TreeMapNode> {
   void onDraw(CCanvas canvas, Paint paint) {
     Rect rect = attr;
     itemStyle.drawRect(canvas, paint, rect);
-    var label = data.label;
+    var label = data.name;
     var config = labelConfig;
     var ls = labelStyle;
     if (label == null || label.isNotEmpty || config == null || !ls.show) {

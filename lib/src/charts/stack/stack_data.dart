@@ -2,15 +2,16 @@ import 'package:e_chart/e_chart.dart';
 
 class StackGroupData<T> {
   late final String id;
+  late final String name;
   int styleIndex = 0;
   List<T?> data;
   int xAxisIndex;
   int yAxisIndex;
 
   String? _stackId;
-  StackStrategy strategy;
 
   String? get stackId => _stackId;
+  StackStrategy strategy;
 
   SNumber? barSize;
   SNumber? barMaxSize;
@@ -24,6 +25,7 @@ class StackGroupData<T> {
     this.barMaxSize,
     this.barMinSize = const SNumber(1, false),
     String? id,
+    String? name,
     String? stackId,
     this.strategy = StackStrategy.all,
     this.styleIndex = 0,
@@ -34,6 +36,7 @@ class StackGroupData<T> {
       this.id = id;
     }
     this._stackId = stackId;
+    this.name = name ?? '';
   }
 
   set stackId(String? id) {
@@ -104,7 +107,7 @@ class StackItemData {
   }
 
   num get aveValue {
-    return value/2;
+    return value / 2;
   }
 
   @override

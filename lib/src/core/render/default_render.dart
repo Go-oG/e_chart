@@ -22,14 +22,13 @@ class DefaultRender extends ChartRender {
       titleView.measure(w, h);
       h -= titleView.height;
     }
-    if (context.legend != null) {
-      LegendComponent legendView = context.legend!;
-      legendView.measure(w, h);
-      h -= legendView.height;
-    }
+    var legendView = context.legend;
+    legendView.measure(w, h);
+
+    h -= legendView.height;
     List<ChartView> renderList = context.coordList;
     for (var v in renderList) {
-      v.measure(parentWidth, parentHeight);
+      v.measure(parentWidth, parentHeight - legendView.height);
     }
   }
 
@@ -48,12 +47,13 @@ class DefaultRender extends ChartRender {
         continue;
       }
       var margin = v.margin;
-      v.layout(
-        rect.left + margin.left,
-        rect.top + margin.top,
-        rect.left + margin.left + v.width,
-        rect.top + margin.top + v.height,
-      );
+      // v.layout(
+      //   rect.left + margin.left,
+      //   rect.top + margin.top,
+      //   rect.left + margin.left + v.width,
+      //   rect.top + margin.top + v.height,
+      // );
+      v.layout(rect.left + margin.left, rect.top + margin.top, rect.right - margin.right, rect.bottom - margin.bottom);
     }
   }
 
@@ -94,32 +94,30 @@ class DefaultRender extends ChartRender {
       // }
     }
 
-    if (context.legend != null) {
-      LegendComponent legendView = context.legend!;
-      Legend legend = legendView.legend;
-      Align2 vAlign = legend.vAlign;
-      Align2 hAlign = legend.hAlign;
-      if (vAlign == Align2.center && hAlign == Align2.center) {
-        vAlign = Align2.start;
-      }
-      double top;
-      double left;
-      if (vAlign == Align2.start) {
-        top = titleTopUsed + legend.offset.dy;
-      } else if (vAlign == Align2.center) {
-        top = height / 2 - legendView.height / 2;
-      } else {
-        top = height - titleBottomUsed - legendView.height;
-      }
-      if (hAlign == Align2.start) {
-        left = legend.offset.dx;
-      } else if (hAlign == Align2.center) {
-        left = legend.offset.dx + (width / 2 - legendView.width / 2);
-      } else {
-        left = width - legend.offset.dx - legendView.width;
-      }
-      legendView.layout(left, top, left + legendView.width, top + legendView.height);
+    var legendView = context.legend;
+    Legend legend = legendView.legend;
+    Align2 vAlign = legend.vAlign;
+    Align2 hAlign = legend.hAlign;
+    if (vAlign == Align2.center && hAlign == Align2.center) {
+      vAlign = Align2.start;
     }
+    double top;
+    double left;
+    if (vAlign == Align2.start) {
+      top = titleTopUsed + legend.offset.dy;
+    } else if (vAlign == Align2.center) {
+      top = height / 2 - legendView.height / 2;
+    } else {
+      top = height - titleBottomUsed - legendView.height;
+    }
+    if (hAlign == Align2.start) {
+      left = legend.offset.dx;
+    } else if (hAlign == Align2.center) {
+      left = legend.offset.dx + ((width - legendView.width) / 2);
+    } else {
+      left = width - legendView.width + legend.offset.dx;
+    }
+    legendView.layout(left, top, left + legendView.width, top + legendView.height);
 
     double l = 0;
     double t = 0;
@@ -130,20 +128,16 @@ class DefaultRender extends ChartRender {
       t = max(t, titleView.bottom);
       b = min(b, titleView.top);
     }
-    if (context.legend != null) {
-      LegendComponent legend = context.legend!;
-      Align2 hAlign = legend.legend.hAlign;
-      Align2 vAlign = legend.legend.vAlign;
-      if (hAlign == Align2.start) {
-        l = max(l, legend.right);
-      } else if (hAlign == Align2.end) {
-        r = min(r, legend.left);
-      }
-      if (vAlign == Align2.start) {
-        t = max(t, legend.bottom);
-      } else if (vAlign == Align2.end) {
-        b = min(b, legend.top);
-      }
+
+    if (hAlign == Align2.start) {
+      l = max(l, legendView.right);
+    } else if (hAlign == Align2.end) {
+      r = min(r, legendView.left);
+    }
+    if (vAlign == Align2.start) {
+      t = max(t, legendView.bottom);
+    } else if (vAlign == Align2.end) {
+      b = min(b, legendView.top);
     }
     return Rect.fromLTRB(l, t, r, b);
   }
@@ -154,6 +148,7 @@ class DefaultRender extends ChartRender {
     mPaint.color = context.option.theme.backgroundColor;
     mPaint.style = PaintingStyle.fill;
     canvas.drawRect(selfBoxBound, mPaint);
+
     for (var v in context.coordList) {
       try {
         canvas.save();
@@ -166,6 +161,16 @@ class DefaultRender extends ChartRender {
         rethrow;
       }
     }
-
+    try {
+      var legend = context.legend;
+      canvas.save();
+      canvas.translate(legend.left, legend.top);
+      legend.draw(canvas);
+      canvas.restore();
+    } catch (e) {
+      debugPrint('$e');
+      Logger.e(e);
+      rethrow;
+    }
   }
 }

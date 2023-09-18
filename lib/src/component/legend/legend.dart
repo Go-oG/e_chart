@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class Legend {
-  List<LegendItem> data;
+  List<LegendItem>? data;
   bool show;
   bool scroll;
   Position labelPosition;
@@ -19,10 +19,10 @@ class Legend {
   EdgeInsets padding;
   TriggerOn triggerOn;
 
-  Legend(
-    this.data, {
+  Legend({
     this.show = true,
     this.scroll = false,
+    this.data,
     this.labelPosition = Position.right,
     this.vAlign = Align2.start,
     this.hAlign = Align2.center,

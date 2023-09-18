@@ -7,22 +7,21 @@ class GroupData extends BaseGroupData<ItemData> {
   GroupData(
     super.data, {
     super.id,
-    super.label,
+    super.name,
   });
 }
 
 class BaseGroupData<T> {
   late final String id;
-  DynamicText? label;
-
+  DynamicText? name;
   List<T> data;
-
+  int styleIndex = -1;
   bool show = true;
 
   BaseGroupData(
     this.data, {
     String? id,
-    this.label,
+    this.name,
   }) {
     if (id == null || id.isEmpty) {
       this.id = randomId();
@@ -45,7 +44,7 @@ class BaseGroupData<T> {
 class ItemData extends BaseItemData {
   num value;
 
-  ItemData(this.value, {super.label, super.id});
+  ItemData(this.value, {super.name, super.id});
 
   @override
   String toString() {
@@ -55,14 +54,28 @@ class ItemData extends BaseItemData {
 
 class BaseItemData {
   late final String id;
-  DynamicText? label;
+  DynamicText? name;
   bool show = true;
+  int styleIndex = -1;
 
-  BaseItemData({this.label, String? id}) {
+  BaseItemData({dynamic name, String? id}) {
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {
       this.id = id;
+    }
+    if (name is DynamicText) {
+      this.name = name;
+    } else if (name is String) {
+      this.name = name.toText();
+    } else if (name is TextSpan) {
+      this.name = name.toText();
+    } else if (name is Paragraph) {
+      this.name = name.toText();
+    } else {
+      if (name != null) {
+        throw ChartError("name only support String textSpan Paragraph");
+      }
     }
   }
 

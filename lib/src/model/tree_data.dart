@@ -1,11 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 
-class TreeData extends ItemData{
-  static final TreeData empty=TreeData(double.nan,id: "TE0101010101");
+class TreeData extends ItemData {
+  static final TreeData empty = TreeData(double.nan, id: "TE0101010101");
   List<TreeData> _children = [];
   TreeData? parent;
 
-  TreeData(super.value, {super.label, super.id});
+  TreeData(super.value, {super.name, super.id});
 
   TreeData addData(TreeData data) {
     if (data.parent != null && data.parent != this) {
@@ -51,7 +51,7 @@ class TreeData extends ItemData{
 
   @override
   String toString() {
-    return "$runtimeType label:$label value:${value.toStringAsFixed(2)}";
+    return "$runtimeType label:$name value:${value.toStringAsFixed(2)}";
   }
 
   static int computeDeep(TreeData data) {

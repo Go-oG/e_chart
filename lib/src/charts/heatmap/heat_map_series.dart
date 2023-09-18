@@ -97,6 +97,17 @@ class HeatMapSeries extends RectSeries {
     }
     return formatNumber(data.value).toText();
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) => [];
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data, (p0, p1) {
+      p0.styleIndex = p1 + start;
+    });
+    return data.length;
+  }
 }
 
 class HeatMapData extends BaseItemData {
@@ -104,7 +115,7 @@ class HeatMapData extends BaseItemData {
   dynamic y;
   num value;
 
-  HeatMapData(this.x, this.y, this.value, {super.id, super.label}) {
+  HeatMapData(this.x, this.y, this.value, {super.id, super.name}) {
     checkDataType(x);
     checkDataType(y);
   }

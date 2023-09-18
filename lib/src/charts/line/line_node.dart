@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 ///该节点的存在是为了优化折线图在大数据量下的绘制
 class LineNode {
   final int groupIndex;
-  final int styleIndex;
   final LineGroupData data;
   final List<Offset?> offsetList;
   final Map<StackItemData, LineSymbolNode> symbolMap;
@@ -15,7 +14,6 @@ class LineNode {
 
   LineNode(
     this.groupIndex,
-    this.styleIndex,
     this.data,
     this.offsetList,
     this.borderList,

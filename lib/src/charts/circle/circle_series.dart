@@ -87,6 +87,28 @@ class CircleSeries extends ChartSeries {
   ChartView? toView() {
     return CircleView(this);
   }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) {
+    List<LegendItem> list = [];
+    each(data, (item, i) {
+      var name = item.name;
+      if (name == null || name.isEmpty) {
+        return;
+      }
+      list.add(LegendItem(name, CircleSymbol()..itemStyle = getAreaStyle(context, item, i, {})));
+    });
+
+    return list;
+  }
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data, (p0, p1) {
+      p0.styleIndex = p1 + start;
+    });
+    return data.length;
+  }
 }
 
 class CircleItemData extends BaseItemData {
@@ -94,5 +116,5 @@ class CircleItemData extends BaseItemData {
   num max;
   num offsetAngle;
 
-  CircleItemData(this.value, this.max, {this.offsetAngle = 0, super.id, super.label});
+  CircleItemData(this.value, this.max, {this.offsetAngle = 0, super.id, super.name});
 }

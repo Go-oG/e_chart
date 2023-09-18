@@ -33,7 +33,7 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
   void _drawText(CCanvas canvas, Paint paint) {
     Arc arc = attr.arc;
     var style = labelStyle;
-    var label = data.label;
+    var label = data.name;
     var config = labelConfig;
     if (config == null || label == null || label.isEmpty || !style.show || arc.sweepAngle.abs() <= style.minAngle) {
       return;
@@ -98,7 +98,7 @@ class SunburstAttr {
       return;
     }
     double originAngle = arc.startAngle + arc.sweepAngle / 2;
-    Size size = style.measure(node.data.label!, maxWidth: arc.outRadius - arc.innerRadius);
+    Size size = style.measure(node.data.name!, maxWidth: arc.outRadius - arc.innerRadius);
     double labelMargin = series.labelMarginFun?.call(node) ?? 0;
     if (labelMargin > 0) {
       size = Size(size.width + labelMargin, size.height);

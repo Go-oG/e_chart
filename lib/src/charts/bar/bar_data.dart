@@ -6,6 +6,7 @@ class BarGroupData extends StackGroupData<StackItemData> {
     super.xAxisIndex,
     super.yAxisIndex,
     super.id,
+    super.name,
     super.barSize,
     super.barMaxSize,
     super.barMinSize,

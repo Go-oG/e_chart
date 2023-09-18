@@ -5,7 +5,7 @@ class LegendComponent extends FlexLayout {
   late final Legend legend;
 
   LegendComponent(Legend? legend) : super(align: Align2.center, direction: legend?.direction ?? Direction.horizontal) {
-    this.legend = legend ?? Legend([], show: false);
+    this.legend = legend ?? Legend(show: false);
   }
 
   @override
@@ -18,7 +18,19 @@ class LegendComponent extends FlexLayout {
     if (!legend.show) {
       return;
     }
-    for (var item in legend.data) {
+    List<LegendItem> dataList = [];
+    if (legend.data != null && legend.data!.isNotEmpty) {
+      dataList.addAll(legend.data!);
+    } else {
+      for (var item in context.option.series) {
+        dataList.addAll(item.getLegendItem(context));
+      }
+    }
+    for (var item in dataList) {
+      var style=item.textStyle;
+      if(style==null||!style.show){
+        item.textStyle= context.option.theme.subTitle.getStyle();
+      }
       addView(LegendItemView(legend, item));
     }
   }
@@ -119,7 +131,7 @@ class LegendItemView extends GestureView with ViewStateProvider {
     num w = item.symbol.size.width;
     num h = item.symbol.size.height;
     Size textSize = labelStyle.measure(item.name, maxLine: 1);
-    Position p = legend.labelPosition;
+    var p = legend.labelPosition;
     if (p == Position.left || p == Position.right) {
       w += textSize.width + item.gap;
       h = max([h, textSize.height]);
@@ -137,7 +149,7 @@ class LegendItemView extends GestureView with ViewStateProvider {
   void onDraw(CCanvas canvas) {
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
-    Position p = legend.labelPosition;
+    var p = legend.labelPosition;
     Size symbolSize = item.symbol.size;
     LabelStyle textStyle = labelStyle;
     if (p == Position.left) {

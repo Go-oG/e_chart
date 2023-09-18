@@ -35,7 +35,7 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
       if (!layoutHelper.needDraw(node)) {
         return false;
       }
-      var label = node.data.label;
+      var label = node.data.name;
       if (label != null && label.isNotEmpty) {
         var labelStyle = series.getLabelStyle(context, node);
         if (labelStyle == null || !labelStyle.show) {

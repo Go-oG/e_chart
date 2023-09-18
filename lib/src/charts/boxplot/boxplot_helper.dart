@@ -53,8 +53,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  StackAnimationNode onCreateAnimatorNode(
-      SingleNode<BoxplotData, BoxplotGroup> node, DiffType diffType, LayoutType type) {
+  StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
     if (diffType == DiffType.update) {
       var an = StackAnimationNode();
       an.extSetAll(node.extGetAll());
@@ -95,6 +94,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
     Offset upo = Offset.lerp(suo, euo, t)!;
     Offset maxo = Offset.lerp(smaxo, emaxo, t)!;
     _setPath(node, series.direction == Direction.vertical, mino, downo, middleo, upo, maxo, colRect);
+    node.updateTextPosition(context, series);
   }
 
   void _setPath(

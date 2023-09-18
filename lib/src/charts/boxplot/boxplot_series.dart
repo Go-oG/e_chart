@@ -37,21 +37,21 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
   }
 
   @override
-  AreaStyle? getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, int styleIndex, [Set<ViewState>? status]) {
+  AreaStyle getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group, status ?? {});
+      return areaStyleFun?.call(data, group, status ?? {}) ?? AreaStyle.empty;
     }
     var chartTheme = context.option.theme;
-    return AreaStyle(color: chartTheme.getColor(styleIndex)).convert(status);
+    return AreaStyle(color: chartTheme.getColor(group.styleIndex)).convert(status);
   }
 
   @override
-  LineStyle? getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, int styleIndex, [Set<ViewState>? status]) {
+  LineStyle getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
-      return lineStyleFun?.call(data, group, status ?? {});
+      return lineStyleFun?.call(data, group, status ?? {})??LineStyle.empty;
     }
     var barTheme = context.option.theme.boxplotTheme;
-    return barTheme.getBorderStyle();
+    return barTheme.getBorderStyle()??LineStyle.empty;
   }
 }
 

@@ -49,7 +49,7 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
     var path = attr.area.toPath();
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
-    var label = data.label;
+    var label = data.name;
     var config = attr.textConfig;
     if (config == null || label == null || label.isEmpty) {
       return;

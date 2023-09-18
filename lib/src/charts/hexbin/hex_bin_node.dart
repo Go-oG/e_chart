@@ -15,7 +15,7 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
   void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, attr.center);
 
-    var s = data.label;
+    var s = data.name;
     if (s == null || s.isEmpty) {
       return;
     }

@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 
 /// 图表的抽象表示
 /// 建议所有的属性都应该为公共且可以更改的
+///每个图表必须要有一个Series
 abstract class ChartSeries extends ChartNotifier<Command> {
   late final String id;
 
+  ///Series的索引 在Context中进行分配
   int seriesIndex = -1;
+
   String name;
 
   ///坐标系系统
@@ -50,6 +53,8 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     }
   }
 
+
+
   ///通知数据更新
   void notifyUpdateData() {
     value = Command.updateData;
@@ -62,9 +67,23 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     value = Command.configChange;
   }
 
+  ///返回承载该Series的渲染视图
+  ///如果返回null,那么将会调用[SeriesFactory]的相关方法
+  ///来创建视图，如果无法创建视图则会抛错
   ChartView? toView() {
     return null;
   }
+
+  ///每个Series必须返回一个图例数据集
+  ///以便在需要显示Legend时能够获取到数据
+  List<LegendItem> getLegendItem(Context context);
+
+  ///分配样式索引
+  int onAllocateStyleIndex(int start);
+
+
+
+
 
   ///获取动画参数
   ///[threshold]动画执行上限,超过该值则不执行 设置为<=0则不执行任何动画
@@ -90,6 +109,8 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     }
     return null;
   }
+
+
 }
 
 abstract class RectSeries extends ChartSeries {
