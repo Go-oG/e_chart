@@ -1,23 +1,40 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../model/enums/align2.dart';
-import '../../model/enums/direction.dart';
-import 'legend_item.dart';
-
 class Legend {
-  bool show = true;
-  bool scroll = false;
-  List<LegendItem> itemList;
-  
-  Align2 vAlign = Align2.start;
-  Align2 hAlign = Align2.center;
-  
-  Offset offset = Offset.zero;
-  Direction direction = Direction.horizontal;
+  List<LegendItem> data;
+  bool show;
+  bool scroll;
+  Position labelPosition;
+  Align2 vAlign;
+  Align2 hAlign;
+  Offset offset;
+  Direction direction;
+  num itemGap;
+  bool allowSelectMulti;
+  AreaStyle inactiveStyle;
+  LineStyle inactiveBorderStyle;
+  AnimatorOption? animator;
+  BoxDecoration? decoration;
+  EdgeInsets padding;
+  TriggerOn triggerOn;
 
-  num itemGap = 10;
-  BoxDecoration decoration = const BoxDecoration();
-  EdgeInsetsGeometry padding = EdgeInsets.zero;
-
-  Legend({required this.itemList});
+  Legend(
+    this.data, {
+    this.show = true,
+    this.scroll = false,
+    this.labelPosition = Position.right,
+    this.vAlign = Align2.start,
+    this.hAlign = Align2.center,
+    this.offset = Offset.zero,
+    this.direction = Direction.horizontal,
+    this.itemGap = 10,
+    this.allowSelectMulti = true,
+    this.inactiveStyle = const AreaStyle(color: Color(0xFFCCCCCC)),
+    this.inactiveBorderStyle = LineStyle.empty,
+    this.animator,
+    this.decoration,
+    this.padding = EdgeInsets.zero,
+    this.triggerOn = TriggerOn.click,
+  });
 }

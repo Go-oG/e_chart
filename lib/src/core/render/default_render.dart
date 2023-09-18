@@ -23,7 +23,7 @@ class DefaultRender extends ChartRender {
       h -= titleView.height;
     }
     if (context.legend != null) {
-      LegendViewGroup legendView = context.legend!;
+      LegendComponent legendView = context.legend!;
       legendView.measure(w, h);
       h -= legendView.height;
     }
@@ -95,7 +95,7 @@ class DefaultRender extends ChartRender {
     }
 
     if (context.legend != null) {
-      LegendViewGroup legendView = context.legend!;
+      LegendComponent legendView = context.legend!;
       Legend legend = legendView.legend;
       Align2 vAlign = legend.vAlign;
       Align2 hAlign = legend.hAlign;
@@ -131,7 +131,7 @@ class DefaultRender extends ChartRender {
       b = min(b, titleView.top);
     }
     if (context.legend != null) {
-      LegendViewGroup legend = context.legend!;
+      LegendComponent legend = context.legend!;
       Align2 hAlign = legend.legend.hAlign;
       Align2 vAlign = legend.legend.vAlign;
       if (hAlign == Align2.start) {

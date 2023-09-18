@@ -1,25 +1,23 @@
 import 'package:e_chart/e_chart.dart';
 
 class LegendItem {
-  late final String id;
+  late final String seriesId;
   DynamicText name;
-  Position position;
-
-  ///文字位置
+  ChartSymbol symbol;
   num gap;
-  LabelStyle textStyle = const LabelStyle();
-  ChartSymbol symbol = EmptySymbol();
+  LabelStyle? textStyle;
 
   LegendItem(
-    this.name, {
-    String? id,
-    this.position = Position.right,
+    this.name,
+    this.symbol, {
+    String? seriesId,
     this.gap = 8,
+    this.textStyle,
   }) {
-    if (id == null || id.isEmpty) {
-      this.id = randomId();
+    if (seriesId == null || seriesId.isEmpty) {
+      this.seriesId = randomId();
     } else {
-      this.id = id;
+      this.seriesId = seriesId;
     }
   }
 }

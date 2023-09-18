@@ -42,7 +42,7 @@ export 'group/linear_layout_group.dart';
 
 export 'guideline/guide_line.dart';
 
-export 'legend/layout.dart';
+export 'legend/legend_view.dart';
 export 'legend/legend.dart';
 export 'legend/legend_item.dart';
 

@@ -8,7 +8,7 @@ extension RectExt on Rect {
   }
 
   ///判断当前矩形是否和给定圆有交点
-  bool containsCircle(Offset center, num radius) {
+  bool overlapCircle(Offset center, num radius) {
     if (contains2(center)) {
       return true;
     }

@@ -18,6 +18,8 @@ mixin ViewStateProvider {
 
   bool get isDragged => _stateSet.contains(ViewState.dragged);
 
+  bool get isSelected => _stateSet.contains(ViewState.selected);
+
   bool _changed = false;
 
   bool get changed {

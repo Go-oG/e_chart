@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/title/title_view.dart';
-import 'package:e_chart/src/core/view/render_node.dart';
 import 'package:flutter/widgets.dart';
 import 'package:e_chart/e_chart.dart' as ec;
 
@@ -53,22 +52,19 @@ class Context {
   ///Title(全局只会存在一个)
   TitleView? _title;
 
-  TitleView? get title => _title;
+  TitleView get title => _title!;
 
   ///图例(全局一个实例)
-  LegendViewGroup? _legend;
+  LegendComponent? _legend;
 
-  LegendViewGroup? get legend => _legend;
+  LegendComponent get legend => _legend!;
 
   /// 创建Chart组件
   /// 组件是除了渲染视图之外的全部控件
   void _createComponent() {
     ///图例
-    if (option.legend != null) {
-      _legend = LegendViewGroup(option.legend!);
-      _legend?.create(this, root);
-      //TODO 这里不知道是否需要回调[bindSeriesCommand]
-    }
+    _legend = LegendComponent(option.legend!);
+    _legend!.create(this, root);
 
     ///title
     if (option.title != null) {
@@ -199,7 +195,7 @@ class Context {
       coord.destroy();
     }
     _coordList.clear();
-    _legend?.destroy();
+    _legend!.destroy();
     _legend = null;
     _title?.destroy();
     _title = null;

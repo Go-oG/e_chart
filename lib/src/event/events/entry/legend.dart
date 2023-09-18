@@ -1,13 +1,15 @@
 import 'package:e_chart/e_chart.dart';
 
 class LegendSelectedEvent extends ChartEvent {
-  final LegendSelectAction action;
-  LegendSelectedEvent(this.action);
+  final LegendItem legendItem;
+
+  LegendSelectedEvent(this.legendItem);
 }
 
 class LegendUnSelectedEvent extends ChartEvent {
-  final LegendUnSelectAction action;
-  LegendUnSelectedEvent(this.action);
+  final LegendItem legendItem;
+
+  LegendUnSelectedEvent(this.legendItem);
 }
 
 class LegendSelectChangeEvent extends ChartEvent {
@@ -18,5 +20,6 @@ class LegendSelectChangeEvent extends ChartEvent {
 
 class LegendScrollEvent extends ChartEvent {
   final LegendScrollAction action;
+
   LegendScrollEvent(this.action);
 }

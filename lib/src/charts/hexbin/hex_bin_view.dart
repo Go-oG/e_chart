@@ -17,7 +17,7 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinHelper> {
     canvas.save();
     canvas.translate(tr.dx, tr.dy);
     each(layoutHelper.nodeList, (node, p1) {
-      if (sRect.containsCircle(node.attr.center, node.symbol.r)) {
+      if (sRect.overlapCircle(node.attr.center, node.symbol.r)) {
         node.onDraw(canvas, mPaint);
       }
     });

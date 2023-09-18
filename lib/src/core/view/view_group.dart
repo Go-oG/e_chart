@@ -59,6 +59,14 @@ abstract class ChartViewGroup extends GestureView  {
     }
   }
 
+  @override
+  void markDirtyWithChild() {
+    super.markDirtyWithChild();
+    for(var c in children){
+      c.markDirtyWithChild();
+    }
+  }
+
 
   void changeChildToFront(ChartView child) {
     int index = children.indexOf(child);

@@ -55,6 +55,10 @@ abstract class RenderNode with ViewSize {
     _dirty = true;
   }
 
+  void markDirtyWithChild(){
+    _dirty=true;
+  }
+
   bool get isDirty => _dirty;
 
   void clearDirty() {
