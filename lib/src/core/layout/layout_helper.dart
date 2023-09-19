@@ -356,7 +356,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
         return;
       }
     };
-    _context?.addEventCall(_brushListener);
+    _context?.addEventCall(EventType.brush, _brushListener);
   }
 
   void unregisterBrushListener() {
@@ -393,7 +393,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
         return;
       }
     };
-    _context?.addEventCall(_legendListener);
+    _context?.addEventCall(EventType.legend, _legendListener);
   }
 
   void onLegendSelectedEvent(LegendSelectedEvent event) {}
@@ -406,7 +406,4 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void unregisterLegendListener() {}
 //========Legend 结束================
-
-
-
 }

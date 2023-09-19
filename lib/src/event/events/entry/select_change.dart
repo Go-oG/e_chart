@@ -11,4 +11,7 @@ class SelectChangeEvent extends ChartEvent {
     this.unselectActions = const [],
     this.toggleActions = const [],
   });
+
+  @override
+  EventType get eventType => EventType.normal;
 }

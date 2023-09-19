@@ -13,7 +13,7 @@ class ChartOption {
   AnimatorOption? animation;
   ToolTip? toolTip;
   ChartTheme theme = ChartTheme();
-  VoidFun1<ChartEvent>? eventCall;
+  Map<EventType, Set<VoidFun1<ChartEvent>>>? eventCall;
   int doubleClickInterval = 220;
   int longPressTime = 280;
 
@@ -35,5 +35,4 @@ class ChartOption {
       this.theme = theme;
     }
   }
-
 }

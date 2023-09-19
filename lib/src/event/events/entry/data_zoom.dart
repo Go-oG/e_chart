@@ -4,4 +4,6 @@ class DataZoomEvent extends ChartEvent {
   final DataZoomAction action;
 
   DataZoomEvent(this.action);
+  @override
+  EventType get eventType => EventType.dataZoom;
 }

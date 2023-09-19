@@ -12,9 +12,7 @@ export 'action/chart_action_dispatcher.dart';
 
 export 'events/entry/brush.dart';
 export 'events/entry/data_zoom.dart';
-export 'events/entry/downplay.dart';
 export 'events/entry/graph.dart';
-export 'events/entry/highlight.dart';
 export 'events/entry/legend.dart';
 export 'events/entry/point_event.dart';
 export 'events/entry/rendered.dart';

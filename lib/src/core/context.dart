@@ -63,12 +63,11 @@ class Context {
   void allocateIndex() {
     //给Series 分配索引
     //同时包含了样式索引
-    int styleIndex=0;
-    each(option.series, (series, i){
+    int styleIndex = 0;
+    each(option.series, (series, i) {
       series.seriesIndex = i;
-      styleIndex+=series.onAllocateStyleIndex(styleIndex);
+      styleIndex += series.onAllocateStyleIndex(styleIndex);
     });
-
   }
 
   /// 创建Chart组件
@@ -160,9 +159,12 @@ class Context {
     _createRenderView();
 
     ///绑定事件
-    if (option.eventCall != null) {
-      _eventDispatcher.addCall(option.eventCall!);
-    }
+    option.eventCall?.forEach((key, value) {
+      for (var c in value) {
+        _eventDispatcher.addCall(key, c);
+      }
+    });
+
   }
 
   void onStart() {
@@ -401,12 +403,11 @@ class Context {
   }
 
   ///=======Event分发和监听
-
-  void addEventCall(VoidFun1<ChartEvent>? call) {
+  void addEventCall(EventType type,VoidFun1<ChartEvent>? call) {
     if (call == null) {
       return;
     }
-    _eventDispatcher.addCall(call);
+    _eventDispatcher.addCall(type,call);
   }
 
   void removeEventCall(VoidFun1<ChartEvent>? call) {
@@ -419,4 +420,5 @@ class Context {
   void dispatchEvent(ChartEvent event) {
     _eventDispatcher.dispatch(event);
   }
+
 }

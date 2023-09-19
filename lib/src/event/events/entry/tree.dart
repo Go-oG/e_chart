@@ -18,4 +18,6 @@ class TreeEvent extends ChartEvent {
       throw ChartError("seriesIndex 和 seriesId不能同时为空");
     }
   }
+  @override
+  EventType get eventType => EventType.normal;
 }

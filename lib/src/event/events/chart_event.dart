@@ -1,10 +1,16 @@
 import '../../model/index.dart';
+import 'chart_event_dispatcher.dart';
 
-abstract class ChartEvent {}
+abstract class ChartEvent {
+  const ChartEvent();
+
+  EventType get eventType;
+}
 
 class EventInfo {
   ///当前图形元素所属的组件名称，
   final ComponentType componentType;
+
   ///系列类型。值可能为：'line'、'bar'、'pie' 等。
   ///当 componentType 为 'series' 时有意义。
   final SeriesType? seriesType;
