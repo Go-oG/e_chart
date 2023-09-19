@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-
 class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   final GroupNode<T, P> parentNode;
   final List<SingleNode<T, P>> nodeList;

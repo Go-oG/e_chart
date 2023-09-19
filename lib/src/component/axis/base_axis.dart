@@ -71,9 +71,9 @@ abstract class BaseAxis {
     AxisLine? axisLine,
     AxisLabel? axisLabel,
     SplitLine? splitLine,
+    AxisTick? axisTick,
     this.minorSplitLine,
     this.splitArea,
-    AxisTick? axisTick,
     this.minorTick,
     this.axisPointer,
   }) {
@@ -169,13 +169,6 @@ List<Size> measureAxisNameTextMaxSize(Iterable<BaseAxis> axisList, Direction dir
     }
   }
   return [firstSize, lastSize];
-}
-
-enum AxisType {
-  value,
-  category,
-  time,
-  log,
 }
 
 ///时间分割类型

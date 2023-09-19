@@ -212,22 +212,27 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       return [];
     }
     var group = curList.first.parent;
-    StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle? lineStyle = buildLineStyle(null, group,  {});
+    var stepType = series.stepLineFun?.call(group);
+    var lineStyle = curList.first.borderStyle;
+
     num smooth = stepType == null ? lineStyle.smooth : 0;
 
     List<SingleNode<StackItemData, LineGroupData>> nodeList = List.from(nodeMap.values);
 
-    List<List<Offset>> splitResult = _splitList(nodeList);
+    var splitResult = _splitList(nodeList);
     splitResult.removeWhere((element) => element.length < 2);
     List<AreaNode> areaList = [];
     for (var itemList in splitResult) {
       Area area;
-      var downList = [Offset(itemList.first.dx, height), Offset(itemList.last.dx, height)];
+      var first = itemList.first;
+      var last = itemList.last;
+      var downList = [Offset(first.position.dx, height), Offset(last.position.dx, height)];
+
+      List<Offset> ol = List.from(itemList.map((e) => e.position));
       if (stepType == null) {
-        area = Area(itemList, downList, upSmooth: smooth, downSmooth: 0);
+        area = Area(ol, downList, upSmooth: smooth, downSmooth: 0);
       } else {
-        Line line = _buildLine(itemList, stepType, 0, []);
+        Line line = _buildLine(ol, stepType, 0, []);
         area = Area(line.pointList, downList, upSmooth: smooth, downSmooth: 0);
       }
       areaList.add(AreaNode(area));
@@ -275,10 +280,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     var group = curList.first.parent;
     var preGroup = resultList[curIndex - 1].data;
     StepType? stepType = series.stepLineFun?.call(group);
-    LineStyle lineStyle = buildLineStyle(null, group,  {});
+    var lineStyle = curList.first.borderStyle;
     num smooth = (stepType == null) ? (lineStyle.smooth) : 0;
     StepType? preStepType = series.stepLineFun?.call(preGroup);
-    LineStyle? preLineStyle = buildLineStyle(null, preGroup, {});
+    var preLineStyle = resultList[curIndex - 1].lineStyle;
     num preSmooth = (preStepType == null) ? (preLineStyle.smooth) : 0;
 
     List<List<List<Offset>>> splitResult = [];
@@ -359,17 +364,18 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     }
     var group = nodeList.first.parent;
 
-    List<List<Offset>> olList = _splitList(nodeList);
+    var olList = _splitList(nodeList);
     olList.removeWhere((element) => element.length < 2);
     List<OptLinePath> borderList = [];
-    StepType? stepType = series.stepLineFun?.call(group);
+    var stepType = series.stepLineFun?.call(group);
     each(olList, (list, p1) {
-      LineStyle style = buildLineStyle(null, group, {});
+      var style = list.first.borderStyle;
       num smooth = stepType != null ? 0 : style.smooth;
+      List<Offset> ol = List.from(list.map((e) => e.position));
       if (stepType == null) {
-        borderList.add(OptLinePath.build(list, smooth, style.dash));
+        borderList.add(OptLinePath.build(ol, smooth, style.dash));
       } else {
-        Line line = _buildLine(list, stepType, 0, []);
+        Line line = _buildLine(ol, stepType, 0, []);
         borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
       }
     });
@@ -390,12 +396,13 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return line;
   }
 
-  List<List<Offset>> _splitList(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
-    List<List<Offset>> olList = [];
-    List<Offset> tmpList = [];
+  List<List<SingleNode<StackItemData, LineGroupData>>> _splitList(
+      List<SingleNode<StackItemData, LineGroupData>> nodeList) {
+    List<List<SingleNode<StackItemData, LineGroupData>>> olList = [];
+    List<SingleNode<StackItemData, LineGroupData>> tmpList = [];
     for (var node in nodeList) {
       if (node.originData != null) {
-        tmpList.add(node.position);
+        tmpList.add(node);
       } else {
         if (tmpList.isNotEmpty) {
           olList.add(tmpList);

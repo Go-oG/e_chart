@@ -66,10 +66,6 @@ class StackItemData extends BaseItemData {
   dynamic x;
   dynamic y;
 
-  num stackUp = 0;
-
-  num stackDown = 0;
-
   StackItemData(this.x, this.y, {super.id, super.name}) {
     checkDataType(x);
     checkDataType(y);
@@ -79,16 +75,12 @@ class StackItemData extends BaseItemData {
     if (x == null || y == null) {
       throw ChartError("NullPointException");
     }
-
-    if (y is num) {
-      stackUp = y;
-    } else {
-      stackUp = x;
-    }
-    stackDown = 0;
   }
 
   num get value {
+    if (y is num && x is num) {
+      throw ChartError(" x 和 y都是num 请重写该方法并返回正确的值");
+    }
     if (y is num) {
       return y;
     }

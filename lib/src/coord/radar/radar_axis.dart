@@ -1,4 +1,6 @@
 import '../../component/axis/base_axis.dart';
+import '../../component/axis/model/axis_type.dart';
+
 ///雷达图坐标轴
 class RadarAxis extends BaseAxis {
   RadarAxis({

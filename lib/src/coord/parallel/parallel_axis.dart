@@ -10,7 +10,7 @@ class ParallelAxis extends BaseAxis {
     this.parallelIndex = 0,
     this.realTime = true,
     super.show,
-    super.type = AxisType.value,
+    super.type,
     super.min,
     super.max,
     super.splitNumber,

@@ -1,42 +1,9 @@
-import 'package:e_chart/e_chart.dart';
 
-///存储数据处理结果
-class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
-  ///存储不同坐标轴的数据
-  final Map<AxisIndex, List<GroupNode<T, P>>> groupMap;
-  final Map<AxisIndex, DataStore<SingleNode<T, P>>> storeMap = {};
+import '../../../model/chart_error.dart';
+import '../../../utils/math_util.dart';
 
-  AxisGroup(this.groupMap);
-
-  void mergeData(Direction direction) {
-    groupMap.forEach((key, value) {
-      List<SingleNode<T, P>> nodeList = [];
-      for (var ele in value) {
-        ele.mergeData();
-        for (var col in ele.nodeList) {
-          nodeList.addAll(col.nodeList);
-        }
-      }
-      DataStore<SingleNode<T, P>> store = DataStore(nodeList, (data) {
-        if (direction == Direction.vertical) {
-          return data.originData?.x;
-        }
-        return data.originData?.y;
-      });
-      storeMap[key] = store;
-    });
-  }
-
-  int getColumnCount(AxisIndex index) {
-    List<GroupNode>? group = groupMap[index];
-    if (group == null || group.isEmpty) {
-      return 0;
-    }
-    return group.first.nodeList.length;
-  }
-}
-
-///用于解决大数据量下数据的获取
+///用于优化解决大数据量下数据的获取
+///支持按时间维度、字符串维度、数字维度来进行数据的管理
 class DataStore<T> {
   static const int _soreSize = 500;
   final dynamic Function(T data) accessor;
@@ -49,6 +16,7 @@ class DataStore<T> {
   Map<int, List<T>> _timeMap = {};
   Map<int, List<T>> _numMap = {};
 
+  ///存储数字基数
   late final double _numBase;
 
   void _parse(List<T?> list) {
@@ -79,15 +47,18 @@ class DataStore<T> {
       if (key is num) {
         numList.add(node);
       }
+      throw ChartError("只支持num、String、DateTime");
     }
+
     if (numList.isEmpty) {
       _numBase = 1;
       return;
     }
+
     if (numList.length == 1) {
       _numBase = 1;
     } else {
-      List<num> ext = extremes(numList, (p0) {
+      var ext = extremes(numList, (p0) {
         return accessor.call(p0);
       });
       num diff = (ext.last - ext.first).abs();

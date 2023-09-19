@@ -1,7 +1,10 @@
+import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/stack/model/extreme.dart';
+
+import 'extreme_info.dart';
 
 ///处理二维坐标系下堆叠数据
-///只针对数字类型处理
 class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends ChartSeries> {
   final Context context;
   final List<P> _dataList;
@@ -36,34 +39,17 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     });
   }
 
-  ///存储交叉轴轴上的极值数据(交叉轴一定是数值轴)
-  ///对于竖直布局交叉轴为Y轴
-  ///对于水平布局交叉轴为X轴
-  Map<AxisIndex, List<num>> _crossAxisExtremeMap = {};
+  ///存储坐标轴上的极值数据
+  Map<AxisIndex, ExtremeInfo> _xAxisExtreme = {};
+  Map<AxisIndex, ExtremeInfo> _yAxisExtreme = {};
 
-  List<num> getCrossExtreme(CoordType system, int axisIndex) {
-    if (_crossAxisExtremeMap.isEmpty) {
-      return [];
-    }
+  ExtremeInfo getExtreme(CoordType system, bool x, int axisIndex) {
     if (axisIndex < 0) {
       axisIndex = 0;
     }
-    return _crossAxisExtremeMap[AxisIndex(system, axisIndex)] ?? [];
-  }
-
-  ///存储主轴上的极值数据
-  ///对于竖直布局主轴为X轴
-  ///对于水平布局主轴为Y轴
-  Map<AxisIndex, List<dynamic>> _mainAxisExtremeMap = {};
-
-  List<dynamic> getMainExtreme(CoordType system, int axisIndex) {
-    if (_mainAxisExtremeMap.isEmpty) {
-      return [];
-    }
-    if (axisIndex < 0) {
-      axisIndex = 0;
-    }
-    return _mainAxisExtremeMap[AxisIndex(system, axisIndex)] ?? [];
+    var index = AxisIndex(system, axisIndex);
+    var info = (x ? _xAxisExtreme : _yAxisExtreme)[index];
+    return info ?? ExtremeInfo(x, index, [], [], []);
   }
 
   ///存储每个数据组的数值信息
@@ -90,9 +76,8 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     ///最后进行数据合并整理
     AxisGroup<T, P> group = AxisGroup(resultMap);
     group.mergeData(direction);
-    var r = _collectExtreme(group);
-    _crossAxisExtremeMap = r.crossInfo;
-    _mainAxisExtremeMap = r.mainInfo;
+    _xAxisExtreme = _collectExtreme(group, true);
+    _yAxisExtreme = _collectExtreme(group, false);
     return group;
   }
 
@@ -243,132 +228,100 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   ///收集极值信息
-  ExtremeInfo _collectExtreme(AxisGroup<T, P> axisGroup) {
-    CoordType system = _series.coordType ?? CoordType.grid;
-    bool polar = system == CoordType.polar;
+  ///极值信息应该为复合数据
+  Map<AxisIndex, ExtremeInfo> _collectExtreme(AxisGroup<T, P> axisGroup, bool x) {
+    Map<int, NumExtreme> numMap = {};
+    Map<int, TimeExtreme> timeMap = {};
+    Map<int, List<String>> strMap = {};
     bool vertical = direction == Direction.vertical;
-
-    Map<int, SingleNode<T, P>> mainNumMaxMap = {};
-    Map<int, SingleNode<T, P>> mainNumMinMap = {};
-    Map<int, SingleNode<T, P>> mainTimeMaxMap = {};
-    Map<int, SingleNode<T, P>> mainTimeMinMap = {};
-    Map<int, List<SingleNode<T, P>>> mainStrMap = {};
-
-    Map<int, num> crossMinMap = {};
-    Map<int, num> crossMaxMap = {};
-
     axisGroup.groupMap.forEach((key, value) {
       for (var group in value) {
         for (var column in group.nodeList) {
           for (var node in column.nodeList) {
-            final group = node.parent;
-            var mainIndex = vertical ? node.parent.xAxisIndex : node.parent.yAxisIndex;
-            if (mainIndex < 0) {
-              mainIndex = 0;
-            }
-            final mainData = vertical ? node.originData?.x : node.originData?.y;
-            if (mainData is String) {
-              List<SingleNode<T, P>> strList = mainStrMap[mainIndex] ?? [];
-              mainStrMap[mainIndex] = strList;
-              strList.add(node);
-            } else if (mainData is num) {
-              var sn = mainNumMinMap[mainIndex];
-              var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as num?;
-              if (sn == null || (od != null && mainData < od)) {
-                mainNumMinMap[mainIndex] = node;
-              }
-              sn = mainNumMaxMap[mainIndex];
-              od = vertical ? sn?.originData?.x : sn?.originData?.y;
-              if (sn == null || (od != null && mainData > od)) {
-                mainNumMaxMap[mainIndex] = node;
-              }
-            } else if (mainData is DateTime) {
-              var sn = mainTimeMinMap[mainIndex];
-              var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as DateTime?;
-              if (sn == null || (od != null && mainData.millisecondsSinceEpoch < od.millisecondsSinceEpoch)) {
-                mainTimeMinMap[mainIndex] = node;
-              }
-              sn = mainTimeMaxMap[mainIndex];
-              od = vertical ? sn?.originData?.x : sn?.originData?.y;
-              if (sn == null || (od != null && mainData.millisecondsSinceEpoch > od.millisecondsSinceEpoch)) {
-                mainTimeMaxMap[mainIndex] = node;
-              }
-            }
-
-            int crossIndex;
-            if (polar) {
-              crossIndex = _series.polarIndex;
+            int axisIndex = m.min(x ? node.parent.xAxisIndex : node.parent.yAxisIndex, 0);
+            List<dynamic> dl = [];
+            if (x != vertical) {
+              dl.add(node.up);
+              dl.add(node.down);
             } else {
-              crossIndex = vertical ? group.yAxisIndex : group.xAxisIndex;
+              dl.add(x ? node.originData?.x : node.originData?.y);
             }
+            for (var data in dl) {
+              if (data == null) {
+                continue;
+              }
 
-            num minValue = crossMinMap[crossIndex] ?? double.maxFinite;
-            num maxValue = crossMaxMap[crossIndex] ?? double.minPositive;
-            var crossUp = node.up;
-            var crossDown = node.down;
-            if (crossUp < crossDown) {
-              var tt = crossUp;
-              crossUp = crossDown;
-              crossDown = tt;
+              if (data is String) {
+                var strList = strMap[axisIndex] ?? [];
+                strMap[axisIndex] = strList;
+                strList.add(data);
+                continue;
+              }
+              if (data is num) {
+                var extreme = numMap[axisIndex] ?? NumExtreme();
+                numMap[axisIndex] = extreme;
+                if (extreme.minValue == null || (data < extreme.minValue!)) {
+                  extreme.minValue = data;
+                }
+                if (extreme.maxValue == null || (data > extreme.maxValue!)) {
+                  extreme.maxValue = data;
+                }
+                continue;
+              }
+              if (data is DateTime) {
+                var extreme = timeMap[axisIndex] ?? TimeExtreme();
+                timeMap[axisIndex] = extreme;
+                if (extreme.minTime == null || (data.isBefore(extreme.minTime!))) {
+                  extreme.minTime = data;
+                }
+                if (extreme.maxTime == null || (data.isAfter(extreme.maxTime!))) {
+                  extreme.maxTime = data;
+                }
+                continue;
+              }
+              throw ChartError("不支持的数据类型 ${data.runtimeType}");
             }
-            minValue = min([minValue, crossDown]);
-            maxValue = max([maxValue, crossUp]);
-            crossMinMap[crossIndex] = minValue;
-            crossMaxMap[crossIndex] = maxValue;
           }
         }
       }
     });
-
-    Map<AxisIndex, List<num>> crossResultMap = {};
-    crossMinMap.forEach((key, value) {
-      if (value.isFinite && value != double.maxFinite && value != double.minPositive) {
-        crossResultMap[AxisIndex(system, key)] = [value];
+    Map<int, ExtremeInfo> infoMap = {};
+    var coord = _series.coordType ?? CoordType.grid;
+    numMap.forEach((key, value) {
+      var info = infoMap[key] ?? ExtremeInfo(x, AxisIndex(coord, key), [], [], []);
+      infoMap[key] = info;
+      var v = value.minValue;
+      if (v != null && v.isFinite) {
+        info.numExtreme.add(v);
+      }
+      v = value.maxValue;
+      if (v != null && v.isFinite) {
+        info.numExtreme.add(v);
       }
     });
-    crossMaxMap.forEach((key, value) {
-      if (value.isFinite && value != double.maxFinite && value != double.minPositive) {
-        var axis = AxisIndex(system, key);
-        List<num> list = crossResultMap[axis] ?? [];
-        crossResultMap[axis] = list;
-        list.add(value);
+    timeMap.forEach((key, value) {
+      var info = infoMap[key] ?? ExtremeInfo(x, AxisIndex(coord, key), [], [], []);
+      infoMap[key] = info;
+      var v = value.minTime;
+      if (v != null) {
+        info.timeExtreme.add(v);
+      }
+      v = value.maxTime;
+      if (v != null) {
+        info.timeExtreme.add(v);
       }
     });
-
-    ///处理主轴数据
-    Map<AxisIndex, List<dynamic>> mainResultMap = {};
-    for (var tm in [mainNumMaxMap, mainNumMinMap, mainTimeMaxMap, mainTimeMinMap]) {
-      tm.forEach((key, value) {
-        var axis = AxisIndex(system, key);
-        List<dynamic> rl = mainResultMap[axis] ?? [];
-        mainResultMap[axis] = rl;
-        rl.add(vertical ? value.originData!.x : value.originData!.y);
-      });
-    }
-    mainStrMap.forEach((key, value) {
-      var axis = AxisIndex(system, key);
-      List<dynamic> rl = mainResultMap[axis] ?? [];
-      mainResultMap[axis] = rl;
-      if (realSort) {
-        value.sort((a, b) {
-          var au = a.up;
-          var bu = b.up;
-          if (sort == Sort.desc) {
-            return bu.compareTo(au);
-          } else {
-            return au.compareTo(bu);
-          }
-        });
-      }
-      var result = unionBy<SingleNode<T, P>, String>([value], (a) {
-        return (vertical ? a.originData!.x : a.originData!.y) as String;
-      });
-
-      rl.addAll(result.map((e) {
-        return vertical ? e.originData!.x : e.originData!.y;
-      }));
+    strMap.forEach((key, value) {
+      var info = infoMap[key] ?? ExtremeInfo(x, AxisIndex(coord, key), [], [], []);
+      infoMap[key] = info;
+      info.strExtreme.addAll(value);
     });
-    return ExtremeInfo(mainResultMap, crossResultMap);
+    Map<AxisIndex, ExtremeInfo> rm = {};
+    infoMap.forEach((key, value) {
+      value.syncData();
+      rm[value.axisIndex] = value;
+    });
+    return rm;
   }
 
   ///收集分组数值信息
@@ -431,13 +384,6 @@ class InnerData<T extends StackItemData, P extends StackGroupData<T>> {
   final P parent;
 
   InnerData(this.data, this.parent);
-}
-
-class ExtremeInfo {
-  final Map<AxisIndex, List<dynamic>> mainInfo;
-  final Map<AxisIndex, List<num>> crossInfo;
-
-  ExtremeInfo(this.mainInfo, this.crossInfo);
 }
 
 class OriginInfo<T extends StackItemData, P extends StackGroupData<T>> {

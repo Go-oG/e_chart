@@ -156,6 +156,16 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     return data is num;
   }
 
+  AxisType get axisType {
+    if (axis.categoryList.isNotEmpty || axis.type == AxisType.category) {
+      return AxisType.category;
+    }
+    if (axis.type == AxisType.time || axis.timeRange != null) {
+      return AxisType.time;
+    }
+    return axis.type;
+  }
+
   void notifyLayoutUpdate() {
     value = Command.layoutUpdate;
   }

@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 
 ///用于辅助布局相关的抽象类，通常和SeriesView 配合使用
-///其包含了Chart事件分发、处理以及手势相关的处理
+///其包含了Chart事件分发、处理以及手势等相关处理
 abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command> {
   Context? _context;
 
@@ -18,8 +18,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   set context(Context c) => _context = c;
 
-  Context? get contextNull => _context;
-
   S? _series;
 
   set series(S s) => _series = s;
@@ -32,13 +30,9 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return s;
   }
 
-  S? get seriesNull => _series;
-
   ChartView? _view;
 
   ChartView get view => _view!;
-
-  ChartView? get viewNull => _view;
 
   set view(ChartView? v) => _view = v;
 
@@ -276,7 +270,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     if (offset != null) {
       return offset;
     }
-    return viewNull?.translation ?? Offset.zero;
+    return view.translation;
   }
 
   double get translationX => view.translationX;

@@ -24,6 +24,7 @@ export 'axis/model/axis_tile_node.dart';
 export 'axis/model/label_result.dart';
 export 'axis/model/tick_result.dart';
 export 'axis/model/line_result.dart';
+export 'axis/model/axis_type.dart';
 
 export 'axis/radius/radius_attrs.dart';
 export 'axis/radius/radius_axis.dart';

@@ -191,18 +191,19 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       return [];
     }
     var group = nodeList.first.parent;
-    List<List<Offset>> olList = _splitList(nodeList);
+    var olList = _splitList(nodeList);
     olList.removeWhere((element) => element.length < 2);
     List<OptLinePath> borderList = [];
     StepType? stepType = series.stepLineFun?.call(group);
 
     each(olList, (list, p1) {
-      LineStyle style = buildLineStyle(null, group, {});
+      var style = list.first.borderStyle;
       num smooth = stepType != null ? 0 : style.smooth;
+      List<Offset> ol = List.from(list.map((e) => e.position));
       if (stepType == null) {
-        borderList.add(OptLinePath.build(list, smooth, style.dash));
+        borderList.add(OptLinePath.build(ol, smooth, style.dash));
       } else {
-        Line line = _buildLine(list, stepType, 0, []);
+        Line line = _buildLine(ol, stepType, 0, []);
         borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
       }
     });
@@ -223,12 +224,13 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     return line;
   }
 
-  List<List<Offset>> _splitList(Iterable<SingleNode<StackItemData, LineGroupData>> nodeList) {
-    List<List<Offset>> olList = [];
-    List<Offset> tmpList = [];
+  List<List<SingleNode<StackItemData, LineGroupData>>> _splitList(
+      Iterable<SingleNode<StackItemData, LineGroupData>> nodeList) {
+    List<List<SingleNode<StackItemData, LineGroupData>>> olList = [];
+    List<SingleNode<StackItemData, LineGroupData>> tmpList = [];
     for (var node in nodeList) {
       if (node.originData != null) {
-        tmpList.add(node.position);
+        tmpList.add(node);
       } else {
         if (tmpList.isNotEmpty) {
           olList.add(tmpList);

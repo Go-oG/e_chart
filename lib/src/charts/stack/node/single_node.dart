@@ -20,23 +20,8 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
   }
 
   ///记录数据的上界和下界
-  num _up = 0;
-
-  num get up => _up;
-
-  set up(num u) {
-    _up = u;
-    data.data?.stackUp = u;
-  }
-
-  num _down = 0;
-
-  num get down => _down;
-
-  set down(num d) {
-    _down = d;
-    data.data?.stackDown = d;
-  }
+  num up = 0;
+  num down = 0;
 
   T? get originData => data.data;
 
@@ -100,7 +85,7 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     } else {
       labelConfig = align.convert(rect, labelStyle, series.direction);
     }
-    label = formatData(series, attr.dynamicLabel ?? data.data?.stackUp);
+    label = formatData(series, attr.dynamicLabel ?? up);
   }
 
   DynamicText formatData(StackSeries<T, P> series, dynamic data) {

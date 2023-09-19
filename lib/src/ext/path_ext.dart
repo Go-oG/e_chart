@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../component/index.dart';
 import '../core/render/ccanvas.dart';
 
 extension PathExt on Path {
@@ -174,6 +175,24 @@ extension PathExt on Path {
   void lineTo2(Offset offset) {
     lineTo(offset.dx, offset.dy);
   }
+
+  bool overlapRect(Rect rect) {
+    if (contains(rect.topLeft)) {
+      return true;
+    }
+    if (contains(rect.topRight)) {
+      return true;
+    }
+    if (contains(rect.bottomLeft)) {
+      return true;
+    }
+    if (contains(rect.bottomRight)) {
+      return true;
+    }
+    var bound =getBounds();
+    return bound.overlaps(rect);
+  }
+
 }
 
 ///用于实现 path dash

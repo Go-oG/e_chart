@@ -215,6 +215,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
       return node;
     }
+
     if (valueType != null) {
       var info = series.getHelper(context).getValueInfo(group);
       if (info == null) {
@@ -238,7 +239,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         var arc = snode.attr.arc;
         node.offset = circlePoint(arc.outRadius, arc.centerAngle(), arc.center);
       } else {
-        if (data.stackUp >= 0) {
+        if (snode.up >= 0) {
           node.offset = snode.attr.rect.topCenter;
         } else {
           node.offset = snode.attr.rect.bottomCenter;
@@ -333,20 +334,9 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     doubleTween.start(context, type == LayoutType.update);
   }
 
-  //========动画相关函数=====
-
+  ///==============动画相关函数===============
   bool needRunAnimator(LayoutType type) {
-    if (type == LayoutType.none || series.animation == null) {
-      return false;
-    }
-    var animator = series.animation!;
-    if (type == LayoutType.update && animator.updateDuration.inMilliseconds <= 0) {
-      return false;
-    }
-    if (type == LayoutType.layout && animator.duration.inMilliseconds <= 0) {
-      return false;
-    }
-    return true;
+    return getAnimation(type) != null;
   }
 
   ///创建动画节点
@@ -367,10 +357,22 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     if (series.coordType == CoordType.polar) {
       system = CoordType.polar;
     }
-    if (series.isVertical && !isXAxis || (!series.isVertical && isXAxis)) {
-      return series.getHelper(context).getCrossExtreme(system, axisIndex);
+    AxisType type;
+    if (series.coordType == CoordType.polar) {
+      var coord = findPolarCoord();
+      type = isXAxis ? coord.radiusAxisType : coord.angleAxisType;
+    } else {
+      var coord = findGridCoord();
+      type = coord.getAxisType(axisIndex, isXAxis);
     }
-    return series.getHelper(context).getMainExtreme(system, axisIndex);
+    var extreme = series.getHelper(context).getExtreme(system, isXAxis, axisIndex);
+    if (type == AxisType.category) {
+      return extreme.strExtreme;
+    }
+    if (type == AxisType.time) {
+      return extreme.timeExtreme;
+    }
+    return extreme.numExtreme;
   }
 
   List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
@@ -421,7 +423,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   void handleHoverOrClick(Offset offset, bool click) {
-    var old = offset;
     var translation = getTranslation();
     offset = offset.translate(-translation.dx, -translation.dy);
     var node = findNode(offset);
@@ -431,7 +432,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     if (node == oldHoverNode) {
       return;
     }
-
     var oldNode = oldHoverNode;
     oldHoverNode = null;
     if (oldNode != null) {
@@ -457,52 +457,34 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
     });
 
+    Map<SingleNode<T, P>, NodeAttr> oldStyleMap = {};
+    Map<SingleNode<T, P>, NodeAttr> styleMap = {};
+
     nodeMap.forEach((key, node) {
-      var originData = node.originData;
-      var parent = node.parent;
-      var status = node.status;
-      node.itemStyle = buildAreaStyle(originData, parent, status);
-      node.borderStyle = buildLineStyle(originData, parent, status);
-      node.labelStyle = buildLabelStyle(originData, parent, status);
+      oldStyleMap[node] = node.toAttr();
+      node.updateStyle(context, series);
+      styleMap[node] = node.toAttr();
     });
 
-    var animation = series.animation;
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+    var animation = getAnimation(LayoutType.update, 2);
+
+    if (animation == null) {
       notifyLayoutUpdate();
       return;
     }
 
-    Map<SingleNode<T, P>, AreaStyle> oldAreStyleMap = {};
-    Map<SingleNode<T, P>, LineStyle> oldLineStyleMap = {};
+    var doubleTween = ChartDoubleTween(option: animation);
 
-    Map<SingleNode<T, P>, AreaStyle> newAreStyleMap = {};
-    Map<SingleNode<T, P>, LineStyle> newLineStyleMap = {};
-
-    nodeMap.forEach((key, node) {
-      oldAreStyleMap[node] = node.itemStyle;
-      oldLineStyleMap[node] = node.borderStyle;
-      newAreStyleMap[node] = buildAreaStyle(node.originData, node.parent, node.status);
-      newLineStyleMap[node] = buildLineStyle(node.originData, node.parent, node.status);
-    });
-
-    ChartDoubleTween doubleTween = ChartDoubleTween(option: animation);
-    AreaStyleTween areaTween = AreaStyleTween(AreaStyle.empty, AreaStyle.empty);
-    LineStyleTween lineTween = LineStyleTween(LineStyle.empty, LineStyle.empty);
     doubleTween.addListener(() {
       double t = doubleTween.value;
       nodeMap.forEach((key, node) {
-        var oa = oldAreStyleMap[node]!;
-        var ol = oldLineStyleMap[node]!;
-        var na = newAreStyleMap[node]!;
-        var nl = newLineStyleMap[node]!;
-        areaTween.changeValue(oa, na);
-        node.itemStyle = areaTween.safeGetValue(t);
-        lineTween.changeValue(ol, nl);
-        node.borderStyle = lineTween.safeGetValue(t);
+        var oldAttr = oldStyleMap[node]!;
+        var newAttr = styleMap[node]!;
+        node.itemStyle = AreaStyle.lerp(oldAttr.itemStyle, newAttr.itemStyle, t);
+        node.borderStyle = LineStyle.lerp(oldAttr.borderStyle, newAttr.borderStyle, t);
       });
       notifyLayoutUpdate();
     });
-    oldHoverNode = newNode;
     doubleTween.start(context, true);
   }
 
@@ -519,7 +501,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
-        if (coordSystem == CoordType.grid && rectInPath(area.path, node.attr.rect)) {
+        if (coordSystem == CoordType.grid && area.path.overlapRect(node.rect)) {
           has = true;
           break;
         }
@@ -544,11 +526,11 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
-        if (coordSystem == CoordType.grid && rectInPath(area.path, node.attr.rect)) {
+        if (coordSystem == CoordType.grid && area.path.overlapRect(node.rect)) {
           has = true;
           break;
         }
-        if (coordSystem == CoordType.polar && arcInPath(area.path, node.attr.arc)) {
+        if (coordSystem == CoordType.polar && arcInPath(area.path, node.arc)) {
           has = true;
           break;
         }
@@ -573,25 +555,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   bool arcInPath(Path path, Arc arc) {
     Rect rect = path.getBounds();
-    return rectInPath(arc.toPath(), rect);
-  }
-
-  bool rectInPath(Path path, Rect rect) {
-    if (path.contains(rect.topLeft)) {
-      return true;
-    }
-    if (path.contains(rect.topRight)) {
-      return true;
-    }
-    if (path.contains(rect.bottomLeft)) {
-      return true;
-    }
-    if (path.contains(rect.bottomRight)) {
-      return true;
-    }
-
-    Rect bound = path.getBounds();
-    return bound.overlaps(rect);
+    return arc.toPath().overlapRect(rect);
   }
 
   CoordType get coordSystem;
@@ -614,15 +578,4 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return null;
   }
 
-  AreaStyle buildAreaStyle(T? data, P group, Set<ViewState> status) {
-    return series.getAreaStyle(context, data, group, status);
-  }
-
-  LineStyle buildLineStyle(T? data, P group, Set<ViewState> status) {
-    return series.getLineStyle(context, data, group, status);
-  }
-
-  LabelStyle buildLabelStyle(T? data, P group, Set<ViewState> status) {
-    return series.getLabelStyle(context, data, group, status);
-  }
 }

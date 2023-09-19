@@ -188,7 +188,6 @@ class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends 
     if (fun != null) {
       return fun.call(data, group, status) ?? LineStyle.empty;
     }
-
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
       var theme = chartTheme.lineTheme;

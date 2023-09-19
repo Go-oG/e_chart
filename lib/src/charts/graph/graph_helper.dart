@@ -9,8 +9,8 @@ class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    viewNull?.translationX = 0;
-    viewNull?.translationY = 0;
+    view.translationX = 0;
+    view.translationY = 0;
     var newGraph = convertDataToGraph(series.nodes, series.edges);
     var params = GraphLayoutParams(context, series, boxBound, globalBoxBound, width, height);
     _oldLayout?.clearListener();

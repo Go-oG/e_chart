@@ -537,6 +537,25 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
+  AxisType getAxisType(int axisIndex, bool isXAxis) {
+    return (isXAxis ? getXAxis(axisIndex) : getYAxis(axisIndex)).axisType;
+  }
+
+  XAxisImpl getXAxis(int xAxisIndex) {
+    if (xAxisIndex < 0) {
+      xAxisIndex = 0;
+    }
+    return xMap[props.xAxisList[xAxisIndex]]!;
+  }
+
+  YAxisImpl getYAxis(int yAxisIndex) {
+    if (yAxisIndex < 0) {
+      yAxisIndex = 0;
+    }
+    return yMap[props.yAxisList[yAxisIndex]]!;
+  }
+
+  @override
   double getAxisLength(int axisIndex, bool isXAxis) {
     var axis = isXAxis ? getXAxis(axisIndex) : getYAxis(axisIndex);
     return axis.getLength();
@@ -568,20 +587,6 @@ class GridCoordImpl extends GridCoord {
       axisImpl = yMap[props.yAxisList[axisIndex]]!;
     }
     return axisImpl.getViewportDataRange();
-  }
-
-  XAxisImpl getXAxis(int xAxisIndex) {
-    if (xAxisIndex < 0) {
-      xAxisIndex = 0;
-    }
-    return xMap[props.xAxisList[xAxisIndex]]!;
-  }
-
-  YAxisImpl getYAxis(int yAxisIndex) {
-    if (yAxisIndex < 0) {
-      yAxisIndex = 0;
-    }
-    return yMap[props.yAxisList[yAxisIndex]]!;
   }
 
   double computeSize(List<BaseGridAxisImpl> axisList, bool computeWidth) {
@@ -778,6 +783,8 @@ abstract class GridCoord extends CoordLayout<Grid> {
   List<Offset> dataToPoint(int axisIndex, dynamic data, bool xAxis);
 
   GridAxis getAxis(int axisIndex, bool isXAxis);
+
+  AxisType getAxisType(int axisIndex, bool isXAxis);
 
   double getLeftFirstAxisWidth();
 

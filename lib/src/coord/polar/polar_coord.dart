@@ -167,6 +167,13 @@ class PolarCoordImpl extends PolarCoord {
   double getMaxYScroll() {
     return 0;
   }
+
+  @override
+  AxisType get angleAxisType => _angleAxis.axisType;
+
+  @override
+  AxisType get radiusAxisType => _radiusAxis.axisType;
+
 }
 
 abstract class PolarCoord extends CircleCoordLayout<Polar> {
@@ -187,6 +194,10 @@ abstract class PolarCoord extends CircleCoordLayout<Polar> {
   num getStartAngle();
 
   BaseScale getScale(bool angleAxis);
+
+  AxisType get radiusAxisType;
+
+  AxisType get angleAxisType;
 }
 
 class PolarPosition {

@@ -166,7 +166,7 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
 
   @override
   Offset getTranslation() {
-    return viewNull?.translation ?? Offset.zero;
+    return view.translation ?? Offset.zero;
   }
 }
 

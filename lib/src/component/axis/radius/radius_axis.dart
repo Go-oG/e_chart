@@ -1,4 +1,5 @@
 import '../base_axis.dart';
+import '../model/axis_type.dart';
 
 ///极坐标-径向轴
 class RadiusAxis extends BaseAxis {

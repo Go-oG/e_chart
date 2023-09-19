@@ -9,8 +9,8 @@ class LineNode {
   final Map<StackItemData, LineSymbolNode> symbolMap;
   final List<OptLinePath> borderList;
   final List<AreaNode> areaList;
-  AreaStyle? areaStyle;
-  LineStyle? lineStyle;
+  AreaStyle areaStyle=AreaStyle.empty;
+  LineStyle lineStyle=LineStyle.empty;
 
   LineNode(
     this.groupIndex,
