@@ -36,15 +36,27 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         Logger.w("内部状态异常 无法找到 upValue 或者downValue");
         return;
       }
-      dynamic upValue = getUpValue(upNode), downValue = getDownValue(downNode);
+      dynamic upValue = getUpValue(upNode),
+          downValue = getDownValue(downNode);
+      if (upValue == null || downValue == null) {
+        return;
+      }
       if (vertical) {
         int yIndex = upNode.parent.yAxisIndex;
-        var uo = coord.dataToPoint(yIndex, upValue, false).last;
-        var downo = coord.dataToPoint(yIndex, downValue, false).first;
+        var uo = coord
+            .dataToPoint(yIndex, upValue, false)
+            .last;
+        var downo = coord
+            .dataToPoint(yIndex, downValue, false)
+            .first;
         node.rect = Rect.fromLTRB(groupRect.left, uo.dy, groupRect.right, downo.dy);
       } else {
-        var lo = coord.dataToPoint(xIndex.axisIndex, x, true).first;
-        var ro = coord.dataToPoint(xIndex.axisIndex, x, true).last;
+        var lo = coord
+            .dataToPoint(xIndex.axisIndex, x, true)
+            .first;
+        var ro = coord
+            .dataToPoint(xIndex.axisIndex, x, true)
+            .last;
         node.rect = Rect.fromLTRB(lo.dx, groupRect.top, ro.dx, groupRect.bottom);
       }
     });
@@ -61,7 +73,9 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         continue;
       }
       if (vertical) {
-        var uo = coord.dataToPoint(node.parent.yAxisIndex, getUpValue(node), false).last;
+        var uo = coord
+            .dataToPoint(node.parent.yAxisIndex, getUpValue(node), false)
+            .last;
         node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, uo.dy);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topLeft;
@@ -69,7 +83,9 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
           node.position = node.rect.topCenter;
         }
       } else {
-        var uo = coord.dataToPoint(node.parent.xAxisIndex, getUpValue(node), true).last;
+        var uo = coord
+            .dataToPoint(node.parent.xAxisIndex, getUpValue(node), true)
+            .last;
         node.rect = Rect.fromLTRB(uo.dx, colRect.top, uo.dx, colRect.height);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topRight;
@@ -201,7 +217,8 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)
+          ..center = off;
       }
     });
     return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap);
@@ -240,13 +257,11 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return areaList;
   }
 
-  LineNode buildStackResult(
-    int groupIndex,
-    LineGroupData group,
-    List<SingleNode<StackItemData, LineGroupData>> nodeList,
-    List<LineNode> resultList,
-    int curIndex,
-  ) {
+  LineNode buildStackResult(int groupIndex,
+      LineGroupData group,
+      List<SingleNode<StackItemData, LineGroupData>> nodeList,
+      List<LineNode> resultList,
+      int curIndex,) {
     if (nodeList.isEmpty) {
       return LineNode(groupIndex, group, [], [], [], {});
     }
@@ -262,15 +277,16 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)
+          ..center = off;
       }
     });
 
     return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap);
   }
 
-  List<AreaNode> buildAreaPathForStack(
-      List<SingleNode<StackItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
+  List<AreaNode> buildAreaPathForStack(List<SingleNode<StackItemData, LineGroupData>> curList,
+      List<LineNode> resultList, int curIndex) {
     if (curList.length < 2) {
       return [];
     }

@@ -20,8 +20,9 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
   }
 
   ///记录数据的上界和下界
-  num up = 0;
-  num down = 0;
+  num up=0;
+
+  num down=0;
 
   T? get originData => data.data;
 
@@ -42,9 +43,9 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
   @override
   bool contains(Offset offset) {
     if (coord == CoordType.polar) {
-      return attr.rect.contains2(offset);
+      return attr.arc.contains(offset);
     }
-    return attr.arc.contains(offset);
+    return attr.rect.contains2(offset);
   }
 
   @override

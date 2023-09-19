@@ -177,6 +177,7 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
       canUseSize = groupSize.toDouble();
     }
     double allBarSize = 0;
+
     ///计算Group占用的大小
     List<double> sizeList = [];
     each(groupNode.nodeList, (node, i) {
@@ -238,8 +239,13 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
       }
       bool isX = !series.isVertical;
       int index = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
-      final uo = coord.dataToPoint(index, getUpValue(node), isX).last;
-      final downo = coord.dataToPoint(index, getDownValue(node), isX).first;
+      var upv = getUpValue(node);
+      var dowv = getDownValue(node);
+      // if (upv == null || dowv == null) {
+      //   continue;
+      // }
+      final uo = coord.dataToPoint(index, upv, isX).last;
+      final downo = coord.dataToPoint(index, dowv, isX).first;
       if (vertical) {
         node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, downo.dy);
       } else {
@@ -393,16 +399,6 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
   @override
   void onLayoutByParent(LayoutType type) {
     onLayout(type);
-  }
-
-  @override
-  SingleNode<T, P>? findNode(Offset offset) {
-    for (var ele in showNodeMap.values) {
-      if (ele.rect.contains(offset)) {
-        return ele;
-      }
-    }
-    return null;
   }
 
   @override

@@ -10,7 +10,6 @@ class LineGroupData extends StackGroupData<StackItemData> {
     super.yAxisIndex,
     super.id,
     super.stackId,
-    super.strategy,
     super.barMaxSize,
     super.barMinSize,
     super.barSize,

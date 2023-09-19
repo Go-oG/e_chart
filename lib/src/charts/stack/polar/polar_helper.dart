@@ -171,25 +171,5 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  SingleNode<T, P>? findNode(Offset offset) {
-    for (var ele in nodeMap.values) {
-      if (offset.inArc(ele.arc)) {
-        return ele;
-      }
-    }
-    return null;
-  }
-
-  @override
-  Offset getTranslation() {
-    return findPolarCoord().translation;
-  }
-
-  @override
-  Offset getMaxTranslation() {
-    return findPolarCoord().getMaxScroll();
-  }
-
-  @override
   CoordType get coordSystem => CoordType.polar;
 }

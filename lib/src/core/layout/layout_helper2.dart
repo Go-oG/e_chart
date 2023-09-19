@@ -164,4 +164,16 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     }
     return null;
   }
+
+  N? findNodeByData(covariant dynamic data) {
+    if (data == null) {
+      return null;
+    }
+    for (var e in nodeList) {
+      if (e.data == data) {
+        return e;
+      }
+    }
+    return null;
+  }
 }

@@ -11,7 +11,7 @@ class BarGroupData extends StackGroupData<StackItemData> {
     super.barMaxSize,
     super.barMinSize,
     super.stackId,
-    super.strategy,
     super.styleIndex,
+        super.stackUsePercent,
   });
 }

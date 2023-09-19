@@ -6,7 +6,7 @@ import 'package:e_chart/e_chart.dart';
 ///一般用于笛卡尔坐标系和极坐标系的布局
 ///需要支持部分布局
 abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
-    extends LayoutHelper<S> {
+    extends LayoutHelper2<SingleNode<T, P>, S> {
   ///该map存储当前给定数据的映射
   ///如果给定的数据为空则不会存在
   Map<T, SingleNode<T, P>> _nodeMap = {};
@@ -229,7 +229,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       } else if (valueType == ValueType.ave && info.aveData != null) {
         data = info.aveData;
       }
-      SingleNode<T, P>? snode = newNodeMap[data];
+      var snode = newNodeMap[data];
       if (data == null || snode == null) {
         return null;
       }
@@ -402,99 +402,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return dl;
   }
 
-  Offset getMaxTranslation();
-
-  ///==========用户相关操作的处理=============
-  SingleNode<T, P>? oldHoverNode;
-
-  @override
-  void onClick(Offset localOffset) {
-    handleHoverOrClick(localOffset, true);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  @override
-  void onHoverStart(Offset localOffset) {
-    handleHoverOrClick(localOffset, false);
-  }
-
-  void handleHoverOrClick(Offset offset, bool click) {
-    var translation = getTranslation();
-    offset = offset.translate(-translation.dx, -translation.dy);
-    var node = findNode(offset);
-    if (node != null) {
-      click ? sendClickEvent(offset, node) : sendHoverEvent(offset, node);
-    }
-    if (node == oldHoverNode) {
-      return;
-    }
-    var oldNode = oldHoverNode;
-    oldHoverNode = null;
-    if (oldNode != null) {
-      sendHoverEvent(offset, oldNode);
-    }
-    onHandleHoverEnd(oldNode, node);
-    oldHoverNode = node;
-  }
-
-  void onHandleHoverEnd(SingleNode<T, P>? oldNode, SingleNode<T, P>? newNode) {
-    var states = [ViewState.focused, ViewState.hover, ViewState.disabled];
-    var states2 = [ViewState.focused, ViewState.hover];
-    final nodeMap = this.nodeMap;
-    nodeMap.forEach((key, ele) {
-      nodeMap[ele]?.removeStates(states);
-      if (newNode == null) {
-        return;
-      }
-      if (ele.data == newNode.data || (ele.parent == newNode.parent && series.selectedMode == SelectedMode.group)) {
-        nodeMap[ele]?.addStates(states2);
-      } else {
-        nodeMap[ele]?.addState(ViewState.disabled);
-      }
-    });
-
-    Map<SingleNode<T, P>, NodeAttr> oldStyleMap = {};
-    Map<SingleNode<T, P>, NodeAttr> styleMap = {};
-
-    nodeMap.forEach((key, node) {
-      oldStyleMap[node] = node.toAttr();
-      node.updateStyle(context, series);
-      styleMap[node] = node.toAttr();
-    });
-
-    var animation = getAnimation(LayoutType.update, 2);
-
-    if (animation == null) {
-      notifyLayoutUpdate();
-      return;
-    }
-
-    var doubleTween = ChartDoubleTween(option: animation);
-
-    doubleTween.addListener(() {
-      double t = doubleTween.value;
-      nodeMap.forEach((key, node) {
-        var oldAttr = oldStyleMap[node]!;
-        var newAttr = styleMap[node]!;
-        node.itemStyle = AreaStyle.lerp(oldAttr.itemStyle, newAttr.itemStyle, t);
-        node.borderStyle = LineStyle.lerp(oldAttr.borderStyle, newAttr.borderStyle, t);
-      });
-      notifyLayoutUpdate();
-    });
-    doubleTween.start(context, true);
-  }
-
-  @override
-  void onHoverEnd() {
-    if (oldHoverNode == null) {
-      return;
-    }
-    onHandleHoverEnd(oldHoverNode, null);
-  }
+  ///==========Brush相关的=============
 
   @override
   void onBrushEvent(BrushEvent event) {
@@ -560,11 +468,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   CoordType get coordSystem;
 
-  SingleNode<T, P>? findNodeByData(T? data) {
+  @override
+  SingleNode<T, P>? findNodeByData(covariant T? data) {
     return nodeMap[data];
   }
 
-  SingleNode<T, P>? findNode(Offset offset) {
+  @override
+  SingleNode<T, P>? findNode(Offset offset, [bool overlap = false]) {
     for (var ele in showNodeMap.values) {
       if (ele.contains(offset)) {
         return ele;
@@ -578,4 +488,20 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return null;
   }
 
+  @override
+  Offset getTranslation() {
+    var type = coordSystem;
+    if (type == CoordType.polar) {
+      return findPolarCoord().translation;
+    }
+    return findGridCoord().translation;
+  }
+
+  Offset getMaxTranslation() {
+    var type = coordSystem;
+    if (type == CoordType.polar) {
+      return findPolarCoord().getMaxScroll();
+    }
+    return findGridCoord().getMaxScroll();
+  }
 }

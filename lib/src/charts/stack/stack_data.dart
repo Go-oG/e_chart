@@ -8,10 +8,8 @@ class StackGroupData<T> {
   int xAxisIndex;
   int yAxisIndex;
 
-  String? _stackId;
-
-  String? get stackId => _stackId;
-  StackStrategy strategy;
+  String? stackId;
+  bool stackUsePercent;
 
   SNumber? barSize;
   SNumber? barMaxSize;
@@ -26,8 +24,8 @@ class StackGroupData<T> {
     this.barMinSize = const SNumber(1, false),
     String? id,
     String? name,
-    String? stackId,
-    this.strategy = StackStrategy.all,
+    this.stackId,
+    this.stackUsePercent = false,
     this.styleIndex = 0,
   }) {
     if (id == null || id.isEmpty) {
@@ -35,12 +33,7 @@ class StackGroupData<T> {
     } else {
       this.id = id;
     }
-    this._stackId = stackId;
     this.name = name ?? '';
-  }
-
-  set stackId(String? id) {
-    _stackId = id;
   }
 
   @override

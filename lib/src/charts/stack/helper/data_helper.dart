@@ -176,13 +176,13 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
       var coord = _series.coordType == CoordType.polar ? CoordType.polar : CoordType.grid;
       singleNodeMap.forEach((key, value) {
-        ColumnNode<T, P> column = ColumnNode(groupNode, [], true, value.first.parent.strategy);
+        ColumnNode<T, P> column = ColumnNode(groupNode, [], true);
         List<SingleNode<T, P>> dl = List.from(value.map((e) => SingleNode(coord, column, e, true)));
         column.nodeList.addAll(dl);
         groupNode.nodeList.add(column);
       });
       each(singleNodeList, (e, i) {
-        ColumnNode<T, P> column = ColumnNode(groupNode, [], false, StackStrategy.all);
+        ColumnNode<T, P> column = ColumnNode(groupNode, [], false);
         column.nodeList.add(SingleNode(coord, column, e, false));
         groupNode.nodeList.add(column);
       });

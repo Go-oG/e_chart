@@ -5,13 +5,12 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   final GroupNode<T, P> parentNode;
   final List<SingleNode<T, P>> nodeList;
   final bool isStack;
-  final StackStrategy strategy;
 
-  ColumnNode(this.parentNode, this.nodeList, this.isStack, this.strategy);
+  ColumnNode(this.parentNode, this.nodeList, this.isStack);
 
   ///布局过程中使用
   Rect rect = Rect.zero;
-  Arc arc = Arc();
+  Arc arc = Arc.zero;
 
   num getUp() {
     if (nodeList.isEmpty) {
@@ -47,40 +46,64 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   }
 
   void mergeData() {
-    num? up;
-    final bool negative = strategy == StackStrategy.negative;
-    final bool positive = strategy == StackStrategy.positive;
-    final bool all = strategy == StackStrategy.all;
-    final bool samesign = strategy == StackStrategy.samesign;
-
-    for (int i = 0; i < nodeList.length; i++) {
-      var cn = nodeList[i];
-      var itemData = cn.originData;
-      if (itemData == null) {
-        continue;
-      }
-      bool minZero = itemData.minValue > 0;
-      bool maxZero = itemData.maxValue < 0;
-      if (up == null) {
-        if (all || samesign || (positive && minZero && isStack) || (negative && maxZero && isStack)) {
-          up = itemData.maxValue;
-          cn.up = itemData.maxValue;
-          cn.down = itemData.minValue;
-        }
-        continue;
-      }
-      bool sameZero = (itemData.maxValue <= 0 && up <= 0) || (itemData.minValue >= 0 && up >= 0);
-      if (all || (samesign && sameZero) || (positive && minZero) || (negative && maxZero)) {
-        if (negative || (samesign && up < 0)) {
-          cn.up = up;
-          cn.down = up + itemData.minValue;
-          up = cn.down;
-        } else {
-          cn.down = up;
-          cn.up = up + itemData.maxValue;
-          up = cn.up;
-        }
-      }
+    if (nodeList.isEmpty) {
+      return;
     }
+    if (nodeList.length == 1) {
+      var first = nodeList.first;
+      var itemData = first.originData;
+      if (itemData == null) {
+        return;
+      }
+      first.up = itemData.maxValue;
+      first.down = itemData.minValue;
+      return;
+    }
+
+    List<SingleNode<T, P>> positiveList = [];
+    List<SingleNode<T, P>> negativeList = [];
+    List<SingleNode<T, P>> crossList = [];
+    each(nodeList, (node, p1) {
+      var itemData = node.originData;
+      if (itemData == null) {
+        return;
+      }
+      if (itemData.minValue >= 0) {
+        positiveList.add(node);
+      } else if (itemData.maxValue <= 0) {
+        negativeList.add(node);
+      } else {
+        crossList.add(node);
+      }
+    });
+
+    List<List<SingleNode<T, P>>> tmpList=[positiveList,crossList];
+    for(var list in tmpList){
+      if(list.isEmpty){continue;}
+      var first = list.first;
+      var firstData = first.originData!;
+      num down = firstData.minValue;
+      num up = firstData.maxValue;
+      each(list, (node, p1) {
+        node.up = up;
+        node.down = down;
+        down = up;
+        up += (node.originData!.maxValue - node.originData!.minValue);
+      });
+    }
+
+    if (negativeList.isNotEmpty) {
+      var first = negativeList.first;
+      var firstData = first.originData!;
+      num up = firstData.maxValue;
+      num down = firstData.minValue;
+      each(negativeList, (node, p1) {
+        node.up = up;
+        node.down = down;
+        up = down;
+        down -= (node.originData!.maxValue - node.originData!.minValue);
+      });
+    }
+
   }
 }
