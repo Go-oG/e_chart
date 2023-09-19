@@ -10,14 +10,10 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
-    bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
-    PolarPosition position;
-    if (vertical) {
-      position = coord.dataToPosition(x, groupNode.nodeList.first.getUp());
-    } else {
-      position = coord.dataToPosition(groupNode.nodeList.first.getUp(), x);
-    }
+    final xData = groupNode.getXData();
+    final yData = groupNode.getYData();
+    var position = coord.dataToPosition(xData,yData);
     num ir = position.radius.length == 1 ? 0 : position.radius[0];
     num or = position.radius.length == 1 ? position.radius[0] : position.radius[1];
     num sa = position.angle.length < 2 ? coord.getStartAngle() : position.angle[0];
@@ -94,47 +90,38 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
     }
 
     each(groupNode.nodeList, (colNode, i) {
-      var coord = findPolarCoord();
-      Arc arc;
       if (vertical) {
-        var up = coord.dataToPosition(x, colNode.getUp());
-        var down = coord.dataToPosition(x, colNode.getDown());
         num or = offset + sizeList[i];
-        var sa = down.angle[0];
-        var tmpAngle = (up.angle[0] - down.angle[0]);
-        arc = groupArc.copy(startAngle: sa, sweepAngle: tmpAngle, innerRadius: offset, outRadius: or);
+        colNode.arc = groupArc.copy(innerRadius: offset, outRadius: or);
         offset = or + columnGap;
       } else {
-        var up = coord.dataToPosition(colNode.getUp(), x);
-        var down = coord.dataToPosition(colNode.getDown(), x);
         var diffAngle = sizeList[i] * dir;
-        arc = groupArc.copy(
-            innerRadius: down.radius[0], outRadius: up.radius[0], startAngle: offset, sweepAngle: diffAngle);
+        colNode.arc = groupArc.copy(startAngle: offset, sweepAngle: diffAngle);
         offset += diffAngle;
         offset += columnGap * dir;
       }
-      colNode.arc = arc;
     });
   }
 
   @override
   void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type) {
-    final num up = columnNode.nodeList[columnNode.nodeList.length - 1].up;
-    final num down = columnNode.nodeList.first.down;
-    final num diff = up - down;
     final bool vertical = series.direction == Direction.vertical;
     final colArc = columnNode.arc;
-    final num arcSize = vertical ? colArc.sweepAngle : (colArc.outRadius - colArc.innerRadius).abs();
-    num offset = vertical ? colArc.startAngle : colArc.innerRadius;
+    var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {
-      num percent = (node.up - node.down) / diff;
-      num length = percent * arcSize;
-      if (vertical) {
-        node.arc = colArc.copy(startAngle: offset, sweepAngle: length);
-      } else {
-        node.arc = colArc.copy(innerRadius: offset, outRadius: offset + length);
+      var data = node.data.data;
+      if (data == null) {
+        node.arc = Arc.zero;
+        node.position = Offset.zero;
+        return;
       }
-      offset += length;
+      var up = coord.dataToPosition(data.x, node.up);
+      var down = coord.dataToPosition(data.x, node.down);
+      if (vertical) {
+        node.arc = colArc.copy(startAngle: down.angle.first, sweepAngle: up.angle.last - down.angle.first);
+      } else {
+        node.arc = colArc.copy(innerRadius: down.radius.first, outRadius: up.radius.last);
+      }
       node.position = node.arc.centroid();
     });
   }

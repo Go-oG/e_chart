@@ -158,10 +158,10 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     groupNode.rect = Rect.fromLTRB(l, t, r, b);
   }
 
+  ///计算Column的位置，Column会占满一行或者一列
   @override
   void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
     final int groupInnerCount = axisGroup.getColumnCount(xIndex);
-
     int colGapCount = groupInnerCount - 1;
     if (colGapCount < 1) {
       colGapCount = 0;
@@ -169,7 +169,6 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     final bool vertical = series.direction == Direction.vertical;
     final Rect groupRect = groupNode.rect;
     final num groupSize = vertical ? groupRect.width : groupRect.height;
-
     double groupGap = series.groupGap.convert(groupSize) * 2;
     double columnGap = series.columnGap.convert(groupSize);
     double allGap = groupGap + colGapCount * columnGap;
@@ -178,7 +177,6 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
       canUseSize = groupSize.toDouble();
     }
     double allBarSize = 0;
-
     ///计算Group占用的大小
     List<double> sizeList = [];
     each(groupNode.nodeList, (node, i) {
@@ -219,29 +217,11 @@ abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, 
     double offset = vertical ? groupRect.left : groupRect.top;
     offset += groupGap * 0.5;
     each(groupNode.nodeList, (node, i) {
-      if (node.nodeList.isEmpty) {
-        return;
-      }
-      var parent = node.nodeList.first.parent;
-      int yIndex = parent.yAxisIndex;
-      var coord = findGridCoord();
-      var upNode = node.getUpNode();
-      var downNode = node.getDownNode();
-      if (upNode == null || downNode == null) {
-        Logger.w("内部状态异常 无法找到 upValue 或者downValue");
-        return;
-      }
-      dynamic upValue = getUpValue(upNode), downValue = getDownValue(downNode);
       if (vertical) {
-        var uo = coord.dataToPoint(yIndex, upValue, false).last;
-        var downo = coord.dataToPoint(yIndex, downValue, false).first;
-        node.rect = Rect.fromLTRB(offset, uo.dy, offset + sizeList[i], downo.dy);
+        node.rect = Rect.fromLTRB(offset, groupRect.top, offset + sizeList[i], groupRect.bottom);
         offset += sizeList[i] + columnGap;
       } else {
-        var axisIndex = node.parentNode.getXAxisIndex();
-        var lo = coord.dataToPoint(axisIndex, downValue, true).first;
-        var ro = coord.dataToPoint(axisIndex, upValue, true).last;
-        node.rect = Rect.fromLTRB(lo.dx, offset, ro.dx, offset + sizeList[i]);
+        node.rect = Rect.fromLTRB(groupRect.left, offset, groupRect.right, offset + sizeList[i]);
         offset += sizeList[i] + columnGap;
       }
     });

@@ -262,39 +262,36 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         for (var column in group.nodeList) {
           for (var node in column.nodeList) {
             final group = node.parent;
-
             var mainIndex = vertical ? node.parent.xAxisIndex : node.parent.yAxisIndex;
             if (mainIndex < 0) {
               mainIndex = 0;
             }
             final mainData = vertical ? node.originData?.x : node.originData?.y;
-            if (mainData != null) {
-              if (mainData is String) {
-                List<SingleNode<T, P>> strList = mainStrMap[mainIndex] ?? [];
-                mainStrMap[mainIndex] = strList;
-                strList.add(node);
-              } else if (mainData is num) {
-                var sn = mainNumMinMap[mainIndex];
-                var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as num;
-                if (sn == null || mainData < od) {
-                  mainNumMinMap[mainIndex] = node;
-                }
-                sn = mainNumMaxMap[mainIndex];
-                od = vertical ? sn?.originData?.x : sn?.originData?.y;
-                if (sn == null || mainData > od) {
-                  mainNumMaxMap[mainIndex] = node;
-                }
-              } else if (mainData is DateTime) {
-                var sn = mainTimeMinMap[mainIndex];
-                var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as DateTime;
-                if (sn == null || mainData.millisecondsSinceEpoch < od.millisecondsSinceEpoch) {
-                  mainTimeMinMap[mainIndex] = node;
-                }
-                sn = mainTimeMaxMap[mainIndex];
-                od = vertical ? sn?.originData?.x : sn?.originData?.y;
-                if (sn == null || mainData.millisecondsSinceEpoch > od.millisecondsSinceEpoch) {
-                  mainTimeMaxMap[mainIndex] = node;
-                }
+            if (mainData is String) {
+              List<SingleNode<T, P>> strList = mainStrMap[mainIndex] ?? [];
+              mainStrMap[mainIndex] = strList;
+              strList.add(node);
+            } else if (mainData is num) {
+              var sn = mainNumMinMap[mainIndex];
+              var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as num?;
+              if (sn == null || (od != null && mainData < od)) {
+                mainNumMinMap[mainIndex] = node;
+              }
+              sn = mainNumMaxMap[mainIndex];
+              od = vertical ? sn?.originData?.x : sn?.originData?.y;
+              if (sn == null || (od != null && mainData > od)) {
+                mainNumMaxMap[mainIndex] = node;
+              }
+            } else if (mainData is DateTime) {
+              var sn = mainTimeMinMap[mainIndex];
+              var od = (vertical ? sn?.originData?.x : sn?.originData?.y) as DateTime?;
+              if (sn == null || (od != null && mainData.millisecondsSinceEpoch < od.millisecondsSinceEpoch)) {
+                mainTimeMinMap[mainIndex] = node;
+              }
+              sn = mainTimeMaxMap[mainIndex];
+              od = vertical ? sn?.originData?.x : sn?.originData?.y;
+              if (sn == null || (od != null && mainData.millisecondsSinceEpoch > od.millisecondsSinceEpoch)) {
+                mainTimeMaxMap[mainIndex] = node;
               }
             }
 

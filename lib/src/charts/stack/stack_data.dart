@@ -76,6 +76,10 @@ class StackItemData extends BaseItemData {
     if (x is! num && y is! num) {
       throw ChartError('x 和 y 必须有一个是num类型的数据');
     }
+    if (x == null || y == null) {
+      throw ChartError("NullPointException");
+    }
+
     if (y is num) {
       stackUp = y;
     } else {
@@ -103,10 +107,8 @@ class StackItemData extends BaseItemData {
     return value / 2;
   }
 
-
   @override
   String toString() {
     return '$runtimeType x:${x} y:$y';
   }
-
 }
