@@ -101,7 +101,7 @@ class CandleStickData extends StackItemData {
     required this.lowest,
     required this.highest,
     required this.lastClose,
-    super.label,
+    super.name,
     super.id,
   }) : super(time, max([highest, close]));
 
@@ -115,4 +115,12 @@ class CandleStickData extends StackItemData {
 
   @override
   num get aveValue => (lowest + highest) / 2;
+
+  @override
+  String toString() {
+    return '$runtimeType time:$time name:$name id:$id\n'
+        'highest:${highest.toStringAsFixed(2)} lowest:${lowest.toStringAsFixed(2)}\n'
+        'open:${open.toStringAsFixed(2)} close:${close.toStringAsFixed(2)} '
+        'lastClose:${lastClose.toStringAsFixed(2)}';
+  }
 }

@@ -24,4 +24,9 @@ class WrapData<T extends StackItemData, P extends StackGroupData<T>> {
     }
     return other.parent == parent && other.data == data;
   }
+
+  @override
+  String toString() {
+    return '$data parent:$parent dataIndex:$dataIndex groupIndex:$groupIndex';
+  }
 }

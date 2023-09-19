@@ -230,23 +230,17 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       if (interval > 0 && split.index % interval != 0) {
         return;
       }
-      LineStyle? style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
+      var style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
       if (style == null) {
         return;
       }
-      List<Offset> ol = [];
-      canvas.save();
+      List<Offset> ol = [split.start];
       if (vertical) {
-        canvas.translate(-style.width / 2, 0);
-        ol.add(split.start);
         ol.add(split.start.translate(0, h * dir));
       } else {
-        canvas.translate(0, -style.width / 2);
-        ol.add(split.start);
         ol.add(split.start.translate(dir * w, 0));
       }
       style.drawPolygon(canvas, paint, ol);
-      canvas.restore();
     });
     canvas.restore();
   }
@@ -269,9 +263,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     canvas.clipRect(getAxisClipRect(scroll));
     each(layoutResult.split, (split, i) {
-      LineStyle? style = axis.getAxisLineStyle(i, split.maxIndex, theme);
-      if (style == null) {
-        Logger.i("$runtimeType 坐标轴axisLine样式为空 不绘制");
+      var style = axis.getAxisLineStyle(i, split.maxIndex, theme);
+      if (style == null || style.notDraw) {
         return;
       }
       style.drawPolygon(canvas, paint, [split.start, split.end]);
@@ -300,15 +293,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         var start = line.start;
         var end = line.end;
         if (interval <= 0 || (line.originIndex % interval == 0)) {
-          var style = tick.lineStyle;
-          canvas.save();
-          if (direction == Direction.horizontal) {
-            canvas.translate(-style.width / 2, 0);
-          } else {
-            canvas.translate(0, -style.width / 2);
-          }
           tick.lineStyle.drawPolygon(canvas, paint, [start, end]);
-          canvas.restore();
         }
       }
       var minorTick = axis.getMinorTick(line.index, line.maxIndex, theme);
@@ -455,7 +440,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     } else {
       alignment = axis.position == Align2.end ? Alignment.centerLeft : Alignment.centerRight;
     }
-    TextDrawInfo config = TextDrawInfo(tmp, align: alignment);
+    var config = TextDrawInfo(tmp, align: alignment);
     axisPointer.labelStyle.draw(canvas, paint, dt, config);
     canvas.restore();
   }
@@ -497,26 +482,26 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   Rect getAxisClipRect(Offset scroll) {
     var box = coord.contentBox;
-    Rect clipRect;
-    double w = axis.axisLine.width;
+
     if (direction == Direction.horizontal) {
       //X轴
       double left = scroll.dx.abs() + box.left;
+      var offset = coord.getAxisLayoutOffset(true);
+      left -= offset[0];
+      var w = box.width + offset[0] + offset[1];
       if (axis.position == Align2.start) {
-        clipRect = Rect.fromLTWH(left, 0, box.width, coord.height);
-      } else {
-        clipRect = Rect.fromLTWH(left, 0, box.width, coord.height);
+        return Rect.fromLTRB(left, -attrs.rect.height, left + w, box.top + attrs.rect.height);
       }
-    } else {
-      //Y轴
-      double top = box.top + scroll.dy;
-      if (axis.position == Align2.end) {
-        clipRect = Rect.fromLTWH(box.right - w, top, coord.width + w, box.height);
-      } else {
-        clipRect = Rect.fromLTWH(0, top, coord.width + 1, box.height);
-      }
+      return Rect.fromLTRB(left, box.bottom - attrs.rect.height, left + w, coord.height);
     }
-    return clipRect;
+    //Y轴
+    var offset = coord.getAxisLayoutOffset(false);
+    double top = box.top + scroll.dy - offset[0];
+    double h = box.height + offset[0] + offset[1];
+    if (axis.position == Align2.end) {
+      return Rect.fromLTRB(box.right - attrs.rect.width, top, coord.width + attrs.rect.width, top + h);
+    }
+    return Rect.fromLTRB(-attrs.rect.width, top, box.left + attrs.rect.width, top + h);
   }
 
   List<int> computeRangeIndex(num distance, int tickCount, num interval) {

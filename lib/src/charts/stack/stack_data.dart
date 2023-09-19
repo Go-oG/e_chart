@@ -62,24 +62,17 @@ class StackGroupData<T> {
   }
 }
 
-class StackItemData {
-  late final String id;
+class StackItemData extends BaseItemData {
   dynamic x;
   dynamic y;
-  DynamicText? label;
 
   num stackUp = 0;
 
   num stackDown = 0;
 
-  StackItemData(this.x, this.y, {String? id, this.label}) {
+  StackItemData(this.x, this.y, {super.id, super.name}) {
     checkDataType(x);
     checkDataType(y);
-    if (id == null || id.isEmpty) {
-      this.id = randomId();
-    } else {
-      this.id = id;
-    }
     if (x is! num && y is! num) {
       throw ChartError('x 和 y 必须有一个是num类型的数据');
     }
@@ -110,11 +103,10 @@ class StackItemData {
     return value / 2;
   }
 
-  @override
-  bool operator ==(Object other) {
-    return other is StackItemData && other.id == id;
-  }
 
   @override
-  int get hashCode => id.hashCode;
+  String toString() {
+    return '$runtimeType x:${x} y:$y';
+  }
+
 }

@@ -20,7 +20,6 @@ class GraphNode extends DataNode2<GraphAttr, GraphItemData, ChartSymbol> {
   @override
   void updateStyle(Context context, covariant GraphSeries series) {
     setSymbol(series.getSymbol(context, data, dataIndex, size, status), true);
-
   }
 
   ///下面是对Attr的访问封装
@@ -59,6 +58,8 @@ class GraphNode extends DataNode2<GraphAttr, GraphItemData, ChartSymbol> {
 
   Size get size => Size(attr.width, attr.height);
 
+  Offset get center => Offset(x, y);
+
   /// 当前X方向速度分量
   double get vx => attr.vx;
 
@@ -79,7 +80,6 @@ class GraphNode extends DataNode2<GraphAttr, GraphItemData, ChartSymbol> {
   int get index => attr.index;
 
   set index(int v) => attr.index = v;
-
 }
 
 class GraphAttr {

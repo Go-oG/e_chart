@@ -79,6 +79,14 @@ class GraphSeries extends RectSeries {
     return CircleSymbol(radius: size.shortestSide / 2, itemStyle: as, borderStyle: bs).convert(status);
   }
 
+  LineStyle getBorderStyle(Context context, GraphItemData source, GraphItemData target, Set<ViewState> status) {
+    var fun = lineFun;
+    if (fun != null) {
+      return fun.call(source, target, status);
+    }
+    return context.option.theme.graphTheme.getStyle() ?? LineStyle.empty;
+  }
+
   @override
   List<LegendItem> getLegendItem(Context context) => [];
 
@@ -89,4 +97,5 @@ class GraphSeries extends RectSeries {
     });
     return nodes.length;
   }
+
 }

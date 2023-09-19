@@ -19,7 +19,7 @@ class AxisLine {
   Fun3<int, int, Color?>? styleFun;
 
   AxisLine({
-    this.width = 2,
+    this.width = 1,
     this.dash = const [],
     this.shadow = const [],
     this.show = true,

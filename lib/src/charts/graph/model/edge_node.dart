@@ -6,26 +6,22 @@ class Edge extends DataNode<EdgeAttr, EdgeItemData> {
   final GraphNode target;
 
   Edge(EdgeItemData data, int dataIndex, this.source, this.target)
-      : super(
-          data,
-          dataIndex,
-          0,
-          EdgeAttr(),
-          AreaStyle.empty,
-          LineStyle.empty,
-          LabelStyle.empty,
-        );
+      : super(data, dataIndex, 0, EdgeAttr(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
 
   @override
   bool contains(Offset offset) {
-    return false;
+    return Segment(source.center, target.center).contains(offset);
   }
 
   @override
-  void onDraw(CCanvas canvas, Paint paint) {}
+  void onDraw(CCanvas canvas, Paint paint) {
+    borderStyle.drawPolygon(canvas, paint, points);
+  }
 
   @override
-  void updateStyle(Context context, covariant GraphSeries series) {}
+  void updateStyle(Context context, covariant GraphSeries series) {
+    borderStyle = series.getBorderStyle(context, source.data, target.data, status);
+  }
 
   double get x => attr.x;
 

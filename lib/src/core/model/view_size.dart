@@ -51,6 +51,7 @@ mixin ViewSize {
   Size get size => Size(width, height);
 
   double translationX = 0;
+
   double translationY = 0;
 
   Offset get translation => Offset(translationX, translationY);

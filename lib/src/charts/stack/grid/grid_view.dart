@@ -8,31 +8,25 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
 
   @override
   void onDrawGroupBk(CCanvas canvas) {
-    Set<GroupNode> rectSet = {};
-    AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
+    Set<ColumnNode> rectSet = {};
     Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, 0);
     var nodeMap = layoutHelper.showNodeMap;
     nodeMap.forEach((key, node) {
-      var group = node.parentNode.parentNode;
-      if (rectSet.contains(group)) {
+      var column = node.parentNode;
+      if (rectSet.contains(column)) {
         return;
       }
-      AreaStyle? style;
-      if (series.groupStyleFun != null) {
-        style = series.groupStyleFun?.call(node.originData, node.parent, node.status);
-      } else if (group.isHover) {
-        style = s2;
-      }
+      var style = series.groupStyleFun?.call(node.originData, node.parent, node.status);
       if (style != null) {
         if (series.coordType == CoordType.polar) {
-          style.drawPath(canvas, mPaint, group.arc.toPath());
+          style.drawPath(canvas, mPaint, column.arc.toPath());
         } else {
-          style.drawRect(canvas, mPaint, group.rect);
+          style.drawRect(canvas, mPaint, column.rect);
         }
       }
-      rectSet.add(group);
+      rectSet.add(column);
     });
     canvas.restore();
     return;

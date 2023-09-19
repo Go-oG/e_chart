@@ -48,7 +48,10 @@ class EventDispatcher {
   }
 
   void dispatch(ChartEvent event) {
-    // Logger.i('$runtimeType dispatch($event)');
+    var type=event.eventType;
+    if(type==EventType.click){
+      Logger.i('$runtimeType dispatch($event)');
+    }
     var set = _callMap[event.eventType] ?? _callMap[EventType.normal]!;
     each(set, (call, p1) {
       try {

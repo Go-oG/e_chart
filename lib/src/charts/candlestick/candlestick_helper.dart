@@ -167,11 +167,17 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
 
   @override
   SingleNode<CandleStickData, CandleStickGroup>? findNode(Offset offset) {
-    for (var node in nodeMap.values) {
-      Rect ar = node.rect;
-      if (ar.contains2(offset)) {
-        return node;
+    var node=super.findNode(offset);
+    if(node!=null){return node;}
+    for (var node in showNodeMap.values) {
+      List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
+      for (var l in bl) {
+        if (offset.inPolygon(l)) {
+          return node;
+        }
       }
+    }
+    for (var node in nodeMap.values) {
       List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
       for (var l in bl) {
         if (offset.inPolygon(l)) {

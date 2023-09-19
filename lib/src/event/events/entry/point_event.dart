@@ -13,6 +13,7 @@ class UserClickEvent extends ChartEvent {
   String toString() {
     return "$runtimeType\n$event";
   }
+
   @override
   EventType get eventType => EventType.click;
 }
@@ -28,6 +29,7 @@ class UserDoubleClickEvent extends ChartEvent {
   String toString() {
     return "$runtimeType\n$event";
   }
+
   @override
   EventType get eventType => EventType.doubleClick;
 }
@@ -43,6 +45,7 @@ class UserHoverEvent extends ChartEvent {
   String toString() {
     return "$runtimeType\n$event";
   }
+
   @override
   EventType get eventType => EventType.hover;
 }
@@ -56,6 +59,7 @@ class UserHoverEndEvent extends ChartEvent {
   String toString() {
     return "$runtimeType\n$event";
   }
+
   @override
   EventType get eventType => EventType.hover;
 }
@@ -71,19 +75,21 @@ class UserLongPressEvent extends ChartEvent {
   String toString() {
     return "$runtimeType:$event";
   }
+
   @override
   EventType get eventType => EventType.longPress;
 }
 
 class UserLongPressEndEvent extends ChartEvent {
   final EventInfo event;
+
   UserLongPressEndEvent(this.event);
+
   @override
   String toString() {
     return "$runtimeType:$event";
   }
+
   @override
   EventType get eventType => EventType.longPress;
-
 }
-

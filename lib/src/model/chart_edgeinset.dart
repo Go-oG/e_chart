@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-
 class ChartEdgeInset {
   double left = 0;
   double top = 0;

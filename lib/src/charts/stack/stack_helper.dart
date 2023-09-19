@@ -407,7 +407,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   void onClick(Offset localOffset) {
-    super.onClick(localOffset);
     handleHoverOrClick(localOffset, true);
   }
 
@@ -422,27 +421,24 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   void handleHoverOrClick(Offset offset, bool click) {
-    Offset tr = getTranslation();
-    offset = offset.translate(tr.dx, tr.dy);
+    var old = offset;
+    var translation = getTranslation();
+    offset = offset.translate(-translation.dx, -translation.dy);
     var node = findNode(offset);
+    if (node != null) {
+      click ? sendClickEvent(offset, node) : sendHoverEvent(offset, node);
+    }
     if (node == oldHoverNode) {
       return;
     }
-    if (series.selectedMode == SelectedMode.group && node?.parentNode == oldHoverNode?.parentNode) {
-      return;
-    }
-    if (node != null) {
-      if (click) {
-        sendClickEvent(offset, node);
-      } else {
-        sendHoverEvent(offset, node);
-      }
-    }
-    if (oldHoverNode != null && !click) {
-      sendHoverEvent(offset, oldHoverNode!);
-    }
 
-    onHandleHoverEnd(oldHoverNode, node);
+    var oldNode = oldHoverNode;
+    oldHoverNode = null;
+    if (oldNode != null) {
+      sendHoverEvent(offset, oldNode);
+    }
+    onHandleHoverEnd(oldNode, node);
+    oldHoverNode = node;
   }
 
   void onHandleHoverEnd(SingleNode<T, P>? oldNode, SingleNode<T, P>? newNode) {
@@ -605,8 +601,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   SingleNode<T, P>? findNode(Offset offset) {
+    for (var ele in showNodeMap.values) {
+      if (ele.contains(offset)) {
+        return ele;
+      }
+    }
     for (var ele in nodeMap.values) {
-      if (ele.attr.rect.contains(offset)) {
+      if (ele.contains(offset)) {
         return ele;
       }
     }

@@ -48,10 +48,10 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
   @override
   LineStyle getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, [Set<ViewState>? status]) {
     if (lineStyleFun != null) {
-      return lineStyleFun?.call(data, group, status ?? {})??LineStyle.empty;
+      return lineStyleFun?.call(data, group, status ?? {}) ?? LineStyle.empty;
     }
     var barTheme = context.option.theme.boxplotTheme;
-    return barTheme.getBorderStyle()??LineStyle.empty;
+    return barTheme.getBorderStyle() ?? LineStyle.empty;
   }
 }
 
@@ -86,7 +86,15 @@ class BoxplotData extends StackItemData {
     required this.middle,
     required this.downAve4,
     required this.min,
-    super.label,
+    super.name,
     super.id,
   }) : super(x, max);
+
+  @override
+  String toString() {
+    return '$runtimeType x:$x name:$name id:$id\n'
+        'max:${max.toStringAsFixed(2)} upAve4:${upAve4.toStringAsFixed(2)}\n'
+        'middle:${middle.toStringAsFixed(2)} downAve4:${downAve4.toStringAsFixed(2)} '
+        'min:${min.toStringAsFixed(2)}';
+  }
 }

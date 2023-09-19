@@ -56,7 +56,10 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
 
   @override
   bool contains(Offset offset) {
-    return false;
+    if (coord == CoordType.polar) {
+      return attr.rect.contains2(offset);
+    }
+    return attr.arc.contains(offset);
   }
 
   @override

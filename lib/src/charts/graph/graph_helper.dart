@@ -46,8 +46,7 @@ class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
   void onDragStart(Offset offset) {
     var old = offset;
     var center = _oldLayout?.getTranslation() ?? Offset.zero;
-    var scroll = view.translation;
-    offset = offset.translate(-center.dx, -center.dy).translate(scroll.dx.abs(), scroll.dy.abs());
+    offset = offset.translate(-center.dx, -center.dy).translate(view.translationX.abs(), view.translationY.abs());
     var node = findNode(offset);
     if (node == null && series.onlyDragNode) {
       return;
@@ -58,7 +57,7 @@ class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
       node.fy = offset.dy;
       node.x = offset.dx;
       node.y = offset.dy;
-      node.drawIndex=100;
+      node.drawIndex = 100;
       node.addState(ViewState.dragged);
       node.updateStyle(context, series);
       sortList(nodeList);
@@ -69,34 +68,35 @@ class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
 
   @override
   void onDragMove(Offset offset, Offset diff) {
-    var center = _oldLayout?.getTranslation() ?? Offset.zero;
-    var scroll = view.translation;
-    offset = offset.translate2(center.invert).translate2(scroll.abs);
     var node = _dragNode;
+    if (node == null && series.onlyDragNode) {
+      return;
+    }
+
     if (node == null) {
-      if (series.onlyDragNode) {
-        return;
-      }
       view.translationX += diff.dx;
       view.translationY += diff.dy;
       notifyLayoutUpdate();
       return;
     }
-    node.fx = offset.dx;
-    node.fy = offset.dy;
-    node.x = offset.dx;
-    node.y = offset.dy;
+    var center = _oldLayout?.getTranslation() ?? Offset.zero;
+    double fx = offset.dx - center.dx + view.translationX.abs();
+    double fy = offset.dy - center.dy + view.translationY.abs();
+    node.fx = fx;
+    node.fy = fy;
+    node.x = fx;
+    node.y = fy;
     notifyLayoutUpdate();
   }
 
   @override
   void onDragEnd() {
     var node = _dragNode;
-    _dragNode=null;
+    _dragNode = null;
     if (node != null) {
       node.removeState(ViewState.dragged);
       node.updateStyle(context, series);
-      node.drawIndex=0;
+      node.drawIndex = 0;
       notifyLayoutUpdate();
     }
   }

@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
@@ -26,19 +26,42 @@ class GridCoordImpl extends GridCoord {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    Size size = Size(parentWidth, parentHeight);
-    double w = parentWidth - padding.horizontal;
-    double h = parentHeight - padding.vertical;
+    var lp = layoutParams;
+    double pw = lp.width.convert(parentWidth - padding.horizontal),
+        ph = lp.height.convert(parentHeight - padding.vertical);
+    double maxW = 0;
+    double maxH = 0;
+    for (var child in children) {
+      child.measure(pw, ph);
+      maxW = m.max(maxW, child.width);
+      maxH = m.max(maxH, child.height);
+    }
+    var opw = pw;
+    var oph = ph;
+    if (lp.width.isWrap) {
+      pw = maxW;
+      pw = m.min(pw, opw);
+    }
+    if (lp.height.isWrap) {
+      ph = maxH;
+      pw = m.min(pw, oph);
+    }
+
+    if (pw != opw || ph != oph) {
+      for (var child in children) {
+        child.measure(pw, ph);
+        maxW = m.max(maxW, child.width);
+        maxH = m.max(maxH, child.height);
+      }
+    }
+
     xMap.forEach((key, value) {
-      value.doMeasure(w, h);
+      value.doMeasure(pw, ph);
     });
     yMap.forEach((key, value) {
-      value.doMeasure(w, h);
+      value.doMeasure(pw, ph);
     });
-    for (var child in children) {
-      child.measure(w, h);
-    }
-    return size;
+    return Size(pw, ph);
   }
 
   @override
@@ -112,12 +135,12 @@ class GridCoordImpl extends GridCoord {
     for (var view in children) {
       double rr, bb;
       if (view.layoutParams.width.isMatch) {
-        rr = contentBox.right;
+        rr = contentBox.right - rightOffset;
       } else {
         rr = ll + view.width;
       }
       if (view.layoutParams.height.isMatch) {
-        bb = contentBox.bottom;
+        bb = contentBox.bottom - bottomOffset;
       } else {
         bb = tt + view.height;
       }
@@ -158,7 +181,7 @@ class GridCoordImpl extends GridCoord {
     each(topList, (value, i) {
       var axisInfo = value.axisInfo;
       var h = axisInfo.bound.height;
-      Rect rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
+      var rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
       var attrs = LineAxisAttrs(coordScale.dx, viewPort.scrollX, rect, rect.bottomLeft, rect.bottomRight,
           splitCount: splitCount);
       topOffset -= (h + value.axis.offset);
@@ -172,10 +195,8 @@ class GridCoordImpl extends GridCoord {
     each(bottomList, (value, i) {
       var axisInfo = value.axisInfo;
       var h = axisInfo.bound.height;
-      Rect rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
-      var attrs = LineAxisAttrs(
-          scaleX, viewPort.scrollX, rect, rect.topLeft.translate(0, -1), rect.topRight.translate(0, -1),
-          splitCount: splitCount);
+      var rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
+      var attrs = LineAxisAttrs(scaleX, viewPort.scrollX, rect, rect.topLeft, rect.topRight, splitCount: splitCount);
       bottomOffset += (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
       if (needAlignTick && splitCount == null && i == 0) {
@@ -218,7 +239,7 @@ class GridCoordImpl extends GridCoord {
         rightOffset -= value.axis.offset;
       }
       double w = value.axisInfo.bound.width;
-      Rect rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
+      var rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
       var attrs =
           LineAxisAttrs(scaleY, viewPort.scrollY, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
       rightOffset -= w;
@@ -244,7 +265,7 @@ class GridCoordImpl extends GridCoord {
         leftOffset += value.axis.offset;
       }
       double w = value.axisInfo.bound.width;
-      Rect rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
+      var rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
       var attrs = LineAxisAttrs(scaleY, viewPort.scrollY, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
       leftOffset += w;
       value.doLayout(attrs, dl);
@@ -357,7 +378,7 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
-    var sx = scaleX + scale * cos(rotation);
+    var sx = scaleX + scale * m.cos(rotation);
     if (sx < 0.001) {
       sx = 0.001;
     }
@@ -372,7 +393,7 @@ class GridCoordImpl extends GridCoord {
         value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleX));
       });
     }
-    var sy = scaleY + scale * sin(rotation);
+    var sy = scaleY + scale * m.sin(rotation);
     if (sy < 0.001) {
       sy = 0.001;
     }
@@ -427,7 +448,6 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onClick(Offset offset) {
-    super.onClick(offset);
     if (needInvalidateAxisPointer(true)) {
       _axisPointerOffset = offset.translate(viewPort.scrollX.abs(), viewPort.scrollY.abs());
       if (!contentBox.contains(offset)) {
@@ -531,67 +551,6 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  double getBottomFirstAxisHeight() {
-    XAxis? xAxis;
-    for (var axis in props.xAxisList) {
-      if (axis.position != Align2.start) {
-        xAxis = axis;
-        break;
-      }
-    }
-    if (xAxis == null) {
-      return 0;
-    }
-
-    return xMap[xAxis]!.attrs.rect.height;
-  }
-
-  @override
-  double getTopFirstAxisHeight() {
-    XAxis? xAxis;
-    for (var axis in props.xAxisList) {
-      if (axis.position == Align2.start) {
-        xAxis = axis;
-        break;
-      }
-    }
-    if (xAxis == null) {
-      return 0;
-    }
-    return xMap[xAxis]!.attrs.rect.height;
-  }
-
-  @override
-  double getLeftFirstAxisWidth() {
-    YAxis? yAxis;
-    for (var axis in props.yAxisList) {
-      if (axis.position != Align2.end) {
-        yAxis = axis;
-        break;
-      }
-    }
-    if (yAxis == null) {
-      return 0;
-    }
-    return yMap[yAxis]!.attrs.rect.width;
-  }
-
-  @override
-  double getRightFirstAxisWidth() {
-    YAxis? yAxis;
-    for (var axis in props.yAxisList) {
-      if (axis.position == Align2.end) {
-        yAxis = axis;
-        break;
-      }
-    }
-    if (yAxis == null) {
-      return 0;
-    }
-    return yMap[yAxis]!.attrs.rect.width;
-  }
-
-  @override
   RangeInfo getViewportDataRange(int axisIndex, bool isXAxis) {
     if (axisIndex < 0) {
       axisIndex = 0;
@@ -683,31 +642,125 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  set scaleX(double sx) => coordScale.dx = sx;
+  double getBottomFirstAxisHeight() {
+    XAxis? xAxis;
+    for (var axis in props.xAxisList) {
+      if (axis.position != Align2.start) {
+        xAxis = axis;
+        break;
+      }
+    }
+    if (xAxis == null) {
+      return 0;
+    }
+
+    return xMap[xAxis]!.attrs.rect.height;
+  }
 
   @override
-  double get scaleX => coordScale.dx;
+  double getTopFirstAxisHeight() {
+    XAxis? xAxis;
+    for (var axis in props.xAxisList) {
+      if (axis.position == Align2.start) {
+        xAxis = axis;
+        break;
+      }
+    }
+    if (xAxis == null) {
+      return 0;
+    }
+    return xMap[xAxis]!.attrs.rect.height;
+  }
 
   @override
-  set scaleY(double sy) => coordScale.dy = sy;
+  double getLeftFirstAxisWidth() {
+    YAxis? yAxis;
+    for (var axis in props.yAxisList) {
+      if (axis.position != Align2.end) {
+        yAxis = axis;
+        break;
+      }
+    }
+    if (yAxis == null) {
+      return 0;
+    }
+    return yMap[yAxis]!.attrs.rect.width;
+  }
 
   @override
-  double get scaleY => coordScale.dy;
+  double getRightFirstAxisWidth() {
+    YAxis? yAxis;
+    for (var axis in props.yAxisList) {
+      if (axis.position == Align2.end) {
+        yAxis = axis;
+        break;
+      }
+    }
+    if (yAxis == null) {
+      return 0;
+    }
+    return yMap[yAxis]!.attrs.rect.width;
+  }
 
   @override
-  set translationX(double tx) => viewPort.scrollX = tx;
+  List<double> getAxisLayoutOffset(bool xAxis) {
+    if (xAxis) {
+      //X 轴布局
+      GridAxis? left;
+      GridAxis? right;
+      for (var axis in props.yAxisList) {
+        var yAxisImpl = yMap[axis]!;
+        var yAxis = yAxisImpl.axis;
+        if (!yAxis.show) {
+          continue;
+        }
+        if (yAxisImpl.attrs.rect.width <= 0) {
+          continue;
+        }
+        if (axis.position != Align2.end && left == null) {
+          left = yAxis;
+        } else if (axis.position == Align2.end && right == null) {
+          right = yAxis;
+        }
+        if (left != null && right != null) {
+          break;
+        }
+      }
+      var ls = left?.axisLine;
+      var rs = right?.axisLine;
+      double l = ls == null ? 0 : (ls.show ? ls.width : 0);
+      double r = rs == null ? 0 : (rs.show ? rs.width : 0);
+      return [l, r];
+    }
 
-  @override
-  double get translationX => viewPort.scrollX;
+    //Y 轴布局
+    GridAxis? top;
+    GridAxis? bottom;
+    for (var axis in props.xAxisList) {
+      var xAxisImpl = xMap[axis]!;
+      var xAxis = xAxisImpl.axis;
+      if (!xAxis.show) {
+        continue;
+      }
+      if (xAxisImpl.attrs.rect.height <= 0) {
+        continue;
+      }
+      if (axis.position == Align2.start && top == null) {
+        top = xAxis;
+      } else if (axis.position != Align2.start && bottom == null) {
+        bottom = xAxis;
+      }
+      if (top != null && bottom != null) {
+        break;
+      }
+    }
+    var ts = top?.axisLine;
+    var bs = bottom?.axisLine;
+    double t = ts == null ? 0 : (ts.show ? ts.width : 0);
+    double b = bs == null ? 0 : (bs.show ? bs.width : 0);
 
-  @override
-  set translationY(double ty) => viewPort.scrollY = ty;
-
-  @override
-  double get translationY => viewPort.scrollY;
-
-  @override
-  Offset get translation => viewPort.translation;
+    return [t, b];
+  }
 }
 
 abstract class GridCoord extends CoordLayout<Grid> {
@@ -734,6 +787,9 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   double getBottomFirstAxisHeight();
 
+  ///获取坐标轴布局偏移量
+  List<double> getAxisLayoutOffset(bool xAxis);
+
   ///获取比例尺
   BaseScale getScale(int axisIndex, bool isXAxis);
 
@@ -754,4 +810,28 @@ abstract class GridCoord extends CoordLayout<Grid> {
   double get scrollX => viewPort.scrollX;
 
   double get scrollY => viewPort.scrollY;
+
+  @override
+  set scaleX(double sx) => coordScale.dx = sx;
+
+  @override
+  double get scaleX => coordScale.dx;
+
+  @override
+  set scaleY(double sy) => coordScale.dy = sy;
+
+  @override
+  double get scaleY => coordScale.dy;
+
+  @override
+  set translationX(double tx) => viewPort.scrollX = tx;
+
+  @override
+  double get translationX => viewPort.scrollX;
+
+  @override
+  set translationY(double ty) => viewPort.scrollY = ty;
+
+  @override
+  double get translationY => viewPort.scrollY;
 }
