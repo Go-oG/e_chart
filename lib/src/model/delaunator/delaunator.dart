@@ -3,6 +3,8 @@ import 'dart:math' as math;
 
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+
 import '../../utils/list_util.dart';
 import 'triangle.dart';
 
@@ -19,7 +21,8 @@ class Delaunator {
   List<Offset> points;
   late List<double> coords;
   late int _count;
-  late int maxTriangles = math.min(2 * _count - 5, 0);
+
+  late int maxTriangles = math.max(2 * _count - 5, 0);
   late final List<int> _triangles = List.filled(maxTriangles * 3, 0);
   late final List<int> _halfEdges = List.filled(maxTriangles * 3, 0);
 
@@ -50,11 +53,11 @@ class Delaunator {
 
   Delaunator(this.points) {
     coords = [];
-    _count = coords.length >> 1;
     each(points, (p0, p1) {
       coords.add(p0.dx);
       coords.add(p0.dy);
     });
+    _count = coords.length >> 1;
     update();
   }
 
@@ -81,6 +84,7 @@ class Delaunator {
     var i0 = -1;
     var i1 = -1;
     var i2 = -1;
+
     for (var i = 0; i < _count; i++) {
       var d = _dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
       if (d < minDist) {
