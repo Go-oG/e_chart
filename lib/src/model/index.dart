@@ -1,3 +1,7 @@
+export 'delaunator/d_edge.dart';
+export 'delaunator/delaunator.dart';
+export 'delaunator/triangle.dart';
+
 export 'enums/align2.dart';
 export 'enums/circle_align.dart';
 export 'enums/component_type.dart';
@@ -19,6 +23,9 @@ export 'event/coord_scroll.dart';
 export 'quadtree/quad_node.dart';
 export 'quadtree/quadtree.dart' hide InnerQuad;
 
+export 'quickselect/quick_select.dart';
+export 'rbush/rbush.dart';
+
 export 'array.dart';
 export 'chart_align.dart';
 export 'chart_error.dart';
@@ -36,4 +43,3 @@ export 'text_info.dart';
 export 'tree_data.dart';
 
 export 'node/tree_node.dart';
-

@@ -1,5 +1,9 @@
 import 'package:flutter/widgets.dart';
 
+List<T> copyList<T>(Iterable<T> list){
+  return List.from(list);
+}
+
 List<List<T>> splitList<T>(List<T> list, int count) {
   List<List<T>> rl = [];
   if (count <= 0) {
