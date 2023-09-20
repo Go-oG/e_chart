@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends StackSeries<T, G> {
+abstract class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends StackSeries<T, G> {
   GridSeries(
     super.data, {
     super.direction = Direction.vertical,
@@ -68,8 +68,5 @@ class GridSeries<T extends StackItemData, G extends StackGroupData<T>> extends S
     }
     return super.buildHelper(context);
   }
-
-
-
 
 }

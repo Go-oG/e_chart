@@ -71,7 +71,7 @@ class SunburstSeries extends RectSeries {
     this.angleGap = 0,
     this.matchParent = false,
     this.rootToNode = true,
-    this.sort = Sort.empty,
+    this.sort = Sort.none,
     this.selectedMode = SelectedMode.group,
     this.radiusDiffFun,
     this.labelStyleFun,
@@ -145,4 +145,6 @@ class SunburstSeries extends RectSeries {
     }
     return c;
   }
+  @override
+  SeriesType get seriesType => SeriesType.sunburst;
 }

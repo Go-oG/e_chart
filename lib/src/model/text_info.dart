@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/src/ext/text_style_ext.dart';
 import 'package:flutter/material.dart';
 
-import '../core/view_state.dart';
+import '../core/model/view_state.dart';
 import '../utils/index.dart';
 
 ///文本绘制参数

@@ -108,6 +108,9 @@ class HeatMapSeries extends RectSeries {
     });
     return data.length;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.heatmap;
 }
 
 class HeatMapData extends BaseItemData {

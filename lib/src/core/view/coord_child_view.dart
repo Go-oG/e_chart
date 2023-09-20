@@ -1,5 +1,5 @@
 import '../layout/layout_helper.dart';
-import '../series.dart';
+import '../series/series.dart';
 import 'series_view.dart';
 
 abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> extends SeriesView<T, L> {

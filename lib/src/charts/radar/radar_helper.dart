@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/widgets.dart';
 
 import 'radar_node.dart';
 
@@ -8,22 +7,21 @@ import 'radar_node.dart';
 class RadarHelper extends LayoutHelper<RadarSeries> {
   List<RadarGroupNode> _groupNodeList = [];
 
-  RadarHelper(super.context,super.view, super.series);
+  RadarHelper(super.context, super.view, super.series);
 
   List<RadarGroupNode> get groupNodeList => _groupNodeList;
 
-  List<RadarNode> _nodeList = [];
   Offset center = Offset.zero;
   double radius = 0;
 
   @override
   void onLayout(LayoutType type) {
-    RadarCoord layout = context.findRadarCoord(series.radarIndex);
-    center = layout.getCenter();
-    radius = layout.getRadius();
+    var coord = context.findRadarCoord(series.radarIndex);
+    center = coord.getCenter();
+    radius = coord.getRadius();
 
-    List<RadarNode> oldList = _nodeList;
-    List<RadarNode> newList = [];
+    List<RadarGroupNode> oldList = _groupNodeList;
+    List<RadarGroupNode> newList = [];
     each(series.data, (group, gi) {
       var groupNode = RadarGroupNode(
         [],
@@ -35,41 +33,40 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
         series.getLineStyle(context, group, gi, {}) ?? LineStyle.empty,
         LabelStyle.empty,
       );
+      groupNode.center = center;
       each(group.data, (c, i) {
-        RadarNode radarNode = RadarNode(
-          groupNode,
-          series.getSymbol(context, c, group, i, {}),
-          c,
-          i,
-          gi,
-          Offset.zero,
-          AreaStyle.empty,
-          LineStyle.empty,
-          LabelStyle.empty,
-        );
-        radarNode.attr = layout.dataToPoint(i, c.value).point;
+        var radarNode = RadarNode(groupNode, series.getSymbol(context, c, group, i, {}), c, i, gi);
+        radarNode.attr = coord.dataToPoint(i, c.value).point;
         groupNode.nodeList.add(radarNode);
       });
-      newList.addAll(groupNode.nodeList);
+      groupNode.updatePath();
+      newList.add(groupNode);
     });
-
-    var an = DiffUtil.diffLayout(
-      getAnimation(type, oldList.length + newList.length),
+    var an = DiffUtil.diffLayout3(
+      getAnimation(type),
       oldList,
       newList,
-      (data, node, add) => center,
-      (s, e, t) => Offset.lerp(s, e, t)!,
-      (resultList) {
-        _nodeList = resultList;
-        List<RadarGroupNode> gl = List.from(splitNode(resultList).keys);
-        for (var e in gl) {
-          e.updatePath();
+      (node, type) {
+        if (type == DiffType.add) {
+          return {"scale": 0};
+        } else {
+          return {'scale': node.scale};
         }
-        _groupNodeList = gl;
+      },
+      (node, type) {
+        if (type == DiffType.remove) {
+          return {"scale": 0};
+        } else {
+          return {"scale": 1};
+        }
+      },
+      (node, s, e, t, type) {
+        node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
+      },
+      (resultList) {
+        _groupNodeList = resultList;
         notifyLayoutUpdate();
       },
-      () => inAnimation = true,
-      () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }
@@ -84,6 +81,4 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
     return resultMap;
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.radar;
 }

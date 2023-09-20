@@ -3,6 +3,7 @@ class SeriesType {
   static const SeriesType line=SeriesType("line");
   static const SeriesType boxplot=SeriesType("boxplot");
   static const SeriesType candlestick=SeriesType("candlestick");
+  static const SeriesType calendar=SeriesType("calendar");
   static const SeriesType funnel=SeriesType("funnel");
   static const SeriesType heatmap=SeriesType("heatmap");
   static const SeriesType parallel=SeriesType("parallel");

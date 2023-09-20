@@ -122,7 +122,4 @@ class CircleHelper extends LayoutHelper2<CircleNode, CircleSeries> {
 
     return nl;
   }
-
-  @override
-  SeriesType get seriesType => SeriesType.circle;
 }

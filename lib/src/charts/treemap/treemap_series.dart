@@ -92,4 +92,7 @@ class TreeMapSeries extends RectSeries {
     }
     return c;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.treemap;
 }

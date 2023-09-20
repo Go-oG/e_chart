@@ -271,7 +271,4 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     }
     return null;
   }
-
-  @override
-  SeriesType get seriesType => SeriesType.line;
 }

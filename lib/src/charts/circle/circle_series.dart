@@ -109,6 +109,9 @@ class CircleSeries extends ChartSeries {
     });
     return data.length;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.circle;
 }
 
 class CircleItemData extends BaseItemData {

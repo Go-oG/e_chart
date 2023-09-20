@@ -211,9 +211,6 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
   }
 
   @override
-  SeriesType get seriesType => SeriesType.funnel;
-
-  @override
   void onRunUpdateAnimation(var list, var animation) {
     var tween2 = ChartDoubleTween(option: animation);
     tween2.addListener(() {

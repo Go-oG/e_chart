@@ -13,7 +13,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   static const String _highK = "high";
   static const String _lowK = "low";
 
-  CandlestickHelper(super.context,super.view, super.series);
+  CandlestickHelper(super.context, super.view, super.series);
 
   @override
   void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
@@ -166,9 +166,11 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   }
 
   @override
-  SingleNode<CandleStickData, CandleStickGroup>? findNode(Offset offset,[bool overlap=false]) {
-    var node=super.findNode(offset);
-    if(node!=null){return node;}
+  SingleNode<CandleStickData, CandleStickGroup>? findNode(Offset offset, [bool overlap = false]) {
+    var node = super.findNode(offset);
+    if (node != null) {
+      return node;
+    }
 
     for (var node in showNodeMap.values) {
       List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
@@ -188,7 +190,4 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     }
     return null;
   }
-
-  @override
-  SeriesType get seriesType => SeriesType.candlestick;
 }

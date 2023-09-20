@@ -1,5 +1,5 @@
 enum Sort {
-  empty,
+  none,
   desc,
   asc,
 }

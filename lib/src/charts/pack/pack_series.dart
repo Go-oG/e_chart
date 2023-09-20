@@ -72,4 +72,6 @@ class PackSeries extends RectSeries {
   int onAllocateStyleIndex(int start) {
     return 0;
   }
+  @override
+  SeriesType get seriesType => SeriesType.pack;
 }

@@ -5,7 +5,7 @@ import 'package:e_chart/e_chart.dart';
 import 'point_node.dart';
 
 class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
-  PointHelper(super.context,super.view, super.series);
+  PointHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
@@ -96,9 +96,6 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       node.attr = Offset(ox, oy);
     }
   }
-
-  @override
-  SeriesType get seriesType => SeriesType.point;
 
   @override
   void onRunUpdateAnimation(var list, var animation) {

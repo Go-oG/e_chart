@@ -48,4 +48,7 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
     }
     return BarGridView(this);
   }
+
+  @override
+  SeriesType get seriesType =>SeriesType.bar;
 }

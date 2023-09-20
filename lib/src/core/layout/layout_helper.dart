@@ -145,7 +145,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
         old.dataIndex == node.dataIndex &&
         old.node == node &&
         old.groupIndex == node.groupIndex &&
-        old.seriesType == seriesType;
+        old.seriesType == series.seriesType;
   }
 
   UserHoverEvent? _lastHoverEvent;
@@ -182,12 +182,10 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
       dataIndex: node.dataIndex,
       dataType: node.dataType,
       groupIndex: node.groupIndex,
-      seriesType: seriesType,
+      seriesType: series.seriesType,
       seriesIndex: series.seriesIndex,
     );
   }
-
-  SeriesType get seriesType;
 
   ///========查找坐标系函数=======================
   GridCoord findGridCoord() {

@@ -27,7 +27,7 @@ class FunnelSeries extends RectSeries {
     this.labelAlign = const ChartAlign(),
     this.maxValue,
     this.direction = Direction.vertical,
-    this.sort = Sort.empty,
+    this.sort = Sort.none,
     this.gap = 2,
     this.align = Align2.center,
     this.labelStyleFun,
@@ -132,4 +132,7 @@ class FunnelSeries extends RectSeries {
     });
     return dataList.length;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.funnel;
 }

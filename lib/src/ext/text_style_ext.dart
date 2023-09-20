@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../core/view_state.dart';
+import '../core/model/view_state.dart';
 
 extension TextStyleExtension on TextStyle {
   TextPainter toPainter(String text,

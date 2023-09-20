@@ -101,4 +101,6 @@ class HexbinSeries extends RectSeries {
     });
     return data.length;
   }
+  @override
+  SeriesType get seriesType => SeriesType.hexbin;
 }

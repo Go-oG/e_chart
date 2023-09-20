@@ -37,6 +37,9 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
   }
 
   @override
+  SeriesType get seriesType => SeriesType.boxplot;
+
+  @override
   AreaStyle getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, [Set<ViewState>? status]) {
     if (areaStyleFun != null) {
       return areaStyleFun?.call(data, group, status ?? {}) ?? AreaStyle.empty;

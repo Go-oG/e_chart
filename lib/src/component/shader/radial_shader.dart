@@ -4,7 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../core/view_state.dart';
+import '../../core/index.dart';
 import 'shader.dart';
 
 class RadialShader extends ChartShader {

@@ -146,6 +146,8 @@ class SankeySeries extends RectSeries {
     });
     return data.data.length;
   }
+  @override
+  SeriesType get seriesType => SeriesType.sankey;
 }
 
 class SankeyData {

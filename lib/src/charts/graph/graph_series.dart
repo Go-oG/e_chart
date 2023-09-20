@@ -97,5 +97,6 @@ class GraphSeries extends RectSeries {
     });
     return nodes.length;
   }
-
+  @override
+  SeriesType get seriesType => SeriesType.graph;
 }

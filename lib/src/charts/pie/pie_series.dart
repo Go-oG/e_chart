@@ -132,6 +132,9 @@ class PieSeries extends RectSeries {
     });
     return data.length;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.pie;
 }
 
 enum RoseType {

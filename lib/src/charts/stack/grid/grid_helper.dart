@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///适用于GridCoord坐标系的布局帮助者
-abstract class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
+class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends StackHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
   GridHelper(super.context, super.view, super.series) {

@@ -229,9 +229,6 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     }
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.sankey;
-
   /// 计算链接位置
   void _computeLinkPosition(List<SankeyLink> links, List<SankeyNode> nodes) {
     for (var node in nodes) {

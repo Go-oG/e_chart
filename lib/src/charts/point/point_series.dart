@@ -4,7 +4,7 @@ import 'point_view.dart';
 
 class PointSeries extends RectSeries {
   List<PointGroup> data;
-  Fun4<PointData, PointGroup, Set<ViewState>,  ChartSymbol>? symbolFun;
+  Fun4<PointData, PointGroup, Set<ViewState>, ChartSymbol>? symbolFun;
 
   PointSeries(
     this.data, {
@@ -32,8 +32,7 @@ class PointSeries extends RectSeries {
     return PointView(this);
   }
 
-  ChartSymbol getSymbol(
-      Context context, PointData data, int index, PointGroup group,  Set<ViewState> status) {
+  ChartSymbol getSymbol(Context context, PointData data, int index, PointGroup group, Set<ViewState> status) {
     var fun = symbolFun;
     if (fun != null) {
       return fun.call(data, group, status);
@@ -46,13 +45,16 @@ class PointSeries extends RectSeries {
   }
 
   @override
-  List<LegendItem> getLegendItem(Context context) =>[];
+  List<LegendItem> getLegendItem(Context context) => [];
 
   @override
   int onAllocateStyleIndex(int start) {
     each(data, (p0, p1) {
-      p0.styleIndex=p1+start;
+      p0.styleIndex = p1 + start;
     });
     return data.length;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.point;
 }

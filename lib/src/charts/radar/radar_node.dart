@@ -5,6 +5,8 @@ import 'package:e_chart/e_chart.dart';
 class RadarGroupNode extends DataNode<Path, GroupData> {
   static final Path emptyPath = Path();
   final List<RadarNode> nodeList;
+  double scale = 1;
+  Offset center = Offset.zero;
 
   RadarGroupNode(
     this.nodeList,
@@ -59,10 +61,16 @@ class RadarGroupNode extends DataNode<Path, GroupData> {
     if (!data.show) {
       return;
     }
+
     Path? path = pathOrNull;
     if (path != null) {
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.scale(scale);
+      canvas.translate(-center.dx, -center.dy);
       itemStyle.drawPath(canvas, paint, path);
       borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
+      canvas.restore();
     }
 
     each(nodeList, (node, p1) {
@@ -86,14 +94,10 @@ class RadarNode extends DataNode<Offset, ItemData> {
   RadarNode(
     this.parent,
     this.symbol,
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+    ItemData data,
+    int dataIndex,
+    int groupIndex,
+  ) : super.empty(data, dataIndex, groupIndex, Offset.zero);
 
   @override
   bool contains(Offset offset) {
@@ -101,7 +105,7 @@ class RadarNode extends DataNode<Offset, ItemData> {
     if (sb == null) {
       return false;
     }
-    return sb.contains(attr,offset);
+    return sb.contains(attr, offset);
   }
 
   @override

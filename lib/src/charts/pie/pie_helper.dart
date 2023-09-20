@@ -217,9 +217,6 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
   }
 
   @override
-  SeriesType get seriesType => SeriesType.pie;
-
-  @override
   void onRunUpdateAnimation(var list, var animation) {
     List<PieNode> oldList = [];
     List<PieNode> newList = [];

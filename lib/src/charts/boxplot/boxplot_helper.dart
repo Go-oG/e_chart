@@ -160,6 +160,4 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
     return node.rect;
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.boxplot;
 }

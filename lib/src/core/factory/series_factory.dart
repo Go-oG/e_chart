@@ -1,4 +1,4 @@
-import '../series.dart';
+import '../series/series.dart';
 import '../view/view.dart';
 
 class SeriesFactory {

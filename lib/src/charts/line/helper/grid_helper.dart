@@ -450,9 +450,6 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return _animatorPercent;
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.line;
-
   ChartSymbol? getSymbol(StackItemData data, LineGroupData group, Set<ViewState>? status) {
     if (series.symbolFun != null) {
       return series.symbolFun?.call(data, group, status ?? {});

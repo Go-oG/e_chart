@@ -35,6 +35,8 @@ class ThemeRiverSeries extends RectSeries {
   ChartView? toView() {
     return ThemeRiverView(this);
   }
+  @override
+  SeriesType get seriesType => SeriesType.themeriver;
 
   AreaStyle? getAreaStyle(Context context, GroupData data, int index, Set<ViewState> status) {
     if (areaStyleFun != null) {

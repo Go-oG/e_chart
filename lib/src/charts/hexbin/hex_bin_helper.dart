@@ -102,9 +102,6 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
     return newList;
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.hexbin;
-
   ///计算方块中心坐标(center表示Hex(0,0,0)的位置)
   ///将Hex转换为Pixel
   Offset hexToPixel(Offset center, Hex h, Size size) {
@@ -166,7 +163,7 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
 
   @override
   Offset getTranslation() {
-    return view.translation ?? Offset.zero;
+    return view.translation;
   }
 }
 

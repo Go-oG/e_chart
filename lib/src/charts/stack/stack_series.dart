@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends ChartSeries {
+abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends ChartSeries {
   static const defaultAnimatorAttrs = AnimatorOption(
     curve: Curves.linear,
     updateDuration: Duration(milliseconds: 600),

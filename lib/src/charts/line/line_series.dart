@@ -44,4 +44,6 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
   ChartView? toView() {
     return LineView(this);
   }
+  @override
+  SeriesType get seriesType => SeriesType.line;
 }

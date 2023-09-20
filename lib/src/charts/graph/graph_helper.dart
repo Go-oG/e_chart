@@ -32,9 +32,6 @@ class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
   }
 
   @override
-  SeriesType get seriesType => SeriesType.graph;
-
-  @override
   Offset getTranslation() {
     Offset c = _oldLayout?.getTranslation() ?? Offset.zero;
     return c.translate(view.translationX, view.translationY);

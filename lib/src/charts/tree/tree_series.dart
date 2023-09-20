@@ -1,4 +1,3 @@
-
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/tree/tree_view.dart';
 
@@ -40,12 +39,12 @@ class TreeSeries extends RectSeries {
     return symbolFun.call(node);
   }
 
-  LineStyle getLinkStyle(Context context, TreeLayoutNode source,TreeLayoutNode target) {
-    return linkStyleFun.call(source,target);
+  LineStyle getLinkStyle(Context context, TreeLayoutNode source, TreeLayoutNode target) {
+    return linkStyleFun.call(source, target);
   }
 
   @override
-  List<LegendItem> getLegendItem(Context context) =>[];
+  List<LegendItem> getLegendItem(Context context) => [];
 
   @override
   int onAllocateStyleIndex(int start) {
@@ -62,4 +61,7 @@ class TreeSeries extends RectSeries {
     }
     return c;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.tree;
 }

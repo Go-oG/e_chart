@@ -1,8 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-
-import '../../core/view_state.dart';
+import '../../core/index.dart';
 import 'shader.dart';
 
 class LineShader extends ChartShader {

@@ -137,6 +137,8 @@ class CalenderSeries extends ChartSeries {
   ChartView? toView() {
     return CalendarView(this);
   }
+  @override
+  SeriesType get seriesType =>SeriesType.calendar;
 
   @override
   List<LegendItem> getLegendItem(Context context) {

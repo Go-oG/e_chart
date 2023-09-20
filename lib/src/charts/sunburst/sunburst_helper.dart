@@ -98,7 +98,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         return SunburstNode(p0, p1, index - 1, value: p1.value);
       },
       sort: (a, b) {
-        if (series.sort == Sort.empty) {
+        if (series.sort == Sort.none) {
           return 0;
         }
         if (series.sort == Sort.asc) {
@@ -204,9 +204,6 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       childStartAngle += (swa + angleGap) * dir;
     });
   }
-
-  @override
-  SeriesType get seriesType => SeriesType.sunburst;
 
   ///构建根节点布局位置
   Arc buildRootArc(Offset center, int maxDeep) {

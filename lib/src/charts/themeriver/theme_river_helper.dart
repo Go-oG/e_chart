@@ -103,9 +103,6 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
     }
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.themeriver;
-
   Map<String, dynamic> _computeBaseline(List<List<_InnerNode>> data) {
     int layerNum = data.length;
     int pointNum = data[0].length;

@@ -102,4 +102,7 @@ class RadarSeries extends RectSeries {
     });
     return data.length;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.radar;
 }

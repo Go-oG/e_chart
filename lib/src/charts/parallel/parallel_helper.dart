@@ -6,7 +6,7 @@ import 'parallel_node.dart';
 class ParallelHelper extends LayoutHelper<ParallelSeries> {
   List<ParallelNode> nodeList = [];
 
-  ParallelHelper(super.context,super.view, super.series);
+  ParallelHelper(super.context, super.view, super.series);
 
   double animationProcess = 1;
 
@@ -151,9 +151,6 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
       notifyLayoutUpdate();
     }
   }
-
-  @override
-  SeriesType get seriesType => SeriesType.parallel;
 
   ParallelNode? findNode(Offset offset) {
     for (var node in nodeList) {

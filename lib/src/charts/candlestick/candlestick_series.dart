@@ -71,6 +71,9 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
     Color color = data.isUp ? theme.upColor : theme.downColor;
     return LineStyle(color: color, width: theme.borderWidth).convert(status);
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.candlestick;
 }
 
 class CandleStickGroup extends StackGroupData<CandleStickData> {

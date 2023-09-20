@@ -62,13 +62,17 @@ class ParallelSeries extends ChartSeries {
     });
     return list;
   }
+
   @override
   int onAllocateStyleIndex(int start) {
     each(data, (p0, p1) {
-      p0.styleIndex=p1+start;
+      p0.styleIndex = p1 + start;
     });
     return data.length;
   }
+
+  @override
+  SeriesType get seriesType => SeriesType.parallel;
 }
 
 class ParallelGroup extends BaseGroupData<dynamic> {

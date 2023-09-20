@@ -65,9 +65,6 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
     _startLayout(_rootNode);
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.tree;
-
   void computeDeepAndHeight(TreeLayoutNode root) {
     root.setDeep(0);
     root.computeHeight();
@@ -261,12 +258,12 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
       root.each((node, index, startNode) {
         Offset begin = oldPositionMap[node.data] ?? node.center;
         Offset end = positionMap[node.data] ?? node.center;
-        Offset p =Offset.lerp(begin, end, v)!;
+        Offset p = Offset.lerp(begin, end, v)!;
         node.x = p.dx;
         node.y = p.dy;
         Size beginSize = oldSizeMap[node.data] ?? Size.zero;
         Size endSize = sizeMap[node.data] ?? node.size;
-        node.size=Size.lerp(beginSize, endSize, v)!;
+        node.size = Size.lerp(beginSize, endSize, v)!;
         return false;
       });
       notifyLayoutUpdate();

@@ -63,6 +63,4 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
     }
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.heatmap;
 }

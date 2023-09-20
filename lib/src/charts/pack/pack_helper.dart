@@ -120,9 +120,6 @@ class PackHelper extends LayoutHelper<PackSeries> {
     return rn;
   }
 
-  @override
-  SeriesType get seriesType => SeriesType.pack;
-
   double tx = 0;
   double ty = 0;
   double scale = 1;
