@@ -4,11 +4,19 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///多边形
+/// TODO 有问题
 class Polygon extends Shape {
-  final List<Offset> points;
-  final bool pathUseAll;
+  static final Polygon zero = Polygon([]);
+  late final List<Offset> points;
+  final bool pathUseHull;
 
-  Polygon(this.points, [this.pathUseAll = true]);
+  Polygon(Iterable<Offset> points, [this.pathUseHull = false]) {
+    this.points = List.from(points);
+  }
+
+  Polygon.from(Iterable<ChartOffset> points, [this.pathUseHull = false]) {
+    this.points = List.from(points.map((e) => e.toOffset()));
+  }
 
   ///多边形的面积
   ///如果多边形的顶点按逆时针顺序排列（假设坐标系的原点 ⟨0，0⟩ 位于左上角）
@@ -224,13 +232,35 @@ class Polygon extends Shape {
 
   Path? _path;
 
+  Rect? _rect;
+
+  Rect getBound() {
+    if (_rect == null) {
+      double left = double.maxFinite;
+      double top = double.maxFinite;
+      double bottom = double.minPositive;
+      double right = double.minPositive;
+      each(points, (p0, p1) {
+        left = m.min(p0.dx, left);
+        top = m.min(p0.dy, top);
+        right = m.max(p0.dx, right);
+        bottom = m.max(p0.dy, bottom);
+      });
+      _rect = Rect.fromLTRB(left, top, right, bottom);
+    }
+    if (_rect!.isInfinite || _rect!.isEmpty) {
+      return Rect.zero;
+    }
+    return _rect!;
+  }
+
   @override
   Path toPath() {
     if (_path != null) {
       return _path!;
     }
     Path path = Path();
-    each(pathUseAll ? hull() : points, (p0, p1) {
+    each(pathUseHull ? hull() : points, (p0, p1) {
       if (p1 == 0) {
         path.moveTo2(p0);
       } else {

@@ -5,9 +5,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import '../../utils/list_util.dart';
-import 'triangle.dart';
-
 var epsilon = pow(2, -52);
 
 List<int> edgeStack = List.filled(512, 0);
@@ -17,9 +14,9 @@ List<int> edgeStack = List.filled(512, 0);
 ///移植自
 ///https://github.com/ricardomatias/delaunator/blob/main/src/main/kotlin/com/github/ricardomatias/Delaunator.kt
 /// https://github.com/mapbox/delaunator
-class Delaunator {
-  List<Offset> points;
-  late List<double> coords;
+class Delaunay {
+  List<ChartOffset> points;
+  late List<num> coords;
   late int _count;
 
   late int maxTriangles = math.max(2 * _count - 5, 0);
@@ -42,30 +39,30 @@ class Delaunator {
   var _hullStart = -1;
 
   late final List<int> _ids = List.filled(_count, 0);
-  late final List<double> _dists = List.filled(_count, 0.0);
+  late final List<num> _dists = List.filled(_count, 0.0);
 
-  var _cx = double.nan;
-  var _cy = double.nan;
+  num _cx = double.nan;
+  num _cy = double.nan;
 
   var _trianglesLen = -1;
 
   late List<int> hull;
 
-  Delaunator(this.points) {
+  Delaunay(this.points) {
     coords = [];
     each(points, (p0, p1) {
-      coords.add(p0.dx);
-      coords.add(p0.dy);
+      coords.add(p0.x);
+      coords.add(p0.y);
     });
     _count = coords.length >> 1;
     update();
   }
 
   void update() {
-    var minX = double.infinity;
-    var minY = double.infinity;
-    var maxX = double.negativeInfinity;
-    var maxY = double.negativeInfinity;
+    num minX = double.infinity;
+    num minY = double.infinity;
+    num maxX = double.negativeInfinity;
+    num maxY = double.negativeInfinity;
 
     for (var i = 0; i < _count; i++) {
       var x = coords[2 * i];
@@ -132,7 +129,7 @@ class Delaunator {
 
       List<int> nhull = List.filled(_count, 0);
       var j = 0;
-      var d0 = double.negativeInfinity;
+      num d0 = double.negativeInfinity;
       for (int i = 0; i < _count; i++) {
         var id = _ids[i];
         if (_dists[id] > d0) {
@@ -162,11 +159,11 @@ class Delaunator {
     }
 
     var center = _circumCenter(i0x, i0y, i1x, i1y, i2x, i2y);
-    _cx = center.dx;
-    _cy = center.dy;
+    _cx = center.x;
+    _cy = center.y;
 
     for (int i = 0; i < _count; i++) {
-      _dists[i] = _dist(coords[2 * i], coords[2 * i + 1], center.dx, center.dy);
+      _dists[i] = _dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
     }
 
     _quicksort(_ids, _dists, 0, _count - 1);
@@ -195,8 +192,8 @@ class Delaunator {
     _trianglesLen = 0;
     _addTriangle(i0, i1, i2, -1, -1, -1);
 
-    var xp = 0.0;
-    var yp = 0.0;
+    num xp = 0.0;
+    num yp = 0.0;
 
     int indices = _ids.length;
     for (var k = 0; k < indices; k++) {
@@ -297,17 +294,24 @@ class Delaunator {
   }
 
   //=========形状相关===============
-  ///获取所有的三角形
-  List<Triangle> getTriangle() {
-    List<Triangle> rl = [];
-    eachTriangle((p0, p1, p2, index) {
-      rl.add(Triangle(p0, p1, p2));
-    });
+
+  ///获取相关形状shape
+  List<DShape> getShape(bool triangle) {
+    List<DShape> rl = [];
+    if (triangle) {
+      eachTriangle((p0, p1, p2, index) {
+        rl.add(DShape(index, [p0, p1, p2]));
+      });
+    } else {
+      eachVoronoiCell2((p0, p1) {
+        rl.add(DShape(p1, p0));
+      });
+    }
     return rl;
   }
 
   ///遍历所有的三角形(不会创建任何的三角形而是返回三角形的顶点)
-  void eachTriangle(void Function(Offset, Offset, Offset, int index) call) {
+  void eachTriangle(void Function(ChartOffset, ChartOffset, ChartOffset, int index) call) {
     int length = triangles.length;
     for (int i = 0; i < length; i += 3) {
       var o0 = points[triangles[i]];
@@ -318,7 +322,7 @@ class Delaunator {
   }
 
   ///遍历沃罗诺伊细胞
-  void eachVoronoiCell(void Function(Iterable<Offset>, int) call) {
+  void eachVoronoiCell(void Function(Iterable<ChartOffset>, int) call) {
     ///存储point ids
     Set<int> seen = {};
     for (var e = 0; e < triangles.length; e++) {
@@ -333,7 +337,7 @@ class Delaunator {
     }
   }
 
-  void eachVoronoiCell2(void Function(Iterable<Offset>, int) call) {
+  void eachVoronoiCell2(void Function(Iterable<ChartOffset>, int) call) {
     Map<int, int> index = {};
     for (var e = 0; e < triangles.length; e++) {
       var endpoint = triangles[nextHalfEdge(e)];
@@ -354,7 +358,7 @@ class Delaunator {
 
   ///遍历所有的三角边
   ///回调参数分别对应[startPoint,endPoint,index]
-  void eachEdge(void Function(Offset, Offset, int) call) {
+  void eachEdge(void Function(ChartOffset, ChartOffset, int) call) {
     for (var e = 0; e < triangles.length; e++) {
       if (e > halfEdges[e]) {
         var p = points[triangles[e]];
@@ -365,7 +369,7 @@ class Delaunator {
   }
 
   ///遍历沃罗诺伊边缘(类似细胞图案)
-  void eachVoronoiEdge(void Function(Offset, Offset, int) call) {
+  void eachVoronoiEdge(void Function(ChartOffset, ChartOffset, int) call) {
     for (var e = 0; e < triangles.length; e++) {
       if (e < halfEdges[e]) {
         var p = triangleCenter(edgeToTriangle(e));
@@ -391,7 +395,7 @@ class Delaunator {
     return List.from(result.map((e) => halfEdges[e]));
   }
 
-  List<Offset> getPointsByPoint(int point) {
+  List<int> getPointsByPoint(int point) {
     return List.from(aroundEdgesByPoint(point).map((e) => triangles[e]));
   }
 
@@ -433,15 +437,15 @@ class Delaunator {
   }
 
   ///给定三角形索引 计算其中心
-  Offset triangleCenter(int triangleIndex) {
-    List<Offset> vertices = List.from(triangleToPoints(triangleIndex).map((p) => points[p]));
+  ChartOffset triangleCenter(int triangleIndex) {
+    List<ChartOffset> vertices = List.from(triangleToPoints(triangleIndex).map((p) => points[p]));
     return _circumCenter(
-      vertices[0].dx,
-      vertices[0].dy,
-      vertices[1].dx,
-      vertices[1].dy,
-      vertices[2].dx,
-      vertices[2].dy,
+      vertices[0].x,
+      vertices[0].y,
+      vertices[1].x,
+      vertices[1].y,
+      vertices[2].x,
+      vertices[2].y,
     );
   }
 
@@ -451,8 +455,8 @@ class Delaunator {
   }
 
   ///获取凸包
-  List<Offset> getHull() {
-    List<Offset> rl = [];
+  List<ChartOffset> getHull() {
+    List<ChartOffset> rl = [];
     for (var h in hull) {
       rl.add(points[h]);
     }
@@ -553,7 +557,7 @@ double _circumRadius(num ax, num ay, num bx, num by, num cx, num cy) {
 }
 
 ///计算圆心
-Offset _circumCenter(num ax, num ay, num bx, num by, num cx, num cy) {
+ChartOffset _circumCenter(num ax, num ay, num bx, num by, num cx, num cy) {
   var dx = bx - ax;
   var dy = by - ay;
   var ex = cx - ax;
@@ -566,10 +570,10 @@ Offset _circumCenter(num ax, num ay, num bx, num by, num cx, num cy) {
   var x = ax + (ey * bl - dy * cl) * d;
   var y = ay + (dx * cl - ex * bl) * d;
 
-  return Offset(x, y);
+  return ChartOffset(x, y);
 }
 
-void _quicksort(List<int> ids, List<double> dists, int left, int right) {
+void _quicksort(List<int> ids, List<num> dists, int left, int right) {
   if (right - left <= 20) {
     for (var i = left + 1; i <= right; i++) {
       var temp = ids[i];

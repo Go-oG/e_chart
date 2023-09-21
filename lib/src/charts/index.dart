@@ -10,8 +10,8 @@ export 'candlestick/candlestick_series.dart';
 export 'circle/circle_series.dart';
 export 'circle/circle_node.dart';
 
-export 'delaunator/delaunator_series.dart';
-export 'delaunator/delaunator_node.dart';
+export 'delaunay/delaunay_series.dart';
+export 'delaunay/delaunay_node.dart';
 
 export 'funnel/funnel_series.dart';
 

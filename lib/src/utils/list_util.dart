@@ -1,7 +1,14 @@
 import 'package:flutter/widgets.dart';
 
-List<T> copyList<T>(Iterable<T> list){
+List<T> copyList<T>(Iterable<T> list) {
   return List.from(list);
+}
+
+T? removeLastOrNull<T>(List<T>? list) {
+  if (list==null||list.isEmpty) {
+    return null;
+  }
+  return list.removeLast();
 }
 
 List<List<T>> splitList<T>(List<T> list, int count) {
@@ -481,4 +488,3 @@ bool equalList<T>(List<T?> s, List<T?> e) {
   }
   return true;
 }
-

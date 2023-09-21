@@ -1,6 +1,6 @@
-export 'delaunator/d_edge.dart';
-export 'delaunator/delaunator.dart';
-export 'delaunator/triangle.dart';
+export 'delaunay/d_edge.dart';
+export 'delaunay/delaunay.dart';
+export 'delaunay/d_shape.dart';
 
 export 'enums/align2.dart';
 export 'enums/circle_align.dart';
