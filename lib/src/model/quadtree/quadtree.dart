@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'quad_node.dart';
 
+///四叉树
 class QuadTree<T> {
   QuadNode<T>? _root;
 
@@ -170,6 +171,15 @@ class QuadTree<T> {
     return tree;
   }
 
+  /// 拓展四叉树范围到指定矩形范围 并返回四叉树。
+  QuadTree<T> extent(Rect rect) {
+    Offset p0 = rect.topLeft;
+    Offset p1 = rect.bottomRight;
+    cover(p0.dx, p0.dy).cover(p1.dx, p1.dy);
+    return this;
+  }
+
+  ///展开四叉树以覆盖指定的点位置
   QuadTree<T> cover(num x, num y) {
     if (x.isNaN || y.isNaN) {
       return this;
@@ -220,108 +230,6 @@ class QuadTree<T> {
     _x1 = x1;
     _y1 = y1;
     return this;
-  }
-
-  List<T> get data {
-    List<T> list = [];
-    each((node, x0, y0, x1, y1) {
-      QuadNode? nodeTmp = node;
-      if (!nodeTmp.hasChild) {
-        do {
-          list.add(nodeTmp!.data!);
-        } while ((nodeTmp = nodeTmp.next) != null);
-      }
-      return true;
-    });
-    return list;
-  }
-
-  /// 拓展四叉树范围
-  /// 如果指定了area，则扩展四叉树以覆盖到指定的点[[x0, y0], [x1, y1]] 并返回四叉树。
-  /// 如果没有指定position，则返回四叉树当前的范围[[x0, y0], [x1, y1]]，
-  QuadTree<T> extent(Rect rect) {
-    Offset p0 = rect.topLeft;
-    Offset p1 = rect.bottomRight;
-    cover(p0.dx, p0.dy).cover(p1.dx, p1.dy);
-    return this;
-  }
-
-  Rect get boundRect => Rect.fromLTRB(_x0.toDouble(), _y0.toDouble(), _x1.toDouble(), _y1.toDouble());
-
-  ///返回离给定搜索半径的位置⟨x,y⟩最近的点。
-  ///如果没有指定半径，默认为无穷大。
-  ///如果在搜索范围内没有基准点，则返回未定义
-  T? find(int x, int y, [double? r]) {
-    T? data;
-    num x0 = _x0;
-    num y0 = _y0;
-    num x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-    num x3 = _x1;
-    num y3 = _y1;
-    List<InnerQuad> quads = [];
-
-    QuadNode? node = _root;
-    int i = 0;
-    if (node != null) {
-      quads.add(InnerQuad(node, x0, y0, x3, y3));
-    }
-
-    double radius;
-    if (r == null) {
-      radius = double.infinity;
-    } else {
-      x0 = (x - r);
-      y0 = (y - r);
-      x3 = (x + r);
-      y3 = (y + r);
-      radius = r * r;
-    }
-
-    while (quads.isNotEmpty) {
-      InnerQuad q = quads.removeLast();
-      // 如果此象限不能包含更近的节点，请停止搜索
-      node = q.node;
-      if (node == null || (x1 = q.x0) > x3 || (y1 = q.y0) > y3 || (x2 = q.x1) < x0 || (y2 = q.y1) < y0) {
-        continue;
-      }
-      //将当前象限一分为二.
-      if (node.hasChild) {
-        int xm = ((x1 + x2) / 2).round(), ym = ((y1 + y2) / 2).round();
-        if (node[3] != null) {
-          quads.add(InnerQuad(node[3]!, xm, ym, x2, y2));
-        }
-        if (node[2] != null) {
-          quads.add(InnerQuad(node[2]!, x1, ym, xm, y2));
-        }
-        if (node[1] != null) {
-          quads.add(InnerQuad(node[1]!, xm, y1, x2, ym));
-        }
-        if (node[0] != null) {
-          quads.add(InnerQuad(node[0]!, x1, y1, xm, ym));
-        }
-
-        //首先访问最近的象限
-        if ((i = _toInt(y >= ym) << 1 | _toInt(x >= xm)) != 0) {
-          q = quads[quads.length - 1];
-          quads[quads.length - 1] = quads[quads.length - 1 - i];
-          quads[quads.length - 1 - i] = q;
-        }
-      } else {
-        // 访问此点（不需要访问重合点！）
-        var dx = x - xFun(node.data), dy = y - yFun(node.data);
-        double d2 = (dx * dx + dy * dy);
-        if (d2 < radius) {
-          radius = d2;
-          var d = sqrt(radius);
-          x0 = x - d;
-          y0 = y - d;
-          x3 = x + d;
-          y3 = y + d;
-          data = node.data!;
-        }
-      }
-    }
-    return data;
   }
 
   QuadTree<T> remove(T d) {
@@ -491,6 +399,121 @@ class QuadTree<T> {
     return this;
   }
 
+  ///返回离给定搜索半径的位置⟨x,y⟩最近的点。
+  ///如果没有指定半径，默认为无穷大。
+  ///如果在搜索范围内没有基准点，则返回未定义
+  T? find(int x, int y, [double? r]) {
+    T? data;
+    num x0 = _x0;
+    num y0 = _y0;
+    num x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    num x3 = _x1;
+    num y3 = _y1;
+    List<InnerQuad> quads = [];
+
+    QuadNode? node = _root;
+    int i = 0;
+    if (node != null) {
+      quads.add(InnerQuad(node, x0, y0, x3, y3));
+    }
+
+    double radius;
+    if (r == null) {
+      radius = double.infinity;
+    } else {
+      x0 = (x - r);
+      y0 = (y - r);
+      x3 = (x + r);
+      y3 = (y + r);
+      radius = r * r;
+    }
+
+    while (quads.isNotEmpty) {
+      InnerQuad q = quads.removeLast();
+      // 如果此象限不能包含更近的节点，请停止搜索
+      node = q.node;
+      if (node == null || (x1 = q.x0) > x3 || (y1 = q.y0) > y3 || (x2 = q.x1) < x0 || (y2 = q.y1) < y0) {
+        continue;
+      }
+      //将当前象限一分为二.
+      if (node.hasChild) {
+        int xm = ((x1 + x2) / 2).round(), ym = ((y1 + y2) / 2).round();
+        if (node[3] != null) {
+          quads.add(InnerQuad(node[3]!, xm, ym, x2, y2));
+        }
+        if (node[2] != null) {
+          quads.add(InnerQuad(node[2]!, x1, ym, xm, y2));
+        }
+        if (node[1] != null) {
+          quads.add(InnerQuad(node[1]!, xm, y1, x2, ym));
+        }
+        if (node[0] != null) {
+          quads.add(InnerQuad(node[0]!, x1, y1, xm, ym));
+        }
+
+        //首先访问最近的象限
+        if ((i = _toInt(y >= ym) << 1 | _toInt(x >= xm)) != 0) {
+          q = quads[quads.length - 1];
+          quads[quads.length - 1] = quads[quads.length - 1 - i];
+          quads[quads.length - 1 - i] = q;
+        }
+      } else {
+        // 访问此点（不需要访问重合点！）
+        var dx = x - xFun(node.data), dy = y - yFun(node.data);
+        double d2 = (dx * dx + dy * dy);
+        if (d2 < radius) {
+          radius = d2;
+          var d = sqrt(radius);
+          x0 = x - d;
+          y0 = y - d;
+          x3 = x + d;
+          y3 = y + d;
+          data = node.data!;
+        }
+      }
+    }
+    return data;
+  }
+
+  ///搜索矩形范围内的所有节点数据
+  List<T> search(Rect rect) {
+    List<T> results = [];
+    var xmin = rect.left;
+    var ymin = rect.top;
+    var xmax = rect.right;
+    var ymax = rect.bottom;
+    each((node, x1, y1, x2, y2) {
+      if (!node.hasChild) {
+        QuadNode<T>? tmpNode = node;
+        do {
+          var d = node.data;
+          if (d != null) {
+            var dx = xFun.call(d);
+            var dy = yFun.call(d);
+            if (dx >= xmin && dx < xmax && dy >= ymin && dy < ymax) {
+              results.add(d);
+            }
+          }
+        } while ((tmpNode = tmpNode?.next) != null);
+      }
+      return x1 >= xmax || y1 >= ymax || x2 < xmin || y2 < ymin;
+    });
+    return results;
+  }
+
+  ///搜索圆形范围内的所有节点数据
+  List<T> searchInCircle(Offset center, num radius) {
+    List<T> results = search(Rect.fromCircle(center: center, radius: radius.toDouble()));
+    num dis2 = radius * radius;
+    results.removeWhere((e) {
+      var dx = center.dx - xFun.call(e);
+      var dy = center.dy - yFun.call(e);
+      var dis = dx * dx + dy * dy;
+      return dis > dis2;
+    });
+    return results;
+  }
+
   QuadTree<T> copy() {
     QuadTree<T> copy = QuadTree(xFun, yFun, _x0, _y0, _x1, _y1);
     QuadNode<T>? node = _root;
@@ -546,6 +569,22 @@ class QuadTree<T> {
     });
     return sizeTmp;
   }
+
+  List<T> get data {
+    List<T> list = [];
+    each((node, x0, y0, x1, y1) {
+      QuadNode? nodeTmp = node;
+      if (!nodeTmp.hasChild) {
+        do {
+          list.add(nodeTmp!.data!);
+        } while ((nodeTmp = nodeTmp.next) != null);
+      }
+      return true;
+    });
+    return list;
+  }
+
+  Rect get boundRect => Rect.fromLTRB(_x0.toDouble(), _y0.toDouble(), _x1.toDouble(), _y1.toDouble());
 
   @override
   String toString() {

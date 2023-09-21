@@ -556,11 +556,24 @@ class RNode<T> {
 
   @override
   int get hashCode {
+    if (data != null) {
+      return data.hashCode;
+    }
     return id.hashCode;
   }
 
   @override
   bool operator ==(Object other) {
-    return other is RNode && other.id == id;
+    if (other is! RNode) {
+      return false;
+    }
+
+    if (other.data != null && data != null) {
+      return other.data == data;
+    }
+    if (other.data == null && data == null) {
+      return other.id == id;
+    }
+    return false;
   }
 }
