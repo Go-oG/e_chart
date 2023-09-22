@@ -310,6 +310,16 @@ class Delaunay {
     return rl;
   }
 
+  void eachShape(bool triangle,void Function(Iterable<ChartOffset>,int) call) {
+    if (triangle) {
+      eachTriangle((p0, p1, p2, index) {
+        call.call([p0,p1,p2],index);
+      });
+    } else {
+      eachVoronoiCell2(call);
+    }
+  }
+
   ///遍历所有的三角形(不会创建任何的三角形而是返回三角形的顶点)
   void eachTriangle(void Function(ChartOffset, ChartOffset, ChartOffset, int index) call) {
     int length = triangles.length;

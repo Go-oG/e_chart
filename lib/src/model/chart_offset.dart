@@ -28,4 +28,9 @@ class ChartOffset {
     x -= other.dx;
     y -= other.dy;
   }
+  @override
+  String toString() {
+    // TODO: implement toString
+    return 'COffset[${x.toStringAsFixed(0)},${y.toStringAsFixed(0)}]';
+  }
 }

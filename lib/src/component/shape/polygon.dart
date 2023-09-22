@@ -260,14 +260,18 @@ class Polygon extends Shape {
       return _path!;
     }
     Path path = Path();
-    each(pathUseHull ? hull() : points, (p0, p1) {
+    List<Offset> ol = pathUseHull ? hull() : points;
+    each(ol, (p0, p1) {
       if (p1 == 0) {
         path.moveTo2(p0);
       } else {
         path.lineTo2(p0);
       }
     });
-    path.close();
+    if (ol.length > 2) {
+      path.close();
+    }
+
     _path = path;
     return path;
   }

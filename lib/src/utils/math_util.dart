@@ -139,3 +139,9 @@ num hypot(List<num> list) {
   }
   return math.sqrt(a);
 }
+
+///求三角形面积
+num triangleArea(Offset p1, Offset p2, Offset p3) {
+  return 0.5 * ((p1.dx * p2.dy - p2.dx * p1.dy) + (p2.dx * p3.dy - p3.dx * p2.dy) + (p3.dx * p1.dy - p1.dx * p3.dy));
+}
+
