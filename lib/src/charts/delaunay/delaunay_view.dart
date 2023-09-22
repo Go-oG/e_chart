@@ -14,13 +14,15 @@ class DelaunayView extends SeriesView<DelaunaySeries, DelaunayHelper> {
   void onDraw(CCanvas canvas) {
     canvas.save();
     canvas.translate(translationX, translationY);
-    each(layoutHelper.getShowNodeList(), (p0, p1) {
+    var list=layoutHelper.showNodeList;
+    each(list, (p0, p1) {
       p0.onDraw(canvas, mPaint);
       debugDraw(canvas, p0.attr.center(),color: Colors.black);
     });
     each(series.data, (p0, p1) {
       debugDraw(canvas, p0.toOffset(),color: Colors.white);
     });
+
     Path path=Path();
     each(layoutHelper.hull, (p, p1) {
       if(p1==0){
@@ -31,9 +33,6 @@ class DelaunayView extends SeriesView<DelaunaySeries, DelaunayHelper> {
     });
     path.close();
     debugDrawPath(canvas, path);
-
-
-
 
     canvas.restore();
   }

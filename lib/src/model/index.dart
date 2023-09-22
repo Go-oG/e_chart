@@ -24,7 +24,7 @@ export 'quadtree/quad_node.dart';
 export 'quadtree/quadtree.dart' hide InnerQuad;
 
 export 'quickselect/quick_select.dart';
-export 'rbush/rbush.dart';
+export 'rbush/rbush.dart' hide RNode;
 
 export 'array.dart';
 export 'chart_align.dart';

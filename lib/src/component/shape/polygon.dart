@@ -63,15 +63,20 @@ class Polygon extends Shape {
     if (points.isEmpty) {
       return false;
     }
-    var dx = offset.dx;
-    var dy = offset.dy;
-    if (points.length == 1) {
-      Offset p1 = points[0];
-      double a = (dx - p1.dx).abs();
-      double b = (dy - p1.dy).abs();
-      return a * a + b * b <= 0.0001;
+    if (points.length < 3) {
+      for (var c in points) {
+        if (c == offset) {
+          return true;
+        }
+      }
+      return false;
     }
-    return inInner(offset) || inBorder(offset);
+    if (!getBound().contains2(offset)) {
+      return false;
+    }
+    return toPath().contains(offset);
+
+    //return inInner(offset) || inBorder(offset);
   }
 
   /// 返回一个点是否在一个多边形区域内

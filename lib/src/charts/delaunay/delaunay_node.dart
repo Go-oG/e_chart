@@ -9,14 +9,11 @@ import 'delaunay_series.dart';
 
 class DelaunayNode extends DataNode<DShape, List<Offset>> {
   DelaunayNode(
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+    List<Offset> data,
+    int dataIndex,
+    int groupIndex,
+    DShape attr,
+  ) : super.empty(data, dataIndex, groupIndex, attr);
 
   @override
   bool contains(Offset offset) {
