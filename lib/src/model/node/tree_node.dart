@@ -189,7 +189,7 @@ abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D
     return resultList;
   }
 
-  T each(TreeFun<D, A, T> callback) {
+  T each(TreeFun<D, A, T> callback, [bool exitUseBreak = true]) {
     int index = -1;
     for (var node in iterator()) {
       if (callback.call(node, ++index, this as T)) {
@@ -200,14 +200,17 @@ abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D
   }
 
   ///先序遍历
-  T eachBefore(TreeFun<D, A, T> callback) {
+  T eachBefore(TreeFun<D, A, T> callback, [bool exitUseBreak = true]) {
     List<T> nodes = [this as T];
     List<T> children;
     int index = -1;
     while (nodes.isNotEmpty) {
       T node = nodes.removeLast();
       if (callback.call(node, ++index, this as T)) {
-        break;
+        if (exitUseBreak) {
+          break;
+        }
+        continue;
       }
       children = node._childrenList;
       nodes.addAll(children.reversed);
@@ -216,7 +219,7 @@ abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D
   }
 
   ///后序遍历
-  T eachAfter(TreeFun<D, A, T> callback) {
+  T eachAfter(TreeFun<D, A, T> callback, [bool exitUseBreak = true]) {
     List<T> nodes = [this as T];
     List<T> next = [];
     List<T> children;

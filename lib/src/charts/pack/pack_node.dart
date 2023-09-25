@@ -25,7 +25,7 @@ class PackNode extends TreeNode<TreeData, Rect, PackNode> {
       return;
     }
     style.drawCircle(canvas, paint, center, r);
-    bs.drawArc(canvas, paint, r - bs.width / 2, 0, 360);
+    bs.drawCircle(canvas, paint, center, r);
   }
 
   @override

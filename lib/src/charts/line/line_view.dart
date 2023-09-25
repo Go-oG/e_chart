@@ -81,7 +81,6 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (ls.notDraw) {
       return;
     }
-    lineNode.lineStyle = ls;
     for (var border in lineNode.borderList) {
       if (!clipRect.overlaps(border.rect)) {
         continue;

@@ -7,9 +7,17 @@ extension RectExt on Rect {
     return offset.dx >= left && offset.dx <= right && offset.dy >= top && offset.dy <= bottom;
   }
 
+  bool contains3(num x, num y) {
+    return x >= left && x <= right && y >= top && y <= bottom;
+  }
+
   ///判断当前矩形是否和给定圆有交点
   bool overlapCircle(Offset center, num radius) {
-    if (contains2(center)) {
+    return overlapCircle2(center.dx, center.dy, radius);
+  }
+
+  bool overlapCircle2(double cx, double cy, num radius) {
+    if (contains3(cx, cy)) {
       return true;
     }
 
@@ -19,12 +27,12 @@ extension RectExt on Rect {
     var hy = height * 0.5;
 
     ///翻转圆心到第一象限并求圆心间向量
-    var vx = (center.dx - this.center.dx).abs();
-    var vy = (center.dy - this.center.dy).abs();
+    var vx = (center.dx - cx).abs();
+    var vy = (center.dy - cy).abs();
 
-    var cx = m.max(vx - hx, 0);
-    var cy = m.max(vy - hy, 0);
-    return (cx * cx + cy * cy) <= radius * radius;
+    var cx2 = m.max(vx - hx, 0);
+    var cy2 = m.max(vy - hy, 0);
+    return (cx2 * cx2 + cy2 * cy2) <= radius * radius;
   }
 
   ///判断当前矩形是否和给定的线段重合

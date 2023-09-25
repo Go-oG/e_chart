@@ -154,7 +154,9 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
         nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
-    return LineNode(groupIndex, group, ol, borderList, [], nodeMap);
+    var itemStyle = series.getAreaStyle(context, null, list.first.parent, list.first.status);
+    var border = series.getLineStyle(context, null, list.first.parent, list.first.status);
+    return LineNode(groupIndex, group, ol, borderList, [], nodeMap, itemStyle, border);
   }
 
   LineNode buildStackResult(
@@ -165,7 +167,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     int curIndex,
   ) {
     if (nodeList.isEmpty) {
-      return LineNode(groupIndex, group, [], [], [], {});
+      return LineNode(groupIndex, group, [], [], [], {}, AreaStyle.empty, LineStyle.empty);
     }
     List<OptLinePath> borderList = _buildBorderPath(nodeList);
 
@@ -181,8 +183,9 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
         nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
-
-    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, [], nodeMap);
+    var itemStyle = series.getAreaStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    var border = series.getLineStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, [], nodeMap, itemStyle, border);
   }
 
   ///公用部分

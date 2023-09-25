@@ -18,16 +18,16 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
     var tx = layoutHelper.tx;
     var ty = layoutHelper.ty;
     var scale = layoutHelper.scale;
-
-    canvas.save();
     Matrix4 matrix4 = Matrix4.compose(Vector3(tx, ty, 0), Quaternion.identity(), Vector3(scale, scale, 1));
+    canvas.save();
     canvas.transform(matrix4.storage);
-    root.each((node, p1, p2) {
+    root.eachBefore((node, p1, p2) {
       if (layoutHelper.needDraw(node)) {
         node.onDraw(canvas, mPaint);
+        return false;
       }
-      return false;
-    });
+      return true;
+    }, false);
     canvas.restore();
 
     ///这里分开绘制是为了优化当存在textScaleFactory时文字高度计算有问题

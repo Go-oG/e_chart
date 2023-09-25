@@ -290,7 +290,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       return;
     }
 
-    var animation = series.animation!;
+    var animation = getAnimation(type)!;
 
     ///动画
     DiffResult2<SingleNode<T, P>, StackAnimationNode, T> diffResult =

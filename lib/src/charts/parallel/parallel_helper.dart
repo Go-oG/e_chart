@@ -17,8 +17,8 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
 
     layoutNode(newList);
 
-    var animation = series.animation;
-    if (animation == null || type == LayoutType.none) {
+    var animation = getAnimation(type,newList.length);
+    if (animation == null) {
       nodeList = newList;
       animationProcess = 1;
       return;

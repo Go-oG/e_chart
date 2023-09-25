@@ -221,7 +221,9 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
           ..center = off;
       }
     });
-    return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap);
+    var itemStyle=series.getAreaStyle(context, null, list.first.parent, list.first.status);
+    var border=series.getLineStyle(context, null, list.first.parent, list.first.status);
+    return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap,itemStyle,border);
   }
 
   List<AreaNode> buildAreaPathForNormal(List<SingleNode<StackItemData, LineGroupData>> curList) {
@@ -263,7 +265,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       List<LineNode> resultList,
       int curIndex,) {
     if (nodeList.isEmpty) {
-      return LineNode(groupIndex, group, [], [], [], {});
+      return LineNode(groupIndex, group, [], [], [], {},AreaStyle.empty,LineStyle.empty);
     }
     List<OptLinePath> borderList = _buildBorderPath(nodeList);
     List<AreaNode> areaList = buildAreaPathForStack(nodeList, resultList, curIndex);
@@ -282,7 +284,9 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
     });
 
-    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap);
+    var itemStyle=series.getAreaStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    var border=series.getLineStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap,itemStyle,border);
   }
 
   List<AreaNode> buildAreaPathForStack(List<SingleNode<StackItemData, LineGroupData>> curList,

@@ -324,11 +324,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return null;
   }
 
-  ///子类可以覆写该方法实现部分绘制
-  bool needDraw<T>(T node) {
-    return true;
-  }
-
   ///注册Brush组件 Event监听器
   VoidFun1<ChartEvent>? _brushListener;
 

@@ -265,6 +265,18 @@ class PackHelper extends LayoutHelper<PackSeries> {
     _paddingFun = fun1;
     return this;
   }
+
+  bool needDraw(PackNode node) {
+    Rect rect = boxBound;
+    var cx = node.x * scale;
+    cx += tx;
+    var cy = node.y * scale;
+    cy += ty;
+    if (rect.overlapCircle2(cx, cy, node.r * scale)) {
+      return true;
+    }
+    return false;
+  }
 }
 
 double _defaultRadius(PackNode d) {
