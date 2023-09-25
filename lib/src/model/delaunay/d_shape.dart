@@ -19,4 +19,12 @@ class DShape extends Polygon {
     }
     return super.contains(offset);
   }
+
+  @override
+  Rect getBound() {
+    if (path != null) {
+      return path!.getBounds();
+    }
+    return super.getBound();
+  }
 }
