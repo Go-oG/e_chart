@@ -24,8 +24,19 @@ class PackNode extends TreeNode<TreeData, Rect, PackNode> {
     if (style.notDraw && bs.notDraw) {
       return;
     }
+    bool ds = false;
+    if (scale != 1) {
+      ds = true;
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.scale(scale);
+      canvas.translate(-center.dx, -center.dy);
+    }
     style.drawCircle(canvas, paint, center, r);
     bs.drawCircle(canvas, paint, center, r);
+    if (ds) {
+      canvas.restore();
+    }
   }
 
   @override

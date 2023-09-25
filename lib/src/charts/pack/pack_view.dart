@@ -11,52 +11,43 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
 
   @override
   void onDraw(CCanvas canvas) {
-    var root = layoutHelper.rootNode;
-    if (root == null) {
-      return;
-    }
-    var tx = layoutHelper.tx;
-    var ty = layoutHelper.ty;
-    var scale = layoutHelper.scale;
-    Matrix4 matrix4 = Matrix4.compose(Vector3(tx, ty, 0), Quaternion.identity(), Vector3(scale, scale, 1));
+    Matrix4 matrix4 = Matrix4.compose(
+      Vector3(translationX, translationY, 0),
+      Quaternion.identity(),
+      Vector3(scaleX, scaleX, 1),
+    );
     canvas.save();
     canvas.transform(matrix4.storage);
-    root.eachBefore((node, p1, p2) {
-      if (layoutHelper.needDraw(node)) {
-        node.onDraw(canvas, mPaint);
-        return false;
-      }
-      return true;
-    }, false);
+    var nodeList = layoutHelper.showNodeList;
+    each(nodeList, (node, p1) {
+      node.onDraw(canvas, mPaint);
+    });
     canvas.restore();
 
     ///这里分开绘制是为了优化当存在textScaleFactory时文字高度计算有问题
-    root.each((node, p1, p2) {
-      if (!layoutHelper.needDraw(node)) {
-        return false;
+    each(nodeList, (node, p2) {
+      var config = node.labelConfig;
+      if (config == null) {
+        return;
       }
       var label = node.data.name;
-      if (label != null && label.isNotEmpty) {
-        var labelStyle = series.getLabelStyle(context, node);
-        if (labelStyle == null || !labelStyle.show) {
-          return false;
-        }
-        double r = node.r;
-        if (series.optTextDraw && r * 2 * scale < label.length * (labelStyle.textStyle.fontSize ?? 8) * 0.5) {
-          return false;
-        }
-        Offset center = node.center;
-        center = center.scale(scale, scale);
-        center = center.translate(tx, ty);
-        TextDrawInfo config = TextDrawInfo(
-          center,
-          align: Alignment.center,
-          maxWidth: r * 2 * scale * 0.98,
-          maxLines: 1,
-        );
-        labelStyle.draw(canvas, mPaint, label, config);
+      if (label == null || label.isEmpty) {
+        return;
       }
-      return false;
+      var labelStyle = node.labelStyle;
+      if (!labelStyle.show) {
+        return;
+      }
+      double r = node.r;
+      if (series.optTextDraw && r * 2 * scaleX < label.length * (labelStyle.textStyle.fontSize ?? 8) * 0.5) {
+        return;
+      }
+      canvas.save();
+      var dx = translationX + config.offset.dx * (scaleX - 1);
+      var dy = translationY + config.offset.dy * (scaleX - 1);
+      canvas.translate(dx, dy);
+      labelStyle.draw(canvas, mPaint, label, config);
+      canvas.restore();
     });
   }
 
@@ -74,4 +65,7 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
     oldHelper?.clearRef();
     return PackHelper(context, this, series);
   }
+
+  @override
+  bool get enableHover => false;
 }

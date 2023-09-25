@@ -12,11 +12,11 @@ class ChartOffset {
   }
 
   double distance(ChartOffset o2) {
-    return toOffset().distance2(o2.toOffset());
+    return toOffset().distance3(o2.x, o2.y);
   }
 
   double distance2(Offset o2) {
-    return toOffset().distance2(o2);
+    return o2.distance3(x, y);
   }
 
   void add(Offset other) {
@@ -28,9 +28,9 @@ class ChartOffset {
     x -= other.dx;
     y -= other.dy;
   }
+
   @override
   String toString() {
-    // TODO: implement toString
     return 'C[${x.toStringAsFixed(0)},${y.toStringAsFixed(0)}]';
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
-import 'package:vector_math/vector_math.dart';
 
 extension OffsetExt on Offset {
   ///求两点之间的距离
@@ -56,7 +55,13 @@ extension OffsetExt on Offset {
   }
 
   bool inCircle(num radius, {Offset center = Offset.zero}) {
-    return distance2(center) <= radius;
+    return inCircle2(radius, center.dx, center.dy);
+  }
+
+  bool inCircle2(num radius, [num cx = 0, num cy = 0]) {
+    double a = (dx - cx).abs();
+    double b = (dy - cy).abs();
+    return a * a + b * b <= radius * radius;
   }
 
   /// 给定圆心坐标求当前点的偏移角度

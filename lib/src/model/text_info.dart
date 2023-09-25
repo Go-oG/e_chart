@@ -14,12 +14,12 @@ class TextDrawInfo {
   final num minWidth;
   final num maxHeight;
   final num rotate; //文本相对于水平旋转的角度
-  num scaleFactor; //文本缩放参数
   final TextAlign textAlign;
   final TextDirection textDirection;
   final int? maxLines;
   final String? ellipsis;
   final bool ignoreOverText; //是否忽略绘制越界的文本
+  num scaleFactor; //文本缩放参数
 
   TextDrawInfo(
     this.offset, {
