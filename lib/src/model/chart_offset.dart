@@ -31,6 +31,6 @@ class ChartOffset {
   @override
   String toString() {
     // TODO: implement toString
-    return 'COffset[${x.toStringAsFixed(0)},${y.toStringAsFixed(0)}]';
+    return 'C[${x.toStringAsFixed(0)},${y.toStringAsFixed(0)}]';
   }
 }

@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-///多边形
+///多边形(封闭的)
 /// TODO 有问题
 class Polygon extends Shape {
   static final Polygon zero = Polygon([]);
@@ -74,9 +74,8 @@ class Polygon extends Shape {
     if (!getBound().contains2(offset)) {
       return false;
     }
+    return inInner2(offset);
     return toPath().contains(offset);
-
-    //return inInner(offset) || inBorder(offset);
   }
 
   /// 返回一个点是否在一个多边形区域内
@@ -105,6 +104,27 @@ class Polygon extends Shape {
       }
     }
     return (nCross % 2 == 1);
+  }
+
+  bool inInner2(Offset offset) {
+    int n = points.length;
+    var p = points[n - 1];
+    var x = offset.dx, y = offset.dy;
+    var x0 = p.dx, y0 = p.dy;
+
+    bool inside = false;
+    double x1, y1;
+    for (var i = 0; i < n; ++i) {
+      p = points[i];
+      x1 = p.dx;
+      y1 = p.dy;
+      if (((y1 > y) != (y0 > y)) && (x < (x0 - x1) * (y - y1) / (y0 - y1) + x1)) {
+        inside = !inside;
+      }
+      x0 = x1;
+      y0 = y1;
+    }
+    return inside;
   }
 
   /// 返回一个点是否在一个多边形边界上
@@ -173,17 +193,19 @@ class Polygon extends Shape {
       sortedPoints.add(Hull(points[i].dx, points[i].dy, i));
     }
     sortedPoints.sort((a, b) {
-      var r = (a.x - b.x).toInt();
+      var r = a.x.compareTo(b.x);
       if (r != 0) {
         return r;
       }
-      return (a.y - b.y).toInt();
+      return a.y.compareTo(b.y);
     });
+
     for (int i = 0; i < n; ++i) {
       flippedPoints.add(Offset(sortedPoints[i].x, -sortedPoints[i].y));
     }
 
-    var upperIndexes = _computeUpperHullIndexes(sortedPoints), lowerIndexes = _computeUpperHullIndexes(flippedPoints);
+    var upperIndexes = _computeUpperHullIndexes(sortedPoints);
+    var lowerIndexes = _computeUpperHullIndexes(flippedPoints);
 
     int skipLeft = lowerIndexes[0] == upperIndexes[0] ? 1 : 0;
     int skipRight = lowerIndexes[lowerIndexes.length - 1] == upperIndexes[upperIndexes.length - 1] ? 1 : 0;
@@ -222,10 +244,9 @@ class Polygon extends Shape {
           c = Offset(c.x, c.y);
         }
         num r = _cross(a, b, c);
-        if (r > 0) {
-          break;
+        if (r <= 0) {
+          --size;
         }
-        --size;
       }
       indexes[size++] = i;
     }

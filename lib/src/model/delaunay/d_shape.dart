@@ -6,8 +6,17 @@ import 'package:e_chart/e_chart.dart';
 class DShape extends Polygon {
   static final DShape zero = DShape(-1, []);
   final int index;
+  Path? path;
 
   DShape(this.index, Iterable<ChartOffset> points) : super.from(points, false);
 
   bool get isEmpty => index < 0 || points.isEmpty;
+
+  @override
+  bool contains(Offset offset) {
+    if (path != null) {
+      return path!.contains(offset);
+    }
+    return super.contains(offset);
+  }
 }

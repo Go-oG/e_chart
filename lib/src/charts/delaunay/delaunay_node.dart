@@ -22,8 +22,9 @@ class DelaunayNode extends DataNode<DShape, List<Offset>> {
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    itemStyle.drawPath(canvas, paint, attr.toPath());
-    borderStyle.drawPath(canvas, paint, attr.toPath());
+    var p = attr.path ?? attr.toPath();
+    itemStyle.drawPath(canvas, paint, p);
+    borderStyle.drawPath(canvas, paint, p);
   }
 
   @override

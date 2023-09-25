@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'dart:math' as math;
 
+import 'package:flutter/cupertino.dart';
+
 import '../../functions.dart';
 import '../../utils/list_util.dart' as el;
 import '../../utils/uuid_util.dart';
@@ -46,11 +48,9 @@ class RBush<T> {
   ///搜索并返回与给定边界框相交的数据项
   List<T> search(Rect rect) {
     RNode<T>? node = _root;
-
     if (!_intersects(rect, node)) {
       return [];
     }
-
     List<T> result = [];
     List<RNode<T>> next = [_root];
     while (next.isNotEmpty) {
@@ -76,7 +76,40 @@ class RBush<T> {
     return result;
   }
 
-  List<T> _eachData(RNode<T>? node, List<T> result) {
+  List<T> search2(Rect rect) {
+    if (!_intersects(rect, _root)) {
+      return [];
+    }
+    List<T> result = [];
+    List<RNode<T>> list = [_root];
+    List<RNode<T>> next = [];
+    while (list.isNotEmpty) {
+      for (var node in list) {
+        for (var child in node.children) {
+          if (!_intersects(rect, child)) {
+            continue;
+          }
+          if (node.leaf) {
+            var d = child.value;
+            if (d != null) {
+              result.add(d);
+            }
+            continue;
+          }
+          if (_contains2(rect, child)) {
+            _eachData(child, result);
+          } else {
+            next.add(child);
+          }
+        }
+      }
+      list = next;
+      next = [];
+    }
+    return result;
+  }
+
+  void _eachData(RNode<T>? node, List<T> result) {
     List<RNode<T>> next = [];
     while (node != null) {
       if (node.leaf) {
@@ -92,7 +125,6 @@ class RBush<T> {
       }
       node = el.removeLastOrNull(next);
     }
-    return result;
   }
 
   ///遍历节点(层序遍历)
@@ -578,6 +610,7 @@ class RBush<T> {
     return math.max(0, maxX - minX) * math.max(0, maxY - minY);
   }
 
+  ///判断 矩形a 是否包含节点 b;
   bool _contains2(Rect a, RNode b) {
     return a.left <= b.minX && a.top <= b.minY && b.maxX <= a.right && b.maxY <= a.bottom;
   }

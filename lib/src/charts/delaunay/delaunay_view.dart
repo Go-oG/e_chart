@@ -17,23 +17,7 @@ class DelaunayView extends SeriesView<DelaunaySeries, DelaunayHelper> {
     var list=layoutHelper.showNodeList;
     each(list, (p0, p1) {
       p0.onDraw(canvas, mPaint);
-      debugDraw(canvas, p0.attr.center(),color: Colors.black);
     });
-    each(series.data, (p0, p1) {
-      debugDraw(canvas, p0.toOffset(),color: Colors.white);
-    });
-
-    Path path=Path();
-    each(layoutHelper.hull, (p, p1) {
-      if(p1==0){
-        path.moveTo(p.x.toDouble(),p.y.toDouble());
-      }else{
-        path.lineTo(p.x.toDouble(),p.y.toDouble());
-      }
-    });
-    path.close();
-    debugDrawPath(canvas, path);
-
     canvas.restore();
   }
   @override

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
-  static const double findRange = 20;
+  static const double findRange = 16;
 
   DelaunayHelper(super.context, super.view, super.series);
 
@@ -15,9 +15,7 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
 
   void updateShowNodeList() {
     Rect rect = Rect.fromLTWH(-translationX, -translationY, width, height);
-  //  showNodeList = List.from(bush.search(rect).map((e) => e.value!));
     showNodeList = bush.search(rect);
-    debugPrint('list:${showNodeList.length}');
   }
 
   @override
@@ -53,10 +51,18 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
         bottom = m.max(bottom, p0.y);
       });
     }
-    var oldList = nodeList;
 
     var de = Delaunay(series.data);
     hull = de.getHull();
+    var hullPath = Path();
+    each(hull, (p0, p1) {
+      if (p1 == 0) {
+        hullPath.moveTo(p0.x.toDouble(), p0.y.toDouble());
+      } else {
+        hullPath.lineTo(p0.x.toDouble(), p0.y.toDouble());
+      }
+    });
+    hullPath.close();
 
     List<DShape> list = [];
     de.eachShape(useTriangle, (sp, index) {
@@ -64,19 +70,18 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
         list.add(DShape(index, sp));
       } else {
         ///修剪边缘
-        List<ChartOffset> ol = List.from(sp);
-        // ol.removeWhere((e){
-        //   return e.x>right||e.x<left||e.y>bottom||e.y<top;
-        // });
-        // eachRight(ol, (e, i) {
-        //   if ((e.x > right || e.x < left) && i != 0) {
-        //     e.x = ol[i - 1].x;
-        //   }
-        //   if ((e.y < top || e.y > bottom) && i != 0) {
-        //     e.y = ol[i - 1].y;
-        //   }
-        // });
-        list.add(DShape(index, ol));
+        bool has = false;
+        for (var p0 in sp) {
+          if (!hullPath.contains(p0.toOffset())) {
+            has = true;
+            break;
+          }
+        }
+        var sd = DShape(index, sp);
+        if (has) {
+          sd.path = Path.combine(PathOperation.intersect, hullPath, sd.toPath());
+        }
+        list.add(sd);
       }
     });
     List<DelaunayNode> rl = [];
@@ -104,12 +109,8 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
     if (hoveNode != null && hoveNode.contains(offset)) {
       return hoveNode;
     }
-    var sw = Stopwatch();
-    sw.start();
-    var searchResult = bush.search(Rect.fromCenter(center: offset, width: findRange, height: findRange));
-    sw.stop();
-    debugPrint('搜索量${searchResult.length} 搜索耗时:${sw.elapsedMicroseconds}ns');
-
+    var r = Rect.fromCenter(center: offset, width: findRange, height: findRange);
+    var searchResult = bush.search2(r);
     for (var e in searchResult) {
       if (e.contains(offset)) {
         return e;
