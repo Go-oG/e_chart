@@ -144,6 +144,7 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
       view.scaleX = view.scaleY = newScale;
       view.translationX = ntx;
       view.translationY = nty;
+      updateDrawNodeList();
       notifyLayoutUpdate();
       return;
     }

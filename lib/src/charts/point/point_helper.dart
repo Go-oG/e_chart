@@ -7,6 +7,10 @@ import 'point_node.dart';
 class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   PointHelper(super.context, super.view, super.series);
 
+  RBush<PointNode> rBush = RBush((p0) => p0.left, (p0) => p0.top, (p0) => p0.right, (p0) => p0.bottom);
+
+  List<PointNode> showNodeList = [];
+
   @override
   void onLayout(LayoutType type) {
     List<PointNode> oldList = nodeList;
@@ -18,7 +22,6 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       });
     });
     layoutNode(newList);
-
     var an = DiffUtil.diffLayout2(
       getAnimation(type, oldList.length + newList.length),
       oldList,
@@ -34,10 +37,20 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
-      () => inAnimation = true,
-      () => inAnimation = false,
+      () {
+        inAnimation = true;
+        var tmp = [...oldList, ...newList];
+        rBush.clear();
+        rBush.addAll(tmp);
+        updateShowNodeList();
+      },
+      () {
+        inAnimation = false;
+        rBush.clear();
+        rBush.addAll(newList);
+        updateShowNodeList();
+      },
     );
-
     context.addAnimationToQueue(an);
   }
 
@@ -97,6 +110,24 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     }
   }
 
+  void updateShowNodeList() {
+    var rect = boxBound.translate(-translationX, -translationY);
+    showNodeList = rBush.search2(rect);
+  }
+
+  @override
+  int getAnimatorCountLimit() {
+    return showNodeList.length;
+  }
+
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    view.translationX += diff.dx;
+    view.translationY += diff.dy;
+    updateShowNodeList();
+    notifyLayoutUpdate();
+  }
+
   @override
   void onRunUpdateAnimation(var list, var animation) {
     List<PointNode> oldList = [];
@@ -109,7 +140,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
         newList.add(diff.node);
       }
     }
-    sortList(nodeList);
+    sortList(showNodeList);
     List<ChartTween> tl = [];
     for (var diff in list) {
       var node = diff.node;
@@ -128,5 +159,30 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     for (var t in tl) {
       t.start(context, true);
     }
+  }
+
+  @override
+  void onCoordScrollUpdate(CoordScroll scroll) {
+    super.onCoordScrollUpdate(scroll);
+    view.translationX = scroll.scroll.dx;
+    view.translationY = scroll.scroll.dy;
+    updateShowNodeList();
+    view.markDirty();
+  }
+
+  @override
+  PointNode? findNode(Offset offset, [bool overlap = false]) {
+    var hoveNode = oldHoverNode;
+    if (hoveNode != null && hoveNode.contains(offset)) {
+      return hoveNode;
+    }
+    var rect = Rect.fromCenter(center: offset, width: 8, height: 8);
+    var result = rBush.search2(rect);
+    for (var p in result) {
+      if (p.contains(offset)) {
+        return p;
+      }
+    }
+    return null;
   }
 }

@@ -70,8 +70,8 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
         Offset ec = e['center']!;
         num sr = s['rotate']!;
         num er = e['rotate']!;
-        double ss = s['scale']!;
-        double es = e['scale']!;
+        num ss = s['scale']!;
+        num es = e['scale']!;
         node.attr.center = sc == ec ? ec : Offset.lerp(sc, ec, t)!;
         node.symbol.rotate = lerpDouble(sr, er, t)!;
         node.symbol.scale = lerpDouble(ss, es, t)!;

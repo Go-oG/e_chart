@@ -84,7 +84,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     tween.addEndListener(() {
       inAnimation = false;
     });
-    context.addAnimationToQueue([AnimationNode(tween, animation, LayoutType.layout)]);
+    context.addAnimationToQueue([AnimationNode(tween, animation, type)]);
   }
 
   SunburstNode convertData(TreeData rootData) {
@@ -286,7 +286,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
   void _forward(SunburstNode clickNode) {
     var oldBackNode = showRootNode;
     var hasBack = showRootNode is SunburstVirtualNode;
-    var animation = series.animation;
+    var animation = getAnimation(LayoutType.update, -1);
     if (hasBack && oldBackNode != null) {
       oldBackNode.clear();
       clickNode.parent = null;
@@ -396,8 +396,8 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     bn.updateTextPosition(series);
     _layoutNodeIterator(bn, parentNode.height + 1, false);
 
-    var animation = series.animation;
-    if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
+    var animation = getAnimation(LayoutType.update, -1);
+    if (animation == null) {
       showRootNode = bn;
       notifyLayoutUpdate();
       return;
@@ -412,7 +412,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       }
       return false;
     });
-    var tween = ChartDoubleTween(option: series.animation!);
+    var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
       var t = tween.value;
       parentNode.each((node, index, startNode) {
@@ -479,7 +479,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
   }
 
   @override
-  SunburstNode? findNode(Offset offset,[bool overlap=false]) {
+  SunburstNode? findNode(Offset offset, [bool overlap = false]) {
     return showRootNode?.find((node, index, startNode) {
       Arc arc = node.attr.arc;
       return arc.contains(offset);

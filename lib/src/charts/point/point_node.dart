@@ -47,4 +47,12 @@ class PointNode extends DataNode2<Offset, PointData, ChartSymbol> {
       symbol.scale,
     );
   }
+
+  double get left => attr.dx - symbol.size.width / 2;
+
+  double get top => attr.dy - symbol.size.height / 2;
+
+  double get right => attr.dx + symbol.size.width / 2;
+
+  double get bottom => attr.dy + symbol.size.height / 2;
 }

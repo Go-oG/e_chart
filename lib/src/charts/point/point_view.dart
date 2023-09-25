@@ -1,14 +1,18 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/point/point_helper.dart';
+
+import 'point_helper.dart';
 
 class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild, CalendarChild, GridChild {
   PointView(super.series);
 
   @override
   void onDraw(CCanvas canvas) {
-    for (var node in layoutHelper.nodeList) {
-      node.onDraw(canvas,mPaint);
-    }
+    canvas.save();
+    canvas.translate(translationX, translationY);
+    each(layoutHelper.showNodeList, (p0, p1) {
+      p0.onDraw(canvas, mPaint);
+    });
+    canvas.restore();
   }
 
   @override
@@ -70,6 +74,9 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   @override
   PointHelper buildLayoutHelper(var oldHelper) {
     oldHelper?.clearRef();
-    return PointHelper(context,this, series);
+    return PointHelper(context, this, series);
   }
+
+  @override
+  bool get useSingleLayer => false;
 }

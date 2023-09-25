@@ -148,6 +148,9 @@ abstract class ChartView extends RenderNode {
       return false;
     }
 
+    var oldLayer = cacheLayer.layer;
+    cacheLayer.layer = null;
+
     cacheLayer.layer = canvas.paintContext.pushClipRect(
       true,
       globalBound.topLeft,
@@ -155,7 +158,7 @@ abstract class ChartView extends RenderNode {
       (context, offset) {
         _drawInner(CCanvas(context), offset, true);
       },
-      oldLayer: cacheLayer.layer as ClipRectLayer?,
+      oldLayer: oldLayer as ClipRectLayer?,
     );
     return false;
   }

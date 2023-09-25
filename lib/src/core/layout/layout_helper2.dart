@@ -93,7 +93,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       nl.add(NodeDiff(clickNode, newAttr, clickNode.toAttr(), false));
     }
 
-    var animator = getAnimation(LayoutType.update, 2);
+    var animator = getAnimation(LayoutType.update, getAnimatorCountLimit());
     if (animator == null) {
       onHandleHoverAndClickEnd(oldNode, clickNode);
       notifyLayoutUpdate();
@@ -103,6 +103,10 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
       onRunUpdateAnimation(nl, animator);
     }
     onHandleHoverAndClickEnd(oldNode, clickNode);
+  }
+
+  int getAnimatorCountLimit(){
+    return -1;
   }
 
   void onHandleHoverAndClickEnd(N? oldNode, N? newNode) {}
