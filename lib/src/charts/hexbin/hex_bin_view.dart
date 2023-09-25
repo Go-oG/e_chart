@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 
 import 'hex_bin_helper.dart';
 
@@ -10,18 +11,23 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinHelper> {
   @override
   bool get enableDrag => true;
 
+  var sw=Stopwatch();
   @override
   void onDraw(CCanvas canvas) {
+    sw.reset();
     var tr = layoutHelper.getTranslation();
-    var sRect = Rect.fromLTWH(-tr.dx, -tr.dy, width, height);
     canvas.save();
     canvas.translate(tr.dx, tr.dy);
-    each(layoutHelper.nodeList, (node, p1) {
-      if (sRect.overlapCircle(node.attr.center, node.symbol.r)) {
-        node.onDraw(canvas, mPaint);
-      }
+    each(layoutHelper.showNodeList, (node, p1) {
+
+      sw.start();
+      node.onDraw(canvas, mPaint);
+      sw.stop();
+      debugPrint("绘制耗时${sw.elapsedMicroseconds} ns");
+      sw.reset();
     });
     canvas.restore();
+
   }
 
   @override

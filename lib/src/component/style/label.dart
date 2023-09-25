@@ -27,49 +27,45 @@ class LabelStyle {
     this.minAngle = 0,
   });
 
-  Size draw(CCanvas canvas, Paint paint, DynamicText text, TextDrawInfo config, [Set<ViewState>? states]) {
+  Size draw(CCanvas canvas, Paint paint, DynamicText text, TextDrawInfo config) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
-    if (text.isString) {
-      return drawText(canvas, paint, text.text as String, config, states);
+    dynamic drawText = text.getDrawText(textStyle);
+    if (drawText is TextSpan) {
+      return drawTextSpan(canvas, paint, drawText, config);
     }
-    if (text.isTextSpan) {
-      return drawTextSpan(canvas, paint, text.text as TextSpan, config);
-    }
-    return drawParagraph(canvas, paint, text.text as Paragraph, config);
+    return drawParagraph(canvas, paint, drawText as Paragraph, config);
   }
 
-  Size drawText(CCanvas canvas, Paint paint, String text, TextDrawInfo config, [Set<ViewState>? states]) {
+  Size drawText(CCanvas canvas, Paint paint, String text, TextDrawInfo config) {
     if (!show || text.isEmpty) {
       return Size.zero;
     }
-    TextStyle style = textStyle;
-    if (states != null && style.color != null) {
-      style = style.copyWith(color: ColorResolver(style.color!).resolve(states)!);
-    }
-    return drawTextSpan(canvas, paint, TextSpan(text: text, style: style), config);
+    return drawTextSpan(canvas, paint, TextSpan(text: text, style: textStyle), config);
   }
 
   Size drawTextSpan(CCanvas canvas, Paint paint, TextSpan text, TextDrawInfo config) {
     if (!show || (text.text?.isEmpty ?? true)) {
       return Size.zero;
     }
-    TextOverflow? textOverflow = overFlow == OverFlow.cut ? TextOverflow.clip : null;
-    String? ellipsis = textOverflow == TextOverflow.ellipsis ? '\u2026' : null;
-    TextPainter painter = config.toPainter2(text);
-    if (config.ellipsis == null) {
+    var textOverflow = overFlow == OverFlow.cut ? TextOverflow.clip : null;
+    var ellipsis = textOverflow == TextOverflow.ellipsis ? '\u2026' : null;
+    var painter = config.toPainter2(text);
+    if (ellipsis != null) {
       painter.ellipsis = ellipsis;
     }
+    painter.text = text;
     painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
+
     if (painter.height > config.maxHeight) {
       int maxLineCount = config.maxHeight ~/ (painter.height / painter.computeLineMetrics().length);
       maxLineCount = max([1, maxLineCount]).toInt();
       painter.maxLines = maxLineCount;
       painter.layout(minWidth: config.minWidth.toDouble(), maxWidth: config.maxWidth.toDouble());
     }
-    Offset leftTop = _computeAlignOffset(config.offset, config.align, painter.width, painter.height);
-    Offset center = leftTop.translate(painter.width * 0.5, painter.height * 0.5);
+    var leftTop = _computeAlignOffset(config.offset, config.align, painter.width, painter.height);
+    var center = leftTop.translate(painter.width * 0.5, painter.height * 0.5);
     canvas.save();
     canvas.translate(center.dx, center.dy);
     if (config.scaleFactor != 1) {
@@ -84,14 +80,14 @@ class LabelStyle {
       decoration?.drawPath(canvas, paint, path);
     }
 
-    Offset textOffset = Offset(-painter.width * 0.5, -painter.height * 0.5);
+    var textOffset = Offset(-painter.width / 2, -painter.height / 2);
     painter.paint(canvas.canvas, textOffset);
     canvas.restore();
     return Size(painter.width, painter.height);
   }
 
   Size drawParagraph(CCanvas canvas, Paint paint, Paragraph paragraph, TextDrawInfo config) {
-    ParagraphConstraints constraints = ParagraphConstraints(width: config.maxWidth.toDouble());
+    var constraints = ParagraphConstraints(width: config.maxWidth.toDouble());
     paragraph.layout(constraints);
     double w = paragraph.width;
     double h = paragraph.height;

@@ -168,6 +168,20 @@ class DynamicText {
   String toString() {
     return '$text';
   }
+
+  TextSpan? _cacheSpan;
+
+  dynamic getDrawText(TextStyle? style) {
+    if (text is String) {
+      var cs = _cacheSpan;
+      if (cs == null || cs.style != style) {
+        cs = TextSpan(text: text, style: style);
+      }
+      _cacheSpan = cs;
+      return cs;
+    }
+    return text;
+  }
 }
 
 String getText(dynamic data) {

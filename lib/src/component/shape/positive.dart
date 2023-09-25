@@ -42,6 +42,20 @@ class PositiveShape implements Shape {
     return path;
   }
 
+  List<Offset> toList() {
+    if (count <= 0 || r <= 0) {
+      return [];
+    }
+    List<Offset> ol = [];
+    double singleAngle = 360 / count;
+    for (int j = 0; j < count; j++) {
+      num angle = angleOffset + j * singleAngle;
+      Offset c = circlePoint(r, angle, center);
+      ol.add(c);
+    }
+    return ol;
+  }
+
   PositiveShape copy({Offset? center, num? r, int? count, num? angleOffset}) {
     return PositiveShape(
       center: center ?? this.center,

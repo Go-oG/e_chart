@@ -64,6 +64,8 @@ class AreaStyle {
     drawPath(canvas, paint, polygon.toPath());
   }
 
+
+
   void drawArea(CCanvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [num smooth = 0]) {
     if (notDraw) {
       return;
@@ -84,7 +86,7 @@ class AreaStyle {
       path.addRRect(rect.toRRect(corner));
       path.close();
     }
-    drawPath(canvas, paint, path,rect);
+    drawPath(canvas, paint, path, rect);
   }
 
   void drawRRect(CCanvas canvas, Paint paint, RRect rect) {
@@ -93,7 +95,7 @@ class AreaStyle {
     }
     Path path = Path();
     path.addRRect(rect);
-    drawPath(canvas, paint, path,rect.outerRect);
+    drawPath(canvas, paint, path, rect.outerRect);
   }
 
   void drawCircle(CCanvas canvas, Paint paint, Offset center, num radius) {
@@ -115,7 +117,7 @@ class AreaStyle {
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
-    fillPaint(paint, bound ?? path.getBounds());
+    fillPaint(paint, shader == null ? null : (bound ?? path.getBounds()));
     canvas.drawPath(path, paint);
   }
 

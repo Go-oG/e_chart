@@ -8,6 +8,7 @@ class PositiveSymbol extends ChartSymbol {
   final int count;
   final num fixRotate;
   late final Path path;
+  late final Rect bound = path.getBounds();
 
   PositiveSymbol({
     this.count = 3,
@@ -19,7 +20,7 @@ class PositiveSymbol extends ChartSymbol {
     if (count <= 0 || r <= 0) {
       path = Path();
     } else {
-      PositiveShape shape = PositiveShape(center: Offset.zero, r: r, count: count, angleOffset: fixRotate);
+      var shape = PositiveShape(center: Offset.zero, r: r, count: count, angleOffset: fixRotate);
       path = shape.toPath();
     }
   }
@@ -37,17 +38,8 @@ class PositiveSymbol extends ChartSymbol {
     if (!checkStyle()) {
       return;
     }
-    itemStyle.drawPath(canvas, paint, path);
-    borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
-
-    // num r = attr.shape.r;
-    // double scale = 1 - (lineStyle.width / (2 * r));
-    // Matrix4 m4 = Matrix4.identity();
-    // m4.translate(attr.center.dx, attr.center.dy);
-    // m4.scale(scale, scale);
-    // m4.translate(-attr.center.dx, -attr.center.dy);
-    // var path2 = path.transform(m4.storage);
-    // lineStyle.drawPath(canvas, paint, path2, drawDash: true, needSplit: false);
+    itemStyle.drawPath(canvas, paint, path, bound);
+    borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false, bound: bound);
   }
 
   @override
@@ -59,8 +51,8 @@ class PositiveSymbol extends ChartSymbol {
       fixRotate: ro,
       r: r,
       count: c,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ?? AreaStyle.empty,
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t) ?? LineStyle.empty,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
     );
   }
 

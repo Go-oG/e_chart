@@ -11,18 +11,23 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
     super.labelStyle,
   );
 
+  var sw = Stopwatch();
+
   @override
   void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, attr.center);
-
     var s = data.name;
     if (s == null || s.isEmpty) {
       return;
     }
     var ls = labelStyle;
-    if (ls.show) {
-      TextDrawInfo config = TextDrawInfo(attr.center, textAlign: TextAlign.center);
+    var config = labelConfig;
+    if (ls.show && config != null) {
+      sw.start();
       ls.draw(canvas, paint, s, config);
+      sw.stop();
+      debugPrint('文字绘制耗时:${sw.elapsedMicroseconds}ns');
+      sw.reset();
     }
   }
 
@@ -33,11 +38,11 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
 
   @override
   void updateStyle(Context context, HexbinSeries series) {
-    itemStyle = series.getItemStyle(context, data, dataIndex, status)??AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status)??LineStyle.empty;
+    itemStyle = series.getItemStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
+    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
     labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
-    symbol.itemStyle=itemStyle;
-    symbol.borderStyle=borderStyle;
+    symbol.itemStyle = itemStyle;
+    symbol.borderStyle = borderStyle;
   }
 }
 

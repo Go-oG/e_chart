@@ -210,18 +210,14 @@ class LineStyle {
   ///此时应该将needSplit 指定为true进行优化
   ///绘制效率严重低下的问题
   void drawPath(CCanvas canvas, Paint paint, Path path,
-      {bool drawDash = false, bool needSplit = true, num splitLength = 200}) {
+      {bool drawDash = false, bool needSplit = true, num splitLength = 200,Rect? bound}) {
     if (width <= 0) {
       return;
     }
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
-    Rect? rect;
-    if (shader != null) {
-      rect = path.getBounds();
-    }
-    fillPaint(paint, rect);
+    fillPaint(paint,shader==null?null: (bound?? path.getBounds()));
 
     if (drawDash && dash.isNotEmpty) {
       path = path.dashPath(dash);

@@ -1,9 +1,6 @@
 import 'dart:ui';
-
-import 'package:e_chart/src/ext/text_style_ext.dart';
 import 'package:flutter/material.dart';
 
-import '../core/model/view_state.dart';
 import '../utils/index.dart';
 
 ///文本绘制参数
@@ -79,14 +76,20 @@ class TextDrawInfo {
     );
   }
 
-  TextPainter toPainter(String text, TextStyle textStyle, [Set<ViewState>? states]) {
-    return textStyle.toPainter(text,
-        ellipsis: ellipsis, maxLines: maxLines, textAlign: textAlign, textDirection: textDirection, states: states);
-  }
+  final TextPainter _cachePainter = TextPainter();
 
   TextPainter toPainter2(TextSpan text) {
-    return TextPainter(
-        text: text, textAlign: textAlign, textDirection: textDirection, maxLines: maxLines, ellipsis: ellipsis);
+    fillPainter(_cachePainter);
+    _cachePainter.text = text;
+    return _cachePainter;
+  }
+
+  void fillPainter(TextPainter painter) {
+    painter
+      ..textAlign = textAlign
+      ..textDirection = textDirection
+      ..maxLines = maxLines
+      ..ellipsis = ellipsis;
   }
 
   static TextDrawInfo fromRect(Rect rect, Alignment align, [bool inside = true]) {

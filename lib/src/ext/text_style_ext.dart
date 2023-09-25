@@ -9,8 +9,7 @@ extension TextStyleExtension on TextStyle {
       int? maxLines,
       String? ellipsis,
       double textScaleFactor = 1,
-      TextWidthBasis textWidthBasis = TextWidthBasis.longestLine,
-      Set<ViewState>? states}) {
+      TextWidthBasis textWidthBasis = TextWidthBasis.longestLine}) {
     return TextPainter(
       text: TextSpan(text: text, style: this),
       textAlign: textAlign,

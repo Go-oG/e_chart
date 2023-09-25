@@ -24,8 +24,12 @@ abstract class ChartSymbol {
     }
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    canvas.rotate(rotate*Constants.angleUnit);
-    canvas.scale(scale);
+    if (rotate != 0) {
+      canvas.rotate(rotate * Constants.angleUnit);
+    }
+    if (scale != 1) {
+      canvas.scale(scale);
+    }
     onDraw(canvas, paint);
     canvas.restore();
   }

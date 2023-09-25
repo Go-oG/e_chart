@@ -20,19 +20,18 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
   bool flat = false;
   num radius = 0;
 
+  List<HexbinNode> showNodeList = [];
+
   @override
   void onLayout(LayoutType type) {
     var oldNodeList = nodeList;
     List<HexbinNode> newList = convertDataToNode(series.data);
-
     flat = series.flat;
     radius = series.radius;
-
     var params = HexbinLayoutParams(series, width, height, radius.toDouble(), series.flat);
     var hexLayout = series.layout;
     hexLayout.onLayout(newList, type, params);
     flat = params.flat;
-
     ///坐标转换
     final angleOffset = flat ? _flat.angle : _pointy.angle;
     _zeroCenter = hexLayout.computeZeroCenter(params);
@@ -40,13 +39,15 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
     each(newList, (node, i) {
       var center = hexToPixel(_zeroCenter, node.attr.hex, size);
       node.attr.center = center;
+      node.labelConfig = TextDrawInfo(center, textAlign: TextAlign.center);
       var s = PositiveSymbol(
           r: series.radius, count: 6, fixRotate: 0, itemStyle: AreaStyle.empty, borderStyle: LineStyle.empty);
       s.rotate = angleOffset;
-
       node.setSymbol(s, false);
       node.updateStyle(context, series);
     });
+
+
     var an = DiffUtil.diffLayout3(
       getAnimation(type, oldNodeList.length + newList.length),
       oldNodeList,
@@ -77,11 +78,17 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
         node.symbol.scale = lerpDouble(ss, es, t)!;
       },
       (resultList) {
-        nodeList = resultList;
+        updateShowNodeList(resultList);
         notifyLayoutUpdate();
       },
-      () => inAnimation = true,
-      () => inAnimation = false,
+      () {
+        nodeList = newList;
+        inAnimation = true;
+      },
+      () {
+        updateShowNodeList(nodeList);
+        inAnimation = false;
+      },
     );
     context.addAnimationToQueue(an);
   }
@@ -134,7 +141,7 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
     for (var diff in list) {
       diff.node.drawIndex = diff.old ? 0 : 100;
     }
-    sortList(nodeList);
+    sortList(showNodeList);
 
     List<ChartTween> tl = [];
     for (var diff in list) {
@@ -165,6 +172,34 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
   Offset getTranslation() {
     return view.translation;
   }
+  @override
+  HexbinNode? findNode(Offset offset, [bool overlap = false]) {
+    var hoveNode = oldHoverNode;
+    if (hoveNode != null && hoveNode.contains(offset)) {
+      return hoveNode;
+    }
+    ///这里倒序查找是因为当绘制顺序不一致时需要从最后查找
+    var list = showNodeList;
+    for (int i = list.length - 1; i >= 0; i--) {
+      var node = list[i];
+      if (node.contains(offset)) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  void updateShowNodeList(List<HexbinNode> nodeList) {
+    List<HexbinNode> nl = [];
+    var sRect = Rect.fromLTWH(-translationX, -translationY, width, height);
+    each(nodeList, (node, p1) {
+      if (sRect.overlapCircle(node.attr.center, node.symbol.r)) {
+        nl.add(node);
+      }
+    });
+    showNodeList = nl;
+  }
+
 }
 
 class _Orientation {
