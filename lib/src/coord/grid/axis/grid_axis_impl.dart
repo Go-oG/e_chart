@@ -143,14 +143,16 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       Offset offset = center.translate(parenDis, 0);
       Offset textOffset = offset.translate(0, labelOffset);
       textOffset = textOffset.rotate(angle, center: center);
-      TextDrawInfo config = TextDrawInfo(textOffset, align: align);
+
       DynamicText? text;
       int t = i - indexList[0];
       if (labels.length > t) {
         text = labels[t];
       }
+      var style = axisLabel.getLabelStyle(i, scale.tickCount, getAxisTheme());
+      var config = TextDraw(text ?? DynamicText.empty, style, textOffset, align: align);
       int oi = i * sn;
-      LabelResult result = LabelResult(oi, i, scale.tickCount, config, text, []);
+      var result = LabelResult(oi, i, scale.tickCount, config, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -159,14 +161,15 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       }
 
       ///构建minorLabel
+      var minorStyle = axisLabel.getMinorLabelStyle(i, scale.tickCount, getAxisTheme());
+
       double minorInterval = interval / (minorCount + 1);
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         num dis = parenDis + minorInterval * j;
+        var text = axisLabel.formatter?.call(scale.toData(dis)) ?? DynamicText.empty;
         final labelOffset = circlePoint(dis, angle, center);
-        TextDrawInfo minorConfig = TextDrawInfo(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
-        dynamic data = scale.toData(dis);
-        DynamicText? text = axisLabel.formatter?.call(data);
-        result.minorLabel.add(LabelResult(oi + j, i, scale.tickCount, minorConfig, text));
+        var minorConfig = TextDraw(text, minorStyle, labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+        result.minorLabel.add(LabelResult(oi + j, i, scale.tickCount, minorConfig));
       }
     }
     return resultList;
@@ -323,7 +326,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     if (!axisLabel.show) {
       return;
     }
-    var theme = getAxisTheme();
+
     canvas.save();
     if (direction == Direction.horizontal) {
       canvas.translate(scroll.dx, 0);
@@ -362,38 +365,23 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
 
     each(layoutResult.label, (label, i) {
-      var labelStyle = axisLabel.getLabelStyle(label.index, label.maxIndex, theme);
-      var minorStyle = axisLabel.getMinorLabelStyle(label.index, label.maxIndex, theme);
-      bool b1 = (labelStyle != null && labelStyle.show);
-      bool b2 = (minorStyle != null && minorStyle.show);
-      if (b1 && label.text != null) {
-        if (interval > 0) {
-          if (label.originIndex % interval == 0) {
-            labelStyle.draw(canvas, paint, label.text!, label.textConfig);
-          }
-        } else {
-          labelStyle.draw(canvas, paint, label.text!, label.textConfig);
+      if (!label.textConfig.notDraw) {
+        if (interval <= 0 || label.originIndex % interval == 0) {
+          label.textConfig.draw(canvas, paint);
         }
       }
-
-      if (b2) {
+      if (label.minorLabel.isNotEmpty && label.minorLabel.first.textConfig.style.show) {
         each(label.minorLabel, (minor, p1) {
-          if (minor.text == null) {
-            return;
-          }
-          if (interval <= 0) {
-            minorStyle.draw(canvas, paint, minor.text!, minor.textConfig);
-            return;
-          }
-
-          if (minor.originIndex % interval == 0) {
-            minorStyle.draw(canvas, paint, minor.text!, minor.textConfig);
+          if (interval <= 0 || minor.originIndex % interval == 0) {
+            minor.textConfig.draw(canvas, paint);
           }
         });
       }
     });
     canvas.restore();
   }
+
+  final TextDraw _axisPointerTD = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
 
   @override
   void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
@@ -413,6 +401,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     } else {
       canvas.translate(0, scroll.dy);
     }
+
     List<Offset> ol = [];
     if (vertical) {
       var x = pointerDis + paintOffset + rect.left;
@@ -432,16 +421,22 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     } else {
       tmp = Offset(attrs.start.dx, tmp.dy);
     }
-
-    DynamicText dt = formatData(scale.toData(pointerDis));
+    var dt = formatData(scale.toData(pointerDis));
     Alignment alignment;
     if (vertical) {
       alignment = axis.position == Align2.start ? Alignment.bottomCenter : Alignment.topCenter;
     } else {
       alignment = axis.position == Align2.end ? Alignment.centerLeft : Alignment.centerRight;
     }
-    var config = TextDrawInfo(tmp, align: alignment);
-    axisPointer.labelStyle.draw(canvas, paint, dt, config);
+    if (_axisPointerTD.offset != tmp || _axisPointerTD.align != alignment || _axisPointerTD.text != dt) {
+      _axisPointerTD.updatePainter(
+        text: dt,
+        style: axisPointer.labelStyle,
+        offset: tmp,
+        align: alignment,
+      );
+    }
+    _axisPointerTD.draw(canvas, paint);
     canvas.restore();
   }
 

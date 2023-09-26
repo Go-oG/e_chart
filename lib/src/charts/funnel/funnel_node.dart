@@ -39,20 +39,8 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
     return path;
   }
 
-  @override
-  String toString() {
-    String s = '';
-    for (var element in attr) {
-      s = '$s$element ';
-    }
-    return s;
-  }
-
-  TextDrawInfo? computeTextPosition(FunnelSeries series) {
-    var style = labelStyle;
-    if (!style.show) {
-      return null;
-    }
+  void updateTextPosition(Context context, FunnelSeries series) {
+    var style = label.style;
     Offset p0 = attr[0];
     Offset p1 = attr[1];
     Offset p2 = attr[2];
@@ -79,7 +67,8 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
     if (!align.inside) {
       textAlign = Alignment(-textAlign.x, -textAlign.y);
     }
-    return TextDrawInfo(offset, align: textAlign);
+    label.updatePainter(text: data.name ?? DynamicText.empty, offset: offset, align: textAlign);
+    labelLine = computeLabelLineOffset(context, series, label.offset) ?? [];
   }
 
   List<Offset>? computeLabelLineOffset(Context context, FunnelSeries series, Offset? textOffset) {
@@ -88,7 +77,7 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
       return null;
     }
 
-    LabelStyle style = labelStyle;
+    LabelStyle style = label.style;
     if (!style.show) {
       return null;
     }
@@ -119,20 +108,12 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   void onDraw(CCanvas canvas, Paint paint) {
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
-    TextDrawInfo? config = labelConfig;
-    DynamicText? label = data.name;
-    if (label == null || label.isEmpty || config == null) {
-      return;
-    }
-    var style = labelStyle;
-    if (!style.show) {
+    if (label.notDraw) {
       return;
     }
     List<Offset>? ol = labelLine;
-    if (ol != null) {
-      style.guideLine?.style.drawPolygon(canvas, paint, ol);
-    }
-    style.draw(canvas, paint, label, config);
+    label.style.guideLine?.style.drawPolygon(canvas, paint, ol);
+    label.draw(canvas, paint);
   }
 
   @override
@@ -144,7 +125,17 @@ class FunnelNode extends DataNode<List<Offset>, ItemData> {
   void updateStyle(Context context, FunnelSeries series) {
     itemStyle = series.getAreaStyle(context, data, dataIndex, status);
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
-    labelConfig = computeTextPosition(series);
+    var s = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    label.style = s;
+  }
+
+
+  @override
+  String toString() {
+    String s = '';
+    for (var element in attr) {
+      s = '$s$element ';
+    }
+    return s;
   }
 }

@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 
 class ToolTipItemView extends GestureView {
   final MenuItem item;
-
-  ToolTipItemView(this.item);
-
-  Size? _subSize;
   final LabelStyle _defaultSubStyle = const LabelStyle(textStyle: TextStyle(color: Colors.black87, fontSize: 13));
+
+  late TextDraw _label;
+  TextDraw? _subLabel;
+
+  ToolTipItemView(this.item) {
+    _label = TextDraw(item.title, item.titleStyle, Offset.zero, align: Alignment.centerLeft);
+    if (item.desc != null) {
+      _subLabel = TextDraw(item.desc!, item.descStyle ?? _defaultSubStyle, Offset.zero, align: Alignment.centerRight);
+    }
+  }
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
@@ -38,24 +44,32 @@ class ToolTipItemView extends GestureView {
       w += 16;
     }
 
-    w +=padding.horizontal;
+    w += padding.horizontal;
     h += padding.vertical;
     return Size(w.toDouble(), h.toDouble());
   }
 
   @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    double c = padding.top + height / 2;
+    double lf=padding.left;
+    if(item.symbol!=null){
+      Size s = item.symbol!.size;
+      lf += s.width + 8;
+    }
+    _label.updatePainter(offset: Offset(lf, c));
+    _subLabel?.updatePainter(offset: Offset(width, c));
+  }
+
+  @override
   void onDraw(CCanvas canvas) {
     double c = padding.top + height / 2;
-    double left = padding.left;
     if (item.symbol != null) {
       Size s = item.symbol!.size;
       item.symbol?.draw(canvas, mPaint, Offset(padding.left + s.width / 2, c));
-      left += s.width + 8;
     }
-    item.titleStyle.draw(canvas, mPaint, item.title, TextDrawInfo(Offset(left, c), align: Alignment.centerLeft));
-    if (_subSize != null && item.desc != null) {
-      (item.descStyle ?? _defaultSubStyle)
-          .draw(canvas, mPaint, item.desc!, TextDrawInfo(Offset(width, c), align: Alignment.centerRight));
-    }
+    _label.draw(canvas, mPaint);
+    _subLabel?.draw(canvas, mPaint);
   }
 }

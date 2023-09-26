@@ -131,18 +131,22 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       if (scale.isCategory && axis.categoryCenter) {
         d += 0.5;
       }
-      final double parenDis = interval * d;
 
-      Offset offset = center.translate(parenDis, 0);
-      Offset textOffset = offset.translate(0, labelOffset);
-      textOffset = textOffset.rotate(angle, center: center);
-      TextDrawInfo config = TextDrawInfo(textOffset, align: toAlignment(angle + 90, axisLabel.inside));
       DynamicText? text;
       if (labels.length > i) {
         text = labels[i];
       }
 
-      LabelResult result = LabelResult(i, i, tickCount, config, text, []);
+      final double parenDis = interval * d;
+
+      Offset offset = center.translate(parenDis, 0);
+      Offset textOffset = offset.translate(0, labelOffset);
+      textOffset = textOffset.rotate(angle, center: center);
+      var ls = axisLabel.getLabelStyle(i, tickCount, getAxisTheme());
+      var config =
+          TextDraw(text ?? DynamicText.empty, ls, textOffset, align: toAlignment(angle + 90, axisLabel.inside));
+
+      var result = LabelResult(i, i, tickCount, config, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -151,16 +155,19 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       }
 
       ///构建minorLabel
+      var minorLS = axisLabel.getMinorLabelStyle(i, tickCount, getAxisTheme());
       double minorInterval = interval / (minorCount + 1);
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         num dis = parenDis + minorInterval * j;
         final labelOffset = circlePoint(dis, angle, center);
-        TextDrawInfo minorConfig = TextDrawInfo(labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+
         dynamic data = scale.toData(dis);
-        DynamicText? text = axisLabel.formatter?.call(data);
-        result.minorLabel.add(LabelResult(i + j, i, tickCount, minorConfig, text));
+        var text = axisLabel.formatter?.call(data) ?? DynamicText.empty;
+        var minorConfig = TextDraw(text, minorLS, labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+        result.minorLabel.add(LabelResult(i + j, i, tickCount, minorConfig));
       }
     }
+
     return resultList;
   }
 
@@ -177,7 +184,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   }
 
   @override
-  TextDrawInfo onLayoutAxisName() {
+  TextDraw onLayoutAxisName() {
     Offset center;
     Offset p;
     var align = axis.axisName?.align ?? Align2.end;
@@ -191,11 +198,12 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       center = attrs.start;
       p = Offset((attrs.start.dx + attrs.end.dx) / 2, (attrs.start.dy + attrs.end.dy) / 2);
     }
-
     num a = p.angle(center);
     double r = center.distance2(p);
     r += axis.axisName?.nameGap ?? 0;
-    return TextDrawInfo(circlePoint(r, a, center), align: toAlignment(a));
+    var label = axis.axisName?.name ?? DynamicText.empty;
+    var s = axis.axisName?.labelStyle ?? const LabelStyle();
+    return TextDraw(label, s, circlePoint(r, a, center), align: toAlignment(a));
   }
 
   @override
@@ -236,23 +244,13 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
   @override
   void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
-    var theme = getAxisTheme();
-    int maxCount = layoutResult.label.length;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
     each(layoutResult.label, (label, i) {
-      var labelStyle = axis.getLabelStyle(i, maxCount, theme);
-      var minorStyle = axis.getMinorLabelStyle(i, maxCount, theme);
-      bool b1 = (labelStyle != null && labelStyle.show);
-      bool b2 = (minorStyle != null && minorStyle.show);
-      if (b1 && label.text != null) {
-        labelStyle.draw(canvas, paint, label.text!, label.textConfig);
-      }
-      if (b2) {
+      label.textConfig.draw(canvas, paint);
+      if (label.minorLabel.isNotEmpty && label.minorLabel.first.textConfig.style.show) {
         each(label.minorLabel, (minor, p1) {
-          if (minor.text != null) {
-            minorStyle.draw(canvas, paint, minor.text!, minor.textConfig);
-          }
+          minor.textConfig.draw(canvas, paint);
         });
       }
     });

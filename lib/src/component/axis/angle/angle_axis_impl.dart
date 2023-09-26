@@ -174,8 +174,10 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       }
       num angle = attrs.angleOffset + angleInterval * d;
       Offset offset = circlePoint(r, angle, attrs.center);
-      TextDrawInfo config = TextDrawInfo(offset, align: toAlignment(angle, axisLabel.inside));
-      var result = LabelResult(i, i, labels.length, config, text, []);
+
+      var labelStyle = axis.getLabelStyle(i, labels.length, getAxisTheme());
+      var config = TextDraw(text, labelStyle, offset, align: toAlignment(angle, axisLabel.inside));
+      var result = LabelResult(i, i, labels.length, config, []);
       resultList.add(result);
       if (axis.isCategoryAxis || axis.isTimeAxis) {
         continue;
@@ -187,34 +189,35 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       }
 
       ///构建minorLabel
+      var minorStyle = axis.getMinorLabelStyle(i, labels.length, getAxisTheme());
       double minorInterval = angleInterval / (minorCount + 1);
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         num childAngle = angle + minorInterval * j;
-        final labelOffset = circlePoint(r, childAngle, attrs.center);
-        TextDrawInfo minorConfig = TextDrawInfo(labelOffset, align: toAlignment(childAngle, axisLabel.inside));
         dynamic data = scale.toData(childAngle);
-        DynamicText? text = axisLabel.formatter?.call(data);
-        result.minorLabel.add(LabelResult(i + j, i, labels.length, minorConfig, text));
+        var text = axisLabel.formatter?.call(data) ?? DynamicText.empty;
+        final labelOffset = circlePoint(r, childAngle, attrs.center);
+        var minorConfig = TextDraw(text, minorStyle, labelOffset, align: toAlignment(childAngle, axisLabel.inside));
+        result.minorLabel.add(LabelResult(i + j, i, labels.length, minorConfig));
       }
     }
-
     return resultList;
   }
 
   @override
-  TextDrawInfo onLayoutAxisName() {
-    DynamicText? label = titleNode.name?.name;
+  TextDraw onLayoutAxisName() {
+    var label = titleNode.name?.name ?? DynamicText.empty;
     Offset start = attrs.center;
     Offset end = circlePoint(attrs.radius.last, attrs.angleOffset, attrs.center);
     var axisName = axis.axisName;
     var align = axisName?.align ?? Align2.end;
-    if (align == Align2.center || (label == null || label.isEmpty)) {
-      return TextDrawInfo(Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
+    var style = axisName?.labelStyle ?? const LabelStyle();
+    if (align == Align2.center || label.isEmpty) {
+      return TextDraw(label, style, Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
     }
     if (align == Align2.start) {
-      return TextDrawInfo(start, align: Alignment.centerLeft);
+      return TextDraw(label, style, start, align: Alignment.centerLeft);
     }
-    return TextDrawInfo(end, align: toAlignment(end.angle(start)));
+    return TextDraw(label, style, end, align: toAlignment(end.angle(start)));
   }
 
   @override
@@ -230,7 +233,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
     int maxCount = layoutResult.splitList.length;
     each(layoutResult.splitList, (split, i) {
-      AreaStyle? style = axis.getSplitAreaStyle(i, maxCount, theme);
+      var style = axis.getSplitAreaStyle(i, maxCount, theme);
       style?.drawArc(canvas, paint, split);
     });
   }
@@ -301,32 +304,25 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
   @override
   void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
-    var theme = getAxisTheme();
-
     var axisLabel = axis.axisLabel;
     if (axisLabel.show) {
       int maxCount = layoutResult.label.length;
       each(layoutResult.label, (label, i) {
-        var labelStyle = axis.getLabelStyle(i, maxCount, theme);
-        var minorStyle = axis.getMinorLabelStyle(i, maxCount, theme);
-        bool b1 = (labelStyle != null && labelStyle.show);
-        bool b2 = (minorStyle != null && minorStyle.show);
-        if (b1 && label.text != null && label.text!.isNotEmpty) {
-          if (axis.isCategoryAxis || i != maxCount - 1) {
-            labelStyle.draw(canvas, paint, label.text!, label.textConfig);
-          }
+        var labelStyle = label.textConfig.style;
+        if (labelStyle.show && (axis.isCategoryAxis || i != maxCount - 1)) {
+          label.textConfig.draw(canvas, paint);
         }
 
-        if (b2 && label.minorLabel.isNotEmpty) {
+        if (label.minorLabel.isNotEmpty && label.minorLabel.first.textConfig.style.show) {
           each(label.minorLabel, (ml, i) {
-            if (ml.text != null && ml.text!.isNotEmpty) {
-              minorStyle.draw(canvas, paint, ml.text!, ml.textConfig);
-            }
+            ml.textConfig.draw(canvas, paint);
           });
         }
       });
     }
   }
+
+  final TextDraw _axisPointerTD = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
 
   @override
   void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
@@ -373,11 +369,21 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
     ///绘制 数据
     dis = ol.last.distance2(ol.first);
-    DynamicText dt = formatData(scale.toData(dis));
+    var dt = formatData(scale.toData(dis));
     num angle = offset.angle(attrs.center);
-    Offset o = circlePoint(attrs.radius.last, angle, attrs.center);
-    TextDrawInfo config = TextDrawInfo(o, align: toAlignment(angle, axis.axisLabel.inside));
-    axisPointer.labelStyle.draw(canvas, paint, dt, config);
+    var o = circlePoint(attrs.radius.last, angle, attrs.center);
+
+    if (_axisPointerTD.text != dt ||
+        _axisPointerTD.offset != o ||
+        _axisPointerTD.align != toAlignment(angle, axis.axisLabel.inside)) {
+      _axisPointerTD.updatePainter(
+        offset: o,
+        text: dt,
+        style: axisPointer.labelStyle,
+        align: toAlignment(angle, axis.axisLabel.inside),
+      );
+    }
+    _axisPointerTD.draw(canvas, paint);
   }
 
   ///将一个"Y轴数据" 转换到角度范围

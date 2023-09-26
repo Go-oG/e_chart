@@ -11,7 +11,8 @@ class TreeMapSeries extends RectSeries {
   //表示展示几层，从当前层次开始计算
   // 如果<=0 则展示全部
   int showDepth;
-  Fun2<TreeMapNode, AreaStyle?> areaStyleFun;
+  Fun2<TreeMapNode, AreaStyle?>? itemStyleFun;
+  Fun2<TreeMapNode, LineStyle?>? borderStyleFun;
   Fun2<TreeMapNode, LabelStyle?>? labelStyleFun;
 
   ///标签文字对齐位置
@@ -36,6 +37,8 @@ class TreeMapSeries extends RectSeries {
   TreeMapSeries(
     this.data, {
     this.labelStyleFun,
+    this.itemStyleFun,
+    this.borderStyleFun,
     TreemapLayout? layout,
     this.showDepth = 2,
     this.alignFun,
@@ -46,7 +49,6 @@ class TreeMapSeries extends RectSeries {
     this.paddingRight,
     this.paddingBottom,
     this.onClick,
-    required this.areaStyleFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -95,4 +97,20 @@ class TreeMapSeries extends RectSeries {
 
   @override
   SeriesType get seriesType => SeriesType.treemap;
+
+  LabelStyle getLabelStyle(Context context, TreeMapNode node) {
+    return labelStyleFun?.call(node) ?? LabelStyle.empty;
+  }
+
+  AreaStyle getAreaStyle(Context context, TreeMapNode node) {
+    if (itemStyleFun != null) {
+      return itemStyleFun?.call(node) ?? AreaStyle.empty;
+    }
+    return context.option.theme.getAreaStyle(node.dataIndex).convert(node.status);
+  }
+
+  LineStyle getBorderStyle(Context context, TreeMapNode node) {
+    return borderStyleFun?.call(node) ?? LineStyle.empty;
+  }
+
 }

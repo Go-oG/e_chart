@@ -11,10 +11,72 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
     super.deep,
     super.groupIndex,
     super.value,
-  }) : super(parent, data, dataIndex, SunburstAttr.zero(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+  }) : super(parent, data, dataIndex, SunburstAttr.zero(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty) {
+    label.text = data.name ?? DynamicText.empty;
+  }
 
   void updateTextPosition(SunburstSeries series) {
-    attr._updateTextPosition(series, this);
+    label.updatePainter();
+    if (label.notDraw) {
+      return;
+    }
+    var arc = attr.arc;
+    label.updatePainter(maxWidth: (arc.outRadius - arc.innerRadius).toDouble());
+
+    Size size = label.getSize();
+    double labelMargin = series.labelMarginFun?.call(this) ?? 0;
+    if (labelMargin > 0) {
+      size = Size(size.width + labelMargin, size.height);
+    }
+
+    var originAngle = arc.startAngle + arc.sweepAngle / 2;
+
+    var dx = m.cos(originAngle * Constants.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
+    var dy = m.sin(originAngle * Constants.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
+    var align = series.labelAlignFun?.call(this) ?? Align2.start;
+    if (align == Align2.start) {
+      dx = m.cos(originAngle * Constants.angleUnit) * (arc.innerRadius + size.width / 2);
+      dy = m.sin(originAngle * Constants.angleUnit) * (arc.innerRadius + size.width / 2);
+    } else if (align == Align2.end) {
+      dx = m.cos(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
+      dy = m.sin(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
+    }
+    var textPosition = Offset(dx, dy);
+    double rotateMode = series.rotateFun?.call(this) ?? -1;
+    double rotateAngle = 0;
+
+    if (rotateMode <= -2) {
+      ///切向
+      if (originAngle >= 360) {
+        originAngle = originAngle % 360;
+      }
+      if (originAngle >= 0 && originAngle < 90) {
+        rotateAngle = originAngle % 90;
+      } else if (originAngle >= 90 && originAngle < 270) {
+        rotateAngle = originAngle - 180;
+      } else {
+        rotateAngle = originAngle - 360;
+      }
+    } else if (rotateMode <= -1) {
+      ///径向
+      if (originAngle >= 360) {
+        originAngle = originAngle % 360;
+      }
+      if (originAngle >= 0 && originAngle < 180) {
+        rotateAngle = originAngle - 90;
+      } else {
+        rotateAngle = originAngle - 270;
+      }
+    } else if (rotateMode > 0) {
+      rotateAngle = rotateMode;
+    }
+
+    label.updatePainter(
+      rotate: rotateAngle,
+      offset: textPosition,
+      align: Alignment.center,
+      maxWidth: (arc.outRadius - arc.innerRadius).toDouble(),
+    );
   }
 
   @override
@@ -26,32 +88,14 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
   void onDraw(CCanvas canvas, Paint paint) {
     itemStyle.drawArc(canvas, paint, attr.arc);
     borderStyle.drawPath(canvas, paint, attr.arc.toPath());
-    labelStyle.draw(canvas, paint, "D$deep:${data.value}".toText(), TextDrawInfo(attr.arc.centroid()));
-    // _drawText(canvas, paint);
-  }
-
-  void _drawText(CCanvas canvas, Paint paint) {
-    Arc arc = attr.arc;
-    var style = labelStyle;
-    var label = data.name;
-    var config = labelConfig;
-    if (config == null || label == null || label.isEmpty || !style.show || arc.sweepAngle.abs() <= style.minAngle) {
-      return;
-    }
-    style.draw(canvas, paint, label, config);
-    // TextDrawInfo config = TextDrawInfo(
-    //   node.attr.textPosition,
-    //   align: Alignment.center,
-    //   maxWidth: arc.outRadius - arc.innerRadius,
-    //   rotate: node.attr.textRotateAngle,
-    // );
+    label.draw(canvas, paint);
   }
 
   @override
   void updateStyle(Context context, covariant SunburstSeries series) {
     itemStyle = series.getAreaStyle(context, this);
     borderStyle = series.getBorderStyle(context, this);
-    labelStyle = series.getLabelStyle(context, this);
+    label.updatePainter(style: series.getLabelStyle(context, this));
   }
 
   @override
@@ -82,72 +126,11 @@ class SunburstAttr {
   static final SunburstAttr empty = SunburstAttr(Arc());
   Arc arc;
 
-  SunburstAttr(this.arc, {this.textPosition = Offset.zero, this.textRotateAngle = 0, this.alpha = 1});
+  SunburstAttr(this.arc, {this.alpha = 1});
 
   SunburstAttr.zero() : arc = Arc();
 
-  Offset textPosition = Offset.zero;
-  double textRotateAngle = 0;
   double alpha = 1;
-
-  /// 更新绘制相关的Path
-  void _updateTextPosition(SunburstSeries series, SunburstNode node) {
-    textPosition = Offset.zero;
-    LabelStyle? style = series.labelStyleFun?.call(node);
-    if (style == null) {
-      return;
-    }
-    double originAngle = arc.startAngle + arc.sweepAngle / 2;
-    Size size = style.measure(node.data.name!, maxWidth: arc.outRadius - arc.innerRadius);
-    double labelMargin = series.labelMarginFun?.call(node) ?? 0;
-    if (labelMargin > 0) {
-      size = Size(size.width + labelMargin, size.height);
-    }
-
-    double dx = m.cos(originAngle * Constants.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
-    double dy = m.sin(originAngle * Constants.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
-    Align2 align = series.labelAlignFun?.call(node) ?? Align2.start;
-    if (align == Align2.start) {
-      dx = m.cos(originAngle * Constants.angleUnit) * (arc.innerRadius + size.width / 2);
-      dy = m.sin(originAngle * Constants.angleUnit) * (arc.innerRadius + size.width / 2);
-    } else if (align == Align2.end) {
-      dx = m.cos(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
-      dy = m.sin(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
-    }
-    textPosition = Offset(dx, dy);
-
-    double rotateMode = series.rotateFun?.call(node) ?? -1;
-    double rotateAngle = 0;
-
-    if (rotateMode <= -2) {
-      ///切向
-      if (originAngle >= 360) {
-        originAngle = originAngle % 360;
-      }
-      if (originAngle >= 0 && originAngle < 90) {
-        rotateAngle = originAngle % 90;
-      } else if (originAngle >= 90 && originAngle < 270) {
-        rotateAngle = originAngle - 180;
-      } else {
-        rotateAngle = originAngle - 360;
-      }
-    } else if (rotateMode <= -1) {
-      ///径向
-      if (originAngle >= 360) {
-        originAngle = originAngle % 360;
-      }
-      if (originAngle >= 0 && originAngle < 180) {
-        rotateAngle = originAngle - 90;
-      } else {
-        rotateAngle = originAngle - 270;
-      }
-    } else if (rotateMode > 0) {
-      rotateAngle = rotateMode;
-    }
-    textRotateAngle = rotateAngle;
-  }
-
-
 
   @override
   String toString() {

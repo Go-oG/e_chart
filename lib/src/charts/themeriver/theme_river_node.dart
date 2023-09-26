@@ -10,7 +10,9 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
     super.itemStyle,
     super.borderStyle,
     super.labelStyle,
-  );
+  ) {
+    label.text = data.name ?? DynamicText.empty;
+  }
 
   void update(List<Offset> pList, List<Offset> pList2, num smooth, Direction direction) {
     Area area;
@@ -26,15 +28,14 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
 
     Offset o1 = polygonList.first;
     Offset o2 = polygonList.last;
-    TextDrawInfo config;
     if (direction == Direction.horizontal) {
       Offset offset = Offset(o1.dx, (o1.dy + o2.dy) * 0.5);
-      config = TextDrawInfo(offset, align: Alignment.centerLeft);
+      label.updatePainter(offset: offset, align: Alignment.centerLeft);
     } else {
       Offset offset = Offset((o1.dx + o2.dx) / 2, o1.dy);
-      config = TextDrawInfo(offset, align: Alignment.topCenter);
+      label.updatePainter(offset: offset, align: Alignment.topCenter);
     }
-    attr = ThemeRiverAttr(polygonList, area, config);
+    attr = ThemeRiverAttr(polygonList, area);
   }
 
   Path get drawPath => attr.area.toPath();
@@ -49,28 +50,23 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
     var path = attr.area.toPath();
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path);
-    var label = data.name;
-    var config = attr.textConfig;
-    if (config == null || label == null || label.isEmpty) {
-      return;
-    }
-    labelStyle.draw(canvas, paint, label, config);
+    label.draw(canvas, paint);
   }
 
   @override
   void updateStyle(Context context, covariant ThemeRiverSeries series) {
-    itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    itemStyle = series.getAreaStyle(context, data, dataIndex, status);
+    borderStyle = series.getBorderStyle(context, data, dataIndex, status);
+    var s = series.getLabelStyle(context, data, dataIndex, status);
+    label.updatePainter(style: s);
   }
 }
 
 class ThemeRiverAttr {
-  static final empty = ThemeRiverAttr([], Area([], []), null);
+  static final empty = ThemeRiverAttr([], Area([], []));
   final List<Offset> polygonList;
   final Area area;
-  final TextDrawInfo? textConfig;
   int index = 0;
 
-  ThemeRiverAttr(this.polygonList, this.area, this.textConfig);
+  ThemeRiverAttr(this.polygonList, this.area);
 }

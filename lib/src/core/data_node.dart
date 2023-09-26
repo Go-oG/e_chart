@@ -18,14 +18,12 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
 
   ///绘制顺序(从小到到绘制，最大的最后绘制)
   int drawIndex = 0;
+  TextDraw label = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
 
-  DynamicText label = DynamicText.empty;
-  TextDrawInfo? labelConfig;
   List<Offset> labelLine = [];
 
   late AreaStyle itemStyle;
   late LineStyle borderStyle;
-  late LabelStyle labelStyle;
 
   DataNode(
     this.data,
@@ -34,15 +32,16 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
     P attr,
     this.itemStyle,
     this.borderStyle,
-    this.labelStyle,
+    LabelStyle labelStyle,
   ) {
     _attr = attr;
+    label.style = labelStyle;
   }
 
   DataNode.empty(this.data, this.dataIndex, this.groupIndex, P attr) {
     itemStyle = AreaStyle.empty;
     borderStyle = LineStyle.empty;
-    labelStyle = LabelStyle.empty;
+    label.style = LabelStyle.empty;
     _attr = attr;
   }
 
@@ -63,7 +62,7 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   bool contains(Offset offset);
 
   NodeAttr toAttr() {
-    return NodeAttr(attr, drawIndex, label, labelConfig, labelLine, itemStyle, borderStyle, labelStyle, 1);
+    return NodeAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, 1);
   }
 
   void updateStyle(Context context, covariant ChartSeries series);
@@ -86,7 +85,15 @@ abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
     int groupIndex,
     P attr,
     LabelStyle labelStyle,
-  ) : super(data, dataIndex, groupIndex, attr, symbol.itemStyle, symbol.borderStyle, labelStyle) {
+  ) : super(
+          data,
+          dataIndex,
+          groupIndex,
+          attr,
+          symbol.itemStyle,
+          symbol.borderStyle,
+          labelStyle,
+        ) {
     _symbol = symbol;
   }
 
@@ -115,7 +122,7 @@ abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
 
   @override
   NodeAttr toAttr() {
-    return NodeAttr(attr, drawIndex, label, labelConfig, labelLine, itemStyle, borderStyle, labelStyle, symbol.scale);
+    return NodeAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, symbol.scale);
   }
 }
 
@@ -141,23 +148,19 @@ class SymbolNode<T> with ViewStateProvider, ExtProps {
 class NodeAttr {
   final dynamic attr;
   final int drawIndex;
-  final DynamicText? label;
-  final TextDrawInfo? labelConfig;
+  final TextDraw label;
   final List<Offset>? labelLine;
   final AreaStyle itemStyle;
   final LineStyle borderStyle;
-  final LabelStyle labelStyle;
   final double symbolScale;
 
   const NodeAttr(
     this.attr,
     this.drawIndex,
     this.label,
-    this.labelConfig,
     this.labelLine,
     this.itemStyle,
     this.borderStyle,
-    this.labelStyle,
     this.symbolScale,
   );
 }

@@ -9,6 +9,8 @@ class MarkPoint {
   LabelStyle? labelStyle;
   int precision; //精度
 
+  late TextDraw _label;
+
   MarkPoint(
     this.data, {
     ChartSymbol? symbol,
@@ -19,13 +21,15 @@ class MarkPoint {
     if (symbol != null) {
       this.symbol = symbol;
     }
+    _label = TextDraw(DynamicText.empty, labelStyle ?? LabelStyle(), Offset.zero);
   }
 
   void draw(CCanvas canvas, Paint paint, Offset offset, [DynamicText? text]) {
     symbol.draw(canvas, paint, offset);
-    if (text != null && text.isNotEmpty) {
-      labelStyle?.draw(canvas, paint, text, TextDrawInfo(offset));
+    if (_label.text != text && _label.offset != offset) {
+      _label.updatePainter(text: text ?? DynamicText.empty, offset: offset);
     }
+    _label.draw(canvas, paint);
   }
 }
 

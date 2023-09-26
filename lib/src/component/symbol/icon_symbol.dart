@@ -6,6 +6,8 @@ class IconSymbol extends ChartSymbol {
   final Icon icon;
   late final LabelStyle style;
 
+  late TextDraw _label;
+
   IconSymbol(this.icon) {
     IconData data = icon.icon!;
     double? iconSize = icon.size ?? 8;
@@ -29,6 +31,7 @@ class IconSymbol extends ChartSymbol {
       shadows: iconShadows,
     );
     style = LabelStyle(textStyle: textStyle, lineMargin: 0);
+    _label = TextDraw(DynamicText(String.fromCharCode(icon.icon!.codePoint)), style, Offset.zero);
   }
 
   @override
@@ -45,13 +48,12 @@ class IconSymbol extends ChartSymbol {
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    TextDrawInfo config = TextDrawInfo(Offset.zero, align: Alignment.center);
-    style.draw(canvas, paint, DynamicText(String.fromCharCode(icon.icon!.codePoint)), config);
+    _label.draw(canvas, paint);
   }
 
   @override
   ChartSymbol lerp(covariant ChartSymbol end, double t) {
-    throw ChartError("not Support");
+    return end;
   }
 
   @override

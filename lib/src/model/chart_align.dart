@@ -8,10 +8,9 @@ class ChartAlign {
 
   const ChartAlign({this.align = Alignment.center, this.inside = true});
 
-  TextDrawInfo convert(Rect rect, LabelStyle style, Direction direction) {
+  void fill(TextDraw textDraw, Rect rect, LabelStyle style, Direction direction) {
     double x = rect.center.dx + align.x * rect.width / 2;
     double y = rect.center.dy + align.y * rect.height / 2;
-
     if (!inside) {
       double lineWidth = (style.guideLine?.length ?? 0).toDouble();
       List<num> lineGap = (style.guideLine?.gap ?? [0, 0]);
@@ -28,13 +27,14 @@ class ChartAlign {
     if (!inside) {
       textAlign = Alignment(-textAlign.x, -textAlign.y);
     }
-    return TextDrawInfo(offset, align: textAlign);
+    textDraw.updatePainter(style: style, offset: offset, align: textAlign);
   }
 
-  TextDrawInfo convert2(Arc arc, LabelStyle style, Direction direction) {
+  void fill2(TextDraw draw, Arc arc, LabelStyle style, Direction direction) {
     var angle = (arc.startAngle + arc.sweepAngle / 2) + align.x * arc.sweepAngle.abs();
     num diff = arc.outRadius - arc.innerRadius;
     var radius = (arc.innerRadius + diff / 2) + align.y * diff;
-    return TextDrawInfo(circlePoint(radius, angle, arc.center), align: Alignment.center);
+    draw.updatePainter(offset: circlePoint(radius, angle, arc.center), align: Alignment.center);
   }
+
 }

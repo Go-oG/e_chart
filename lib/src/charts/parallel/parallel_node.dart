@@ -52,7 +52,7 @@ class ParallelNode extends DataNode<ParallelAttr, ParallelGroup> {
   void updateStyle(Context context, ParallelSeries series) {
     itemStyle = AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    label.style = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
   }
 }
 

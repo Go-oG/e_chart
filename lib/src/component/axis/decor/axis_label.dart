@@ -47,28 +47,28 @@ class AxisLabel {
     }
   }
 
-  LabelStyle? getLabelStyle(int index, int maxIndex, AxisTheme theme) {
+  LabelStyle getLabelStyle(int index, int maxIndex, AxisTheme theme) {
     if (styleFun != null) {
-      return styleFun?.call(index, maxIndex);
+      return styleFun?.call(index, maxIndex)??LabelStyle.empty;
     }
     if (style != null) {
-      return style;
+      return style!;
     }
     if (!theme.showLabel) {
-      return null;
+      return LabelStyle.empty;
     }
     return LabelStyle(textStyle: TextStyle(color: theme.labelColor, fontSize: theme.labelSize.toDouble()));
   }
 
-  LabelStyle? getMinorLabelStyle(int index, int maxIndex, AxisTheme theme) {
+  LabelStyle getMinorLabelStyle(int index, int maxIndex, AxisTheme theme) {
     if (minorStyleFun != null) {
-      return styleFun?.call(index, maxIndex);
+      return minorStyleFun?.call(index, maxIndex)??LabelStyle.empty;
     }
     if (minorStyle != null) {
-      return style;
+      return minorStyle!;
     }
     if (!theme.showLabel) {
-      return null;
+      return LabelStyle.empty;
     }
     return LabelStyle(textStyle: TextStyle(color: theme.minorLabelColor, fontSize: theme.minorLabelSize.toDouble()));
   }

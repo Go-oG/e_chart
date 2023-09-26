@@ -95,6 +95,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       _layoutHorizontal(nodeList, itemSize);
     }
     for (var node in nodeList) {
+      node.updateTextPosition(context, series);
       node.updateStyle(context, series);
     }
   }
@@ -219,10 +220,10 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
         var node = diff.node;
         var startAttr = diff.startAttr;
         var endAttr = diff.endAttr;
-        var s = startAttr.labelConfig?.scaleFactor ?? 1;
+        var s = startAttr.label.scaleFactor;
         var e = diff.old ? 1 : 1.1;
         node.itemStyle = AreaStyle.lerp(startAttr.itemStyle, endAttr.itemStyle, t);
-        node.labelConfig?.scaleFactor = lerpDouble(s, e, t)!;
+        node.label.scaleFactor = lerpDouble(s, e, t)!;
       }
       notifyLayoutUpdate();
     });

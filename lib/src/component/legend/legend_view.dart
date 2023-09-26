@@ -27,9 +27,9 @@ class LegendComponent extends FlexLayout {
       }
     }
     for (var item in dataList) {
-      var style=item.textStyle;
-      if(style==null||!style.show){
-        item.textStyle= context.option.theme.subTitle.getStyle();
+      var style = item.textStyle;
+      if (style == null || !style.show) {
+        item.textStyle = context.option.theme.subTitle.getStyle();
       }
       addView(LegendItemView(legend, item));
     }
@@ -119,12 +119,14 @@ class LegendComponent extends FlexLayout {
 class LegendItemView extends GestureView with ViewStateProvider {
   final Legend legend;
   final LegendItem item;
-
   LabelStyle labelStyle = LabelStyle.empty;
 
   LegendItemView(this.legend, this.item) {
     labelStyle = item.textStyle ?? LabelStyle.empty;
   }
+
+  Offset symbolOffset = Offset.zero;
+  TextDraw? label;
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
@@ -146,35 +148,48 @@ class LegendItemView extends GestureView with ViewStateProvider {
   }
 
   @override
+  void onLayout(double left, double top, double right, double bottom) {
+    super.onLayout(left, top, right, bottom);
+    label = null;
+    var p = legend.labelPosition;
+    var symbolSize = item.symbol.size;
+    if (p == Position.left) {
+      Offset o = Offset(0, height / 2);
+      label = TextDraw(item.name, labelStyle, o, align: Alignment.centerLeft);
+      var s = label!.getSize();
+      symbolOffset = Offset(s.width + item.gap + symbolSize.width / 2, height / 2);
+      return;
+    }
+    if (p == Position.right) {
+      symbolOffset = Offset(symbolSize.width / 2, height / 2);
+      Offset o = Offset(symbolSize.width + item.gap, height / 2);
+      label = TextDraw(item.name, labelStyle, o, align: Alignment.centerLeft);
+      return;
+    }
+    if (p == Position.top) {
+      Offset o = Offset(width / 2, 0);
+      label = TextDraw(item.name, labelStyle, o, align: Alignment.topCenter);
+      Size s = label!.getSize();
+      symbolOffset = Offset(width / 2, s.height + item.gap + symbolSize.height / 2);
+      return;
+    }
+
+    if (p == Position.bottom) {
+      symbolOffset = Offset(width / 2, height - symbolSize.height / 2);
+      Offset o = Offset(width / 2, height - symbolSize.height);
+      label = TextDraw(item.name, labelStyle, o, align: Alignment.bottomCenter);
+      return;
+    }
+    symbolOffset = Offset(width / 2, height / 2);
+    label = TextDraw(item.name, labelStyle, symbolOffset, align: Alignment.center);
+  }
+
+  @override
   void onDraw(CCanvas canvas) {
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
-    var p = legend.labelPosition;
-    Size symbolSize = item.symbol.size;
-    LabelStyle textStyle = labelStyle;
-    if (p == Position.left) {
-      Offset o = Offset(0, height / 2);
-      var s = labelStyle.draw(canvas, mPaint, item.name, TextDrawInfo(o, align: Alignment.centerLeft));
-      o = Offset(s.width + item.gap + symbolSize.width / 2, height / 2);
-      item.symbol.draw(canvas, mPaint, o);
-    } else if (p == Position.right) {
-      item.symbol.draw(canvas, mPaint, Offset(symbolSize.width / 2, height / 2));
-      Offset o = Offset(symbolSize.width + item.gap, height / 2);
-      textStyle.draw(canvas, mPaint, item.name, TextDrawInfo(o, align: Alignment.centerLeft));
-    } else if (p == Position.top) {
-      Offset o = Offset(width / 2, 0);
-      Size s = textStyle.draw(canvas, mPaint, item.name, TextDrawInfo(o, align: Alignment.topCenter));
-      o = Offset(width / 2, s.height + item.gap + symbolSize.height / 2);
-      item.symbol.draw(canvas, mPaint, o);
-    } else if (p == Position.bottom) {
-      item.symbol.draw(canvas, mPaint, Offset(width / 2, height - symbolSize.height / 2));
-      Offset o = Offset(width / 2, height - symbolSize.height);
-      textStyle.draw(canvas, mPaint, item.name, TextDrawInfo(o, align: Alignment.bottomCenter));
-    } else {
-      Offset o = Offset(width / 2, height / 2);
-      item.symbol.draw(canvas, mPaint, o);
-      textStyle.draw(canvas, mPaint, item.name, TextDrawInfo(o, align: Alignment.center));
-    }
+    item.symbol.draw(canvas, mPaint, symbolOffset);
+    label?.draw(canvas, mPaint);
     canvas.restore();
   }
 

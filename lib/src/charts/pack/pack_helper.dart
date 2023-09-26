@@ -58,10 +58,10 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
     ///计算文字位置
     int c = 0;
     root.each((node, p1, p2) {
-      node.labelConfig = null;
       double r = node.r;
-      node.labelConfig = TextDrawInfo(
-        node.center,
+      node.label.updatePainter(
+        text: node.data.name??DynamicText.empty,
+        offset: node.center,
         align: Alignment.center,
         maxWidth: r * 2 * 0.98,
         maxLines: 1,
@@ -135,11 +135,11 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
     double ntx = width / 2 - newScale * pn.x;
     double nty = height / 2 - newScale * pn.y;
 
-    if(newScale==oldScale&&ntx==oldTx&&nty==oldTy){
+    if (newScale == oldScale && ntx == oldTx && nty == oldTy) {
       return;
     }
 
-    var animation = getAnimation(LayoutType.update,-1);
+    var animation = getAnimation(LayoutType.update, -1);
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       view.scaleX = view.scaleY = newScale;
       view.translationX = ntx;
@@ -177,7 +177,7 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
       }
       return true;
     }, false);
-    showNodeList=nodeList;
+    showNodeList = nodeList;
   }
 
   @override
@@ -230,7 +230,6 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
     }
     return false;
   }
-
 }
 
 double _defaultRadius(PackNode d) {

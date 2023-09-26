@@ -39,7 +39,5 @@ export 'optimun.dart';
 export 'range.dart';
 export 'range_info.dart';
 export 'string_number.dart';
-export 'text_info.dart';
 export 'tree_data.dart';
-
 export 'node/tree_node.dart';

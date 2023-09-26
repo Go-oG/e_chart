@@ -82,7 +82,8 @@ class RadarGroupNode extends DataNode<Path, GroupData> {
   void updateStyle(Context context, covariant RadarSeries series) {
     itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
     borderStyle = series.getLineStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    labelStyle = LabelStyle.empty;
+    label.style=LabelStyle.empty;
+    label.updatePainter();
   }
 }
 

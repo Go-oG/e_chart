@@ -104,7 +104,7 @@ class SankeySeries extends RectSeries {
     return AreaStyle(color: Colors.grey.withOpacity(0.5));
   }
 
-  LineStyle? getLinkBorderStyle(
+  LineStyle getLinkBorderStyle(
     Context context,
     BaseItemData sourceData,
     int sourceIndex,
@@ -117,10 +117,10 @@ class SankeySeries extends RectSeries {
     if (fun != null) {
       return fun.call(sourceData, sourceIndex, targetData, targetIndex, index, status);
     }
-    return null;
+    return LineStyle.empty;
   }
 
-  LabelStyle? getLinkLabelStyle(
+  LabelStyle getLinkLabelStyle(
     Context context,
     BaseItemData sourceData,
     int sourceIndex,
@@ -133,7 +133,7 @@ class SankeySeries extends RectSeries {
     if (fun != null) {
       return fun.call(sourceData, sourceIndex, targetData, targetIndex, index, status);
     }
-    return context.option.theme.getLabelStyle();
+    return context.option.theme.getLabelStyle()??LabelStyle.empty;
   }
 
   @override

@@ -50,7 +50,8 @@ class SankeyNode extends DataNode<Rect, BaseItemData> {
   void updateStyle(Context context, SankeySeries series) {
     itemStyle = series.getItemStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    var style = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    label.updatePainter(style: style);
   }
 }
 
@@ -103,11 +104,10 @@ class SankeyLink extends DataNode<Area, Pair<SankeyNode>> {
     itemStyle =
         series.getLinkStyle(context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status);
     borderStyle = series.getLinkBorderStyle(
-            context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status) ??
-        LineStyle.empty;
-    labelStyle = series.getLinkLabelStyle(
-            context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status) ??
-        LabelStyle.empty;
+        context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status);
+    var s = series.getLinkLabelStyle(
+        context, source.data, source.dataIndex, target.data, target.dataIndex, dataIndex, status);
+    label.updatePainter(style: s);
   }
 
   @override

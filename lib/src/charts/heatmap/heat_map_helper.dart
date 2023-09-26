@@ -1,10 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
+import 'package:scidart/numdart.dart';
 
 import 'heat_map_node.dart';
 
 class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
-  HeatMapHelper(super.context,super.view, super.series);
+  HeatMapHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
@@ -60,7 +61,14 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
         throw ChartError('无法布局 $gridLayout  $calendarLayout');
       }
       node.attr = rect;
+      //文字
+      var label = data.name;
+      if (label != null) {
+        node.label = TextDraw(label, LabelStyle.empty, TextDraw.offsetByRect(node.attr, node.labelAlign),
+            align: TextDraw.alignConvert(node.labelAlign));
+      } else {
+        node.label = TextDraw.empty;
+      }
     }
   }
-
 }

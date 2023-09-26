@@ -42,6 +42,10 @@ class TreeSeries extends RectSeries {
   LineStyle getLinkStyle(Context context, TreeLayoutNode source, TreeLayoutNode target) {
     return linkStyleFun.call(source, target);
   }
+  LabelStyle getLabelStyle(Context context, TreeLayoutNode source) {
+    return labelStyleFun?.call(source)??LabelStyle.empty;
+  }
+
 
   @override
   List<LegendItem> getLegendItem(Context context) => [];

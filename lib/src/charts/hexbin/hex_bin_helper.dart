@@ -39,7 +39,7 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
     each(newList, (node, i) {
       var center = hexToPixel(_zeroCenter, node.attr.hex, size);
       node.attr.center = center;
-      node.labelConfig = TextDrawInfo(center, textAlign: TextAlign.center);
+      node.label.updatePainter(offset: center,textAlign: TextAlign.center);
       var s = PositiveSymbol(
           r: series.radius, count: 6, fixRotate: 0, itemStyle: AreaStyle.empty, borderStyle: LineStyle.empty);
       s.rotate = angleOffset;

@@ -41,7 +41,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   BaseScale onBuildScale(L attrs, List<dynamic> dataSet);
 
-  TextDrawInfo onLayoutAxisName();
+  TextDraw onLayoutAxisName();
 
   void debugDraw(Canvas canvas, Offset offset, {Color color = Colors.deepPurple, bool fill = true, num r = 6}) {
     if (!kDebugMode) {
@@ -84,7 +84,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     if (name == null || name.isEmpty) {
       return;
     }
-    axis.axisName?.labelStyle.draw(canvas, paint, name, titleNode.config);
+    titleNode.config.draw(canvas, paint);
   }
 
   void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {}

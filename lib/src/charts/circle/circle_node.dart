@@ -7,7 +7,14 @@ class CircleNode extends DataNode<Arc, CircleItemData> {
   Arc backgroundArc = Arc();
 
   CircleNode(
-      super.data, super.dataIndex, super.groupIndex, super.attr, super.itemStyle, super.borderStyle, super.labelStyle);
+    super.data,
+    super.dataIndex,
+    super.groupIndex,
+    super.attr,
+    super.itemStyle,
+    super.borderStyle,
+    super.labelStyle,
+  );
 
   @override
   bool contains(Offset offset) {
@@ -16,8 +23,8 @@ class CircleNode extends DataNode<Arc, CircleItemData> {
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    backgroundStyle.drawArc(canvas, paint, backgroundArc,true);
-    itemStyle.drawArc(canvas, paint, attr,true);
+    backgroundStyle.drawArc(canvas, paint, backgroundArc, true);
+    itemStyle.drawArc(canvas, paint, attr, true);
     borderStyle.drawPath(canvas, paint, attr.toPath());
   }
 
@@ -32,6 +39,6 @@ class CircleNode extends DataNode<Arc, CircleItemData> {
   void updateStyle(Context context, covariant CircleSeries series) {
     itemStyle = series.getAreaStyle(context, data, dataIndex, status);
     borderStyle = series.getBorderStyle(context, data, dataIndex, status);
-    labelStyle = series.getLabelStyle(context, data, dataIndex, status);
+    label.style = series.getLabelStyle(context, data, dataIndex, status);
   }
 }

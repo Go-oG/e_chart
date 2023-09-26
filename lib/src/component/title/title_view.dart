@@ -5,20 +5,23 @@ class TitleView extends ChartView {
   DynamicText title;
   LabelStyle style;
 
-  TitleView(this.title, this.style);
+  late TextDraw label;
+
+  TitleView(this.title, this.style) {
+    label = TextDraw(title, style, Offset.zero, align: Alignment.topLeft);
+  }
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
     if (title.isEmpty) {
       return Size.zero;
     }
-    Size size= title.getTextSize(style.textStyle);
+    Size size = title.getTextSize(style.textStyle);
     return size;
   }
 
   @override
   void onDraw(CCanvas canvas) {
-    var option = TextDrawInfo(Offset.zero, align: Alignment.topLeft);
-    style.draw(canvas, mPaint, title, option);
+    label.draw(canvas, mPaint);
   }
 }

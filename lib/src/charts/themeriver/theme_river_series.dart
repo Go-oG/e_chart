@@ -38,7 +38,7 @@ class ThemeRiverSeries extends RectSeries {
   @override
   SeriesType get seriesType => SeriesType.themeriver;
 
-  AreaStyle? getAreaStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+  AreaStyle getAreaStyle(Context context, GroupData data, int index, Set<ViewState> status) {
     if (areaStyleFun != null) {
       return areaStyleFun!.call(data, index, status);
     }
@@ -46,19 +46,19 @@ class ThemeRiverSeries extends RectSeries {
     return AreaStyle(color: theme.colors[index % theme.colors.length]).convert(status);
   }
 
-  LineStyle? getBorderStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+  LineStyle getBorderStyle(Context context, GroupData data, int index, Set<ViewState> status) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, index, status);
+      return borderStyleFun!.call(data, index, status)??LineStyle.empty;
     }
-    return null;
+    return LineStyle.empty;
   }
 
-  LabelStyle? getLabelStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+  LabelStyle getLabelStyle(Context context, GroupData data, int index, Set<ViewState> status) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, index, status);
+      return labelStyleFun!.call(data, index, status)??LabelStyle.empty;
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle();
+    return theme.getLabelStyle()??LabelStyle.empty;
   }
 
   @override

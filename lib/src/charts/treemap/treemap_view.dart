@@ -103,18 +103,14 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
     canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
     canvas.translate(tx, ty);
     for (var c in drawList) {
-      _drawNode(canvas, c);
+      c.onDraw(canvas, mPaint);
     }
     canvas.restore();
   }
 
   void _drawNode(CCanvas canvas, TreeMapNode node) {
-    AreaStyle? style = series.areaStyleFun.call(node);
-    if (style == null) {
-      return;
-    }
     Rect rect = node.attr;
-    style.drawRect(canvas, mPaint, rect);
+   // style.drawRect(canvas, mPaint, rect);
     DynamicText label = node.data.name ?? DynamicText.empty;
     if (label.isEmpty) {
       return;
@@ -137,7 +133,9 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
     double x = rect.center.dx + align.x * rect.width / 2;
     double y = rect.center.dy + align.y * rect.height / 2;
 
-    TextDrawInfo config = TextDrawInfo(
+    var config = TextDraw(
+      DynamicText.empty,
+      LabelStyle.empty,
       Offset(x, y),
       maxWidth: rect.width * 0.8,
       maxHeight: rect.height * 0.8,
@@ -147,7 +145,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
       ignoreOverText: true,
     );
 
-    labelStyle.draw(canvas, mPaint, label, config);
+   // labelStyle.draw(canvas, mPaint, label, config);
   }
 
   ///处理点击事件

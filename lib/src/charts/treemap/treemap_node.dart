@@ -17,6 +17,7 @@ class TreeMapNode extends TreeNode<TreeData, Rect, TreeMapNode> {
     super.value,
   }) {
     setExpand(false, false);
+    label.text = data.name ?? DynamicText.empty;
   }
 
   ///计算面积比
@@ -45,20 +46,14 @@ class TreeMapNode extends TreeNode<TreeData, Rect, TreeMapNode> {
   void onDraw(CCanvas canvas, Paint paint) {
     Rect rect = attr;
     itemStyle.drawRect(canvas, paint, rect);
-    var label = data.name;
-    var config = labelConfig;
-    var ls = labelStyle;
-    if (label == null || label.isNotEmpty || config == null || !ls.show) {
-      return;
-    }
-
-    if (rect.height < (ls.textStyle.fontSize ?? 0)) {
-      return;
-    }
-    if (rect.width < (ls.textStyle.fontSize ?? 0) * 2) {
-      return;
-    }
-    ls.draw(canvas, paint, label, config);
+    label.draw(canvas, paint);
+    //
+    // if (rect.height < (ls.textStyle.fontSize ?? 0)) {
+    //   return;
+    // }
+    // if (rect.width < (ls.textStyle.fontSize ?? 0) * 2) {
+    //   return;
+    // }
 
     // Alignment align = series.alignFun?.call(node) ?? Alignment.topLeft;
     // double x = rect.center.dx + align.x * rect.width / 2;
@@ -76,9 +71,9 @@ class TreeMapNode extends TreeNode<TreeData, Rect, TreeMapNode> {
   }
 
   @override
-  void updateStyle(Context context, covariant ChartSeries series) {
-
+  void updateStyle(Context context, covariant TreeMapSeries series) {
+    label.updatePainter(style: series.getLabelStyle(context, this));
+    itemStyle = series.getAreaStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
   }
-
 }
-

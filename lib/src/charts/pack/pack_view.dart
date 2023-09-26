@@ -26,27 +26,19 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
 
     ///这里分开绘制是为了优化当存在textScaleFactory时文字高度计算有问题
     each(nodeList, (node, p2) {
-      var config = node.labelConfig;
-      if (config == null) {
-        return;
-      }
-      var label = node.data.name;
-      if (label == null || label.isEmpty) {
-        return;
-      }
-      var labelStyle = node.labelStyle;
-      if (!labelStyle.show) {
+      var label = node.label;
+      if (label.notDraw) {
         return;
       }
       double r = node.r;
-      if (series.optTextDraw && r * 2 * scaleX < label.length * (labelStyle.textStyle.fontSize ?? 8) * 0.5) {
+      if (series.optTextDraw && r * 2 * scaleX < label.text.length * (label.style.textStyle.fontSize ?? 8) * 0.5) {
         return;
       }
       canvas.save();
-      var dx = translationX + config.offset.dx * (scaleX - 1);
-      var dy = translationY + config.offset.dy * (scaleX - 1);
+      var dx = translationX + label.offset.dx * (scaleX - 1);
+      var dy = translationY + label.offset.dy * (scaleX - 1);
       canvas.translate(dx, dy);
-      labelStyle.draw(canvas, mPaint, label, config);
+      label.draw(canvas, mPaint);
       canvas.restore();
     });
   }

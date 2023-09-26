@@ -52,6 +52,7 @@ class PackNode extends TreeNode<TreeData, Rect, PackNode> {
   void updateStyle(Context context, covariant PackSeries series) {
     itemStyle = series.getItemStyle(context, this) ?? AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
-    labelStyle = series.getLabelStyle(context, this) ?? LabelStyle.empty;
+    label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
+    label.updatePainter();
   }
 }

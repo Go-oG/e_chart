@@ -20,9 +20,9 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
   }
 
   ///记录数据的上界和下界
-  num up=0;
+  num up = 0;
 
-  num down=0;
+  num down = 0;
 
   T? get originData => data.data;
 
@@ -63,30 +63,25 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     if (originData == null) {
       return;
     }
-    var style = labelStyle;
-    var config = labelConfig;
-    var label = this.label;
-    if (!style.show || config == null || label.isEmpty) {
-      return;
-    }
-    style.draw(canvas, paint, label, config);
+    label.draw(canvas, paint);
   }
 
   @override
   void updateStyle(Context context, covariant StackSeries<T, P> series) {
     itemStyle = series.getAreaStyle(context, data.data, data.parent, status);
     borderStyle = series.getLineStyle(context, data.data, data.parent, status);
-    labelStyle = series.getLabelStyle(context, data.data, data.parent, status);
+    var s = series.getLabelStyle(context, data.data, data.parent, status);
+    label.updatePainter(style: s);
   }
 
   void updateTextPosition(Context context, covariant StackSeries<T, P> series) {
     var align = series.getLabelAlign(context, data.data, data.parent, status);
     if (coord == CoordType.polar) {
-      labelConfig = align.convert2(arc, labelStyle, series.direction);
+      align.fill2(label, arc, label.style, series.direction);
     } else {
-      labelConfig = align.convert(rect, labelStyle, series.direction);
+      align.fill(label, rect, label.style, series.direction);
     }
-    label = formatData(series, attr.dynamicLabel ?? up);
+    label.updatePainter(text: formatData(series, attr.dynamicLabel ?? up));
   }
 
   DynamicText formatData(StackSeries<T, P> series, dynamic data) {

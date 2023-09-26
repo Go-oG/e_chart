@@ -13,20 +13,18 @@ class PieNode extends DataNode<Arc, ItemData> {
   );
 
   ///计算文字的位置
-  TextDrawInfo? textDrawConfig;
   Path? guidLinePath;
 
   void updateTextPosition(PieSeries series) {
-    textDrawConfig = null;
     guidLinePath = null;
-    var labelStyle = this.labelStyle;
+    var labelStyle = label.style;
     if (series.labelAlign == CircleAlign.center) {
-      textDrawConfig = TextDrawInfo(attr.center, align: Alignment.center);
+      label.updatePainter(offset: attr.center, align: Alignment.center);
     } else if (series.labelAlign == CircleAlign.inside) {
       double radius = (attr.innerRadius + attr.outRadius) / 2;
       double angle = attr.startAngle + attr.sweepAngle / 2;
-      Offset offset = circlePoint(radius, angle).translate(attr.center.dx, attr.center.dy);
-      textDrawConfig = TextDrawInfo(offset, align: Alignment.center);
+      var offset = circlePoint(radius, angle).translate(attr.center.dx, attr.center.dy);
+      label.updatePainter(offset: offset, align: Alignment.center);
     } else if (series.labelAlign == CircleAlign.outside) {
       num expand = labelStyle.guideLine?.length ?? 0;
       double centerAngle = attr.startAngle + attr.sweepAngle / 2;
@@ -37,11 +35,12 @@ class PieNode extends DataNode<Arc, ItemData> {
       } else {
         align = Alignment.centerLeft;
       }
-      textDrawConfig = TextDrawInfo(offset, align: align);
+      label.updatePainter(offset: offset, align: align);
+    } else {
+      label.updatePainter(style: LabelStyle.empty);
     }
 
-    var config = textDrawConfig;
-    if (config == null) {
+    if (label.notDraw) {
       return;
     }
 
@@ -56,7 +55,7 @@ class PieNode extends DataNode<Arc, ItemData> {
       Path path = Path();
       path.moveTo(tmpOffset.dx, tmpOffset.dy);
       path.lineTo(tmpOffset2.dx, tmpOffset2.dy);
-      path.lineTo(config.offset.dx, config.offset.dy);
+      path.lineTo(label.offset.dx, label.offset.dy);
       guidLinePath = path;
     }
   }
@@ -71,18 +70,14 @@ class PieNode extends DataNode<Arc, ItemData> {
     itemStyle.drawArc(canvas, paint, attr);
     borderStyle.drawPath(canvas, paint, attr.toPath());
 
-    var ls = labelStyle;
-    var config = textDrawConfig;
-    var label = data.name;
+    var ls = label.style;
     if (guidLinePath != null) {
       ls.guideLine?.style.drawPath(canvas, paint, guidLinePath!);
     }
 
-    if (ls.show && config != null && label != null && label.isNotEmpty) {
-      if (attr.center == config.offset) {
-        if (isHover || isFocused || isActivated || isDragged || isPressed) {
-          ls.draw(canvas, paint, label, config);
-        }
+    if (!label.notDraw && attr.center == label.offset) {
+      if (isHover || isFocused || isActivated || isDragged || isPressed) {
+        label.draw(canvas, paint);
       }
     }
   }
@@ -91,6 +86,7 @@ class PieNode extends DataNode<Arc, ItemData> {
   void updateStyle(Context context, PieSeries series) {
     itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
     borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    labelStyle = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    var style = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    label.updatePainter(style: style);
   }
 }

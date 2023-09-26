@@ -14,7 +14,9 @@ class TreeLayoutNode extends TreeNode<TreeData, TreeAttr, TreeLayoutNode> {
     super.deep,
     super.maxDeep,
     super.value,
-  });
+  }) {
+    label.text = data.name ?? DynamicText.empty;
+  }
 
   @override
   String toString() {
@@ -33,18 +35,12 @@ class TreeLayoutNode extends TreeNode<TreeData, TreeAttr, TreeLayoutNode> {
       return;
     }
     attr.symbol.draw(canvas, paint, offset);
-    var lb = label;
-    var ls = labelStyle;
-    var config = labelConfig;
-    if (lb == null || lb.isEmpty || !ls.show || config == null) {
-      return;
-    }
-    ls.draw(canvas, paint, lb, config);
+    label.draw(canvas, paint);
   }
 
   @override
   void updateStyle(Context context, covariant TreeSeries series) {
-
+    label.updatePainter(style: series.getLabelStyle(context, this));
   }
 }
 

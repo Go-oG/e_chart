@@ -124,15 +124,13 @@ abstract class BaseAxis {
     return minorTick?.getTick(index, maxIndex, theme);
   }
 
-  LabelStyle? getLabelStyle(int index, int maxIndex, AxisTheme theme) {
+  LabelStyle getLabelStyle(int index, int maxIndex, AxisTheme theme) {
     return axisLabel.getLabelStyle(index, maxIndex, theme);
   }
 
-  LabelStyle? getMinorLabelStyle(int index, int maxIndex, AxisTheme theme) {
+  LabelStyle getMinorLabelStyle(int index, int maxIndex, AxisTheme theme) {
     return axisLabel.getMinorLabelStyle(index, maxIndex, theme);
   }
-
-
 }
 
 ///给定坐标轴集和方向

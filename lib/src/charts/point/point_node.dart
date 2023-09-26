@@ -11,7 +11,9 @@ class PointNode extends DataNode2<Offset, PointData, ChartSymbol> {
     PointData data,
     int dataIndex,
     int groupIndex,
-  ) : super(symbol, data, dataIndex, groupIndex, Offset.zero, LabelStyle.empty);
+  ) : super(symbol, data, dataIndex, groupIndex, Offset.zero, LabelStyle.empty) {
+    label.text = data.name ?? DynamicText.empty;
+  }
 
   @override
   bool contains(Offset offset) {
@@ -21,11 +23,7 @@ class PointNode extends DataNode2<Offset, PointData, ChartSymbol> {
   @override
   void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, attr);
-    var label = data.name;
-    var labelConfig = this.labelConfig;
-    if (label != null && label.isNotEmpty && labelConfig != null) {
-      labelStyle.draw(canvas, paint, label, labelConfig);
-    }
+    label.draw(canvas, paint);
   }
 
   @override
@@ -35,17 +33,7 @@ class PointNode extends DataNode2<Offset, PointData, ChartSymbol> {
 
   @override
   NodeAttr toAttr() {
-    return NodeAttr(
-      attr,
-      drawIndex,
-      label,
-      labelConfig,
-      labelLine,
-      itemStyle,
-      borderStyle,
-      labelStyle,
-      symbol.scale,
-    );
+    return NodeAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, symbol.scale);
   }
 
   double get left => attr.dx - symbol.size.width / 2;
