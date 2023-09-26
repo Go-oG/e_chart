@@ -9,8 +9,8 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
     super.groupIndex,
     super.attr,
     super.labelStyle,
-  ){
-    label.text=data.name??DynamicText.empty;
+  ) {
+    label.text = data.name ?? DynamicText.empty;
   }
 
   @override
@@ -31,6 +31,11 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
     label.style = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
     symbol.itemStyle = itemStyle;
     symbol.borderStyle = borderStyle;
+  }
+
+  @override
+  void updateLabelPosition(Context context, covariant ChartSeries series) {
+    label.updatePainter(offset: attr.center,align: Alignment.center);
   }
 }
 

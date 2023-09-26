@@ -70,6 +70,8 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   ///更新当前符号的大小
   void updateSymbolSize(Size size) {}
 
+  void updateLabelPosition(Context context, covariant ChartSeries series) {}
+
   DataType get dataType => DataType.nodeData;
 }
 

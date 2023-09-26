@@ -47,7 +47,6 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
       node.updateStyle(context, series);
     });
 
-
     var an = DiffUtil.diffLayout3(
       getAnimation(type, oldNodeList.length + newList.length),
       oldNodeList,
@@ -76,6 +75,7 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
         node.attr.center = sc == ec ? ec : Offset.lerp(sc, ec, t)!;
         node.symbol.rotate = lerpDouble(sr, er, t)!;
         node.symbol.scale = lerpDouble(ss, es, t)!;
+        node.updateLabelPosition(context, series);
       },
       (resultList) {
         updateShowNodeList(resultList);

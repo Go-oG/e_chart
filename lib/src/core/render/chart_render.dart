@@ -41,6 +41,9 @@ abstract class ChartRender extends RenderNode {
 
   @override
   void invalidate() {
+    if (inDrawing) {
+      return;
+    }
     _notifier.value = Command.invalidate;
   }
 
