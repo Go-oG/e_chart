@@ -70,6 +70,15 @@ extension PathExt on Path {
     return newPath;
   }
 
+  double getLength() {
+    double l = 0;
+    PathMetrics metrics = computeMetrics();
+    for (PathMetric metric in metrics) {
+      l += metric.length;
+    }
+    return l;
+  }
+
   //返回路径百分比上的一点
   Offset? percentOffset(double percent) {
     PathMetrics metrics = computeMetrics();
@@ -189,10 +198,9 @@ extension PathExt on Path {
     if (contains(rect.bottomRight)) {
       return true;
     }
-    var bound =getBounds();
+    var bound = getBounds();
     return bound.overlaps(rect);
   }
-
 }
 
 ///用于实现 path dash

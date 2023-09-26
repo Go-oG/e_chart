@@ -74,7 +74,8 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     label.updatePainter(style: s);
   }
 
-  void updateTextPosition(Context context, covariant StackSeries<T, P> series) {
+  @override
+  void updateLabelPosition(Context context, covariant StackSeries<T, P> series) {
     var align = series.getLabelAlign(context, data.data, data.parent, status);
     if (coord == CoordType.polar) {
       align.fill2(label, arc, label.style, series.direction);

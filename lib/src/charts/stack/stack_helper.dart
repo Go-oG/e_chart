@@ -92,7 +92,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     final List<SingleNode<T, P>> newNodeList = List.from(newNodeMap.values, growable: false);
 
     each(newNodeList, (p0, p1) {
-      p0.updateTextPosition(context, series);
+      p0.updateLabelPosition(context, series);
       p0.updateStyle(context, series);
     });
 

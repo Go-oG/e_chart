@@ -15,28 +15,21 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     var oldList = nodeList;
     var newList = convertData(series.dataList);
     layoutNode(newList);
-    var an = DiffUtil.diffLayout<List<Offset>, ItemData, FunnelNode>(
+    var an = DiffUtil.diffLayout3(
       getAnimation(type),
       oldList,
       newList,
-      (data, node, add) {
-        List<Offset> pl = node.attr;
-        Offset o0 = Offset((pl[0].dx + pl[1].dx) / 2, (pl[0].dy + pl[3].dy) / 2);
-        return [o0, o0, o0, o0];
+      (node, type) {
+        return {'scale': type == DiffType.add ? 0 : node.scale};
       },
-      (s, e, t) {
-        List<Offset> pl = [];
-        for (int i = 0; i < 4; i++) {
-          pl.add(Offset.lerp(s[i], e[i], t)!);
-        }
-        return pl;
+      (node, type) {
+        return {'scale': type == DiffType.remove ? 0 : 1};
       },
-      (result) {
-        for (var n in result) {
-          List<Offset> ol = List.from(n.attr);
-          n.updatePoint(context, series, ol);
-        }
-        nodeList = result;
+      (node, s, e, t, type) {
+        node.scale = lerpDouble(s['scale'], e['scale'], t)!;
+      },
+      (resultList) {
+        nodeList = resultList;
         notifyLayoutUpdate();
       },
       () => inAnimation = true,
@@ -95,7 +88,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       _layoutHorizontal(nodeList, itemSize);
     }
     for (var node in nodeList) {
-      node.updateTextPosition(context, series);
+      node.updateLabelPosition(context, series);
       node.updateStyle(context, series);
     }
   }
@@ -147,12 +140,12 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     }
     for (var node in nodeList) {
       FunnelProps props = propsMap[node]!;
-      node.attr = [
+      node.attr = Polygon([
         props.p1,
         props.p1.translate(props.len1, 0),
         props.p2.translate(props.len2, 0),
         props.p2,
-      ];
+      ]);
     }
   }
 
@@ -202,12 +195,12 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     }
     for (var node in nodeList) {
       FunnelProps props = propsMap[node]!;
-      node.attr = [
+      node.attr = Polygon([
         props.p1,
         props.p2,
         props.p2.translate(0, props.len2),
         props.p1.translate(0, props.len1),
-      ];
+      ]);
     }
   }
 

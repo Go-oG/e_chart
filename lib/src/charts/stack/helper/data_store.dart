@@ -46,8 +46,9 @@ class DataStore<T> {
       }
       if (key is num) {
         numList.add(node);
+        continue;
       }
-      throw ChartError("只支持num、String、DateTime");
+      throw ChartError("只支持num、String、DateTime key type:${key.runtimeType}");
     }
 
     if (numList.isEmpty) {

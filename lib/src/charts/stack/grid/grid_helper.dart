@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
+import 'package:flutter/rendering.dart';
 
 ///适用于GridCoord坐标系的布局帮助者
 class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
@@ -131,7 +132,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     List<Offset> xList = coord.dataToPoint(xIndex, xData, true);
     List<Offset> yList = coord.dataToPoint(yIndex, yData, false);
     if (xList.length >= 2 && yList.length >= 2) {
-      throw ChartError('内部布局状态异常');
+      throw ChartError('内部布局状态异常,主轴和副轴必须有一个是能返回范围的');
     }
     double l, r, t, b;
     if (xList.length >= 2) {
@@ -144,6 +145,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
       t = 0;
       b = height;
+      groupNode.rect = Rect.fromLTRB(l, t, r, b);
     } else {
       t = yList.first.dy;
       b = yList.last.dy;
@@ -154,8 +156,8 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
       l = 0;
       r = width;
+      groupNode.rect = Rect.fromLTRB(l, t, r, b);
     }
-    groupNode.rect = Rect.fromLTRB(l, t, r, b);
   }
 
   ///计算Column的位置，Column会占满一行或者一列
@@ -376,8 +378,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     } else {
       node.attr.dynamicLabel = null;
     }
-
-    node.updateTextPosition(context, series);
+    node.updateLabelPosition(context, series);
   }
 
   @override

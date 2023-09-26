@@ -33,7 +33,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     int maxDeep = newRoot.height;
     radiusDiff = radiusRange / (maxDeep <= 0 ? 1 : maxDeep);
     newRoot.attr = SunburstAttr(buildRootArc(center, maxDeep));
-    newRoot.updateTextPosition(series);
+    newRoot.updateLabelPosition(context, series);
     newRoot.eachBefore((tmp, index, startNode) {
       tmp.updateStyle(context, series);
       nodeMap[tmp.data] = tmp;
@@ -76,7 +76,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         var s = arcStartMap[node]!;
         var e = arcMap[node]!;
         node.attr.arc = Arc.lerp(s, e, t);
-        node.updateTextPosition(series);
+        node.updateLabelPosition(context, series);
         return false;
       });
       notifyLayoutUpdate();
@@ -154,7 +154,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         outRadius: ir + radiusDiff,
         maxRadius: maxRadius,
       );
-      parent.firstChild.updateTextPosition(series);
+      parent.firstChild.updateLabelPosition(context, series);
       return;
     }
 
@@ -200,7 +200,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
           padAngle: angleGap,
           maxRadius: maxRadius,
           center: center);
-      ele.updateTextPosition(series);
+      ele.updateLabelPosition(context, series);
       childStartAngle += (swa + angleGap) * dir;
     });
   }
@@ -306,7 +306,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       );
       if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
         clickNode.attr.arc = e;
-        clickNode.updateTextPosition(series);
+        clickNode.updateLabelPosition(context, series);
         _layoutNodeIterator(clickNode, clickNode.height + 1, false);
         notifyLayoutUpdate();
         return;
@@ -316,7 +316,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       tween.addListener(() {
         var t = tween.value;
         clickNode.attr.arc = Arc.lerp(s, e, t);
-        clickNode.updateTextPosition(series);
+        clickNode.updateLabelPosition(context, series);
         _layoutNodeIterator(clickNode, clickNode.height + 1, false);
         notifyLayoutUpdate();
       });
@@ -342,9 +342,9 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     );
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       bn.attr.arc = be;
-      bn.updateTextPosition(series);
+      bn.updateLabelPosition(context, series);
       clickNode.attr.arc = ce;
-      clickNode.updateTextPosition(series);
+      clickNode.updateLabelPosition(context, series);
       _layoutNodeIterator(clickNode, clickNode.height + 1, false);
       showRootNode = bn;
       notifyLayoutUpdate();
@@ -355,10 +355,10 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     tween.addListener(() {
       var t = tween.value;
       bn.attr.arc = Arc.lerp(bs, be, t);
-      bn.updateTextPosition(series);
+      bn.updateLabelPosition(context, series);
 
       clickNode.attr.arc = Arc.lerp(cs, ce, t);
-      clickNode.updateTextPosition(series);
+      clickNode.updateLabelPosition(context, series);
       _layoutNodeIterator(clickNode, clickNode.height + 1, false);
       notifyLayoutUpdate();
     });
@@ -393,7 +393,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       parentNode.parent = null;
       bn = SunburstVirtualNode(parentNode, SunburstAttr(buildBackArc(center, parentNode.height + 1)));
     }
-    bn.updateTextPosition(series);
+    bn.updateLabelPosition(context, series);
     _layoutNodeIterator(bn, parentNode.height + 1, false);
 
     var animation = getAnimation(LayoutType.update, -1);
@@ -419,7 +419,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         var e = arcMap[node]!;
         var s = oldArcMap[node]!;
         node.attr.arc = Arc.lerp(s, e, t);
-        node.updateTextPosition(series);
+        node.updateLabelPosition(context, series);
         return false;
       });
       notifyLayoutUpdate();

@@ -72,7 +72,8 @@ class StackItemData extends BaseItemData {
 
   num get value {
     if (y is num && x is num) {
-      throw ChartError(" x 和 y都是num 请重写该方法并返回正确的值");
+      return y;
+      // ChartError(" x 和 y都是num 请重写该方法并返回正确的值");
     }
     if (y is num) {
       return y;

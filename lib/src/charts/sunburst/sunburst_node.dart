@@ -15,14 +15,14 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
     label.text = data.name ?? DynamicText.empty;
   }
 
-  void updateTextPosition(SunburstSeries series) {
+  @override
+  void updateLabelPosition(Context context, SunburstSeries series) {
     label.updatePainter();
     if (label.notDraw) {
       return;
     }
     var arc = attr.arc;
-    label.updatePainter(maxWidth: (arc.outRadius - arc.innerRadius).toDouble());
-
+    label.updatePainter();
     Size size = label.getSize();
     double labelMargin = series.labelMarginFun?.call(this) ?? 0;
     if (labelMargin > 0) {
@@ -41,7 +41,7 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
       dx = m.cos(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
       dy = m.sin(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
     }
-    var textPosition = Offset(dx, dy);
+    var textPosition = Offset(dx, dy).translate2(attr.arc.center);
     double rotateMode = series.rotateFun?.call(this) ?? -1;
     double rotateAngle = 0;
 
@@ -75,7 +75,6 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
       rotate: rotateAngle,
       offset: textPosition,
       align: Alignment.center,
-      maxWidth: (arc.outRadius - arc.innerRadius).toDouble(),
     );
   }
 

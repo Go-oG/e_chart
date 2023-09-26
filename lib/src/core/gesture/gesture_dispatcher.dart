@@ -74,7 +74,7 @@ class GestureDispatcher {
       return;
     }
     if (event is PointerHoverEvent) {
-      if (isWeb) {
+      if (!isPhone) {
         onHoverMove(event);
       }
       return;

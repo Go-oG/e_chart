@@ -64,6 +64,21 @@ class AreaStyle {
     drawPath(canvas, paint, polygon.toPath());
   }
 
+  void drawPolygon(CCanvas canvas, Paint paint, Polygon polygon) {
+    if (notDraw) {
+      return;
+    }
+    if (polygon.points.isEmpty) {
+      return;
+    }
+    if (polygon.points.length == 1) {
+      fillPaint(paint, null);
+      canvas.drawPoints(PointMode.points, polygon.points, paint);
+      return;
+    }
+    drawPath(canvas, paint, polygon.toPath());
+  }
+
   void drawRect(CCanvas canvas, Paint paint, Rect rect, [Corner? corner]) {
     if (notDraw) {
       return;
@@ -147,6 +162,7 @@ class AreaStyle {
       drawCircle(canvas, paint, arc.center, arc.outRadius);
       return;
     }
+
     ///下面是为了解决在Web上Path 裁剪失效导致的形状错乱
     num r = (arc.outRadius - arc.innerRadius);
     paint.reset();

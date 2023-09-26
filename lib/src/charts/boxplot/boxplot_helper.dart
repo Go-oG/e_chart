@@ -94,7 +94,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
     Offset upo = Offset.lerp(suo, euo, t)!;
     Offset maxo = Offset.lerp(smaxo, emaxo, t)!;
     _setPath(node, series.direction == Direction.vertical, mino, downo, middleo, upo, maxo, colRect);
-    node.updateTextPosition(context, series);
+    node.updateLabelPosition(context, series);
   }
 
   void _setPath(

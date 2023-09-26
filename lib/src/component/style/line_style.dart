@@ -91,7 +91,7 @@ class LineStyle {
     }
   }
 
-  ///绘制多边形(或者线段)
+  ///绘制多边形(或者线段) 将忽略smooth参数
   ///下方这样写是为了改善Flutter上Path过长时
   ///绘制效率低下的问题
   void drawPolygon(CCanvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
@@ -103,14 +103,14 @@ class LineStyle {
       return;
     }
 
-    if (shader == null && shadow.isEmpty && dash.isEmpty && smooth <= 0) {
+    if (shader == null && shadow.isEmpty && dash.isEmpty) {
       fillPaint(paint, null);
       canvas.drawPoints(close ? PointMode.polygon : PointMode.lines, points, paint);
       return;
     }
 
     if (shader != null || shadow.isNotEmpty) {
-      Path path = Line(points, smooth: smooth).toPath();
+      Path path = Line(points, smooth: 0).toPath();
       fillPaint(paint, path.getBounds());
     } else {
       fillPaint(paint, null);
@@ -134,6 +134,58 @@ class LineStyle {
     if (close) {
       olList.last.add(points.first);
     }
+    for (var ol in olList) {
+      if (ol.length == 1) {
+        canvas.drawPoints(PointMode.points, ol, paint);
+        continue;
+      }
+      if (smooth <= 0 && dash.isEmpty) {
+        canvas.drawPoints(PointMode.polygon, ol, paint);
+        continue;
+      }
+      Line line = Line(ol, smooth: smooth, dashList: dash);
+      canvas.drawPath(line.toPath(), paint);
+    }
+  }
+
+  void drawPolygon2(CCanvas canvas, Paint paint, Polygon polygon) {
+    if (notDraw || polygon.points.isEmpty) {
+      return;
+    }
+    var points = polygon.points;
+    if (points.length == 1) {
+      canvas.drawPoints(PointMode.points, points, paint);
+      return;
+    }
+
+    if (shader == null && shadow.isEmpty && dash.isEmpty) {
+      fillPaint(paint, null);
+      canvas.drawPoints(PointMode.polygon, points, paint);
+      return;
+    }
+    if (shader != null || shadow.isNotEmpty) {
+      fillPaint(paint, polygon.getBound());
+    } else {
+      fillPaint(paint, null);
+    }
+
+    List<List<Offset>> olList = [];
+    List<Offset> tmpList = [];
+    for (int i = 0; i < points.length; i++) {
+      if (tmpList.isEmpty && i != 0) {
+        tmpList.add(points[i - 1]);
+      }
+      tmpList.add(points[i]);
+      if (tmpList.length >= 30) {
+        olList.add(tmpList);
+        tmpList = [];
+      }
+    }
+    if (tmpList.isNotEmpty) {
+      olList.add(tmpList);
+    }
+    olList.last.add(points.first);
+
     for (var ol in olList) {
       if (ol.length == 1) {
         canvas.drawPoints(PointMode.points, ol, paint);
@@ -262,8 +314,8 @@ class LineStyle {
       return;
     }
 
-    if(drawDash&&dash.isNotEmpty){
-      path=path.dashPath(dash);
+    if (drawDash && dash.isNotEmpty) {
+      path = path.dashPath(dash);
     }
 
     if (shadow.isNotEmpty) {
