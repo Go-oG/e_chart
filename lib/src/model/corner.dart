@@ -30,4 +30,6 @@ class Corner {
       lerpDouble(s.rightBottom, e.rightBottom, t)!,
     );
   }
+
+  bool get isEmpty => leftTop == 0 && rightTop == 0 && leftBottom == 0 && rightBottom == 0;
 }

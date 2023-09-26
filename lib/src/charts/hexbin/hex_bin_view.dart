@@ -11,7 +11,8 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinHelper> {
   @override
   bool get enableDrag => true;
 
-  var sw=Stopwatch();
+  var sw = Stopwatch();
+
   @override
   void onDraw(CCanvas canvas) {
     sw.reset();
@@ -19,15 +20,9 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinHelper> {
     canvas.save();
     canvas.translate(tr.dx, tr.dy);
     each(layoutHelper.showNodeList, (node, p1) {
-
-      sw.start();
       node.onDraw(canvas, mPaint);
-      sw.stop();
-      debugPrint("绘制耗时${sw.elapsedMicroseconds} ns");
-      sw.reset();
     });
     canvas.restore();
-
   }
 
   @override

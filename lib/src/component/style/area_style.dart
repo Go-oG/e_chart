@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils/platform_util.dart';
 
-/// 区域样式
+/// 区域样式(所有的绘制都是填充)
 class AreaStyle {
   static const AreaStyle empty = AreaStyle();
   final Color? color;
@@ -64,50 +64,60 @@ class AreaStyle {
     drawPath(canvas, paint, polygon.toPath());
   }
 
-
-
-  void drawArea(CCanvas canvas, Paint paint, List<Offset> p1List, List<Offset> p2List, [num smooth = 0]) {
-    if (notDraw) {
-      return;
-    }
-    Area area = Area(p1List, p2List, upSmooth: smooth, downSmooth: smooth);
-    drawPath(canvas, paint, area.toPath());
-  }
-
   void drawRect(CCanvas canvas, Paint paint, Rect rect, [Corner? corner]) {
     if (notDraw) {
       return;
     }
-    Path path = Path();
-    if (corner == null) {
-      path.addRect(rect);
-      path.close();
-    } else {
-      path.addRRect(rect.toRRect(corner));
-      path.close();
+    Path? path;
+    if (shadow.isNotEmpty) {
+      path = Path();
+      if (corner == null) {
+        path.addRect(rect);
+        path.close();
+      } else {
+        path.addRRect(rect.toRRect(corner));
+        path.close();
+      }
+      drawPath(canvas, paint, path, rect);
+      return;
     }
-    drawPath(canvas, paint, path, rect);
+    fillPaint(paint, rect);
+    if (corner == null || corner.isEmpty) {
+      canvas.drawRect(rect, paint);
+    } else {
+      canvas.drawRRect(rect.toRRect(corner), paint);
+    }
   }
 
   void drawRRect(CCanvas canvas, Paint paint, RRect rect) {
     if (notDraw) {
       return;
     }
-    Path path = Path();
-    path.addRRect(rect);
-    drawPath(canvas, paint, path, rect.outerRect);
+    if (shadow.isNotEmpty) {
+      Path path = Path();
+      path.addRRect(rect);
+      drawPath(canvas, paint, path, rect.outerRect);
+      return;
+    }
+    fillPaint(paint, shader == null ? null : rect.outerRect);
+    canvas.drawRRect(rect, paint);
   }
 
   void drawCircle(CCanvas canvas, Paint paint, Offset center, num radius) {
     if (notDraw) {
       return;
     }
-    var rect = Rect.fromCircle(center: center, radius: radius.toDouble());
-    Path path = Path();
-    path.moveTo2(circlePoint(radius, 0, center));
-    path.arcTo(rect, 0, 2 * pi - 0.0001, false);
-    path.close();
-    drawPath(canvas, paint, path, rect);
+    if (shader != null || shadow.isNotEmpty) {
+      var rect = Rect.fromCircle(center: center, radius: radius.toDouble());
+      Path path = Path();
+      path.moveTo2(circlePoint(radius, 0, center));
+      path.arcTo(rect, 0, 2 * pi - 0.0001, false);
+      path.close();
+      drawPath(canvas, paint, path, rect);
+      return;
+    }
+    fillPaint(paint, null);
+    canvas.drawCircle(center, radius.toDouble(), paint);
   }
 
   void drawPath(CCanvas canvas, Paint paint, Path path, [Rect? bound]) {
@@ -122,22 +132,33 @@ class AreaStyle {
   }
 
   void drawArc(CCanvas canvas, Paint paint, Arc arc, [bool useCircleRect = false]) {
-    if (!isWeb) {
-      drawPath(canvas, paint, arc.toPath(), arc.getBound(useCircleRect));
+    if (notDraw) {
       return;
     }
-
-    if (arc.sweepAngle.abs() >= Arc.circleMinAngle) {
-      if (arc.innerRadius <= 0) {
-        drawCircle(canvas, paint, arc.center, arc.outRadius);
-        return;
-      }
-      num r = (arc.outRadius - arc.innerRadius);
-      LineStyle style = LineStyle(color: color, shader: shader, shadow: shadow, width: r);
-      style.drawCircle(canvas, paint, arc.center, arc.outRadius - r / 2);
-    } else {
-      drawPath(canvas, paint, arc.toPath(), arc.getBound(useCircleRect));
+    if (!isWeb) {
+      drawPath(canvas, paint, arc.toPath(), shader == null ? null : arc.getBound(useCircleRect));
+      return;
     }
+    if (arc.sweepAngle.abs() < Arc.circleMinAngle) {
+      drawPath(canvas, paint, arc.toPath(), shader == null ? null : arc.getBound(useCircleRect));
+      return;
+    }
+    if (arc.innerRadius <= 0) {
+      drawCircle(canvas, paint, arc.center, arc.outRadius);
+      return;
+    }
+    ///下面是为了解决在Web上Path 裁剪失效导致的形状错乱
+    num r = (arc.outRadius - arc.innerRadius);
+    paint.reset();
+    if (color != null) {
+      paint.color = color!;
+    }
+    paint.style = PaintingStyle.stroke;
+    paint.strokeWidth = r.toDouble();
+    if (shader != null) {
+      paint.shader = shader!.toShader(Rect.fromCenter(center: arc.center, width: r * 2, height: r * 2));
+    }
+    canvas.drawCircle(arc.center, arc.outRadius - r / 2, paint);
   }
 
   AreaStyle convert(Set<ViewState>? states) {

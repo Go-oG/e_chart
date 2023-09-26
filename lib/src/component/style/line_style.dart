@@ -40,21 +40,34 @@ class LineStyle {
 
   @override
   bool operator ==(Object other) {
-    if(other is! LineStyle){
+    if (other is! LineStyle) {
       return false;
     }
-    if(other.color!=color){return false;}
-    if(other.width!=width){return false;}
-    if(other.cap!=cap){return false;}
-    if(other.join!=join){return false;}
-    if(!listEquals(other.dash, dash)){
+    if (other.color != color) {
       return false;
     }
-    if(!listEquals(other.shadow, shadow)){return false;}
-    if(other.shader!=shader){return false;}
-    if(other.smooth!=smooth){return false;}
-    return other.align==align;
-
+    if (other.width != width) {
+      return false;
+    }
+    if (other.cap != cap) {
+      return false;
+    }
+    if (other.join != join) {
+      return false;
+    }
+    if (!listEquals(other.dash, dash)) {
+      return false;
+    }
+    if (!listEquals(other.shadow, shadow)) {
+      return false;
+    }
+    if (other.shader != shader) {
+      return false;
+    }
+    if (other.smooth != smooth) {
+      return false;
+    }
+    return other.align == align;
   }
 
   Color? pickColor() {
@@ -82,10 +95,7 @@ class LineStyle {
   ///下方这样写是为了改善Flutter上Path过长时
   ///绘制效率低下的问题
   void drawPolygon(CCanvas canvas, Paint paint, List<Offset> points, [bool close = false]) {
-    if (width <= 0) {
-      return;
-    }
-    if (points.isEmpty) {
+    if (notDraw || points.isEmpty) {
       return;
     }
     if (points.length == 1) {
@@ -93,8 +103,18 @@ class LineStyle {
       return;
     }
 
-    Path path = Line(points, smooth: 0, dashList: dash).toPath();
-    fillPaint(paint, path.getBounds());
+    if (shader == null && shadow.isEmpty && dash.isEmpty && smooth <= 0) {
+      fillPaint(paint, null);
+      canvas.drawPoints(close ? PointMode.polygon : PointMode.lines, points, paint);
+      return;
+    }
+
+    if (shader != null || shadow.isNotEmpty) {
+      Path path = Line(points, smooth: smooth).toPath();
+      fillPaint(paint, path.getBounds());
+    } else {
+      fillPaint(paint, null);
+    }
 
     List<List<Offset>> olList = [];
     List<Offset> tmpList = [];
@@ -114,27 +134,23 @@ class LineStyle {
     if (close) {
       olList.last.add(points.first);
     }
-
     for (var ol in olList) {
       if (ol.length == 1) {
         canvas.drawPoints(PointMode.points, ol, paint);
         continue;
       }
-
       if (smooth <= 0 && dash.isEmpty) {
         canvas.drawPoints(PointMode.polygon, ol, paint);
         continue;
       }
-
       Line line = Line(ol, smooth: smooth, dashList: dash);
-      Path p = line.toPath();
-      canvas.drawPath(p, paint);
+      canvas.drawPath(line.toPath(), paint);
     }
   }
 
   ///绘制一个圆弧部分(也可以绘制圆)
   void drawArc(CCanvas canvas, Paint paint, num radius, num startAngle, num sweepAngle, [Offset center = Offset.zero]) {
-    if (width <= 0) {
+    if (notDraw) {
       return;
     }
     //优化绘制半径、消除
@@ -144,14 +160,17 @@ class LineStyle {
     } else if (align == Align2.end) {
       r += width / 2;
     }
-    Arc arc = Arc(outRadius: r, startAngle: startAngle, sweepAngle: sweepAngle, center: center);
-    Path path = arc.arcOpen();
+
+    Rect rect = Rect.fromCircle(radius: r, center: center);
+    if (shader == null && shadow.isEmpty && dash.isEmpty) {
+      fillPaint(paint);
+      canvas.drawArc(rect, startAngle * Constants.angleUnit, sweepAngle * Constants.angleUnit, false, paint);
+      return;
+    }
+    Path path = Path();
+    path.addArc(rect, startAngle * Constants.angleUnit, sweepAngle * Constants.angleUnit);
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
-    }
-    Rect? rect;
-    if (shader != null) {
-      rect = Rect.fromCircle(center: center, radius: r);
     }
     fillPaint(paint, rect);
     if (dash.isNotEmpty) {
@@ -161,28 +180,55 @@ class LineStyle {
   }
 
   void drawCircle(CCanvas canvas, Paint paint, Offset center, num radius) {
-    var rect = Rect.fromCircle(center: center, radius: radius.toDouble());
-    fillPaint(paint, rect);
-    canvas.drawCircle(center, radius.toDouble(), paint);
+    double r = radius.toDouble();
+    if (align == Align2.start) {
+      r -= width / 2;
+    } else if (align == Align2.end) {
+      r += width / 2;
+    }
+    if (shader == null && shadow.isEmpty && dash.isEmpty) {
+      fillPaint(paint);
+      canvas.drawCircle(center, r, paint);
+      return;
+    }
+
+    Rect rect = Rect.fromCircle(radius: r, center: center);
+    if (shadow.isNotEmpty || dash.isNotEmpty) {
+      Path path = Path();
+      path.addOval(rect);
+      path.drawShadows(canvas, path, shadow);
+      fillPaint(paint, rect);
+      canvas.drawPath(path, paint);
+    } else {
+      fillPaint(paint, rect);
+      canvas.drawCircle(center, r, paint);
+    }
   }
 
   void drawRect(CCanvas canvas, Paint paint, Rect rect, [Corner? corner]) {
-    if (width <= 0) {
+    if (notDraw) {
       return;
     }
+    if (shader == null && shadow.isEmpty && dash.isEmpty) {
+      fillPaint(paint);
+      if (corner == null || corner.isEmpty) {
+        canvas.drawRect(rect, paint);
+      } else {
+        canvas.drawRRect(rect.toRRect(corner), paint);
+      }
+      return;
+    }
+
     RRect? rRect;
     if (corner != null) {
-      var lt = Radius.circular(corner.leftTop);
-      var rt = Radius.circular(corner.rightTop);
-      var lb = Radius.circular(corner.leftBottom);
-      var rb = Radius.circular(corner.rightBottom);
-      rRect = RRect.fromRectAndCorners(rect, topLeft: lt, topRight: rt, bottomLeft: lb, bottomRight: rb);
+      rRect = rect.toRRect(corner);
     }
     Rect? shaderRect;
     if (shader != null) {
       shaderRect = rect;
     }
     fillPaint(paint, shaderRect);
+
     if (shadow.isNotEmpty || dash.isNotEmpty) {
       Path path = Path();
       if (rRect != null) {
@@ -199,6 +245,7 @@ class LineStyle {
       canvas.drawPath(path, paint);
       return;
     }
+
     if (rRect != null) {
       canvas.drawRRect(rRect, paint);
     } else {
@@ -210,18 +257,21 @@ class LineStyle {
   ///此时应该将needSplit 指定为true进行优化
   ///绘制效率严重低下的问题
   void drawPath(CCanvas canvas, Paint paint, Path path,
-      {bool drawDash = false, bool needSplit = true, num splitLength = 200,Rect? bound}) {
-    if (width <= 0) {
+      {bool drawDash = false, bool needSplit = true, num splitLength = 200, Rect? bound}) {
+    if (notDraw) {
       return;
     }
+
+    if(drawDash&&dash.isNotEmpty){
+      path=path.dashPath(dash);
+    }
+
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
-    fillPaint(paint,shader==null?null: (bound?? path.getBounds()));
 
-    if (drawDash && dash.isNotEmpty) {
-      path = path.dashPath(dash);
-    }
+    fillPaint(paint, shader == null ? null : (bound ?? path.getBounds()));
+
     if (!needSplit) {
       canvas.drawPath(path, paint);
       return;

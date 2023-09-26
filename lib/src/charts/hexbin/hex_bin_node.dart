@@ -13,16 +13,10 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
     label.text=data.name??DynamicText.empty;
   }
 
-  var sw = Stopwatch();
-
   @override
   void onDraw(CCanvas canvas, Paint paint) {
     symbol.draw(canvas, paint, attr.center);
-    sw.start();
     label.draw(canvas, paint);
-    sw.stop();
-    debugPrint('文字绘制耗时:${sw.elapsedMicroseconds}ns');
-    sw.reset();
   }
 
   @override
