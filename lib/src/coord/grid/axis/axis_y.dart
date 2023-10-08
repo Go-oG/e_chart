@@ -23,12 +23,23 @@ class YAxis extends GridAxis {
     super.timeFormatFun,
     super.axisName,
     super.axisLine,
-    super.axisLabel,
+    AxisLabel? axisLabel,
     super.splitLine,
     super.minorSplitLine,
     super.splitArea,
-    super.axisTick,
+    AxisTick? axisTick,
     super.minorTick,
     super.axisPointer,
-  });
+  }) {
+    if (axisLabel == null) {
+      this.axisLabel.inside = true;
+    } else {
+      this.axisLabel = axisLabel;
+    }
+    if (axisTick != null) {
+      this.axisTick = axisTick;
+    } else {
+      this.axisTick.tick?.inside = true;
+    }
+  }
 }

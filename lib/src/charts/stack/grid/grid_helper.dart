@@ -131,22 +131,26 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     final yData = groupNode.getYData();
     List<Offset> xList = coord.dataToPoint(xIndex, xData, true);
     List<Offset> yList = coord.dataToPoint(yIndex, yData, false);
-    if (xList.length >= 2 && yList.length >= 2) {
-      throw ChartError('内部布局状态异常,主轴和副轴必须有一个是能返回范围的');
-    }
+    final bool vertical = series.direction == Direction.vertical;
     double l, r, t, b;
-    if (xList.length >= 2) {
-      l = xList.first.dx;
-      r = xList.last.dx;
-      if (l > r) {
-        var tt = l;
-        l = r;
-        r = tt;
-      }
+    if (vertical) {
       t = 0;
       b = height;
+      l = xList.first.dx;
+      r = xList.last.dx;
+      if (xList.length == 1) {
+        var type = coord.getAxisType(xIndex, true);
+        if (type == AxisType.value || type == AxisType.log) {
+          num d = l;
+          var interval = coord.getScale(xIndex, true).tickInterval / 2;
+          l = d - interval;
+          r = d + interval;
+        }
+      }
       groupNode.rect = Rect.fromLTRB(l, t, r, b);
     } else {
+      l = 0;
+      r = width;
       t = yList.first.dy;
       b = yList.last.dy;
       if (b < t) {
@@ -154,8 +158,15 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         t = b;
         b = tt;
       }
-      l = 0;
-      r = width;
+      if (yList.length == 1) {
+        var type = coord.getAxisType(yIndex, false);
+        if (type == AxisType.value || type == AxisType.log) {
+          num d = t;
+          var interval = coord.getScale(yIndex, false).tickInterval / 2;
+          t = d - interval;
+          b = d + interval;
+        }
+      }
       groupNode.rect = Rect.fromLTRB(l, t, r, b);
     }
   }

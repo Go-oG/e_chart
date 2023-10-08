@@ -56,6 +56,9 @@ class LabelStyle {
 
   //TODO 待实现
   LabelStyle convert(Set<ViewState>? set) {
+    if (set == null || set.isEmpty) {
+      return this;
+    }
     return this;
   }
 }

@@ -25,7 +25,7 @@ abstract class BaseTick {
 
   BaseTick({
     this.show = true,
-    this.inside = false,
+    this.inside = true,
     this.length = 8,
     this.lineStyle = const LineStyle(),
     this.interval = -1,
