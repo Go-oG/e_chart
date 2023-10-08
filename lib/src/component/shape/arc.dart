@@ -151,7 +151,7 @@ class Arc implements Shape {
     Offset o1 = circlePoint(or, startAngle, center);
     Rect orRect = Rect.fromCircle(center: center, radius: or);
     outPath.moveTo(o1.dx, o1.dy);
-    outPath.arcTo(orRect, startAngle * Constants.angleUnit, sweep, true);
+    outPath.arcTo(orRect, startAngle * StaticConfig.angleUnit, sweep, true);
     outPath.close();
     if (ir <= innerMin) {
       return outPath;
@@ -162,14 +162,14 @@ class Arc implements Shape {
       Path innerPath = Path();
       o1 = circlePoint(ir, startAngle, center);
       innerPath.moveTo(o1.dx, o1.dy);
-      innerPath.arcTo(irRect, startAngle * Constants.angleUnit, sweep, true);
+      innerPath.arcTo(irRect, startAngle * StaticConfig.angleUnit, sweep, true);
       innerPath.close();
       return Path.combine(PathOperation.difference, outPath, innerPath);
     }
 
     ///由于Flutter中的Path.combine 在Web环境下会出现剪切错误的BUG，
     ///因此这里我们自行实现一个路径
-    sweep = Constants.angleUnit * 359.9;
+    sweep = StaticConfig.angleUnit * 359.9;
     Path rp = Path();
 
     ///Out
@@ -194,16 +194,16 @@ class Arc implements Shape {
     path.moveTo(center.dx, center.dy);
 
     ///扫过角度对应的弧长度
-    double dd = or * sweepAngle.abs() * Constants.angleUnit;
+    double dd = or * sweepAngle.abs() * StaticConfig.angleUnit;
     corner = m.min(dd / 2, corner);
-    final swRadian = sweepAngle.abs() * Constants.angleUnit;
+    final swRadian = sweepAngle.abs() * StaticConfig.angleUnit;
     final int direction = sweepAngle < 0 ? -1 : 1;
     final bool clockwise = sweepAngle >= 0;
     Rect orRect = Rect.fromCircle(center: center, radius: or);
     if (corner <= cornerMin) {
       Offset o1 = circlePoint(or, startAngle, center);
       path.lineTo(o1.dx, o1.dy);
-      path.arcTo(orRect, startAngle * Constants.angleUnit, swRadian * direction, false);
+      path.arcTo(orRect, startAngle * StaticConfig.angleUnit, swRadian * direction, false);
       path.close();
       return path;
     }
@@ -220,14 +220,14 @@ class Arc implements Shape {
 
     double a, b;
     if (clockwise) {
-      a = lt.p2.angle(center) * Constants.angleUnit;
-      b = rt.p1.angle(center) * Constants.angleUnit;
+      a = lt.p2.angle(center) * StaticConfig.angleUnit;
+      b = rt.p1.angle(center) * StaticConfig.angleUnit;
       if (b < a) {
         b += 2 * pi;
       }
     } else {
-      a = rt.p1.angle(center) * Constants.angleUnit;
-      b = lt.p2.angle(center) * Constants.angleUnit;
+      a = rt.p1.angle(center) * StaticConfig.angleUnit;
+      b = lt.p2.angle(center) * StaticConfig.angleUnit;
       if (b > a) {
         b -= 2 * pi;
       }
@@ -268,10 +268,10 @@ class Arc implements Shape {
     }
 
     ///角度转弧度
-    final double outRadian = (oea - osa).abs() * Constants.angleUnit;
-    final double inRadian = (iea - isa).abs() * Constants.angleUnit;
-    final double outStartRadian = osa * Constants.angleUnit;
-    final double inEndRadian = iea * Constants.angleUnit;
+    final double outRadian = (oea - osa).abs() * StaticConfig.angleUnit;
+    final double inRadian = (iea - isa).abs() * StaticConfig.angleUnit;
+    final double outStartRadian = osa * StaticConfig.angleUnit;
+    final double inEndRadian = iea * StaticConfig.angleUnit;
 
     final Path path = Path();
     if (corner < cornerMin) {
@@ -316,8 +316,8 @@ class Arc implements Shape {
       path.moveTo2(clockwise ? lt.p1 : rt.p2);
       path.arcToPoint(clockwise ? lt.p2 : rt.p1, radius: radius, largeArc: false, clockwise: clockwise);
       double a, b;
-      a = (clockwise ? lt.p2 : rt.p1).angle(center) * Constants.angleUnit;
-      b = (clockwise ? rt.p1 : lt.p2).angle(center) * Constants.angleUnit;
+      a = (clockwise ? lt.p2 : rt.p1).angle(center) * StaticConfig.angleUnit;
+      b = (clockwise ? rt.p1 : lt.p2).angle(center) * StaticConfig.angleUnit;
       if (clockwise && b < a) {
         b += 2 * pi;
       }
@@ -342,8 +342,8 @@ class Arc implements Shape {
       path.lineTo2(clockwise ? rb.p1 : lb.p2);
       path.arcToPoint(clockwise ? rb.p2 : lb.p1, radius: radius, largeArc: false, clockwise: clockwise);
       double a, b;
-      a = (clockwise ? rb.p2 : lb.p1).angle(center) * Constants.angleUnit;
-      b = (clockwise ? lb.p1 : rb.p2).angle(center) * Constants.angleUnit;
+      a = (clockwise ? rb.p2 : lb.p1).angle(center) * StaticConfig.angleUnit;
+      b = (clockwise ? lb.p1 : rb.p2).angle(center) * StaticConfig.angleUnit;
       if (clockwise && b > a) {
         b -= 2 * pi;
       }
@@ -379,7 +379,7 @@ class Arc implements Shape {
   }
 
   static List<num> adjustAngle(double r, double startAngle, double sweepAngle, double padAngle, double maxRadius) {
-    final radian = padAngle * Constants.angleUnit * 0.5;
+    final radian = padAngle * StaticConfig.angleUnit * 0.5;
     final gap = maxRadius * sin(radian);
     var sa = startAngle, ea = startAngle + sweepAngle;
     final dis = r * sin(radian);
@@ -433,8 +433,8 @@ class Arc implements Shape {
     Path path = Path();
     Offset op = circlePoint(r, startAngle, center);
     path.moveTo(op.dx, op.dy);
-    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * Constants.angleUnit,
-        sweepAngle * Constants.angleUnit, false);
+    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * StaticConfig.angleUnit,
+        sweepAngle * StaticConfig.angleUnit, false);
     return path;
   }
 

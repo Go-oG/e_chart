@@ -216,11 +216,11 @@ class LineStyle {
     Rect rect = Rect.fromCircle(radius: r, center: center);
     if (shader == null && shadow.isEmpty && dash.isEmpty) {
       fillPaint(paint);
-      canvas.drawArc(rect, startAngle * Constants.angleUnit, sweepAngle * Constants.angleUnit, false, paint);
+      canvas.drawArc(rect, startAngle * StaticConfig.angleUnit, sweepAngle * StaticConfig.angleUnit, false, paint);
       return;
     }
     Path path = Path();
-    path.addArc(rect, startAngle * Constants.angleUnit, sweepAngle * Constants.angleUnit);
+    path.addArc(rect, startAngle * StaticConfig.angleUnit, sweepAngle * StaticConfig.angleUnit);
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }

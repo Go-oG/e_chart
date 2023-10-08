@@ -48,7 +48,7 @@ class Star implements Shape {
     Path path = Path();
     for (int i = 0; i <= 360; i++) {
       num a = angleOffset + i;
-      a *= Constants.angleUnit;
+      a *= StaticConfig.angleUnit;
       double x = cos(a) + cos(count * a) / count;
       double y = sin(a) - sin(count * a) / count;
       if (i == 0) {

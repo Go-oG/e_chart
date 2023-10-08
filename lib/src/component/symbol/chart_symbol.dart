@@ -25,7 +25,7 @@ abstract class ChartSymbol {
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     if (rotate != 0) {
-      canvas.rotate(rotate * Constants.angleUnit);
+      canvas.rotate(rotate * StaticConfig.angleUnit);
     }
     if (scale != 1) {
       canvas.scale(scale);

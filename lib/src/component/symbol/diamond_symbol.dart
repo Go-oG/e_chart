@@ -38,7 +38,7 @@ class DiamondSymbol extends ChartSymbol {
       return;
     }
     canvas.save();
-    canvas.rotate(fixRotate*Constants.angleUnit);
+    canvas.rotate(fixRotate*StaticConfig.angleUnit);
     itemStyle.drawPath(canvas, paint, path);
     borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
     canvas.restore();

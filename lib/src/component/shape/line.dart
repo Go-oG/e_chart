@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/src/ext/index.dart';
 
-import '../../model/constans.dart';
+import '../../static_config.dart';
 import '../../utils/assert_check.dart';
 import 'chart_shape.dart';
 
@@ -128,7 +128,7 @@ class Line implements Shape {
 
   ///获取贝塞尔曲线控制点
   List<Offset> _getCtrPoint(Offset start, Offset end) {
-    var v = Constants.smoothRatio;
+    var v = StaticConfig.smoothRatio;
     assertCheck(v >= 0 && v <= 1, "smoothRatio must >=0&&<=1 ");
     if (start.dx == end.dx || start.dy == end.dy) {
       return [];

@@ -88,7 +88,7 @@ extension OffsetExt on Offset {
   ///顺时针 angle 为正数
   Offset rotate(num angle, {Offset center = Offset.zero}) {
     angle = angle % 360;
-    num t = angle * Constants.angleUnit;
+    num t = angle * StaticConfig.angleUnit;
     double x = (dx - center.dx) * m.cos(t) - (dy - center.dy) * m.sin(t) + center.dx;
     double y = (dx - center.dx) * m.sin(t) + (dy - center.dy) * m.cos(t) + center.dy;
     return Offset(x, y);
@@ -119,7 +119,7 @@ extension OffsetExt on Offset {
 
 ///给定一个半径和圆心计算给定角度对应的位置坐标
 Offset circlePoint(num radius, num angle, [Offset center = Offset.zero]) {
-  double x = center.dx + radius * m.cos(angle * Constants.angleUnit);
-  double y = center.dy + radius * m.sin(angle * Constants.angleUnit);
+  double x = center.dx + radius * m.cos(angle * StaticConfig.angleUnit);
+  double y = center.dy + radius * m.sin(angle * StaticConfig.angleUnit);
   return Offset(x, y);
 }

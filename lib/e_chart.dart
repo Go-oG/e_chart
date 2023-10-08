@@ -2,6 +2,8 @@ export 'src/chart.dart';
 
 export 'src/functions.dart';
 
+export 'src/static_config.dart';
+
 export 'src/animation/index.dart';
 
 export 'src/charts/index.dart';

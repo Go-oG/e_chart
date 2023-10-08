@@ -31,15 +31,15 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
 
     var originAngle = arc.startAngle + arc.sweepAngle / 2;
 
-    var dx = m.cos(originAngle * Constants.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
-    var dy = m.sin(originAngle * Constants.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
+    var dx = m.cos(originAngle * StaticConfig.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
+    var dy = m.sin(originAngle * StaticConfig.angleUnit) * (arc.innerRadius + arc.outRadius) / 2;
     var align = series.labelAlignFun?.call(this) ?? Align2.start;
     if (align == Align2.start) {
-      dx = m.cos(originAngle * Constants.angleUnit) * (arc.innerRadius + size.width / 2);
-      dy = m.sin(originAngle * Constants.angleUnit) * (arc.innerRadius + size.width / 2);
+      dx = m.cos(originAngle * StaticConfig.angleUnit) * (arc.innerRadius + size.width / 2);
+      dy = m.sin(originAngle * StaticConfig.angleUnit) * (arc.innerRadius + size.width / 2);
     } else if (align == Align2.end) {
-      dx = m.cos(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
-      dy = m.sin(originAngle * Constants.angleUnit) * (arc.outRadius - size.width / 2);
+      dx = m.cos(originAngle * StaticConfig.angleUnit) * (arc.outRadius - size.width / 2);
+      dy = m.sin(originAngle * StaticConfig.angleUnit) * (arc.outRadius - size.width / 2);
     }
     var textPosition = Offset(dx, dy).translate2(attr.arc.center);
     double rotateMode = series.rotateFun?.call(this) ?? -1;

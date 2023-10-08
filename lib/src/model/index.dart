@@ -30,7 +30,7 @@ export 'array.dart';
 export 'chart_align.dart';
 export 'chart_error.dart';
 export 'chart_offset.dart';
-export 'constans.dart';
+export '../static_config.dart';
 export 'corner.dart';
 export 'data.dart';
 export 'link.dart';

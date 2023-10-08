@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:e_chart/e_chart.dart';
+
 import '../../utils/math_util.dart';
 
 ///将给定的数据范围格式化成美观的数据
@@ -113,14 +115,12 @@ NiceScale _standRange(num min, num max, int splitCount, int oldCount, bool start
   return NiceScale(res[0], res[1], (res[1] - res[0]) / count, count);
 }
 
-///映射标准步长值
-///[originStep]原始步长值
-final List<num> _stand = List.from([0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], growable: false);
 
 ///将给定的值映射到标准间隔
 double _mapStandInterval(num originStep) {
-  for (int i = 0; i < _stand.length; i++) {
-    var d = _stand[i];
+  List<num> stand=StaticConfig.scaleSteps;
+  for (int i = 0; i < stand.length; i++) {
+    var d = stand[i];
     if (originStep <= d) {
       return d.toDouble();
     }
@@ -185,6 +185,6 @@ class NiceScale {
 
   @override
   String toString() {
-    return 'start:${start.toStringAsFixed(2)} end:${end.toStringAsFixed(2)} tickCount:${tickCount} sep:${step.toStringAsFixed(2)}';
+    return 'start:${start.toStringAsFixed(2)} end:${end.toStringAsFixed(2)} tickCount:$tickCount sep:${step.toStringAsFixed(2)}';
   }
 }
