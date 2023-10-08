@@ -44,5 +44,5 @@ class SectorSymbol extends ChartSymbol {
   }
 
   @override
-  Size get size => Size.square(or.toDouble());
+  Size get size => Size.square(or*2);
 }

@@ -5,20 +5,20 @@ List<T> copyList<T>(Iterable<T> list) {
 }
 
 T? removeLastOrNull<T>(List<T>? list) {
-  if (list==null||list.isEmpty) {
+  if (list == null || list.isEmpty) {
     return null;
   }
   return list.removeLast();
 }
 
-List<List<T>> splitList<T>(List<T> list, int count) {
+List<List<T>> splitList<T>(Iterable<T> list, int count) {
   List<List<T>> rl = [];
   if (count <= 0) {
     count = 1;
   }
   List<T> tmpList = [];
-  for (int i = 0; i < list.length; i++) {
-    tmpList.add(list[i]);
+  for (var data in list) {
+    tmpList.add(data);
     if (tmpList.length >= count) {
       rl.add(tmpList);
       tmpList = [];
@@ -30,14 +30,14 @@ List<List<T>> splitList<T>(List<T> list, int count) {
   return rl;
 }
 
-List<List<T?>> splitList2<T>(List<T?> list, int count) {
+List<List<T?>> splitList2<T>(Iterable<T?> list, int count) {
   List<List<T?>> rl = [];
   if (count <= 0) {
     count = 1;
   }
   List<T?> tmpList = [];
-  for (int i = 0; i < list.length; i++) {
-    tmpList.add(list[i]);
+  for (var data in list) {
+    tmpList.add(data);
     if (tmpList.length >= count) {
       rl.add(tmpList);
       tmpList = [];
@@ -49,11 +49,10 @@ List<List<T?>> splitList2<T>(List<T?> list, int count) {
   return rl;
 }
 
-List<List<T>> splitListForNull<T>(List<T?> list) {
+List<List<T>> splitListForNull<T>(Iterable<T?> list) {
   List<List<T>> rl = [];
   List<T> tmpList = [];
-  for (int i = 0; i < list.length; i++) {
-    var t = list[i];
+  for (var t in list) {
     if (t != null) {
       tmpList.add(t);
     } else {

@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'point_helper.dart';
 
@@ -7,12 +8,14 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
 
   @override
   void onDraw(CCanvas canvas) {
+    var list = layoutHelper.showNodeList;
     canvas.save();
     canvas.translate(translationX, translationY);
-    each(layoutHelper.showNodeList, (p0, p1) {
+    each(list, (p0, p1) {
       p0.onDraw(canvas, mPaint);
     });
     canvas.restore();
+    debugPrint("绘制数:${list.length} 占比:${(100 * list.length / layoutHelper.nodeList.length).toStringAsFixed(2)}");
   }
 
   @override

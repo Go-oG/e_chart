@@ -96,7 +96,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       p0.updateStyle(context, series);
     });
 
-    _onLayoutMarkPointAndLine(series.data, newNodeList, newNodeMap);
+    _layoutMarkPointAndLine(series.data, newNodeList, newNodeMap);
     onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
   }
 
@@ -125,7 +125,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type);
 
   ///布局MarkLine和MarkPoint
-  void _onLayoutMarkPointAndLine(
+  void _layoutMarkPointAndLine(
       List<P> groupList, List<SingleNode<T, P>> newNodeList, Map<T, SingleNode<T, P>> newNodeMap) {
     if (series.markPoint == null &&
         series.markLine == null &&

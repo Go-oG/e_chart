@@ -14,6 +14,12 @@ extension OffsetExt on Offset {
     return m.sqrt(a * a + b * b);
   }
 
+  double distanceNotSqrt(num x, num y) {
+    double a = (dx - x).abs();
+    double b = (dy - y).abs();
+    return a * a + b * b;
+  }
+
   /// 判断点Q是否在由 p1 p2组成的线段上 允许偏移值
   /// [deviation] 偏差值必须大于等于0
   bool inLine(Offset p1, Offset p2, {double deviation = 4}) {
@@ -54,14 +60,17 @@ extension OffsetExt on Offset {
     return arc.contains(this);
   }
 
-  bool inCircle(num radius, {Offset center = Offset.zero}) {
-    return inCircle2(radius, center.dx, center.dy);
+  bool inCircle(num radius, {Offset center = Offset.zero, bool equal = true}) {
+    return inCircle2(radius, center.dx, center.dy, equal);
   }
 
-  bool inCircle2(num radius, [num cx = 0, num cy = 0]) {
+  bool inCircle2(num radius, [num cx = 0, num cy = 0, bool equal = true]) {
     double a = (dx - cx).abs();
     double b = (dy - cy).abs();
-    return a * a + b * b <= radius * radius;
+    if (equal) {
+      return a * a + b * b <= radius * radius;
+    }
+    return a * a + b * b < radius * radius;
   }
 
   /// 给定圆心坐标求当前点的偏移角度
@@ -94,7 +103,17 @@ extension OffsetExt on Offset {
   }
 
   Offset get abs {
+    if (dx >= 0 && dy >= 0) {
+      return this;
+    }
     return Offset(dx.abs(), dy.abs());
+  }
+
+  Offset merge(Offset offset) {
+    if (offset == this) {
+      return offset;
+    }
+    return Offset((dx + offset.dx) / 2, (dy + offset.dy) / 2);
   }
 }
 

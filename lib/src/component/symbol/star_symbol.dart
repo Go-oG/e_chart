@@ -32,8 +32,8 @@ class StarSymbol extends ChartSymbol {
   ChartSymbol lerp(covariant StarSymbol end, double t) {
     return StarSymbol(
       Star.lerp(star, end.star, t),
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ?? AreaStyle.empty,
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t) ?? LineStyle.empty,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
     );
   }
 

@@ -232,6 +232,9 @@ class LineStyle {
   }
 
   void drawCircle(CCanvas canvas, Paint paint, Offset center, num radius) {
+    if (notDraw) {
+      return;
+    }
     double r = radius.toDouble();
     if (align == Align2.start) {
       r -= width / 2;

@@ -38,8 +38,8 @@ class RectSymbol extends ChartSymbol {
     return RectSymbol(
       rectSize: rect.size,
       corner: Corner.lerp(corner, end.corner, t),
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ?? AreaStyle.empty,
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t) ?? LineStyle.empty,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t) ,
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
     );
   }
 

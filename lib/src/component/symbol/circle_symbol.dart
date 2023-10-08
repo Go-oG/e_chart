@@ -4,20 +4,23 @@ import 'package:e_chart/e_chart.dart';
 
 class CircleSymbol extends ChartSymbol {
   final num radius;
+  late Size _size;
 
   CircleSymbol({
     this.radius = 8,
     super.borderStyle,
     super.itemStyle,
-  });
+  }) {
+    _size = Size.square(radius * 2);
+  }
 
   @override
-  Size get size => Size.square(radius * 2);
+  Size get size => _size;
 
   @override
   bool contains(Offset center, Offset point) {
     double dis = point.distance2(center);
-    return dis <= (scale*size.longestSide / 2);
+    return dis <= (scale * size.longestSide / 2);
   }
 
   @override
@@ -34,8 +37,8 @@ class CircleSymbol extends ChartSymbol {
     var or = lerpDouble(radius, end.radius, t)!;
     return CircleSymbol(
       radius: or,
-      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t)??AreaStyle.empty,
-      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t)??LineStyle.empty,
+      itemStyle: AreaStyle.lerp(itemStyle, end.itemStyle, t),
+      borderStyle: LineStyle.lerp(borderStyle, end.borderStyle, t),
     );
   }
 

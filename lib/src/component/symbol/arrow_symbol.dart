@@ -9,13 +9,15 @@ class ArrowSymbol extends ChartSymbol {
   final double ratio;
   final num fixRotate;
   late Path path;
+  late Size _size;
 
   ArrowSymbol({super.borderStyle, super.itemStyle, this.sideLength = 16, this.fixRotate = 0, this.ratio = 0.8}) {
     path = buildPath(sideLength, ratio);
+    _size = Size(sideLength * sqrt(3) / 3, sideLength * sqrt(3) / 3);
   }
 
   @override
-  Size get size => Size(sideLength * sqrt(3) / 3, sideLength * sqrt(3) / 3);
+  Size get size => _size;
 
   @override
   bool contains(Offset center, Offset point) {

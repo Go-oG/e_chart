@@ -1,7 +1,8 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-
+import 'package:e_chart/src/utils/shape_util.dart';
+import 'package:flutter/rendering.dart';
 import 'point_node.dart';
 
 class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
@@ -110,9 +111,62 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     }
   }
 
-  void updateShowNodeList() {
+  void updateShowNodeList() async {
     var rect = boxBound.translate(-translationX, -translationY);
-    showNodeList = rBush.search2(rect);
+    var list = rBush.search2(rect);
+    sortList(list);
+
+    int rowCount = 10;
+    int colCount = 10;
+    int oldCount = list.length;
+
+    List<List<List<PointNode>>> spList = List.generate(rowCount, (index) => List.generate(colCount, (in2) => []));
+    var cellH = rect.height / rowCount;
+    var cellW = rect.width / colCount;
+    for (var node in list) {
+      int row = ((node.attr.dy - rect.top) / cellH).floor();
+      if (row < 0) {
+        row = 0;
+      }
+      if (row >= rowCount) {
+        row = rowCount - 1;
+      }
+      int col = ((node.attr.dx - rect.left) / cellW).floor();
+      if (col < 0) {
+        col = 0;
+      }
+      if (col >= colCount) {
+        col = colCount - 1;
+      }
+
+      spList[row][col].add(node);
+    }
+
+    List<Future<List<PointNode>>> futureList = [];
+    list = [];
+    for (var rows in spList) {
+      for (var cell in rows) {
+        if (cell.length > 50) {
+          var f = Future<List<PointNode>>(() {
+            int old = cell.length;
+            var rl = removeOverlapCircle<PointNode>(cell, (p0) => p0.attr, (p0) => p0.symbol.size.shortestSide / 2);
+            debugPrint("处理前:$old 处理后:${rl.length}");
+            return rl;
+          });
+          futureList.add(f);
+        } else {
+          list.addAll(cell);
+        }
+      }
+    }
+
+    for (var f in futureList) {
+      list.addAll(await f);
+    }
+    sortList(list);
+    showNodeList = list;
+    debugPrint('优化前:${oldCount} 优化后:${list.length}');
+    notifyLayoutUpdate();
   }
 
   @override
