@@ -352,6 +352,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onAnimatorEnd(DiffResult2<SingleNode<T, P>, StackAnimationNode, T> result) {}
 
   ///=======其它函数======
+  ///获取指定坐标轴上的极值数据
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
     CoordType system = CoordType.grid;
     if (series.coordType == CoordType.polar) {

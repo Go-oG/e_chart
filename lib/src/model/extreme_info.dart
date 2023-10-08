@@ -1,4 +1,4 @@
-import '../index.dart';
+import 'axis_index.dart';
 
 ///存储坐标轴上的极值信息
 class ExtremeInfo {
@@ -13,6 +13,27 @@ class ExtremeInfo {
   late List<dynamic> _info;
 
   ExtremeInfo(this.xAxis, this.axisIndex, this.numExtreme, this.strExtreme, this.timeExtreme) {
+    _info = [...numExtreme, ...strExtreme, ...timeExtreme];
+  }
+
+  void syncData() {
+    _info = [...numExtreme, ...strExtreme, ...timeExtreme];
+  }
+
+  List<dynamic> getAllExtreme() {
+    return _info;
+  }
+}
+
+class ExtremeInfo2 {
+  final String axisIndex;
+  final List<num> numExtreme;
+  final List<String> strExtreme;
+  final List<DateTime> timeExtreme;
+
+  late List<dynamic> _info;
+
+  ExtremeInfo2(this.axisIndex, this.numExtreme, this.strExtreme, this.timeExtreme) {
     _info = [...numExtreme, ...strExtreme, ...timeExtreme];
   }
 

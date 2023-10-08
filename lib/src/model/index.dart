@@ -41,3 +41,6 @@ export 'range_info.dart';
 export 'string_number.dart';
 export 'tree_data.dart';
 export 'node/tree_node.dart';
+export 'axis_index.dart';
+export 'extreme.dart';
+export 'extreme_info.dart';

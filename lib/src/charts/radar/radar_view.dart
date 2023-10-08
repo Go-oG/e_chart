@@ -29,7 +29,12 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
 
   @override
   RadarHelper buildLayoutHelper(var oldHelper) {
-    oldHelper?.clearRef();
+    if(oldHelper!=null){
+      oldHelper.context=context;
+      oldHelper.view=this;
+      oldHelper.series=series;
+      return oldHelper;
+    }
     return RadarHelper(context, this, series);
   }
 }

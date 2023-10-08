@@ -1,19 +1,15 @@
 import 'package:e_chart/e_chart.dart';
 
 class PointGroup extends BaseGroupData<PointData> {
-  int gridIndex;
-  int gridXIndex;
-  int gridYIndex;
-  int polarIndex;
-  int calendarIndex;
+  ///标识使用的坐标轴索引
+  ///对应Polar坐标系 X轴对应半径轴 Y轴对应角度轴
+  int xAxisIndex;
+  int yAxisIndex;
 
   PointGroup(
     super.data, {
-    this.gridIndex = 0,
-    this.gridXIndex = 0,
-    this.gridYIndex = 0,
-    this.polarIndex = -1,
-    this.calendarIndex = 0,
+    this.xAxisIndex = 0,
+    this.yAxisIndex = 0,
     super.id,
     super.name,
   });

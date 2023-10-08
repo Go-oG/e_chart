@@ -1,8 +1,8 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/stack/model/extreme.dart';
+import 'package:e_chart/src/model/extreme.dart';
 
-import 'extreme_info.dart';
+import '../../../model/extreme_info.dart';
 
 ///处理二维坐标系下堆叠数据
 class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends ChartSeries> {

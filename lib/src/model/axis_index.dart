@@ -1,4 +1,4 @@
-import '../../../model/index.dart';
+import 'index.dart';
 
 class AxisIndex {
   final CoordType system;
@@ -18,3 +18,4 @@ class AxisIndex {
     return other is AxisIndex && other.axisIndex == axisIndex && other.system == system;
   }
 }
+

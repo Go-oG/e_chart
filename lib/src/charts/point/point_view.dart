@@ -23,24 +23,12 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
 
   @override
   List<dynamic> getAngleExtreme() {
-    List<dynamic> dl = [];
-    for (var ele in series.data) {
-      for (var e in ele.data) {
-        dl.add(e.y);
-      }
-    }
-    return dl;
+    return series.getExtremeHelper().getExtreme('y0').getAllExtreme();
   }
 
   @override
   List<dynamic> getRadiusExtreme() {
-    List<dynamic> dl = [];
-    for (var ele in series.data) {
-      for (var e in ele.data) {
-        dl.add(e.x);
-      }
-    }
-    return dl;
+    return series.getExtremeHelper().getExtreme('x0').getAllExtreme();
   }
 
   @override
@@ -50,33 +38,40 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
 
   @override
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
-    if (axisIndex <= 0) {
-      axisIndex = 0;
-    }
+    axisIndex = max([axisIndex, 0]).toInt();
+    return series.getExtremeHelper().getExtreme(isXAxis ? 'x:$axisIndex' : 'y$axisIndex').getAllExtreme();
+  }
+
+  @override
+  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     List<dynamic> dl = [];
-    for (var group in series.data) {
-      var index = isXAxis ? group.gridXIndex : group.gridYIndex;
+    each(layoutHelper.showNodeList, (node, p1) {
+      var data = node.data;
+      var index = isXAxis ? node.group.xAxisIndex : node.group.yAxisIndex;
       if (index < 0) {
         index = 0;
       }
       if (index != axisIndex) {
-        continue;
+        return;
       }
-      for (var e in group.data) {
-        dl.add(isXAxis ? e.x : e.y);
+
+      if (isXAxis) {
+        dl.add(data.x);
+      } else {
+        dl.add(data.y);
       }
-    }
+    });
     return dl;
   }
 
   @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
-    return getAxisExtreme(axisIndex, isXAxis);
-  }
-
-  @override
   PointHelper buildLayoutHelper(var oldHelper) {
-    oldHelper?.clearRef();
+    if (oldHelper != null) {
+      oldHelper.context = context;
+      oldHelper.view = this;
+      oldHelper.series = series;
+      return oldHelper;
+    }
     return PointHelper(context, this, series);
   }
 

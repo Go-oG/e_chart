@@ -93,8 +93,8 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
 
   void _layoutForGrid(List<PointNode> nodeList, GridCoord coord) {
     for (var node in nodeList) {
-      var x = coord.dataToPoint(node.group.gridXIndex, node.data.x, true);
-      var y = coord.dataToPoint(node.group.gridYIndex, node.data.y, false);
+      var x = coord.dataToPoint(node.group.xAxisIndex, node.data.x, true);
+      var y = coord.dataToPoint(node.group.yAxisIndex, node.data.y, false);
       double ox;
       if (x.length == 1) {
         ox = x.first.dx;

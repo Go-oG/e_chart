@@ -9,3 +9,5 @@ export 'math_util.dart';
 export 'num_util.dart';
 export 'string_util.dart';
 export 'uuid_util.dart';
+
+export 'helper/extreme_helper.dart';

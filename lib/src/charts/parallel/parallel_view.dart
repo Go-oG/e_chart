@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'parallel_helper.dart';
 
-//平行坐标系
+///平行坐标系
 class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implements ParallelChild {
   ParallelView(super.series);
 
@@ -31,14 +31,10 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
 
   @override
   List<dynamic> getDimDataSet(int dim) {
-    List<dynamic> list = [];
-    for (var group in series.data) {
-      if (dim < group.data.length) {
-        var data = group.data[dim];
-        list.add(data);
-      }
+    if (dim < 0) {
+      dim = 0;
     }
-    return list;
+    return series.getExtremeHelper().getExtreme('$dim').getAllExtreme();
   }
 
   @override
@@ -46,7 +42,12 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
 
   @override
   ParallelHelper buildLayoutHelper(var oldHelper) {
-    oldHelper?.clearRef();
+    if (oldHelper != null) {
+      oldHelper.context = context;
+      oldHelper.view = this;
+      oldHelper.series = series;
+      return oldHelper;
+    }
     return ParallelHelper(context, this, series);
   }
 }

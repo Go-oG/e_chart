@@ -73,6 +73,49 @@ class ParallelSeries extends ChartSeries {
 
   @override
   SeriesType get seriesType => SeriesType.parallel;
+
+  ExtremeHelper<dynamic>? _extremeHelper;
+
+  ExtremeHelper<dynamic> getExtremeHelper() {
+    if (_extremeHelper != null) {
+      return _extremeHelper!;
+    }
+
+    int maxValue = 0;
+    each(data, (group, p0) {
+      maxValue = max([maxValue, group.data.length]).toInt();
+    });
+
+    ExtremeHelper<ParallelGroup> helper = ExtremeHelper(
+      (p0) => List.generate(maxValue, (index) => '$index', growable: false),
+      (p0, index) {
+        var di = int.parse(index);
+        if (p0.data.length <= di) {
+          return null;
+        }
+        return p0.data[di];
+      },
+      data,
+    );
+    _extremeHelper = helper;
+    return helper;
+  }
+
+  void clearExtreme() {
+    _extremeHelper = null;
+  }
+
+  @override
+  void notifyUpdateData() {
+    clearExtreme();
+    super.notifyUpdateData();
+  }
+
+  @override
+  void notifyConfigChange() {
+    clearExtreme();
+    super.notifyConfigChange();
+  }
 }
 
 class ParallelGroup extends BaseGroupData<dynamic> {

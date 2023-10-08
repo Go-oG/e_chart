@@ -57,4 +57,51 @@ class PointSeries extends RectSeries {
 
   @override
   SeriesType get seriesType => SeriesType.point;
+
+  ExtremeHelper<PointData>? _extremeHelper;
+
+  ExtremeHelper<PointData> getExtremeHelper() {
+    if (_extremeHelper != null) {
+      return _extremeHelper!;
+    }
+    Map<PointData, PointGroup> groupMap = {};
+    each(data, (group, p0) {
+      each(group.data, (child, p1) {
+        if (groupMap.containsKey(child)) {
+          throw ChartError("存在相同ID的数据");
+        }
+        groupMap[child] = group;
+      });
+    });
+
+    ExtremeHelper<PointData> helper = ExtremeHelper(
+      (p0) => ['x${groupMap[p0]!.xAxisIndex}', 'y${groupMap[p0]!.yAxisIndex}'],
+      (p0, index) {
+        if (index.startsWith('x')) {
+          return p0.x;
+        }
+        return p0.y;
+      },
+      groupMap.keys,
+    );
+    _extremeHelper = helper;
+    return helper;
+  }
+
+  void clearExtreme() {
+    _extremeHelper = null;
+  }
+
+  @override
+  void notifyUpdateData() {
+    clearExtreme();
+    super.notifyUpdateData();
+  }
+
+  @override
+  void notifyConfigChange() {
+    clearExtreme();
+    super.notifyConfigChange();
+  }
+
 }
