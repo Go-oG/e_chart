@@ -24,19 +24,20 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    _nodeMap = {};
+    Map<TreeData, TreeRenderNode> nodeMap={};
     int i = 0;
     var root = toTree<TreeData, TreeAttr, TreeRenderNode>(series.data, (p0) => p0.children, (p0, p1) {
       var node = TreeRenderNode(p0, p1, i, TreeAttr.of());
       node.attr.symbol = series.getSymbol(context, node);
       i += 1;
-      _nodeMap[p1] = node;
+      nodeMap[p1] = node;
       node.updateStyle(context, series);
       node.size = node.attr.symbol.size;
       return node;
     });
     _startLayout(root);
     _rootNode = root;
+    _nodeMap=nodeMap;
     _rBush.clear();
     _rBush.addAll(root.iterator());
     updateShowNodeList();

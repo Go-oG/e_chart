@@ -2,6 +2,7 @@ export 'align_util.dart';
 export 'assert_check.dart';
 export 'color_util.dart';
 export 'diff.dart' hide TweenWrap;
+export 'diff2.dart';
 export 'js_util.dart';
 export 'list_util.dart';
 export 'log_util.dart';

@@ -5,7 +5,7 @@ import 'pie_node.dart';
 
 ///饼图布局
 class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
-  PieHelper(super.context,super.view, super.series);
+  PieHelper(super.context, super.view, super.series);
 
   num maxData = double.minPositive;
   num minData = double.maxFinite;
@@ -228,9 +228,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       }
     }
     const double rDiff = 8;
-
     DiffUtil.diffUpdate<Arc, ItemData, PieNode>(
-      context,
       animation,
       oldList,
       newList,
@@ -247,6 +245,6 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       },
       (s, e, t) => Arc.lerp(s, e, t),
       notifyLayoutUpdate,
-    );
+    ).first.start(context);
   }
 }

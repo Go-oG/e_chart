@@ -206,7 +206,6 @@ class DiffUtil {
       throw ChartError('状态异常');
     }
 
-
     Map<dynamic, Map<String, dynamic>> startMap = {};
     Map<dynamic, Map<String, dynamic>> endMap = {};
     addSet.forEach((key, value) {
@@ -362,19 +361,7 @@ class DiffUtil {
   }
 
   ///用于在点击或者hover触发时执行diff动画
-  static void diffUpdate<P, D, N extends DataNode<P, D>>(
-    Context context,
-    AnimatorOption? attrs,
-    Iterable<N> oldList,
-    Iterable<N> newList,
-    P Function(D data, N node, bool isOld) builder,
-    P Function(P s, P e, double t) lerpFun,
-    VoidCallback callback,
-  ) {
-    diffUpdate2<P, D, N>(attrs, oldList, newList, builder, lerpFun, callback).first.start(context);
-  }
-
-  static List<AnimationNode> diffUpdate2<P, D, N extends DataNode<P, D>>(
+  static List<AnimationNode> diffUpdate<P, D, N extends DataNode<P, D>>(
     AnimatorOption? attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
