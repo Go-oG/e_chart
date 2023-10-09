@@ -59,8 +59,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
   void onHandleHoverAndClick(Offset offset, bool click) {
     var oldOffset = offset;
-    Offset scroll = getTranslation();
-    offset = offset.translate2(scroll.invert);
+    offset = offset.translate(-translationX, -translationY);
     var clickNode = findNode(offset);
     if (oldHoverNode == clickNode) {
       if (clickNode != null) {

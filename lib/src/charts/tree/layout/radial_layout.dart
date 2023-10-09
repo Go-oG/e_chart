@@ -17,7 +17,7 @@ class RadialTreeLayout extends TreeLayout {
   bool useTidy;
 
   ///只在 [useTidy]为true时使用
-  Fun3<TreeLayoutNode, TreeLayoutNode, num>? splitFun;
+  Fun3<TreeRenderNode, TreeRenderNode, num>? splitFun;
 
   RadialTreeLayout({
     this.rotateAngle = 0,
@@ -25,27 +25,26 @@ class RadialTreeLayout extends TreeLayout {
     this.useTidy = false,
     this.clockwise = true,
     this.splitFun,
-    super.center = const [SNumber.percent(50), SNumber.percent(50)],
-    super.centerIsRoot = true,
     super.lineType = LineType.line,
     super.gapFun,
     super.levelGapFun,
-    super.sizeFun,
     super.levelGapSize,
     super.nodeGapSize,
-    super.nodeSize,
   });
 
   @override
-  void onLayout2(TreeLayoutNode root) {
-    Offset center = Offset(this.center[0].convert(width), this.center[1].convert(height));
-    int maxDeep = root.findMaxDeep();
+  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
+    num width = params.width;
+    num height = params.height;
+
+    var center = Offset(params.series.center[0].convert(width), params.series.center[1].convert(height));
+    int maxDeep = rootNode.findMaxDeep();
     num maxH = 0;
     for (int i = 1; i <= maxDeep; i++) {
       maxH += getLevelGap(i - 1, i);
     }
-    List<TreeLayoutNode> nodeList = [root];
-    List<TreeLayoutNode> next = [];
+    List<TreeRenderNode> nodeList = [rootNode];
+    List<TreeRenderNode> next = [];
     while (nodeList.isNotEmpty) {
       num v = 0;
       for (var n in nodeList) {
@@ -59,11 +58,11 @@ class RadialTreeLayout extends TreeLayout {
     }
     num radius = maxH / 2;
     if (useTidy) {
-      _layoutForTidy(context, root, sweepAngle, radius);
+      _layoutForTidy(params.series, rootNode, sweepAngle, radius);
     } else {
-      _layoutForDendrogram(context, root, sweepAngle, radius);
+      _layoutForDendrogram(params.series, rootNode, sweepAngle, radius);
     }
-    root.each((node, index, startNode) {
+    rootNode.each((node, index, startNode) {
       Offset c;
       if (clockwise) {
         c = circlePoint(node.y, node.x + rotateAngle, center);
@@ -74,26 +73,26 @@ class RadialTreeLayout extends TreeLayout {
       node.y = c.dy;
       return false;
     });
-    root.x = center.dx;
-    root.y = center.dy;
+    rootNode.x = center.dx;
+    rootNode.y = center.dy;
   }
 
-  void _layoutForDendrogram(Context context, TreeLayoutNode root, num sweepAngle, num radius) {
+  void _layoutForDendrogram(TreeSeries series, TreeRenderNode root, num sweepAngle, num radius) {
     root.sort((p0, p1) => p1.height.compareTo(p0.height));
-    D3DendrogramLayout layout = D3DendrogramLayout(direction: Direction2.ttb, diff: false);
+    var layout = D3DendrogramLayout(direction: Direction2.ttb, useCompactGap: false);
     if (splitFun != null) {
       layout.splitFun = splitFun!;
     }
-    layout.boxBound = Rect.fromLTWH(0, 0, sweepAngle.toDouble(), radius.toDouble());
-    layout.onLayout2(root);
+    var lp = TreeLayoutParams(series, sweepAngle.toDouble(), radius.toDouble());
+    layout.onLayout(root, lp);
   }
 
-  void _layoutForTidy(Context context, TreeLayoutNode root, num sweepAngle, num radius) {
-    D3TreeLayout layout = D3TreeLayout(diff: false);
+  void _layoutForTidy(TreeSeries series, TreeRenderNode root, num sweepAngle, num radius) {
+    var layout = D3TreeLayout(diff: false);
     if (splitFun != null) {
       layout.splitFun = splitFun!;
     }
-    layout.boxBound = Rect.fromLTWH(0, 0, sweepAngle.toDouble(), radius.toDouble());
-    layout.onLayout2(root);
+    var lp = TreeLayoutParams(series, sweepAngle.toDouble(), radius.toDouble());
+    layout.onLayout(root, lp);
   }
 }

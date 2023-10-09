@@ -1,8 +1,8 @@
-import 'dart:math';
-import 'dart:ui';
+
+import 'dart:ui'  as ui;
 
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 
 class LabelStyle {
   static const LabelStyle empty = LabelStyle(show: false);
@@ -19,7 +19,7 @@ class LabelStyle {
   const LabelStyle({
     this.show = true,
     this.rotate = 0,
-    this.textStyle = const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.normal),
+    this.textStyle = const TextStyle(color: Color(0xFFFFFFFF), fontSize: 13, fontWeight: FontWeight.normal),
     this.decoration,
     this.overFlow = OverFlow.cut,
     this.ellipsis = '',
@@ -27,6 +27,29 @@ class LabelStyle {
     this.lineMargin = 4,
     this.minAngle = 0,
   });
+
+  LabelStyle copy({
+    bool? show,
+    double? rotate,
+   TextStyle? textStyle,
+    AreaStyle? decoration,
+    OverFlow? overFlow,
+    String? ellipsis,
+    GuideLine? guideLine,
+    double? lineMargin,
+    double? minAngle,
+  }) {
+    return LabelStyle(
+        show: show ?? this.show,
+        rotate: rotate ?? this.rotate,
+        textStyle: textStyle ?? this.textStyle,
+        decoration: decoration ?? this.decoration,
+        overFlow: overFlow ?? this.overFlow,
+        ellipsis: ellipsis ?? this.ellipsis,
+        guideLine: guideLine ?? this.guideLine,
+        lineMargin: lineMargin ?? this.lineMargin,
+        minAngle: minAngle ?? this.minAngle);
+  }
 
   Size measure(DynamicText text, {num maxWidth = double.infinity, int? maxLine}) {
     if (text.isEmpty) {
@@ -48,8 +71,8 @@ class LabelStyle {
       painter.layout(maxWidth: maxWidth.toDouble());
       return painter.size;
     }
-    Paragraph p = text.text as Paragraph;
-    ParagraphConstraints constraints = ParagraphConstraints(width: maxWidth.toDouble());
+    ui.Paragraph p = text.text as ui.Paragraph;
+    ui.ParagraphConstraints constraints = ui.ParagraphConstraints(width: maxWidth.toDouble());
     p.layout(constraints);
     return Size(p.width, p.height);
   }

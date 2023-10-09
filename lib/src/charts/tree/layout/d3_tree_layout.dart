@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 class D3TreeLayout extends TreeLayout {
   ///分离函数，用于决定两个节点(一般为兄弟节点)之间的间距
-  Fun3<TreeLayoutNode, TreeLayoutNode, num> splitFun = (a, b) {
+  Fun3<TreeRenderNode, TreeRenderNode, num> splitFun = (a, b) {
     ///对于Radial布局 一般设置为 (a.parent == b.parent ? 1 : 2) / a.depth;
     return a.parent == b.parent ? 1 : 2;
   };
@@ -18,43 +18,36 @@ class D3TreeLayout extends TreeLayout {
     super.gapFun,
     super.levelGapFun,
     super.lineType,
-    super.sizeFun,
-    super.center = const [SNumber.percent(50), SNumber.percent(0)],
-    super.centerIsRoot,
     super.levelGapSize,
     super.nodeGapSize,
-    super.nodeSize,
   });
-
   @override
-  void onLayout2(TreeLayoutNode root) {
-    num dx = width;
-    num dy = height;
-    InnerNode t = _treeRoot(root);
+  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
+    num dx = params.width;
+    num dy = params.height;
+    InnerNode t = _treeRoot(rootNode);
     t.eachAfter(_firstWalk);
     t.parent!.m = -t.z;
     t.eachBefore(_secondWalk);
 
     if (diff) {
-      root.eachBefore((node, b, c) {
+      rootNode.eachBefore((node, b, c) {
         _sizeNode(node, dx, dy);
         return false;
       });
     } else {
-      var left = root, right = root, bottom = root;
+      var left = rootNode, right = rootNode, bottom = rootNode;
 
       ///找到最右 最左 最低的节点
-      root.eachBefore((node, b, c) {
+      rootNode.eachBefore((node, b, c) {
         if (node.x < left.x) left = node;
         if (node.x > right.x) right = node;
         if (node.deep > bottom.deep) bottom = node;
         return false;
       });
-
       var split = left == right ? 1 : splitFun.call(left, right) / 2;
-
       var tx = split - left.x, kx = dx / (right.x + split + tx), ky = dy / (jsOr(bottom.deep, 1));
-      root.eachBefore((node, b, c) {
+      rootNode.eachBefore((node, b, c) {
         node.x = (node.x + tx) * kx;
         node.y = node.deep * ky;
         return false;
@@ -89,10 +82,10 @@ class D3TreeLayout extends TreeLayout {
     return vim.a!.parent == v.parent ? vim.a! : ancestor;
   }
 
-  InnerNode _treeRoot(TreeLayoutNode root) {
+  InnerNode _treeRoot(TreeRenderNode root) {
     InnerNode tree = InnerNode(null, root, 0);
     List<InnerNode> nodes = [tree];
-    List<TreeLayoutNode> children = [];
+    List<TreeRenderNode> children = [];
     while (nodes.isNotEmpty) {
       var node = nodes.removeLast();
       children = node.node!.children;
@@ -182,7 +175,7 @@ class D3TreeLayout extends TreeLayout {
     return ancestor;
   }
 
-  void _sizeNode(TreeLayoutNode node, num dx, num dy) {
+  void _sizeNode(TreeRenderNode node, num dx, num dy) {
     node.x *= dx;
     node.y = node.deep * dy;
   }
@@ -196,10 +189,11 @@ class D3TreeLayout extends TreeLayout {
     var children = v.children;
     return children.isNotEmpty ? children[children.length - 1] : v.t;
   }
+
 }
 
 class InnerNode extends TreeNode<Offset, Offset, InnerNode> {
-  TreeLayoutNode? node;
+  TreeRenderNode? node;
   int i;
   InnerNode? A; // default ancestor
   InnerNode? a; // ancestor

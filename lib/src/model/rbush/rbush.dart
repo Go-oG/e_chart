@@ -290,7 +290,7 @@ class RBush<T> {
         goingUp = true;
       }
       if (tmpNode.leaf) {
-        int index = findItem2(item, tmpNode.children);
+        int index = _findItem2(item, tmpNode.children);
         if (index != -1) {
           //如果被找到了，则删除该项并向上压缩树
           tmpNode.children.removeRange(index, index + 1);
@@ -544,11 +544,11 @@ class RBush<T> {
     }
   }
 
-  int findItem(RNode item, List<RNode> items) {
+  int _findItem(RNode item, List<RNode> items) {
     return items.indexOf(item);
   }
 
-  int findItem2(T item, List<RNode> items) {
+  int _findItem2(T item, List<RNode> items) {
     return items.indexWhere((e) => item == e.value);
   }
 

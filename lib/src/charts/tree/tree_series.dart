@@ -4,17 +4,25 @@ import 'package:e_chart/src/charts/tree/tree_view.dart';
 class TreeSeries extends RectSeries {
   TreeData data;
   TreeLayout layout;
+
+  ///描述根节点的位置
+  List<SNumber> center;
+  bool rootInCenter;
   SelectedMode selectedMode;
-  Fun2<TreeLayoutNode, ChartSymbol> symbolFun;
-  Fun2<TreeLayoutNode, LabelStyle>? labelStyleFun;
-  Fun3<TreeLayoutNode, TreeLayoutNode, LineStyle> linkStyleFun;
+
+  ///这个包含了大小等相关信息
+  Fun2<TreeRenderNode, ChartSymbol>? symbolFun;
+  Fun2<TreeRenderNode, LabelStyle>? labelStyleFun;
+  Fun3<TreeRenderNode, TreeRenderNode, LineStyle>? linkStyleFun;
 
   TreeSeries(
     this.data,
     this.layout, {
+    this.rootInCenter = true,
+    this.center = const [SNumber.number(0), SNumber.percent(50)],
     this.selectedMode = SelectedMode.single,
-    required this.symbolFun,
-    required this.linkStyleFun,
+    this.symbolFun,
+    this.linkStyleFun,
     this.labelStyleFun,
     super.leftMargin,
     super.topMargin,
@@ -35,17 +43,25 @@ class TreeSeries extends RectSeries {
     return TreeView(this);
   }
 
-  ChartSymbol getSymbol(Context context, TreeLayoutNode node) {
-    return symbolFun.call(node);
+  ChartSymbol getSymbol(Context context, TreeRenderNode node) {
+    var fun = symbolFun;
+    if (fun != null) {
+      return fun.call(node);
+    }
+    return CircleSymbol(radius: 8, itemStyle: context.option.theme.getAreaStyle(node.groupIndex).convert(node.status));
   }
 
-  LineStyle getLinkStyle(Context context, TreeLayoutNode source, TreeLayoutNode target) {
-    return linkStyleFun.call(source, target);
-  }
-  LabelStyle getLabelStyle(Context context, TreeLayoutNode source) {
-    return labelStyleFun?.call(source)??LabelStyle.empty;
+  LineStyle getLinkStyle(Context context, TreeRenderNode source, TreeRenderNode target) {
+    var fun = linkStyleFun;
+    if (fun != null) {
+      return fun.call(source, target);
+    }
+    return LineStyle.normal;
   }
 
+  LabelStyle getLabelStyle(Context context, TreeRenderNode source) {
+    return labelStyleFun?.call(source) ?? LabelStyle.empty;
+  }
 
   @override
   List<LegendItem> getLegendItem(Context context) => [];

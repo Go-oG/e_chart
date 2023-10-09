@@ -197,7 +197,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     var olList = _splitList(nodeList);
     olList.removeWhere((element) => element.length < 2);
     List<OptLinePath> borderList = [];
-    StepType? stepType = series.stepLineFun?.call(group);
+    LineType? stepType = series.stepLineFun?.call(group);
 
     each(olList, (list, p1) {
       var style = list.first.borderStyle;
@@ -213,12 +213,12 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     return borderList;
   }
 
-  Line _buildLine(List<Offset> offsetList, StepType? type, num smooth, List<num> dash) {
+  Line _buildLine(List<Offset> offsetList, LineType? type, num smooth, List<num> dash) {
     Line line = Line(offsetList, smooth: smooth, dashList: dash);
     if (type != null) {
-      if (type == StepType.step) {
+      if (type == LineType.step) {
         line = Line(line.step(), dashList: dash);
-      } else if (type == StepType.after) {
+      } else if (type == LineType.after) {
         line = Line(line.stepAfter(), dashList: dash);
       } else {
         line = Line(line.stepBefore(), dashList: dash);

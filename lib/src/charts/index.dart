@@ -59,8 +59,9 @@ export 'tree/layout/dendrogram_layout.dart';
 export 'tree/layout/indented_layout.dart';
 export 'tree/layout/mindmap_layout.dart';
 export 'tree/layout/radial_layout.dart';
+
 export 'tree/node.dart';
-export 'tree/tree_helper.dart';
+export 'tree/tree_layout.dart';
 export 'tree/tree_series.dart';
 
 export 'treemap/layout/binary.dart' hide BinaryNode;

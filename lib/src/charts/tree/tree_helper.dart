@@ -1,142 +1,123 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-abstract class TreeLayout extends LayoutHelper<TreeSeries> {
-  ///描述根节点的位置
-  List<SNumber> center;
-  bool centerIsRoot;
+class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
+  TreeHelper(super.context, super.view, super.series);
 
-  ///连接线的类型(某些布局只支持某些特定类型)
-  LineType lineType;
-
-  ///是否平滑连接线
-  num smooth;
-
-  ///节点大小配置
-  Size? nodeSize;
-  Fun2<TreeLayoutNode, Size>? sizeFun;
-
-  ///节点之间的间距函数
-  Offset? nodeGapSize;
-  Fun3<TreeLayoutNode, TreeLayoutNode, Offset>? gapFun;
-
-  ///节点之间的层级间距函数优先级：fun> levelGapSize
-  num? levelGapSize;
-  Fun3<int, int, num>? levelGapFun;
-  Offset _transOffset = Offset.zero;
-
-  TreeLayout({
-    this.center = const [SNumber.number(0), SNumber.percent(50)],
-    this.lineType = LineType.line,
-    this.smooth = 0,
-    this.centerIsRoot = true,
-    this.nodeSize,
-    this.sizeFun,
-    this.nodeGapSize,
-    this.gapFun,
-    this.levelGapSize,
-    this.levelGapFun,
-  }) : super.lazy();
-
-  //========布局中使用的变量=============
   ///保存数据和节点之间的映射关系，以便在O(1)时间中处理数据
-  Map<TreeData, TreeLayoutNode> _nodeMap = {};
+  Map<TreeData, TreeRenderNode> _nodeMap = {};
 
-  ///外部传入的数据映射
-  ///所有的操作都是对该树进行操作
-  TreeLayoutNode _rootNode =
-      TreeLayoutNode(null, TreeData(0), 0, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+  TreeRenderNode _rootNode = TreeRenderNode(null, TreeData.empty, 0, TreeAttr.of());
 
-  ///记录节点数
-  int nodeCount = 0;
+  TreeRenderNode get rootNode => _rootNode;
+
+  final RBush<TreeRenderNode> _rBush = RBush(
+    (p0) => p0.center.dx - p0.size.width / 2,
+    (p0) => p0.center.dy - p0.size.height / 2,
+    (p0) => p0.center.dx + p0.size.width / 2,
+    (p0) => p0.center.dy + p0.size.height / 2,
+  );
+
+  void updateShowNodeList() {
+    nodeList = _rBush.search(getViewPortRect());
+  }
 
   @override
   void onLayout(LayoutType type) {
     _nodeMap = {};
     int i = 0;
-    _rootNode = toTree<TreeData, TreeAttr, TreeLayoutNode>(series.data, (p0) => p0.children, (p0, p1) {
-      TreeLayoutNode node =
-          TreeLayoutNode(p0, p1, i, TreeAttr.of(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty);
+    var root = toTree<TreeData, TreeAttr, TreeRenderNode>(series.data, (p0) => p0.children, (p0, p1) {
+      var node = TreeRenderNode(p0, p1, i, TreeAttr.of());
       node.attr.symbol = series.getSymbol(context, node);
       i += 1;
       _nodeMap[p1] = node;
+      node.updateStyle(context, series);
+      node.size = node.attr.symbol.size;
       return node;
     });
-    _startLayout(_rootNode);
+    _startLayout(root);
+    _rootNode = root;
+    _rBush.clear();
+    _rBush.addAll(root.iterator());
+    updateShowNodeList();
   }
 
-  void computeDeepAndHeight(TreeLayoutNode root) {
+  void _startLayout(TreeRenderNode root) {
+    ///计算树的深度和高度
     root.setDeep(0);
     root.computeHeight();
-  }
-
-  void _startLayout(TreeLayoutNode root, [bool notify = true]) {
-    ///计算树的深度和高度
-    computeDeepAndHeight(root);
-
-    ///在布局开始时都要先计算总数和节点大小
-    nodeCount = 0;
-    root.each((node, index, startNode) {
-      nodeCount += 1;
-      node.size = getNodeSize(node);
-      return false;
-    });
 
     ///开始布局
-    onLayout2(root);
+    series.layout.onLayout(root, TreeLayoutParams(series, width, height));
 
     ///布局完成计算偏移量并更新节点
-    double x = center[0].convert(width);
-    double y = center[1].convert(height);
-    double dx, dy;
-    Offset c = root.center;
-    if (!centerIsRoot) {
-      c = root.getBoundBox().center;
-    }
-    dx = x - c.dx;
-    dy = y - c.dy;
+    double x = series.center[0].convert(width);
+    double y = series.center[1].convert(height);
 
     ///布局完成后，需要再次更新节点位置和大小
-    _transOffset = Offset.zero;
-    root.each((node, index, startNode) {
-      node.x += dx;
-      node.y += dy;
-      node.size = getNodeSize(node);
-      return false;
-    });
-    if (notify) {
-      notifyLayoutEnd();
+    translationX = translationY = 0;
+
+    ///root中心点坐标
+    var center = root.center;
+    if (!series.rootInCenter) {
+      center = root.getBoundBox().center;
     }
+    double dx = x - center.dx;
+    double dy = y - center.dy;
+    if (dx != 0 || dy != 0) {
+      root.each((node, index, startNode) {
+        node.x += dx;
+        node.y += dy;
+        return false;
+      });
+    }
+
   }
 
-  void onLayout2(TreeLayoutNode root);
+  @override
+  void onClick(Offset localOffset) {
+    var offset = localOffset.translate(-translationX, -translationY);
+    var node = findNode(offset);
 
-  TreeLayoutNode get rootNode => _rootNode;
-
-  Offset get translationOffset => _transOffset;
-
-  ///获取父节点和根节点之间的路径
-  Path? getPath(TreeLayoutNode parent, TreeLayoutNode child, [List<double>? dash]) {
-    Line line = Line([parent.center, child.center]);
-    List<Offset> ol = [];
-    if (lineType == LineType.step) {
-      ol = line.step();
-    } else if (lineType == LineType.stepBefore) {
-      ol = line.stepBefore();
-    } else if (lineType == LineType.stepAfter) {
-      ol = line.stepAfter();
-    } else {
-      ol = [parent.center, child.center];
+    if (node == null) {
+      var oh = oldHoverNode;
+      oldHoverNode = null;
+      if (oh == null) {
+        return;
+      }
+      oh.removeStates([ViewState.hover, ViewState.selected]);
+      oh.updateStyle(context, series);
+      sendHoverEndEvent(oh);
+      notifyLayoutUpdate();
+      return;
     }
-    return Line(ol, smooth: smooth, dashList: dash).toPath();
+
+    if (node != oldHoverNode) {
+      var oh = oldHoverNode;
+      if (oh != null) {
+        oldHoverNode = null;
+        oh.removeStates([ViewState.hover, ViewState.selected]);
+        oh.updateStyle(context, series);
+        sendHoverEndEvent(oh);
+      }
+      node.addStates([ViewState.hover, ViewState.selected]);
+      node.updateStyle(context, series);
+      sendClickEvent(offset, node);
+      oldHoverNode = node;
+    }
+
+    if (node.notChild) {
+      expandNode(node);
+      return;
+    }
+    collapseNode(node);
   }
 
   ///折叠一个节点
-  void collapseNode(TreeLayoutNode node, [bool runAnimation = true]) {
-    var data = node.data;
-    TreeLayoutNode clickNode = _nodeMap[data]!;
+  void collapseNode(TreeRenderNode node) {
+    var clickNode = node;
     if (clickNode.notChild) {
-      debugPrint('点击节点无子节点');
+      notifyLayoutUpdate();
       return;
     }
 
@@ -150,7 +131,7 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
     });
 
     ///先保存折叠节点的子节点
-    List<TreeLayoutNode> removedNodes = List.from(clickNode.children);
+    List<TreeRenderNode> removedNodes = List.from(clickNode.children);
     clickNode.clear();
 
     ///移除其父节点
@@ -159,7 +140,18 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
     });
 
     ///移除节点后-重新布局位置并记录
-    _startLayout(_rootNode, false);
+    ///这里先不更新显示节点
+    _startLayout(_rootNode);
+    List<TreeRenderNode> nodeSet=List.from(nodeList);
+    var rect=getViewPortRect();
+    _rootNode.each((node, index, startNode){
+      if(rect.overlaps(Rect.fromCircle(center: node.center, radius: node.size.shortestSide/2))){
+        nodeSet.add(node);
+      }
+      return false;
+    });
+    nodeList=nodeSet;
+
     Map<TreeData, Offset> positionMap = {};
     Map<TreeData, Size> sizeMap = {};
     _rootNode.each((node, index, startNode) {
@@ -183,29 +175,40 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
     }
 
     doAnimator(_rootNode, oldPositionMap, positionMap, oldSizeMap, sizeMap, () {
-      ///布局结束后，重新移除节点
+      ///动画结束后，重新移除节点
       clickNode.clear();
       each(removedNodes, (p0, p1) {
         p0.parent = null;
       });
+
+      ///动画结束更新区域
+      _rBush.clear();
+      _rBush.addAll(_rootNode.iterator());
+      updateShowNodeList();
       notifyLayoutEnd();
     });
   }
 
   ///展开一个节点
-  void expandNode(TreeLayoutNode node, [bool runAnimation = true]) {
+  void expandNode(TreeRenderNode node) {
     var data = node.data;
-    TreeLayoutNode clickNode = _nodeMap[data]!;
+    var clickNode = _nodeMap[data]!;
     if (clickNode.hasChild || data.children.isEmpty) {
+      notifyLayoutUpdate();
       return;
     }
 
-    if (!runAnimation) {
+    var animation=getAnimation(LayoutType.update);
+    if (animation==null) {
       for (var c in data.children) {
-        TreeLayoutNode cNode = _nodeMap[c]!;
-        clickNode.add(cNode);
+        clickNode.add(_nodeMap[c]!);
       }
-      _startLayout(_rootNode, true);
+      _startLayout(_rootNode);
+      _rBush.clear();
+      _rBush.addAll(_rootNode.iterator());
+      updateShowNodeList();
+
+      notifyLayoutUpdate();
       return;
     }
 
@@ -220,13 +223,16 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
 
     ///添加节点并保存当前点击节点的位置
     for (var c in data.children) {
-      TreeLayoutNode cNode = _nodeMap[c]!;
+      TreeRenderNode cNode = _nodeMap[c]!;
       clickNode.add(cNode);
     }
     Offset oldOffset = clickNode.center;
 
     ///二次测量位置
-    _startLayout(_rootNode, false);
+    _startLayout(_rootNode);
+    _rBush.clear();
+    _rBush.addAll(_rootNode.iterator());
+    updateShowNodeList();
 
     Map<TreeData, Offset> positionMap = {};
     Map<TreeData, Size> sizeMap = {};
@@ -237,7 +243,6 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
         oldSizeMap[node.data] = Size.zero;
       }
       positionMap[node.data] = node.center;
-      node.size = getNodeSize(node);
       sizeMap[node.data] = node.size;
       return false;
     });
@@ -245,14 +250,27 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
   }
 
   void doAnimator(
-    TreeLayoutNode root,
+    TreeRenderNode root,
     Map<TreeData, Offset> oldPositionMap,
     Map<TreeData, Offset> positionMap,
     Map<TreeData, Size> oldSizeMap,
     Map<TreeData, Size> sizeMap, [
     VoidCallback? endCallback,
   ]) {
-    var tween = ChartDoubleTween(option: series.animation!);
+    var animation = getAnimation(LayoutType.update);
+    if (animation == null) {
+      root.each((node, index, startNode) {
+        Offset end = positionMap[node.data] ?? node.center;
+        node.x = end.dx;
+        node.y = end.dy;
+        node.size = sizeMap[node.data] ?? node.size;
+        return false;
+      });
+      notifyLayoutUpdate();
+      return;
+    }
+
+    var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
       double v = tween.value;
       root.each((node, index, startNode) {
@@ -269,43 +287,24 @@ abstract class TreeLayout extends LayoutHelper<TreeSeries> {
       notifyLayoutUpdate();
     });
     if (endCallback != null) {
-      tween.addEndListener(() {
-        endCallback.call();
-      });
+      tween.addEndListener(endCallback);
     }
     tween.start(context, true);
   }
 
-  TreeLayoutNode? findNode(Offset local) {
-    return rootNode.findNodeByOffset(local);
+  @override
+  TreeRenderNode? findNode(Offset offset, [bool overlap = false]) {
+    var result = _rBush.search2(Rect.fromCircle(center: offset, radius: 4));
+    for (var node in result) {
+      if (node.contains(offset)) {
+        return node;
+      }
+    }
+    return null;
   }
 
-  ///========普通函数=============
-  Size getNodeSize(TreeLayoutNode node) {
-    Size? size = sizeFun?.call(node) ?? nodeSize;
-    if (size != null) {
-      return size;
-    }
-    return const Size.square(8);
-  }
-
-  Offset getNodeGap(TreeLayoutNode node1, TreeLayoutNode node2) {
-    Offset? offset = gapFun?.call(node1, node2) ?? nodeGapSize;
-    if (offset != null) {
-      return offset;
-    }
-    return const Offset(8, 8);
-  }
-
-  double getLevelGap(int level1, int level2) {
-    if (levelGapFun != null) {
-      return levelGapFun!.call(level1, level2).toDouble();
-    }
-    if (levelGapSize != null) {
-      return levelGapSize!.toDouble();
-    }
-    return 24;
+  @override
+  Offset getTranslation() {
+    return view.translation;
   }
 }
-
-enum LineType { line, stepAfter, step, stepBefore }

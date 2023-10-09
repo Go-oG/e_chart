@@ -1,4 +1,5 @@
-enum StepType{
+enum LineType{
+  line,
   step,
   after,
   before

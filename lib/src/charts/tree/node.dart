@@ -2,19 +2,17 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class TreeLayoutNode extends TreeNode<TreeData, TreeAttr, TreeLayoutNode> {
-  TreeLayoutNode(
-    super.parent,
-    super.data,
-    super.dataIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle, {
+class TreeRenderNode extends TreeNode<TreeData, TreeAttr, TreeRenderNode> {
+  TreeRenderNode(
+    TreeRenderNode? parent,
+    TreeData data,
+    int dataIndex,
+    TreeAttr attr, {
     super.deep,
     super.maxDeep,
     super.value,
-  }) {
+    super.groupIndex,
+  }) : super.simple(parent, data, dataIndex, attr) {
     label.text = data.name ?? DynamicText.empty;
   }
 
@@ -40,6 +38,7 @@ class TreeLayoutNode extends TreeNode<TreeData, TreeAttr, TreeLayoutNode> {
 
   @override
   void updateStyle(Context context, covariant TreeSeries series) {
+    attr.symbol = series.getSymbol(context, this);
     label.updatePainter(style: series.getLabelStyle(context, this));
   }
 }

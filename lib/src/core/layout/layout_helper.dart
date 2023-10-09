@@ -250,6 +250,10 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return Offset(local.dx + globalBoxBound.left, local.dy + globalBoxBound.top);
   }
 
+  Rect getViewPortRect() {
+    return Rect.fromLTWH(-translationX, -translationY, width, height);
+  }
+
   ///获取平移偏移量
   Offset getTranslation() {
     var type = series.coordType;

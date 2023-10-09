@@ -7,6 +7,7 @@ import '../shader/shader.dart' as sd;
 /// 线段样式
 class LineStyle {
   static const LineStyle empty = LineStyle(width: 0);
+  static const LineStyle normal = LineStyle(width: 1,color: Colors.black87);
   final Color? color;
   final num width;
   final StrokeCap cap;

@@ -43,6 +43,20 @@ abstract class TreeNode<D, A, T extends TreeNode<D, A, T>> extends DataNode<A, D
     this._value = value;
   }
 
+  TreeNode.simple(
+    this.parent,
+    D data,
+    int dataIndex,
+    A attr, {
+    this.maxDeep = -1,
+    int deep = 0,
+    num value = 0,
+    int groupIndex = 0,
+  }) : super(data, dataIndex, groupIndex, attr, AreaStyle.empty, LineStyle.empty, LabelStyle.empty) {
+    this._deep = deep;
+    this._value = value;
+  }
+
   num get value => _value;
 
   set value(num v) => _value = v;

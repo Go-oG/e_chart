@@ -299,10 +299,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     }
     var group = curList.first.parent;
     var preGroup = resultList[curIndex - 1].data;
-    StepType? stepType = series.stepLineFun?.call(group);
+    LineType? stepType = series.stepLineFun?.call(group);
     var lineStyle = curList.first.borderStyle;
     num smooth = (stepType == null) ? (lineStyle.smooth) : 0;
-    StepType? preStepType = series.stepLineFun?.call(preGroup);
+    LineType? preStepType = series.stepLineFun?.call(preGroup);
     var preLineStyle = resultList[curIndex - 1].lineStyle;
     num preSmooth = (preStepType == null) ? (preLineStyle.smooth) : 0;
 
@@ -402,12 +402,12 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return borderList;
   }
 
-  Line _buildLine(List<Offset> offsetList, StepType? type, num smooth, List<num> dash) {
+  Line _buildLine(List<Offset> offsetList, LineType? type, num smooth, List<num> dash) {
     Line line = Line(offsetList, smooth: smooth, dashList: dash);
     if (type != null) {
-      if (type == StepType.step) {
+      if (type == LineType.step) {
         line = Line(line.step(), dashList: dash);
-      } else if (type == StepType.after) {
+      } else if (type == LineType.after) {
         line = Line(line.stepAfter(), dashList: dash);
       } else {
         line = Line(line.stepBefore(), dashList: dash);

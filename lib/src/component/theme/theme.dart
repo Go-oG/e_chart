@@ -50,7 +50,7 @@ class ChartTheme {
     return _labelStyle.getStyle();
   }
 
-  BorderTheme border=BorderTheme.any(color:const Color(0xFFCCCCCC),width: 0);
+  BorderTheme border=BorderTheme.any(color:const Color(0xFFCCCCCC),width: 1);
 
 
   ///通用组件主题

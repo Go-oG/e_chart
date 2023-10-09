@@ -7,7 +7,7 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
   Fun4<StackItemData, LineGroupData, Set<ViewState>, ChartSymbol?>? symbolFun;
 
   ///返回非空值表示是阶梯折线图
-  Fun2<LineGroupData, StepType?>? stepLineFun;
+  Fun2<LineGroupData, LineType?>? stepLineFun;
 
   LineSeries(
     super.data, {
