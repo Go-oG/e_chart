@@ -4,23 +4,33 @@ import '../../e_chart.dart';
 import 'diff.dart';
 
 ///优化的适用于超大数据的diff
+///[nodeList] 现有节点列表
+///[dataList] 新的数据集合
+///[builder] 根据数据创建新的节点
+///[layoutCall] 外部应该在改方法内部进行节点布局
+///[startFun] 返回给定节点的动画初始信息
+///[endFun] 返回给定节点的动画结束信息
+///[lerpFun] 动画差值函数
+///[updateCall] 动画更新函数
+///[onStart] 动画开始时回调
+///[onEnd] 动画结束时回调
 List<AnimationNode> diffLayoutOpt<T, N extends DataNode<dynamic, T>>(
   AnimatorOption? attrs,
   Iterable<N> nodeList,
   Iterable<T> dataList,
-  N Function(T data) builder,
+  N Function(T data, int index) builder,
   void Function(List<N> nodes) layoutCall,
   Map<String, dynamic> Function(N node, DiffType type) startFun,
   Map<String, dynamic> Function(N node, DiffType type) endFun,
   void Function(N node, Map<String, dynamic> s, Map<String, dynamic> e, double t, DiffType type) lerpFun,
   void Function(List<N> resultList) updateCall, [
   VoidCallback? onStart,
-  VoidCallback? onEnd,
+  void Function(List<N> nodes)? onEnd,
 ]) {
   if (nodeList.isEmpty && dataList.isEmpty) {
     onStart?.call();
     updateCall.call([]);
-    onEnd?.call();
+    onEnd?.call([]);
     return [];
   }
 
@@ -30,13 +40,18 @@ List<AnimationNode> diffLayoutOpt<T, N extends DataNode<dynamic, T>>(
   Set<T> addSet = {};
   Set<T> updateSet = {};
   List<N> removeSet = [];
-  for (var data in dataList) {
+
+  ///存储节点索引
+  final Map<T, int> indexMap = {};
+  each(dataList, (data, p1) {
     if (nodeMap.containsKey(data)) {
       updateSet.add(data);
     } else {
       addSet.add(data);
     }
-  }
+    indexMap[data] = p1;
+  });
+
   Set<T> dataSet = Set.from(dataList);
   for (var node in nodeList) {
     if (!dataSet.contains(node.data)) {
@@ -56,12 +71,18 @@ List<AnimationNode> diffLayoutOpt<T, N extends DataNode<dynamic, T>>(
     endMap[node.data] = endFun.call(node, DiffType.remove);
   });
 
-  final Map<T, N> addNodeMap = {for (var e in addSet) e: builder.call(e)};
-
+  final Map<T, N> addNodeMap = {for (var e in addSet) e: builder.call(e, indexMap[e]!)};
   List<N> layoutList = List.from(addNodeMap.values);
   for (var update in updateSet) {
     layoutList.add(nodeMap[update]!);
   }
+
+  ///排序
+  layoutList.sort((a, b) {
+    var ai = indexMap[a.data] ?? a.dataIndex;
+    var bi = indexMap[b.data] ?? b.dataIndex;
+    return ai.compareTo(bi);
+  });
 
   ///让外界进行布局
   layoutCall.call(layoutList);
@@ -69,7 +90,7 @@ List<AnimationNode> diffLayoutOpt<T, N extends DataNode<dynamic, T>>(
   if (attrs == null) {
     onStart?.call();
     updateCall.call(layoutList);
-    onEnd?.call();
+    onEnd?.call(layoutList);
     return [];
   }
 
@@ -127,7 +148,7 @@ List<AnimationNode> diffLayoutOpt<T, N extends DataNode<dynamic, T>>(
     if (endCount >= tweenList.length && tweenList.isNotEmpty) {
       innerRun();
       updateCall.call(resultList);
-      onEnd?.call();
+      onEnd?.call(resultList);
     }
   }
 
@@ -203,7 +224,7 @@ List<AnimationNode> diffLayoutOpt<T, N extends DataNode<dynamic, T>>(
     onStart?.call();
     innerRun();
     updateCall.call(resultList);
-    onEnd?.call();
+    onEnd?.call(resultList);
     return [];
   }
 

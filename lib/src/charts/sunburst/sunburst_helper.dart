@@ -462,7 +462,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         sendHoverEvent(offset, hoverNode);
       }
     }
-    var animation = series.animation;
+    var animation = getAnimation(LayoutType.update,getAnimatorCountLimit());
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       notifyLayoutUpdate();
       return;

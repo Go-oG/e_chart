@@ -22,7 +22,7 @@ class AnimatorOption {
 
     ///这里默认有个延迟是为了让动画更自然
     this.updateDelay = Duration.zero,
-    this.threshold = 2000,
+    this.threshold = 800,
     this.behavior = AnimationBehavior.normal,
     this.curve = Curves.linear,
     this.updateCurve = Curves.linear,

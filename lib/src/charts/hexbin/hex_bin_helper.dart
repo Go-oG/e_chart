@@ -14,43 +14,56 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
 
   ///Hex(0,0,0)的位置
   Offset _zeroCenter = Offset.zero;
-
-  HexbinHelper(super.context, super.view, super.series);
-
   bool flat = false;
-  num radius = 0;
-
+  double radius = 0;
   List<HexbinNode> showNodeList = [];
+
+  ///用于加速节点查找
+  late final RBush<HexbinNode> _rBush;
+
+  HexbinHelper(super.context, super.view, super.series) {
+    _rBush = RBush(
+      (p0) => p0.attr.center.dx - radius,
+      (p0) => p0.attr.center.dy - radius,
+      (p0) => p0.attr.center.dx + radius,
+      (p0) => p0.attr.center.dy + radius,
+    );
+  }
 
   @override
   void onLayout(LayoutType type) {
     var oldNodeList = nodeList;
-    List<HexbinNode> newList = convertDataToNode(series.data);
-    flat = series.flat;
-    radius = series.radius;
-    var params = HexbinLayoutParams(series, width, height, radius.toDouble(), series.flat);
-    var hexLayout = series.layout;
-    hexLayout.onLayout(newList, type, params);
-    flat = params.flat;
-    ///坐标转换
-    final angleOffset = flat ? _flat.angle : _pointy.angle;
-    _zeroCenter = hexLayout.computeZeroCenter(params);
-    final size = Size.square(radius * 1);
-    each(newList, (node, i) {
-      var center = hexToPixel(_zeroCenter, node.attr.hex, size);
-      node.attr.center = center;
-      node.label.updatePainter(offset: center,textAlign: TextAlign.center);
-      var s = PositiveSymbol(
-          r: series.radius, count: 6, fixRotate: 0, itemStyle: AreaStyle.empty, borderStyle: LineStyle.empty);
-      s.rotate = angleOffset;
-      node.setSymbol(s, false);
-      node.updateStyle(context, series);
-    });
-
-    var an = DiffUtil.diffLayout3(
-      getAnimation(type, oldNodeList.length + newList.length),
+    translationX = translationY = 0;
+    var an = diffLayoutOpt<ItemData, HexbinNode>(
+      getAnimation(type, series.data.length),
       oldNodeList,
-      newList,
+      series.data,
+      (data, index) => HexbinNode(PositiveSymbol.empty, data, index, 0, HexAttr.zero, LabelStyle.empty),
+      (nodes) {
+        flat = series.flat;
+        radius = series.radius.toDouble();
+        var params = HexbinLayoutParams(series, width, height, radius.toDouble(), series.flat);
+        var hexLayout = series.layout;
+        hexLayout.onLayout(nodes, type, params);
+        flat = params.flat;
+
+        ///坐标转换
+        final angleOffset = flat ? _flat.angle : _pointy.angle;
+        _zeroCenter = hexLayout.computeZeroCenter(params);
+        final size = Size.square(radius * 1);
+        each(nodes, (node, i) {
+          var center = hexToPixel(_zeroCenter, node.attr.hex, size);
+          node.attr.center = center;
+          node.label.updatePainter(offset: center, textAlign: TextAlign.center);
+          var s = PositiveSymbol(
+              r: series.radius, count: 6, fixRotate: 0, itemStyle: AreaStyle.empty, borderStyle: LineStyle.empty);
+          s.rotate = angleOffset;
+          node.setSymbol(s, false);
+          node.updateStyle(context, series);
+        });
+        _rBush.clear();
+        _rBush.addAll(nodes);
+      },
       (node, type) {
         Map<String, dynamic> dm = {};
         dm['center'] = node.attr.center;
@@ -78,15 +91,19 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
         node.updateLabelPosition(context, series);
       },
       (resultList) {
+        nodeList = resultList;
         updateShowNodeList(resultList);
         notifyLayoutUpdate();
       },
       () {
-        nodeList = newList;
         inAnimation = true;
       },
-      () {
-        updateShowNodeList(nodeList);
+      (nodes) {
+        _rBush.clear();
+        _rBush.addAll(nodes);
+
+        var sRect = getViewPortRect().inflate(radius * 2);
+        showNodeList = _rBush.search2(sRect);
         inAnimation = false;
       },
     );
@@ -169,19 +186,23 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
   }
 
   @override
+  int getAnimatorCountLimit() {
+    return showNodeList.length;
+  }
+
+  @override
   Offset getTranslation() {
     return view.translation;
   }
+
   @override
   HexbinNode? findNode(Offset offset, [bool overlap = false]) {
-    var hoveNode = oldHoverNode;
-    if (hoveNode != null && hoveNode.contains(offset)) {
-      return hoveNode;
-    }
-    ///这里倒序查找是因为当绘制顺序不一致时需要从最后查找
-    var list = showNodeList;
-    for (int i = list.length - 1; i >= 0; i--) {
-      var node = list[i];
+    var rect = Rect.fromCircle(center: offset, radius: radius);
+    var result = _rBush.search2(rect);
+    result.sort((a, b) {
+      return b.drawIndex.compareTo(a.drawIndex);
+    });
+    for (var node in result) {
       if (node.contains(offset)) {
         return node;
       }
@@ -191,7 +212,7 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
 
   void updateShowNodeList(List<HexbinNode> nodeList) {
     List<HexbinNode> nl = [];
-    var sRect = Rect.fromLTWH(-translationX, -translationY, width, height);
+    var sRect = getViewPortRect();
     each(nodeList, (node, p1) {
       if (sRect.overlapCircle(node.attr.center, node.symbol.r)) {
         nl.add(node);
@@ -199,7 +220,6 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
     });
     showNodeList = nl;
   }
-
 }
 
 class _Orientation {
