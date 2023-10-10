@@ -5,7 +5,7 @@ import 'package:e_chart/e_chart.dart';
 ///Diff 比较工具类
 ///用于在布局中实现动画
 class DiffUtil {
-  static DiffResult2<T, P, K> diff<T, K, P>(
+  static DiffResult<T, P, K> diff<T, K, P>(
     Iterable<T> oldList,
     Iterable<T> newList,
     Fun2<T, K> keyFun,
@@ -68,7 +68,7 @@ class DiffUtil {
         endMap[t] = builder.call(t, DiffType.remove);
       }
     }
-    return DiffResult2(startMap, endMap, curList, finalList, removeSet, addSet, commonSet);
+    return DiffResult(startMap, endMap, curList, finalList, removeSet, addSet, commonSet);
   }
 
   static List<AnimationNode> diffLayout<P, D, N extends DataNode<P, D>>(
@@ -409,29 +409,289 @@ class DiffUtil {
   }
 }
 
-class DiffResult<N, D> {
-  final Map<D, N> startMap;
-  final Map<D, N> endMap;
+///优化的适用于超大数据的diff
+///[nodeList] 现有节点列表
+///[dataList] 新的数据集合
+///[builder] 根据数据创建新的节点
+///[layoutCall] 外部应该在改方法内部进行节点布局
+///[startFun] 返回给定节点的动画初始信息
+///[endFun] 返回给定节点的动画结束信息
+///[lerpFun] 动画差值函数
+///[updateCall] 动画更新函数
+///[onStart] 动画开始时回调
+///[onEnd] 动画结束时回调
+///[testFun] 该函数用于判断一个节点是否需要执行动画 返回true则表示需要执行动画
+///[reallocateDataIndex] true则表示需要对每个数据的dataIndex进行重新排序(通常为true)
+List<AnimationNode> diffLayoutOpt<T, N extends DataNode<dynamic, T>>(
+  AnimatorOption? attrs,
+  Iterable<N> nodeList,
+  Iterable<T> dataList,
+  N Function(T data, int index) builder,
+  void Function(List<N> nodes) layoutCall,
+  Map<String, dynamic> Function(N node, DiffType type) startFun,
+  Map<String, dynamic> Function(N node, DiffType type) endFun,
+  void Function(N node, Map<String, dynamic> s, Map<String, dynamic> e, double t, DiffType type) lerpFun,
+  void Function(List<N> resultList, double t) updateCall, {
+  VoidCallback? onStart,
+  void Function(List<N> nodes)? onEnd,
+  bool Function(N node, Map<String, dynamic> map)? testFun,
+  bool reallocateDataIndex = true,
+}) {
+  if (nodeList.isEmpty && dataList.isEmpty) {
+    onStart?.call();
+    updateCall.call([], 1);
+    onEnd?.call([]);
+    return [];
+  }
 
-  final List<N> startList;
-  final List<N> endList;
+  final Map<T, N> nodeMap = {for (var e in nodeList) e.data: e};
 
-  final Set<D> removeSet;
-  final Set<D> addSet;
-  final Set<D> updateSet;
+  ///分离数据的类型并存储节点索引
+  Set<T> addSet = {};
+  Set<T> updateSet = {};
+  List<N> removeSet = [];
 
-  DiffResult(
-    this.startMap,
-    this.endMap,
-    this.startList,
-    this.endList,
-    this.removeSet,
-    this.addSet,
-    this.updateSet,
-  );
+  ///存储新增数据和其节点的映射
+  final Map<T, N> addNodeMap = {};
+
+  ///存储数据索引
+  final Map<T, int> indexMap = {};
+  each(dataList, (data, p1) {
+    if (nodeMap.containsKey(data)) {
+      updateSet.add(data);
+    } else {
+      addSet.add(data);
+      addNodeMap[data] = builder.call(data, p1);
+    }
+    indexMap[data] = p1;
+  });
+
+  ///找到被移除的数据
+  Set<T> dataSet = Set.from(dataList);
+  for (var node in nodeList) {
+    if (!dataSet.contains(node.data)) {
+      removeSet.add(node);
+    }
+  }
+
+  ///存储节点初始和结束信息
+  final Map<T, Map<String, dynamic>> startMap = {};
+  final Map<T, Map<String, dynamic>> endMap = {};
+  each(updateSet, (data, p1) {
+    var node = nodeMap[data]!;
+    startMap[data] = startFun.call(node, DiffType.update);
+  });
+  each(removeSet, (node, p1) {
+    startMap[node.data] = startFun.call(node, DiffType.remove);
+    endMap[node.data] = endFun.call(node, DiffType.remove);
+  });
+
+  ///创建新增节点并合并为结束后的数据项
+  List<N> layoutList = List.from(addNodeMap.values);
+  for (var update in updateSet) {
+    layoutList.add(nodeMap[update]!);
+  }
+
+  ///重新分配数据索引
+  if (reallocateDataIndex) {
+    each(layoutList, (p0, p1) {
+      p0.dataIndex = indexMap[p0.data] ?? p0.dataIndex;
+    });
+    layoutList.sort((a, b) {
+      return a.dataIndex.compareTo(b.dataIndex);
+    });
+  }
+
+  ///让外界进行布局
+  layoutCall.call(layoutList);
+
+  if (attrs == null) {
+    onStart?.call();
+    updateCall.call(layoutList, 1);
+    onEnd?.call(layoutList);
+    return [];
+  }
+
+  ///记录布局属性
+  each(updateSet, (data, p1) {
+    var node = nodeMap[data]!;
+    endMap[data] = endFun.call(node, DiffType.update);
+  });
+  each(addSet, (data, p1) {
+    var node = addNodeMap[data]!;
+    startMap[data] = startFun.call(node, DiffType.add);
+    endMap[data] = endFun.call(node, DiffType.add);
+  });
+
+  ///存放到动画结束前的所有节点数据
+  final List<N> animationList = [...layoutList, ...removeSet];
+
+  List<N> addAnimationList = [];
+  List<N> addRemainList = [];
+  if (testFun == null) {
+    addAnimationList = List.from(addNodeMap.values);
+  } else {
+    addNodeMap.forEach((key, node) {
+      var bs = testFun.call(node, startMap[node.data]!);
+      var be = testFun.call(node, endMap[node.data]!);
+      if (bs || be) {
+        addAnimationList.add(node);
+      } else {
+        addRemainList.add(node);
+      }
+    });
+  }
+  List<N> removeAnimationList = [];
+  List<N> removeRemainList = [];
+  if (testFun == null) {
+    removeAnimationList = removeSet;
+  } else {
+    each(removeSet, (node, p1) {
+      var s = startMap[node.data]!;
+      if (testFun.call(node, s)) {
+        removeAnimationList.add(node);
+      } else {
+        removeRemainList.add(node);
+      }
+    });
+  }
+  List<N> updateAnimationList = [];
+  List<N> updateRemainList = [];
+  if (testFun == null) {
+    updateAnimationList = List.from(updateSet.map((e) => nodeMap[e]!));
+  } else {
+    each(updateSet, (data, p1) {
+      var node = nodeMap[data]!;
+      var s = startMap[data]!;
+      var e = endMap[data]!;
+      var bs = testFun.call(node, s);
+      var be = testFun.call(node, e);
+      if (bs || be) {
+        updateAnimationList.add(node);
+      } else {
+        updateRemainList.add(node);
+      }
+    });
+  }
+
+  ///动画执行完成后的数据
+  final List<N> resultList = layoutList;
+
+  void animationRun(Iterable<N> list, double t, DiffType type) {
+    each(list, (node, p1) {
+      var s = startMap[node.data]!;
+      var e = endMap[node.data]!;
+      lerpFun.call(node, s, e, t, type);
+    });
+  }
+
+  void animationRun2(Iterable<T> list, double t, DiffType type) {
+    each(list, (data, p1) {
+      var node = (addNodeMap[data] ?? nodeMap[data])!;
+      var s = startMap[data]!;
+      var e = endMap[data]!;
+      lerpFun.call(node, s, e, t, type);
+    });
+  }
+
+  ///复原初始值(避免闪烁)
+  animationRun2(addSet, 0, DiffType.add);
+  animationRun2(updateSet, 0, DiffType.update);
+  animationRun(removeSet, 0, DiffType.remove);
+
+  ///创建动画对象
+  List<TweenWrap> tweenList = [];
+  int endCount = 0;
+
+  void handleEnd() {
+    if (endCount >= tweenList.length && tweenList.isNotEmpty) {
+      animationRun2(addSet, 1, DiffType.add);
+      animationRun2(updateSet, 1, DiffType.update);
+      animationRun(removeSet, 1, DiffType.remove);
+      updateCall.call(resultList, 1);
+      onEnd?.call(resultList);
+    }
+  }
+
+  ///判断是否要执行对应动画
+  var doAdd = addAnimationList.isNotEmpty && attrs.check(LayoutType.layout, addAnimationList.length);
+  var doRemove = removeAnimationList.isNotEmpty && attrs.check(LayoutType.update, removeAnimationList.length);
+  var doUpdate = updateAnimationList.isNotEmpty && attrs.check(LayoutType.update, updateAnimationList.length);
+  if (doAdd) {
+    animationRun(addRemainList, 1, DiffType.add);
+    var addTween = ChartDoubleTween(option: attrs);
+    addTween.addListener(() {
+      var t = addTween.value;
+      animationRun(addAnimationList, t, DiffType.add);
+      updateCall.call(animationList, t);
+    });
+    addTween.addEndListener(() {
+      endCount += 1;
+      handleEnd();
+    });
+    tweenList.add(TweenWrap(addTween, TweenWrap.addStatus));
+  } else {
+    animationRun2(addSet, 1, DiffType.add);
+  }
+  if (doRemove) {
+    animationRun(removeRemainList, 1, DiffType.remove);
+    var removeTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
+    removeTween.addListener(() {
+      var t = removeTween.value;
+      animationRun(removeAnimationList, t, DiffType.remove);
+      updateCall.call(animationList, t);
+    });
+    removeTween.addEndListener(() {
+      endCount += 1;
+      handleEnd();
+    });
+    tweenList.add(TweenWrap(removeTween, TweenWrap.removeStatus));
+  } else {
+    animationRun(removeSet, 1, DiffType.remove);
+  }
+  if (doUpdate) {
+    animationRun(updateRemainList, 1, DiffType.update);
+    var updateTween = ChartDoubleTween.fromValue(0, 1, option: attrs);
+    updateTween.addListener(() {
+      var t = updateTween.value;
+      animationRun(updateAnimationList, t, DiffType.update);
+      updateCall.call(animationList, t);
+    });
+    updateTween.addEndListener(() {
+      endCount += 1;
+      handleEnd();
+    });
+    tweenList.add(TweenWrap(updateTween, TweenWrap.updateStatus));
+  } else {
+    animationRun2(updateSet, 1, DiffType.update);
+  }
+
+  ///无任何动画直接将所有节点还原到最后位置
+  if (tweenList.isEmpty) {
+    onStart?.call();
+    updateCall.call(resultList, 1);
+    onEnd?.call(resultList);
+    return [];
+  }
+  if (onStart != null) {
+    tweenList.first.tween.addStartListener(() {
+      onStart.call();
+    });
+  }
+  List<AnimationNode> nl = [];
+  for (var wrap in tweenList) {
+    var status = wrap.status;
+    if (status == TweenWrap.updateStatus || status == TweenWrap.removeStatus) {
+      nl.add(AnimationNode(wrap.tween, attrs, LayoutType.update));
+    } else {
+      nl.add(AnimationNode(wrap.tween, attrs, LayoutType.layout));
+    }
+  }
+
+  return nl;
 }
 
-class DiffResult2<N, P, D> {
+class DiffResult<N, P, D> {
   final Map<N, P> startMap;
   final Map<N, P> endMap;
 
@@ -442,7 +702,7 @@ class DiffResult2<N, P, D> {
   final Set<D> addSet;
   final Set<D> updateSet;
 
-  DiffResult2(
+  DiffResult(
     this.startMap,
     this.endMap,
     this.startList,

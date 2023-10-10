@@ -293,7 +293,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     var animation = getAnimation(type)!;
 
     ///动画
-    DiffResult2<SingleNode<T, P>, StackAnimationNode, T> diffResult =
+    DiffResult<SingleNode<T, P>, StackAnimationNode, T> diffResult =
         DiffUtil.diff(oldNodeList, newNodeList, (p0) => p0.originData!, (b, c) {
       return onCreateAnimatorNode(b, c, type);
     });
@@ -342,14 +342,14 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   ///创建动画节点
   StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type);
 
-  void onAnimatorStart(DiffResult2<SingleNode<T, P>, StackAnimationNode, T> result) {}
+  void onAnimatorStart(DiffResult<SingleNode<T, P>, StackAnimationNode, T> result) {}
 
   void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleNode<T, P>, StackAnimationNode> startMap,
       Map<SingleNode<T, P>, StackAnimationNode> endMap);
 
-  void onAnimatorUpdateEnd(DiffResult2<SingleNode<T, P>, StackAnimationNode, T> result, double t) {}
+  void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, StackAnimationNode, T> result, double t) {}
 
-  void onAnimatorEnd(DiffResult2<SingleNode<T, P>, StackAnimationNode, T> result) {}
+  void onAnimatorEnd(DiffResult<SingleNode<T, P>, StackAnimationNode, T> result) {}
 
   ///=======其它函数======
   ///获取指定坐标轴上的极值数据

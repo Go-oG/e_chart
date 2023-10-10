@@ -28,11 +28,11 @@ class AnimatorOption {
     this.updateCurve = Curves.linear,
   });
 
-  bool check(LayoutType type,[int threshold=-1]){
+  bool check(LayoutType type,[int count=-1]){
     if (type == LayoutType.none) {
       return false;
     }
-    if (threshold > 0 && threshold > threshold && threshold > 0) {
+    if (count > 0 && count > threshold && threshold > 0) {
       return false;
     }
     if (type == LayoutType.layout) {

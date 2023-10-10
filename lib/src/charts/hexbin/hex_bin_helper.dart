@@ -34,6 +34,7 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
   void onLayout(LayoutType type) {
     var oldNodeList = nodeList;
     translationX = translationY = 0;
+    var rect = getViewPortRect();
     var an = diffLayoutOpt<ItemData, HexbinNode>(
       getAnimation(type, series.data.length),
       oldNodeList,
@@ -85,26 +86,34 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
         num er = e['rotate']!;
         num ss = s['scale']!;
         num es = e['scale']!;
-        node.attr.center = sc == ec ? ec : Offset.lerp(sc, ec, t)!;
+        node.attr.center = sc == ec ? ec : offsetLerp(sc, ec, t);
         node.symbol.rotate = lerpDouble(sr, er, t)!;
         node.symbol.scale = lerpDouble(ss, es, t)!;
         node.updateLabelPosition(context, series);
       },
-      (resultList) {
+      (resultList, t) {
         nodeList = resultList;
         updateShowNodeList(resultList);
         notifyLayoutUpdate();
       },
-      () {
+      onStart: () {
         inAnimation = true;
       },
-      (nodes) {
+      onEnd: (nodes) {
         _rBush.clear();
         _rBush.addAll(nodes);
-
+        nodeList = nodes;
         var sRect = getViewPortRect().inflate(radius * 2);
         showNodeList = _rBush.search2(sRect);
         inAnimation = false;
+      },
+      testFun: (node, map) {
+        var center = map['center'] as Offset;
+        var scale = map['scale'] as num;
+        if (scale <= 0) {
+          return false;
+        }
+        return rect.overlapCircle2(center.dx, center.dy, radius * scale);
       },
     );
     context.addAnimationToQueue(an);
@@ -193,6 +202,15 @@ class HexbinHelper extends LayoutHelper2<HexbinNode, HexbinSeries> {
   @override
   Offset getTranslation() {
     return view.translation;
+  }
+
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    view.translationX += diff.dx;
+    view.translationY += diff.dy;
+    var sRect = getViewPortRect().inflate(radius * 2);
+    showNodeList = _rBush.search2(sRect);
+    notifyLayoutUpdate();
   }
 
   @override
