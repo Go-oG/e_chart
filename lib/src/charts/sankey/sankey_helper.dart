@@ -10,6 +10,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   List<SankeyNode> _nodes = [];
 
   List<SankeyNode> get nodes => _nodes;
+
   List<SankeyLink> _links = [];
 
   List<SankeyLink> get links => _links;
@@ -18,14 +19,23 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
   num _nodeGap = 0;
 
+  final RBush<SankeyNode> _nodeBush =
+      RBush((p0) => p0.attr.left, (p0) => p0.attr.top, (p0) => p0.attr.right, (p0) => p0.attr.bottom);
+
+  final RBush<SankeyLink> _linkBush = RBush(
+    (p0) => m.min(p0.source.attr.left, p0.target.attr.left),
+    (p0) => m.min(p0.source.attr.top, p0.target.attr.top),
+    (p0) => m.max(p0.source.attr.right, p0.target.attr.right),
+    (p0) => m.max(p0.source.attr.bottom, p0.target.attr.bottom),
+  );
+
   SankeyHelper(super.context, super.view, super.series) {
     _nodeGap = series.gap;
   }
 
   @override
   void onLayout(LayoutType type) {
-    left = 0;
-    top = 0;
+    left = top = 0;
     right = width;
     bottom = height;
     _oldHoverNode = null;
@@ -33,7 +43,11 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     List<SankeyNode> nodes = dataToNode(series.data.data, series.data.links, 0);
     List<SankeyLink> links = dataToLink(nodes, series.data.links);
     layoutNode(nodes, links);
-    var animation = getAnimation(type, nodes.length + links.length);
+    _nodeBush.clear().addAll(nodes);
+    _linkBush.clear().addAll(links);
+
+    ///动画
+    var animation = getAnimation(type, 1);
     if (animation == null) {
       animationProcess = 1;
       _nodes = nodes;
@@ -92,20 +106,15 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   SankeyLink? _oldHoverLink;
 
   void handleHoverAndClick(Offset local, bool click) {
-    dynamic clickNode = findEventNode(local);
+    var offset = local.translate(-translationX, -translationY);
+    dynamic clickNode = findEventNode(offset);
     if (clickNode == null) {
       _handleCancel();
       return;
     }
 
-    var oldLink = _oldHoverLink;
     _oldHoverLink = null;
-    var oldNode = _oldHoverNode;
     _oldHoverNode = null;
-
-    if (clickNode == oldNode || clickNode == oldLink) {
-      return;
-    }
 
     if (clickNode is SankeyLink) {
       SankeyLink link = clickNode;
@@ -143,27 +152,12 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
   ///找到点击节点(优先节点而不是边)
   dynamic findEventNode(Offset offset) {
-    ///这里先从hover数据集中进行选择
-    var oldNode = _oldHoverNode;
-    if (oldNode != null && oldNode.contains(offset)) {
-      return oldNode;
+    var sr = Rect.fromCenter(center: offset, width: 1, height: 1);
+    var sn = _nodeBush.searchSingle(sr, (node) => node.contains(offset));
+    if (sn != null) {
+      return sn;
     }
-    var oldLink = _oldHoverLink;
-    if (oldLink != null && oldLink.contains(offset)) {
-      return oldLink;
-    }
-
-    for (var ele in _nodes) {
-      if (ele.contains(offset)) {
-        return ele;
-      }
-    }
-    for (var element in _links) {
-      if (element.contains(offset)) {
-        return element;
-      }
-    }
-    return null;
+    return _linkBush.searchSingle(sr, (node) => node.contains(offset));
   }
 
   //处理数据状态
@@ -610,11 +604,16 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
         i,
         0,
         series.getLinkStyle(context, src, srcIndex, target, targetIndex, i, emptyVS),
-        series.getLinkBorderStyle(context, src, srcIndex, target, targetIndex, i, emptyVS) ?? LineStyle.empty,
-        series.getLinkLabelStyle(context, src, srcIndex, target, targetIndex, i, emptyVS) ?? LabelStyle.empty,
+        series.getLinkBorderStyle(context, src, srcIndex, target, targetIndex, i, emptyVS),
+        series.getLinkLabelStyle(context, src, srcIndex, target, targetIndex, i, emptyVS),
       ));
     });
     return resultList;
+  }
+
+  @override
+  Offset getTranslation() {
+    return view.translation;
   }
 }
 

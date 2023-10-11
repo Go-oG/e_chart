@@ -57,6 +57,9 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   @override
   int get calendarIndex => series.calendarIndex;
 
+  @override
+  bool get enableDrag => true;
+
   AreaStyle? getAreaStyle(HeatMapNode node, int index) {
     return series.getAreaStyle(context, node.data, index, node.status);
   }

@@ -109,6 +109,41 @@ class RBush<T> {
     return result;
   }
 
+  T? searchSingle(Rect rect, bool Function(T node) testFun) {
+    if (!_intersects(rect, _root)) {
+      return null;
+    }
+    List<RNode<T>> list = [_root];
+    List<RNode<T>> next = [];
+    while (list.isNotEmpty) {
+      for (var node in list) {
+        for (var child in node.children) {
+          if (!_intersects(rect, child)) {
+            continue;
+          }
+          if (node.leaf) {
+            var d = child.value;
+            if (d != null && testFun.call(d)) {
+              return d;
+            }
+            continue;
+          }
+          if (_contains2(rect, child)) {
+            var res = _eachSingleData(child, testFun);
+            if (res != null) {
+              return res;
+            }
+          } else {
+            next.add(child);
+          }
+        }
+      }
+      list = next;
+      next = [];
+    }
+    return null;
+  }
+
   void _eachData(RNode<T>? node, List<T> result) {
     List<RNode<T>> next = [];
     while (node != null) {
@@ -125,6 +160,24 @@ class RBush<T> {
       }
       node = el.removeLastOrNull(next);
     }
+  }
+
+  T? _eachSingleData(RNode<T>? node, bool Function(T node) testFun) {
+    List<RNode<T>> next = [];
+    while (node != null) {
+      if (node.leaf) {
+        for (var c in node.children) {
+          var d = c.value;
+          if (d != null && testFun.call(d)) {
+            return d;
+          }
+        }
+      } else {
+        next.addAll(node.children);
+      }
+      node = el.removeLastOrNull(next);
+    }
+    return null;
   }
 
   ///遍历节点(层序遍历)

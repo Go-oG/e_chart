@@ -9,8 +9,9 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
 
   @override
   void onDraw(CCanvas canvas) {
-    canvas.save();
     var ap = layoutHelper.animationProcess;
+    canvas.save();
+    canvas.translate(translationX, translationY);
     Rect clipRect;
     if (series.direction == Direction.horizontal) {
       clipRect = Rect.fromLTWH(0, 0, width * ap, height);
@@ -39,4 +40,7 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
     oldHelper?.clearRef();
     return SankeyHelper(context, this, series);
   }
+
+  @override
+  bool get enableDrag => true;
 }

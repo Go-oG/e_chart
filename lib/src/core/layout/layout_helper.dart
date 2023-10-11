@@ -109,7 +109,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onDragStart(Offset offset) {}
 
-  void onDragMove(Offset offset, Offset diff) {}
+  void onDragMove(Offset offset, Offset diff) {
+    view.translationX += diff.dx;
+    view.translationY += diff.dy;
+    notifyLayoutUpdate();
+  }
 
   void onDragEnd() {}
 

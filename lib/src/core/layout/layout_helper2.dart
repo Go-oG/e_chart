@@ -13,12 +13,7 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
   LayoutHelper2.lazy() : super.lazy();
 
-  @override
-  void onDragMove(Offset offset, Offset diff) {
-    view.translationX += diff.dx;
-    view.translationY += diff.dy;
-    notifyLayoutUpdate();
-  }
+
 
   @override
   void onClick(Offset localOffset) {

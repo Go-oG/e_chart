@@ -46,6 +46,7 @@ class AreaStyle {
       paint.shader = shader!.toShader(rect);
     }
     paint.style = PaintingStyle.fill;
+    paint.strokeWidth = 0;
   }
 
   void drawPolygonArea(CCanvas canvas, Paint paint, List<Offset> points) {
@@ -60,8 +61,16 @@ class AreaStyle {
       canvas.drawPoints(PointMode.points, points, paint);
       return;
     }
-    Polygon polygon = Polygon(points, true);
-    drawPath(canvas, paint, polygon.toPath());
+
+    Path path = Path();
+    each(points, (p0, i) {
+      if (i == 0) {
+        path.moveTo(p0.dx, p0.dy);
+      } else {
+        path.lineTo(p0.dx, p0.dy);
+      }
+    });
+    drawPath(canvas, paint, path);
   }
 
   void drawPolygon(CCanvas canvas, Paint paint, Polygon polygon) {

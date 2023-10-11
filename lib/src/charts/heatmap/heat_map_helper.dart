@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
-import 'package:scidart/numdart.dart';
 
 import 'heat_map_node.dart';
 
