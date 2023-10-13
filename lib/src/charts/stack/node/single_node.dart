@@ -68,6 +68,7 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
 
   @override
   void updateStyle(Context context, covariant StackSeries<T, P> series) {
+    attr.corner = series.getCorner(data.data, data.parent, status);
     itemStyle = series.getAreaStyle(context, data.data, data.parent, status);
     borderStyle = series.getLineStyle(context, data.data, data.parent, status);
     var s = series.getLabelStyle(context, data.data, data.parent, status);

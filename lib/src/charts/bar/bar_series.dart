@@ -7,6 +7,7 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
   BarSeries(
     super.data, {
     super.corner,
+    super.cornerFun,
     super.columnGap,
     super.groupGap,
     super.innerGap,
@@ -50,5 +51,5 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
   }
 
   @override
-  SeriesType get seriesType =>SeriesType.bar;
+  SeriesType get seriesType => SeriesType.bar;
 }

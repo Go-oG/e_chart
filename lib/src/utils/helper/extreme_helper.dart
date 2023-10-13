@@ -6,7 +6,7 @@ class ExtremeHelper<T> {
   ///返回X轴和Y轴方向上的数据
   final Fun3<T, String, dynamic> valueFun;
 
-  ///返回当前数据使用的坐标维度索引
+  ///返回当前数据使用的全部坐标维度索引
   final Fun2<T, List<String>> axisDimFun;
 
   ExtremeHelper(this.axisDimFun, this.valueFun, Iterable<T> data) {

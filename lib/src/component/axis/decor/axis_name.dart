@@ -6,11 +6,13 @@ class AxisName {
   Align2 align;
   num nameGap;
   LabelStyle labelStyle;
+  num rotate;
 
   AxisName(
     this.name, {
     this.align = Align2.end,
     this.nameGap = 8,
     this.labelStyle = const LabelStyle(),
+    this.rotate = 0,
   });
 }

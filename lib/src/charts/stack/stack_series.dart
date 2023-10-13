@@ -15,6 +15,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
   SelectedMode selectedMode;
 
   Corner corner;
+  Fun4<T, G, Set<ViewState>, Corner>? cornerFun;
 
   /// Group组的间隔
   SNumber groupGap;
@@ -58,7 +59,6 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
   /// 标签样式
   LabelStyle? labelStyle;
   Fun4<T, G, Set<ViewState>, LabelStyle?>? labelStyleFun;
-  Fun4<T, G, Set<ViewState>, Corner>? cornerFun;
 
   /// 背景样式
   Fun4<T?, G, Set<ViewState>, AreaStyle?>? groupStyleFun;
@@ -82,6 +82,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
     this.sort = Sort.asc,
     this.sortCount,
     this.corner = Corner.zero,
+    this.cornerFun,
     this.columnGap = const SNumber.number(4),
     this.groupGap = const SNumber.number(4),
     this.innerGap = 0,
@@ -228,6 +229,17 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
     } else {
       return const ChartAlign(align: Alignment.centerRight, inside: false);
     }
+  }
+
+  Corner? getCorner(T? data, G group, Set<ViewState> status) {
+    if (data == null) {
+      return null;
+    }
+    var fun = cornerFun;
+    if (fun != null) {
+      return fun.call(data, group, status);
+    }
+    return corner;
   }
 
   bool get isVertical => direction == Direction.vertical;

@@ -150,7 +150,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         text = labels[t];
       }
       var style = axisLabel.getLabelStyle(i, scale.tickCount, getAxisTheme());
-      var config = TextDraw(text ?? DynamicText.empty, style, textOffset, align: align);
+      var config = TextDraw(text ?? DynamicText.empty, style, textOffset, align: align, rotate: axisLabel.rotate);
       int oi = i * sn;
       var result = LabelResult(oi, i, scale.tickCount, config, []);
       resultList.add(result);
@@ -168,7 +168,13 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         num dis = parenDis + minorInterval * j;
         var text = axisLabel.formatter?.call(scale.toData(dis)) ?? DynamicText.empty;
         final labelOffset = circlePoint(dis, angle, center);
-        var minorConfig = TextDraw(text, minorStyle, labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+        var minorConfig = TextDraw(
+          text,
+          minorStyle,
+          labelOffset,
+          align: toAlignment(angle + 90, axisLabel.inside),
+          rotate: axisLabel.rotate,
+        );
         result.minorLabel.add(LabelResult(oi + j, i, scale.tickCount, minorConfig));
       }
     }

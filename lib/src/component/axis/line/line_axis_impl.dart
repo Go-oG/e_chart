@@ -131,20 +131,22 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       if (scale.isCategory && axis.categoryCenter) {
         d += 0.5;
       }
-
       DynamicText? text;
       if (labels.length > i) {
         text = labels[i];
       }
-
       final double parenDis = interval * d;
-
       Offset offset = center.translate(parenDis, 0);
       Offset textOffset = offset.translate(0, labelOffset);
       textOffset = textOffset.rotate(angle, center: center);
       var ls = axisLabel.getLabelStyle(i, tickCount, getAxisTheme());
-      var config =
-          TextDraw(text ?? DynamicText.empty, ls, textOffset, align: toAlignment(angle + 90, axisLabel.inside));
+      var config = TextDraw(
+        text ?? DynamicText.empty,
+        ls,
+        textOffset,
+        align: toAlignment(angle + 90, axisLabel.inside),
+        rotate: axisLabel.rotate,
+      );
 
       var result = LabelResult(i, i, tickCount, config, []);
       resultList.add(result);
@@ -163,7 +165,13 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
         dynamic data = scale.toData(dis);
         var text = axisLabel.formatter?.call(data) ?? DynamicText.empty;
-        var minorConfig = TextDraw(text, minorLS, labelOffset, align: toAlignment(angle + 90, axisLabel.inside));
+        var minorConfig = TextDraw(
+          text,
+          minorLS,
+          labelOffset,
+          align: toAlignment(angle + 90, axisLabel.inside),
+          rotate: axisLabel.rotate,
+        );
         result.minorLabel.add(LabelResult(i + j, i, tickCount, minorConfig));
       }
     }

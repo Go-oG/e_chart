@@ -176,7 +176,13 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       Offset offset = circlePoint(r, angle, attrs.center);
 
       var labelStyle = axis.getLabelStyle(i, labels.length, getAxisTheme());
-      var config = TextDraw(text, labelStyle, offset, align: toAlignment(angle, axisLabel.inside));
+      var config = TextDraw(
+        text,
+        labelStyle,
+        offset,
+        align: toAlignment(angle, axisLabel.inside),
+        rotate: axisLabel.rotate,
+      );
       var result = LabelResult(i, i, labels.length, config, []);
       resultList.add(result);
       if (axis.isCategoryAxis || axis.isTimeAxis) {
@@ -196,7 +202,13 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
         dynamic data = scale.toData(childAngle);
         var text = axisLabel.formatter?.call(data) ?? DynamicText.empty;
         final labelOffset = circlePoint(r, childAngle, attrs.center);
-        var minorConfig = TextDraw(text, minorStyle, labelOffset, align: toAlignment(childAngle, axisLabel.inside));
+        var minorConfig = TextDraw(
+          text,
+          minorStyle,
+          labelOffset,
+          align: toAlignment(childAngle, axisLabel.inside),
+          rotate: axisLabel.rotate,
+        );
         result.minorLabel.add(LabelResult(i + j, i, labels.length, minorConfig));
       }
     }
@@ -212,12 +224,19 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     var align = axisName?.align ?? Align2.end;
     var style = axisName?.labelStyle ?? const LabelStyle();
     if (align == Align2.center || label.isEmpty) {
-      return TextDraw(label, style, Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2), align: Alignment.center);
+      return TextDraw(label, style, Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2),
+          align: Alignment.center, rotate: axisName?.rotate ?? 0);
     }
     if (align == Align2.start) {
-      return TextDraw(label, style, start, align: Alignment.centerLeft);
+      return TextDraw(label, style, start, align: Alignment.centerLeft, rotate: axisName?.rotate ?? 0);
     }
-    return TextDraw(label, style, end, align: toAlignment(end.angle(start)));
+    return TextDraw(
+      label,
+      style,
+      end,
+      align: toAlignment(end.angle(start)),
+      rotate: axisName?.rotate ?? 0,
+    );
   }
 
   @override

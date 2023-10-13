@@ -13,6 +13,7 @@ abstract class GridSeries<T extends StackItemData, G extends StackGroupData<T>> 
     super.sort,
     super.sortCount,
     super.corner,
+    super.cornerFun,
     super.columnGap,
     super.groupGap,
     super.innerGap,
@@ -68,5 +69,4 @@ abstract class GridSeries<T extends StackItemData, G extends StackGroupData<T>> 
     }
     return super.buildHelper(context);
   }
-
 }
