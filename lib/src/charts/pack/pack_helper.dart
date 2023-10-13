@@ -59,13 +59,24 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
     int c = 0;
     root.each((node, p1, p2) {
       double r = node.r;
-      node.label.updatePainter(
-        text: node.data.name??DynamicText.empty,
-        offset: node.center,
-        align: Alignment.center,
-        maxWidth: r * 2 * 0.98,
-        maxLines: 1,
-      );
+      var align = series.getLabelAlign(node);
+      if (align == Alignment.center) {
+        node.label.updatePainter(
+          text: node.data.name ?? DynamicText.empty,
+          offset: node.center,
+          align: Alignment.center,
+          maxWidth: r * 2 * 0.98,
+          maxLines: 1,
+        );
+      } else {
+        ChartAlign(align: align, inside: true).fill(
+          node.label,
+          Rect.fromCircle(center: node.center, radius: r),
+          node.label.style,
+          Direction.vertical,
+        );
+        node.label.updatePainter(text: node.data.name ?? DynamicText.empty, maxWidth: r * 2 * 0.98, maxLines: 1);
+      }
       c++;
       return false;
     });

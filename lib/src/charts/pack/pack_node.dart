@@ -55,4 +55,5 @@ class PackNode extends TreeNode<TreeData, Rect, PackNode> {
     label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
     label.updatePainter();
   }
+
 }

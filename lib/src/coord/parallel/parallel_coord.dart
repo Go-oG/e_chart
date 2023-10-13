@@ -9,7 +9,8 @@ class ParallelCoordImpl extends ParallelCoord {
 
   void initAxis() {
     axisMap.clear();
-    Direction direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
+    ///翻转方向
+    var direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
       axisMap[ele] = ParallelAxisImpl(context, this, ele, direction, axisIndex: i);
@@ -139,7 +140,7 @@ class ParallelCoordImpl extends ParallelCoord {
       for (var ele in children) {
         if (ele is ParallelChild) {
           var child = ele as ParallelChild;
-          dataSet.addAll(child.getDimDataSet(node.axisIndex));
+          dataSet.addAll(child.getDimExtreme(node.axisIndex));
         }
       }
 

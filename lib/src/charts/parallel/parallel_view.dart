@@ -30,7 +30,7 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
   }
 
   @override
-  List<dynamic> getDimDataSet(int dim) {
+  List<dynamic> getDimExtreme(int dim) {
     if (dim < 0) {
       dim = 0;
     }
@@ -49,5 +49,10 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
       return oldHelper;
     }
     return ParallelHelper(context, this, series);
+  }
+
+  @override
+  void onParallelAxisChange(List<int> dims) {
+    layoutHelper.onParallelAxisChange(dims);
   }
 }

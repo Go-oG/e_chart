@@ -7,7 +7,7 @@ import '../shader/shader.dart' as sd;
 /// 线段样式
 class LineStyle {
   static const LineStyle empty = LineStyle(width: 0);
-  static const LineStyle normal = LineStyle(width: 1,color: Colors.black87);
+  static const LineStyle normal = LineStyle(width: 1, color: Colors.black87);
   final Color? color;
   final num width;
   final StrokeCap cap;
@@ -76,6 +76,19 @@ class LineStyle {
       return shader!.pickColor();
     }
     return color;
+  }
+
+  ///判断当前样式转换为给定样式后是否会影响Path的路径
+  bool changeEffect(LineStyle style) {
+    if (cap != style.cap || join != style.join) {
+      return true;
+    }
+    var s = max([0, smooth]);
+    var e = max([0, style.smooth]);
+    if (s != e) {
+      return true;
+    }
+    return !equalList(dash, style.dash);
   }
 
   void fillPaint(Paint paint, [Rect? rect]) {

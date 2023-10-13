@@ -29,20 +29,28 @@ class ParallelSeries extends ChartSeries {
     return ParallelView(this);
   }
 
-  LineStyle? getBorderStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
+  ChartSymbol getSymbol(dynamic data, ParallelGroup group, int dataIndex, int groupIndex) {
+    var fun = symbolFun;
+    if (fun != null) {
+      return fun.call(data, group, dataIndex, groupIndex, null)??EmptySymbol.empty;
+    }
+    return EmptySymbol.empty;
+  }
+
+  LineStyle getBorderStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
     if (borderStyleFun != null) {
       return borderStyleFun!.call(data, index, status ?? {});
     }
     var theme = context.option.theme.parallelTheme;
-    return theme.getItemStyle(context, index);
+    return theme.getItemStyle(context, index)??LineStyle.empty;
   }
 
-  LabelStyle? getLabelStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
+  LabelStyle getLabelStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
     if (labelStyleFun != null) {
       return labelStyleFun!.call(data, index, status ?? {});
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(status);
+    return theme.getLabelStyle()?.convert(status)??LabelStyle.empty;
   }
 
   @override

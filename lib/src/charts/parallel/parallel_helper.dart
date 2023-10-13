@@ -14,94 +14,55 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
   void onLayout(LayoutType type) {
     List<ParallelNode> oldList = nodeList;
     List<ParallelNode> newList = convertData(series.data);
-
     layoutNode(newList);
-
-    var animation = getAnimation(type,newList.length);
-    if (animation == null) {
+    var animation = getAnimation(type, newList.length);
+    if (animation == null || type == LayoutType.none || type == LayoutType.update) {
       nodeList = newList;
       animationProcess = 1;
       return;
     }
 
-    var coord = findParallelCoord();
-    int axisCount = coord.getAxisCount();
-    var direction = coord.direction;
-    var an = DiffUtil.diffLayout<ParallelAttr, ParallelGroup, ParallelNode>(
-      animation,
-      oldList,
-      newList,
-      (data, node, add) {
-        if (type == LayoutType.update) {
-          List<SymbolNode> ol = [];
-          eachNull(node.attr.symbolList, (symbol, p1) {
-            var offset = symbol?.center;
-            if (offset == null) {
-              ol.add(SymbolNode(symbol!.data, symbol.symbol, p1, node.groupIndex));
-            } else {
-              double dx = direction == Direction.vertical ? 0 : offset.dx;
-              double dy = direction == Direction.vertical ? offset.dy : height;
-              var node = SymbolNode(symbol!.data, symbol.symbol, symbol.dataIndex, symbol.groupIndex);
-              node.center = Offset(dx, dy);
-              ol.add(node);
-            }
-          });
-          return ParallelAttr(
-            ol,
-            axisCount,
-            direction,
-            width,
-            height,
-          );
-        }
-        return node.attr;
-      },
-      (s, e, t) {
-        if (type == LayoutType.layout) {
-          animationProcess = t;
-          return e;
-        }
-
-        animationProcess = 1;
-        List<SymbolNode> pl = [];
-        for (int i = 0; i < s.symbolList.length; i++) {
-          var so = s.symbolList[i].center;
-          var eo = e.symbolList[i].center;
-          var ed = e.symbolList[i];
-          var ro = Offset.lerp(so, eo, t)!;
-          pl.add(SymbolNode(ed.data, ed.symbol, ed.dataIndex, ed.groupIndex)..center = ro);
-        }
-        return ParallelAttr(pl, axisCount, direction, width, height);
-      },
-      (resultList) {
-        nodeList = resultList;
-        notifyLayoutUpdate();
-      },
-    );
-    context.addAnimationToQueue(an);
+    var tween = ChartDoubleTween(option: animation);
+    tween.addStartListener(() {
+      nodeList = newList;
+    });
+    tween.addListener(() {
+      animationProcess = tween.value;
+      notifyLayoutUpdate();
+    });
+    context.addAnimationToQueue([AnimationNode(tween, animation, LayoutType.layout)]);
   }
 
   void layoutNode(List<ParallelNode> nodeList) {
     var coord = findParallelCoord();
     for (var node in nodeList) {
-      eachNull(node.attr.symbolList, (symbol, i) {
+      eachNull(node.attr, (symbol, i) {
         var data = node.data.data[i];
         if (data == null) {
-          node.attr.symbolList[i].symbol = EmptySymbol.empty;
+          node.attr[i].symbol = EmptySymbol.empty;
         } else {
-          Offset c = coord.dataToPosition(i, data).center;
-          symbol?.center = c;
+          symbol?.center = coord.dataToPosition(i, data).center;
         }
       });
+      node.updatePath(context, series);
     }
   }
 
-  ChartSymbol? getSymbol(dynamic data, ParallelGroup group, int dataIndex, int groupIndex) {
-    var fun = series.symbolFun;
-    if (fun != null) {
-      return fun.call(data, group, dataIndex, groupIndex, null);
-    }
-    return null;
+  List<ParallelNode> convertData(List<ParallelGroup> list) {
+    List<ParallelNode> nodeList = [];
+    each(list, (p0, p1) {
+      List<SymbolNode> snl = [];
+      var bs = series.getBorderStyle(context, p0, p1, null);
+      var ls = series.getLabelStyle(context, p0, p1, null);
+      var node = ParallelNode(p0, p1, 0, snl, AreaStyle.empty, bs, ls);
+      nodeList.add(node);
+      each(p0.data, (data, i) {
+        var node = SymbolNode(data, series.getSymbol(data, p0, i, p1), i, p1);
+        node.data = data;
+        snl.add(node);
+      });
+    });
+    return nodeList;
   }
 
   @override
@@ -161,29 +122,33 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     return null;
   }
 
-  List<ParallelNode> convertData(List<ParallelGroup> list) {
-    List<ParallelNode> nodeList = [];
+  void onParallelAxisChange(List<int> dims) {
+    if (dims.isEmpty) {
+      return;
+    }
     var coord = findParallelCoord();
-    int axisCount = coord.getAxisCount();
-    var direction = coord.direction;
-    each(list, (p0, p1) {
-      List<SymbolNode> snl = [];
-      var node = ParallelNode(
-        p0,
-        p1,
-        0,
-        ParallelAttr(snl, axisCount, direction, width, height),
-        AreaStyle.empty,
-        series.getBorderStyle(context, p0, p1, null) ?? LineStyle.empty,
-        series.getLabelStyle(context, p0, p1, null) ?? LabelStyle.empty,
-      );
-      nodeList.add(node);
-      each(p0.data, (data, i) {
-        var node = SymbolNode(data, getSymbol(data, p0, i, p1) ?? EmptySymbol.empty, i, p1);
-        node.data = data;
-        snl.add(node);
-      });
+    each(nodeList, (node, p1) {
+      bool hasChange = false;
+      for (var dim in dims) {
+        if (node.attr.length <= dim) {
+          continue;
+        }
+        var cn = node.attr[dim];
+        if (cn.data == null) {
+          continue;
+        }
+        var old = cn.center;
+        cn.center = coord.dataToPosition(dim, cn.data!).center;
+
+        if (old != cn.center) {
+          hasChange = true;
+        }
+      }
+      if (hasChange) {
+        node.updatePath(context, series);
+      }
     });
-    return nodeList;
   }
+
+
 }

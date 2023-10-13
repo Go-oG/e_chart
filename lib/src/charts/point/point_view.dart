@@ -15,7 +15,6 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
       p0.onDraw(canvas, mPaint);
     });
     canvas.restore();
-    debugPrint("绘制数:${list.length} 占比:${(100 * list.length / layoutHelper.nodeList.length).toStringAsFixed(2)}");
   }
 
   @override
