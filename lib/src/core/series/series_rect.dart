@@ -30,7 +30,6 @@ abstract class RectSeries extends ChartSeries {
     super.backgroundColor,
     super.tooltip,
     super.clip,
-    super.z,
     super.id,
   });
 

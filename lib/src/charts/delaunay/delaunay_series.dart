@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 
 import 'delaunay_view.dart';
@@ -32,14 +30,12 @@ class DelaunaySeries extends RectSeries {
     return DelaunayView(this);
   }
 
-  final SeriesType _type = const SeriesType("delaunay");
-
   @override
-  SeriesType get seriesType => _type;
+  SeriesType get seriesType => SeriesType.delaunay;
 
   AreaStyle getAreaStyle(Context context, DShape data, int dataIndex, Set<ViewState> status) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, status)??AreaStyle.empty;
+      return areaStyleFun?.call(data, status) ?? AreaStyle.empty;
     }
     return context.option.theme.getAreaStyle(dataIndex).convert(status);
   }

@@ -105,7 +105,6 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
     super.polarIndex,
     super.id,
     super.tooltip,
-    super.z,
   }) : super(radarIndex: -1, parallelIndex: -1, calendarIndex: -1);
 
   DataHelper<T, G, StackSeries<T, G>>? _helper;

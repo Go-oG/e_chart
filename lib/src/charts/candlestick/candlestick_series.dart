@@ -30,7 +30,6 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
     super.backgroundColor,
     super.id,
     super.clip,
-    super.z,
   }) : super(
             coordType: CoordType.grid,
             polarIndex: -1,

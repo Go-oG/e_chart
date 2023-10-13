@@ -32,5 +32,6 @@ class RadiusAxis extends BaseAxis {
     super.axisTick,
     super.minorTick,
     super.axisPointer,
+    super.alignTicks,
   });
 }

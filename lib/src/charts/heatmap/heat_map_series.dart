@@ -38,7 +38,6 @@ class HeatMapSeries extends RectSeries {
     super.backgroundColor,
     super.id,
     super.clip,
-    super.z,
   }) : super(polarIndex: -1, parallelIndex: -1, radarIndex: -1);
 
   @override

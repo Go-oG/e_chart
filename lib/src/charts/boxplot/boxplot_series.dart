@@ -18,7 +18,6 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
     super.tooltip,
     super.backgroundColor,
     super.id,
-    super.z,
     super.clip,
     super.labelFormatFun,
     super.animatorStyle,

@@ -36,7 +36,6 @@ abstract class GridSeries<T extends StackItemData, G extends StackGroupData<T>> 
     super.polarIndex,
     super.id,
     super.tooltip,
-    super.z,
   });
 
   @override

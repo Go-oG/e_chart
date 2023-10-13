@@ -24,7 +24,6 @@ class PointSeries extends RectSeries {
     super.backgroundColor,
     super.id,
     super.clip,
-    super.z,
   }) : super(radarIndex: -1, parallelIndex: -1);
 
   @override

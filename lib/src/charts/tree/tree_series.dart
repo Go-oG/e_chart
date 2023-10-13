@@ -35,7 +35,6 @@ class TreeSeries extends RectSeries {
     super.backgroundColor,
     super.id,
     super.clip,
-    super.z,
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1, radarIndex: -1);
 
   @override

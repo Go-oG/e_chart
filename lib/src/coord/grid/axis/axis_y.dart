@@ -2,6 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 class YAxis extends GridAxis {
   YAxis({
+    super.show,
     super.alignTicks,
     super.position = Align2.start,
     super.type,
@@ -13,14 +14,13 @@ class YAxis extends GridAxis {
     super.splitNumber,
     super.minInterval,
     super.maxInterval,
-    super.interval,
     super.logBase,
     super.categoryList,
     super.categoryCenter,
-    super.show,
     super.timeRange,
     super.timeType,
     super.timeFormatFun,
+    super.interval,
     super.axisName,
     super.axisLine,
     AxisLabel? axisLabel,

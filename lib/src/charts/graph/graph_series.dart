@@ -40,7 +40,6 @@ class GraphSeries extends RectSeries {
     super.tooltip,
     super.topMargin,
     super.width,
-    super.z,
   });
 
   @override

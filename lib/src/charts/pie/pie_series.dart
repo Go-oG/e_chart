@@ -69,7 +69,6 @@ class PieSeries extends RectSeries {
     super.clip,
     super.backgroundColor,
     super.id,
-    super.z,
   }) : super(gridIndex: -1, parallelIndex: -1, radarIndex: -1, polarIndex: -1);
 
   @override

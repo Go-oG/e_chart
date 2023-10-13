@@ -21,7 +21,6 @@ class ParallelSeries extends ChartSeries {
     super.tooltip,
     super.backgroundColor,
     super.id,
-    super.z,
   }) : super(coordType: CoordType.parallel, gridIndex: -1, calendarIndex: -1, polarIndex: -1, radarIndex: -1);
 
   @override

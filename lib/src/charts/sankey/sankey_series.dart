@@ -45,7 +45,6 @@ class SankeySeries extends RectSeries {
     super.id,
     super.animation = const AnimatorOption(duration: Duration(seconds: 2), curve: Curves.ease),
     super.clip,
-    super.z,
   }) : super(gridIndex: -1, polarIndex: -1, radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
 
   @override

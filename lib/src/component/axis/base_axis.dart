@@ -28,7 +28,6 @@ abstract class BaseAxis {
   num? maxInterval;
   num? interval;
   num logBase;
-
   ///是否翻转坐标轴数据
   bool inverse;
 
@@ -54,10 +53,12 @@ abstract class BaseAxis {
     this.type = AxisType.value,
     this.categoryList = const [],
     this.categoryCenter = true,
+
     this.alignTicks = true,
     this.timeType = TimeType.day,
+    this.timeRange,
     this.timeFormatFun,
-    this.inverse = false,
+
     this.min,
     this.max,
     this.start0 = true,
@@ -66,7 +67,7 @@ abstract class BaseAxis {
     this.maxInterval,
     this.interval,
     this.logBase = 10,
-    this.timeRange,
+    this.inverse = false,
     this.axisName,
     AxisLine? axisLine,
     AxisLabel? axisLabel,

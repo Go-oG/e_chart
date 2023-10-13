@@ -35,7 +35,6 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
     super.backgroundColor,
     super.id,
     super.clip,
-    super.z,
     super.tooltip,
   }) : super(groupGap: SNumber.zero, columnGap: SNumber.zero);
 

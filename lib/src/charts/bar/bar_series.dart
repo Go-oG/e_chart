@@ -35,7 +35,6 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
     super.backgroundColor,
     super.id,
     super.clip,
-    super.z,
     super.tooltip,
     super.labelStyle,
     super.dynamicLabel,

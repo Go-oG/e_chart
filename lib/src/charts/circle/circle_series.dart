@@ -39,7 +39,6 @@ class CircleSeries extends ChartSeries {
     super.id,
     super.name,
     super.tooltip,
-    super.z,
   }) : super(
           calendarIndex: -1,
           gridIndex: -1,

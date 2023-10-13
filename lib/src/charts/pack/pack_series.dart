@@ -39,7 +39,6 @@ class PackSeries extends RectSeries {
     super.id,
     super.tooltip,
     super.clip,
-    super.z,
   }) : super(parallelIndex: -1, polarIndex: -1, calendarIndex: -1, gridIndex: -1, radarIndex: -1);
 
   @override

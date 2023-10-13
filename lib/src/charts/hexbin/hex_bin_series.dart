@@ -43,7 +43,6 @@ class HexbinSeries extends RectSeries {
     super.tooltip,
     super.backgroundColor,
     super.id,
-    super.z,
   }) : super(gridIndex: -1, polarIndex: -1, parallelIndex: -1, radarIndex: -1, calendarIndex: -1) {
     if (layout != null) {
       this.layout = layout;

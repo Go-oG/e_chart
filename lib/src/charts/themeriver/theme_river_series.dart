@@ -28,7 +28,6 @@ class ThemeRiverSeries extends RectSeries {
     super.id,
     super.animation,
     super.clip,
-    super.z,
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1, radarIndex: -1);
 
   @override
@@ -36,7 +35,7 @@ class ThemeRiverSeries extends RectSeries {
     return ThemeRiverView(this);
   }
   @override
-  SeriesType get seriesType => SeriesType.themeriver;
+  SeriesType get seriesType => SeriesType.themeRiver;
 
   AreaStyle getAreaStyle(Context context, GroupData data, int index, Set<ViewState> status) {
     if (areaStyleFun != null) {

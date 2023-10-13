@@ -31,7 +31,6 @@ class RadarSeries extends RectSeries {
     super.clip,
     super.backgroundColor,
     super.id,
-    super.z,
   }) : super(coordType: CoordType.radar, parallelIndex: -1, gridIndex: -1, calendarIndex: -1, polarIndex: -1);
 
   @override

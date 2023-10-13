@@ -27,7 +27,6 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   ToolTip? tooltip;
 
   bool clip; // 是否裁剪
-  int z; //z轴索引
   bool useSingleLayer;
 
   ChartSeries({
@@ -39,7 +38,6 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     this.animation,
     this.coordType,
     this.tooltip,
-    this.z = 0,
     this.clip = true,
     this.backgroundColor,
     this.name = '',

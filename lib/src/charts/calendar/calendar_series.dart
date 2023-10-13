@@ -130,7 +130,6 @@ class CalenderSeries extends ChartSeries {
     super.id,
     super.animation,
     super.clip,
-    super.z,
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1);
 
   @override
