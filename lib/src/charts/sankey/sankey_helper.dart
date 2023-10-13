@@ -157,7 +157,30 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     if (sn != null) {
       return sn;
     }
-    return _linkBush.searchSingle(sr, (node) => node.contains(offset));
+    var searchList = _linkBush.search2(sr);
+    searchList.removeWhere((element) => !element.contains(offset));
+    if (searchList.isEmpty) {
+      return null;
+    }
+    SankeyLink result = searchList.first;
+    if (searchList.length == 1) {
+      return result;
+    }
+    for (var i = 1; i < searchList.length; i++) {
+      var next = searchList[i];
+      num sub = next.width - result.width;
+      if (sub.abs() <= 1e-6) {
+        sub = 0;
+      }
+      if (sub < 0) {
+        result = next;
+      } else if (sub == 0) {
+        if ((next.target.left - next.source.right) < (result.target.left - next.source.right)) {
+          result = next;
+        }
+      }
+    }
+    return result;
   }
 
   //处理数据状态
