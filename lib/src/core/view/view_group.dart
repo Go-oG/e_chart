@@ -2,11 +2,12 @@ import 'dart:math' as m;
 import 'package:flutter/rendering.dart';
 
 import '../../event/index.dart';
+import '../../model/chart_error.dart';
 import '../../utils/log_util.dart';
 import '../index.dart';
 
 /// ViewGroup
-abstract class ChartViewGroup extends GestureView  {
+abstract class ChartViewGroup extends GestureView {
   final List<ChartView> _children = [];
 
   ChartViewGroup() : super();
@@ -55,33 +56,22 @@ abstract class ChartViewGroup extends GestureView  {
   set forceLayout(bool f) {
     super.forceLayout = f;
     for (var c in children) {
-      c.forceLayout=f;
+      c.forceLayout = f;
     }
   }
 
   @override
   void markDirtyWithChild() {
     super.markDirtyWithChild();
-    for(var c in children){
+    for (var c in children) {
       c.markDirtyWithChild();
     }
-  }
-
-
-  void changeChildToFront(ChartView child) {
-    int index = children.indexOf(child);
-    if (index != -1) {
-      children.removeAt(index);
-    }
-    _addViewInner(child, -1);
-    requestLayout();
   }
 
   ///=========Event和Action分发处理==================
   bool dispatchAction(ChartAction action) {
     return false;
   }
-
 
   ///=========布局测量相关============
   @override
@@ -186,13 +176,76 @@ abstract class ChartViewGroup extends GestureView  {
     return false;
   }
 
-
   ///========================管理子View相关方法=======================
-  void addView(ChartView view, {int index = -1}) {
-    _addViewInner(view, index);
+  void addView(ChartView view) {
+    addViewInner(view);
     if (!inLayout) {
       requestLayout();
     }
+  }
+
+  void addViews(Iterable<ChartView> views) {
+    for (var c in views) {
+      c.parent = this;
+      children.add(c);
+    }
+    sortChildView();
+    if (!inLayout) {
+      requestLayout();
+    }
+  }
+
+  void addViewInner(ChartView child) {
+    if (child.parent != null && child.parent != this) {
+      Logger.w("The specified child already has a parent. You must call removeView() on the child's parent first.");
+    }
+    child.parent = this;
+    children.add(child);
+    sortChildView();
+  }
+
+  void sortChildView() {
+    children.sort((a, b) {
+      return a.zLevel.compareTo(b.zLevel);
+    });
+  }
+
+  int _binarySearchLast<T>(List<T> sortList, int Function(T a) compareFun) {
+    int left = 0;
+    int right = sortList.length - 1;
+
+    if (compareFun.call(sortList.last) <= 0) {
+      return right;
+    }
+    if (compareFun.call(sortList.first) > 0) {
+      return 0;
+    }
+
+    while (left < right) {
+      final int mid = left + ((right - left) >> 1);
+      int comp = compareFun.call(sortList[mid]);
+      if (comp == 0) {
+        if (right - left == 1) {
+          return right;
+        }
+        left = mid;
+        continue;
+      }
+
+      if (right - left == 1) {
+        comp = compareFun.call(sortList[right]);
+        if (comp <= 0) {
+          return left;
+        }
+        return right;
+      }
+      if (comp < 0) {
+        left = mid + 1;
+      } else {
+        right = mid;
+      }
+    }
+    return -1;
   }
 
   void removeView(ChartView view) {
@@ -225,25 +278,6 @@ abstract class ChartViewGroup extends GestureView  {
       }
     }
     return false;
-  }
-
-  void _addViewInner(ChartView child, int index) {
-    if (child.parent != null && child.parent != this) {
-      throw FlutterError(
-          "The specified child already has a parent. You must call removeView() on the child's parent first.");
-    }
-    _addInArray(child, index);
-  }
-
-  void _addInArray(ChartView child, int index) {
-    if (index >= children.length || index < 0 || children.isEmpty) {
-      children.add(child);
-      return;
-    }
-    children.insert(index, child);
-    children.sort((a, b) {
-      return a.zLevel.compareTo(b.zLevel);
-    });
   }
 
   void clearChildren() {

@@ -11,7 +11,7 @@ class BrushView extends ChartView {
 
   BrushView(this.coord, this.brush) {
     layoutParams = const LayoutParams.matchAll();
-    zLevel = 1000;
+    zLevel = 10000;
   }
 
   @override

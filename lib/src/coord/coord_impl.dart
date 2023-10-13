@@ -94,7 +94,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   @override
-  bool get enableHover => true;
+  bool get enableHover => false;
 
   @override
   bool get enableDrag => true;
@@ -137,4 +137,5 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     }
     return vl;
   }
+
 }

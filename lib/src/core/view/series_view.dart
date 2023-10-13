@@ -13,9 +13,11 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   L get layoutHelper => _layoutHelper!;
 
   SeriesView(this.series) {
+    zLevel=series.seriesType.priority;
     if (series is RectSeries) {
       layoutParams = (series as RectSeries).toLayoutParams();
     }
+
   }
 
   @override

@@ -14,7 +14,7 @@ export 'model/layout_params.dart';
 export 'model/series_type.dart';
 export 'model/size_params.dart';
 export 'model/view_port.dart';
-export 'model/view_size.dart';
+export 'model/view_attr.dart';
 export 'model/view_state.dart';
 
 export 'render/ccanvas.dart';

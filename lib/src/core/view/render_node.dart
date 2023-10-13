@@ -5,10 +5,10 @@ import 'package:flutter/rendering.dart';
 
 import '../../utils/uuid_util.dart';
 import '../render/ccanvas.dart';
-import '../model/view_size.dart';
+import '../model/view_attr.dart';
 
 ///渲染节点
-abstract class RenderNode with ViewSize {
+abstract class RenderNode with ViewAttr {
   final String id = randomId();
 
   RenderNode? _parent;
@@ -20,8 +20,8 @@ abstract class RenderNode with ViewSize {
 
   Paint mPaint = Paint();
 
-  ///索引层次
-  int zLevel = -1;
+  ///索引层次(影响其绘制顺序)
+  int zLevel = 0;
 
   bool inMeasure = false;
   bool inLayout = false;

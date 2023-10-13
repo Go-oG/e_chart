@@ -1,25 +1,25 @@
 class SeriesType {
-  static const SeriesType bar = SeriesType("bar", 0);
+  static const SeriesType bar = SeriesType("bar", 1);
   static const SeriesType line = SeriesType("line", 99);
-  static const SeriesType boxplot = SeriesType("boxplot", 0);
-  static const SeriesType candlestick = SeriesType("candlestick", 0);
-  static const SeriesType calendar = SeriesType("calendar", 0);
-  static const SeriesType funnel = SeriesType("funnel", 0);
-  static const SeriesType heatmap = SeriesType("heatmap", 0);
-  static const SeriesType parallel = SeriesType("parallel", 0);
-  static const SeriesType pie = SeriesType("pie", 0);
+  static const SeriesType boxplot = SeriesType("boxplot", 1);
+  static const SeriesType candlestick = SeriesType("candlestick", 1);
+  static const SeriesType calendar = SeriesType("calendar", 1);
+  static const SeriesType funnel = SeriesType("funnel", 1);
+  static const SeriesType heatmap = SeriesType("heatmap", 1);
+  static const SeriesType parallel = SeriesType("parallel", 1);
+  static const SeriesType pie = SeriesType("pie", 1);
   static const SeriesType point = SeriesType("point", 100);
-  static const SeriesType radar = SeriesType("radar", 0);
-  static const SeriesType graph = SeriesType("graph", 0);
-  static const SeriesType hexbin = SeriesType("hexbin", 0);
-  static const SeriesType pack = SeriesType("pack", 0);
-  static const SeriesType sankey = SeriesType("sankey", 0);
-  static const SeriesType sunburst = SeriesType("sunburst", 0);
-  static const SeriesType themeRiver = SeriesType("themeriver", 0);
-  static const SeriesType tree = SeriesType("tree", 0);
-  static const SeriesType treemap = SeriesType("treemap", 0);
-  static const SeriesType circle = SeriesType("circle", 0);
-  static const SeriesType delaunay = SeriesType("delaunay", 0);
+  static const SeriesType radar = SeriesType("radar", 1);
+  static const SeriesType graph = SeriesType("graph", 1);
+  static const SeriesType hexbin = SeriesType("hexbin", 1);
+  static const SeriesType pack = SeriesType("pack", 1);
+  static const SeriesType sankey = SeriesType("sankey", 1);
+  static const SeriesType sunburst = SeriesType("sunburst", 1);
+  static const SeriesType themeRiver = SeriesType("themeriver", 1);
+  static const SeriesType tree = SeriesType("tree", 1);
+  static const SeriesType treemap = SeriesType("treemap", 1);
+  static const SeriesType circle = SeriesType("circle", 1);
+  static const SeriesType delaunay = SeriesType("delaunay", 1);
 
   final String type;
 

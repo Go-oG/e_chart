@@ -3,7 +3,7 @@ import 'dart:ui';
 import '../../model/chart_edgeinset.dart';
 import 'layout_params.dart';
 
-mixin ViewSize {
+mixin ViewAttr {
   ///存储当前节点的布局方式
   LayoutParams layoutParams = const LayoutParams.matchAll();
 
