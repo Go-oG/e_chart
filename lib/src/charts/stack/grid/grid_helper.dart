@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/event/events/entry/coord_event.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 
@@ -34,6 +35,13 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       _tmpType = LayoutType.none;
     }
     findGridCoord().onChildDataSetChange(true);
+  }
+
+  @override
+  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
+    subscribeCoordScrollEvent();
+    subscribeCoordLayoutChangeEvent();
+    super.doLayout(boxBound, globalBoxBound, type);
   }
 
   @override
@@ -393,22 +401,6 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   @override
-  void onCoordScrollUpdate(CoordScroll scroll) {
-    onLayout(LayoutType.none);
-    if (!series.dynamicRange) {
-      notifyLayoutUpdate();
-      return;
-    }
-    findGridCoord().onAdjustAxisDataRange(AdjustAttr(!series.isVertical));
-    notifyLayoutUpdate();
-  }
-
-  @override
-  void onCoordScaleUpdate(CoordScale scale) {
-    onLayout(LayoutType.none);
-  }
-
-  @override
   void onLayoutByParent(LayoutType type) {
     onLayout(type);
   }
@@ -425,4 +417,27 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
   @override
   CoordType get coordSystem => CoordType.grid;
+
+  @override
+  void onCoordLayoutChange(CoordLayoutChangeEvent event) {
+    onLayout(LayoutType.none);
+  }
+
+  @override
+  void onCoordScroll(CoordScrollEvent event) {
+    if (event.coord != CoordType.grid) {
+      return;
+    }
+    if (event.coordViewId != findGridCoord().id) {
+      return;
+    }
+    translationX=event.scrollX;
+    translationY=event.scrollY;
+    onLayout(LayoutType.none);
+    if (series.dynamicRange) {
+      findGridCoord().onAdjustAxisDataRange(AdjustAttr(!series.isVertical));
+    }
+    notifyLayoutUpdate();
+  }
+
 }

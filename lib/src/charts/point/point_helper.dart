@@ -11,6 +11,18 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   List<PointNode> showNodeList = [];
 
   @override
+  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
+    context.addEventCall(EventType.coordLayoutChange, (p0) {
+      onLayout(LayoutType.none);
+    });
+    context.addEventCall(EventType.coordScroll, (p0) {
+      updateShowNodeList();
+      view.markDirty();
+    });
+    super.doLayout(boxBound, globalBoxBound, type);
+  }
+
+  @override
   void onLayout(LayoutType type) {
     List<PointNode> oldList = nodeList;
     List<PointNode> newList = [];
@@ -161,15 +173,6 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     for (var t in tl) {
       t.start(context, true);
     }
-  }
-
-  @override
-  void onCoordScrollUpdate(CoordScroll scroll) {
-    super.onCoordScrollUpdate(scroll);
-    view.translationX = scroll.scroll.dx;
-    view.translationY = scroll.scroll.dy;
-    updateShowNodeList();
-    view.markDirty();
   }
 
   @override

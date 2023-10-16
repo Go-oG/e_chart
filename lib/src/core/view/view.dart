@@ -311,17 +311,5 @@ abstract class ChartView extends RenderNode {
   }
 
   ///=======由坐标系回调=========
-  void onCoordScrollStart(CoordScroll scroll) {}
-
-  void onCoordScrollUpdate(CoordScroll scroll) {}
-
-  void onCoordScrollEnd(CoordScroll scroll) {}
-
-  void onCoordScaleStart(CoordScale scale) {}
-
-  void onCoordScaleUpdate(CoordScale scale) {}
-
-  void onCoordScaleEnd(CoordScale scale) {}
-
   void onLayoutByParent(LayoutType type) {}
 }

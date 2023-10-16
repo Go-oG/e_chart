@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/coord/grid/grid_coord.dart';
-import 'package:flutter/painting.dart';
 
 class Grid extends Coord {
   ///grid区域是否包含坐标轴的刻度标签

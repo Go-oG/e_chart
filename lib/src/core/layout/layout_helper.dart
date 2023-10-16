@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/event/events/entry/coord_event.dart';
 import 'package:flutter/cupertino.dart';
 
 ///用于辅助布局相关的抽象类，通常和SeriesView 配合使用
@@ -83,15 +84,14 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onMeasure() {}
 
-  void stopLayout() {
-    unregisterBrushListener();
-    unregisterLegendListener();
-  }
+  void stopLayout() {}
 
   @override
   void dispose() {
-    unregisterLegendListener();
-    unregisterBrushListener();
+    unsubscribeLegendEvent();
+    unsubscribeBrushEvent();
+    unsubscribeCoordLayoutChangeEvent();
+    unsubscribeCoordScrollEvent();
     _view = null;
     _series = null;
     _context = null;
@@ -118,17 +118,17 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   void onDragEnd() {}
 
   ///=========坐标系相关事件处理========
-  void onCoordScrollStart(CoordScroll scroll) {}
-
-  void onCoordScrollUpdate(CoordScroll scroll) {}
-
-  void onCoordScrollEnd(CoordScroll scroll) {}
-
-  void onCoordScaleStart(CoordScale scale) {}
-
-  void onCoordScaleUpdate(CoordScale scale) {}
-
-  void onCoordScaleEnd(CoordScale scale) {}
+  // void onCoordScrollStart(CoordScroll scroll) {}
+  //
+  // void onCoordScrollUpdate(CoordScroll scroll) {}
+  //
+  // void onCoordScrollEnd(CoordScroll scroll) {}
+  //
+  // void onCoordScaleStart(CoordScale scale) {}
+  //
+  // void onCoordScaleUpdate(CoordScale scale) {}
+  //
+  // void onCoordScaleEnd(CoordScale scale) {}
 
   void onLayoutByParent(LayoutType type) {}
 
@@ -335,70 +335,115 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   ///注册Brush组件 Event监听器
   VoidFun1<ChartEvent>? _brushListener;
 
-  void registerBrushListener() {
+  void subscribeBrushEvent() {
     _context?.removeEventCall(_brushListener);
     _brushListener = (event) {
       if (event is BrushEvent) {
-        onBrushEvent(event);
+        onBrushUpdate(event);
         return;
       }
       if (event is BrushClearEvent) {
-        onBrushClearEvent(event);
+        onBrushClear(event);
         return;
       }
       if (event is BrushClearEvent) {
-        onBrushClearEvent(event);
+        onBrushClear(event);
         return;
       }
     };
     _context?.addEventCall(EventType.brush, _brushListener);
   }
 
-  void unregisterBrushListener() {
+  void unsubscribeBrushEvent() {
     _context?.removeEventCall(_brushListener);
     _brushListener = null;
   }
 
-  void onBrushEvent(BrushEvent event) {}
+  void onBrushUpdate(BrushEvent event) {}
 
-  void onBrushEndEvent(BrushEndEvent event) {}
+  void onBrushEnd(BrushEndEvent event) {}
 
-  void onBrushClearEvent(BrushClearEvent event) {}
+  void onBrushClear(BrushClearEvent event) {}
 
   /// 注册Legend组件事件
   VoidFun1<ChartEvent>? _legendListener;
 
-  void registerLegendListener() {
+  void subscribeLegendEvent() {
     _context?.removeEventCall(_legendListener);
     _legendListener = (event) {
       if (event is LegendSelectedEvent) {
-        onLegendSelectedEvent(event);
+        onLegendSelected(event);
         return;
       }
       if (event is LegendUnSelectedEvent) {
-        onLegendUnSelectedEvent(event);
+        onLegendUnSelected(event);
         return;
       }
       if (event is LegendSelectChangeEvent) {
-        onLegendSelectChangeEvent(event);
+        onLegendSelectChange(event);
         return;
       }
       if (event is LegendScrollEvent) {
-        onLegendScrollEvent(event);
+        onLegendScroll(event);
         return;
       }
     };
     _context?.addEventCall(EventType.legend, _legendListener);
   }
 
-  void onLegendSelectedEvent(LegendSelectedEvent event) {}
+  void onLegendSelected(LegendSelectedEvent event) {}
 
-  void onLegendUnSelectedEvent(LegendUnSelectedEvent event) {}
+  void onLegendUnSelected(LegendUnSelectedEvent event) {}
 
-  void onLegendSelectChangeEvent(LegendSelectChangeEvent event) {}
+  void onLegendSelectChange(LegendSelectChangeEvent event) {}
 
-  void onLegendScrollEvent(LegendScrollEvent event) {}
+  void onLegendScroll(LegendScrollEvent event) {}
 
-  void unregisterLegendListener() {}
-//========Legend 结束================
+  void unsubscribeLegendEvent() {
+    _context?.removeEventCall(_legendListener);
+    _legendListener = null;
+  }
+
+ //========Legend 结束================
+
+  ///注册坐标系滚动事件
+  VoidFun1<ChartEvent>? _coordScrollListener;
+
+  void subscribeCoordScrollEvent() {
+    _context?.removeEventCall(_coordScrollListener);
+    _coordScrollListener = (event) {
+      if (event is CoordScrollEvent) {
+        onCoordScroll(event);
+        return;
+      }
+    };
+    _context?.addEventCall(EventType.coordScroll, _coordScrollListener);
+  }
+
+  void unsubscribeCoordScrollEvent() {
+    _context?.removeEventCall(_coordScrollListener);
+    _coordScrollListener = null;
+  }
+
+  void onCoordScroll(CoordScrollEvent event) {}
+
+  VoidFun1<ChartEvent>? _coordLayoutListener;
+
+  void subscribeCoordLayoutChangeEvent() {
+    _context?.removeEventCall(_coordLayoutListener);
+    _coordLayoutListener = (event) {
+      if (event is CoordLayoutChangeEvent) {
+        onCoordLayoutChange(event);
+        return;
+      }
+    };
+    _context?.addEventCall(EventType.coordLayoutChange, _coordLayoutListener);
+  }
+
+  void unsubscribeCoordLayoutChangeEvent() {
+    _context?.removeEventCall(_coordLayoutListener);
+    _coordLayoutListener = null;
+  }
+
+  void onCoordLayoutChange(CoordLayoutChangeEvent event) {}
 }

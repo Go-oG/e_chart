@@ -174,7 +174,7 @@ class GridCoordImpl extends GridCoord {
       }
       extremeMap[axis] = dl;
     }
-    coordScale.dx = props.baseXScale;
+    scaleX = props.baseXScale;
 
     int? splitCount;
     double topOffset = contentBox.top;
@@ -182,8 +182,8 @@ class GridCoordImpl extends GridCoord {
       var axisInfo = value.axisInfo;
       var h = axisInfo.bound.height;
       var rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var attrs = LineAxisAttrs(coordScale.dx, viewPort.scrollX, rect, rect.bottomLeft, rect.bottomRight,
-          splitCount: splitCount);
+      var attrs =
+          LineAxisAttrs(scaleX, viewPort.scrollX, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
       topOffset -= (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
       if (needAlignTick && i == 0) {
@@ -230,7 +230,7 @@ class GridCoordImpl extends GridCoord {
       }
       extremeMap[axis] = dl;
     }
-    coordScale.dy = props.baseYScale;
+    scaleY = props.baseYScale;
     int? splitCount;
     double rightOffset = contentBox.left;
     each(leftList, (value, i) {
@@ -351,25 +351,9 @@ class GridCoordImpl extends GridCoord {
         value.onScrollChange(sc.dy);
       });
     }
-    if (!hasChange) {
-      return;
-    }
-    var cs = CoordScroll(props.id, props.coordSystem, sc);
-    each(children, (p0, p1) {
-      if (p0 is CoordChildView) {
-        p0.onCoordScrollUpdate(cs);
-      }
-    });
-    invalidate();
-  }
-
-  @override
-  void onDragEnd() {
-    var cs = CoordScroll(props.id, props.coordSystem, viewPort.translation);
-    for (var child in children) {
-      if (child is CoordChildView) {
-        child.onCoordScrollEnd(cs);
-      }
+    if (hasChange) {
+      sendScrollChangeEvent();
+      invalidate();
     }
   }
 
@@ -388,7 +372,7 @@ class GridCoordImpl extends GridCoord {
     bool hasChange = false;
     if (sx != scaleX) {
       hasChange = true;
-      coordScale.dx = sx;
+      scaleX = sx;
       xMap.forEach((key, value) {
         value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleX));
       });
@@ -402,17 +386,13 @@ class GridCoordImpl extends GridCoord {
     }
     if (sy != scaleY) {
       hasChange = true;
-      coordScale.dy = sy;
+      scaleY = sy;
       yMap.forEach((key, value) {
         value.onAttrsChange(value.attrs.copyWith(scaleRatio: sy));
       });
     }
     if (hasChange) {
-      each(children, (p0, p1) {
-        if (p0 is CoordChildView) {
-          p0.onCoordScaleUpdate(coordScale);
-        }
-      });
+      sendLayoutChangeEvent();
       invalidate();
     }
   }
@@ -813,22 +793,6 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   @override
   Offset get translation => viewPort.translation;
-
-  double get scrollX => viewPort.scrollX;
-
-  double get scrollY => viewPort.scrollY;
-
-  @override
-  set scaleX(double sx) => coordScale.dx = sx;
-
-  @override
-  double get scaleX => coordScale.dx;
-
-  @override
-  set scaleY(double sy) => coordScale.dy = sy;
-
-  @override
-  double get scaleY => coordScale.dy;
 
   @override
   set translationX(double tx) => viewPort.scrollX = tx;

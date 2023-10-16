@@ -26,7 +26,7 @@ class YAxisImpl extends XAxisImpl {
       if (axisLabel.show) {
         double tmp = axisLabel.margin + axisLabel.padding + 0;
         var maxStr = getMaxStr(Direction.vertical);
-        Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme())?.measure(maxStr, maxWidth: 100) ?? Size.zero;
+        Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme()).measure(maxStr, maxWidth: 100);
         tmp += textSize.width * 0.5;
         width += tmp;
       }
@@ -65,7 +65,7 @@ class YAxisImpl extends XAxisImpl {
       startIndex = 0;
       endIndex = tickCount;
     } else {
-      double scroll = coord.scrollX.abs();
+      double scroll = coord.translationX.abs();
       startIndex = scroll ~/ interval - 2;
       if (startIndex < 0) {
         startIndex = 0;

@@ -11,7 +11,7 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     Set<ColumnNode> rectSet = {};
     Offset offset = layoutHelper.getTranslation();
     canvas.save();
-    canvas.translate(offset.dx, 0);
+    canvas.translate(offset.dx, offset.dy);
     var nodeMap = layoutHelper.showNodeMap;
     nodeMap.forEach((key, node) {
       var column = node.parentNode;

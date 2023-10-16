@@ -10,6 +10,7 @@ class EventDispatcher {
   final Set<VoidFun1<ChartEvent>> _renderSet = {};
   final Set<VoidFun1<ChartEvent>> _dataZoomSet = {};
   final Set<VoidFun1<ChartEvent>> _coordScrollSet = {};
+  final Set<VoidFun1<ChartEvent>> _coordChangeSet = {};
   final Set<VoidFun1<ChartEvent>> _brushSet = {};
   final Set<VoidFun1<ChartEvent>> _legendSet = {};
 
@@ -28,6 +29,7 @@ class EventDispatcher {
     _callMap[EventType.legend] = _legendSet;
     _callMap[EventType.dataZoom] = _dataZoomSet;
     _callMap[EventType.coordScroll] = _coordScrollSet;
+    _callMap[EventType.coordLayoutChange] = _coordChangeSet;
     _callMap[EventType.click] = _clickSet;
     _callMap[EventType.hover] = _hoverSet;
     _callMap[EventType.longPress] = _longPressSet;
@@ -74,6 +76,7 @@ enum EventType {
   legend,
   dataZoom,
   coordScroll,
+  coordLayoutChange,
   click,
   hover,
   longPress,

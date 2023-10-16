@@ -29,8 +29,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
-    registerBrushListener();
-    registerLegendListener();
+    subscribeBrushEvent();
+    subscribeLegendEvent();
     super.doLayout(boxBound, globalBoxBound, type);
   }
 
@@ -406,7 +406,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   ///==========Brush相关的=============
 
   @override
-  void onBrushEvent(BrushEvent event) {
+  void onBrushUpdate(BrushEvent event) {
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
@@ -431,7 +431,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onBrushEndEvent(BrushEndEvent event) {
+  void onBrushEnd(BrushEndEvent event) {
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in event.data) {
@@ -454,7 +454,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onBrushClearEvent(BrushClearEvent event) {
+  void onBrushClear(BrushClearEvent event) {
     nodeMap.forEach((key, node) {
       node.removeState(ViewState.disabled);
       node.removeState(ViewState.selected);
@@ -505,4 +505,5 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     }
     return findGridCoord().getMaxScroll();
   }
+
 }

@@ -514,7 +514,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         startIndex = 0;
         endIndex = tickCount;
       } else {
-        double scroll = coord.scrollX.abs();
+        double scroll = coord.translationX.abs();
         startIndex = scroll ~/ interval - 2;
         if (startIndex < 0) {
           startIndex = 0;
@@ -532,7 +532,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       startIndex = 0;
       endIndex = tickCount;
     } else {
-      double scroll = coord.scrollY.abs();
+      double scroll = coord.translationY.abs();
       startIndex = scroll ~/ interval - 2;
       if (startIndex < 0) {
         startIndex = 0;
@@ -567,7 +567,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     if (distance <= viewSize) {
       RangeInfo.range(Pair<num>(scale.domain.first, scale.domain.last));
     }
-    num scroll = direction == Direction.horizontal ? coord.scrollX.abs() : coord.scrollY.abs();
+    num scroll = direction == Direction.horizontal ? coord.translationX.abs() : coord.translationY.abs();
     return RangeInfo.range(Pair<num>(scale.toData(scroll), scale.toData(scroll + viewSize)));
   }
 

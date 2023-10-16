@@ -136,36 +136,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   }
 
   @override
-  void onCoordScaleUpdate(CoordScale scale) {
-    layoutHelper.onCoordScaleUpdate(scale);
-  }
-
-  @override
-  void onCoordScaleStart(CoordScale scale) {
-    layoutHelper.onCoordScaleStart(scale);
-  }
-
-  @override
-  void onCoordScaleEnd(CoordScale scale) {
-    layoutHelper.onCoordScaleEnd(scale);
-  }
-
-  @override
-  void onCoordScrollStart(CoordScroll scroll) {
-    layoutHelper.onCoordScrollUpdate(scroll);
-  }
-
-  @override
-  void onCoordScrollUpdate(CoordScroll scroll) {
-    layoutHelper.onCoordScrollUpdate(scroll);
-  }
-
-  @override
-  void onCoordScrollEnd(CoordScroll scroll) {
-    layoutHelper.onCoordScrollEnd(scroll);
-  }
-
-  @override
   void onLayoutByParent(LayoutType type) {
     layoutHelper.onLayoutByParent(type);
   }

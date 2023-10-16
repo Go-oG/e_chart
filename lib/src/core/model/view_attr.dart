@@ -57,6 +57,7 @@ mixin ViewAttr {
   Offset get translation => Offset(translationX, translationY);
 
   double scaleX = 1;
+
   double scaleY = 1;
 
   Offset get scale => Offset(scaleX, scaleY);

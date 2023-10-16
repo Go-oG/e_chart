@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/event/events/entry/coord_event.dart';
 import 'package:flutter/material.dart';
 
 ///负责处理和布局所有的子View
@@ -6,7 +7,9 @@ import 'package:flutter/material.dart';
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
   final ViewPort viewPort = ViewPort.zero();
-  late final CoordScale coordScale;
+
+  late final CoordScrollEvent scrollEvent;
+  late final CoordLayoutChangeEvent layoutChangeEvent;
 
   ///存储内容的边界
   Rect contentBox = Rect.zero;
@@ -16,7 +19,8 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   CoordLayout(this.props) : super() {
     layoutParams = props.layoutParams;
-    coordScale = CoordScale(props.id, props.coordSystem, 1, 1);
+    scrollEvent = CoordScrollEvent(id, props.id, props.coordSystem);
+    layoutChangeEvent = CoordLayoutChangeEvent(id, props.id, props.coordSystem);
   }
 
   @override
@@ -94,7 +98,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   @override
-  bool get enableHover => false;
+  bool get enableHover => true;
 
   @override
   bool get enableDrag => true;
@@ -138,4 +142,13 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     return vl;
   }
 
+  void sendScrollChangeEvent() {
+    scrollEvent.scrollX = viewPort.scrollX;
+    scrollEvent.scrollY = viewPort.scrollY;
+    context.dispatchEvent(scrollEvent);
+  }
+
+  void sendLayoutChangeEvent() {
+    context.dispatchEvent(layoutChangeEvent);
+  }
 }
