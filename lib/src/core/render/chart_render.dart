@@ -35,6 +35,11 @@ abstract class ChartRender extends RenderNode {
         Logger.e(e);
       }
     }
+
+    if (context.hasEventListener(EventType.rendered)) {
+      context.dispatchEvent(RenderedEvent.rendered);
+    }
+
   }
 
   void onDraw(CCanvas canvas);
@@ -62,6 +67,7 @@ abstract class ChartRender extends RenderNode {
 
   @override
   void dispose() {
+    context.dispatchEvent(ChartDestroyEvent.single);
     context.destroy();
     super.dispose();
   }

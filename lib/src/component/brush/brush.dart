@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///框选配置
-class Brush {
+class Brush extends ChartNotifier<Command> {
   late final String id;
   bool enable = false;
   BrushType type;
@@ -33,7 +33,7 @@ class Brush {
     this.throttleDelay = 0,
     this.removeOnClick = true,
     AreaStyle? areaStyle,
-  }) {
+  }) : super(Command.none) {
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {
@@ -42,6 +42,20 @@ class Brush {
     if (areaStyle != null) {
       this.areaStyle = areaStyle;
     }
+  }
+
+  void hide() {
+    enable = false;
+    value = Command.hideBrush;
+  }
+
+  void show() {
+    enable = true;
+    value = Command.showBrush;
+  }
+
+  void clear() {
+    value = Command.clearBrush;
   }
 }
 

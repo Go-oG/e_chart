@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/event/events/coord.dart';
 import 'point_node.dart';
 
 class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
@@ -12,13 +13,10 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
 
   @override
   void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
-    context.addEventCall(EventType.coordLayoutChange, (p0) {
-      onLayout(LayoutType.none);
-    });
-    context.addEventCall(EventType.coordScroll, (p0) {
-      updateShowNodeList();
-      view.markDirty();
-    });
+    if (series.coordType == CoordType.grid) {
+      subscribeCoordScrollEvent();
+    }
+    subscribeCoordLayoutChangeEvent();
     super.doLayout(boxBound, globalBoxBound, type);
   }
 
@@ -78,6 +76,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       _layoutForGrid(nodeList, findGridCoord());
       return;
     }
+    Logger.w('暂不支持其它坐标系 ${series.coordType}');
   }
 
   void _layoutForCalendar(List<PointNode> nodeList, CalendarCoord coord) {
@@ -122,7 +121,8 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   }
 
   void updateShowNodeList() async {
-    var rect = boxBound.translate(-translationX, -translationY);
+    Offset translation = getTranslation();
+    var rect = boxBound.translate(-translation.dx, -translation.dy);
     var list = rBush.search2(rect);
     sortList(list);
     showNodeList = list;
@@ -136,6 +136,12 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
 
   @override
   void onDragMove(Offset offset, Offset diff) {
+    if (series.coordType == CoordType.grid ||
+        series.coordType == CoordType.polar ||
+        series.coordType == CoordType.calendar) {
+      return;
+    }
+
     view.translationX += diff.dx;
     view.translationY += diff.dy;
     updateShowNodeList();
@@ -189,5 +195,25 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       }
     }
     return null;
+  }
+
+  @override
+  void onCoordScroll(CoordScrollEvent event) {
+    if (event.coord != CoordType.grid || series.coordType != CoordType.grid) {
+      return;
+    }
+    if (event.coordViewId != findGridCoord().id) {
+      return;
+    }
+    updateShowNodeList();
+    view.markDirty();
+  }
+
+  @override
+  void onCoordLayoutChange(CoordLayoutChangeEvent event) {
+    if (event.coordViewId != findGridCoord().id) {
+      return;
+    }
+    onLayout(LayoutType.none);
   }
 }

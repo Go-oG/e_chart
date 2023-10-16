@@ -7,6 +7,8 @@ class LegendItem {
   num gap;
   LabelStyle? textStyle;
 
+  bool selected=true;
+
   LegendItem(
     this.name,
     this.symbol, {
@@ -20,4 +22,5 @@ class LegendItem {
       this.seriesId = seriesId;
     }
   }
+
 }

@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class Legend {
+class Legend extends ChartNotifier<Command> {
   List<LegendItem>? data;
   bool show;
   bool scroll;
@@ -36,5 +36,18 @@ class Legend {
     this.decoration,
     this.padding = EdgeInsets.zero,
     this.triggerOn = TriggerOn.click,
-  });
+  }) : super(Command.none);
+
+  void inverseSelect() {
+    value = Command.inverseSelectLegend;
+  }
+
+  void selectAll() {
+    value =Command.selectAllLegend;
+  }
+
+  void unselect() {
+    value = Command.unselectLegend;
+  }
 }
+

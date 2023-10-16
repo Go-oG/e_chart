@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/event/events/entry/coord_event.dart';
+import 'package:e_chart/src/event/events/coord.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 

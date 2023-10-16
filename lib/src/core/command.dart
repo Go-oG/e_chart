@@ -1,17 +1,31 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/render/chart_render.dart';
 
 ///对图表命令的封装
 class Command {
-  ///[SeriesLayout]使用
+  ///[ChartRender]使用
   static const Command none = Command._(0, runAnimation: false);
-  static const Command invalidate = Command._(-1, runAnimation: false);
-  static const Command reLayout = Command._(-2, runAnimation: true);
-  static const Command updateData = Command._(-3, runAnimation: true);
-  static const Command configChange = Command._(-4, runAnimation: true);
+  static const Command invalidate = Command._(-10000, runAnimation: false);
+  static const Command reLayout = Command._(-10001, runAnimation: true);
 
   ///[LayoutHelper]使用
-  static const Command layoutEnd = Command._(-5, runAnimation: false);
-  static const Command layoutUpdate = Command._(-6, runAnimation: false);
+  static const Command layoutEnd = Command._(-10002, runAnimation: false);
+  static const Command layoutUpdate = Command._(-10003, runAnimation: false);
+
+  ///通用
+  static const Command configChange = Command._(-10004, runAnimation: true);
+  static const Command updateData = Command._(-10005, runAnimation: true);
+
+  ///组件相关
+  //Brush
+  static const clearBrush = Command._(-10006, runAnimation: false);
+  static const hideBrush = Command._(-10007, runAnimation: false);
+  static const showBrush = Command._(-10008, runAnimation: false);
+
+  //legend
+  static const inverseSelectLegend = Command._(-10009);
+  static const selectAllLegend = Command._(-10010);
+  static const unselectLegend = Command._(-10011);
 
   final int code;
 
@@ -20,7 +34,7 @@ class Command {
 
   Command(
     this.code, {
-    this.runAnimation = true,
+    this.runAnimation = false,
   }) {
     if (code <= 0) {
       throw ChartError("code must >0");

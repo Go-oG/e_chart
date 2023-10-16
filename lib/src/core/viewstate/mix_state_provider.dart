@@ -1,4 +1,4 @@
-import '../model/view_state.dart';
+import 'package:e_chart/e_chart.dart';
 
 ///https://m3.material.io/foundations/interaction/states/overview
 mixin ViewStateProvider {
@@ -33,6 +33,13 @@ mixin ViewStateProvider {
   }
 
   bool addStates(Iterable<ViewState> states) {
+    if (states.isEmpty) {
+      return false;
+    }
+    if (_stateSet.isEmpty) {
+      _stateSet.addAll(states);
+      return true;
+    }
     bool result = false;
     for (var s in states) {
       if (addState(s)) {
@@ -43,10 +50,16 @@ mixin ViewStateProvider {
   }
 
   bool removeState(ViewState s) {
+    if (_stateSet.isEmpty) {
+      return false;
+    }
     return _changed = _stateSet.remove(s);
   }
 
   bool removeStates(Iterable<ViewState> states) {
+    if (_stateSet.isEmpty) {
+      return false;
+    }
     bool result = false;
     for (var s in states) {
       if (removeState(s)) {
@@ -66,4 +79,3 @@ mixin ViewStateProvider {
 
   Set<ViewState> get status => _stateSet;
 }
-

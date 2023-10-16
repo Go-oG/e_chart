@@ -74,7 +74,7 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.getAngleExtreme());
+      list.addAll(c.getPolarExtreme(false));
     }
     return list;
   }
@@ -86,7 +86,7 @@ class PolarCoordImpl extends PolarCoord {
         continue;
       }
       PolarChild c = child as PolarChild;
-      list.addAll(c.getRadiusExtreme());
+      list.addAll(c.getPolarExtreme(true));
     }
     return list;
   }
@@ -173,7 +173,6 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   AxisType get radiusAxisType => _radiusAxis.axisType;
-
 }
 
 abstract class PolarCoord extends CircleCoordLayout<Polar> {

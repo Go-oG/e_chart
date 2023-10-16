@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/event/events/entry/coord_event.dart';
 import 'package:flutter/material.dart';
 
 ///负责处理和布局所有的子View

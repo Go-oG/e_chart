@@ -14,7 +14,7 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
   }
 
   @override
-  List<num> dataSet(int dim) {
+  List<num> getRadarExtreme(int dim) {
     List<num> resultList = [];
     for (var group in series.data) {
       if (group.data.length > dim) {

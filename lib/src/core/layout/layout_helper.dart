@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/event/events/entry/coord_event.dart';
 import 'package:flutter/cupertino.dart';
 
 ///用于辅助布局相关的抽象类，通常和SeriesView 配合使用
@@ -118,27 +117,15 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   void onDragEnd() {}
 
   ///=========坐标系相关事件处理========
-  // void onCoordScrollStart(CoordScroll scroll) {}
-  //
-  // void onCoordScrollUpdate(CoordScroll scroll) {}
-  //
-  // void onCoordScrollEnd(CoordScroll scroll) {}
-  //
-  // void onCoordScaleStart(CoordScale scale) {}
-  //
-  // void onCoordScaleUpdate(CoordScale scale) {}
-  //
-  // void onCoordScaleEnd(CoordScale scale) {}
 
   void onLayoutByParent(LayoutType type) {}
 
-  ///dataZoom
-  void onDataZoom(DataZoomEvent event) {}
-
   ///==============事件发送============
   void sendClickEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
-    var event = UserClickEvent(offset, toGlobal(offset), buildEvent(node, componentType));
-    context.dispatchEvent(event);
+    if (context.hasEventListener(EventType.click)) {
+      var event = UserClickEvent(offset, toGlobal(offset), buildEvent(node, componentType));
+      context.dispatchEvent(event);
+    }
   }
 
   bool equalsEvent(EventInfo old, DataNode node, ComponentType type) {
@@ -152,29 +139,41 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
         old.seriesType == series.seriesType;
   }
 
-  UserHoverEvent? _lastHoverEvent;
+  void sendHoverStartEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
+    if (!context.hasEventListener(EventType.hoverStart)) {
+      return;
+    }
+    context.dispatchEvent(UserHoverStartEvent(offset, toGlobal(offset), buildEvent(node, componentType)));
+  }
+
+  UserHoverUpdateEvent? _lastHoverEvent;
 
   void sendHoverEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
-    var lastEvent = _lastHoverEvent;
-    UserHoverEvent? event;
-    if (lastEvent != null) {
-      var old = lastEvent.event;
-      if (equalsEvent(old, node, componentType)) {
-        event = lastEvent;
-        event.localOffset = offset;
-        event.globalOffset = toGlobal(offset);
+    if (context.hasEventListener(EventType.hoverUpdate)) {
+      var lastEvent = _lastHoverEvent;
+      UserHoverUpdateEvent? event;
+      if (lastEvent != null) {
+        var old = lastEvent.event;
+        if (equalsEvent(old, node, componentType)) {
+          event = lastEvent;
+          event.localOffset = offset;
+          event.globalOffset = toGlobal(offset);
+        }
       }
+      event ??= UserHoverUpdateEvent(
+        offset,
+        toGlobal(offset),
+        buildEvent(node, componentType),
+      );
+      _lastHoverEvent = event;
+      context.dispatchEvent(event);
     }
-    event ??= UserHoverEvent(
-      offset,
-      toGlobal(offset),
-      buildEvent(node, componentType),
-    );
-    _lastHoverEvent = event;
-    context.dispatchEvent(event);
   }
 
   void sendHoverEndEvent(DataNode node, [ComponentType componentType = ComponentType.series]) {
+    if (!context.hasEventListener(EventType.hoverEnd)) {
+      return;
+    }
     context.dispatchEvent(UserHoverEndEvent(buildEvent(node, componentType)));
   }
 
@@ -192,6 +191,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   ///========查找坐标系函数=======================
+
   GridCoord findGridCoord() {
     return context.findGridCoord(series.gridIndex);
   }
@@ -261,20 +261,20 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   ///获取平移偏移量
   Offset getTranslation() {
     var type = series.coordType;
-    Offset? offset;
     if (type == CoordType.polar) {
-      offset = findParallelCoordNull()?.translation;
-    } else if (type == CoordType.calendar) {
-      offset = findCalendarCoordNull()?.translation;
-    } else if (type == CoordType.radar) {
-      offset = findRadarCoordNull()?.translation;
-    } else if (type == CoordType.parallel) {
-      offset = findParallelCoordNull()?.translation;
-    } else if (type == CoordType.grid) {
-      offset = findGridCoordNull()?.translation;
+      return findPolarCoord().translation;
     }
-    if (offset != null) {
-      return offset;
+    if (type == CoordType.calendar) {
+      return findCalendarCoord().translation;
+    }
+    if (type == CoordType.radar) {
+      return findRadarCoord().translation;
+    }
+    if (type == CoordType.parallel) {
+      return findParallelCoord().translation;
+    }
+    if (type == CoordType.grid) {
+      return findGridCoord().translation;
     }
     return view.translation;
   }
@@ -333,65 +333,37 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   ///注册Brush组件 Event监听器
-  VoidFun1<ChartEvent>? _brushListener;
-
   void subscribeBrushEvent() {
-    _context?.removeEventCall(_brushListener);
-    _brushListener = (event) {
-      if (event is BrushEvent) {
-        onBrushUpdate(event);
-        return;
-      }
-      if (event is BrushClearEvent) {
-        onBrushClear(event);
-        return;
-      }
-      if (event is BrushClearEvent) {
-        onBrushClear(event);
-        return;
-      }
-    };
-    _context?.addEventCall(EventType.brush, _brushListener);
+    _context?.addEventCall(EventType.brushStart, onBrushStart as VoidFun1<ChartEvent>);
+    _context?.addEventCall(EventType.brushUpdate, onBrushUpdate as VoidFun1<ChartEvent>);
+    _context?.addEventCall(EventType.brushEnd, onBrushEnd as VoidFun1<ChartEvent>);
+    _context?.addEventCall(EventType.brushEnd, onBrushEnd as VoidFun1<ChartEvent>);
   }
 
   void unsubscribeBrushEvent() {
-    _context?.removeEventCall(_brushListener);
-    _brushListener = null;
+    _context?.removeEventCall(onBrushUpdate as VoidFun1);
+    _context?.removeEventCall(onBrushEnd as VoidFun1);
+    _context?.removeEventCall(onBrushStart as VoidFun1);
   }
 
-  void onBrushUpdate(BrushEvent event) {}
+  void onBrushUpdate(BrushUpdateEvent event) {}
 
   void onBrushEnd(BrushEndEvent event) {}
 
-  void onBrushClear(BrushClearEvent event) {}
+  void onBrushStart(BrushStartEvent event) {}
 
   /// 注册Legend组件事件
-  VoidFun1<ChartEvent>? _legendListener;
-
   void subscribeLegendEvent() {
-    _context?.removeEventCall(_legendListener);
-    _legendListener = (event) {
-      if (event is LegendSelectedEvent) {
-        onLegendSelected(event);
-        return;
-      }
-      if (event is LegendUnSelectedEvent) {
-        onLegendUnSelected(event);
-        return;
-      }
-      if (event is LegendSelectChangeEvent) {
-        onLegendSelectChange(event);
-        return;
-      }
-      if (event is LegendScrollEvent) {
-        onLegendScroll(event);
-        return;
-      }
-    };
-    _context?.addEventCall(EventType.legend, _legendListener);
+    _context?.addEventCall(EventType.legendScroll, onLegendScroll as VoidFun1<ChartEvent>?);
+    _context?.addEventCall(EventType.legendInverseSelect, onLegendInverseSelect as VoidFun1<ChartEvent>?);
+    _context?.addEventCall(EventType.legendSelectAll, onLegendSelectedAll as VoidFun1<ChartEvent>?);
+    _context?.addEventCall(EventType.legendUnSelect, onLegendUnSelected as VoidFun1<ChartEvent>?);
+    _context?.addEventCall(EventType.legendSelectChanged, onLegendSelectChange as VoidFun1<ChartEvent>?);
   }
 
-  void onLegendSelected(LegendSelectedEvent event) {}
+  void onLegendInverseSelect(LegendInverseSelectEvent event) {}
+
+  void onLegendSelectedAll(LegendSelectAllEvent event) {}
 
   void onLegendUnSelected(LegendUnSelectedEvent event) {}
 
@@ -400,11 +372,14 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   void onLegendScroll(LegendScrollEvent event) {}
 
   void unsubscribeLegendEvent() {
-    _context?.removeEventCall(_legendListener);
-    _legendListener = null;
+    _context?.removeEventCall(onLegendInverseSelect as VoidFun1<ChartEvent>?);
+    _context?.removeEventCall(onLegendSelectedAll as VoidFun1<ChartEvent>?);
+    _context?.removeEventCall(onLegendUnSelected as VoidFun1<ChartEvent>?);
+    _context?.removeEventCall(onLegendSelectChange as VoidFun1<ChartEvent>?);
+    _context?.removeEventCall(onLegendScroll as VoidFun1<ChartEvent>?);
   }
 
- //========Legend 结束================
+  //========Legend 结束================
 
   ///注册坐标系滚动事件
   VoidFun1<ChartEvent>? _coordScrollListener;

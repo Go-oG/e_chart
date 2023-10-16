@@ -25,6 +25,8 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
   late AreaStyle itemStyle;
   late LineStyle borderStyle;
 
+  late final DataStatusChangeEvent _dataStateChangeEvent;
+
   DataNode(
     this.data,
     this.dataIndex,
@@ -34,11 +36,13 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
     this.borderStyle,
     LabelStyle labelStyle,
   ) {
+    _dataStateChangeEvent = DataStatusChangeEvent(data, status);
     _attr = attr;
     label.style = labelStyle;
   }
 
   DataNode.empty(this.data, this.dataIndex, this.groupIndex, P attr) {
+    _dataStateChangeEvent = DataStatusChangeEvent(data, status);
     itemStyle = AreaStyle.empty;
     borderStyle = LineStyle.empty;
     label.style = LabelStyle.empty;
@@ -67,12 +71,38 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
 
   void updateStyle(Context context, covariant ChartSeries series);
 
+  bool updateStatus(Context context, Iterable<ViewState>? remove, Iterable<ViewState>? add) {
+    if ((remove == null || remove.isEmpty) && (add == null || add.isEmpty)) {
+      return false;
+    }
+    if (equalSet<ViewState>(remove, add)) {
+      return false;
+    }
+    if (remove != null) {
+      removeStates(remove);
+    }
+    if (add != null) {
+      addStates(add);
+    }
+    if (context.hasEventListener(EventType.dataStatusChanged)) {
+      context.dispatchEvent(_dataStateChangeEvent);
+    }
+    return true;
+  }
+
+  void sendStateChangeEvent(Context context){
+    if (context.hasEventListener(EventType.dataStatusChanged)) {
+      context.dispatchEvent(_dataStateChangeEvent);
+    }
+  }
+
   ///更新当前符号的大小
   void updateSymbolSize(Size size) {}
 
   void updateLabelPosition(Context context, covariant ChartSeries series) {}
 
   DataType get dataType => DataType.nodeData;
+
 }
 
 abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {

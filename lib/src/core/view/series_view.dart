@@ -13,11 +13,10 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   L get layoutHelper => _layoutHelper!;
 
   SeriesView(this.series) {
-    zLevel=series.seriesType.priority;
+    zLevel = series.seriesType.priority;
     if (series is RectSeries) {
       layoutParams = (series as RectSeries).toLayoutParams();
     }
-
   }
 
   @override
@@ -143,4 +142,28 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   @override
   bool get useSingleLayer => series.useSingleLayer;
 
+  SeriesViewTranslationEvent? _translationEvent;
+
+  void sendTranslationEvent() {
+    if (!context.hasEventListener(EventType.seriesViewTranslation)) {
+      return;
+    }
+    _translationEvent ??= SeriesViewTranslationEvent(series, id, translationX, translationY);
+    _translationEvent!.translationX = translationX;
+    _translationEvent!.translationY = translationY;
+    context.dispatchEvent(_translationEvent!);
+  }
+
+  SeriesViewScaleEvent? _scaleEvent;
+
+  void sendScaleEvent(double zoom, double originX, double originY) {
+    if (!context.hasEventListener(EventType.seriesViewScale)) {
+      return;
+    }
+    _scaleEvent ??= SeriesViewScaleEvent(series, id, 1, 0, 0);
+    _scaleEvent!.zoom = zoom;
+    _scaleEvent!.originY = originY;
+    _scaleEvent!.originX = originX;
+    context.dispatchEvent(_scaleEvent!);
+  }
 }

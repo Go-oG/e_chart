@@ -211,13 +211,11 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   @override
-  List<dynamic> getAngleExtreme() {
+  List getPolarExtreme(bool radius) {
+    if (radius) {
+      return getAxisExtreme(0, true);
+    }
     return getAxisExtreme(0, false);
-  }
-
-  @override
-  List<dynamic> getRadiusExtreme() {
-    return getAxisExtreme(0, true);
   }
 
   @override

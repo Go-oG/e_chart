@@ -1,5 +1,5 @@
-import '../../core/model/series_type.dart';
-import '../../model/index.dart';
+import '../core/model/series_type.dart';
+import '../model/index.dart';
 import 'chart_event_dispatcher.dart';
 
 abstract class ChartEvent {

@@ -4,14 +4,20 @@ import 'package:e_chart/e_chart.dart';
 ///框选
 ///BrushView 只能在坐标系中出现
 ///覆盖在单个坐标系的最顶层(比TooltipView 低)
-class BrushView extends ChartView {
+class BrushView extends GestureView {
   final CoordLayout coord;
   final Brush brush;
-  final List<BrushArea> brushList = [];
+  List<BrushArea> _brushList = [];
+  late final BrushEndEvent _endEvent;
+  late final BrushStartEvent _startEvent;
+  late final BrushUpdateEvent _updateEvent;
 
   BrushView(this.coord, this.brush) {
     layoutParams = const LayoutParams.matchAll();
     zLevel = 10000;
+    _endEvent = BrushEndEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
+    _startEvent = BrushStartEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
+    _updateEvent = BrushUpdateEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
   }
 
   @override
@@ -22,64 +28,55 @@ class BrushView extends ChartView {
     super.layoutParams = p;
   }
 
-  final RectGesture _gesture = RectGesture();
-
   @override
   void onCreate() {
     super.onCreate();
-    _initGesture();
+    brush.addListener(() {
+      var c = brush.value;
+      if (c.code == Command.showBrush.code || c.code == Command.hideBrush.code) {
+        invalidate();
+      } else if (c.code == Command.clearBrush.code) {
+        _brushList = [];
+        invalidate();
+      }
+    });
   }
 
-  Offset _lastDrag = Offset.zero;
+  @override
+  bool get enableLongPress => true;
 
-  void _initGesture() {
-    _gesture.clear();
-    context.removeGesture(_gesture);
-    context.addGesture(_gesture);
-    _gesture.longPressStart = (e) {
-      var offset = toLocal(e.globalPosition);
-      _lastDrag = offset;
-      onDragStart(offset);
-    };
-    _gesture.longPressMove = (e) {
-      var offset = toLocal(e.globalPosition);
-      var dx = offset.dx - _lastDrag.dx;
-      var dy = offset.dy - _lastDrag.dy;
-      _lastDrag = offset;
-      onDragMove(offset, Offset(dx, dy));
-    };
-    _gesture.longPressEnd = () {
-      _lastDrag = Offset.zero;
-      onDragEnd();
-    };
-    _gesture.click = (e) {
-      onClick(toLocal(e.globalPosition));
-    };
-  }
+  @override
+  bool get enableClick => true;
 
-  bool handleAction(ChartAction action) {
+  @override
+  bool get enableScale => false;
+
+  @override
+  bool get enableHover => false;
+
+  bool _handleAction(ChartAction action) {
     if (!brush.enable) {
       return false;
     }
     if (action is BrushClearAction) {
       if (action.brushId == brush.id) {
-        brushList.clear();
-        context.dispatchEvent(BrushClearEvent(brush.id, coord.props.coordSystem));
+        _brushList = [];
+        context.dispatchEvent(_endEvent);
         invalidate();
         return true;
       }
       return false;
     }
     if (action is BrushAction) {
-      if (handleActionList(action.actionList) > 0) {
-        sendBrushEvent(brushList);
+      if (_handleActionList(action.actionList) > 0) {
+        _sendBrushEvent(_brushList);
         invalidate();
       }
       return false;
     }
     if (action is BrushEndAction) {
-      if (handleActionList(action.actionList) > 0) {
-        sendBrushEndEvent(brushList);
+      if (_handleActionList(action.actionList) > 0) {
+        _sendBrushEndEvent(_brushList);
         invalidate();
       }
       return false;
@@ -87,58 +84,52 @@ class BrushView extends ChartView {
     return false;
   }
 
-  int handleActionList(List<BrushActionData> list) {
+  int _handleActionList(List<BrushActionData> list) {
     int c = 0;
     for (var data in list) {
       if (data.brushId != brush.id) {
         continue;
       }
       if (!brush.supportMulti) {
-        brushList.clear();
+        _brushList.clear();
       }
-      brushList.add(BrushArea(data.brushType, data.range));
+      _brushList.add(BrushArea(data.brushType, data.range));
       c++;
     }
     return c;
   }
 
-  void sendBrushEvent(List<BrushArea> brushList, [bool redraw = true]) {
+  void _sendBrushEvent(List<BrushArea> brushList, [bool redraw = true]) {
+    _updateEvent.areas = brushList;
+    context.dispatchEvent(_updateEvent);
     if (redraw) {
       invalidate();
     }
-    var event = BrushEvent(coord.props.coordSystem, brush.id, data: brushList);
-    context.dispatchEvent(event);
   }
 
-  void sendBrushEndEvent(List<BrushArea> brushList, [bool redraw = true]) {
+  void _sendBrushEndEvent(List<BrushArea> brushList, [bool redraw = true]) {
+    context.dispatchEvent(_endEvent);
     if (redraw) {
       invalidate();
     }
-    var event = BrushEndEvent(coord.props.coordSystem, brush.id, brushList);
-    context.dispatchEvent(event);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    _gesture.rect = globalBound;
   }
 
   @override
   void onStart() {
     super.onStart();
-    context.addActionCall(handleAction);
+    context.addActionCall(_handleAction);
   }
 
   @override
   void onStop() {
-    context.removeActionCall(handleAction);
+    context.removeActionCall(_handleAction);
     super.onStop();
   }
 
   @override
   void onDestroy() {
-    brushList.clear();
+    _brushList = [];
+    brush.clearListener();
     super.onDestroy();
   }
 
@@ -147,7 +138,7 @@ class BrushView extends ChartView {
     if (!brush.enable) {
       return;
     }
-    for (var area in brushList) {
+    for (var area in _brushList) {
       brush.areaStyle.drawPath(canvas, mPaint, area.path);
       brush.borderStyle?.drawPath(canvas, mPaint, area.path, needSplit: false);
     }
@@ -163,22 +154,24 @@ class BrushView extends ChartView {
   Offset? _first;
   Offset? _last;
 
+  @override
   void onClick(Offset offset) {
     if (!brush.enable) {
       return;
     }
     var scroll = coord.translation;
     offset = offset.translate(scroll.dx.abs(), scroll.dy);
-    if (brush.removeOnClick && !brush.supportMulti && brushList.isNotEmpty) {
-      var first = brushList.first;
+    if (brush.removeOnClick && !brush.supportMulti && _brushList.isNotEmpty) {
+      var first = _brushList.first;
       if (!first.path.contains(offset)) {
-        brushList.clear();
+        _brushList = [];
         invalidate();
-        context.dispatchEvent(BrushClearEvent(brush.id, coord.props.coordSystem));
+        context.dispatchEvent(_endEvent);
       }
     }
   }
 
+  @override
   void onDragStart(Offset offset) {
     var scroll = coord.translation;
     offset = offset.translate(scroll.dx.abs(), scroll.dy);
@@ -188,8 +181,10 @@ class BrushView extends ChartView {
       return;
     }
     _first = offset;
+    context.dispatchEvent(_startEvent);
   }
 
+  @override
   void onDragMove(Offset offset, Offset diff) {
     if (!brush.enable) {
       _ol = [];
@@ -209,13 +204,14 @@ class BrushView extends ChartView {
     } else {
       _ol.add(offset);
     }
-    List<BrushArea> areaList = List.from(brushList);
+    List<BrushArea> areaList = List.from(_brushList);
     if (_ol.isNotEmpty) {
       areaList.add(BrushArea(brush.type, _ol));
     }
-    sendBrushEvent(areaList);
+    _sendBrushEvent(areaList);
   }
 
+  @override
   void onDragEnd() {
     if (!brush.enable) {
       _ol = [];
@@ -232,12 +228,12 @@ class BrushView extends ChartView {
       _ol = buildArea(first, last);
     }
     if (!brush.supportMulti) {
-      brushList.clear();
+      _brushList = [];
     }
     if (_ol.isNotEmpty) {
-      brushList.add(BrushArea(brush.type, _ol));
+      _brushList.add(BrushArea(brush.type, _ol));
     }
-    sendBrushEndEvent(brushList);
+    _sendBrushEndEvent(_brushList);
     _ol = [];
     _first = null;
     _last = null;

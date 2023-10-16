@@ -406,10 +406,19 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   ///==========Brush相关的=============
 
   @override
-  void onBrushUpdate(BrushEvent event) {
+  void onBrushUpdate(BrushUpdateEvent event) {
+    _handleBrush(event.areas);
+  }
+
+  @override
+  void onBrushEnd(BrushEndEvent event) {
+    _handleBrush(event.areas);
+  }
+
+  void _handleBrush(List<BrushArea> areas) {
     nodeMap.forEach((key, node) {
       bool has = false;
-      for (var area in event.data) {
+      for (var area in areas) {
         if (coordSystem == CoordType.grid && area.path.overlapRect(node.rect)) {
           has = true;
           break;
@@ -420,44 +429,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
         }
       }
       if (has) {
-        node.addState(ViewState.selected);
-        node.removeState(ViewState.disabled);
+        has = node.updateStatus(context, [ViewState.disabled], [ViewState.selected]);
       } else {
-        node.removeState(ViewState.selected);
-        node.addState(ViewState.disabled);
-      }
-    });
-    notifyLayoutUpdate();
-  }
-
-  @override
-  void onBrushEnd(BrushEndEvent event) {
-    nodeMap.forEach((key, node) {
-      bool has = false;
-      for (var area in event.data) {
-        if (coordSystem == CoordType.grid && area.path.overlapRect(node.rect)) {
-          has = true;
-          break;
-        }
-        if (coordSystem == CoordType.polar && arcInPath(area.path, node.arc)) {
-          has = true;
-          break;
-        }
+        has = node.updateStatus(context, [ViewState.selected], [ViewState.disabled]);
       }
       if (has) {
-        node.addState(ViewState.selected);
-      } else {
-        node.removeState(ViewState.selected);
+        node.updateStyle(context, series);
       }
-    });
-    notifyLayoutUpdate();
-  }
-
-  @override
-  void onBrushClear(BrushClearEvent event) {
-    nodeMap.forEach((key, node) {
-      node.removeState(ViewState.disabled);
-      node.removeState(ViewState.selected);
     });
     notifyLayoutUpdate();
   }
@@ -505,5 +483,4 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     }
     return findGridCoord().getMaxScroll();
   }
-
 }

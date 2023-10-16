@@ -11,7 +11,70 @@ class LegendComponent extends FlexLayout {
   @override
   void onCreate() {
     super.onCreate();
+    legend.addListener(() {
+      var c = legend.value;
+      if (c.code == Command.inverseSelectLegend.code) {
+        final List<LegendItem> selectedList = [];
+        final List<LegendItem> unselectedList = [];
+        for (var child in children) {
+          if (child is! LegendItemView) {
+            continue;
+          }
+          child.item.selected = !child.item.selected;
+          child.updateStyle();
+          if (child.item.selected) {
+            selectedList.add(child.item);
+          } else {
+            unselectedList.add(child.item);
+          }
+        }
+        invalidate();
+        context.dispatchEvent(LegendInverseSelectEvent(selectedList, unselectedList));
+      } else if (c.code == Command.selectAllLegend.code) {
+        final List<LegendItem> selectedList = [];
+        int count = 0;
+        for (var child in children) {
+          if (child is! LegendItemView) {
+            continue;
+          }
+          if (!child.item.selected) {
+            child.item.selected = !child.item.selected;
+            child.updateStyle();
+            count += 1;
+          }
+          selectedList.add(child.item);
+        }
+        if (count > 0) {
+          invalidate();
+          context.dispatchEvent(LegendSelectAllEvent(selectedList));
+        }
+      } else if (c.code == Command.unselectLegend.code) {
+        final List<LegendItem> unselectedList = [];
+        int count = 0;
+        for (var child in children) {
+          if (child is! LegendItemView) {
+            continue;
+          }
+          if (child.item.selected) {
+            child.item.selected = false;
+            child.updateStyle();
+            count += 1;
+          }
+          unselectedList.add(child.item);
+        }
+        if (count > 0) {
+          invalidate();
+          context.dispatchEvent(LegendUnSelectedEvent(unselectedList));
+        }
+      }
+    });
     loadData();
+  }
+
+  @override
+  void onDestroy() {
+    legend.clearListener();
+    super.onDestroy();
   }
 
   void loadData() {
@@ -56,14 +119,8 @@ class LegendComponent extends FlexLayout {
       return;
     }
 
-    if (child.isSelected) {
-      child.removeState(ViewState.selected);
-      context.dispatchEvent(LegendUnSelectedEvent(child.item));
-    } else {
-      child.addState(ViewState.selected);
-      context.dispatchEvent(LegendSelectedEvent(child.item));
-    }
-
+    child.item.selected = !child.item.selected;
+    context.dispatchEvent(LegendSelectChangeEvent(child.item));
     if (!legend.allowSelectMulti) {
       for (var c in children) {
         c.markDirtyWithChild();
@@ -71,11 +128,10 @@ class LegendComponent extends FlexLayout {
         if (lc == child || !lc.isSelected) {
           continue;
         }
-        lc.removeState(ViewState.selected);
-        context.dispatchEvent(LegendUnSelectedEvent(lc.item));
+        c.item.selected = false;
+        context.dispatchEvent(LegendSelectChangeEvent(c.item));
       }
     }
-
     invalidate();
   }
 
@@ -89,15 +145,8 @@ class LegendComponent extends FlexLayout {
     if (!child.isSelected && !select) {
       return;
     }
-
-    if (select) {
-      child.addState(ViewState.selected);
-      context.dispatchEvent(LegendSelectedEvent(child.item));
-    } else {
-      child.removeState(ViewState.selected);
-      context.dispatchEvent(LegendUnSelectedEvent(child.item));
-    }
-
+    child.item.selected = select;
+    context.dispatchEvent(LegendSelectChangeEvent(child.item));
     if (!legend.allowSelectMulti) {
       for (var c in children) {
         c.markDirtyWithChild();
@@ -106,12 +155,12 @@ class LegendComponent extends FlexLayout {
           continue;
         }
         if (select) {
+          lc.item.selected = false;
           lc.removeState(ViewState.selected);
-          context.dispatchEvent(LegendUnSelectedEvent(lc.item));
+          context.dispatchEvent(LegendSelectChangeEvent(lc.item));
         }
       }
     }
-
     invalidate();
   }
 }
@@ -267,4 +316,6 @@ class LegendItemView extends GestureView with ViewStateProvider {
 
   @override
   bool get enableScale => false;
+
+  void updateStyle() {}
 }

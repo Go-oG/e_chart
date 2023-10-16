@@ -488,3 +488,31 @@ bool equalList<T>(List<T?> s, List<T?> e) {
   }
   return true;
 }
+
+bool equalSet<T>(Iterable<T>? s, Iterable<T>? e) {
+  int ls = s?.length ?? 0;
+  int le = e?.length ?? 0;
+  if (ls != le) {
+    return false;
+  }
+  if (ls == 0) {
+    return true;
+  }
+
+  Set<T> tmpSet;
+  if (e is Set) {
+    tmpSet = e as Set<T>;
+  } else {
+    tmpSet = Set.from(e!);
+  }
+
+  for (var data in s!) {
+    if (data == null) {
+      continue;
+    }
+    if (!tmpSet.contains(data)) {
+      return false;
+    }
+  }
+  return true;
+}

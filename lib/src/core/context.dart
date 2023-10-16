@@ -164,7 +164,6 @@ class Context {
         _eventDispatcher.addCall(key, c);
       }
     });
-
   }
 
   void onStart() {
@@ -402,12 +401,12 @@ class Context {
     _actionDispatcher.dispatch(action);
   }
 
-  ///=======Event分发和监听
-  void addEventCall(EventType type,VoidFun1<ChartEvent>? call) {
+  ///=======Event分发和监听===============
+  void addEventCall(EventType type, VoidFun1<ChartEvent>? call) {
     if (call == null) {
       return;
     }
-    _eventDispatcher.addCall(type,call);
+    _eventDispatcher.addCall(type, call);
   }
 
   void removeEventCall(VoidFun1<ChartEvent>? call) {
@@ -421,4 +420,7 @@ class Context {
     _eventDispatcher.dispatch(event);
   }
 
+  bool hasEventListener(EventType? type) {
+    return _eventDispatcher.hasEventListener(type);
+  }
 }

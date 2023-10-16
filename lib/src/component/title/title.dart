@@ -1,9 +1,8 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../model/enums/align2.dart';
-import '../style/label.dart';
 
-class ChartTitle {
+class ChartTitle extends ChartNotifier<Command>{
   bool show = false;
 
   Align2 position = Align2.start;
@@ -27,4 +26,6 @@ class ChartTitle {
   Decoration decoration = const BoxDecoration();
   VoidCallback? textClick;
   VoidCallback? subTextClick;
+
+  ChartTitle():super(Command.none);
 }

@@ -294,6 +294,7 @@ class CalendarCoordImpl extends CalendarCoord {
     var old = viewPort.translation;
     Offset sc = viewPort.scroll(diff);
     if (old.dx != sc.dx || old.dy != sc.dy) {
+      sendScrollChangeEvent();
       invalidate();
     }
   }

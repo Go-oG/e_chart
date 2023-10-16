@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///表格的通用配置
-class ChartOption {
+class ChartOption extends ChartNotifier<Command> {
   ChartTitle? title;
   Legend? legend;
   List<Grid> gridList;
@@ -30,7 +30,7 @@ class ChartOption {
     this.toolTip,
     ChartTheme? theme,
     this.eventCall,
-  }) {
+  }) : super(Command.none) {
     if (theme != null) {
       this.theme = theme;
     }

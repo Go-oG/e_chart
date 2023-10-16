@@ -4,6 +4,7 @@ class RenderedEvent extends ChartEvent {
   static const RenderedEvent rendered = RenderedEvent();
 
   const RenderedEvent();
+
   @override
-  EventType get eventType => EventType.render;
+  EventType get eventType => EventType.rendered;
 }

@@ -1,9 +1,9 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'tooltip_theme.dart' as tp;
-import '../index.dart';
 
 ///全局的主题配置
-class ChartTheme {
+class ChartTheme extends ChartNotifier<Command> {
   ///该列表必须至少有一个
   List<Color> _colors = const [
     Color(0xFF63B0F2),
@@ -15,12 +15,16 @@ class ChartTheme {
     Color(0xFFF36261),
   ];
 
+  ChartTheme() : super(Command.none);
+
   List<Color> get colors => _colors;
   Map<int, AreaStyle> _areaStyleMap = {};
+
   set colors(List<Color> colors) {
     _areaStyleMap = {};
     _colors = List.from(colors, growable: false);
   }
+
   AreaStyle getAreaStyle(int index) {
     var style = _areaStyleMap[index];
     if (style != null) {
@@ -30,17 +34,19 @@ class ChartTheme {
     _areaStyleMap[index] = style;
     return style;
   }
+
   Color getColor(int index) {
     return colors[index % colors.length];
   }
+
   Color backgroundColor = const Color(0xFFFDFDFD);
 
-  LabelTheme title=LabelTheme.of(const Color(0xFF464646), 15);
-  LabelTheme subTitle=LabelTheme.of(const Color(0xFF464646), 13);
-  LabelTheme mark=LabelTheme.of(const Color(0xFFEEEEEE), 13);
-  LabelTheme legend=LabelTheme.of(const Color(0xFF333333), 15);
+  LabelTheme title = LabelTheme.of(const Color(0xFF464646), 15);
+  LabelTheme subTitle = LabelTheme.of(const Color(0xFF464646), 13);
+  LabelTheme mark = LabelTheme.of(const Color(0xFFEEEEEE), 13);
+  LabelTheme legend = LabelTheme.of(const Color(0xFF333333), 15);
 
-  final LabelTheme _labelStyle=LabelTheme.of(const Color(0xDD000000), 13);
+  final LabelTheme _labelStyle = LabelTheme.of(const Color(0xDD000000), 13);
   bool showLabel = true;
 
   LabelStyle? getLabelStyle() {
@@ -50,8 +56,7 @@ class ChartTheme {
     return _labelStyle.getStyle();
   }
 
-  BorderTheme border=BorderTheme.any(color:const Color(0xFFCCCCCC),width: 1);
-
+  BorderTheme border = BorderTheme.any(color: const Color(0xFFCCCCCC), width: 1);
 
   ///通用组件主题
   tp.TooltipTheme tooltipTheme = tp.TooltipTheme();

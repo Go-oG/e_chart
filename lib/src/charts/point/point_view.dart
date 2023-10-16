@@ -9,8 +9,9 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   @override
   void onDraw(CCanvas canvas) {
     var list = layoutHelper.showNodeList;
+    Offset tr=layoutHelper.getTranslation();
     canvas.save();
-    canvas.translate(translationX, translationY);
+    canvas.translate(tr.dx, tr.dy);
     each(list, (p0, p1) {
       p0.onDraw(canvas, mPaint);
     });
@@ -21,15 +22,10 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   int get calendarIndex => series.calendarIndex;
 
   @override
-  List<dynamic> getAngleExtreme() {
-    return series.getExtremeHelper().getExtreme('y0').getAllExtreme();
+  List getPolarExtreme(bool radius) {
+    String index=radius?'x0':'y0';
+    return series.getExtremeHelper().getExtreme(index).getAllExtreme();
   }
-
-  @override
-  List<dynamic> getRadiusExtreme() {
-    return series.getExtremeHelper().getExtreme('x0').getAllExtreme();
-  }
-
   @override
   int getAxisDataCount(int axisIndex, bool isXAxis) {
     return series.data.length;

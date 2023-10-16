@@ -94,7 +94,7 @@ class RadarCoordImpl extends RadarCoord {
       if (child is! RadarChild) {
         continue;
       }
-      (child as RadarChild).dataSet(dim).forEach((element) {
+      (child as RadarChild).getRadarExtreme(dim).forEach((element) {
         list.add(element);
       });
     }
