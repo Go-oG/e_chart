@@ -1,11 +1,7 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../../functions.dart';
-import '../../style/index.dart';
-import '../../theme/axis_theme.dart';
-import 'axis_symbol.dart';
-
-class AxisLine {
+class AxisLine extends ChartNotifier2{
   bool show;
   double width;
   Color? color;

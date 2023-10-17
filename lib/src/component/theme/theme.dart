@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'tooltip_theme.dart' as tp;
 
 ///全局的主题配置
-class ChartTheme extends ChartNotifier<Command> {
+class ChartTheme extends ChartNotifier2 {
   ///该列表必须至少有一个
   List<Color> _colors = const [
     Color(0xFF63B0F2),
@@ -15,7 +15,7 @@ class ChartTheme extends ChartNotifier<Command> {
     Color(0xFFF36261),
   ];
 
-  ChartTheme() : super(Command.none);
+  ChartTheme();
 
   List<Color> get colors => _colors;
   Map<int, AreaStyle> _areaStyleMap = {};

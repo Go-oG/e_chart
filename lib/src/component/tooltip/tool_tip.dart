@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart' as e;
 import 'package:flutter/material.dart';
 
 ///提示框
-class ToolTip extends ChartNotifier<Command>{
+class ToolTip extends ChartNotifier2 {
   bool show;
   Trigger trigger;
   TriggerOn triggerOn;
@@ -54,7 +54,7 @@ class ToolTip extends ChartNotifier<Command>{
     this.minWidth = 300,
     this.maxHeight = 400,
     this.maxWidth,
-  }):super(Command.none) {
+  }) {
     if (backgroundStyle != null) {
       this.backgroundStyle = backgroundStyle;
     }

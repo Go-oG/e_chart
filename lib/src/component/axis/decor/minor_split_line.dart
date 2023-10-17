@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class MinorSplitLine {
+class MinorSplitLine extends ChartNotifier2 {
   bool show;
   LineStyle? style;
   Fun3<int, int, LineStyle?>? splitLineFun;

@@ -28,6 +28,15 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   StackHelper(super.context, super.view, super.series);
 
   @override
+  void dispose() {
+    showNodeMap = {};
+    markLineList = [];
+    markPointList = [];
+    _nodeMap = {};
+    super.dispose();
+  }
+
+  @override
   void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
     subscribeBrushEvent();
     subscribeLegendEvent();
@@ -168,6 +177,16 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
           }
         }
       }
+    }
+
+    void hc() {
+      _layoutMarkPointAndLine(series.data, nodeList, nodeMap);
+    }
+    for (var mpn in mpnl) {
+      mpn.markPoint.addListener(hc);
+    }
+    for (var mln in mlnl) {
+      mln.line.addListener(hc);
     }
     markPointList = mpnl;
     markLineList = mlnl;

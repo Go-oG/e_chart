@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class MarkLine {
+class MarkLine extends ChartNotifier2{
   MarkPoint start;
   MarkPoint end;
   bool touch;
@@ -14,7 +14,10 @@ class MarkLine {
     this.touch = false,
     this.lineStyle = const LineStyle(dash: [4,8]),
     this.precision = 2,
-  });
+  }){
+    start.addListener(notifyListeners);
+    end.addListener(notifyListeners);
+  }
 
   void draw(CCanvas canvas, Paint paint, Offset start, Offset end, {DynamicText? startText, DynamicText? endText}) {
     lineStyle.drawPolygon(canvas, paint, [start, end]);

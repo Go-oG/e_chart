@@ -1,8 +1,6 @@
-import '../../../functions.dart';
-import '../../theme/axis_theme.dart';
-import '../../tick/main_tick.dart';
+import 'package:e_chart/e_chart.dart';
 
-class AxisTick {
+class AxisTick extends ChartNotifier2 {
   bool show;
   MainTick? tick;
   Fun3<int, int, MainTick?>? tickFun;

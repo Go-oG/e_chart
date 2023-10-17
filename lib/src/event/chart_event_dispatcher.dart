@@ -70,6 +70,7 @@ class EventType {
 
   ///坐标轴范围发生更改
   static const axisRangeChange = EventType("axisRangeChange");
+  static const axisLabelClick = EventType("axisLabelClick");
 
   ///图例滚动事件
   static const legendScroll = EventType("legendScroll");

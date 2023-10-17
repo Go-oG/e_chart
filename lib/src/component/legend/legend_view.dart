@@ -8,72 +8,94 @@ class LegendComponent extends FlexLayout {
     this.legend = legend ?? Legend(show: false);
   }
 
+  late Align2 hAlign;
+  late Align2 vAlign;
+  late Offset offset;
+
   @override
   void onCreate() {
     super.onCreate();
-    legend.addListener(() {
-      var c = legend.value;
-      if (c.code == Command.inverseSelectLegend.code) {
-        final List<LegendItem> selectedList = [];
-        final List<LegendItem> unselectedList = [];
-        for (var child in children) {
-          if (child is! LegendItemView) {
-            continue;
-          }
-          child.item.selected = !child.item.selected;
-          child.updateStyle();
-          if (child.item.selected) {
-            selectedList.add(child.item);
-          } else {
-            unselectedList.add(child.item);
-          }
+    hAlign = legend.hAlign;
+    vAlign = legend.vAlign;
+    offset = legend.offset;
+    legend.addListener(handleCommand);
+    loadData();
+  }
+
+  void handleCommand() {
+    var c = legend.value;
+    if (c == Command.inverseSelectLegend) {
+      final List<LegendItem> selectedList = [];
+      final List<LegendItem> unselectedList = [];
+      for (var child in children) {
+        if (child is! LegendItemView) {
+          continue;
         }
-        invalidate();
-        context.dispatchEvent(LegendInverseSelectEvent(selectedList, unselectedList));
-      } else if (c.code == Command.selectAllLegend.code) {
-        final List<LegendItem> selectedList = [];
-        int count = 0;
-        for (var child in children) {
-          if (child is! LegendItemView) {
-            continue;
-          }
-          if (!child.item.selected) {
-            child.item.selected = !child.item.selected;
-            child.updateStyle();
-            count += 1;
-          }
+        child.item.selected = !child.item.selected;
+        child.updateStyle();
+        if (child.item.selected) {
           selectedList.add(child.item);
-        }
-        if (count > 0) {
-          invalidate();
-          context.dispatchEvent(LegendSelectAllEvent(selectedList));
-        }
-      } else if (c.code == Command.unselectLegend.code) {
-        final List<LegendItem> unselectedList = [];
-        int count = 0;
-        for (var child in children) {
-          if (child is! LegendItemView) {
-            continue;
-          }
-          if (child.item.selected) {
-            child.item.selected = false;
-            child.updateStyle();
-            count += 1;
-          }
+        } else {
           unselectedList.add(child.item);
         }
-        if (count > 0) {
-          invalidate();
-          context.dispatchEvent(LegendUnSelectedEvent(unselectedList));
-        }
       }
-    });
-    loadData();
+      invalidate();
+      context.dispatchEvent(LegendInverseSelectEvent(selectedList, unselectedList));
+      return;
+    }
+    if (c == Command.selectAllLegend) {
+      final List<LegendItem> selectedList = [];
+      int count = 0;
+      for (var child in children) {
+        if (child is! LegendItemView) {
+          continue;
+        }
+        if (!child.item.selected) {
+          child.item.selected = !child.item.selected;
+          child.updateStyle();
+          count += 1;
+        }
+        selectedList.add(child.item);
+      }
+      if (count > 0) {
+        invalidate();
+        context.dispatchEvent(LegendSelectAllEvent(selectedList));
+      }
+      return;
+    }
+    if (c == Command.unselectLegend) {
+      final List<LegendItem> unselectedList = [];
+      int count = 0;
+      for (var child in children) {
+        if (child is! LegendItemView) {
+          continue;
+        }
+        if (child.item.selected) {
+          child.item.selected = false;
+          child.updateStyle();
+          count += 1;
+        }
+        unselectedList.add(child.item);
+      }
+      if (count > 0) {
+        invalidate();
+        context.dispatchEvent(LegendUnSelectedEvent(unselectedList));
+      }
+      return;
+    }
+    if (c == Command.configChange) {
+      if (legend.hAlign != hAlign || legend.vAlign != vAlign || legend.offset != offset) {
+        requestLayout();
+      } else {
+        requestLayoutSelf();
+      }
+      return;
+    }
   }
 
   @override
   void onDestroy() {
-    legend.clearListener();
+    legend.removeListener(handleCommand);
     super.onDestroy();
   }
 

@@ -1,8 +1,6 @@
-import '../../../functions.dart';
-import '../../theme/axis_theme.dart';
-import '../../style/index.dart';
+import 'package:e_chart/e_chart.dart';
 
-class SplitArea {
+class SplitArea extends ChartNotifier2{
   bool show;
   int interval;
   AreaStyle? style;

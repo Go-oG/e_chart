@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import '../../../e_chart.dart';
 
-class MarkPoint {
+class MarkPoint extends ChartNotifier2{
   MarkPointData data;
   ChartSymbol symbol = CircleSymbol();
   bool touch;

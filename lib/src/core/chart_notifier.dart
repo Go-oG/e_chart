@@ -38,17 +38,29 @@ class ChartNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
     }
   }
 
+  void notifyChange() {
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     clearListener();
     if (!_disposeFlag) {
       _disposeFlag = true;
       super.dispose();
-    }else{
+    } else {
       Logger.w("已经调用过了Dispose");
     }
   }
 
   @override
   String toString() => '${describeIdentity(this)}($value)';
+}
+
+class ChartNotifier2 extends ChartNotifier<Command> {
+  ChartNotifier2() : super(Command.none);
+
+  void notifyConfigChange() {
+    value = Command.configChange;
+  }
 }

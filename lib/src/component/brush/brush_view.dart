@@ -31,15 +31,21 @@ class BrushView extends GestureView {
   @override
   void onCreate() {
     super.onCreate();
-    brush.addListener(() {
-      var c = brush.value;
-      if (c.code == Command.showBrush.code || c.code == Command.hideBrush.code) {
-        invalidate();
-      } else if (c.code == Command.clearBrush.code) {
-        _brushList = [];
-        invalidate();
-      }
-    });
+    brush.addListener(handleBrushCommand);
+  }
+
+  void handleBrushCommand() {
+    var c = brush.value;
+    if (c.code == Command.showBrush.code || c.code == Command.hideBrush.code) {
+      invalidate();
+      return;
+    }
+    if (c.code == Command.clearBrush.code||c.code==Command.configChange.code) {
+      _brushList = [];
+      invalidate();
+      return;
+    }
+
   }
 
   @override
@@ -129,7 +135,7 @@ class BrushView extends GestureView {
   @override
   void onDestroy() {
     _brushList = [];
-    brush.clearListener();
+    brush.removeListener(handleBrushCommand);
     super.onDestroy();
   }
 

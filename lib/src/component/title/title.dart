@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 
-class ChartTitle extends ChartNotifier<Command>{
+class ChartTitle extends ChartNotifier2{
   bool show = false;
 
   Align2 position = Align2.start;
@@ -27,5 +27,5 @@ class ChartTitle extends ChartNotifier<Command>{
   VoidCallback? textClick;
   VoidCallback? subTextClick;
 
-  ChartTitle():super(Command.none);
+  ChartTitle();
 }

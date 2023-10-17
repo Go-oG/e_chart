@@ -2,7 +2,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 
-class AxisLabel {
+class AxisLabel extends ChartNotifier2{
   bool show;
 
   //坐标轴刻度标签的显示间隔，在类目轴中有效。

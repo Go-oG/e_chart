@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 
-abstract class BaseAxis {
+abstract class BaseAxis extends ChartNotifier2{
   bool show;
   AxisType type;
 

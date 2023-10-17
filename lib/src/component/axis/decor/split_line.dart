@@ -1,9 +1,7 @@
-import '../../../functions.dart';
-import '../../style/index.dart';
-import '../../theme/axis_theme.dart';
+import 'package:e_chart/e_chart.dart';
 
 ///坐标轴在grid区域中的分隔线
-class SplitLine {
+class SplitLine extends ChartNotifier2 {
   bool show;
   int interval;
   LineStyle? style;
