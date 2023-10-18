@@ -3,8 +3,9 @@ import 'dart:math' as math;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 
-abstract class BaseAxis extends ChartNotifier2{
+abstract class BaseAxis extends ChartNotifier2 {
   bool show;
+  late String id;
   AxisType type;
 
   ///类目轴相关配置
@@ -28,6 +29,7 @@ abstract class BaseAxis extends ChartNotifier2{
   num? maxInterval;
   num? interval;
   num logBase;
+
   ///是否翻转坐标轴数据
   bool inverse;
 
@@ -49,16 +51,15 @@ abstract class BaseAxis extends ChartNotifier2{
   AxisPointer? axisPointer;
 
   BaseAxis({
+    String? id,
     this.show = true,
     this.type = AxisType.value,
     this.categoryList = const [],
     this.categoryCenter = true,
-
     this.alignTicks = true,
     this.timeType = TimeType.day,
     this.timeRange,
     this.timeFormatFun,
-
     this.min,
     this.max,
     this.start0 = true,
@@ -78,6 +79,11 @@ abstract class BaseAxis extends ChartNotifier2{
     this.minorTick,
     this.axisPointer,
   }) {
+    if (id != null && id.isNotEmpty) {
+      this.id = id;
+    } else {
+      this.id = randomId();
+    }
     if (axisLine != null) {
       this.axisLine = axisLine;
     }

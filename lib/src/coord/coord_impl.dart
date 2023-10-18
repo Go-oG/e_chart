@@ -7,9 +7,6 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   final T props;
   final ViewPort viewPort = ViewPort.zero();
 
-  late final CoordScrollEvent scrollEvent;
-  late final CoordLayoutChangeEvent layoutChangeEvent;
-
   ///存储内容的边界
   Rect contentBox = Rect.zero;
 
@@ -18,9 +15,9 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   CoordLayout(this.props) : super() {
     layoutParams = props.layoutParams;
-    scrollEvent = CoordScrollEvent(id, props.id, props.coordSystem);
-    layoutChangeEvent = CoordLayoutChangeEvent(id, props.id, props.coordSystem);
   }
+
+  CoordType get coordType=>props.coordSystem;
 
   @override
   void onCreate() {
@@ -141,13 +138,10 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     return vl;
   }
 
-  void sendScrollChangeEvent() {
-    scrollEvent.scrollX = viewPort.scrollX;
-    scrollEvent.scrollY = viewPort.scrollY;
-    context.dispatchEvent(scrollEvent);
-  }
+  @override
+  bool get freeDrag => props.freeDrag;
 
-  void sendLayoutChangeEvent() {
-    context.dispatchEvent(layoutChangeEvent);
-  }
+  @override
+  bool get freeLongPress => props.freeLongPress;
+
 }

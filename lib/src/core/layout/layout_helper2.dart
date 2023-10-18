@@ -13,8 +13,6 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
 
   LayoutHelper2.lazy() : super.lazy();
 
-
-
   @override
   void onClick(Offset localOffset) {
     onHandleHoverAndClick(localOffset, true);

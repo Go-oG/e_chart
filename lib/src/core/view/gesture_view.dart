@@ -1,10 +1,11 @@
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../utils/platform_util.dart';
-import '../gesture/chart_gesture.dart';
-import 'view.dart';
+
 ///实现了一个简易的手势识别器
 abstract class GestureView extends ChartView {
   late ChartGesture _gesture;
@@ -29,7 +30,10 @@ abstract class GestureView extends ChartView {
 
   Offset _lastHover = Offset.zero;
   Offset _lastDrag = Offset.zero;
+  Direction? _dragDirection;
+
   Offset _lastLongPress = Offset.zero;
+  Direction? _lpDirection;
 
   void onInitGesture(ChartGesture gesture) {
     gesture.clear();
@@ -72,9 +76,31 @@ abstract class GestureView extends ChartView {
         var dx = offset.dx - _lastLongPress.dx;
         var dy = offset.dy - _lastLongPress.dy;
         _lastLongPress = offset;
+        if (!freeLongPress) {
+          if (_lpDirection == null) {
+            if (dx.abs() <= 1e-6) {
+              _lpDirection = Direction.vertical;
+            } else if (dy.abs() <= 1e-6) {
+              _lpDirection = Direction.horizontal;
+            } else {
+              var angle = atan(dy.abs() / dx.abs());
+              if (angle.isNaN) {
+                _lpDirection = Direction.horizontal;
+              } else {
+                _lpDirection = angle.abs() < 30 * pi / 180 ? Direction.horizontal : Direction.vertical;
+              }
+            }
+          }
+          if (_lpDirection == Direction.horizontal) {
+            dy = 0;
+          } else {
+            dx = 0;
+          }
+        }
         onLongPressMove(offset, Offset(dx, dy));
       };
       gesture.longPressEnd = () {
+        _lpDirection = null;
         _lastLongPress = Offset.zero;
         onLongPressEnd();
       };
@@ -91,9 +117,31 @@ abstract class GestureView extends ChartView {
         var dx = offset.dx - _lastDrag.dx;
         var dy = offset.dy - _lastDrag.dy;
         _lastDrag = offset;
+        if (!freeDrag) {
+          if (_dragDirection == null) {
+            if (dx.abs() <= 1e-6) {
+              _dragDirection = Direction.vertical;
+            } else if (dy.abs() <= 1e-6) {
+              _dragDirection = Direction.horizontal;
+            } else {
+              var angle = atan(dy.abs() / dx.abs());
+              if (angle.isNaN) {
+                _dragDirection = Direction.horizontal;
+              } else {
+                _dragDirection = angle.abs() < 30 * pi / 180 ? Direction.horizontal : Direction.vertical;
+              }
+            }
+          }
+          if (_dragDirection == Direction.horizontal) {
+            dy = 0;
+          } else {
+            dx = 0;
+          }
+        }
         onDragMove(offset, Offset(dx, dy));
       };
       gesture.dragEnd = () {
+        _dragDirection = null;
         _lastDrag = Offset.zero;
         onDragEnd();
       };
@@ -122,9 +170,17 @@ abstract class GestureView extends ChartView {
 
   bool get enableLongPress => false;
 
+  ///是否自由长按
+  ///当为false时 拖拽将固定为只能在水平或者竖直方向
+  bool get freeLongPress => true;
+
   bool get enableHover => isWeb;
 
   bool get enableDrag => false;
+
+  ///是否自由拖拽
+  ///当为false时 拖拽将固定为只能在水平或者竖直方向
+  bool get freeDrag => true;
 
   bool get enableScale => false;
 

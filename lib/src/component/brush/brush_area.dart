@@ -6,6 +6,7 @@ class BrushArea {
   final BrushType type;
   final List<Offset> offsetList;
   late final Path path;
+  late final Rect bounds;
 
   BrushArea(this.type,this.offsetList) {
     path = Path();
@@ -19,5 +20,6 @@ class BrushArea {
     if (offsetList.length > 2) {
       path.close();
     }
+    bounds=path.getBounds();
   }
 }

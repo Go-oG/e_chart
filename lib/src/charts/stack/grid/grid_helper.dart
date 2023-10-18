@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/event/events/coord.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 
@@ -39,8 +38,8 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
   @override
   void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
-    subscribeCoordScrollEvent();
-    subscribeCoordLayoutChangeEvent();
+    subscribeAxisScrollEvent();
+    subscribeAxisChangeEvent();
     super.doLayout(boxBound, globalBoxBound, type);
   }
 
@@ -131,7 +130,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   @override
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
+  void onLayoutGroup(GroupNode<T, P> groupNode, LayoutType type) {
     var coord = findGridCoord();
     int yIndex = groupNode.getYAxisIndex();
     int xIndex = groupNode.getXAxisIndex();
@@ -181,8 +180,8 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
   ///计算Column的位置，Column会占满一行或者一列
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
-    final int groupInnerCount = axisGroup.getColumnCount(xIndex);
+  void onLayoutColumn(var axisGroup, var groupNode, LayoutType type) {
+    final int groupInnerCount = axisGroup.getColumnCount(AxisIndex(CoordType.grid, groupNode.getXAxisIndex()));
     int colGapCount = groupInnerCount - 1;
     if (colGapCount < 1) {
       colGapCount = 0;
@@ -250,7 +249,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   @override
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type) {
+  void onLayoutNode(ColumnNode<T, P> columnNode, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final coord = findGridCoord();
     final colRect = columnNode.rect;
@@ -260,8 +259,8 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
       bool isX = !series.isVertical;
       int index = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
-      var upv = getUpValue(node);
-      var dowv = getDownValue(node);
+      var upv = getNodeUpValue(node);
+      var dowv = getNodeDownValue(node);
       // if (upv == null || dowv == null) {
       //   continue;
       // }
@@ -276,13 +275,6 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     }
   }
 
-  dynamic getUpValue(SingleNode<T, P> node) {
-    return node.up;
-  }
-
-  dynamic getDownValue(SingleNode<T, P> node) {
-    return node.down;
-  }
 
   @override
   void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
@@ -340,6 +332,42 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   @override
+  void onAxisChange(AxisChangeEvent event) {
+    if (event.coordType != CoordType.grid) {
+      return;
+    }
+    if (event.coordViewId != findGridCoord().id) {
+      return;
+    }
+
+    ///坐标轴发生更新 只需要更新当前显示数据的坐标
+  }
+
+  @override
+  void onAxisScroll(AxisScrollEvent event) {
+    if (event.coordType != CoordType.grid) {
+      return;
+    }
+    if (event.coordViewId != findGridCoord().id) {
+      return;
+    }
+    if (event.direction == null) {
+      throw ChartError('缺失滚动方向');
+    }
+    bool xAxis = event.direction == Direction.vertical;
+    if (event.direction == Direction.horizontal) {
+      translationX = event.scrollOffset;
+    } else {
+      translationY = event.scrollOffset;
+    }
+    onLayout(LayoutType.none);
+    if (series.dynamicRange) {
+      findGridCoord().onRelayoutAxisByChild(xAxis, false);
+    }
+    notifyLayoutUpdate();
+  }
+
+  @override
   StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
     final Rect rect = node.rect;
     if (diffType == DiffType.update) {
@@ -373,37 +401,6 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     return StackAnimationNode(rect: rr, offset: rr.center);
   }
 
-  @override
-  void onAnimatorUpdate(SingleNode<T, P> node, double t, var startMap, var endMap) {
-    var s = startMap[node]!.rect;
-    var e = endMap[node]!.rect;
-    if (s == null || e == null) {
-      return;
-    }
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      node.rect = Rect.lerp(s, e, t)!;
-    } else {
-      if (series.isVertical) {
-        node.rect = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
-      } else {
-        node.rect = Rect.fromLTWH(e.left, e.top, e.width * t, e.height);
-      }
-    }
-
-    if (series.realtimeSort && series.dynamicLabel) {
-      var axisIndex = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
-      node.attr.dynamicLabel =
-          findGridCoord().pxToData(axisIndex, !series.isVertical, series.isVertical ? node.rect.top : node.rect.right);
-    } else {
-      node.attr.dynamicLabel = null;
-    }
-    node.updateLabelPosition(context, series);
-  }
-
-  @override
-  void onLayoutByParent(LayoutType type) {
-    onLayout(type);
-  }
 
   @override
   Offset getTranslation() {
@@ -417,27 +414,4 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
   @override
   CoordType get coordSystem => CoordType.grid;
-
-  @override
-  void onCoordLayoutChange(CoordLayoutChangeEvent event) {
-    onLayout(LayoutType.none);
-  }
-
-  @override
-  void onCoordScroll(CoordScrollEvent event) {
-    if (event.coord != CoordType.grid) {
-      return;
-    }
-    if (event.coordViewId != findGridCoord().id) {
-      return;
-    }
-    translationX=event.scrollX;
-    translationY=event.scrollY;
-    onLayout(LayoutType.none);
-    if (series.dynamicRange) {
-      findGridCoord().onAdjustAxisDataRange(AdjustAttr(!series.isVertical));
-    }
-    notifyLayoutUpdate();
-  }
-
 }

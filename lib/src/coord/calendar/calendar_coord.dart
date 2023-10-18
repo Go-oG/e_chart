@@ -290,11 +290,17 @@ class CalendarCoordImpl extends CalendarCoord {
 
   @override
   void onDragMove(Offset offset, Offset diff) {
-    super.onDragMove(offset, diff);
+    if (diff.dx != 0 && diff.dy != 0) {
+      throw ChartError('只支持单一方向');
+    }
     var old = viewPort.translation;
     Offset sc = viewPort.scroll(diff);
     if (old.dx != sc.dx || old.dy != sc.dy) {
-      sendScrollChangeEvent();
+      if (old.dx != sc.dx) {
+        context.dispatchEvent(AxisScrollEvent(this, [], sc.dx, null));
+      } else {
+        context.dispatchEvent(AxisScrollEvent(this, [], sc.dy, null));
+      }
       invalidate();
     }
   }
@@ -332,6 +338,9 @@ abstract class CalendarCoord extends CoordLayout<Calendar> {
   List<Offset> getDateRangePolygon(DateTime start, DateTime end);
 
   bool inRange(DateTime time);
+
+  @override
+  bool get freeDrag => false;
 }
 
 class CalendarNode {

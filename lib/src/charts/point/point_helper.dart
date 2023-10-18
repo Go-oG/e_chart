@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/event/events/coord.dart';
 import 'point_node.dart';
 
 class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
@@ -14,9 +13,9 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   @override
   void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
     if (series.coordType == CoordType.grid) {
-      subscribeCoordScrollEvent();
+      subscribeAxisScrollEvent();
     }
-    subscribeCoordLayoutChangeEvent();
+    subscribeAxisChangeEvent();
     super.doLayout(boxBound, globalBoxBound, type);
   }
 
@@ -198,8 +197,8 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   }
 
   @override
-  void onCoordScroll(CoordScrollEvent event) {
-    if (event.coord != CoordType.grid || series.coordType != CoordType.grid) {
+  void onAxisScroll(AxisScrollEvent event) {
+    if (event.coordType != CoordType.grid || series.coordType != CoordType.grid) {
       return;
     }
     if (event.coordViewId != findGridCoord().id) {
@@ -210,7 +209,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   }
 
   @override
-  void onCoordLayoutChange(CoordLayoutChangeEvent event) {
+  void onAxisChange(AxisChangeEvent event) {
     if (event.coordViewId != findGridCoord().id) {
       return;
     }

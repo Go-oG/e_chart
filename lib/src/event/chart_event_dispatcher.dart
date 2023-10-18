@@ -24,7 +24,10 @@ class EventDispatcher {
     if (type == EventType.click) {
       Logger.i('$runtimeType dispatch($event)');
     }
-    var set = _callMap[event.eventType] ?? _callMap[EventType.normal]!;
+    var set = _callMap[event.eventType];
+    if (set == null) {
+      return;
+    }
     each(set, (call, p1) {
       try {
         call.call(event);
@@ -66,10 +69,10 @@ class EventType {
   static const brushEnd = EventType("brushEnd");
 
   ///坐标轴显示范围发生更改(其总范围不变)
-  static const axisShowRangeChange = EventType("axisShowRangeChange");
+  static const axisScroll = EventType("axisScroll");
 
   ///坐标轴范围发生更改
-  static const axisRangeChange = EventType("axisRangeChange");
+  static const axisChange = EventType("axisChange");
   static const axisLabelClick = EventType("axisLabelClick");
 
   ///图例滚动事件
@@ -100,7 +103,7 @@ class EventType {
   static const dataStatusChanged = EventType("dataSelectChanged");
 
   ///坐标系发生滚动
-  static const coordScroll = EventType("coordScroll");
+  // static const coordScroll = EventType("coordScroll");
 
   ///坐标系布局发生改变
   static const coordLayoutChange = EventType("coordLayoutChange");

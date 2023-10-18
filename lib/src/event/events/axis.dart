@@ -2,50 +2,46 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class AxisShowRangeChangeEvent extends ChartEvent {
-  final String coordId;
-  final String coordViewId;
-  final CoordType coordType;
-  final String axisId;
-  final String axisViewId;
-  final BaseScale scale;
-  final List<dynamic> showRangeData;
+///坐标轴发生了滚动
+///一般是由于用户滚动操作触发
+class AxisScrollEvent extends ChartEvent {
+  final CoordLayout coord;
+  final List<BaseAxisImpl> axis;
+  Direction? direction;
+  double scrollOffset;
 
-  const AxisShowRangeChangeEvent(
-    this.coordId,
-    this.coordViewId,
-    this.coordType,
-    this.axisId,
-    this.axisViewId,
-    this.scale,
-    this.showRangeData,
+  AxisScrollEvent(
+    this.coord,
+    this.axis,
+    this.scrollOffset,
+    this.direction,
   );
 
+  CoordType get coordType => coord.coordType;
+
+  String get coordViewId => coord.id;
+
+  String get coordId => coord.props.id;
+
   @override
-  EventType get eventType => EventType.axisShowRangeChange;
+  EventType get eventType => EventType.axisScroll;
 }
 
-class AxisRangeChangeEvent extends ChartEvent {
-  final String coordId;
-  final String coordViewId;
-  final CoordType coordType;
-  final String axisId;
-  final String axisViewId;
-  final BaseScale scale;
-  final List<dynamic> showRangeData;
+class AxisChangeEvent extends ChartEvent {
+  final CoordLayout coord;
+  final List<BaseAxisImpl> axis;
+  final Direction direction;
 
-  const AxisRangeChangeEvent(
-    this.coordId,
-    this.coordViewId,
-    this.coordType,
-    this.axisId,
-    this.axisViewId,
-    this.scale,
-    this.showRangeData,
-  );
+  CoordType get coordType => coord.coordType;
+
+  String get coordViewId => coord.id;
+
+  String get coordId => coord.props.id;
+
+  AxisChangeEvent(this.coord, this.axis, this.direction);
 
   @override
-  EventType get eventType => EventType.axisRangeChange;
+  EventType get eventType => EventType.axisChange;
 }
 
 class AxisLabelClickEvent extends ChartEvent {

@@ -89,8 +89,8 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   void dispose() {
     unsubscribeLegendEvent();
     unsubscribeBrushEvent();
-    unsubscribeCoordLayoutChangeEvent();
-    unsubscribeCoordScrollEvent();
+    unsubscribeAxisChangeEvent();
+    unsubscribeAxisScrollEvent();
     _view = null;
     _series = null;
     _context = null;
@@ -116,9 +116,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onDragEnd() {}
 
-  ///=========坐标系相关事件处理========
-
-  void onLayoutByParent(LayoutType type) {}
 
   ///==============事件发送============
   void sendClickEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
@@ -333,6 +330,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   ///注册Brush组件 Event监听器
+
   void subscribeBrushEvent() {
     _context?.addEventCall(EventType.brushStart, onBrushStart as VoidFun1<ChartEvent>);
     _context?.addEventCall(EventType.brushUpdate, onBrushUpdate as VoidFun1<ChartEvent>);
@@ -346,11 +344,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     _context?.removeEventCall(onBrushStart as VoidFun1);
   }
 
-  void onBrushUpdate(BrushUpdateEvent event) {}
+  void onBrushUpdate(covariant BrushUpdateEvent event) {}
 
-  void onBrushEnd(BrushEndEvent event) {}
+  void onBrushEnd(covariant BrushEndEvent event) {}
 
-  void onBrushStart(BrushStartEvent event) {}
+  void onBrushStart(covariant BrushStartEvent event) {}
 
   /// 注册Legend组件事件
   void subscribeLegendEvent() {
@@ -361,15 +359,15 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     _context?.addEventCall(EventType.legendSelectChanged, onLegendSelectChange as VoidFun1<ChartEvent>?);
   }
 
-  void onLegendInverseSelect(LegendInverseSelectEvent event) {}
+  void onLegendInverseSelect(covariant LegendInverseSelectEvent event) {}
 
-  void onLegendSelectedAll(LegendSelectAllEvent event) {}
+  void onLegendSelectedAll(covariant LegendSelectAllEvent event) {}
 
-  void onLegendUnSelected(LegendUnSelectedEvent event) {}
+  void onLegendUnSelected(covariant LegendUnSelectedEvent event) {}
 
-  void onLegendSelectChange(LegendSelectChangeEvent event) {}
+  void onLegendSelectChange(covariant LegendSelectChangeEvent event) {}
 
-  void onLegendScroll(LegendScrollEvent event) {}
+  void onLegendScroll(covariant LegendScrollEvent event) {}
 
   void unsubscribeLegendEvent() {
     _context?.removeEventCall(onLegendInverseSelect as VoidFun1<ChartEvent>?);
@@ -382,43 +380,43 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   //========Legend 结束================
 
   ///注册坐标系滚动事件
-  VoidFun1<ChartEvent>? _coordScrollListener;
+  VoidFun1<ChartEvent>? _axisScrollListener;
 
-  void subscribeCoordScrollEvent() {
-    _context?.removeEventCall(_coordScrollListener);
-    _coordScrollListener = (event) {
-      if (event is CoordScrollEvent) {
-        onCoordScroll(event);
+  void subscribeAxisScrollEvent() {
+    _context?.removeEventCall(_axisScrollListener);
+    _axisScrollListener = (event) {
+      if (event is AxisScrollEvent) {
+        onAxisScroll(event);
         return;
       }
     };
-    _context?.addEventCall(EventType.coordScroll, _coordScrollListener);
+    _context?.addEventCall(EventType.axisScroll, _axisScrollListener);
   }
 
-  void unsubscribeCoordScrollEvent() {
-    _context?.removeEventCall(_coordScrollListener);
-    _coordScrollListener = null;
+  void unsubscribeAxisScrollEvent() {
+    _context?.removeEventCall(_axisScrollListener);
+    _axisScrollListener = null;
   }
 
-  void onCoordScroll(CoordScrollEvent event) {}
+  void onAxisScroll(AxisScrollEvent event) {}
 
-  VoidFun1<ChartEvent>? _coordLayoutListener;
+  VoidFun1<ChartEvent>? _axisChangeListener;
 
-  void subscribeCoordLayoutChangeEvent() {
-    _context?.removeEventCall(_coordLayoutListener);
-    _coordLayoutListener = (event) {
-      if (event is CoordLayoutChangeEvent) {
-        onCoordLayoutChange(event);
+  void subscribeAxisChangeEvent() {
+    _context?.removeEventCall(_axisChangeListener);
+    _axisChangeListener = (event) {
+      if (event is AxisChangeEvent) {
+        onAxisChange(event);
         return;
       }
     };
-    _context?.addEventCall(EventType.coordLayoutChange, _coordLayoutListener);
+    _context?.addEventCall(EventType.axisChange, _axisChangeListener);
   }
 
-  void unsubscribeCoordLayoutChangeEvent() {
-    _context?.removeEventCall(_coordLayoutListener);
-    _coordLayoutListener = null;
+  void unsubscribeAxisChangeEvent() {
+    _context?.removeEventCall(_axisChangeListener);
+    _axisChangeListener = null;
   }
 
-  void onCoordLayoutChange(CoordLayoutChangeEvent event) {}
+  void onAxisChange(AxisChangeEvent event) {}
 }

@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult, C extends CoordLayout>
-    extends ChartNotifier<Command> {
+    extends ChartNotifier2 {
   final int axisIndex;
   final C coord;
   final Context context;
@@ -16,7 +16,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   late final AxisTitleNode titleNode;
 
-  BaseAxisImpl(this.context, this.coord, this.axis, {this.axisIndex = 0}) : super(Command.none) {
+  BaseAxisImpl(this.context, this.coord, this.axis, {this.axisIndex = 0}) {
     titleNode = AxisTitleNode(axis.axisName);
   }
 

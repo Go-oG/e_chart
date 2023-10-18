@@ -18,7 +18,9 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
+  void onLayoutColumn(var axisGroup, var groupNode,  LayoutType type) {
+    var xIndex=AxisIndex(CoordType.polar, groupNode.getXAxisIndex());
+    var xData=groupNode.getXData();
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -32,11 +34,11 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
 
       PolarPosition up, down;
       if (vertical) {
-        up = coord.dataToPosition(x, colNode.getUp());
-        down = coord.dataToPosition(x, colNode.getDown());
+        up = coord.dataToPosition(xData, colNode.getUp());
+        down = coord.dataToPosition(xData, colNode.getDown());
       } else {
-        up = coord.dataToPosition(colNode.getUp(), x);
-        down = coord.dataToPosition(colNode.getDown(), x);
+        up = coord.dataToPosition(colNode.getUp(), xData);
+        down = coord.dataToPosition(colNode.getDown(), xData);
       }
 
       num dx = (up.radius[0] - down.radius[0]).abs();
@@ -53,7 +55,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
+  void onLayoutNode(var columnNode,  LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {

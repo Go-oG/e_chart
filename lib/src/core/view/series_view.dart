@@ -134,10 +134,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     super.onStop();
   }
 
-  @override
-  void onLayoutByParent(LayoutType type) {
-    layoutHelper.onLayoutByParent(type);
-  }
 
   @override
   bool get useSingleLayer => series.useSingleLayer;

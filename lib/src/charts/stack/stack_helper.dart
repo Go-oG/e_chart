@@ -25,7 +25,12 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   List<MarkLineNode> markLineList = [];
 
-  StackHelper(super.context, super.view, super.series);
+  ///标识需要进行二次布局
+  bool needSecondDynamicLayout = false;
+
+  StackHelper(super.context, super.view, super.series) {
+    needSecondDynamicLayout = series.dynamicRange;
+  }
 
   @override
   void dispose() {
@@ -41,6 +46,10 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     subscribeBrushEvent();
     subscribeLegendEvent();
     super.doLayout(boxBound, globalBoxBound, type);
+    if (needSecondDynamicLayout) {
+      needSecondDynamicLayout = false;
+      onLayout(LayoutType.none);
+    }
   }
 
   @override
@@ -76,21 +85,19 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       List<List<GroupNode<T, P>>> spList = splitList(value, 500);
       for (var gl in spList) {
         for (var groupNode in gl) {
-          var xIndex = key;
           if (groupNode.nodeList.isEmpty) {
             return;
           }
-          var x = groupNode.getXData();
 
           ///布局当前组的位置
-          onLayoutGroup(groupNode, xIndex, x, type);
+          onLayoutGroup(groupNode, type);
 
           ///布局组里面的列
-          onLayoutColumn(axisGroup, groupNode, xIndex, x, type);
+          onLayoutColumn(axisGroup, groupNode, type);
 
           ///布局列里面的节点
           for (var cn in groupNode.nodeList) {
-            onLayoutNode(cn, xIndex, type);
+            onLayoutNode(cn, type);
           }
         }
       }
@@ -105,7 +112,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       p0.updateStyle(context, series);
     });
 
-    _layoutMarkPointAndLine(series.data, newNodeList, newNodeMap);
+    layoutMarkPointAndLine(series.data, newNodeList, newNodeMap);
     onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
   }
 
@@ -124,17 +131,16 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   ///实现该方法从而布局单个Group(不需要布局其孩子)
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type);
+  void onLayoutGroup(GroupNode<T, P> groupNode, LayoutType type);
 
   ///布局GroupNode的孩子(ColumnNode)位置
-  void onLayoutColumn(
-      AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type);
+  void onLayoutColumn(AxisGroup<T, P> axisGroup, GroupNode<T, P> groupNode, LayoutType type);
 
   ///布局ColumnNode的孩子的位置
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type);
+  void onLayoutNode(ColumnNode<T, P> columnNode, LayoutType type);
 
   ///布局MarkLine和MarkPoint
-  void _layoutMarkPointAndLine(
+  void layoutMarkPointAndLine(
       List<P> groupList, List<SingleNode<T, P>> newNodeList, Map<T, SingleNode<T, P>> newNodeMap) {
     if (series.markPoint == null &&
         series.markLine == null &&
@@ -180,8 +186,9 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     }
 
     void hc() {
-      _layoutMarkPointAndLine(series.data, nodeList, nodeMap);
+      layoutMarkPointAndLine(series.data, nodeList, nodeMap);
     }
+
     for (var mpn in mpnl) {
       mpn.markPoint.addListener(hc);
     }
@@ -303,13 +310,12 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   ///可以在这里进行动画相关的处理
   void onLayoutEnd(List<SingleNode<T, P>> oldNodeList, Map<T, SingleNode<T, P>> oldNodeMap,
       List<SingleNode<T, P>> newNodeList, Map<T, SingleNode<T, P>> newNodeMap, LayoutType type) {
-    if (!needRunAnimator(type)) {
+    var animation = getAnimation(type);
+    if (!needRunAnimator(type) || animation == null) {
       _nodeMap = newNodeMap;
       showNodeMap = Map.from(newNodeMap);
       return;
     }
-
-    var animation = getAnimation(type)!;
 
     ///动画
     DiffResult<SingleNode<T, P>, StackAnimationNode, T> diffResult =
@@ -350,13 +356,17 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       onAnimatorUpdateEnd(diffResult, t);
       notifyLayoutUpdate();
     });
-    doubleTween.start(context, type == LayoutType.update);
+    context.addAnimationToQueue([AnimationNode(doubleTween, animation, type)]);
   }
 
   ///==============动画相关函数===============
   bool needRunAnimator(LayoutType type) {
+    if (type == LayoutType.none) {
+      return false;
+    }
     return getAnimation(type) != null;
   }
+
 
   ///创建动画节点
   StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type);
@@ -364,11 +374,45 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
   void onAnimatorStart(DiffResult<SingleNode<T, P>, StackAnimationNode, T> result) {}
 
   void onAnimatorUpdate(SingleNode<T, P> node, double t, Map<SingleNode<T, P>, StackAnimationNode> startMap,
-      Map<SingleNode<T, P>, StackAnimationNode> endMap);
+      Map<SingleNode<T, P>, StackAnimationNode> endMap) {
+    var s = startMap[node]!.rect;
+    var e = endMap[node]!.rect;
+    if (s == null || e == null) {
+      return;
+    }
+    if (series.animatorStyle == GridAnimatorStyle.expand) {
+      node.rect = Rect.lerp(s, e, t)!;
+    } else {
+      if (series.isVertical) {
+        node.rect = Rect.fromLTRB(e.left, e.bottom - e.height * t, e.right, e.bottom);
+      } else {
+        node.rect = Rect.fromLTWH(e.left, e.top, e.width * t, e.height);
+      }
+    }
+
+    if (series.realtimeSort && series.dynamicLabel) {
+      var axisIndex = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
+      node.attr.dynamicLabel =
+          findGridCoord().pxToData(axisIndex, !series.isVertical, series.isVertical ? node.rect.top : node.rect.right);
+    } else {
+      node.attr.dynamicLabel = null;
+    }
+    node.updateLabelPosition(context, series);
+  }
 
   void onAnimatorUpdateEnd(DiffResult<SingleNode<T, P>, StackAnimationNode, T> result, double t) {}
 
   void onAnimatorEnd(DiffResult<SingleNode<T, P>, StackAnimationNode, T> result) {}
+
+  //===========动画结束=========
+
+  dynamic getNodeUpValue(SingleNode<T, P> node) {
+    return node.up;
+  }
+
+  dynamic getNodeDownValue(SingleNode<T, P> node) {
+    return node.down;
+  }
 
   ///=======其它函数======
   ///获取指定坐标轴上的极值数据
@@ -395,6 +439,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     return extreme.numExtreme;
   }
 
+  ///获取当前显示窗口内的极值数据
   List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     List<dynamic> dl = [];
     showNodeMap.forEach((key, value) {
@@ -426,15 +471,15 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   void onBrushUpdate(BrushUpdateEvent event) {
-    _handleBrush(event.areas);
+    onHandleBrush(event.areas);
   }
 
   @override
   void onBrushEnd(BrushEndEvent event) {
-    _handleBrush(event.areas);
+    onHandleBrush(event.areas);
   }
 
-  void _handleBrush(List<BrushArea> areas) {
+  void onHandleBrush(List<BrushArea> areas) {
     nodeMap.forEach((key, node) {
       bool has = false;
       for (var area in areas) {
@@ -442,7 +487,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
           has = true;
           break;
         }
-        if (coordSystem == CoordType.polar && arcInPath(area.path, node.attr.arc)) {
+        if (coordSystem == CoordType.polar && node.attr.arc.toPath().overlapRect(area.bounds)) {
           has = true;
           break;
         }
@@ -457,11 +502,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
       }
     });
     notifyLayoutUpdate();
-  }
-
-  bool arcInPath(Path path, Arc arc) {
-    Rect rect = path.getBounds();
-    return arc.toPath().overlapRect(rect);
   }
 
   CoordType get coordSystem;

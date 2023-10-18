@@ -310,6 +310,4 @@ abstract class ChartView extends RenderNode {
     return false;
   }
 
-  ///=======由坐标系回调=========
-  void onLayoutByParent(LayoutType type) {}
 }

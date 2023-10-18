@@ -20,8 +20,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
-    int groupInnerCount = axisGroup.getColumnCount(xIndex);
+  void onLayoutColumn(var axisGroup, var groupNode, LayoutType type) {
+    var xData=groupNode.getXData();
+    var axisIndex=AxisIndex(CoordType.grid, groupNode.getXAxisIndex());
+    int groupInnerCount = axisGroup.getColumnCount(axisIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
       columnCount = 0;
@@ -36,8 +38,8 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         Logger.w("内部状态异常 无法找到 upValue 或者downValue");
         return;
       }
-      dynamic upValue = getUpValue(upNode),
-          downValue = getDownValue(downNode);
+      dynamic upValue = getNodeUpValue(upNode),
+          downValue = getNodeDownValue(downNode);
       if (upValue == null || downValue == null) {
         return;
       }
@@ -52,10 +54,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         node.rect = Rect.fromLTRB(groupRect.left, uo.dy, groupRect.right, downo.dy);
       } else {
         var lo = coord
-            .dataToPoint(xIndex.axisIndex, x, true)
+            .dataToPoint(axisIndex.axisIndex, xData, true)
             .first;
         var ro = coord
-            .dataToPoint(xIndex.axisIndex, x, true)
+            .dataToPoint(axisIndex.axisIndex, xData, true)
             .last;
         node.rect = Rect.fromLTRB(lo.dx, groupRect.top, ro.dx, groupRect.bottom);
       }
@@ -63,18 +65,20 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
+  void onLayoutNode(var columnNode,LayoutType type) {
+    var xIndex=columnNode.parentNode.getXAxisIndex();
+
     final bool vertical = series.direction == Direction.vertical;
     final coord = findGridCoord();
     final colRect = columnNode.rect;
-    GridAxis xAxis = findGridCoord().getAxis(xIndex.axisIndex, true);
+    GridAxis xAxis = findGridCoord().getAxis(xIndex, true);
     for (var node in columnNode.nodeList) {
       if (node.originData == null) {
         continue;
       }
       if (vertical) {
         var uo = coord
-            .dataToPoint(node.parent.yAxisIndex, getUpValue(node), false)
+            .dataToPoint(node.parent.yAxisIndex, getNodeUpValue(node), false)
             .last;
         node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, uo.dy);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
@@ -84,7 +88,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         }
       } else {
         var uo = coord
-            .dataToPoint(node.parent.xAxisIndex, getUpValue(node), true)
+            .dataToPoint(node.parent.xAxisIndex, getNodeUpValue(node), true)
             .last;
         node.rect = Rect.fromLTRB(uo.dx, colRect.top, uo.dx, colRect.height);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {

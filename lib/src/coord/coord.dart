@@ -14,8 +14,10 @@ abstract class Coord extends ChartNotifier<Command> {
 
   ///ToolTip
   ToolTip? toolTip;
-
   LayoutParams layoutParams;
+
+  bool freeDrag;
+  bool freeLongPress;
 
   Coord({
     this.show = true,
@@ -29,6 +31,8 @@ abstract class Coord extends ChartNotifier<Command> {
     this.brush,
     this.toolTip,
     this.backgroundColor,
+    this.freeDrag = false,
+    this.freeLongPress = false,
   }) : super(Command.none) {
     if (id == null || id.isEmpty) {
       this.id = randomId();

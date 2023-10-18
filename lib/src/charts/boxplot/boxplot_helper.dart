@@ -15,17 +15,17 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   static const String _colRectK = "colRect";
 
   @override
-  dynamic getUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
+  dynamic getNodeUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
     return node.originData!.max;
   }
 
   @override
-  dynamic getDownValue(SingleNode<BoxplotData, BoxplotGroup> node) {
+  dynamic getNodeDownValue(SingleNode<BoxplotData, BoxplotGroup> node) {
     return node.originData!.min;
   }
 
   @override
-  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
+  void onLayoutNode(var columnNode, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
@@ -159,5 +159,4 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   Rect getAreaRect(SingleNode<BoxplotData, BoxplotGroup> node) {
     return node.rect;
   }
-
 }

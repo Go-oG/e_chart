@@ -16,7 +16,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   CandlestickHelper(super.context, super.view, super.series);
 
   @override
-  void onLayoutNode(var columnNode, AxisIndex xIndex, LayoutType type) {
+  void onLayoutNode(var columnNode,  LayoutType type) {
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
       var data = node.originData;

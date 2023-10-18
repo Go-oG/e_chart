@@ -9,11 +9,11 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   PolarHelper(super.context, super.view, super.series);
 
   @override
-  void onLayoutGroup(GroupNode<T, P> groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
+  void onLayoutGroup(GroupNode<T, P> groupNode, LayoutType type) {
     var coord = findPolarCoord();
     final xData = groupNode.getXData();
     final yData = groupNode.getYData();
-    var position = coord.dataToPosition(xData,yData);
+    var position = coord.dataToPosition(xData, yData);
     num ir = position.radius.length == 1 ? 0 : position.radius[0];
     num or = position.radius.length == 1 ? position.radius[0] : position.radius[1];
     num sa = position.angle.length < 2 ? coord.getStartAngle() : position.angle[0];
@@ -22,8 +22,8 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode, AxisIndex xIndex, dynamic x, LayoutType type) {
-    final int groupInnerCount = axisGroup.getColumnCount(xIndex);
+  void onLayoutColumn(var axisGroup, var groupNode, LayoutType type) {
+    final int groupInnerCount = axisGroup.getColumnCount(AxisIndex(CoordType.polar, groupNode.getXAxisIndex()));
     int colGapCount = groupInnerCount - 1;
     if (colGapCount <= 1) {
       colGapCount = 0;
@@ -104,7 +104,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onLayoutNode(ColumnNode<T, P> columnNode, AxisIndex xIndex, LayoutType type) {
+  void onLayoutNode(ColumnNode<T, P> columnNode,  LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     final colArc = columnNode.arc;
     var coord = findPolarCoord();

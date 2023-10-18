@@ -27,6 +27,8 @@ class Grid extends Coord {
     super.backgroundColor,
     super.id,
     super.show,
+    super.freeDrag,
+    super.freeLongPress,
   }) {
     if (xAxisList != null) {
       this.xAxisList = xAxisList;

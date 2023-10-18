@@ -148,6 +148,7 @@ class GridCoordImpl extends GridCoord {
     }
   }
 
+  ///布局X轴
   void layoutXAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme, bool force) {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
@@ -175,7 +176,6 @@ class GridCoordImpl extends GridCoord {
       extremeMap[axis] = dl;
     }
     scaleX = props.baseXScale;
-
     int? splitCount;
     double topOffset = contentBox.top;
     each(topList, (value, i) {
@@ -293,14 +293,18 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onAdjustAxisDataRange(AdjustAttr attr) {
-    if (attr.xAxis) {
+  void onRelayoutAxisByChild(bool xAxis, bool notifyInvalidate) {
+    if (xAxis) {
       layoutXAxis(getGridChildList(), contentBox, true, false);
     } else {
       layoutYAxis(getGridChildList(), contentBox, true, false);
     }
-    for (var view in children) {
-      view.onLayoutByParent(LayoutType.none);
+    context.dispatchEvent(AxisChangeEvent(
+        this,
+        xAxis ? xMap.values.toList(growable: false) : yMap.values.toList(growable: false),
+        xAxis ? Direction.horizontal : Direction.vertical));
+    if (notifyInvalidate) {
+      invalidate();
     }
   }
 
@@ -334,17 +338,21 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
+    if (diff.dx != 0 && diff.dy != 0) {
+      throw ChartError("只支持在一个方向滚动");
+    }
+
     Offset old = viewPort.translation;
     Offset sc = viewPort.scroll(diff);
     bool hasChange = false;
-    if (sc.dx != old.dx) {
+    if ((sc.dx - old.dx).abs() > 1e-6) {
       hasChange = true;
       xMap.forEach((key, value) {
         value.attrs.scroll = sc.dx;
         value.onScrollChange(sc.dx);
       });
     }
-    if (sc.dy != old.dy) {
+    if ((sc.dy - old.dy).abs() > 1e-6) {
       hasChange = true;
       yMap.forEach((key, value) {
         value.attrs.scroll = sc.dy;
@@ -352,7 +360,12 @@ class GridCoordImpl extends GridCoord {
       });
     }
     if (hasChange) {
-      sendScrollChangeEvent();
+      if (diff.dx != 0) {
+        context
+            .dispatchEvent(AxisScrollEvent(this, xMap.values.toList(growable: false), diff.dx, Direction.horizontal));
+      } else {
+        context.dispatchEvent(AxisScrollEvent(this, yMap.values.toList(growable: false), diff.dy, Direction.vertical));
+      }
       invalidate();
     }
   }
@@ -392,7 +405,9 @@ class GridCoordImpl extends GridCoord {
       });
     }
     if (hasChange) {
-      sendLayoutChangeEvent();
+      ///TODO 缩放更新
+     // context.dispatchEvent(AxisChangeEvent(this, [], null));
+
       invalidate();
     }
   }
@@ -746,6 +761,9 @@ class GridCoordImpl extends GridCoord {
 
     return [t, b];
   }
+
+  @override
+  bool get freeDrag => false;
 }
 
 abstract class GridCoord extends CoordLayout<Grid> {
@@ -789,7 +807,7 @@ abstract class GridCoord extends CoordLayout<Grid> {
   void onChildDataSetChange(bool layoutChild);
 
   ///当子视图需要实现动态坐标轴时回调该方法
-  void onAdjustAxisDataRange(AdjustAttr attr);
+  void onRelayoutAxisByChild(bool xAxis, bool notifyInvalidate);
 
   @override
   Offset get translation => viewPort.translation;
