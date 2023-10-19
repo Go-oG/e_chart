@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///https://m3.material.io/foundations/interaction/states/overview
-mixin ViewStateProvider {
+mixin StateProvider {
   final Set<ViewState> _stateSet = {};
 
   bool get isEnabled => !_stateSet.contains(ViewState.disabled);

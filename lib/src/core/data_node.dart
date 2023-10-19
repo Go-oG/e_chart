@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///数据到绘图节点的映射
-abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
+abstract class DataNode<P, D> with StateProvider, ExtProps {
   D data;
 
   int dataIndex;
@@ -161,7 +161,7 @@ abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
   }
 }
 
-class SymbolNode<T> with ViewStateProvider, ExtProps {
+class SymbolNode<T> with StateProvider, ExtProps {
   T data;
   ChartSymbol symbol = EmptySymbol();
   int dataIndex;

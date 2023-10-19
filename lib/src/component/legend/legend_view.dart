@@ -187,7 +187,7 @@ class LegendComponent extends FlexLayout {
   }
 }
 
-class LegendItemView extends GestureView with ViewStateProvider {
+class LegendItemView extends GestureView with StateProvider {
   final Legend legend;
   final LegendItem item;
   LabelStyle labelStyle = LabelStyle.empty;

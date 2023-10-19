@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///表示为系列数据
-class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
+class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with StateProvider {
   AxisIndex index;
   List<ColumnNode<T, P>> nodeList;
 
