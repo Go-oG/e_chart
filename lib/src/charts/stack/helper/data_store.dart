@@ -6,9 +6,11 @@ import '../../../utils/math_util.dart';
 ///支持按时间维度、字符串维度、数字维度来进行数据的管理
 class DataStore<T> {
   static const int _soreSize = 500;
-  final dynamic Function(T data) accessor;
+  dynamic Function(T data)? _accessor;
 
-  DataStore(List<T?> list, this.accessor) {
+  dynamic Function(T data) get accessor => _accessor!;
+
+  DataStore(List<T?> list, this._accessor) {
     _parse(list);
   }
 
@@ -127,17 +129,24 @@ class DataStore<T> {
         resultList.addAll(list);
       }
     }
-    if(info.timeList!=null){
-      for(var list in getByTime(info.timeList!)){
+    if (info.timeList != null) {
+      for (var list in getByTime(info.timeList!)) {
         resultList.addAll(list);
       }
     }
-    if(info.categoryList!=null){
-      for(var list in getByStr(info.categoryList!)){
+    if (info.categoryList != null) {
+      for (var list in getByStr(info.categoryList!)) {
         resultList.addAll(list);
       }
     }
 
     return resultList;
+  }
+
+  void dispose() {
+    _accessor = null;
+    _strMap = {};
+    _timeMap = {};
+    _numMap = {};
   }
 }

@@ -115,7 +115,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
   }
 
   DataHelper<T, G, StackSeries<T, G>> buildHelper(Context context) {
-    return DataHelper(context, this, data, direction, realtimeSort, sort);
+    return DataHelper(this, data, direction, realtimeSort, sort,sortCount);
   }
 
   @override
@@ -126,6 +126,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
 
   @override
   void notifyUpdateData() {
+    _helper?.dispose();
     _helper = null;
     super.notifyUpdateData();
   }
@@ -242,6 +243,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
   }
 
   bool get isVertical => direction == Direction.vertical;
+
   bool get isHorizontal => direction == Direction.horizontal;
 
   @override

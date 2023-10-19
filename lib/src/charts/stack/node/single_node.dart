@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 /// 不可再分的最小绘制单元
 /// 其用于极坐标系和二维坐标系下的节点位置表示
 class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends DataNode<SingleAttr, WrapData<T, P>> {
-  final CoordType coord;
-  final ColumnNode<T, P> parentNode;
+  CoordType coord;
+  ColumnNode<T, P> parentNode;
 
   ///标识是否是一个堆叠数据
-  final bool stack;
+  bool stack;
 
   SingleNode(
     this.coord,
@@ -19,14 +19,15 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     assertCheck(coord == CoordType.grid || coord == CoordType.polar, "Coord must is Grid or Polar");
   }
 
+
   ///记录数据的上界和下界
   num up = 0;
 
   num down = 0;
 
-  T? get originData => data.data;
+  T? get originData =>data.data;
 
-  bool get dataIsNull=>originData==null;
+  bool get dataIsNull => originData == null;
 
   P get parent => data.parent;
 
@@ -85,7 +86,7 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     } else {
       align.fill(label, rect, label.style, series.direction);
     }
-    label.updatePainter(text:formatData(series, attr.dynamicLabel ?? up));
+    label.updatePainter(text: formatData(series, attr.dynamicLabel ?? up));
   }
 
   DynamicText formatData(StackSeries<T, P> series, dynamic data) {
@@ -110,7 +111,6 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     }
     return data.toString().toText();
   }
-
 }
 
 class SingleAttr {
@@ -119,7 +119,7 @@ class SingleAttr {
   Corner? corner;
 
   ///只在极坐标系下使用
-  Arc arc = Arc();
+  Arc arc = Arc.zero;
 
   ///通用的节点位置，一般只有折线图和散点图使用
   Offset position = Offset.zero;

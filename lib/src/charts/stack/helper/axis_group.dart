@@ -1,13 +1,14 @@
-import '../../../model/index.dart';
-import '../index.dart';
+import 'package:e_chart/e_chart.dart';
+
 import 'data_store.dart';
 
 ///存储数据处理结果
 class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
   ///存储不同坐标轴的数据
-  final Map<AxisIndex, List<GroupNode<T, P>>> groupMap;
+  Map<AxisIndex, List<GroupNode<T, P>>> groupMap;
+
   ///按照主轴索引存储的数据
-  final Map<AxisIndex, DataStore<SingleNode<T, P>>> storeMap = {};
+  Map<AxisIndex, DataStore<SingleNode<T, P>>> storeMap = {};
 
   AxisGroup(this.groupMap);
 
@@ -36,5 +37,18 @@ class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
       return 0;
     }
     return group.first.nodeList.length;
+  }
+
+  void dispose() {
+    storeMap.forEach((key, value) {
+      value.dispose();
+    });
+    storeMap = {};
+    for (var gl in groupMap.values) {
+      each(gl, (p0, p1) {
+        p0.dispose();
+      });
+    }
+    groupMap = {};
   }
 }

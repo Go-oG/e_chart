@@ -28,8 +28,68 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   void onLayout(LayoutType type) {
+    var animator = getAnimation(type);
+    if (needRunAnimator(type) && animator != null) {
+      onLayoutForAnimator(type, animator);
+      return;
+    }
+    var helper = series.getHelper(context);
+
+    //Dispose Old Node
+    var oldList = nodeList;
+    nodeList = [];
+    each(oldList, (p0, p1) {
+      p0.dispose();
+    });
+
+    List<SingleNode<T, P>> newNodeList = onComputeNeedLayoutData(helper);
+    Set<GroupNode<T, P>> groupNodeSet = Set.from(newNodeList.map((e) => e.parentNode.parentNode));
+    Map<AxisIndex, List<GroupNode<T, P>>> axisNodeMap = {};
+    each(groupNodeSet, (groupNode, p1) {
+      List<GroupNode<T, P>> groupList = axisNodeMap[groupNode.index] ?? [];
+      axisNodeMap[groupNode.index] = groupList;
+      groupList.add(groupNode);
+    });
+
+    ///对节点进行排序(同时也处理实时排序)
+    axisNodeMap.forEach((key, vList) {
+      vList.sort((a, b) {
+        return a.groupIndex.compareTo(b.groupIndex);
+      });
+    });
+
+    ///开始布局
+    for (var ele in axisNodeMap.values) {
+      ///布局Group
+      for (var groupNode in ele) {
+        if (groupNode.nodeList.isEmpty) {
+          continue;
+        }
+
+        ///布局当前组的位置
+        onLayoutGroup(groupNode, type);
+
+        ///布局组里面的列
+        onLayoutColumn(helper.result, groupNode, type);
+
+        ///布局列里面的节点
+        for (var cn in groupNode.nodeList) {
+          onLayoutNode(cn, type);
+        }
+      }
+    }
+    each(newNodeList, (p0, p1) {
+      p0.updateLabelPosition(context, series);
+      p0.updateStyle(context, series);
+    });
+    layoutMarkPointAndLine(helper, series.data, newNodeList);
+    nodeList = newNodeList;
+  }
+
+  void onLayoutForAnimator(LayoutType type, AnimatorOption animator) {
     var helper = series.getHelper(context);
     var oldNodeList = nodeList;
+
     Map<T, SingleNode<T, P>> oldNodeMap = {};
     each(oldNodeList, (p0, p1) {
       if (p0.originData != null) {
@@ -38,9 +98,9 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     });
 
     List<SingleNode<T, P>> newNodeList = onComputeNeedLayoutData(helper);
-    List<SingleNode<T, P>> layoutList = [...newNodeList, ...oldNodeList];
+    newNodeList.removeWhere((element) => element.originData == null);
 
-    Set<GroupNode<T, P>> groupNodeSet = Set.from(layoutList.map((e) => e.parentNode.parentNode));
+    Set<GroupNode<T, P>> groupNodeSet = Set.from(newNodeList.map((e) => e.parentNode.parentNode));
     Map<AxisIndex, List<GroupNode<T, P>>> axisNodeMap = {};
     each(groupNodeSet, (groupNode, p1) {
       List<GroupNode<T, P>> groupList = axisNodeMap[groupNode.index] ?? [];
@@ -56,15 +116,21 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     });
 
     var diffResult = _diffNode(oldNodeList, newNodeList);
-    Map<SingleNode<T, P>, StackAnimatorNode> startMap = {};
-    Map<SingleNode<T, P>, StackAnimatorNode> endMap = {};
+    diffResult.removeSet.removeWhere((element) => element.originData == null);
+    diffResult.addSet.removeWhere((element) => element.originData == null);
+    diffResult.updateSet.removeWhere((element) => element.originData == null);
+
+    Map<T, StackAnimatorNode> startMap = {};
+    Map<T, StackAnimatorNode> endMap = {};
+
     each(diffResult.updateSet, (node, p1) {
-      if(node.dataIsNull){return;}
-      var oldNode=oldNodeMap[node.originData!]!;
-      startMap[node] = onCreateAnimatorNode(oldNode, DiffType.update, true);
+      var data = node.originData!;
+      var oldNode = oldNodeMap[data]!;
+      startMap[data] = onCreateAnimatorNode(oldNode, DiffType.update, true);
     });
     each(diffResult.removeSet, (node, p1) {
-      startMap[node] = onCreateAnimatorNode(node, DiffType.remove, true);
+      var data = node.originData!;
+      startMap[data] = onCreateAnimatorNode(node, DiffType.remove, true);
     });
 
     ///开始布局
@@ -93,19 +159,88 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     });
     layoutMarkPointAndLine(helper, series.data, newNodeList);
 
-    ///布局结束准备动画
+    ///布局结束-准备动画
+    ///对于add和update 在收集数据后需要还原到当前状态
     each(diffResult.addSet, (node, p1) {
-      startMap[node] = onCreateAnimatorNode(node, DiffType.add, true);
-      endMap[node] = onCreateAnimatorNode(node, DiffType.add, false);
-    });
-    each(diffResult.removeSet, (node, p1) {
-      endMap[node] = onCreateAnimatorNode(node, DiffType.remove, false);
+      var data = node.originData!;
+      startMap[data] = onCreateAnimatorNode(node, DiffType.add, true);
+      endMap[data] = onCreateAnimatorNode(node, DiffType.add, false);
+
+      ///还原初始位置
+      onAnimatorUpdate(node, 0, startMap[data]!, endMap[data]!);
     });
     each(diffResult.updateSet, (node, p1) {
-      endMap[node] = onCreateAnimatorNode(node, DiffType.update, false);
+      var data = node.originData!;
+      endMap[data] = onCreateAnimatorNode(node, DiffType.update, false);
+
+      ///还原初始位置
+      onAnimatorUpdate(node, 0, startMap[data]!, endMap[data]!);
     });
-    onLayoutEnd(oldNodeList, newNodeList, startMap, endMap, type);
+    each(diffResult.removeSet, (node, p1) {
+      endMap[node.originData!] = onCreateAnimatorNode(node, DiffType.remove, false);
+    });
+
+    var tmpList = [...diffResult.removeSet, ...newNodeList];
+
+    var removeTween = ChartDoubleTween(option: animator);
+    removeTween.addListener(() {
+      var t = removeTween.value;
+      each(diffResult.removeSet, (node, p1) {
+        var data = node.originData!;
+        var s = startMap[data]!;
+        var e = endMap[data]!;
+        onAnimatorUpdate(node, t, s, e);
+      });
+      notifyLayoutUpdate();
+    });
+    removeTween.addEndListener(() {
+      nodeList = newNodeList;
+    });
+    removeTween.addStartListener(() {
+      onAnimatorStart(tmpList);
+      nodeList=tmpList;
+      notifyLayoutUpdate();
+    });
+
+    var addTween = ChartDoubleTween(option: animator);
+    addTween.addListener(() {
+      var t = addTween.value;
+      each(diffResult.addSet, (node, p1) {
+        var data = node.originData!;
+        var s = startMap[data]!;
+        var e = endMap[data]!;
+        onAnimatorUpdate(node, t, s, e);
+      });
+      notifyLayoutUpdate();
+    });
+    var updateTween = ChartDoubleTween(option: animator);
+    updateTween.addListener(() {
+      var t = updateTween.value;
+      each(diffResult.updateSet, (node, p1) {
+        var data = node.originData!;
+        var s = startMap[data]!;
+        var e = endMap[data]!;
+        onAnimatorUpdate(node, t, s, e);
+      });
+      notifyLayoutUpdate();
+    });
+
+    var endTween = removeTween;
+    if (animator.duration.inMilliseconds > animator.updateDuration.inMilliseconds) {
+      endTween = addTween;
+    }
+    endTween.addEndListener(() {
+      onAnimatorEnd(newNodeList);
+      nodeList=newNodeList;
+      notifyLayoutUpdate();
+    });
+    context.addAnimationToQueue([
+      AnimationNode(removeTween, animator, LayoutType.update),
+      AnimationNode(addTween, animator, LayoutType.layout),
+      AnimationNode(updateTween, animator, LayoutType.update),
+    ]);
   }
+
 
   ///进行Diff比较，当为Update时使用新值
   DiffResult2<N> _diffNode<N>(Iterable<N> oldList, Iterable<N> newList) {
@@ -381,6 +516,48 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T>,
     );
     context.addAnimationToQueue(an);
   }
+
+  // void onLayoutEnd2(
+  //     List<SingleNode<T, P>> oldNodeList,
+  //     List<SingleNode<T, P>> newNodeList,
+  //     Map<SingleNode<T, P>, StackAnimatorNode> startMap,
+  //     Map<SingleNode<T, P>, StackAnimatorNode> endMap,
+  //     LayoutType type,
+  //     ) {
+  //   var animation = getAnimation(type);
+  //   if (!needRunAnimator(type) || animation == null) {
+  //     nodeList = newNodeList;
+  //     return;
+  //   }
+  //
+  //   ///动画
+  //   var an = DiffUtil.diffLayout3<SingleNode<T, P>>(
+  //     animation,
+  //     oldNodeList,
+  //     newNodeList,
+  //         (node, diffType) => {'data': startMap[node]},
+  //         (node, diffType) => {'data': endMap[node]},
+  //         (node, s, e, t, type) {
+  //       var sr = s['data'] as StackAnimatorNode;
+  //       var er = e['data'] as StackAnimatorNode;
+  //       onAnimatorUpdate(node, t, sr, er);
+  //     },
+  //         (resultList, t) {
+  //       nodeList = resultList;
+  //       onAnimatorUpdateEnd(resultList, t);
+  //       notifyLayoutUpdate();
+  //     },
+  //     onEnd: () {
+  //       nodeList = newNodeList;
+  //       onAnimatorEnd(nodeList);
+  //       notifyLayoutEnd();
+  //     },
+  //     onStart: () {
+  //       onAnimatorStart(nodeList);
+  //     },
+  //   );
+  //   context.addAnimationToQueue(an);
+  // }
 
   ///==============动画相关函数===============
   bool needRunAnimator(LayoutType type) {

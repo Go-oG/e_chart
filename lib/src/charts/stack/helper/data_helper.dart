@@ -3,13 +3,15 @@ import 'package:e_chart/e_chart.dart';
 
 ///处理二维坐标系下堆叠数据
 class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends ChartSeries> {
-  final Context context;
-  final List<P> _dataList;
-  final S _series;
-  final Direction direction;
-  final bool realSort;
-  final Sort sort;
-  final Map<T, SingleNode<T, P>> _nodeMap = {};
+  List<P> _dataList;
+  S? _series;
+
+  S get series => _series!;
+  Direction direction;
+  bool realSort;
+  Sort sort;
+  int? sortCount;
+  Map<T, SingleNode<T, P>> _nodeMap = {};
 
   SingleNode<T, P>? findNode(T? t) {
     if (t == null) {
@@ -19,27 +21,92 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   Map<T, SingleNode<T, P>> get nodeMap => _nodeMap;
-  late AxisGroup<T, P> _result;
+  AxisGroup<T, P>? _result;
 
   AxisGroup<T, P> get result {
-    return _result;
+    return _result!;
   }
 
-  DataHelper(this.context, this._series, this._dataList, this.direction, this.realSort, this.sort) {
+  DataHelper(this._series, this._dataList, this.direction, this.realSort, this.sort, this.sortCount) {
     if (realSort) {
-      each(_dataList, (group, p1) {
+      if (_dataList.length > 1) {
+        throw ChartError("当启用了实时排序后，只支持一个数据组");
+      }
+      if (_dataList.isNotEmpty) {
+        P group = _dataList.first;
+        int c = sortCount ?? -1;
+        if (c <= 0) {
+          c = group.data.length;
+        }
+        if (c > group.data.length) {
+          c = group.data.length;
+        }
+        bool isVertical = direction == Direction.vertical;
         group.data.sort((a, b) {
-          var au = a?.value ?? 0;
-          var bu = b?.value ?? 0;
-          if (sort == Sort.asc) {
-            return au.compareTo(bu);
+          num ai = a == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? a.y : a.x);
+          num bi = b == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? b.y : b.x);
+          if (sort == Sort.desc) {
+            return bi.compareTo(ai);
           }
-          return bu.compareTo(au);
+          return ai.compareTo(bi);
         });
-      });
+        if (c != group.data.length) {
+          group.data.removeRange(c, group.data.length);
+        }
+      }
     }
     _result = _parse();
-    _result.groupMap.forEach((key, value) {
+    result.groupMap.forEach((key, value) {
+      for (var gn in value) {
+        for (var cn in gn.nodeList) {
+          for (var node in cn.nodeList) {
+            if (node.originData == null) {
+              continue;
+            }
+            _nodeMap[node.originData!] = node;
+          }
+        }
+      }
+    });
+  }
+
+  void updateData(S series, List<P> dataList, Direction direction, bool realSort, Sort sort, int? sortCount) {
+    _series = series;
+    dataList = _dataList;
+    this.direction = direction;
+    this.realSort = realSort;
+    this.sort = sort;
+    this.sortCount = sortCount;
+    if (realSort) {
+      if (_dataList.length > 1) {
+        throw ChartError("当启用了实时排序后，只支持一个数据组");
+      }
+      if (_dataList.isNotEmpty) {
+        P group = _dataList.first;
+        int c = sortCount ?? -1;
+        if (c <= 0) {
+          c = group.data.length;
+        }
+        if (c > group.data.length) {
+          c = group.data.length;
+        }
+        bool isVertical = direction == Direction.vertical;
+        group.data.sort((a, b) {
+          num ai = a == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? a.y : a.x);
+          num bi = b == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? b.y : b.x);
+          if (sort == Sort.desc) {
+            return bi.compareTo(ai);
+          }
+          return ai.compareTo(bi);
+        });
+        if (c != group.data.length) {
+          group.data.removeRange(c, group.data.length);
+        }
+      }
+    }
+    _result = _parse();
+    _nodeMap = {};
+    result.groupMap.forEach((key, value) {
       for (var gn in value) {
         for (var cn in gn.nodeList) {
           for (var node in cn.nodeList) {
@@ -122,9 +189,9 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     for (var group in dataList) {
       int mainAxisIndex;
       CoordType system;
-      if (_series.coordType == CoordType.polar) {
+      if (series.coordType == CoordType.polar) {
         system = CoordType.polar;
-        mainAxisIndex = _series.polarIndex;
+        mainAxisIndex = series.polarIndex;
       } else {
         system = CoordType.grid;
         if (direction == Direction.vertical) {
@@ -189,7 +256,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         }
       });
 
-      var coord = _series.coordType == CoordType.polar ? CoordType.polar : CoordType.grid;
+      var coord = series.coordType == CoordType.polar ? CoordType.polar : CoordType.grid;
       singleNodeMap.forEach((key, value) {
         ColumnNode<T, P> column = ColumnNode(groupNode, [], true);
         List<SingleNode<T, P>> dl = List.from(value.map((e) => SingleNode(coord, column, e, true)));
@@ -286,7 +353,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
     });
     Map<int, ExtremeInfo> infoMap = {};
-    var coord = _series.coordType ?? CoordType.grid;
+    var coord = series.coordType ?? CoordType.grid;
     numMap.forEach((key, value) {
       var info = infoMap[key] ?? ExtremeInfo(x, AxisIndex(coord, key), [], [], []);
       infoMap[key] = info;
@@ -393,6 +460,14 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
     }
     return max;
+  }
+
+  void dispose() {
+    _result?.dispose();
+    _result = null;
+    _nodeMap = {};
+    _dataList = [];
+    _series = null;
   }
 }
 

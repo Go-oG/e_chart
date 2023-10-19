@@ -4,13 +4,15 @@ import 'package:e_chart/e_chart.dart';
 
 ///数据到绘图节点的映射
 abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
-  final D data;
+  D data;
+
   int dataIndex;
+
   int groupIndex;
 
-  late P _attr;
+  P? _attr;
 
-  P get attr => _attr;
+  P get attr => _attr!;
 
   set attr(P a) {
     _attr = a;
@@ -90,7 +92,7 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
     return true;
   }
 
-  void sendStateChangeEvent(Context context){
+  void sendStateChangeEvent(Context context) {
     if (context.hasEventListener(EventType.dataStatusChanged)) {
       context.dispatchEvent(_dataStateChangeEvent);
     }
@@ -103,6 +105,7 @@ abstract class DataNode<P, D> with ViewStateProvider, ExtProps {
 
   DataType get dataType => DataType.nodeData;
 
+  void dispose(){}
 }
 
 abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {

@@ -37,35 +37,4 @@ abstract class GridSeries<T extends StackItemData, G extends StackGroupData<T>> 
     super.id,
     super.tooltip,
   });
-
-  @override
-  DataHelper<T, G, StackSeries<T, G>> buildHelper(Context context) {
-    if (realtimeSort && data.isNotEmpty) {
-      if (data.length > 1) {
-        throw ChartError("当启用了实时排序后，只支持一个数据组");
-      }
-      G group = data.first;
-      int c = sortCount ?? -1;
-      if (c <= 0) {
-        c = group.data.length;
-      }
-      if (c > group.data.length) {
-        c = group.data.length;
-      }
-      group.data.sort((a, b) {
-        num ai = a == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? a.y : a.x);
-        num bi = b == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? b.y : b.x);
-        if (sort == Sort.desc) {
-          return bi.compareTo(ai);
-        } else {
-          return ai.compareTo(bi);
-        }
-      });
-      if (c != group.data.length) {
-        group.data.removeRange(c, group.data.length);
-      }
-      return DataHelper(context, this, [group], direction, true, sort);
-    }
-    return super.buildHelper(context);
-  }
 }

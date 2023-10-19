@@ -3,8 +3,8 @@ import 'package:e_chart/e_chart.dart';
 
 ///表示为系列数据
 class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
-  final AxisIndex index;
-  final List<ColumnNode<T, P>> nodeList;
+  AxisIndex index;
+  List<ColumnNode<T, P>> nodeList;
 
   ///组索引(影响其位置)
   int groupIndex;
@@ -88,5 +88,12 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
     for (var col in nodeList) {
       col.mergeData();
     }
+  }
+
+  void dispose() {
+    each(nodeList, (p0, p1) {
+      p0.dispose();
+    });
+    nodeList = [];
   }
 }

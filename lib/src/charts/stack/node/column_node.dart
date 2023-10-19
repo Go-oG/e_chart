@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart';
 
 class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
   final GroupNode<T, P> parentNode;
-  final List<SingleNode<T, P>> nodeList;
+  List<SingleNode<T, P>> nodeList;
   final bool isStack;
 
   ColumnNode(this.parentNode, this.nodeList, this.isStack);
@@ -77,9 +77,11 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
       }
     });
 
-    List<List<SingleNode<T, P>>> tmpList=[positiveList,crossList];
-    for(var list in tmpList){
-      if(list.isEmpty){continue;}
+    List<List<SingleNode<T, P>>> tmpList = [positiveList, crossList];
+    for (var list in tmpList) {
+      if (list.isEmpty) {
+        continue;
+      }
       var first = list.first;
       var firstData = first.originData!;
       num down = firstData.minValue;
@@ -104,6 +106,9 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
         down -= (node.originData!.maxValue - node.originData!.minValue);
       });
     }
+  }
 
+  void dispose() {
+    nodeList = [];
   }
 }

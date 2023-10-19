@@ -274,11 +274,11 @@ abstract class ChartView extends RenderNode {
       Logger.w('$c 无法找到能出来该命令相关的回调');
       return;
     }
-    try {
+   // try {
       op.call(c);
-    } catch (e) {
-      Logger.e(e);
-    }
+    // } catch (e) {
+    //   Logger.e(e);
+    // }
   }
 
   void onInvalidateCommand(covariant Command c) {
