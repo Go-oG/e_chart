@@ -50,6 +50,10 @@ extension RectExt on Rect {
     var rb = Radius.circular(corner.rightBottom);
     return RRect.fromRectAndCorners(this, topLeft: lt, topRight: rt, bottomLeft: lb, bottomRight: rb);
   }
+
+  String toString2() {
+    return 'LTRB(${left.toStringAsFixed(1)}, ${top.toStringAsFixed(1)}, ${right.toStringAsFixed(1)}, ${bottom.toStringAsFixed(1)})';
+  }
 }
 
 ///判断两条线段是否相交

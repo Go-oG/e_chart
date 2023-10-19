@@ -242,6 +242,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
   }
 
   bool get isVertical => direction == Direction.vertical;
+  bool get isHorizontal => direction == Direction.horizontal;
 
   @override
   List<LegendItem> getLegendItem(Context context) {

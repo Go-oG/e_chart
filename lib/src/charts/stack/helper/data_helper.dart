@@ -1,8 +1,5 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/model/extreme.dart';
-
-import '../../../model/extreme_info.dart';
 
 ///处理二维坐标系下堆叠数据
 class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends ChartSeries> {
@@ -14,10 +11,14 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   final Sort sort;
   final Map<T, SingleNode<T, P>> _nodeMap = {};
 
-  SingleNode<T, P>? findNode(T t) {
+  SingleNode<T, P>? findNode(T? t) {
+    if (t == null) {
+      return null;
+    }
     return _nodeMap[t];
   }
 
+  Map<T, SingleNode<T, P>> get nodeMap => _nodeMap;
   late AxisGroup<T, P> _result;
 
   AxisGroup<T, P> get result {
@@ -25,14 +26,27 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   DataHelper(this.context, this._series, this._dataList, this.direction, this.realSort, this.sort) {
+    if (realSort) {
+      each(_dataList, (group, p1) {
+        group.data.sort((a, b) {
+          var au = a?.value ?? 0;
+          var bu = b?.value ?? 0;
+          if (sort == Sort.asc) {
+            return au.compareTo(bu);
+          }
+          return bu.compareTo(au);
+        });
+      });
+    }
     _result = _parse();
     _result.groupMap.forEach((key, value) {
       for (var gn in value) {
         for (var cn in gn.nodeList) {
           for (var node in cn.nodeList) {
-            if (node.originData != null) {
-              _nodeMap[node.originData!] = node;
+            if (node.originData == null) {
+              continue;
             }
+            _nodeMap[node.originData!] = node;
           }
         }
       }
@@ -75,6 +89,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
     ///最后进行数据合并整理
     AxisGroup<T, P> group = AxisGroup(resultMap);
+
     group.mergeData(direction);
     _xAxisExtreme = _collectExtreme(group, true);
     _yAxisExtreme = _collectExtreme(group, false);
@@ -94,7 +109,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       Map<int, WrapData<T, P>> childMap = dataMap[group] ?? {};
       dataMap[group] = childMap;
       each(group.data, (childData, i) {
-        childMap[i] = WrapData(childData, group, groupIndex, i);
+        childMap[i] = WrapData(group, childData, groupIndex, i);
       });
     });
     return OriginInfo(sortMap, dataMap);
@@ -189,7 +204,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     });
 
     ///排序
-    for (GroupNode group in groupNodeList) {
+    for (var group in groupNodeList) {
       //排序孩子
       for (var child in group.nodeList) {
         if (child.nodeList.length > 1) {
@@ -209,21 +224,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         });
       }
     }
-
-    if (realSort) {
-      groupNodeList.sort((a, b) {
-        var au = a.getXNodeNull()?.up ?? 0;
-        var bu = b.getXNodeNull()?.up ?? 0;
-        if (sort == Sort.desc) {
-          return bu.compareTo(au);
-        } else {
-          return au.compareTo(bu);
-        }
-      });
-      each(groupNodeList, (gn, i) {
-        gn.nodeIndex = i;
-      });
-    }
     return groupNodeList;
   }
 
@@ -233,6 +233,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     Map<int, NumExtreme> numMap = {};
     Map<int, TimeExtreme> timeMap = {};
     Map<int, List<String>> strMap = {};
+
     bool vertical = direction == Direction.vertical;
     axisGroup.groupMap.forEach((key, value) {
       for (var group in value) {
@@ -250,7 +251,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
               if (data == null) {
                 continue;
               }
-
               if (data is String) {
                 var strList = strMap[axisIndex] ?? [];
                 strMap[axisIndex] = strList;
@@ -299,23 +299,40 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         info.numExtreme.add(v);
       }
     });
+
     timeMap.forEach((key, value) {
-      var info = infoMap[key] ?? ExtremeInfo(x, AxisIndex(coord, key), [], [], []);
-      infoMap[key] = info;
-      var v = value.minTime;
-      if (v != null) {
-        info.timeExtreme.add(v);
+      List<DateTime> timeList = [];
+      if (value.minTime != null) {
+        timeList.add(value.minTime!);
       }
-      v = value.maxTime;
-      if (v != null) {
-        info.timeExtreme.add(v);
+      if (value.maxTime != null) {
+        timeList.add(value.maxTime!);
+      }
+      var info = infoMap[key];
+      if (info == null) {
+        infoMap[key] = ExtremeInfo(x, AxisIndex(coord, key), [], [], timeList);
+      } else {
+        info.timeExtreme = timeList;
       }
     });
+
     strMap.forEach((key, value) {
-      var info = infoMap[key] ?? ExtremeInfo(x, AxisIndex(coord, key), [], [], []);
-      infoMap[key] = info;
-      info.strExtreme.addAll(value);
+      Set<String> strSet = {};
+      List<String> strList = [];
+      each(value, (str, p1) {
+        if (!strSet.contains(str)) {
+          strList.add(str);
+          strSet.add(str);
+        }
+      });
+      var info = infoMap[key];
+      if (info == null) {
+        infoMap[key] = ExtremeInfo(x, AxisIndex(coord, key), [], strList, []);
+      } else {
+        info.strExtreme = strList;
+      }
     });
+
     Map<AxisIndex, ExtremeInfo> rm = {};
     infoMap.forEach((key, value) {
       value.syncData();

@@ -277,19 +277,10 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onChildDataSetChange(bool layoutChild) {
-    List<GridChild> childList = getGridChildList();
-
-    ///布局X轴
-    layoutXAxis(childList, contentBox, false, true);
-
-    ///布局Y轴
-    layoutYAxis(childList, contentBox, false, true);
-    if (!layoutChild) {
-      return;
-    }
     for (var view in children) {
-      view.requestLayoutSelf();
+      view.forceLayout = true;
     }
+    onLayout(left, top, right, bottom);
   }
 
   @override
@@ -406,7 +397,7 @@ class GridCoordImpl extends GridCoord {
     }
     if (hasChange) {
       ///TODO 缩放更新
-     // context.dispatchEvent(AxisChangeEvent(this, [], null));
+      // context.dispatchEvent(AxisChangeEvent(this, [], null));
 
       invalidate();
     }
@@ -565,7 +556,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  RangeInfo getViewportDataRange(int axisIndex, bool isXAxis) {
+  RangeInfo getAxisViewportDataRange(int axisIndex, bool isXAxis) {
     if (axisIndex < 0) {
       axisIndex = 0;
     }
@@ -770,7 +761,7 @@ abstract class GridCoord extends CoordLayout<Grid> {
   GridCoord(super.props);
 
   ///获取指定坐标轴在当前窗口显示的数据范围
-  RangeInfo getViewportDataRange(int axisIndex, bool isXAxis);
+  RangeInfo getAxisViewportDataRange(int axisIndex, bool isXAxis);
 
   ///该方法适用于Bar
   Rect dataToRect(int xAxisIndex, dynamic x, int yAxisIndex, dynamic y);

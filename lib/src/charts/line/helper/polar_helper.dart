@@ -18,9 +18,9 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutColumn(var axisGroup, var groupNode,  LayoutType type) {
-    var xIndex=AxisIndex(CoordType.polar, groupNode.getXAxisIndex());
-    var xData=groupNode.getXData();
+  void onLayoutColumn(var axisGroup, var groupNode, LayoutType type) {
+    var xIndex = AxisIndex(CoordType.polar, groupNode.getXAxisIndex());
+    var xData = groupNode.getXData();
     int groupInnerCount = axisGroup.getColumnCount(xIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -55,7 +55,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutNode(var columnNode,  LayoutType type) {
+  void onLayoutNode(var columnNode, LayoutType type) {
     final bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {
@@ -80,26 +80,26 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
   }
 
   @override
-  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
+  void onLayoutEnd(var oldNodeList, var newNodeList, var startMap, var endMap, LayoutType type) {
     _animatorPercent = 0;
-    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    super.onLayoutEnd(oldNodeList, newNodeList, startMap, endMap, type);
     _updateLine(newNodeList);
   }
 
   @override
-  void onAnimatorStart(var result) {
-    super.onAnimatorStart(result);
+  void onAnimatorStart(var nodeList) {
+    super.onAnimatorStart(nodeList);
     _animatorPercent = 0;
   }
 
   @override
-  void onAnimatorUpdateEnd(var result, double t) {
+  void onAnimatorUpdateEnd(var nodeList, double t) {
     _animatorPercent = t;
   }
 
   @override
-  void onAnimatorEnd(var result) {
-    super.onAnimatorEnd(result);
+  void onAnimatorEnd(var nodeList) {
+    super.onAnimatorEnd(nodeList);
     _animatorPercent = 1;
   }
 

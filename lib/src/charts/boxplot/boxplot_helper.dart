@@ -33,9 +33,6 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
       if (data == null) {
         continue;
       }
-      if (!needLayoutForNode(node, type)) {
-        continue;
-      }
       var group = node.parent;
       Offset minC = _computeOffset(colRect, data.min, group.xAxisIndex, vertical);
       Offset downC = _computeOffset(colRect, data.downAve4, group.xAxisIndex, vertical);
@@ -53,14 +50,18 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
-    if (diffType == DiffType.update) {
-      var an = StackAnimationNode();
+  StackAnimatorNode onCreateAnimatorNode(var node, DiffType diffType, bool isStart) {
+
+    if (diffType == DiffType.update ||
+        (diffType == DiffType.remove && isStart) ||
+        (diffType == DiffType.add && !isStart)) {
+      var an = StackAnimatorNode();
       an.extSetAll(node.extGetAll());
       return an;
     }
+
     Offset middleOffset = node.extGet(_middleCK);
-    var an = StackAnimationNode();
+    var an = StackAnimatorNode();
     an.extSet(_colRectK, node.extGet(_colRectK));
     an.extSet(_minCK, middleOffset);
     an.extSet(_downCK, middleOffset);
@@ -71,12 +72,9 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   @override
-  void onAnimatorUpdate(var node, double t, var startMap, var endMap) {
-    var s = startMap[node];
-    var e = endMap[node];
-    if (s == null || e == null) {
-      return;
-    }
+  void onAnimatorUpdate(var node, double t, var startStatus, var endStatus) {
+    var s = startStatus;
+    var e = endStatus;
     Rect colRect = s.extGet(_colRectK);
     Offset smino = s.extGet(_minCK);
     Offset sdowno = s.extGet(_downCK);

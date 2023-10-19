@@ -34,4 +34,27 @@ class RangeInfo {
 
     return "暂无数据";
   }
+
+  bool includeData(dynamic data) {
+    if (data is String) {
+      return categoryList?.contains(data) ?? false;
+    }
+    if (data is num) {
+      if (numRange == null) {
+        return false;
+      }
+      return numRange!.start <= data && data <= numRange!.end;
+    }
+    if (data is DateTime) {
+      if (timeList == null || timeList!.isEmpty) {
+        return false;
+      }
+
+      return timeList!.first.millisecondsSinceEpoch <= data.millisecondsSinceEpoch &&
+          timeList!.last.millisecondsSinceEpoch >= data.millisecondsSinceEpoch;
+    }
+    throw ChartError("不支持的数据");
+  }
+
+
 }

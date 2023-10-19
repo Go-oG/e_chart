@@ -4,10 +4,12 @@ import 'package:e_chart/e_chart.dart';
 ///表示为系列数据
 class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewStateProvider {
   final AxisIndex index;
-  int nodeIndex;
   final List<ColumnNode<T, P>> nodeList;
 
-  GroupNode(this.index, this.nodeIndex, this.nodeList);
+  ///组索引(影响其位置)
+  int groupIndex;
+
+  GroupNode(this.index, this.groupIndex, this.nodeList);
 
   ///布局中使用的数据
   ///二维坐标使用
@@ -57,23 +59,29 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with ViewS
   }
 
   int getYAxisIndex() {
-    int index = 0;
     for (var list in nodeList) {
       for (var d in list.nodeList) {
-        return d.parent.yAxisIndex;
+        var index = d.parent.yAxisIndex;
+        if (index < 0) {
+          index = 0;
+        }
+        return index;
       }
     }
-    return index;
+    return 0;
   }
 
   int getXAxisIndex() {
-    int index = 0;
     for (var list in nodeList) {
       for (var d in list.nodeList) {
-        return d.parent.xAxisIndex;
+        var index = d.parent.xAxisIndex;
+        if (index < 0) {
+          index = 0;
+        }
+        return index;
       }
     }
-    return index;
+    return 0;
   }
 
   void mergeData() {

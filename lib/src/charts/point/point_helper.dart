@@ -41,18 +41,18 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
       (node, t) {
         node.symbol.scale = t;
       },
-      (resultList) {
+      (resultList, t) {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
-      () {
+      onStart: () {
         inAnimation = true;
         var tmp = [...oldList, ...newList];
         rBush.clear();
         rBush.addAll(tmp);
         updateShowNodeList();
       },
-      () {
+      onEnd: () {
         inAnimation = false;
         rBush.clear();
         rBush.addAll(newList);

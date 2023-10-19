@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
@@ -29,12 +28,12 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       (node, s, e, t, type) {
         node.scale = lerpDouble(s['scale'], e['scale'], t)!;
       },
-      (resultList) {
+      (resultList, t) {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
-      () => inAnimation = true,
-      () => inAnimation = false,
+      onStart: () => inAnimation = true,
+      onEnd: () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }

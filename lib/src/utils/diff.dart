@@ -5,6 +5,7 @@ import 'package:e_chart/e_chart.dart';
 ///Diff 比较工具类
 ///用于在布局中实现动画
 class DiffUtil {
+
   static DiffResult<T, P, K> diff<T, K, P>(
     Iterable<T> oldList,
     Iterable<T> newList,
@@ -77,7 +78,7 @@ class DiffUtil {
     Iterable<N> newList,
     P Function(D data, N node, bool add) builder,
     P Function(P s, P e, double t) lerpFun,
-    void Function(List<N> resultList) updateCall, [
+    void Function(List<N> resultList, double t) updateCall, [
     VoidCallback? onStart,
     VoidCallback? onEnd,
   ]) {
@@ -109,8 +110,8 @@ class DiffUtil {
         node.attr = lerpFun.call(sp, ep, t);
       },
       updateCall,
-      onStart,
-      onEnd,
+      onStart: onStart,
+      onEnd: onEnd,
     );
   }
 
@@ -121,10 +122,10 @@ class DiffUtil {
     double Function(N node, bool add) startFun,
     double Function(N node, bool add) endFun,
     void Function(N node, double t) lerpFun,
-    void Function(List<N> resultList) resultCall, [
+    void Function(List<N> resultList, double t) resultCall, {
     VoidCallback? onStart,
     VoidCallback? onEnd,
-  ]) {
+  }) {
     return diffLayout3(
       attrs,
       oldList,
@@ -146,8 +147,8 @@ class DiffUtil {
         lerpFun.call(node, tt);
       },
       resultCall,
-      onStart,
-      onEnd,
+      onStart: onStart,
+      onEnd: onEnd,
     );
   }
 
@@ -159,19 +160,19 @@ class DiffUtil {
     Map<String, dynamic> Function(N node, DiffType type) startFun,
     Map<String, dynamic> Function(N node, DiffType type) endFun,
     void Function(N node, Map<String, dynamic> s, Map<String, dynamic> e, double t, DiffType type) lerpFun,
-    void Function(List<N> resultList) updateCall, [
+    void Function(List<N> resultList, double t) updateCall, {
     VoidCallback? onStart,
     VoidCallback? onEnd,
-  ]) {
+  }) {
     if (oldList.isEmpty && newList.isEmpty) {
       onStart?.call();
-      updateCall.call([]);
+      updateCall.call([], 1);
       onEnd?.call();
       return [];
     }
     if (attrs == null) {
       onStart?.call();
-      updateCall.call(List.from(newList));
+      updateCall.call(List.from(newList), 1);
       onEnd?.call();
       return [];
     }
@@ -263,7 +264,7 @@ class DiffUtil {
     void handleEnd() {
       if (endCount >= tweenList.length && tweenList.isNotEmpty) {
         innerRun();
-        updateCall.call(endList);
+        updateCall.call(endList, 1);
         onEnd?.call();
       }
     }
@@ -278,7 +279,7 @@ class DiffUtil {
             var e = endMap[key]!;
             lerpFun.call(value, s, e, t, DiffType.add);
           });
-          updateCall.call(resultList);
+          updateCall.call(resultList, t);
         });
         addTween.addEndListener(() {
           endCount += 1;
@@ -300,7 +301,7 @@ class DiffUtil {
             var e = endMap[key]!;
             lerpFun.call(value, s, e, t, DiffType.remove);
           });
-          updateCall.call(resultList);
+          updateCall.call(resultList, t);
         });
         removeTween.addEndListener(() {
           endCount += 1;
@@ -322,7 +323,7 @@ class DiffUtil {
             var e = endMap[key]!;
             lerpFun.call(value, s, e, t, DiffType.update);
           });
-          updateCall.call(resultList);
+          updateCall.call(resultList, t);
         });
         updateTween.addEndListener(() {
           endCount += 1;
@@ -337,7 +338,7 @@ class DiffUtil {
     if (tweenList.isEmpty) {
       onStart?.call();
       innerRun();
-      updateCall.call(endList);
+      updateCall.call(endList, 1);
       onEnd?.call();
       return [];
     }
@@ -709,6 +710,18 @@ class DiffResult<N, P, D> {
     this.endList,
     this.removeSet,
     this.addSet,
+    this.updateSet,
+  );
+}
+
+class DiffResult2<N> {
+  final Set<N> removeSet;
+  final Set<N> addSet;
+  final Set<N> updateSet;
+
+  DiffResult2(
+    this.addSet,
+    this.removeSet,
     this.updateSet,
   );
 }

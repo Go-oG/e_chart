@@ -16,7 +16,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   CandlestickHelper(super.context, super.view, super.series);
 
   @override
-  void onLayoutNode(var columnNode,  LayoutType type) {
+  void onLayoutNode(var columnNode, LayoutType type) {
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
       var data = node.originData;
@@ -71,17 +71,21 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   }
 
   @override
-  StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
+  StackAnimatorNode onCreateAnimatorNode(var node, DiffType diffType, bool isStart) {
     if (node.originData == null) {
-      return StackAnimationNode();
+      return StackAnimatorNode();
     }
-    if (diffType == DiffType.update) {
-      var an = StackAnimationNode();
+
+    if (diffType == DiffType.update ||
+        (diffType == DiffType.remove && isStart) ||
+        (diffType == DiffType.add && !isStart)) {
+      var an = StackAnimatorNode();
       an.extSetAll(node.extGetAll());
       return an;
     }
+
     Offset tmp = node.extGet(_openK);
-    var an = StackAnimationNode();
+    var an = StackAnimatorNode();
     an.extSet(_colRectK, node.extGet(_colRectK));
     an.extSet(_lowK, tmp);
     an.extSet(_openK, tmp);
@@ -91,12 +95,10 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   }
 
   @override
-  void onAnimatorUpdate(var node, double t, var startMap, var endMap) {
-    var s = startMap[node];
-    var e = endMap[node];
-    if (s == null || e == null) {
-      return;
-    }
+  void onAnimatorUpdate(var node, double t, var startStatus, var endStatus) {
+    var s = startStatus;
+    var e = endStatus;
+
     Rect colRect = s.extGet(_colRectK);
     Offset soo = s.extGet(_openK);
     Offset sco = s.extGet(_closeK);
@@ -171,8 +173,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     if (node != null) {
       return node;
     }
-
-    for (var node in showNodeMap.values) {
+    for (var node in nodeList) {
       List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
       for (var l in bl) {
         if (offset.inPolygon(l)) {
@@ -180,7 +181,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
         }
       }
     }
-    for (var node in nodeMap.values) {
+    for (var node in series.getHelper(context).nodeMap.values) {
       List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
       for (var l in bl) {
         if (offset.inPolygon(l)) {

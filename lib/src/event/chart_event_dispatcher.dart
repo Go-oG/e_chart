@@ -18,6 +18,9 @@ class EventDispatcher {
       value.remove(call);
     });
   }
+  void removeCall2(EventType type,VoidFun1<ChartEvent> call) {
+    _callMap[type]?.remove(call);
+  }
 
   void dispatch(ChartEvent event) {
     var type = event.eventType;

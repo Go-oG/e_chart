@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:e_chart/src/ext/offset_ext.dart';
-
 import '../../animation/index.dart';
 import '../../component/style/index.dart';
 import '../index.dart';

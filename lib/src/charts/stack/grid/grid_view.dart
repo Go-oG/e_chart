@@ -12,8 +12,7 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    var nodeMap = layoutHelper.showNodeMap;
-    nodeMap.forEach((key, node) {
+    each(layoutHelper.nodeList, (node, p1) {
       var column = node.parentNode;
       if (rectSet.contains(column)) {
         return;
@@ -35,10 +34,9 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
   @override
   void onDrawBar(CCanvas canvas) {
     Offset offset = layoutHelper.getTranslation();
-    final map = layoutHelper.showNodeMap;
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    map.forEach((key, node) {
+    each(layoutHelper.nodeList, (node, p1) {
       if (node.originData == null) {
         return;
       }
@@ -52,11 +50,10 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
 
   @override
   void onDrawBarLabel(CCanvas canvas) {
-    Offset offset = layoutHelper.getTranslation();
-    final map = layoutHelper.showNodeMap;
     canvas.save();
+    Offset offset = layoutHelper.getTranslation();
     canvas.translate(offset.dx, offset.dy);
-    map.forEach((key, node) {
+    each(layoutHelper.nodeList, (node, p1) {
       if (node.rect.isEmpty) {
         return;
       }

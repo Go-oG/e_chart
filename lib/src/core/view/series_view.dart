@@ -36,8 +36,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    layoutHelper.doLayout(selfBoxBound, globalBound, LayoutType.update);
-    super.onUpdateDataCommand(c);
+    layoutHelper.onSeriesDataUpdate();
   }
 
   @override

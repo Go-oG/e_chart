@@ -127,9 +127,9 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
+  StackAnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType,bool isStart) {
     if (diffType == DiffType.update) {
-      return StackAnimationNode(arc: node.arc, offset: node.arc.centroid());
+      return StackAnimatorNode(arc: node.arc, offset: node.arc.centroid());
     }
     Arc arc;
     if (series.animatorStyle == GridAnimatorStyle.expand) {
@@ -137,15 +137,12 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
     } else {
       arc = node.arc.copy(outRadius: node.arc.innerRadius);
     }
-    return StackAnimationNode(arc: arc, offset: arc.centroid());
+    return StackAnimatorNode(arc: arc, offset: arc.centroid());
   }
 
   @override
-  void onAnimatorUpdate(SingleNode<T, P> node, double t, var startMap, var endMap) {
-    var e = endMap[node]!.arc;
-    if (e == null) {
-      return;
-    }
+  void onAnimatorUpdate(SingleNode<T, P> node, double t, var startStatus, var endStatus) {
+    var e = endStatus.arc!;
     if (series.direction == Direction.vertical) {
       ///角度增加
       double sweepAngle = e.sweepAngle * t;
@@ -172,4 +169,5 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
 
   @override
   CoordType get coordSystem => CoordType.polar;
+
 }

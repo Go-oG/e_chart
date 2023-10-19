@@ -86,18 +86,27 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
       rootNode = root;
       return;
     }
-    var an = DiffUtil.diffLayout3<PackNode>(animation, [], root.iterator(), (node, type) {
-      return {'scale': type == DiffType.add ? 0 : node.scale};
-    }, (node, type) {
-      return {'scale': type == DiffType.remove ? 0 : 1};
-    }, (node, s, e, t, type) {
-      node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
-    }, (resultList) {
-      showNodeList = resultList;
-      notifyLayoutUpdate();
-    }, () {
-      rootNode = root;
-    });
+    var an = DiffUtil.diffLayout3<PackNode>(
+      animation,
+      [],
+      root.iterator(),
+      (node, type) {
+        return {'scale': type == DiffType.add ? 0 : node.scale};
+      },
+      (node, type) {
+        return {'scale': type == DiffType.remove ? 0 : 1};
+      },
+      (node, s, e, t, type) {
+        node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
+      },
+      (resultList, t) {
+        showNodeList = resultList;
+        notifyLayoutUpdate();
+      },
+      onStart: () {
+        rootNode = root;
+      },
+    );
     context.addAnimationToQueue(an);
   }
 

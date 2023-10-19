@@ -6,9 +6,9 @@ class ExtremeInfo {
   ///如果为false 表明为Y轴方向上的极值数据
   final bool xAxis;
   final AxisIndex axisIndex;
-  final List<num> numExtreme;
-  final List<String> strExtreme;
-  final List<DateTime> timeExtreme;
+  List<num> numExtreme;
+  List<String> strExtreme;
+  List<DateTime> timeExtreme;
 
   late List<dynamic> _info;
 

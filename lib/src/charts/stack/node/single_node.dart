@@ -26,6 +26,8 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
 
   T? get originData => data.data;
 
+  bool get dataIsNull=>originData==null;
+
   P get parent => data.parent;
 
   Arc get arc => attr.arc;
@@ -83,7 +85,7 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     } else {
       align.fill(label, rect, label.style, series.direction);
     }
-    label.updatePainter(text: formatData(series, attr.dynamicLabel ?? up));
+    label.updatePainter(text:formatData(series, attr.dynamicLabel ?? up));
   }
 
   DynamicText formatData(StackSeries<T, P> series, dynamic data) {
@@ -108,6 +110,7 @@ class SingleNode<T extends StackItemData, P extends StackGroupData<T>> extends D
     }
     return data.toString().toText();
   }
+
 }
 
 class SingleAttr {

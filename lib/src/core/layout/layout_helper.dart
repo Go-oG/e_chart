@@ -116,7 +116,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   void onDragEnd() {}
 
-
   ///==============事件发送============
   void sendClickEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
     if (context.hasEventListener(EventType.click)) {
@@ -185,6 +184,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
       seriesType: series.seriesType,
       seriesIndex: series.seriesIndex,
     );
+  }
+
+  void onSeriesDataUpdate() {
+    onLayout(LayoutType.update);
+    notifyLayoutUpdate();
   }
 
   ///========查找坐标系函数=======================
@@ -383,7 +387,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   VoidFun1<ChartEvent>? _axisScrollListener;
 
   void subscribeAxisScrollEvent() {
-    _context?.removeEventCall(_axisScrollListener);
+    _context?.removeEventCall2(EventType.axisScroll, _axisScrollListener);
     _axisScrollListener = (event) {
       if (event is AxisScrollEvent) {
         onAxisScroll(event);
@@ -394,7 +398,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   void unsubscribeAxisScrollEvent() {
-    _context?.removeEventCall(_axisScrollListener);
+    _context?.removeEventCall2(EventType.axisScroll, _axisScrollListener);
     _axisScrollListener = null;
   }
 

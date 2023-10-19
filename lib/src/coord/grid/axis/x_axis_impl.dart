@@ -54,7 +54,6 @@ class XAxisImpl extends BaseGridAxisImpl {
 
   @override
   dynamic pxToData(num position) {
-    var diff = position - attrs.start.dx;
-    return scale.toData(diff);
+    return scale.toData(position);
   }
 }

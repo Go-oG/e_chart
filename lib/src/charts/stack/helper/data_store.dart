@@ -1,5 +1,5 @@
-
 import '../../../model/chart_error.dart';
+import '../../../model/range_info.dart';
 import '../../../utils/math_util.dart';
 
 ///用于优化解决大数据量下数据的获取
@@ -118,5 +118,26 @@ class DataStore<T> {
       }
     }
     return rl;
+  }
+
+  List<T> getDataByRange(RangeInfo info) {
+    List<T> resultList = [];
+    if (info.numRange != null) {
+      for (var list in getByNum(info.numRange!.start, info.numRange!.end)) {
+        resultList.addAll(list);
+      }
+    }
+    if(info.timeList!=null){
+      for(var list in getByTime(info.timeList!)){
+        resultList.addAll(list);
+      }
+    }
+    if(info.categoryList!=null){
+      for(var list in getByStr(info.categoryList!)){
+        resultList.addAll(list);
+      }
+    }
+
+    return resultList;
   }
 }

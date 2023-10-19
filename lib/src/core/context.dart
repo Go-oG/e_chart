@@ -416,6 +416,13 @@ class Context {
     _eventDispatcher.removeCall(call);
   }
 
+  void removeEventCall2(EventType type, VoidFun1<ChartEvent>? call) {
+    if (call == null) {
+      return;
+    }
+    _eventDispatcher.removeCall2(type, call);
+  }
+
   void dispatchEvent(ChartEvent event) {
     _eventDispatcher.dispatch(event);
   }

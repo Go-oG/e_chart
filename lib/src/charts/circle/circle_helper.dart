@@ -45,12 +45,12 @@ class CircleHelper extends LayoutHelper2<CircleNode, CircleSeries> {
         var ea = e['arc'] as Arc;
         node.attr = Arc.lerp(sa, ea, t);
       },
-      (resultList) {
+      (resultList, t) {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
-      () => inAnimation = true,
-      () => inAnimation = false,
+      onStart: () => inAnimation = true,
+      onEnd: () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }

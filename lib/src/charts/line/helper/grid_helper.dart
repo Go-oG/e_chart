@@ -21,8 +21,8 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
 
   @override
   void onLayoutColumn(var axisGroup, var groupNode, LayoutType type) {
-    var xData=groupNode.getXData();
-    var axisIndex=AxisIndex(CoordType.grid, groupNode.getXAxisIndex());
+    var xData = groupNode.getXData();
+    var axisIndex = AxisIndex(CoordType.grid, groupNode.getXAxisIndex());
     int groupInnerCount = axisGroup.getColumnCount(axisIndex);
     int columnCount = groupInnerCount;
     if (columnCount <= 1) {
@@ -38,35 +38,26 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         Logger.w("内部状态异常 无法找到 upValue 或者downValue");
         return;
       }
-      dynamic upValue = getNodeUpValue(upNode),
-          downValue = getNodeDownValue(downNode);
+      dynamic upValue = getNodeUpValue(upNode), downValue = getNodeDownValue(downNode);
       if (upValue == null || downValue == null) {
         return;
       }
       if (vertical) {
         int yIndex = upNode.parent.yAxisIndex;
-        var uo = coord
-            .dataToPoint(yIndex, upValue, false)
-            .last;
-        var downo = coord
-            .dataToPoint(yIndex, downValue, false)
-            .first;
+        var uo = coord.dataToPoint(yIndex, upValue, false).last;
+        var downo = coord.dataToPoint(yIndex, downValue, false).first;
         node.rect = Rect.fromLTRB(groupRect.left, uo.dy, groupRect.right, downo.dy);
       } else {
-        var lo = coord
-            .dataToPoint(axisIndex.axisIndex, xData, true)
-            .first;
-        var ro = coord
-            .dataToPoint(axisIndex.axisIndex, xData, true)
-            .last;
+        var lo = coord.dataToPoint(axisIndex.axisIndex, xData, true).first;
+        var ro = coord.dataToPoint(axisIndex.axisIndex, xData, true).last;
         node.rect = Rect.fromLTRB(lo.dx, groupRect.top, ro.dx, groupRect.bottom);
       }
     });
   }
 
   @override
-  void onLayoutNode(var columnNode,LayoutType type) {
-    var xIndex=columnNode.parentNode.getXAxisIndex();
+  void onLayoutNode(var columnNode, LayoutType type) {
+    var xIndex = columnNode.parentNode.getXAxisIndex();
 
     final bool vertical = series.direction == Direction.vertical;
     final coord = findGridCoord();
@@ -77,9 +68,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         continue;
       }
       if (vertical) {
-        var uo = coord
-            .dataToPoint(node.parent.yAxisIndex, getNodeUpValue(node), false)
-            .last;
+        var uo = coord.dataToPoint(node.parent.yAxisIndex, getNodeUpValue(node), false).last;
         node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, uo.dy);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topLeft;
@@ -87,9 +76,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
           node.position = node.rect.topCenter;
         }
       } else {
-        var uo = coord
-            .dataToPoint(node.parent.xAxisIndex, getNodeUpValue(node), true)
-            .last;
+        var uo = coord.dataToPoint(node.parent.xAxisIndex, getNodeUpValue(node), true).last;
         node.rect = Rect.fromLTRB(uo.dx, colRect.top, uo.dx, colRect.height);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topRight;
@@ -101,26 +88,27 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
+  void onLayoutEnd(var oldNodeList, var newNodeList,var startMap,var endMap, LayoutType type) {
     if (series.animation == null || type == LayoutType.none) {
       _lineList = _layoutLineNode(newNodeList);
       _animatorPercent = 1;
     } else {
       _cacheLineList = _layoutLineNode(newNodeList);
     }
-    super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
+    super.onLayoutEnd(oldNodeList, newNodeList,startMap,endMap, type);
   }
 
   @override
-  StackAnimationNode onCreateAnimatorNode(var node, DiffType diffType, LayoutType type) {
+  StackAnimatorNode onCreateAnimatorNode(var node, DiffType diffType, bool isStart) {
+
     if (diffType == DiffType.update) {
-      return StackAnimationNode(offset: node.position);
+      return StackAnimatorNode(offset: node.position);
     }
-    return StackAnimationNode(offset: Offset(node.position.dx, height));
+    return StackAnimatorNode(offset: Offset(node.position.dx, height));
   }
 
   @override
-  void onAnimatorStart(var result) {
+  void onAnimatorStart(var nodeList) {
     if (_cacheLineList != null) {
       _lineList = _cacheLineList!;
       _cacheLineList = null;
@@ -129,17 +117,17 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   @override
-  void onAnimatorUpdate(var node, double t, var startMap, var endMap) {
+  void onAnimatorUpdate(var node, double t, var startStatus, var endStatus) {
     _animatorPercent = t;
   }
 
   @override
-  void onAnimatorUpdateEnd(var result, double t) {
+  void onAnimatorUpdateEnd(var nodeList, double t) {
     _animatorPercent = t;
   }
 
   @override
-  void onAnimatorEnd(var result) {
+  void onAnimatorEnd(var nodeList) {
     _animatorPercent = 1;
   }
 
@@ -221,13 +209,12 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)
-          ..center = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
-    var itemStyle=series.getAreaStyle(context, null, list.first.parent, list.first.status);
-    var border=series.getLineStyle(context, null, list.first.parent, list.first.status);
-    return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap,itemStyle,border);
+    var itemStyle = series.getAreaStyle(context, null, list.first.parent, list.first.status);
+    var border = series.getLineStyle(context, null, list.first.parent, list.first.status);
+    return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap, itemStyle, border);
   }
 
   List<AreaNode> buildAreaPathForNormal(List<SingleNode<StackItemData, LineGroupData>> curList) {
@@ -240,7 +227,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
 
     num smooth = stepType == null ? lineStyle.smooth : 0;
 
-    List<SingleNode<StackItemData, LineGroupData>> nodeList = List.from(nodeMap.values);
+    List<SingleNode<StackItemData, LineGroupData>> nodeList = this.nodeList;
 
     var splitResult = _splitList(nodeList);
     splitResult.removeWhere((element) => element.length < 2);
@@ -263,13 +250,15 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return areaList;
   }
 
-  LineNode buildStackResult(int groupIndex,
-      LineGroupData group,
-      List<SingleNode<StackItemData, LineGroupData>> nodeList,
-      List<LineNode> resultList,
-      int curIndex,) {
+  LineNode buildStackResult(
+    int groupIndex,
+    LineGroupData group,
+    List<SingleNode<StackItemData, LineGroupData>> nodeList,
+    List<LineNode> resultList,
+    int curIndex,
+  ) {
     if (nodeList.isEmpty) {
-      return LineNode(groupIndex, group, [], [], [], {},AreaStyle.empty,LineStyle.empty);
+      return LineNode(groupIndex, group, [], [], [], {}, AreaStyle.empty, LineStyle.empty);
     }
     List<OptLinePath> borderList = _buildBorderPath(nodeList);
     List<AreaNode> areaList = buildAreaPathForStack(nodeList, resultList, curIndex);
@@ -283,18 +272,17 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       }
       var symbol = getSymbol(data, group, null);
       if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)
-          ..center = off;
+        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
 
-    var itemStyle=series.getAreaStyle(context, null, nodeList.first.parent, nodeList.first.status);
-    var border=series.getLineStyle(context, null, nodeList.first.parent, nodeList.first.status);
-    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap,itemStyle,border);
+    var itemStyle = series.getAreaStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    var border = series.getLineStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap, itemStyle, border);
   }
 
-  List<AreaNode> buildAreaPathForStack(List<SingleNode<StackItemData, LineGroupData>> curList,
-      List<LineNode> resultList, int curIndex) {
+  List<AreaNode> buildAreaPathForStack(
+      List<SingleNode<StackItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
     if (curList.length < 2) {
       return [];
     }

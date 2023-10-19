@@ -15,8 +15,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
     Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, 0);
-    var nodeMap = layoutHelper.showNodeMap;
-    nodeMap.forEach((key, node) {
+    each(layoutHelper.nodeList, (node, p1) {
       var group = node.parentNode.parentNode;
       if (rectSet.contains(group)) {
         return;
@@ -37,10 +36,9 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
   @override
   void onDrawBar(CCanvas canvas) {
     Offset offset = layoutHelper.getTranslation();
-    final map = layoutHelper.showNodeMap;
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    map.forEach((key, node) {
+    each(layoutHelper.nodeList, (node, p1) {
       if (node.originData == null) {
         return;
       }
@@ -49,16 +47,16 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T>, S
       }
       node.onDraw(canvas, mPaint);
     });
+
     canvas.restore();
   }
 
   @override
   void onDrawBarLabel(CCanvas canvas) {
     Offset offset = layoutHelper.getTranslation();
-    final map = layoutHelper.showNodeMap;
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    map.forEach((key, node) {
+    each(layoutHelper.nodeList, (node, p1) {
       if (node.attr.arc.isEmpty) {
         return;
       }

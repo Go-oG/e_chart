@@ -80,7 +80,6 @@ class YAxisImpl extends XAxisImpl {
 
   @override
   dynamic pxToData(num position) {
-    var diff = position - attrs.start.dy;
-    return scale.toData(diff);
+    return scale.toData(position);
   }
 }

@@ -6,6 +6,7 @@ import 'data_store.dart';
 class AxisGroup<T extends StackItemData, P extends StackGroupData<T>> {
   ///存储不同坐标轴的数据
   final Map<AxisIndex, List<GroupNode<T, P>>> groupMap;
+  ///按照主轴索引存储的数据
   final Map<AxisIndex, DataStore<SingleNode<T, P>>> storeMap = {};
 
   AxisGroup(this.groupMap);

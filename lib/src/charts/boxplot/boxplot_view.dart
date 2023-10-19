@@ -12,7 +12,7 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
     var of = context.findGridCoord().translation;
     canvas.save();
     canvas.translate(of.dx, of.dy);
-    layoutHelper.showNodeMap.forEach((key, node) {
+    each(layoutHelper.nodeList, (node, p1) {
       var data = node.originData;
       if (data == null) {
         return;
@@ -30,6 +30,7 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
         }
       }
     });
+
     canvas.restore();
   }
 

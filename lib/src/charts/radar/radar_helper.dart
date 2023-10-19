@@ -63,7 +63,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       (node, s, e, t, type) {
         node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
       },
-      (resultList) {
+      (resultList, t) {
         _groupNodeList = resultList;
         notifyLayoutUpdate();
       },
@@ -80,5 +80,4 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
     }
     return resultMap;
   }
-
 }

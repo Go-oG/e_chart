@@ -8,32 +8,12 @@ import 'package:flutter/rendering.dart';
 class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
     extends StackHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
-  GridHelper(super.context, super.view, super.series) {
-    series.addListener(handleCommand);
-  }
+  GridHelper(super.context, super.view, super.series);
 
   @override
-  void dispose() {
-    series.removeListener(handleCommand);
-    super.dispose();
-  }
-
-  void handleCommand() {
-    var c = series.value;
-    if (c.code == Command.updateData.code) {
-      handleDataUpdate();
-    }
-  }
-
-  LayoutType? _tmpType;
-
-  void handleDataUpdate() {
-    if (series.realtimeSort) {
-      _tmpType = LayoutType.update;
-    } else {
-      _tmpType = LayoutType.none;
-    }
+  void onSeriesDataUpdate() {
     findGridCoord().onChildDataSetChange(true);
+    notifyLayoutUpdate();
   }
 
   @override
@@ -41,92 +21,6 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     subscribeAxisScrollEvent();
     subscribeAxisChangeEvent();
     super.doLayout(boxBound, globalBoxBound, type);
-  }
-
-  @override
-  void onLayout(LayoutType type) {
-    if (_tmpType != null) {
-      type = _tmpType!;
-      _tmpType = null;
-    }
-    super.onLayout(type);
-  }
-
-  @override
-  List<GroupNode<T, P>> onComputeNeedLayoutData(var helper, AxisIndex index, List<GroupNode<T, P>> list) {
-    ///启用了实时排序
-    if (series.realtimeSort) {
-      int sortCount = series.sortCount ?? 2 ^ 32 - 1;
-      Set<ColumnNode<T, P>> colNodeSet = {};
-      ColumnNode<T, P>? minNode;
-      each(list, (gn, i) {
-        if (gn.nodeList.length >= 2) {
-          throw ChartError('if enable realtimeSort, stack Column must <=1');
-        }
-        var cl = gn.nodeList.first;
-        if (cl.nodeList.isEmpty) {
-          return;
-        }
-        if (colNodeSet.length < sortCount) {
-          colNodeSet.add(cl);
-          minNode = cl;
-        } else {
-          var up = cl.getUp();
-          if (up > minNode!.getUp()) {
-            colNodeSet.remove(minNode!);
-            colNodeSet.add(cl);
-            minNode = cl;
-          }
-        }
-      });
-      List<ColumnNode<T, P>> colNodeList = List.from(colNodeSet);
-      colNodeList.sort((a, b) {
-        var au = a.getUp();
-        var bu = b.getUp();
-        if (series.sort == Sort.asc) {
-          return bu.compareTo(au);
-        } else {
-          return au.compareTo(bu);
-        }
-      });
-      List<GroupNode<T, P>> rl = [];
-      each(colNodeList, (e, i) {
-        e.parentNode.nodeIndex = i;
-        rl.add(e.parentNode);
-      });
-      return List.from(colNodeList.map((e) => e.parentNode));
-    }
-    var store = helper.result.storeMap[index];
-    if (store == null) {
-      Logger.i("Store is empty");
-      return [];
-    }
-    var coord = findGridCoord();
-    var rangeValue = coord.getViewportDataRange(index.axisIndex, series.isVertical);
-    List<List<SingleNode<T, P>>> nodeList = [];
-    if (rangeValue.categoryList != null) {
-      nodeList = store.getByStr(rangeValue.categoryList!);
-    } else if (rangeValue.timeList != null) {
-      nodeList = store.getByTime(rangeValue.timeList!);
-    } else if (rangeValue.numRange != null) {
-      nodeList = store.getByNum(rangeValue.numRange!.start, rangeValue.numRange!.end);
-    }
-    Set<GroupNode<T, P>> gs = {};
-    List<GroupNode<T, P>> ls = [];
-    for (var pl in nodeList) {
-      for (var node in pl) {
-        var pn = node.parentNode.parentNode;
-        if (gs.contains(pn)) {
-          continue;
-        }
-        gs.add(pn);
-        ls.add(pn);
-      }
-    }
-    ls.sort((a, b) {
-      return a.nodeIndex.compareTo(b.nodeIndex);
-    });
-    return ls;
   }
 
   @override
@@ -254,16 +148,10 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     final coord = findGridCoord();
     final colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
-      if (!needLayoutForNode(node, type)) {
-        continue;
-      }
       bool isX = !series.isVertical;
       int index = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
       var upv = getNodeUpValue(node);
       var dowv = getNodeDownValue(node);
-      // if (upv == null || dowv == null) {
-      //   continue;
-      // }
       final uo = coord.dataToPoint(index, upv, isX).last;
       final downo = coord.dataToPoint(index, dowv, isX).first;
       if (vertical) {
@@ -273,62 +161,6 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
       node.position = node.rect.center;
     }
-  }
-
-
-  @override
-  void onLayoutEnd(var oldNodeList, var oldNodeMap, var newNodeList, var newNodeMap, LayoutType type) {
-    if (oldNodeList.isEmpty && newNodeList.isEmpty) {
-      return;
-    }
-
-    if (!needRunAnimator(type)) {
-      super.onLayoutEnd(oldNodeList, oldNodeMap, newNodeList, newNodeMap, type);
-      return;
-    }
-
-    List<SingleNode<T, P>> oldShowData = List.from(showNodeMap.values);
-
-    ///动画
-    DiffResult<SingleNode<T, P>, StackAnimationNode, T> diffResult =
-        DiffUtil.diff(oldShowData, newNodeList, (p0) => p0.originData!, (b, c) {
-      return onCreateAnimatorNode(b, c, type);
-    });
-    final startMap = diffResult.startMap;
-    final endMap = diffResult.endMap;
-    ChartDoubleTween doubleTween = ChartDoubleTween.fromValue(0, 1, option: series.animation!);
-    doubleTween.addStartListener(() {
-      Map<T, SingleNode<T, P>> map = {};
-      diffResult.startMap.forEach((key, value) {
-        if (key.originData != null) {
-          map[key.originData!] = key;
-        }
-      });
-      showNodeMap = map;
-      updateNodeMap(map);
-      onAnimatorStart(diffResult);
-    });
-    doubleTween.addEndListener(() {
-      Map<T, SingleNode<T, P>> map = {};
-      for (var value in diffResult.endList) {
-        if (value.originData != null) {
-          map[value.originData!] = value;
-        }
-      }
-      showNodeMap = map;
-      updateNodeMap(newNodeMap);
-      onAnimatorEnd(diffResult);
-      notifyLayoutEnd();
-    });
-    doubleTween.addListener(() {
-      double t = doubleTween.value;
-      each(diffResult.startList, (node, p1) {
-        onAnimatorUpdate(node, t, startMap, endMap);
-      });
-      onAnimatorUpdateEnd(diffResult, t);
-      notifyLayoutUpdate();
-    });
-    doubleTween.start(context, type == LayoutType.update);
   }
 
   @override
@@ -368,39 +200,35 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   }
 
   @override
-  StackAnimationNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, LayoutType type) {
-    final Rect rect = node.rect;
-    if (diffType == DiffType.update) {
-      return StackAnimationNode(rect: rect, offset: rect.center);
+  StackAnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType, bool isStart) {
+    Rect rect = node.rect;
+    if (diffType == DiffType.update ||
+        (diffType == DiffType.remove && isStart) ||
+        (diffType == DiffType.add && !isStart)) {
+      return StackAnimatorNode(rect: node.attr.rect, offset: rect.center);
     }
 
-    Rect rr;
-    if (series.isVertical) {
-      if (series.realtimeSort && type == LayoutType.update) {
-        Rect rr = Rect.fromLTRB(width, rect.top, width + rect.width, rect.bottom);
-        return StackAnimationNode(rect: rr, offset: rr.center);
-      }
+    if (isStart) {
+      ///add
+      Rect rr;
       if (series.animatorStyle == GridAnimatorStyle.expand) {
-        rr = Rect.fromLTWH(rect.left, height, rect.width, 0);
+        rr = series.isVertical
+            ? Rect.fromLTWH(rect.left, height, rect.width, 0)
+            : Rect.fromLTWH(0, rect.top, 0, rect.height);
       } else {
-        rr = Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0);
+        rr = series.isVertical
+            ? Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0)
+            : Rect.fromLTWH(rect.left, rect.top, 0, rect.height);
       }
-      return StackAnimationNode(rect: rr, offset: rr.center);
+      return StackAnimatorNode(rect: rr, offset: rr.center);
     }
 
-    ///水平
-    if (series.realtimeSort && type == LayoutType.update) {
-      rr = Rect.fromLTRB(0, height, width, height + rect.height);
-      return StackAnimationNode(rect: rr, offset: rr.center);
-    }
-    if (series.animatorStyle == GridAnimatorStyle.expand) {
-      rr = Rect.fromLTWH(0, rect.top, 0, rect.height);
-    } else {
-      rr = Rect.fromLTWH(rect.left, rect.top, 0, rect.height);
-    }
-    return StackAnimationNode(rect: rr, offset: rr.center);
+    //remove(当移除时动画样式固定为改变高度和宽度)
+    Rect rr = series.isVertical
+        ? Rect.fromLTWH(rect.left, rect.bottom, rect.width, 0)
+        : Rect.fromLTWH(rect.left, rect.top, 0, rect.height);
+    return StackAnimatorNode(rect: rr, offset: rr.center);
   }
-
 
   @override
   Offset getTranslation() {

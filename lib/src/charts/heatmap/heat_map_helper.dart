@@ -21,12 +21,12 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
       (node, add) => add ? 0 : node.symbol.scale,
       (node, add) => add ? 1 : 0,
       (node, t) => node.symbol.scale = t,
-      (resultList) {
+      (resultList, t) {
         nodeList = resultList;
         notifyLayoutUpdate();
       },
-      () => inAnimation = true,
-      () => inAnimation = false,
+      onStart: () => inAnimation = true,
+      onEnd: () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }

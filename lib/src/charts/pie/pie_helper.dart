@@ -51,7 +51,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
         return arc.copy(sweepAngle: 0);
       },
       (s, e, t) => Arc.lerp(s, e, t),
-      (p0) {
+      (p0,t) {
         nodeList = p0;
         notifyLayoutUpdate();
       },
