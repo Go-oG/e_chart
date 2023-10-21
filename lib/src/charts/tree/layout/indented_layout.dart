@@ -18,7 +18,7 @@ class IndentedLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData rootNode, TreeLayoutParams params) {
     var width = params.width;
     var height = params.height;
     Direction2 direction = this.direction;
@@ -34,7 +34,7 @@ class IndentedLayout extends TreeLayout {
 
   ///缩进树只支持stepAfter和StepBefore
   @override
-  Path? onLayoutNodeLink(TreeRenderNode parent, TreeRenderNode child) {
+  Path? onLayoutNodeLink(TreeData parent, TreeData child) {
     smooth = 0;
     Line line = Line([parent.center, child.center]);
     if (lineType == LineType.after) {
@@ -45,15 +45,13 @@ class IndentedLayout extends TreeLayout {
     return line.toPath();
   }
 
-  void _layoutCenter(TreeRenderNode root, num width, num height) {
+  void _layoutCenter(TreeData root, num width, num height) {
     if (root.childCount <= 1) {
       _layoutTree(root, width, height, Direction2.ltr);
       return;
     }
-    TreeRenderNode leftRoot =
-        TreeRenderNode(null, root.data, 0, TreeAttr.of());
-    TreeRenderNode rightRoot =
-        TreeRenderNode(null, root.data, 0, TreeAttr.of());
+    var leftRoot = TreeData(null, []);
+    var rightRoot = TreeData(null, []);
     int i = 0;
     for (var element in root.children) {
       if (i % 2 == 0) {
@@ -88,7 +86,7 @@ class IndentedLayout extends TreeLayout {
     root.y = center.dy;
   }
 
-  void _layoutTree(TreeRenderNode root, num width, num height, Direction2 direction) {
+  void _layoutTree(TreeData root, num width, num height, Direction2 direction) {
     double topOffset = 0;
     root.eachBefore((p0, p1, p2) {
       Size size = p0.size;

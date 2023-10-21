@@ -1,15 +1,13 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import 'radar_node.dart';
-
 /// 雷达图布局
 class RadarHelper extends LayoutHelper<RadarSeries> {
-  List<RadarGroupNode> _groupNodeList = [];
+  List<RadarData> _dataList = [];
 
   RadarHelper(super.context, super.view, super.series);
 
-  List<RadarGroupNode> get groupNodeList => _groupNodeList;
+  List<RadarData> get dataList => _dataList;
 
   Offset center = Offset.zero;
   double radius = 0;
@@ -20,32 +18,21 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
     center = coord.getCenter();
     radius = coord.getRadius();
 
-    List<RadarGroupNode> oldList = _groupNodeList;
-    List<RadarGroupNode> newList = [];
-    each(series.data, (group, gi) {
-      var groupNode = RadarGroupNode(
-        [],
-        group,
-        gi,
-        0,
-        RadarGroupNode.emptyPath,
-        series.getAreaStyle(context, group, gi, {}) ?? AreaStyle.empty,
-        series.getLineStyle(context, group, gi, {}) ?? LineStyle.empty,
-        LabelStyle.empty,
-      );
-      groupNode.center = center;
-      each(group.data, (c, i) {
-        var radarNode = RadarNode(groupNode, series.getSymbol(context, c, group, i, {}), c, i, gi);
-        radarNode.attr = coord.dataToPoint(i, c.value).point;
-        groupNode.nodeList.add(radarNode);
-      });
-      groupNode.updatePath();
-      newList.add(groupNode);
-    });
-    var an = DiffUtil.diffLayout3(
+    var oldList = _dataList;
+    var newList = [...series.data];
+    initData(newList);
+    var an = DiffUtil.diff<RadarData>(
       getAnimation(type),
       oldList,
       newList,
+      (dataList) {
+        each(dataList, (group, gi) {
+          each(group.value, (c, i) {
+            c.attr = coord.dataToPoint(i, c.value).point;
+          });
+          group.updatePath();
+        });
+      },
       (node, type) {
         if (type == DiffType.add) {
           return {"scale": 0};
@@ -61,20 +48,36 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
         }
       },
       (node, s, e, t, type) {
-        node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
+        node.scale = lerpNum(s['scale'], e['scale'], t);
       },
-      (resultList, t) {
-        _groupNodeList = resultList;
+      (dataList, t) {
+        _dataList = dataList;
         notifyLayoutUpdate();
       },
     );
     context.addAnimationToQueue(an);
   }
 
-  Map<RadarGroupNode, List<RadarNode>> splitNode(List<RadarNode> nodeList) {
-    Map<RadarGroupNode, List<RadarNode>> resultMap = {};
+  void initData(List<RadarData> dataList) {
+    each(dataList, (group, gi) {
+      group.groupIndex = gi;
+      group.dataIndex = gi;
+      group.center = center;
+      group.updateStyle(context, series);
+      each(group.value, (c, i) {
+        c.groupIndex = gi;
+        c.dataIndex = i;
+        // c.attr=coord.dataToPoint(i, c.value).point;
+        c.updateStyle(context, series);
+      });
+      group.updatePath();
+    });
+  }
+
+  Map<RadarData, List<RadarChildData>> splitNode(List<RadarChildData> nodeList) {
+    Map<RadarData, List<RadarChildData>> resultMap = {};
     for (var node in nodeList) {
-      List<RadarNode> nl = resultMap[node.parent] ?? [];
+      List<RadarChildData> nl = resultMap[node.parent] ?? [];
       resultMap[node.parent] = nl;
       nl.add(node);
     }

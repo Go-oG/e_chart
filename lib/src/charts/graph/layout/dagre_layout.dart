@@ -27,7 +27,7 @@ class DagreLayout extends GraphLayout {
 
     List<DagreNode> nodeList = [];
     Map<String, DagreNode> nodeMap = {};
-    Map<String, GraphNode> nodeMap2 = {};
+    Map<String, GraphData> nodeMap2 = {};
     for (var ele in graph.nodes) {
       Size size = ele.size;
       DagreNode node = DagreNode(ele.id, size.width, size.height);
@@ -37,7 +37,7 @@ class DagreLayout extends GraphLayout {
     }
 
     List<DagreEdge> edgeList = [];
-    Map<String, Edge> edgeMap = {};
+    Map<String, EdgeData> edgeMap = {};
 
     for (var e in graph.edges) {
       edgeMap[e.id] = e;

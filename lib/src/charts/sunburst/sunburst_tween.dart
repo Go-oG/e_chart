@@ -1,6 +1,6 @@
 
 import 'package:e_chart/e_chart.dart';
-import 'sunburst_node.dart';
+import 'sunburst_data.dart';
 
 class SunburstTween extends ChartTween<SunburstAttr> {
   SunburstTween(

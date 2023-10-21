@@ -7,13 +7,13 @@ import 'package:flutter/painting.dart';
 class HeatMapSeries extends RectSeries {
   List<HeatMapData> data;
   LabelStyle? labelStyle;
-  Fun3<HeatMapData, Set<ViewState>, LabelStyle>? labelStyleFun;
+  Fun2<HeatMapData, LabelStyle>? labelStyleFun;
   Alignment? labelAlign;
   Fun2<HeatMapData, Alignment>? labelAlignFun;
   Fun2<HeatMapData, DynamicText?>? labelFormatFun;
-  Fun4<HeatMapData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
-  Fun4<HeatMapData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
-  Fun5<HeatMapData, int, Set<ViewState>, Size, ChartSymbol>? symbolFun;
+  Fun2<HeatMapData, AreaStyle?>? areaStyleFun;
+  Fun2<HeatMapData, LineStyle?>? borderStyleFun;
+  Fun2<HeatMapData, ChartSymbol>? symbolFun;
 
   HeatMapSeries(
     this.data, {
@@ -45,39 +45,39 @@ class HeatMapSeries extends RectSeries {
     return HeatMapView(this);
   }
 
-  AreaStyle? getAreaStyle(Context context, HeatMapData data, int index, Set<ViewState> status) {
+  AreaStyle? getAreaStyle(Context context, HeatMapData data) {
     if (areaStyleFun != null) {
-      return areaStyleFun!.call(data, index, status);
+      return areaStyleFun!.call(data);
     }
     var theme = context.option.theme;
-    return AreaStyle(color: theme.colors[index % theme.colors.length]).convert(status);
+    return AreaStyle(color: theme.colors[data.dataIndex % theme.colors.length]).convert(data.status);
   }
 
-  LineStyle? getBorderStyle(Context context, HeatMapData data, int index, Set<ViewState> status) {
+  LineStyle? getBorderStyle(Context context, HeatMapData data) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, index, status);
+      return borderStyleFun!.call(data);
     }
     var theme = context.option.theme.funnelTheme;
     return theme.getBorderStyle();
   }
 
-  ChartSymbol? getSymbol(Context context, HeatMapData data, int index, Size size, Set<ViewState> status) {
+  ChartSymbol? getSymbol(Context context, HeatMapData data) {
     var fun = symbolFun;
     if (fun != null) {
-      return fun.call(data, index, status, size);
+      return fun.call(data);
     }
     return null;
   }
 
-  LabelStyle? getLabelStyle(Context context, HeatMapData data, Set<ViewState> status) {
+  LabelStyle? getLabelStyle(Context context, HeatMapData data) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, status);
+      return labelStyleFun!.call(data);
     }
     if (labelStyle != null) {
       return labelStyle;
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(status);
+    return theme.getLabelStyle()?.convert(data.status);
   }
 
   Alignment getLabelAlign(HeatMapData data) {
@@ -110,20 +110,4 @@ class HeatMapSeries extends RectSeries {
 
   @override
   SeriesType get seriesType => SeriesType.heatmap;
-}
-
-class HeatMapData extends BaseItemData {
-  dynamic x;
-  dynamic y;
-  num value;
-
-  HeatMapData(this.x, this.y, this.value, {super.id, super.name}) {
-    checkDataType(x);
-    checkDataType(y);
-  }
-
-  @override
-  String toString() {
-    return "$runtimeType x:$x y:$y value:${value.toStringAsFixed(2)}";
-  }
 }

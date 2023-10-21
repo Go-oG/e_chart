@@ -14,9 +14,9 @@ class DendrogramLayout extends TreeLayout {
     super.nodeGapSize,
     super.smooth,
   });
-  @override
-  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
 
+  @override
+  void onLayout(TreeData rootNode, TreeLayoutParams params) {
     List<num> yList = List.filled(rootNode.height + 1, 0);
     for (int i = 1; i <= rootNode.height; i++) {
       num levelGap = getLevelGap(i - 1, i);
@@ -31,10 +31,8 @@ class DendrogramLayout extends TreeLayout {
       Direction2 d = direction == Direction2.v ? Direction2.ttb : Direction2.ltr;
       return _layoutNode(rootNode, d, yList);
     }
-    var leftNode =
-        TreeRenderNode(null, rootNode.data, 0, TreeAttr.of());
-    var rightNode =
-        TreeRenderNode(null, rootNode.data, 0, TreeAttr.of());
+    var leftNode = TreeData(null, []);
+    var rightNode = TreeData(null, []);
     int middle = c ~/ 2;
     each(rootNode.children, (node, i) {
       node.parent = null;
@@ -86,12 +84,12 @@ class DendrogramLayout extends TreeLayout {
     rootNode.setHeight(max([leftNode.height, rightNode.height]).toInt(), false);
   }
 
-  void _layoutNode(TreeRenderNode root, Direction2 direction, List<num> yList) {
+  void _layoutNode(TreeData root, Direction2 direction, List<num> yList) {
     if (direction == Direction2.v || direction == Direction2.h) {
       throw FlutterError('该方法不支持 Direction2.v 和Direction2.h');
     }
     bool v = direction == Direction2.ttb || direction == Direction2.btt;
-    List<TreeRenderNode> leafList = root.leaves();
+    List<TreeData> leafList = root.leaves();
 
     root.each((node, index, startNode) {
       if (v) {
@@ -104,11 +102,11 @@ class DendrogramLayout extends TreeLayout {
 
     ///处理X轴方向的位置
     num offset = 0;
-    TreeRenderNode? preNode;
-    List<TreeRenderNode> preLeafList = [];
+    TreeData? preNode;
+    List<TreeData> preLeafList = [];
     Set<TreeData> preLeafSet = {};
-    Map<TreeRenderNode, TreeRenderNode> rightMap = {};
-    Map<TreeRenderNode, TreeRenderNode> leftMap = {};
+    Map<TreeData, TreeData> rightMap = {};
+    Map<TreeData, TreeData> leftMap = {};
     for (var node in leafList) {
       rightMap[node] = node;
       leftMap[node] = node;
@@ -120,18 +118,16 @@ class DendrogramLayout extends TreeLayout {
         node.y = offset + size.height / 2;
         offset += size.height + getNodeGap(preNode ?? node, node).dy;
       }
-      if (node.parent != null &&
-          (node.parent!.height - node.height).abs() == 1 &&
-          !preLeafSet.contains(node.parent!.data)) {
+      if (node.parent != null && (node.parent!.height - node.height).abs() == 1 && !preLeafSet.contains(node.parent!)) {
         preLeafList.add(node.parent!);
       }
     }
-    List<TreeRenderNode> nextLeafList = [];
+    List<TreeData> nextLeafList = [];
 
     while (preLeafList.isNotEmpty) {
       preLeafSet = {};
       for (var node in preLeafList) {
-        TreeRenderNode right, left;
+        TreeData right, left;
         right = rightMap[node.lastChild] ?? node.leafRight();
         left = leftMap[node.firstChild] ?? node.leafLeft();
         rightMap[node] = right;
@@ -143,9 +139,9 @@ class DendrogramLayout extends TreeLayout {
           node.y = (right.y + left.y) / 2;
         }
         var parent = node.parent;
-        if (parent != null && (parent.height - node.height).abs() == 1 && !preLeafSet.contains(parent.data)) {
+        if (parent != null && (parent.height - node.height).abs() == 1 && !preLeafSet.contains(parent)) {
           nextLeafList.add(parent);
-          preLeafSet.add(parent.data);
+          preLeafSet.add(parent);
         }
       }
       preLeafList = nextLeafList;
@@ -157,6 +153,4 @@ class DendrogramLayout extends TreeLayout {
       root.right2Left();
     }
   }
-
-
 }

@@ -6,14 +6,14 @@ import 'package:flutter/widgets.dart';
 class DiceLayout extends TreemapLayout {
 
   @override
- void onLayout2(TreeMapNode root,LayoutType type) {
+ void onLayout2(TreeMapData root,LayoutType type) {
     if (root.notChild) {
       return ;
     }
     layoutChildren(boxBound, root.children);
   }
 
-  static void layoutChildren(Rect area, List<TreeMapNode> nodeList) {
+  static void layoutChildren(Rect area, List<TreeMapData> nodeList) {
     if (nodeList.isEmpty) {
       return;
     }

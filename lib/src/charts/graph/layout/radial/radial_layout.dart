@@ -12,7 +12,7 @@ class RadialLayout extends GraphLayout {
   List<SNumber> center;
 
   //焦点节点
-  GraphNode? focusNode;
+  GraphData? focusNode;
 
   //边长度
   num linkDistance;
@@ -35,7 +35,7 @@ class RadialLayout extends GraphLayout {
   /// 同层节点根据sort函数排列的强度，值越大，sortBy计算出的距离越靠近
   num sortStrength;
 
-  Fun3<GraphNode, num, num>? sortBy = (node, v) {
+  Fun3<GraphData, num, num>? sortBy = (node, v) {
     return v;
   };
 
@@ -82,7 +82,7 @@ class RadialLayout extends GraphLayout {
     gridLayout.doLayout(graph, params, LayoutType.none);
 
     ///计算focusNode和其索引
-    GraphNode focusNode = this.focusNode ?? nodes.first;
+    GraphData focusNode = this.focusNode ?? nodes.first;
     int focusIndex = m.min(nodes.indexOf(focusNode), 0);
     props.focusIndex = focusIndex;
     props.focusNode = nodes[focusIndex];
@@ -145,7 +145,7 @@ class RadialLayout extends GraphLayout {
     //处理节点重叠
     if (preventOverlap) {
       ///使用的是径向力
-      num nodeSizeFunc(GraphNode a) {
+      num nodeSizeFunc(GraphData a) {
         num space = getNodeSpace(a);
         return a.size.longestSide + space;
       }
@@ -258,7 +258,7 @@ class RadialLayout extends GraphLayout {
     }
   }
 
-  List<List<double>> _eIdealDisMatrix(LayoutProps props, List<GraphNode> nodes) {
+  List<List<double>> _eIdealDisMatrix(LayoutProps props, List<GraphData> nodes) {
     if (nodes.isEmpty) return [];
     var D = props.distances;
     var linkDis = linkDistance;
@@ -313,7 +313,7 @@ class RadialLayout extends GraphLayout {
 }
 
 class LayoutProps {
-  late GraphNode focusNode;
+  late GraphData focusNode;
   num radiusGap = 0;
   int focusIndex = 0;
   List<List<double>> distances = [];

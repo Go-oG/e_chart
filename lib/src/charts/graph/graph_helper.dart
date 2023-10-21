@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
+class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
   GraphHelper(super.context, super.view, super.series);
 
   Graph graph = Graph([]);
@@ -37,7 +37,7 @@ class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
     return c.translate(view.translationX, view.translationY);
   }
 
-  GraphNode? _dragNode;
+  GraphData? _dragNode;
 
   @override
   void onDragStart(Offset offset) {
@@ -98,46 +98,42 @@ class GraphHelper extends LayoutHelper2<GraphNode, GraphSeries> {
     }
   }
 
-  Graph convertDataToGraph(List<GraphItemData> nodes, List<EdgeItemData> links) {
-    Map<GraphItemData, GraphNode> nodeMap = {};
-    Set<ViewState> emptyS = {};
+  Graph convertDataToGraph(List<GraphData> nodes, List<EdgeData> links) {
+    Set<GraphData> nodeSet = {};
     each(nodes, (data, i) {
-      var node = GraphNode(data, i);
-      node.index = i;
-      node.size = series.getNodeSize(data);
-      var symbol = series.getSymbol(context, data, i, node.size, emptyS);
-      node.setSymbol(symbol, true);
-      nodeMap[data] = node;
+      data.index = i;
+      data.size = series.getNodeSize(data);
+      var symbol = series.getSymbol(context, data);
+      data.setSymbol(symbol, true);
+      nodeSet.add(data);
     });
-    int index = nodeMap.length;
-    List<Edge> edgeList = [];
+    int index = nodes.length;
+    List<EdgeData> edgeList = [];
     each(links, (data, i) {
-      var source = nodeMap[data.source];
-      if (source == null) {
-        source = GraphNode(data.source, index);
+      var source = data.source;
+      if (!nodeSet.contains(source)) {
         source.index = index;
-        source.size = series.getNodeSize(source.data);
-        var symbol = series.getSymbol(context, source.data, index, source.size, emptyS);
+        source.size = series.getNodeSize(source);
+        var symbol = series.getSymbol(context, source);
         source.setSymbol(symbol, true);
-        nodeMap[data.source] = source;
+        nodeSet.add(source);
         index += 1;
       }
-      var target = nodeMap[data.target];
-      if (target == null) {
-        target = GraphNode(data.target, index);
+      var target = data.target;
+      if (!nodeSet.contains(target)) {
         target.index = index;
-        target.size = series.getNodeSize(target.data);
-        var symbol = series.getSymbol(context, target.data, index, target.size, emptyS);
+        target.size = series.getNodeSize(target);
+        var symbol = series.getSymbol(context, target);
         target.setSymbol(symbol, true);
-        nodeMap[data.target] = target;
+        nodeSet.add(target);
         index += 1;
       }
-      edgeList.add(Edge(data, i, source, target));
+      edgeList.add(data);
     });
-    List<GraphNode> nodeList = List.from(nodeMap.values);
+    List<GraphData> nodeList = List.from(nodeSet);
     nodeList.sort((a, b) => a.dataIndex - b.dataIndex);
 
-    each(nodeMap.values, (p0, p1) {
+    each(nodeSet, (p0, p1) {
       p0.attr.fx = p0.data.fx;
       p0.attr.fy = p0.data.fy;
       p0.attr.weight = p0.data.weight;

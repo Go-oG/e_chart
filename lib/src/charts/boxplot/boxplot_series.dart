@@ -39,25 +39,25 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
   SeriesType get seriesType => SeriesType.boxplot;
 
   @override
-  AreaStyle getAreaStyle(Context context, BoxplotData? data, BoxplotGroup group, [Set<ViewState>? status]) {
+  AreaStyle getAreaStyle(Context context, covariant StackData<BoxplotData, BoxplotGroup> data, BoxplotGroup group) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group, status ?? {}) ?? AreaStyle.empty;
+      return areaStyleFun?.call(data, group) ?? AreaStyle.empty;
     }
     var chartTheme = context.option.theme;
-    return AreaStyle(color: chartTheme.getColor(group.styleIndex)).convert(status);
+    return AreaStyle(color: chartTheme.getColor(group.styleIndex)).convert(data.status);
   }
 
   @override
-  LineStyle getLineStyle(Context context, BoxplotData? data, BoxplotGroup group, [Set<ViewState>? status]) {
+  LineStyle getLineStyle(Context context, covariant StackData<BoxplotData, BoxplotGroup> data, BoxplotGroup group) {
     if (lineStyleFun != null) {
-      return lineStyleFun?.call(data, group, status ?? {}) ?? LineStyle.empty;
+      return lineStyleFun?.call(data, group) ?? LineStyle.empty;
     }
     var barTheme = context.option.theme.boxplotTheme;
     return barTheme.getBorderStyle() ?? LineStyle.empty;
   }
 }
 
-class BoxplotGroup extends StackGroupData<BoxplotData> {
+class BoxplotGroup extends StackGroupData<BoxplotData,BoxplotGroup> {
   BoxplotGroup(
     super.data, {
     super.barMaxSize,

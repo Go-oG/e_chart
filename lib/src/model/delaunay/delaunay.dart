@@ -1,8 +1,5 @@
 import 'dart:math';
 import 'dart:math' as math;
-
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 
 var epsilon = pow(2, -52);
@@ -14,11 +11,10 @@ List<int> edgeStack = List.filled(512, 0);
 ///移植自
 ///https://github.com/ricardomatias/delaunator/blob/main/src/main/kotlin/com/github/ricardomatias/Delaunator.kt
 /// https://github.com/mapbox/delaunator
-class Delaunay {
-  List<ChartOffset> points;
+class Delaunay<T> {
+  List<T> points;
   late List<num> coords;
   late int _count;
-
   late int maxTriangles = math.max(2 * _count - 5, 0);
   late final List<int> _triangles = List.filled(maxTriangles * 3, 0);
   late final List<int> _halfEdges = List.filled(maxTriangles * 3, 0);
@@ -48,11 +44,14 @@ class Delaunay {
 
   late List<int> hull;
 
-  Delaunay(this.points) {
+  Fun2<T, num> xFun;
+  Fun2<T, num> yFun;
+
+  Delaunay(this.points, this.xFun, this.yFun) {
     coords = [];
     each(points, (p0, p1) {
-      coords.add(p0.x);
-      coords.add(p0.y);
+      coords.add(xFun.call(p0));
+      coords.add(yFun.call(p0));
     });
     _count = coords.length >> 1;
     update();
@@ -300,7 +299,11 @@ class Delaunay {
     List<DShape> rl = [];
     if (triangle) {
       eachTriangle((p0, p1, p2, index) {
-        rl.add(DShape(index, [p0, p1, p2]));
+        rl.add(DShape(index, [
+          ChartOffset(xFun.call(p0), yFun.call(p0)),
+          ChartOffset(xFun.call(p1), yFun.call(p1)),
+          ChartOffset(xFun.call(p2), yFun.call(p2)),
+        ]));
       });
     } else {
       eachVoronoiCell2((p0, p1) {
@@ -310,10 +313,14 @@ class Delaunay {
     return rl;
   }
 
-  void eachShape(bool triangle,void Function(Iterable<ChartOffset>,int) call) {
+  void eachShape(bool triangle, void Function(Iterable<ChartOffset>, int) call) {
     if (triangle) {
       eachTriangle((p0, p1, p2, index) {
-        call.call([p0,p1,p2],index);
+        call.call([
+          ChartOffset(xFun.call(p0), yFun.call(p0)),
+          ChartOffset(xFun.call(p1), yFun.call(p1)),
+          ChartOffset(xFun.call(p2), yFun.call(p2)),
+        ], index);
       });
     } else {
       eachVoronoiCell2(call);
@@ -321,7 +328,7 @@ class Delaunay {
   }
 
   ///遍历所有的三角形(不会创建任何的三角形而是返回三角形的顶点)
-  void eachTriangle(void Function(ChartOffset, ChartOffset, ChartOffset, int index) call) {
+  void eachTriangle(void Function(T, T, T, int index) call) {
     int length = triangles.length;
     for (int i = 0; i < length; i += 3) {
       var o0 = points[triangles[i]];
@@ -368,7 +375,7 @@ class Delaunay {
 
   ///遍历所有的三角边
   ///回调参数分别对应[startPoint,endPoint,index]
-  void eachEdge(void Function(ChartOffset, ChartOffset, int) call) {
+  void eachEdge(void Function(T, T, int) call) {
     for (var e = 0; e < triangles.length; e++) {
       if (e > halfEdges[e]) {
         var p = points[triangles[e]];
@@ -465,8 +472,8 @@ class Delaunay {
   }
 
   ///获取凸包
-  List<ChartOffset> getHull() {
-    List<ChartOffset> rl = [];
+  List<T> getHull() {
+    List<T> rl = [];
     for (var h in hull) {
       rl.add(points[h]);
     }

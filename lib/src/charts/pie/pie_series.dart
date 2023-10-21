@@ -1,9 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/pie/pie_view.dart';
 
+import 'pie_data.dart';
+
 /// 饼图系列
 class PieSeries extends RectSeries {
-  List<ItemData> data;
+  List<PieData> data;
   List<SNumber> center;
 
   //内圆半径(<=0时为圆)
@@ -32,12 +34,12 @@ class PieSeries extends RectSeries {
   CircleAlign labelAlign;
   PieAnimatorStyle animatorStyle;
 
-  Fun4<ItemData, int, Set<ViewState>, LabelStyle?>? labelStyleFun;
-  Fun4<ItemData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
-  Fun4<ItemData, int, Set<ViewState>, LineStyle?>? borderFun;
+  Fun2<PieData, LabelStyle?>? labelStyleFun;
+  Fun2<PieData, AreaStyle?>? areaStyleFun;
+  Fun2<PieData, LineStyle?>? borderFun;
 
   ///用于实现偏移
-  Fun2<ItemData, num>? offsetFun;
+  Fun2<PieData, num>? offsetFun;
 
   PieSeries(
     this.data, {
@@ -76,30 +78,30 @@ class PieSeries extends RectSeries {
     return PieView(this);
   }
 
-  AreaStyle? getAreaStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+  AreaStyle? getAreaStyle(Context context, PieData data) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, dataIndex, status);
+      return areaStyleFun?.call(data);
     }
-    return context.option.theme.getAreaStyle(dataIndex).convert(status);
+    return context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
   }
 
-  LineStyle? getBorderStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+  LineStyle? getBorderStyle(Context context, PieData data) {
     if (borderFun != null) {
-      return borderFun?.call(data, dataIndex, status);
+      return borderFun?.call(data);
     }
     var theme = context.option.theme.pieTheme;
     return theme.getBorderStyle();
   }
 
-  LabelStyle? getLabelStyle(Context context, ItemData data, int dataIndex, Set<ViewState> status) {
+  LabelStyle? getLabelStyle(Context context, PieData data) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, dataIndex, status);
+      return labelStyleFun!.call(data);
     }
     var theme = context.option.theme;
     return theme.getLabelStyle();
   }
 
-  double getOffset(Context context, ItemData data) {
+  double getOffset(Context context, PieData data) {
     if (offsetFun == null) {
       return 0;
     }
@@ -110,8 +112,8 @@ class PieSeries extends RectSeries {
   List<LegendItem> getLegendItem(Context context) {
     List<LegendItem> list = [];
     each(data, (item, i) {
-      var name = item.name;
-      if (name == null || name.isEmpty) {
+      var name = item.label.text;
+      if (name.isEmpty) {
         return;
       }
       var color = context.option.theme.getColor(i);

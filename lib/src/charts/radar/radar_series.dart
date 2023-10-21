@@ -3,13 +3,15 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/radar/radar_view.dart';
 
+import 'radar_data.dart';
+
 class RadarSeries extends RectSeries {
-  List<GroupData> data;
+  List<RadarData> data;
   int splitNumber;
-  Fun4<GroupData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
-  Fun4<GroupData, int, Set<ViewState>, LineStyle?>? lineStyleFun;
-  Fun4<GroupData, int, Set<ViewState>, LabelStyle>? labelStyleFun;
-  Fun5<ItemData, int, GroupData,Set<ViewState>,  ChartSymbol?>? symbolFun;
+  Fun2<RadarData, AreaStyle?>? areaStyleFun;
+  Fun2<RadarData, LineStyle?>? lineStyleFun;
+  Fun2<RadarData, LabelStyle>? labelStyleFun;
+  Fun2<RadarChildData, ChartSymbol?>? symbolFun;
   num nameGap;
 
   RadarSeries(
@@ -38,39 +40,39 @@ class RadarSeries extends RectSeries {
     return RadarView(this);
   }
 
-  AreaStyle? getAreaStyle(Context context, GroupData group, int index, Set<ViewState> status) {
+  AreaStyle? getAreaStyle(Context context, RadarData group) {
     var theme = context.option.theme.radarTheme;
     var chartTheme = context.option.theme;
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(group, index, status);
+      return areaStyleFun?.call(group);
     }
     if (theme.fill) {
-      Color fillColor = chartTheme.getColor(index);
-      return AreaStyle(color: fillColor).convert(status);
+      Color fillColor = chartTheme.getColor(group.dataIndex);
+      return AreaStyle(color: fillColor).convert(group.status);
     }
     return null;
   }
 
-  LineStyle? getLineStyle(Context context, GroupData group, int index, Set<ViewState> status) {
+  LineStyle? getLineStyle(Context context, RadarData group) {
     var chartTheme = context.option.theme;
     var theme = chartTheme.radarTheme;
     if (lineStyleFun != null) {
-      return lineStyleFun?.call(group, index, status);
+      return lineStyleFun?.call(group);
     }
     if (theme.lineWidth > 0) {
-      Color lineColor = chartTheme.getColor(index);
-      return LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList).convert(status);
+      Color lineColor = chartTheme.getColor(group.dataIndex);
+      return LineStyle(color: lineColor, width: theme.lineWidth, dash: theme.dashList).convert(group.status);
     }
     return null;
   }
 
-  ChartSymbol? getSymbol(Context context, ItemData data,GroupData group, int index, Set<ViewState> status) {
+  ChartSymbol? getSymbol(Context context, RadarChildData data) {
     var chartTheme = context.option.theme;
     var theme = chartTheme.radarTheme;
     if (symbolFun != null) {
-      return symbolFun?.call(data, index,group, status);
+      return symbolFun?.call(data);
     }
-    if(!theme.showSymbol){
+    if (!theme.showSymbol) {
       return null;
     }
     return theme.symbol;
@@ -80,8 +82,8 @@ class RadarSeries extends RectSeries {
   List<LegendItem> getLegendItem(Context context) {
     List<LegendItem> list = [];
     each(data, (item, i) {
-      var name = item.name;
-      if (name == null || name.isEmpty) {
+      var name = item.label.text;
+      if (name.isEmpty) {
         return;
       }
       var color = context.option.theme.getColor(i);
@@ -97,7 +99,7 @@ class RadarSeries extends RectSeries {
   @override
   int onAllocateStyleIndex(int start) {
     each(data, (p0, p1) {
-      p0.styleIndex=p1+start;
+      p0.styleIndex = p1 + start;
     });
     return data.length;
   }

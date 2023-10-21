@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 class D3TreeLayout extends TreeLayout {
   ///分离函数，用于决定两个节点(一般为兄弟节点)之间的间距
-  Fun3<TreeRenderNode, TreeRenderNode, num> splitFun = (a, b) {
+  Fun3<TreeData, TreeData, num> splitFun = (a, b) {
     ///对于Radial布局 一般设置为 (a.parent == b.parent ? 1 : 2) / a.depth;
     return a.parent == b.parent ? 1 : 2;
   };
@@ -21,8 +21,9 @@ class D3TreeLayout extends TreeLayout {
     super.levelGapSize,
     super.nodeGapSize,
   });
+
   @override
-  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData rootNode, TreeLayoutParams params) {
     num dx = params.width;
     num dy = params.height;
     InnerNode t = _treeRoot(rootNode);
@@ -82,10 +83,10 @@ class D3TreeLayout extends TreeLayout {
     return vim.a!.parent == v.parent ? vim.a! : ancestor;
   }
 
-  InnerNode _treeRoot(TreeRenderNode root) {
+  InnerNode _treeRoot(TreeData root) {
     InnerNode tree = InnerNode(null, root, 0);
     List<InnerNode> nodes = [tree];
-    List<TreeRenderNode> children = [];
+    List<TreeData> children = [];
     while (nodes.isNotEmpty) {
       var node = nodes.removeLast();
       children = node.node!.children;
@@ -175,7 +176,7 @@ class D3TreeLayout extends TreeLayout {
     return ancestor;
   }
 
-  void _sizeNode(TreeRenderNode node, num dx, num dy) {
+  void _sizeNode(TreeData node, num dx, num dy) {
     node.x *= dx;
     node.y = node.deep * dy;
   }
@@ -189,11 +190,10 @@ class D3TreeLayout extends TreeLayout {
     var children = v.children;
     return children.isNotEmpty ? children[children.length - 1] : v.t;
   }
-
 }
 
-class InnerNode extends TreeNode<Offset, Offset, InnerNode> {
-  TreeRenderNode? node;
+class InnerNode extends BaseTreeData<Offset, InnerNode> {
+  TreeData? node;
   int i;
   InnerNode? A; // default ancestor
   InnerNode? a; // ancestor
@@ -209,7 +209,7 @@ class InnerNode extends TreeNode<Offset, Offset, InnerNode> {
     InnerNode? parent,
     this.node,
     this.i,
-  ) : super(parent, Offset.zero, 0, Offset.zero, AreaStyle.empty, LineStyle.empty, LabelStyle.empty) {
+  ) : super.attr(parent, [], Offset.zero) {
     a = this;
   }
 
@@ -220,6 +220,5 @@ class InnerNode extends TreeNode<Offset, Offset, InnerNode> {
   void onDraw(CCanvas canvas, Paint paint) {}
 
   @override
-  void updateStyle(Context context, covariant ChartSeries series) {
-  }
+  void updateStyle(Context context, covariant ChartSeries series) {}
 }

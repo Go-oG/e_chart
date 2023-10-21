@@ -1,20 +1,17 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class ParallelNode extends DataNode<List<SymbolNode>, ParallelGroup> {
+class ParallelData extends RenderData<List<SymbolNode>> {
+  List<dynamic> data;
   bool connectNull = true;
   Rect? clipRect;
   late Path path;
 
-  ParallelNode(
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+  ParallelData(
+    this.data, {
+    super.id,
+    super.name,
+  }) : super.attr([]);
 
   @override
   bool contains(Offset offset) {
@@ -41,8 +38,8 @@ class ParallelNode extends DataNode<List<SymbolNode>, ParallelGroup> {
   void updateStyle(Context context, ParallelSeries series) {
     var old = borderStyle;
     itemStyle = AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status);
-    label.style = series.getLabelStyle(context, data, dataIndex, status);
+    borderStyle = series.getBorderStyle(context, this);
+    label.style = series.getLabelStyle(context, this);
     if (old.changeEffect(borderStyle)) {
       updatePath(context, series);
     }

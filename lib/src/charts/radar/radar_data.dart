@@ -2,22 +2,18 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class RadarGroupNode extends DataNode<Path, GroupData> {
+class RadarData extends RenderData<Path> {
   static final Path emptyPath = Path();
-  final List<RadarNode> nodeList;
+  List<RadarChildData> value;
+
   double scale = 1;
   Offset center = Offset.zero;
 
-  RadarGroupNode(
-    this.nodeList,
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+  RadarData(
+    this.value, {
+    super.id,
+    super.name,
+  }) : super.attr(emptyPath);
 
   Path? get pathOrNull {
     if (attr == emptyPath) {
@@ -39,8 +35,8 @@ class RadarGroupNode extends DataNode<Path, GroupData> {
 
   Path buildPath() {
     Path path = Path();
-    for (int i = 0; i < nodeList.length; i++) {
-      RadarNode node = nodeList[i];
+    for (int i = 0; i < value.length; i++) {
+      var node = value[i];
       if (i == 0) {
         path.moveTo(node.attr.dx, node.attr.dy);
       } else {
@@ -58,7 +54,7 @@ class RadarGroupNode extends DataNode<Path, GroupData> {
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    if (!data.show) {
+    if (!show) {
       return;
     }
 
@@ -73,32 +69,30 @@ class RadarGroupNode extends DataNode<Path, GroupData> {
       canvas.restore();
     }
 
-    each(nodeList, (node, p1) {
+    each(value, (node, p1) {
       node.onDraw(canvas, paint);
     });
   }
 
   @override
   void updateStyle(Context context, covariant RadarSeries series) {
-    itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
-    borderStyle = series.getLineStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    label.style=LabelStyle.empty;
+    itemStyle = series.getAreaStyle(context, this) ?? AreaStyle.empty;
+    borderStyle = series.getLineStyle(context, this) ?? LineStyle.empty;
+    label.style = LabelStyle.empty;
     label.updatePainter();
   }
 }
 
-class RadarNode extends DataNode<Offset, ItemData> {
-  final RadarGroupNode parent;
-
+class RadarChildData extends RenderData<Offset> {
+  late RadarData parent;
+  num value;
   ChartSymbol? symbol;
 
-  RadarNode(
-    this.parent,
-    this.symbol,
-    ItemData data,
-    int dataIndex,
-    int groupIndex,
-  ) : super.empty(data, dataIndex, groupIndex, Offset.zero);
+  RadarChildData(
+    this.value, {
+    super.id,
+    super.name,
+  }) : super.attr(Offset.zero);
 
   @override
   bool contains(Offset offset) {
@@ -120,6 +114,6 @@ class RadarNode extends DataNode<Offset, ItemData> {
 
   @override
   void updateStyle(Context context, covariant RadarSeries series) {
-    symbol = series.getSymbol(context, data, parent.data, dataIndex, status);
+    symbol = series.getSymbol(context, this);
   }
 }

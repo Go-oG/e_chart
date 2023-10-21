@@ -16,7 +16,7 @@ class AnimationManager {
 
   AnimationController bounded(TickerProvider provider, AnimatorOption props, {String? key, bool useUpdate = false}) {
     _collate();
-    AnimationController c = AnimationController(
+    var c = AnimationController(
       vsync: provider,
       duration: useUpdate ? props.updateDuration : props.duration,
       reverseDuration: useUpdate ? props.updateDuration : props.duration,

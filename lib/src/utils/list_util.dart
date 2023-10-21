@@ -516,3 +516,17 @@ bool equalSet<T>(Iterable<T>? s, Iterable<T>? e) {
   }
   return true;
 }
+
+Set<N> toSetIfNeed<N>(Iterable<N> iterable) {
+  if (iterable is Set) {
+    return iterable as Set<N>;
+  }
+  return Set.from(iterable);
+}
+
+List<N> toListIfNeed<N>(Iterable<N> iterable) {
+  if (iterable is List) {
+    return iterable as List<N>;
+  }
+  return List.from(iterable);
+}

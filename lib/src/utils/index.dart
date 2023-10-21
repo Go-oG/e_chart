@@ -1,3 +1,4 @@
+export 'base_util.dart';
 export 'align_util.dart';
 export 'assert_check.dart';
 export 'color_util.dart';

@@ -64,7 +64,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     final colRect = columnNode.rect;
     GridAxis xAxis = findGridCoord().getAxis(xIndex, true);
     for (var node in columnNode.nodeList) {
-      if (node.originData == null) {
+      if (node.dataIsNull) {
         continue;
       }
       if (vertical) {
@@ -87,20 +87,19 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     }
   }
 
-  @override
-  void onLayoutEnd(var oldNodeList, var newNodeList,var startMap,var endMap, LayoutType type) {
-    if (series.animation == null || type == LayoutType.none) {
-      _lineList = _layoutLineNode(newNodeList);
-      _animatorPercent = 1;
-    } else {
-      _cacheLineList = _layoutLineNode(newNodeList);
-    }
-    super.onLayoutEnd(oldNodeList, newNodeList,startMap,endMap, type);
-  }
+  // @override
+  // void onLayoutEnd(var oldNodeList, var newNodeList, var startMap, var endMap, LayoutType type) {
+  //   if (series.animation == null || type == LayoutType.none) {
+  //     _lineList = _layoutLineNode(newNodeList);
+  //     _animatorPercent = 1;
+  //   } else {
+  //     _cacheLineList = _layoutLineNode(newNodeList);
+  //   }
+  //   super.onLayoutEnd(oldNodeList, newNodeList, startMap, endMap, type);
+  // }
 
   @override
   StackAnimatorNode onCreateAnimatorNode(var node, DiffType diffType, bool isStart) {
-
     if (diffType == DiffType.update) {
       return StackAnimatorNode(offset: node.position);
     }
@@ -132,18 +131,18 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   ///布局直线使用的数据
-  List<LineNode> _layoutLineNode(List<SingleNode<StackItemData, LineGroupData>> list) {
+  List<LineNode> _layoutLineNode(List<StackData<StackItemData, LineGroupData>> list) {
     Map<LineGroupData, int> groupSortMap = {};
     Map<String, int> sortMap = {};
-    Map<String, Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>>> stackMap = {};
-    Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> normalMap = {};
+    Map<String, Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>>> stackMap = {};
+    Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> normalMap = {};
     each(list, (ele, p1) {
       groupSortMap[ele.parent] = ele.groupIndex;
       if (ele.parent.isStack) {
         var stackId = ele.parent.stackId!;
-        Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> map = stackMap[stackId] ?? {};
+        Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> map = stackMap[stackId] ?? {};
         stackMap[stackId] = map;
-        List<SingleNode<StackItemData, LineGroupData>> tmpList = map[ele.parent] ?? [];
+        List<StackData<StackItemData, LineGroupData>> tmpList = map[ele.parent] ?? [];
         map[ele.parent] = tmpList;
         tmpList.add(ele);
         int? sort = sortMap[stackId];
@@ -155,7 +154,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
           }
         }
       } else {
-        List<SingleNode<StackItemData, LineGroupData>> tmpList = normalMap[ele.parent] ?? [];
+        List<StackData<StackItemData, LineGroupData>> tmpList = normalMap[ele.parent] ?? [];
         normalMap[ele.parent] = tmpList;
         tmpList.add(ele);
       }
@@ -179,7 +178,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       return sortMap[a]!.compareTo(sortMap[b]!);
     });
     each(keyList, (key, p1) {
-      Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> map = stackMap[key]!;
+      Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> map = stackMap[key]!;
       List<LineGroupData> keyList2 = List.from(map.keys);
       keyList2.sort((a, b) {
         return groupSortMap[a]!.compareTo(groupSortMap[b]!);
@@ -194,30 +193,30 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return resultList;
   }
 
-  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
+  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<StackData<StackItemData, LineGroupData>> list) {
     List<OptLinePath> borderList = _buildBorderPath(list);
     List<AreaNode> areaList = buildAreaPathForNormal(list);
     List<Offset?> ol = _collectOffset(list);
-    Map<StackItemData, LineSymbolNode> nodeMap = {};
+    Map<StackData, LineSymbolNode> nodeMap = {};
     each(ol, (off, i) {
       if (group.data.length <= i) {
         return;
       }
       var data = group.data[i];
-      if (data == null || off == null) {
+      if (off == null) {
         return;
       }
-      var symbol = getSymbol(data, group, null);
+      var symbol = getSymbol(data, group);
       if (symbol != null) {
         nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
-    var itemStyle = series.getAreaStyle(context, null, list.first.parent, list.first.status);
-    var border = series.getLineStyle(context, null, list.first.parent, list.first.status);
+    var itemStyle = series.getAreaStyle(context, list.first, list.first.parent);
+    var border = series.getLineStyle(context, list.first, list.first.parent);
     return LineNode(groupIndex, group, ol, borderList, areaList, nodeMap, itemStyle, border);
   }
 
-  List<AreaNode> buildAreaPathForNormal(List<SingleNode<StackItemData, LineGroupData>> curList) {
+  List<AreaNode> buildAreaPathForNormal(List<StackData<StackItemData, LineGroupData>> curList) {
     if (curList.length < 2) {
       return [];
     }
@@ -227,7 +226,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
 
     num smooth = stepType == null ? lineStyle.smooth : 0;
 
-    List<SingleNode<StackItemData, LineGroupData>> nodeList = this.nodeList;
+    List<StackData<StackItemData, LineGroupData>> nodeList = this.nodeList;
 
     var splitResult = _splitList(nodeList);
     splitResult.removeWhere((element) => element.length < 2);
@@ -253,7 +252,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   LineNode buildStackResult(
     int groupIndex,
     LineGroupData group,
-    List<SingleNode<StackItemData, LineGroupData>> nodeList,
+    List<StackData<StackItemData, LineGroupData>> nodeList,
     List<LineNode> resultList,
     int curIndex,
   ) {
@@ -264,25 +263,29 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     List<AreaNode> areaList = buildAreaPathForStack(nodeList, resultList, curIndex);
 
     List<Offset?> ol = _collectOffset(nodeList);
-    Map<StackItemData, LineSymbolNode> nodeMap = {};
+    Map<StackData, LineSymbolNode> nodeMap = {};
     each(ol, (off, i) {
       var data = group.data[i];
-      if (data == null || off == null) {
+      if (off == null) {
         return;
       }
-      var symbol = getSymbol(data, group, null);
+      var symbol = getSymbol(data, group);
       if (symbol != null) {
         nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
 
-    var itemStyle = series.getAreaStyle(context, null, nodeList.first.parent, nodeList.first.status);
-    var border = series.getLineStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    var itemStyle = series.getAreaStyle(
+      context,
+      nodeList.first,
+      nodeList.first.parent,
+    );
+    var border = series.getLineStyle(context, nodeList.first, nodeList.first.parent);
     return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, areaList, nodeMap, itemStyle, border);
   }
 
   List<AreaNode> buildAreaPathForStack(
-      List<SingleNode<StackItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
+      List<StackData<StackItemData, LineGroupData>> curList, List<LineNode> resultList, int curIndex) {
     if (curList.length < 2) {
       return [];
     }
@@ -303,7 +306,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       List<Offset> topList = [];
       List<Offset> preList = [];
       each(curList, (p0, i) {
-        if (p0.originData != null) {
+        if (p0.dataIsNotNull) {
           Offset offset = p0.position;
           topList.add(offset);
           Offset? preOffset = findBottomOffset(curIndex, resultList, i);
@@ -318,7 +321,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       List<Offset> topList = [];
       List<Offset> preList = [];
       each(curList, (p0, i) {
-        if (p0.originData == null) {
+        if (p0.dataIsNotNull) {
           if (topList.length >= 2) {
             splitResult.add([topList, preList]);
             topList = [];
@@ -370,7 +373,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
   }
 
   ///公用部分
-  List<OptLinePath> _buildBorderPath(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
+  List<OptLinePath> _buildBorderPath(List<StackData<StackItemData, LineGroupData>> nodeList) {
     if (nodeList.length < 2) {
       return [];
     }
@@ -408,12 +411,12 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return line;
   }
 
-  List<List<SingleNode<StackItemData, LineGroupData>>> _splitList(
-      List<SingleNode<StackItemData, LineGroupData>> nodeList) {
-    List<List<SingleNode<StackItemData, LineGroupData>>> olList = [];
-    List<SingleNode<StackItemData, LineGroupData>> tmpList = [];
+  List<List<StackData<StackItemData, LineGroupData>>> _splitList(
+      List<StackData<StackItemData, LineGroupData>> nodeList) {
+    List<List<StackData<StackItemData, LineGroupData>>> olList = [];
+    List<StackData<StackItemData, LineGroupData>> tmpList = [];
     for (var node in nodeList) {
-      if (node.originData != null) {
+      if (node.dataIsNotNull) {
         tmpList.add(node);
       } else {
         if (tmpList.isNotEmpty) {
@@ -429,10 +432,10 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return olList;
   }
 
-  List<Offset?> _collectOffset(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
+  List<Offset?> _collectOffset(List<StackData<StackItemData, LineGroupData>> nodeList) {
     List<Offset?> tmpList = [];
     for (var node in nodeList) {
-      if (node.originData != null) {
+      if (node.dataIsNotNull) {
         tmpList.add(node.position);
       } else {
         tmpList.add(null);
@@ -446,9 +449,9 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return _animatorPercent;
   }
 
-  ChartSymbol? getSymbol(StackItemData data, LineGroupData group, Set<ViewState>? status) {
+  ChartSymbol? getSymbol(StackData data, LineGroupData group) {
     if (series.symbolFun != null) {
-      return series.symbolFun?.call(data, group, status ?? {});
+      return series.symbolFun?.call(data as StackData<StackItemData, LineGroupData>, group);
     }
     if (context.option.theme.lineTheme.showSymbol) {
       return context.option.theme.lineTheme.symbol;

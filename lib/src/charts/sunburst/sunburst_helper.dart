@@ -1,10 +1,9 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import 'sunburst_node.dart';
 
 /// 旭日图布局计算(以中心点为计算中心)
-class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
+class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   SunburstHelper(super.context, super.view, super.series);
 
   ///存储布局中使用的临时量
@@ -13,10 +12,8 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
   num maxRadius = 0;
   num radiusDiff = 0;
 
-  SunburstNode? rootNode;
-  SunburstNode? showRootNode;
-
-  Map<TreeData, SunburstNode> _nodeMap = {};
+  SunburstData? rootNode;
+  SunburstData? showRootNode;
 
   ///给定根节点和待布局的节点进行数据的布局
   @override
@@ -26,20 +23,18 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     minRadius = radiusList[0];
     maxRadius = radiusList[1];
     num radiusRange = radiusList[2];
-    Map<TreeData, SunburstNode> nodeMap = {};
-    Map<TreeData, TreeData> parentMap = {};
-    SunburstNode newRoot = convertData(series.data);
-    nodeMap[series.data] = newRoot;
+    Map<SunburstData, SunburstData> parentMap = {};
+    var newRoot = series.data;
+    initData2(newRoot);
     int maxDeep = newRoot.height;
     radiusDiff = radiusRange / (maxDeep <= 0 ? 1 : maxDeep);
     newRoot.attr = SunburstAttr(buildRootArc(center, maxDeep));
     newRoot.updateLabelPosition(context, series);
     newRoot.eachBefore((tmp, index, startNode) {
       tmp.updateStyle(context, series);
-      nodeMap[tmp.data] = tmp;
-      var p = tmp.data.parent;
+      var p = tmp.parent;
       if (p != null) {
-        parentMap[tmp.data] = p;
+        parentMap[tmp] = p;
       }
       if (tmp.hasChild) {
         _layoutChildren(tmp, getRadiusDiff(tmp.deep, maxDeep));
@@ -51,13 +46,12 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     if (animation == null) {
       rootNode = newRoot;
       showRootNode = rootNode;
-      _nodeMap = nodeMap;
       return;
     }
 
     ///执行动画
-    Map<SunburstNode, Arc> arcMap = {};
-    Map<SunburstNode, Arc> arcStartMap = {};
+    Map<SunburstData, Arc> arcMap = {};
+    Map<SunburstData, Arc> arcStartMap = {};
     newRoot.each((node, index, startNode) {
       arcMap[node] = node.attr.arc;
       arcStartMap[node] = node.attr.arc.copy(outRadius: node.attr.arc.innerRadius);
@@ -68,7 +62,6 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       inAnimation = true;
       rootNode = newRoot;
       showRootNode = rootNode;
-      _nodeMap = nodeMap;
     });
     tween.addListener(() {
       var t = tween.value;
@@ -87,47 +80,45 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     context.addAnimationToQueue([AnimationNode(tween, animation, type)]);
   }
 
-  SunburstNode convertData(TreeData rootData) {
-    int index = 0;
-    SunburstNode root = toTree<TreeData, SunburstAttr, SunburstNode>(
-      series.data,
-      (p0) => p0.children,
-      (p0, p1) {
-        p1.parent = p0?.data;
-        index++;
-        return SunburstNode(p0, p1, index - 1, value: p1.value);
-      },
-      sort: (a, b) {
-        if (series.sort == Sort.none) {
-          return 0;
+  void initData2(SunburstData rootData) {
+    rootData.each((node, index, startNode) {
+      node.dataIndex = index;
+      return false;
+    });
+    if (series.sort != Sort.none) {
+      rootData.eachBefore((node, index, startNode) {
+        if (node.childCount <= 1) {
+          return false;
         }
-        if (series.sort == Sort.asc) {
-          return a.data.value.compareTo(b.data.value);
-        } else {
-          return b.data.value.compareTo(a.data.value);
-        }
-      },
-    );
-    root.sum((p0) => p0.data.value);
+        node.children.sort((a, b) {
+          if (series.sort == Sort.asc) {
+            return a.value.compareTo(b.value);
+          } else {
+            return b.value.compareTo(a.value);
+          }
+        });
+        return false;
+      });
+    }
+    rootData.sum((p0) => p0.value);
     if (series.matchParent) {
-      root.each((node, index, startNode) {
+      rootData.each((node, index, startNode) {
         if (node.hasChild) {
           node.value = 0;
         }
         return false;
       });
-      root.sum();
+      rootData.sum();
     }
-    root.computeHeight();
-    int maxDeep = root.height;
-    root.each((node, index, startNode) {
+    rootData.computeHeight();
+    int maxDeep = rootData.height;
+    rootData.each((node, index, startNode) {
       node.maxDeep = maxDeep;
       return false;
     });
-    return root;
   }
 
-  void _layoutNodeIterator(SunburstNode parent, int maxDeep, bool updateStyle) {
+  void _layoutNodeIterator(SunburstData parent, int maxDeep, bool updateStyle) {
     parent.eachBefore((node, index, startNode) {
       if (updateStyle) {
         node.updateStyle(context, series);
@@ -139,7 +130,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     });
   }
 
-  void _layoutChildren(SunburstNode parent, num radiusDiff) {
+  void _layoutChildren(SunburstData parent, num radiusDiff) {
     if (parent.childCount == 0) {
       return;
     }
@@ -160,7 +151,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
 
     bool match = series.matchParent;
     if (!match) {
-      num childAllValue = sumBy<SunburstNode>(parent.children, (p0) => p0.value);
+      num childAllValue = sumBy<SunburstData>(parent.children, (p0) => p0.value);
       match = childAllValue >= parent.value;
     }
     int gapCount = parent.childCount - 1;
@@ -283,7 +274,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     _forward(clickNode);
   }
 
-  void _forward(SunburstNode clickNode) {
+  void _forward(SunburstData clickNode) {
     var oldBackNode = showRootNode;
     var hasBack = showRootNode is SunburstVirtualNode;
     var animation = getAnimation(LayoutType.update, -1);
@@ -375,21 +366,21 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
     var first = bn.firstChild;
     first.parent = null;
 
-    Map<SunburstNode, Arc> oldArcMap = {};
+    Map<SunburstData, Arc> oldArcMap = {};
     first.each((node, index, startNode) {
       oldArcMap[node] = node.attr.arc;
       return false;
     });
 
-    var parentData = first.data.parent?.parent;
-    SunburstNode parentNode;
+    var parentData = first.parent?.parent;
+    SunburstData parentNode;
     if (parentData == null) {
       parentNode = rootNode!;
       bn = rootNode!;
       first.parent = bn;
     } else {
-      parentData = first.data.parent!;
-      parentNode = _nodeMap[parentData]!;
+      parentData = first.parent!;
+      parentNode = parentData.parent!;
       parentNode.parent = null;
       bn = SunburstVirtualNode(parentNode, SunburstAttr(buildBackArc(center, parentNode.height + 1)));
     }
@@ -403,7 +394,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       return;
     }
 
-    Map<SunburstNode, Arc> arcMap = {};
+    Map<SunburstData, Arc> arcMap = {};
     parentNode.each((node, index, startNode) {
       var arc = node.attr.arc;
       arcMap[node] = arc;
@@ -443,7 +434,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
       }
       return;
     }
-    List<NodeDiff<SunburstNode>> nl = [];
+    List<NodeDiff<SunburstData>> nl = [];
     if (oldNode != null) {
       var attr = oldNode.toAttr();
       oldNode.removeState(ViewState.hover);
@@ -462,7 +453,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
         sendHoverEvent(offset, hoverNode);
       }
     }
-    var animation = getAnimation(LayoutType.update,getAnimatorCountLimit());
+    var animation = getAnimation(LayoutType.update, getAnimatorCountLimit());
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
       notifyLayoutUpdate();
       return;
@@ -479,7 +470,7 @@ class SunburstHelper extends LayoutHelper2<SunburstNode, SunburstSeries> {
   }
 
   @override
-  SunburstNode? findNode(Offset offset, [bool overlap = false]) {
+  SunburstData? findNode(Offset offset, [bool overlap = false]) {
     return showRootNode?.find((node, index, startNode) {
       Arc arc = node.attr.arc;
       return arc.contains(offset);

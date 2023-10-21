@@ -3,15 +3,14 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
+class DelaunayHelper extends LayoutHelper2<DelaunayData, DelaunaySeries> {
   static const double findRange = 16;
 
   DelaunayHelper(super.context, super.view, super.series);
 
-  RBush<DelaunayNode> bush = RBush.from((p0) => p0.attr.getBound());
+  RBush<DelaunayData> bush = RBush.from((p0) => p0.attr.getBound());
   List<ChartOffset> hull = [];
-
-  List<DelaunayNode> showNodeList = [];
+  List<DelaunayData> showNodeList = [];
 
   void updateShowNodeList() {
     Rect rect = Rect.fromLTWH(-translationX, -translationY, width, height);
@@ -27,24 +26,24 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
     }
     if (series.data.length > 400) {
       Future(() {
-        layoutNode();
+        layoutNode(series.data);
         updateShowNodeList();
         notifyLayoutUpdate();
       });
     } else {
-      layoutNode();
+      layoutNode(series.data);
       updateShowNodeList();
     }
   }
 
-  void layoutNode() {
+  void layoutNode(List<ChartOffset> dataList) {
     bool useTriangle = series.triangle;
     num left = double.maxFinite;
     num top = double.maxFinite;
     num right = double.minPositive;
     num bottom = double.minPositive;
     if (!useTriangle) {
-      each(series.data, (p0, p1) {
+      each(dataList, (p0, p1) {
         left = m.min(left, p0.x);
         top = m.min(top, p0.y);
         right = m.max(right, p0.x);
@@ -52,7 +51,7 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
       });
     }
 
-    var de = Delaunay(series.data);
+    var de = Delaunay<ChartOffset>(dataList, (a) => a.x, (b) => b.y);
     hull = de.getHull();
     var hullPath = Path();
     each(hull, (p0, p1) {
@@ -64,10 +63,11 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
     });
     hullPath.close();
 
-    List<DShape> list = [];
+    List<DelaunayData> resultList = [];
     de.eachShape(useTriangle, (sp, index) {
+      DShape shape;
       if (useTriangle) {
-        list.add(DShape(index, sp));
+        shape = DShape(index, sp);
       } else {
         ///修剪边缘
         bool has = false;
@@ -81,18 +81,18 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
         if (has) {
           sd.path = Path.combine(PathOperation.intersect, hullPath, sd.toPath());
         }
-        list.add(sd);
+        shape = sd;
       }
-    });
-    List<DelaunayNode> rl = [];
-    each(list, (p0, p1) {
-      var node = DelaunayNode(p0.points, p1, 0, p0);
+      var node=DelaunayData(shape);
+      node.dataIndex=index;
       node.updateStyle(context, series);
-      rl.add(node);
+      node.updateLabelPosition(context, series);
+      resultList.add(node);
     });
+
     bush.clear();
-    bush.addAll(rl);
-    nodeList = rl;
+    bush.addAll(resultList);
+    nodeList = resultList;
   }
 
   @override
@@ -104,7 +104,7 @@ class DelaunayHelper extends LayoutHelper2<DelaunayNode, DelaunaySeries> {
   }
 
   @override
-  DelaunayNode? findNode(Offset offset, [bool overlap = false]) {
+  DelaunayData? findNode(Offset offset, [bool overlap = false]) {
     var hoveNode = oldHoverNode;
     if (hoveNode != null && hoveNode.contains(offset)) {
       return hoveNode;

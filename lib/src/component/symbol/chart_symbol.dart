@@ -58,6 +58,12 @@ abstract class ChartSymbol {
     }
     return true;
   }
+
+  @override
+  String toString() {
+    return '$runtimeType size:$size scale:$scale';
+  }
+
 }
 
 class SymbolAttr {

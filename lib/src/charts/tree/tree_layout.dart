@@ -11,7 +11,7 @@ abstract class TreeLayout {
 
   ///节点之间的间距函数
   Offset? nodeGapSize;
-  Fun3<TreeRenderNode, TreeRenderNode, Offset>? gapFun;
+  Fun3<TreeData, TreeData, Offset>? gapFun;
 
   ///节点之间的层级间距函数优先级：fun> levelGapSize
   num? levelGapSize;
@@ -26,9 +26,9 @@ abstract class TreeLayout {
     this.levelGapFun,
   });
 
-  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params);
+  void onLayout(TreeData rootNode, TreeLayoutParams params);
 
-  Path? onLayoutNodeLink(TreeRenderNode parent, TreeRenderNode child) {
+  Path? onLayoutNodeLink(TreeData parent, TreeData child) {
     Line line = Line([parent.center, child.center]);
     List<Offset> ol = [];
     if (lineType == LineType.step) {
@@ -44,7 +44,7 @@ abstract class TreeLayout {
   }
 
   ///========普通函数=============
-  Offset getNodeGap(TreeRenderNode node1, TreeRenderNode node2) {
+  Offset getNodeGap(TreeData node1, TreeData node2) {
     Offset? offset = gapFun?.call(node1, node2) ?? nodeGapSize;
     if (offset != null) {
       return offset;

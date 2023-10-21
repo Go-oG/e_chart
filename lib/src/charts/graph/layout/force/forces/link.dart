@@ -19,9 +19,9 @@ class LinkForce extends Force {
   late LinkFun _strengthFun;
 
   //==============================
-  List<GraphNode> _nodes = [];
+  List<GraphData> _nodes = [];
 
-  List<Edge> _links = [];
+  List<EdgeData> _links = [];
 
   ///<linkId-value>
   ///存储每个边之间的强度
@@ -113,7 +113,7 @@ class LinkForce extends Force {
     }
   }
 
-  LinkForce setLinks(List<Edge> links) {
+  LinkForce setLinks(List<EdgeData> links) {
     _links = links;
     _initialize();
     return this;
@@ -137,4 +137,4 @@ class LinkForce extends Force {
   }
 }
 
-typedef LinkFun = num Function(Edge link, int i, List<Edge> links);
+typedef LinkFun = num Function(EdgeData link, int i, List<EdgeData> links);

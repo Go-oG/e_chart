@@ -2,17 +2,15 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
-  SunburstNode(
-    SunburstNode? parent,
-    TreeData data,
-    int dataIndex, {
-    super.maxDeep,
-    super.deep,
-    super.groupIndex,
+class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
+  SunburstData(
+    super.parent,
+    super.children, {
     super.value,
-  }) : super(parent, data, dataIndex, SunburstAttr.zero(), AreaStyle.empty, LineStyle.empty, LabelStyle.empty) {
-    label.text = data.name ?? DynamicText.empty;
+    super.id,
+    super.name,
+  }) {
+    attr = SunburstAttr.zero();
   }
 
   @override
@@ -104,8 +102,8 @@ class SunburstNode extends TreeNode<TreeData, SunburstAttr, SunburstNode> {
   }
 }
 
-class SunburstVirtualNode extends SunburstNode {
-  SunburstVirtualNode(SunburstNode child, SunburstAttr attr) : super(null, child.data, 0) {
+class SunburstVirtualNode extends SunburstData {
+  SunburstVirtualNode(SunburstData child, SunburstAttr attr) : super(null, [child]) {
     child.parent = null;
     add(child);
     value = child.value;

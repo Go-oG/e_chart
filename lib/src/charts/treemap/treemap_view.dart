@@ -5,12 +5,12 @@ import 'layout_helper.dart';
 
 /// 矩形树图
 class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
-  late TreeMapNode rootNode;
+  late TreeMapData rootNode;
   late TreeMapLayoutHelper helper;
 
   ///记录显示的层级
-  final List<TreeMapNode> showStack = [];
-  List<TreeMapNode> drawList = [];
+  final List<TreeMapData> showStack = [];
+  List<TreeMapData> drawList = [];
   double tx = 0;
   double ty = 0;
 
@@ -73,8 +73,8 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   }
 
   void adjustDrawList() {
-    List<TreeMapNode> list = [rootNode];
-    List<TreeMapNode> next = [];
+    List<TreeMapData> list = [rootNode];
+    List<TreeMapData> next = [];
     int deep = showStack.last.deep + 1;
     drawList = [];
     while (list.isNotEmpty) {
@@ -108,10 +108,10 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
     canvas.restore();
   }
 
-  void _drawNode(CCanvas canvas, TreeMapNode node) {
+  void _drawNode(CCanvas canvas, TreeMapData node) {
     Rect rect = node.attr;
    // style.drawRect(canvas, mPaint, rect);
-    DynamicText label = node.data.name ?? DynamicText.empty;
+    DynamicText label = node.label.text;
     if (label.isEmpty) {
       return;
     }
@@ -151,7 +151,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   ///处理点击事件
   void handleClick(Offset local) {
     Offset offset = local;
-    TreeMapNode? clickNode = findClickNode(offset);
+    TreeMapData? clickNode = findClickNode(offset);
     if (clickNode == null) {
       debugPrint('无法找到点击节点');
       return;
@@ -163,7 +163,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
     zoomOut(clickNode);
   }
 
-  TreeMapNode? findClickNode(Offset offset) {
+  TreeMapData? findClickNode(Offset offset) {
     offset = offset.translate(-tx, -ty);
     for (var c in drawList) {
       if (c.contains(offset)) {
@@ -174,10 +174,10 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   }
 
   /// 缩小
-  void zoomIn(TreeMapNode node, double ratio) {}
+  void zoomIn(TreeMapData node, double ratio) {}
 
   ///放大
-  void zoomOut(TreeMapNode clickNode) {
+  void zoomOut(TreeMapData clickNode) {
     // if (clickNode == rootNode) {
     //   return;
     // }

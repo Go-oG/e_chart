@@ -2,23 +2,20 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class TreeRenderNode extends TreeNode<TreeData, TreeAttr, TreeRenderNode> {
-  TreeRenderNode(
-    TreeRenderNode? parent,
-    TreeData data,
-    int dataIndex,
-    TreeAttr attr, {
-    super.deep,
-    super.maxDeep,
-    super.value,
-    super.groupIndex,
-  }) : super.simple(parent, data, dataIndex, attr) {
-    label.text = data.name ?? DynamicText.empty;
+class TreeData extends BaseTreeData<TreeAttr, TreeData> {
+  static final TreeData empty = TreeData(null, []);
+
+  TreeData(super.parent,
+      super.children, {
+        super.id,
+        super.value,
+      }) {
+    attr = TreeAttr(EmptySymbol.empty);
   }
 
   @override
   String toString() {
-    return '$data x:${x.toStringAsFixed(2)} y:${y.toStringAsFixed(2)}';
+    return '$x:${x.toStringAsFixed(2)} y:${y.toStringAsFixed(2)}';
   }
 
   @override

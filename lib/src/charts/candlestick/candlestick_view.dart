@@ -17,12 +17,12 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
     canvas.clipRect(Rect.fromLTWH(of.dx.abs() == 0 ? -10 : 0, 0, w, height));
     canvas.translate(of.dx, of.dy);
     each(layoutHelper.nodeList, (node, index) {
-      var data = node.originData;
+      var data = node.dataNull;
       if (data == null) {
         return;
       }
-      var as = series.getAreaStyle(context, data, node.parent, node.status);
-      var ls = series.getLineStyle(context, data, node.parent, node.status);
+      var as = series.getAreaStyle(context, node,node.parent);
+      var ls = series.getLineStyle(context, node,node.parent);
       if (ls.notDraw) {
         Logger.w("Candlestick LineStyle must not null");
         return;

@@ -59,7 +59,7 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     final bool vertical = series.direction == Direction.vertical;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {
-      var data = node.originData;
+      var data = node.dataNull;
       if (data == null) {
         return;
       }
@@ -79,12 +79,11 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     });
   }
 
-  @override
-  void onLayoutEnd(var oldNodeList, var newNodeList, var startMap, var endMap, LayoutType type) {
-    _animatorPercent = 0;
-    super.onLayoutEnd(oldNodeList, newNodeList, startMap, endMap, type);
-    _updateLine(newNodeList);
-  }
+
+  // void onLayoutEnd(var oldNodeList, var newNodeList, var startMap, var endMap, LayoutType type) {
+  //   _animatorPercent = 0;
+  //   _updateLine(newNodeList);
+  // }
 
   @override
   void onAnimatorStart(var nodeList) {
@@ -103,17 +102,17 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     _animatorPercent = 1;
   }
 
-  void _updateLine(List<SingleNode<StackItemData, LineGroupData>> list) {
-    Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> tmpNodeMap = {};
+  void _updateLine(List<StackData<StackItemData, LineGroupData>> list) {
+    Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> tmpNodeMap = {};
     for (var node in list) {
-      List<SingleNode<StackItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];
+      List<StackData<StackItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];
       tmpNodeMap[node.parent] = tmpList;
       tmpList.add(node);
     }
     tmpNodeMap.removeWhere((key, value) => value.isEmpty);
 
     List<LineNode> resultList = [];
-    Map<LineGroupData, List<SingleNode<StackItemData, LineGroupData>>> stackMap = {};
+    Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> stackMap = {};
 
     tmpNodeMap.forEach((key, value) {
       if (key.isNotStack) {
@@ -139,32 +138,32 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     _lineList = resultList;
   }
 
-  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<SingleNode<StackItemData, LineGroupData>> list) {
+  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<StackData<StackItemData, LineGroupData>> list) {
     List<OptLinePath> borderList = _buildBorderPath(list);
     List<Offset?> ol = _collectOffset(list);
-    Map<StackItemData, LineSymbolNode> nodeMap = {};
+    Map<StackData, LineSymbolNode> nodeMap = {};
     each(ol, (off, i) {
+      if (off == null) {
+        return;
+      }
       if (i >= group.data.length) {
         return;
       }
       var data = group.data[i];
-      if (data == null || off == null) {
-        return;
-      }
-      var symbol = getSymbol(data, group, null);
+      var symbol = getSymbol(data, group);
       if (symbol != null) {
         nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
-    var itemStyle = series.getAreaStyle(context, null, list.first.parent, list.first.status);
-    var border = series.getLineStyle(context, null, list.first.parent, list.first.status);
+    var itemStyle = series.getAreaStyle(context, list.first, list.first.parent);
+    var border = series.getLineStyle(context, list.first, list.first.parent);
     return LineNode(groupIndex, group, ol, borderList, [], nodeMap, itemStyle, border);
   }
 
   LineNode buildStackResult(
     int groupIndex,
     LineGroupData group,
-    List<SingleNode<StackItemData, LineGroupData>> nodeList,
+    List<StackData<StackItemData, LineGroupData>> nodeList,
     List<LineNode> resultList,
     int curIndex,
   ) {
@@ -174,24 +173,24 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     List<OptLinePath> borderList = _buildBorderPath(nodeList);
 
     List<Offset?> ol = _collectOffset(nodeList);
-    Map<StackItemData, LineSymbolNode> nodeMap = {};
+    Map<StackData, LineSymbolNode> nodeMap = {};
     each(ol, (off, i) {
-      var data = group.data[i];
-      if (data == null || off == null) {
+      if (off == null) {
         return;
       }
-      var symbol = getSymbol(data, group, null);
+      var data = group.data[i];
+      var symbol = getSymbol(data, group);
       if (symbol != null) {
         nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
       }
     });
-    var itemStyle = series.getAreaStyle(context, null, nodeList.first.parent, nodeList.first.status);
-    var border = series.getLineStyle(context, null, nodeList.first.parent, nodeList.first.status);
+    var itemStyle = series.getAreaStyle(context, nodeList.first, nodeList.first.parent);
+    var border = series.getLineStyle(context, nodeList.first, nodeList.first.parent);
     return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, [], nodeMap, itemStyle, border);
   }
 
   ///公用部分
-  List<OptLinePath> _buildBorderPath(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
+  List<OptLinePath> _buildBorderPath(List<StackData<StackItemData, LineGroupData>> nodeList) {
     if (nodeList.length < 2) {
       return [];
     }
@@ -229,12 +228,12 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     return line;
   }
 
-  List<List<SingleNode<StackItemData, LineGroupData>>> _splitList(
-      Iterable<SingleNode<StackItemData, LineGroupData>> nodeList) {
-    List<List<SingleNode<StackItemData, LineGroupData>>> olList = [];
-    List<SingleNode<StackItemData, LineGroupData>> tmpList = [];
+  List<List<StackData<StackItemData, LineGroupData>>> _splitList(
+      Iterable<StackData<StackItemData, LineGroupData>> nodeList) {
+    List<List<StackData<StackItemData, LineGroupData>>> olList = [];
+    List<StackData<StackItemData, LineGroupData>> tmpList = [];
     for (var node in nodeList) {
-      if (node.originData != null) {
+      if (node.dataIsNotNull) {
         tmpList.add(node);
       } else {
         if (tmpList.isNotEmpty) {
@@ -250,10 +249,10 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     return olList;
   }
 
-  List<Offset?> _collectOffset(List<SingleNode<StackItemData, LineGroupData>> nodeList) {
+  List<Offset?> _collectOffset(List<StackData<StackItemData, LineGroupData>> nodeList) {
     List<Offset?> tmpList = [];
     for (var node in nodeList) {
-      if (node.originData != null) {
+      if (node.dataIsNotNull) {
         tmpList.add(node.position);
       } else {
         tmpList.add(null);
@@ -267,9 +266,9 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     return _animatorPercent;
   }
 
-  ChartSymbol? getSymbol(StackItemData data, LineGroupData group, Set<ViewState>? status) {
+  ChartSymbol? getSymbol(StackData data, LineGroupData group) {
     if (series.symbolFun != null) {
-      return series.symbolFun?.call(data, group, status ?? {});
+      return series.symbolFun?.call(data as StackData<StackItemData, LineGroupData>, group);
     }
     if (context.option.theme.lineTheme.showSymbol) {
       return context.option.theme.lineTheme.symbol;

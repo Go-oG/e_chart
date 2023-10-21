@@ -20,10 +20,10 @@ class RandomLayout extends GraphLayout {
 
   @override
   void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
-    QuadTree<GraphNode> tree = QuadTree((p0) => p0.x, (p0) => p0.y, 0, 0, params.width, params.height);
-    List<GraphNode> nodes = [...graph.nodes];
+    QuadTree<GraphData> tree = QuadTree((p0) => p0.x, (p0) => p0.y, 0, 0, params.width, params.height);
+    List<GraphData> nodes = [...graph.nodes];
     if (sort != null) {
-      Map<GraphNode, num> sortMap = sort!.call(nodes);
+      Map<GraphData, num> sortMap = sort!.call(nodes);
       nodes.sort((a, b) {
         return (sortMap[a] ?? 0).compareTo((sortMap[b] ?? 0));
       });
@@ -46,7 +46,7 @@ class RandomLayout extends GraphLayout {
     }
   }
 
-  bool hasCover(QuadTree<GraphNode> tree, double x, double y, num r, num space) {
+  bool hasCover(QuadTree<GraphData> tree, double x, double y, num r, num space) {
     bool covered = false;
     tree.each((node, x1, y1, x2, y2) {
       if (covered) {

@@ -7,7 +7,7 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
 
   @override
   void onDraw(CCanvas canvas) {
-    var nodeList = layoutHelper.groupNodeList;
+    var nodeList = layoutHelper.dataList;
     each(nodeList, (group, i) {
       group.onDraw(canvas, mPaint);
     });
@@ -17,8 +17,8 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
   List<num> getRadarExtreme(int dim) {
     List<num> resultList = [];
     for (var group in series.data) {
-      if (group.data.length > dim) {
-        resultList.add(group.data[dim].value);
+      if (group.value.length > dim) {
+        resultList.add(group.value[dim].value);
       }
     }
     return resultList;

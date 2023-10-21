@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///表示为系列数据
-class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with StateProvider {
+class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with StateProvider {
   AxisIndex index;
   List<ColumnNode<T, P>> nodeList;
 
@@ -21,7 +21,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with State
   dynamic getXData() {
     var result = getXNodeNull();
     if (result != null) {
-      return result.originData!.x;
+      return result.data.x;
     }
     throw ChartError("无法找到对应的横坐标");
   }
@@ -29,15 +29,15 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with State
   dynamic getYData() {
     var result = getYNodeNull();
     if (result != null) {
-      return result.originData!.y;
+      return result.data.y;
     }
     throw ChartError("无法找到对应的横坐标");
   }
 
-  SingleNode<T, P>? getXNodeNull() {
+  StackData<T, P>? getXNodeNull() {
     for (var list in nodeList) {
       for (var node in list.nodeList) {
-        var x = node.originData?.x;
+        var x = node.dataNull?.x;
         if (x != null) {
           return node;
         }
@@ -46,10 +46,10 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T>> with State
     return null;
   }
 
-  SingleNode<T, P>? getYNodeNull() {
+  StackData<T, P>? getYNodeNull() {
     for (var list in nodeList) {
       for (var node in list.nodeList) {
-        var y = node.originData?.y;
+        var y = node.data.y;
         if (y != null) {
           return node;
         }

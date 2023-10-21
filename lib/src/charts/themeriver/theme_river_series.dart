@@ -1,14 +1,15 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/themeriver/theme_river_data.dart';
 import 'package:e_chart/src/charts/themeriver/theme_river_view.dart';
 
 class ThemeRiverSeries extends RectSeries {
-  List<GroupData> data;
+  List<ThemeRiverData> data;
   Direction direction;
   SNumber? minInterval;
   num smooth;
-  Fun4<GroupData, int, Set<ViewState>, AreaStyle>? areaStyleFun;
-  Fun4<GroupData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
-  Fun4<GroupData, int, Set<ViewState>, LabelStyle?>? labelStyleFun;
+  Fun2<ThemeRiverData, AreaStyle>? areaStyleFun;
+  Fun2<ThemeRiverData, LineStyle?>? borderStyleFun;
+  Fun2<ThemeRiverData, LabelStyle?>? labelStyleFun;
 
   ThemeRiverSeries(
     this.data, {
@@ -34,38 +35,39 @@ class ThemeRiverSeries extends RectSeries {
   ChartView? toView() {
     return ThemeRiverView(this);
   }
+
   @override
   SeriesType get seriesType => SeriesType.themeRiver;
 
-  AreaStyle getAreaStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+  AreaStyle getAreaStyle(Context context, ThemeRiverData data) {
     if (areaStyleFun != null) {
-      return areaStyleFun!.call(data, index, status);
+      return areaStyleFun!.call(data);
     }
     var theme = context.option.theme;
-    return AreaStyle(color: theme.colors[index % theme.colors.length]).convert(status);
+    return AreaStyle(color: theme.colors[data.styleIndex % theme.colors.length]).convert(data.status);
   }
 
-  LineStyle getBorderStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+  LineStyle getBorderStyle(Context context, ThemeRiverData data) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, index, status)??LineStyle.empty;
+      return borderStyleFun!.call(data) ?? LineStyle.empty;
     }
     return LineStyle.empty;
   }
 
-  LabelStyle getLabelStyle(Context context, GroupData data, int index, Set<ViewState> status) {
+  LabelStyle getLabelStyle(Context context, ThemeRiverData data) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, index, status)??LabelStyle.empty;
+      return labelStyleFun!.call(data) ?? LabelStyle.empty;
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle()??LabelStyle.empty;
+    return theme.getLabelStyle() ?? LabelStyle.empty;
   }
 
   @override
   List<LegendItem> getLegendItem(Context context) {
     List<LegendItem> list = [];
     each(data, (item, i) {
-      var name = item.name;
-      if (name == null || name.isEmpty) {
+      var name = item.label.text;
+      if (name.isEmpty) {
         return;
       }
       var color = context.option.theme.getColor(i);

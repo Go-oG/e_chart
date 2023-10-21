@@ -3,7 +3,8 @@ import 'package:e_chart/src/charts/sankey/sankey_view.dart';
 import 'package:flutter/material.dart';
 
 class SankeySeries extends RectSeries {
-  SankeyData data;
+  List<SankeyData> data;
+  List<SankeyLinkData> links;
   double nodeWidth;
   double gap;
   int iterationCount;
@@ -12,18 +13,17 @@ class SankeySeries extends RectSeries {
   LinkSort? linkSort;
   Direction direction;
   num smooth;
-  Fun4<BaseItemData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
+  Fun2<SankeyData, AreaStyle?>? areaStyleFun;
+  Fun2<SankeyData, LineStyle?>? borderStyleFun;
+  Fun2<SankeyData, LabelStyle?>? labelStyleFun;
 
-  Fun4<BaseItemData, int, Set<ViewState>, LineStyle?>? borderStyleFun;
-
-  Fun4<BaseItemData, int, Set<ViewState>, LabelStyle?>? labelStyleFun;
-
-  Fun7<BaseItemData, int, BaseItemData, int, int, Set<ViewState>, AreaStyle>? linkStyleFun;
-  Fun7<BaseItemData, int, BaseItemData, int, int, Set<ViewState>, LineStyle>? linkBorderStyleFun;
-  Fun7<BaseItemData, int, BaseItemData, int, int, Set<ViewState>, LabelStyle>? linkLabelStyleFun;
+  Fun2<SankeyLinkData, AreaStyle>? linkStyleFun;
+  Fun2<SankeyLinkData, LineStyle>? linkBorderStyleFun;
+  Fun2<SankeyLinkData, LabelStyle>? linkLabelStyleFun;
 
   SankeySeries({
     required this.data,
+    required this.links,
     this.nodeWidth = 32,
     this.gap = 8,
     this.iterationCount = 6,
@@ -52,87 +52,63 @@ class SankeySeries extends RectSeries {
     return SankeyView(this);
   }
 
-  AreaStyle? getItemStyle(Context context, BaseItemData data, int index, Set<ViewState> status) {
+  AreaStyle? getItemStyle(Context context, SankeyData data) {
     var fun = areaStyleFun;
     if (fun != null) {
-      return fun.call(data, index, status);
+      return fun.call(data);
     }
-    return context.option.theme.getAreaStyle(index).convert(status);
+    return context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
   }
 
-  LineStyle? getBorderStyle(Context context, BaseItemData data, int index, Set<ViewState> status) {
+  LineStyle? getBorderStyle(Context context, SankeyData data) {
     var fun = borderStyleFun;
     if (fun != null) {
-      return fun.call(data, index, status);
+      return fun.call(data);
     }
-    return context.option.theme.sankeyTheme.getStyle()?.convert(status);
+    return context.option.theme.sankeyTheme.getStyle()?.convert(data.status);
   }
 
-  LabelStyle? getLabelStyle(Context context, BaseItemData data, int index, Set<ViewState> status) {
+  LabelStyle? getLabelStyle(Context context, SankeyData data) {
     var fun = labelStyleFun;
     if (fun != null) {
-      return fun.call(data, index, status);
+      return fun.call(data);
     }
     return context.option.theme.getLabelStyle();
   }
 
-  AreaStyle getLinkStyle(
-    Context context,
-    BaseItemData sourceData,
-    int sourceIndex,
-    BaseItemData targetData,
-    int targetIndex,
-    int index,
-    Set<ViewState> status,
-  ) {
+  AreaStyle getLinkStyle(Context context, SankeyLinkData data) {
     var fun = linkStyleFun;
     if (fun != null) {
-      return fun.call(sourceData, sourceIndex, targetData, targetIndex, index, status);
+      return fun.call(data);
     }
     var color = context.option.theme.sankeyTheme.linkColor;
     if (color != null) {
       return AreaStyle(color: context.option.theme.sankeyTheme.color);
     }
-    var as = getItemStyle(context, sourceData, sourceIndex, status)?.color;
-    var ae = getItemStyle(context, targetData, targetIndex, status)?.color;
+    var as = getItemStyle(context, data.source)?.color;
+    var ae = getItemStyle(context, data.target)?.color;
     if (as != null && ae != null) {
-      if (status.contains(ViewState.disabled)) {
+      if (data.status.contains(ViewState.disabled)) {
         return AreaStyle(shader: LineShader([as.withOpacity(0.5), ae.withOpacity(0.5)]));
       }
     }
     return AreaStyle(color: Colors.grey.withOpacity(0.5));
   }
 
-  LineStyle getLinkBorderStyle(
-    Context context,
-    BaseItemData sourceData,
-    int sourceIndex,
-    BaseItemData targetData,
-    int targetIndex,
-    int index,
-    Set<ViewState> status,
-  ) {
+  LineStyle getLinkBorderStyle(Context context, SankeyLinkData data) {
     var fun = linkBorderStyleFun;
     if (fun != null) {
-      return fun.call(sourceData, sourceIndex, targetData, targetIndex, index, status);
+      return fun.call(data);
     }
     return LineStyle.empty;
   }
 
-  LabelStyle getLinkLabelStyle(
-    Context context,
-    BaseItemData sourceData,
-    int sourceIndex,
-    BaseItemData targetData,
-    int targetIndex,
-    int index,
-    Set<ViewState> status,
-  ) {
+  LabelStyle getLinkLabelStyle(Context context, SankeyLinkData data) {
     var fun = linkLabelStyleFun;
     if (fun != null) {
-      return fun.call(sourceData, sourceIndex, targetData, targetIndex, index, status);
+      return fun.call(data);
     }
-    return context.option.theme.getLabelStyle()??LabelStyle.empty;
+    return context.option.theme.getLabelStyle() ?? LabelStyle.empty;
   }
 
   @override
@@ -140,39 +116,16 @@ class SankeySeries extends RectSeries {
 
   @override
   int onAllocateStyleIndex(int start) {
-    each(data.data, (p0, p1) {
+    each(data, (p0, p1) {
       p0.styleIndex = p1 + start;
     });
-    return data.data.length;
+    return data.length;
   }
+
   @override
   SeriesType get seriesType => SeriesType.sankey;
 }
 
-class SankeyData {
-  final List<ItemData> data;
-  final List<SankeyLinkData> links;
+typedef LinkSort = int Function(SankeyLinkData, SankeyLinkData);
 
-  SankeyData(this.data, this.links);
-}
-
-class SankeyLinkData extends ItemData {
-  final ItemData src;
-  final ItemData target;
-
-  SankeyLinkData(this.src, this.target, super.value, {super.name, super.id});
-
-  @override
-  int get hashCode {
-    return Object.hash(src, target);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is SankeyLinkData && other.src == src && other.target == target;
-  }
-}
-
-typedef LinkSort = int Function(SankeyLink, SankeyLink);
-
-typedef NodeSort = int Function(SankeyNode, SankeyNode);
+typedef NodeSort = int Function(SankeyData, SankeyData);

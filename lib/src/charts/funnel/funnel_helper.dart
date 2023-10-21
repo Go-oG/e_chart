@@ -1,10 +1,9 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'funnel_node.dart';
 
 ///漏斗图布局计算相关
-class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
+class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
   num maxValue = 0;
 
   FunnelHelper(super.context, super.view, super.series);
@@ -13,12 +12,13 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
   void onLayout(LayoutType type) {
     oldHoverNode = null;
     var oldList = nodeList;
-    var newList = convertData(series.dataList);
-    layoutNode(newList);
-    var an = DiffUtil.diffLayout3(
+    var newList = [...series.dataList];
+    initData(newList);
+    var an = DiffUtil.diff<FunnelData>(
       getAnimation(type),
       oldList,
       newList,
+      (dataList) => layoutNode(dataList),
       (node, type) {
         return {'scale': type == DiffType.add ? 0 : node.scale};
       },
@@ -28,8 +28,8 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       (node, s, e, t, type) {
         node.scale = lerpDouble(s['scale'], e['scale'], t)!;
       },
-      (resultList, t) {
-        nodeList = resultList;
+      (dataList, t) {
+        nodeList = dataList;
         notifyLayoutUpdate();
       },
       onStart: () => inAnimation = true,
@@ -38,40 +38,29 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     context.addAnimationToQueue(an);
   }
 
-  List<FunnelNode> convertData(List<ItemData> list) {
-    List<FunnelNode> nodeList = [];
-    if (list.isEmpty) {
-      return nodeList;
-    }
-    Set<ViewState> emptyVS = {};
-    for (int i = 0; i < list.length; i++) {
-      var data = list[i];
-      ItemData? preData = i == 0 ? null : list[i - 1];
-      nodeList.add(FunnelNode(
-        i,
-        preData,
-        data,
-        i,
-        series.getAreaStyle(context, data, i, emptyVS),
-        series.getBorderStyle(context, data, i, emptyVS) ?? LineStyle.empty,
-        series.getLabelStyle(context, data, i, emptyVS) ?? LabelStyle.empty,
-      ));
-    }
 
+  @override
+  void initData(List<FunnelData> dataList) {
+    for (int i = 0; i < dataList.length; i++) {
+      var data = dataList[i];
+      var preData = i == 0 ? null : dataList[i - 1];
+      data.dataIndex = i;
+      data.groupIndex = 0;
+      data.preData = preData;
+      data.groupIndex = 0;
+    }
     ///直接降序处理
-    nodeList.sort((a, b) {
-      return a.data.value.compareTo(b.data.value);
+    dataList.sort((a, b) {
+      return a.value.compareTo(b.value);
     });
-    return nodeList;
   }
 
-  void layoutNode(List<FunnelNode> nodeList) {
+  void layoutNode(List<FunnelData> nodeList) {
     maxValue = 0;
     if (nodeList.isEmpty) {
       return;
     }
-    maxValue = nodeList.first.data.value;
-
+    maxValue = nodeList.first.value;
     if (series.maxValue != null && maxValue < series.maxValue!) {
       maxValue = series.maxValue!;
     }
@@ -93,9 +82,9 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     }
   }
 
-  void _layoutVertical(List<FunnelNode> nodeList, double itemHeight) {
+  void _layoutVertical(List<FunnelData> nodeList, double itemHeight) {
     double offsetY = 0;
-    Map<FunnelNode, FunnelProps> propsMap = {};
+    Map<FunnelData, FunnelProps> propsMap = {};
     double kw = width / maxValue;
     for (var node in nodeList) {
       FunnelProps props = FunnelProps();
@@ -106,7 +95,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       } else {
         props.len1 = 0;
       }
-      props.len2 = node.data.value * kw;
+      props.len2 = node.value * kw;
       props.p2 = props.p1.translate(0, itemHeight);
       offsetY = props.p2.dy + series.gap;
       if (series.align == Align2.start) {
@@ -139,7 +128,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       }
     }
     for (var node in nodeList) {
-      FunnelProps props = propsMap[node]!;
+      var props = propsMap[node]!;
       node.attr = Polygon([
         props.p1,
         props.p1.translate(props.len1, 0),
@@ -149,9 +138,9 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
     }
   }
 
-  void _layoutHorizontal(List<FunnelNode> nodeList, double itemWidth) {
+  void _layoutHorizontal(List<FunnelData> nodeList, double itemWidth) {
     double offsetX = 0;
-    Map<FunnelNode, FunnelProps> propsMap = {};
+    Map<FunnelData, FunnelProps> propsMap = {};
     double kw = height / maxValue;
     for (var node in nodeList) {
       FunnelProps props = FunnelProps();
@@ -162,7 +151,7 @@ class FunnelHelper extends LayoutHelper2<FunnelNode, FunnelSeries> {
       } else {
         props.len1 = 0;
       }
-      props.len2 = node.data.value * kw;
+      props.len2 = node.value * kw;
       props.p2 = props.p1.translate(itemWidth, 0);
       offsetX = props.p2.dx + series.gap;
       if (series.align == Align2.start) {

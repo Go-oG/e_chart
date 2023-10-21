@@ -2,13 +2,16 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-///数据到绘图节点的映射
-abstract class DataNode<P, D> with StateProvider, ExtProps {
-  D data;
+///基础渲染数据
+abstract class RenderData<P> with StateProvider, ExtProps {
+  late final String id;
+  bool show = true;
 
-  int dataIndex;
-
-  int groupIndex;
+  int groupIndex = 0;
+  int dataIndex = -1;
+  int styleIndex = -1;
+  ///绘制顺序(从小到到绘制，最大的最后绘制)
+  int drawIndex = -1;
 
   P? _attr;
 
@@ -18,47 +21,48 @@ abstract class DataNode<P, D> with StateProvider, ExtProps {
     _attr = a;
   }
 
-  ///绘制顺序(从小到到绘制，最大的最后绘制)
-  int drawIndex = 0;
-  TextDraw label = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
-
+  AreaStyle itemStyle = AreaStyle.empty;
+  LineStyle borderStyle = LineStyle.empty;
+  late TextDraw label = TextDraw(DynamicText.empty, const LabelStyle(), Offset.zero);
   List<Offset> labelLine = [];
-
-  late AreaStyle itemStyle;
-  late LineStyle borderStyle;
 
   late final DataStatusChangeEvent _dataStateChangeEvent;
 
-  DataNode(
-    this.data,
-    this.dataIndex,
-    this.groupIndex,
-    P attr,
-    this.itemStyle,
-    this.borderStyle,
-    LabelStyle labelStyle,
-  ) {
-    _dataStateChangeEvent = DataStatusChangeEvent(data, status);
-    _attr = attr;
-    label.style = labelStyle;
+  RenderData({String? id, DynamicText? name}) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+    this.label.text = name ?? DynamicText.empty;
+
+    _dataStateChangeEvent = DataStatusChangeEvent(this, status);
   }
 
-  DataNode.empty(this.data, this.dataIndex, this.groupIndex, P attr) {
-    _dataStateChangeEvent = DataStatusChangeEvent(data, status);
-    itemStyle = AreaStyle.empty;
-    borderStyle = LineStyle.empty;
-    label.style = LabelStyle.empty;
+  RenderData.attr(P attr, {String? id, DynamicText? name}) {
+    if (id == null || id.isEmpty) {
+      this.id = randomId();
+    } else {
+      this.id = id;
+    }
+    this.label.text = name ?? DynamicText.empty;
+    _dataStateChangeEvent = DataStatusChangeEvent(this, status);
     _attr = attr;
   }
 
   @override
   bool operator ==(Object other) {
-    return other is DataNode && other.data == data;
+    return other is RenderData && other.id == id;
   }
 
   @override
   int get hashCode {
-    return data.hashCode;
+    return id.hashCode;
+  }
+
+  @override
+  String toString() {
+    return '$runtimeType attr:$attr}';
   }
 
   void onDraw(CCanvas canvas, Paint paint);
@@ -105,37 +109,32 @@ abstract class DataNode<P, D> with StateProvider, ExtProps {
 
   DataType get dataType => DataType.nodeData;
 
-  void dispose(){}
+  void dispose() {}
 }
 
-abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
-  late S _symbol;
+abstract class RenderData2<P, S extends ChartSymbol> extends RenderData<P> {
+  late S symbol;
 
-  S get symbol => _symbol;
+  RenderData2(this.symbol, {super.id});
 
-  DataNode2(
-    S symbol,
-    D data,
-    int dataIndex,
-    int groupIndex,
-    P attr,
-    LabelStyle labelStyle,
-  ) : super(
-          data,
-          dataIndex,
-          groupIndex,
-          attr,
-          symbol.itemStyle,
-          symbol.borderStyle,
-          labelStyle,
-        ) {
-    _symbol = symbol;
+  RenderData2.attr(
+    this.symbol,
+    P attr, {
+    super.id,
+    super.name,
+  }) {
+    _attr = attr;
   }
+
+  RenderData2.of({
+    super.id,
+    super.name,
+  });
 
   @override
   set itemStyle(AreaStyle style) {
     super.itemStyle = style;
-    _symbol.itemStyle = style;
+    symbol.itemStyle = style;
   }
 
   @override
@@ -152,7 +151,7 @@ abstract class DataNode2<P, D, S extends ChartSymbol> extends DataNode<P, D> {
       symbol.borderStyle = borderStyle;
       symbol.itemStyle = itemStyle;
     }
-    this._symbol = symbol;
+    this.symbol = symbol;
   }
 
   @override

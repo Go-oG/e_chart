@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/circle/circle_view.dart';
 
 class CircleSeries extends ChartSeries {
-  List<CircleItemData> data;
+  List<CircleData> data;
   List<SNumber> center;
   SNumber innerRadius;
   SNumber radiusGap;
@@ -10,14 +10,14 @@ class CircleSeries extends ChartSeries {
   double corner;
   bool clockWise;
 
-  Fun5<CircleItemData, int, double, double, num>? radiusGapFun;
-  Fun5<CircleItemData, int, double, double, num>? radiusFun;
+  Fun5<CircleData, int, double, double, num>? radiusGapFun;
+  Fun5<CircleData, int, double, double, num>? radiusFun;
 
-  Fun2<CircleItemData, AreaStyle>? backStyleFun;
+  Fun2<CircleData, AreaStyle>? backStyleFun;
 
-  Fun4<CircleItemData, int, Set<ViewState>, LabelStyle?>? labelStyleFun;
-  Fun4<CircleItemData, int, Set<ViewState>, AreaStyle?>? areaStyleFun;
-  Fun4<CircleItemData, int, Set<ViewState>, LineStyle?>? borderFun;
+  Fun2<CircleData, LabelStyle?>? labelStyleFun;
+  Fun2<CircleData, AreaStyle?>? areaStyleFun;
+  Fun2<CircleData, LineStyle?>? borderFun;
 
   CircleSeries(
     this.data, {
@@ -48,35 +48,35 @@ class CircleSeries extends ChartSeries {
           coordType: CoordType.single,
         );
 
-  AreaStyle getBackStyle(Context context, CircleItemData data) {
+  AreaStyle getBackStyle(Context context, CircleData data) {
     if (backStyleFun != null) {
       return backStyleFun?.call(data) ?? AreaStyle.empty;
     }
     return AreaStyle.empty;
   }
 
-  AreaStyle getAreaStyle(Context context, CircleItemData data, int dataIndex, Set<ViewState> status) {
+  AreaStyle getAreaStyle(Context context, CircleData data) {
     AreaStyle? style;
     if (areaStyleFun != null) {
-      style = areaStyleFun?.call(data, dataIndex, status);
+      style = areaStyleFun?.call(data);
       if (style != null) {
         return style;
       }
     }
-    return context.option.theme.getAreaStyle(dataIndex).convert(status);
+    return context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
   }
 
-  LineStyle getBorderStyle(Context context, CircleItemData data, int dataIndex, Set<ViewState> status) {
+  LineStyle getBorderStyle(Context context, CircleData data) {
     if (borderFun != null) {
-      return borderFun?.call(data, dataIndex, status) ?? LineStyle.empty;
+      return borderFun?.call(data) ?? LineStyle.empty;
     }
     var theme = context.option.theme.pieTheme;
     return theme.getBorderStyle() ?? LineStyle.empty;
   }
 
-  LabelStyle getLabelStyle(Context context, CircleItemData data, int dataIndex, Set<ViewState> status) {
+  LabelStyle getLabelStyle(Context context, CircleData data) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, dataIndex, status) ?? LabelStyle.empty;
+      return labelStyleFun!.call(data) ?? LabelStyle.empty;
     }
     var theme = context.option.theme;
     return theme.getLabelStyle() ?? LabelStyle.empty;
@@ -91,11 +91,11 @@ class CircleSeries extends ChartSeries {
   List<LegendItem> getLegendItem(Context context) {
     List<LegendItem> list = [];
     each(data, (item, i) {
-      var name = item.name;
-      if (name == null || name.isEmpty) {
+      var name = item.label.text;
+      if ( name.isEmpty) {
         return;
       }
-      list.add(LegendItem(name, CircleSymbol()..itemStyle = getAreaStyle(context, item, i, {})));
+      list.add(LegendItem(name, CircleSymbol()..itemStyle = getAreaStyle(context, item)));
     });
 
     return list;
@@ -111,12 +111,4 @@ class CircleSeries extends ChartSeries {
 
   @override
   SeriesType get seriesType => SeriesType.circle;
-}
-
-class CircleItemData extends BaseItemData {
-  num value;
-  num max;
-  num offsetAngle;
-
-  CircleItemData(this.value, this.max, {this.offsetAngle = 0, super.id, super.name});
 }

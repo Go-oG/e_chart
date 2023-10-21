@@ -11,9 +11,9 @@ class TreeSeries extends RectSeries {
   SelectedMode selectedMode;
 
   ///这个包含了大小等相关信息
-  Fun2<TreeRenderNode, ChartSymbol>? symbolFun;
-  Fun2<TreeRenderNode, LabelStyle>? labelStyleFun;
-  Fun3<TreeRenderNode, TreeRenderNode, LineStyle>? linkStyleFun;
+  Fun2<TreeData, ChartSymbol>? symbolFun;
+  Fun2<TreeData, LabelStyle>? labelStyleFun;
+  Fun3<TreeData, TreeData, LineStyle>? linkStyleFun;
 
   TreeSeries(
     this.data,
@@ -42,7 +42,7 @@ class TreeSeries extends RectSeries {
     return TreeView(this);
   }
 
-  ChartSymbol getSymbol(Context context, TreeRenderNode node) {
+  ChartSymbol getSymbol(Context context, TreeData node) {
     var fun = symbolFun;
     if (fun != null) {
       return fun.call(node);
@@ -50,7 +50,7 @@ class TreeSeries extends RectSeries {
     return CircleSymbol(radius: 8, itemStyle: context.option.theme.getAreaStyle(node.groupIndex).convert(node.status));
   }
 
-  LineStyle getLinkStyle(Context context, TreeRenderNode source, TreeRenderNode target) {
+  LineStyle getLinkStyle(Context context, TreeData source, TreeData target) {
     var fun = linkStyleFun;
     if (fun != null) {
       return fun.call(source, target);
@@ -58,7 +58,7 @@ class TreeSeries extends RectSeries {
     return LineStyle.normal;
   }
 
-  LabelStyle getLabelStyle(Context context, TreeRenderNode source) {
+  LabelStyle getLabelStyle(Context context, TreeData source) {
     return labelStyleFun?.call(source) ?? LabelStyle.empty;
   }
 

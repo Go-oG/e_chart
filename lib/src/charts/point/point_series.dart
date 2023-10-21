@@ -3,8 +3,8 @@ import 'package:e_chart/e_chart.dart';
 import 'point_view.dart';
 
 class PointSeries extends RectSeries {
-  List<PointGroup> data;
-  Fun4<PointData, PointGroup, Set<ViewState>, ChartSymbol>? symbolFun;
+  List<PointData> data;
+  Fun2<PointData, ChartSymbol>? symbolFun;
 
   PointSeries(
     this.data, {
@@ -31,15 +31,15 @@ class PointSeries extends RectSeries {
     return PointView(this);
   }
 
-  ChartSymbol getSymbol(Context context, PointData data, int index, PointGroup group, Set<ViewState> status) {
+  ChartSymbol getSymbol(Context context, PointData data) {
     var fun = symbolFun;
     if (fun != null) {
-      return fun.call(data, group, status);
+      return fun.call(data);
     }
 
     return CircleSymbol(
       radius: 10,
-      itemStyle: AreaStyle(color: context.option.theme.getColor(index)).convert(status),
+      itemStyle: AreaStyle(color: context.option.theme.getColor(data.dataIndex)).convert(data.status),
     );
   }
 
@@ -63,25 +63,16 @@ class PointSeries extends RectSeries {
     if (_extremeHelper != null) {
       return _extremeHelper!;
     }
-    Map<PointData, PointGroup> groupMap = {};
-    each(data, (group, p0) {
-      each(group.data, (child, p1) {
-        if (groupMap.containsKey(child)) {
-          throw ChartError("存在相同ID的数据");
-        }
-        groupMap[child] = group;
-      });
-    });
 
     ExtremeHelper<PointData> helper = ExtremeHelper(
-      (p0) => ['x${groupMap[p0]!.xAxisIndex}', 'y${groupMap[p0]!.yAxisIndex}'],
+      (p0) => ['x${p0.xAxisIndex}', 'y${p0.yAxisIndex}'],
       (p0, index) {
         if (index.startsWith('x')) {
           return p0.x;
         }
         return p0.y;
       },
-      groupMap.keys,
+      data,
     );
     _extremeHelper = helper;
     return helper;
@@ -102,5 +93,4 @@ class PointSeries extends RectSeries {
     clearExtreme();
     super.notifyConfigChange();
   }
-
 }

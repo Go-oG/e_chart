@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart';
 
 
 class RadialParam {
-  List<GraphNode> nodes = [];
+  List<GraphData> nodes = [];
   List<ChartOffset> positions = [];
   List<List<double>> adjMatrix = [];
   int focusID;
@@ -13,7 +13,7 @@ class RadialParam {
   num? width;
   num? speed;
   num? gravity;
-  Fun2<GraphNode, num> nodeSizeFunc;
+  Fun2<GraphData, num> nodeSizeFunc;
   num k;
   bool strictRadial;
 
@@ -42,10 +42,10 @@ class RadialForce {
   late num width;
   late num speed;
   late num gravity;
-  late Fun2<GraphNode, num> nodeSizeFunc;
+  late Fun2<GraphData, num> nodeSizeFunc;
   late num k;
   late bool strictRadial;
-  late List<GraphNode> nodes;
+  late List<GraphData> nodes;
   num? maxDisplace;
   List<ChartOffset> disp = [];
 

@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///帮助在极坐标系中进行布局
-abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>, S extends StackSeries<T, P>>
+abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T,P>, S extends StackSeries<T, P>>
     extends StackHelper<T, P, S> {
   PolarHelper(super.context, super.view, super.series);
 
@@ -109,7 +109,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
     final colArc = columnNode.arc;
     var coord = findPolarCoord();
     each(columnNode.nodeList, (node, i) {
-      var data = node.data.data;
+      var data = node.dataNull;
       if (data == null) {
         node.arc = Arc.zero;
         node.position = Offset.zero;
@@ -127,7 +127,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  StackAnimatorNode onCreateAnimatorNode(SingleNode<T, P> node, DiffType diffType,bool isStart) {
+  StackAnimatorNode onCreateAnimatorNode(StackData<T, P> node, DiffType diffType,bool isStart) {
     if (diffType == DiffType.update) {
       return StackAnimatorNode(arc: node.arc, offset: node.arc.centroid());
     }
@@ -141,7 +141,7 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T>,
   }
 
   @override
-  void onAnimatorUpdate(SingleNode<T, P> node, double t, var startStatus, var endStatus) {
+  void onAnimatorUpdate(StackData<T, P> node, double t, var startStatus, var endStatus) {
     var e = endStatus.arc!;
     if (series.direction == Direction.vertical) {
       ///角度增加

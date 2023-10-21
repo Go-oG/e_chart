@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/circle/circle_helper.dart';
 
@@ -8,7 +6,11 @@ class CircleView extends SeriesView<CircleSeries, CircleHelper> {
 
   @override
   CircleHelper buildLayoutHelper(var oldHelper) {
-    oldHelper?.dispose();
+    if (oldHelper != null) {
+      oldHelper.view = this;
+      oldHelper.series = series;
+      oldHelper.context = context;
+    }
     return CircleHelper(context, this, series);
   }
 

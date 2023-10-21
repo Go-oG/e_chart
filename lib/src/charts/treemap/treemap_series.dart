@@ -5,30 +5,30 @@ import 'package:flutter/material.dart';
 ///树图
 class TreeMapSeries extends RectSeries {
   static final Command commandBack = Command(11);
-  TreeData data;
+  TreeMapData data;
   TreemapLayout layout = SquareLayout();
 
   //表示展示几层，从当前层次开始计算
   // 如果<=0 则展示全部
   int showDepth;
-  Fun2<TreeMapNode, AreaStyle?>? itemStyleFun;
-  Fun2<TreeMapNode, LineStyle?>? borderStyleFun;
-  Fun2<TreeMapNode, LabelStyle?>? labelStyleFun;
+  Fun2<TreeMapData, AreaStyle?>? itemStyleFun;
+  Fun2<TreeMapData, LineStyle?>? borderStyleFun;
+  Fun2<TreeMapData, LabelStyle?>? labelStyleFun;
 
   ///标签文字对齐位置
-  Fun2<TreeMapNode, Alignment>? alignFun;
+  Fun2<TreeMapData, Alignment>? alignFun;
 
-  Fun2<TreeMapNode, num>? paddingInner;
+  Fun2<TreeMapData, num>? paddingInner;
 
-  Fun2<TreeMapNode, num>? paddingTop;
+  Fun2<TreeMapData, num>? paddingTop;
 
-  Fun2<TreeMapNode, num>? paddingRight;
+  Fun2<TreeMapData, num>? paddingRight;
 
-  Fun2<TreeMapNode, num>? paddingBottom;
+  Fun2<TreeMapData, num>? paddingBottom;
 
-  Fun2<TreeMapNode, num>? paddingLeft;
+  Fun2<TreeMapData, num>? paddingLeft;
 
-  Fun3<TreeMapNode, TreeMapNode, int>? sortFun = (a, b) {
+  Fun3<TreeMapData, TreeMapData, int>? sortFun = (a, b) {
     return b.value.compareTo(a.value);
   };
 
@@ -81,34 +81,29 @@ class TreeMapSeries extends RectSeries {
   @override
   int onAllocateStyleIndex(int start) {
     int c = 0;
-    List<TreeData> dl = [data];
-    List<TreeData> next = [];
-    while (dl.isNotEmpty) {
-      each(dl, (p0, p1) {
-        p0.styleIndex = c;
-        c++;
-      });
-      next.addAll(dl);
-      dl = next;
-    }
+    data.each((node, index, startNode) {
+      node.styleIndex=index;
+      c++;
+      return false;
+    });
     return c;
   }
 
   @override
   SeriesType get seriesType => SeriesType.treemap;
 
-  LabelStyle getLabelStyle(Context context, TreeMapNode node) {
+  LabelStyle getLabelStyle(Context context, TreeMapData node) {
     return labelStyleFun?.call(node) ?? LabelStyle.empty;
   }
 
-  AreaStyle getAreaStyle(Context context, TreeMapNode node) {
+  AreaStyle getAreaStyle(Context context, TreeMapData node) {
     if (itemStyleFun != null) {
       return itemStyleFun?.call(node) ?? AreaStyle.empty;
     }
     return context.option.theme.getAreaStyle(node.dataIndex).convert(node.status);
   }
 
-  LineStyle getBorderStyle(Context context, TreeMapNode node) {
+  LineStyle getBorderStyle(Context context, TreeMapData node) {
     return borderStyleFun?.call(node) ?? LineStyle.empty;
   }
 

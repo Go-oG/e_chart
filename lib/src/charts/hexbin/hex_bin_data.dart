@@ -1,16 +1,13 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
-  HexbinNode(
-    super.symbol,
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.labelStyle,
-  ) {
-    label.text = data.name ?? DynamicText.empty;
+class HexbinData extends RenderData2<HexAttr, PositiveSymbol> {
+  HexbinData({
+    super.id,
+    super.name,
+  }) : super.of() {
+    attr = HexAttr.zero;
+    symbol = PositiveSymbol(count: 6);
   }
 
   @override
@@ -26,23 +23,23 @@ class HexbinNode extends DataNode2<HexAttr, ItemData, PositiveSymbol> {
 
   @override
   void updateStyle(Context context, HexbinSeries series) {
-    itemStyle = series.getItemStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    label.style = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    itemStyle = series.getItemStyle(context, this) ?? AreaStyle.empty;
+    borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
+    label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
     symbol.itemStyle = itemStyle;
     symbol.borderStyle = borderStyle;
   }
 
   @override
   void updateLabelPosition(Context context, covariant ChartSeries series) {
-    label.updatePainter(offset: attr.center,align: Alignment.center);
+    label.updatePainter(offset: attr.center, align: Alignment.center);
   }
 }
 
 class HexAttr extends SymbolAttr {
   static final HexAttr zero = HexAttr.all(Hex(0, 0, 0), Offset.zero);
   final Hex hex;
-  late Offset center;
+  Offset center = Offset.zero;
 
   HexAttr(this.hex);
 

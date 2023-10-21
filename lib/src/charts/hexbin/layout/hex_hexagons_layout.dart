@@ -18,7 +18,7 @@ class HexagonsLayout extends HexbinLayout {
   }
 
   @override
-  void onLayout(List<HexbinNode> data, LayoutType type,HexbinLayoutParams params) {
+  void onLayout(List<HexbinData> data, LayoutType type,HexbinLayoutParams params) {
 
     int level = computeMinLevel(data.length);
     List<Hex> hexList = hexagons(level);

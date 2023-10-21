@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import 'parallel_node.dart';
+import 'parallel_data.dart';
 
 class ParallelHelper extends LayoutHelper<ParallelSeries> {
-  List<ParallelNode> nodeList = [];
+  List<ParallelData> nodeList = [];
 
   ParallelHelper(super.context, super.view, super.series);
 
@@ -12,8 +12,8 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    List<ParallelNode> oldList = nodeList;
-    List<ParallelNode> newList = convertData(series.data);
+    List<ParallelData> oldList = nodeList;
+    List<ParallelData> newList = convertData(series.data);
     layoutNode(newList);
     var animation = getAnimation(type, newList.length);
     if (animation == null || type == LayoutType.none || type == LayoutType.update) {
@@ -33,11 +33,11 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     context.addAnimationToQueue([AnimationNode(tween, animation, LayoutType.layout)]);
   }
 
-  void layoutNode(List<ParallelNode> nodeList) {
+  void layoutNode(List<ParallelData> nodeList) {
     var coord = findParallelCoord();
     for (var node in nodeList) {
       eachNull(node.attr, (symbol, i) {
-        var data = node.data.data[i];
+        var data = node.data[i];
         if (data == null) {
           node.attr[i].symbol = EmptySymbol.empty;
         } else {
@@ -48,21 +48,18 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     }
   }
 
-  List<ParallelNode> convertData(List<ParallelGroup> list) {
-    List<ParallelNode> nodeList = [];
-    each(list, (p0, p1) {
+  List<ParallelData> convertData(List<ParallelData> list) {
+    each(list, (data, p1) {
       List<SymbolNode> snl = [];
-      var bs = series.getBorderStyle(context, p0, p1, null);
-      var ls = series.getLabelStyle(context, p0, p1, null);
-      var node = ParallelNode(p0, p1, 0, snl, AreaStyle.empty, bs, ls);
-      nodeList.add(node);
-      each(p0.data, (data, i) {
-        var node = SymbolNode(data, series.getSymbol(data, p0, i, p1), i, p1);
+      data.attr = snl;
+      data.updateStyle(context, series);
+      each(data.data, (cd, i) {
+        var node = SymbolNode(cd, series.getSymbol(cd, data), i, p1);
         node.data = data;
         snl.add(node);
       });
     });
-    return nodeList;
+    return list;
   }
 
   @override
@@ -70,7 +67,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     handleHoverAndClick(localOffset, true);
   }
 
-  ParallelNode? _oldHoverNode;
+  ParallelData? _oldHoverNode;
 
   void handleHoverAndClick(Offset offset, bool click) {
     var node = findNode(offset);
@@ -113,7 +110,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     }
   }
 
-  ParallelNode? findNode(Offset offset) {
+  ParallelData? findNode(Offset offset) {
     for (var node in nodeList) {
       if (node.contains(offset)) {
         return node;
@@ -149,6 +146,4 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
       }
     });
   }
-
-
 }

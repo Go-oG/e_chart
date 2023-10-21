@@ -1,28 +1,20 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class FunnelNode extends DataNode<Polygon, ItemData> {
-  final int index;
-  final ItemData? preData;
+class FunnelData extends RenderData<Polygon> {
+  num value;
 
+  FunnelData? preData;
   double scale = 1;
   Offset center = Offset.zero;
 
-  FunnelNode(
-    this.index,
-    this.preData,
-    ItemData data,
-    int dataIndex,
-    AreaStyle itemStyle,
-    LineStyle borderStyle,
-    LabelStyle labelStyle,
-  ) : super(data, dataIndex, 0, Polygon.zero, itemStyle, borderStyle, labelStyle);
+  FunnelData(this.value, {super.id, super.name});
 
   @override
   set attr(Polygon a) {
     super.attr = a;
     if (a.points.length < 4) {
-      center=Offset.zero;
+      center = Offset.zero;
       return;
     }
     Offset p0 = attr.points[0];
@@ -42,7 +34,7 @@ class FunnelNode extends DataNode<Polygon, ItemData> {
     double centerX = center.dx;
     double centerY = center.dy;
     double topW = (p1.dx - p0.dx).abs();
-    ChartAlign align = series.getLabelAlign(data, status);
+    ChartAlign align = series.getLabelAlign(this);
     double x = centerX + align.align.x * topW / 2;
     double y = centerY + align.align.y * (p1.dy - p2.dy).abs() / 2;
     if (!align.inside) {
@@ -61,12 +53,12 @@ class FunnelNode extends DataNode<Polygon, ItemData> {
     if (!align.inside) {
       textAlign = Alignment(-textAlign.x, -textAlign.y);
     }
-    label.updatePainter(text: data.name ?? DynamicText.empty, offset: offset, align: textAlign);
+    label.updatePainter(text: label.text, offset: offset, align: textAlign);
     labelLine = computeLabelLineOffset(context, series, label.offset) ?? [];
   }
 
   List<Offset>? computeLabelLineOffset(Context context, FunnelSeries series, Offset? textOffset) {
-    ChartAlign align = series.getLabelAlign(data, status);
+    ChartAlign align = series.getLabelAlign(this);
     if (align.inside || textOffset == null) {
       return null;
     }
@@ -126,9 +118,9 @@ class FunnelNode extends DataNode<Polygon, ItemData> {
 
   @override
   void updateStyle(Context context, FunnelSeries series) {
-    itemStyle = series.getAreaStyle(context, data, dataIndex, status);
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    var s = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    itemStyle = series.getAreaStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
+    var s = series.getLabelStyle(context, this) ?? LabelStyle.empty;
     label.style = s;
   }
 

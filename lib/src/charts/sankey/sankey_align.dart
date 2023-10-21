@@ -1,17 +1,17 @@
-import 'sankey_node.dart';
+import 'sankey_data.dart';
 
 abstract class SankeyAlign {
   const SankeyAlign();
 
-  num align(SankeyNode node, int n);
+  num align(SankeyData node, int n);
 }
 
 class LeftAlign extends SankeyAlign {
   const LeftAlign();
 
   @override
-  num align(SankeyNode node, int n) {
-    return node.deep;
+  num align(SankeyData node, int n) {
+    return node.attr.deep;
   }
 }
 
@@ -19,8 +19,8 @@ class RightAlign extends SankeyAlign {
   const RightAlign();
 
   @override
-  num align(SankeyNode node, int n) {
-    return (n - 1 - node.graphHeight);
+  num align(SankeyData node, int n) {
+    return (n - 1 - node.attr.graphHeight);
   }
 }
 
@@ -28,11 +28,11 @@ class JustifyAlign extends SankeyAlign {
   const JustifyAlign();
 
   @override
-  num align(SankeyNode node, int n) {
-    if (node.outLinks.isEmpty) {
+  num align(SankeyData node, int n) {
+    if (node.attr.outLinks.isEmpty) {
       return n - 1;
     }
-    return node.deep;
+    return node.attr.deep;
   }
 }
 
@@ -40,15 +40,15 @@ class CenterAlign extends SankeyAlign {
   const CenterAlign();
 
   @override
-  num align(SankeyNode node, int n) {
-    if (node.inputLinks.isNotEmpty) {
-      return node.deep;
+  num align(SankeyData node, int n) {
+    if (node.attr.inputLinks.isNotEmpty) {
+      return node.attr.deep;
     }
-    if (node.outLinks.isNotEmpty) {
-      int deep = node.outLinks[0].target.deep;
-      for (var element in node.outLinks) {
-        if (element.target.deep < deep) {
-          deep = element.target.deep;
+    if (node.attr.outLinks.isNotEmpty) {
+      int deep = node.attr.outLinks[0].target.attr.deep;
+      for (var element in node.attr.outLinks) {
+        if (element.target.attr.deep < deep) {
+          deep = element.target.attr.deep;
         }
       }
       return deep - 1;

@@ -18,7 +18,7 @@ class PackView extends SeriesView<PackSeries, PackHelper> {
     );
     canvas.save();
     canvas.transform(matrix4.storage);
-    var nodeList = layoutHelper.showNodeList;
+    var nodeList = layoutHelper.nodeList;
     each(nodeList, (node, p1) {
       node.onDraw(canvas, mPaint);
     });

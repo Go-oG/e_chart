@@ -7,15 +7,15 @@ class ResquareLayout extends TreemapLayout {
   double rowsRatio = phi;
 
   @override
-  void onLayout2(TreeMapNode root, LayoutType type) {
+  void onLayout2(TreeMapData root, LayoutType type) {
     Rect rect = boxBound;
     resquarify(root, rowsRatio, rect.left, rect.top, rect.right, rect.bottom);
   }
 
-  static void resquarify(TreeMapNode parent, double ratio, double x0, double y0, double x1, double y1) {
+  static void resquarify(TreeMapData parent, double ratio, double x0, double y0, double x1, double y1) {
     List<Row> rows = [];
     Row row;
-    List<TreeMapNode> nodes = [];
+    List<TreeMapData> nodes = [];
     int i = 0;
     int j = -1;
     int n;

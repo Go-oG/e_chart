@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
+class ColumnNode<T extends StackItemData, P extends StackGroupData<T,P>> {
   final GroupNode<T, P> parentNode;
-  List<SingleNode<T, P>> nodeList;
+  List<StackData<T, P>> nodeList;
   final bool isStack;
 
   ColumnNode(this.parentNode, this.nodeList, this.isStack);
@@ -26,19 +26,19 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
     return nodeList[0].down;
   }
 
-  SingleNode<T, P>? getUpNode() {
+  StackData<T, P>? getUpNode() {
     for (int i = nodeList.length - 1; i >= 0; i--) {
       var cn = nodeList[i];
-      if (cn.originData != null) {
+      if (cn.dataIsNotNull) {
         return cn;
       }
     }
     return null;
   }
 
-  SingleNode<T, P>? getDownNode() {
+  StackData<T, P>? getDownNode() {
     for (var cn in nodeList) {
-      if (cn.originData != null) {
+      if (cn.dataIsNotNull) {
         return cn;
       }
     }
@@ -51,20 +51,20 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
     }
     if (nodeList.length == 1) {
       var first = nodeList.first;
-      var itemData = first.originData;
+      var itemData = first.dataNull;
       if (itemData == null) {
         return;
       }
-      first.up = itemData.maxValue;
-      first.down = itemData.minValue;
+      first.attr.up = itemData.maxValue;
+      first.attr.down = itemData.minValue;
       return;
     }
 
-    List<SingleNode<T, P>> positiveList = [];
-    List<SingleNode<T, P>> negativeList = [];
-    List<SingleNode<T, P>> crossList = [];
+    List<StackData<T, P>> positiveList = [];
+    List<StackData<T, P>> negativeList = [];
+    List<StackData<T, P>> crossList = [];
     each(nodeList, (node, p1) {
-      var itemData = node.originData;
+      var itemData = node.dataNull;
       if (itemData == null) {
         return;
       }
@@ -77,33 +77,33 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T>> {
       }
     });
 
-    List<List<SingleNode<T, P>>> tmpList = [positiveList, crossList];
+    List<List<StackData<T, P>>> tmpList = [positiveList, crossList];
     for (var list in tmpList) {
       if (list.isEmpty) {
         continue;
       }
       var first = list.first;
-      var firstData = first.originData!;
+      var firstData = first.data;
       num down = firstData.minValue;
       num up = firstData.maxValue;
       each(list, (node, p1) {
-        node.up = up;
-        node.down = down;
+        node.attr.up = up;
+        node.attr.down = down;
         down = up;
-        up += (node.originData!.maxValue - node.originData!.minValue);
+        up += (node.data.maxValue - node.data.minValue);
       });
     }
 
     if (negativeList.isNotEmpty) {
       var first = negativeList.first;
-      var firstData = first.originData!;
+      var firstData = first.data;
       num up = firstData.maxValue;
       num down = firstData.minValue;
       each(negativeList, (node, p1) {
-        node.up = up;
-        node.down = down;
+        node.attr.up = up;
+        node.attr.down = down;
         up = down;
-        down -= (node.originData!.maxValue - node.originData!.minValue);
+        down -= (node.data.maxValue - node.data.minValue);
       });
     }
   }

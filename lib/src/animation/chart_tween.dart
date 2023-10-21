@@ -71,6 +71,14 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   }
 
   void _startInner(Context context, [bool useUpdate = false]) {
+    var duration=useUpdate?option.updateDuration:option.duration;
+    if(duration.inMilliseconds<=0){
+      _callOnStart();
+      value=_getValue(1);
+      _callOnEnd();
+      return;
+    }
+
     _hasCallStart = false;
     _cancelFlag = false;
     _controller = context.boundedAnimation(option, useUpdate);
@@ -86,13 +94,11 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
       }
       value = _getValue(curved.value);
     });
-
     curved.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         _callOnEnd();
       }
     });
-
     _controller?.forward();
   }
 

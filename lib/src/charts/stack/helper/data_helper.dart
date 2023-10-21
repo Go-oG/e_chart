@@ -2,38 +2,34 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 
 ///处理二维坐标系下堆叠数据
-class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends ChartSeries> {
-  List<P> _dataList;
-  S? _series;
-
-  S get series => _series!;
+class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
+  late List<P> groupList;
+  CoordType coord;
+  int polarIndex;
   Direction direction;
   bool realSort;
   Sort sort;
   int? sortCount;
-  Map<T, SingleNode<T, P>> _nodeMap = {};
 
-  SingleNode<T, P>? findNode(T? t) {
-    if (t == null) {
-      return null;
-    }
-    return _nodeMap[t];
-  }
+  List<StackData<T, P>> dataList = [];
 
-  Map<T, SingleNode<T, P>> get nodeMap => _nodeMap;
   AxisGroup<T, P>? _result;
 
   AxisGroup<T, P> get result {
     return _result!;
   }
 
-  DataHelper(this._series, this._dataList, this.direction, this.realSort, this.sort, this.sortCount) {
+  DataHelper(this.coord, this.polarIndex, List<P> list, this.direction, this.realSort, this.sort, this.sortCount) {
+    if (coord != CoordType.grid && coord != CoordType.polar) {
+      throw ChartError('only support Grid and Polar Coord');
+    }
+    this.groupList = [...list];
     if (realSort) {
-      if (_dataList.length > 1) {
+      if (groupList.length > 1) {
         throw ChartError("当启用了实时排序后，只支持一个数据组");
       }
-      if (_dataList.isNotEmpty) {
-        P group = _dataList.first;
+      if (groupList.isNotEmpty) {
+        P group = groupList.first;
         int c = sortCount ?? -1;
         if (c <= 0) {
           c = group.data.length;
@@ -43,57 +39,13 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         }
         bool isVertical = direction == Direction.vertical;
         group.data.sort((a, b) {
-          num ai = a == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? a.y : a.x);
-          num bi = b == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? b.y : b.x);
-          if (sort == Sort.desc) {
-            return bi.compareTo(ai);
-          }
-          return ai.compareTo(bi);
-        });
-        if (c != group.data.length) {
-          group.data.removeRange(c, group.data.length);
-        }
-      }
-    }
-    _result = _parse();
-    result.groupMap.forEach((key, value) {
-      for (var gn in value) {
-        for (var cn in gn.nodeList) {
-          for (var node in cn.nodeList) {
-            if (node.originData == null) {
-              continue;
-            }
-            _nodeMap[node.originData!] = node;
-          }
-        }
-      }
-    });
-  }
+          var ad = a.dataNull;
+          var bd = a.dataNull;
 
-  void updateData(S series, List<P> dataList, Direction direction, bool realSort, Sort sort, int? sortCount) {
-    _series = series;
-    dataList = _dataList;
-    this.direction = direction;
-    this.realSort = realSort;
-    this.sort = sort;
-    this.sortCount = sortCount;
-    if (realSort) {
-      if (_dataList.length > 1) {
-        throw ChartError("当启用了实时排序后，只支持一个数据组");
-      }
-      if (_dataList.isNotEmpty) {
-        P group = _dataList.first;
-        int c = sortCount ?? -1;
-        if (c <= 0) {
-          c = group.data.length;
-        }
-        if (c > group.data.length) {
-          c = group.data.length;
-        }
-        bool isVertical = direction == Direction.vertical;
-        group.data.sort((a, b) {
-          num ai = a == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? a.y : a.x);
-          num bi = b == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? b.y : b.x);
+          num ai =
+              ad == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? ad.y : ad.x);
+          num bi =
+              bd == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? bd.y : bd.x);
           if (sort == Sort.desc) {
             return bi.compareTo(ai);
           }
@@ -104,20 +56,15 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
         }
       }
     }
-    _result = _parse();
-    _nodeMap = {};
-    result.groupMap.forEach((key, value) {
-      for (var gn in value) {
-        for (var cn in gn.nodeList) {
-          for (var node in cn.nodeList) {
-            if (node.originData == null) {
-              continue;
-            }
-            _nodeMap[node.originData!] = node;
-          }
-        }
-      }
+    this.dataList = [];
+
+    each(groupList, (group, p1) {
+      each(group.data, (p0, p1) {
+        this.dataList.add(p0);
+      });
     });
+
+    _result = _parse();
   }
 
   ///存储坐标轴上的极值数据
@@ -140,19 +87,18 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
     return _groupValueMap[p];
   }
 
-  OriginInfo<T, P> _originInfo = OriginInfo({}, {});
-
   ///解析数据
   ///将给定数据解析为类似于栈的数据
   ///并保存相关的数据信息
   AxisGroup<T, P> _parse() {
-    _groupValueMap = _collectGroupInfo(_dataList);
+    ///初始化数据的索引
+    _initData(groupList);
 
-    ///解析原始数据信息
-    _originInfo = _parseOriginInfo(_dataList);
+    ///收集基本数值信息
+    _groupValueMap = _collectGroupInfo(groupList);
 
     ///将数据安装使用的X坐标轴进行分割
-    Map<AxisIndex, List<GroupNode<T, P>>> resultMap = _splitDataByAxis(_originInfo, _dataList);
+    Map<AxisIndex, List<GroupNode<T, P>>> resultMap = _splitDataByAxis(groupList);
 
     ///最后进行数据合并整理
     AxisGroup<T, P> group = AxisGroup(resultMap);
@@ -166,34 +112,30 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   ///解析数据的原始信息
   ///包括子数据-父数据映射关系、
   ///排序索引
-  OriginInfo<T, P> _parseOriginInfo(List<P> dataList) {
+  void _initData(List<P> dataList) {
     Map<P, int> sortMap = {};
-    Map<P, Map<int, WrapData<T, P>>> dataMap = {};
     each(dataList, (group, groupIndex) {
       if (!sortMap.containsKey(group)) {
         sortMap[group] = groupIndex;
       }
-      Map<int, WrapData<T, P>> childMap = dataMap[group] ?? {};
-      dataMap[group] = childMap;
-      each(group.data, (childData, i) {
-        childMap[i] = WrapData(group, childData, groupIndex, i);
+      each(group.data, (cd, i) {
+        cd.dataIndex = i;
+        cd.groupIndex = groupIndex;
+        cd.attr.parent = group;
+        cd.attr.coord = coord;
       });
     });
-    return OriginInfo(sortMap, dataMap);
   }
 
   ///将给定的数据按照其使用的坐标轴进行分割
   ///对于竖直方向 X轴为主轴，水平方向 Y轴为主轴
-  Map<AxisIndex, List<GroupNode<T, P>>> _splitDataByAxis(OriginInfo<T, P> originInfo, List<P> dataList) {
+  Map<AxisIndex, List<GroupNode<T, P>>> _splitDataByAxis(List<P> dataList) {
     Map<AxisIndex, List<P>> axisGroupMap = {};
     for (var group in dataList) {
       int mainAxisIndex;
-      CoordType system;
-      if (series.coordType == CoordType.polar) {
-        system = CoordType.polar;
-        mainAxisIndex = series.polarIndex;
+      if (coord == CoordType.polar) {
+        mainAxisIndex = polarIndex;
       } else {
-        system = CoordType.grid;
         if (direction == Direction.vertical) {
           mainAxisIndex = group.xAxisIndex;
         } else {
@@ -203,7 +145,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       if (mainAxisIndex < 0) {
         mainAxisIndex = 0;
       }
-      AxisIndex index = AxisIndex(system, mainAxisIndex);
+      AxisIndex index = AxisIndex(coord, mainAxisIndex);
       if (!axisGroupMap.containsKey(index)) {
         axisGroupMap[index] = [];
       }
@@ -212,23 +154,23 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
 
     Map<AxisIndex, List<GroupNode<T, P>>> resultMap = {};
     axisGroupMap.forEach((key, value) {
-      resultMap[key] = _handleSingleAxis(key, value, originInfo);
+      resultMap[key] = _handleSingleAxis(key, value);
     });
     return resultMap;
   }
 
   ///处理单根坐标轴
-  List<GroupNode<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list, OriginInfo<T, P> originInfo) {
+  List<GroupNode<T, P>> _handleSingleAxis(AxisIndex axisIndex, List<P> list) {
     int barGroupCount = _computeMaxGroupCount(list);
 
     ///存放分组数据
-    List<List<InnerData<T, P>>> groupDataSetList = List.generate(barGroupCount, (index) => []);
+    List<List<StackData<T, P>>> groupDataSetList = List.generate(barGroupCount, (index) => []);
     for (int i = 0; i < barGroupCount; i++) {
       for (var data in list) {
         if (i >= data.data.length) {
           continue;
         }
-        groupDataSetList[i].add(InnerData(data.data[i], data));
+        groupDataSetList[i].add(data.data[i]);
       }
     }
     List<GroupNode<T, P>> groupNodeList = List.generate(barGroupCount, (index) => GroupNode(axisIndex, index, []));
@@ -238,34 +180,35 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       GroupNode<T, P> groupNode = groupNodeList[index];
 
       ///<stackId>
-      Map<String, List<WrapData<T, P>>> singleNodeMap = {};
-
-      List<WrapData<T, P>> singleNodeList = [];
-      each(group, (innerData, p1) {
-        var wrap = originInfo.dataMap[innerData.parent]![index];
-        if (wrap == null) {
+      Map<String, List<StackData<T, P>>> stackMap = {};
+      List<StackData<T, P>> singleNodeList = [];
+      each(group, (data, p1) {
+        if (data.dataIsNull) {
           return;
         }
-        if (wrap.parent.isStack) {
-          var stackId = wrap.parent.stackId!;
-          List<WrapData<T, P>> dl = singleNodeMap[stackId] ?? [];
-          singleNodeMap[stackId] = dl;
-          dl.add(wrap);
+        if (data.parent.isStack) {
+          var stackId = data.parent.stackId!;
+          List<StackData<T, P>> dl = stackMap[stackId] ?? [];
+          stackMap[stackId] = dl;
+          dl.add(data);
         } else {
-          singleNodeList.add(wrap);
+          singleNodeList.add(data);
         }
       });
 
-      var coord = series.coordType == CoordType.polar ? CoordType.polar : CoordType.grid;
-      singleNodeMap.forEach((key, value) {
+      stackMap.forEach((key, value) {
         ColumnNode<T, P> column = ColumnNode(groupNode, [], true);
-        List<SingleNode<T, P>> dl = List.from(value.map((e) => SingleNode(coord, column, e, true)));
-        column.nodeList.addAll(dl);
+        column.nodeList.addAll(value);
+        each(value, (p0, p1) {
+          p0.attr.parentNode = column;
+        });
+
         groupNode.nodeList.add(column);
       });
       each(singleNodeList, (e, i) {
         ColumnNode<T, P> column = ColumnNode(groupNode, [], false);
-        column.nodeList.add(SingleNode(coord, column, e, false));
+        e.attr.parentNode = column;
+        column.nodeList.add(e);
         groupNode.nodeList.add(column);
       });
     });
@@ -309,10 +252,10 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
             int axisIndex = m.min(x ? node.parent.xAxisIndex : node.parent.yAxisIndex, 0);
             List<dynamic> dl = [];
             if (x != vertical) {
-              dl.add(node.up);
-              dl.add(node.down);
+              dl.add(node.attr.up);
+              dl.add(node.attr.down);
             } else {
-              dl.add(x ? node.originData?.x : node.originData?.y);
+              dl.add(x ? node.dataNull?.x : node.dataNull?.y);
             }
             for (var data in dl) {
               if (data == null) {
@@ -353,7 +296,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       }
     });
     Map<int, ExtremeInfo> infoMap = {};
-    var coord = series.coordType ?? CoordType.grid;
+
     numMap.forEach((key, value) {
       var info = infoMap[key] ?? ExtremeInfo(x, AxisIndex(coord, key), [], [], []);
       infoMap[key] = info;
@@ -415,34 +358,36 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
       if (group.data.isEmpty) {
         continue;
       }
-      T? minV;
-      T? maxV;
+      StackData<T, P>? minV;
+      StackData<T, P>? maxV;
 
-      List<T> nl = [];
+      List<StackData<T, P>> nl = [];
       for (var data in group.data) {
-        if (data == null) {
+        if (data.dataIsNull) {
           continue;
         }
         nl.add(data);
-        if (minV == null || data.minValue < minV.minValue) {
+
+        if (minV == null || data.data.minValue < minV.data.minValue) {
           minV = data;
         }
-        if (maxV == null || data.maxValue > maxV.maxValue) {
+        if (maxV == null || data.data.maxValue > maxV.data.maxValue) {
           maxV = data;
         }
       }
 
-      T? aveV;
+      StackData<T, P>? aveV;
+
       if (nl.isNotEmpty) {
-        num v = sumBy(nl, (p0) => p0.aveValue) / nl.length;
+        num v = sumBy(nl, (p0) => p0.data.aveValue) / nl.length;
         nl.sort((a, b) {
-          return a.aveValue.compareTo(b.aveValue);
+          return a.data.aveValue.compareTo(b.data.aveValue);
         });
         num diff = double.maxFinite;
         for (var d in nl) {
-          if ((d.aveValue - v).abs() < diff) {
+          if ((d.data.aveValue - v).abs() < diff) {
             aveV = d;
-            diff = (d.aveValue - v).abs();
+            diff = (d.data.aveValue - v).abs();
           }
         }
       }
@@ -465,31 +410,15 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T>, S extends
   void dispose() {
     _result?.dispose();
     _result = null;
-    _nodeMap = {};
-    _dataList = [];
-    _series = null;
+    groupList = [];
   }
 }
 
-class InnerData<T extends StackItemData, P extends StackGroupData<T>> {
-  final T? data;
-  final P parent;
-
-  InnerData(this.data, this.parent);
-}
-
-class OriginInfo<T extends StackItemData, P extends StackGroupData<T>> {
-  final Map<P, int> sortMap;
-  final Map<P, Map<int, WrapData<T, P>>> dataMap;
-
-  OriginInfo(this.sortMap, this.dataMap);
-}
-
-class ValueInfo<T extends StackItemData, P extends StackGroupData<T>> {
+class ValueInfo<T extends StackItemData, P extends StackGroupData<T, P>> {
   final P group;
-  T? minData;
-  T? maxData;
-  T? aveData;
+  StackData<T, P>? minData;
+  StackData<T, P>? maxData;
+  StackData<T, P>? aveData;
 
   ValueInfo(this.group, this.minData, this.maxData, this.aveData);
 }

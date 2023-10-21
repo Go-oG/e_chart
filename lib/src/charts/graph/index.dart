@@ -16,13 +16,11 @@ export 'layout/dagre_layout.dart';
 export 'layout/graph_grid_layout.dart' hide InnerPos, LayoutProps;
 export 'layout/mds_layout.dart';
 export 'layout/random_layout.dart';
-export 'model/edge_node.dart';
-export 'model/edge_data.dart';
-export 'model/graph.dart';
-export 'model/graph_node.dart';
-export 'model/item_data.dart';
-
-export 'graph_helper.dart';
 export 'layout/graph_layout.dart';
+
+export 'model/graph.dart';
+
+export 'graph_data.dart';
+export 'graph_helper.dart';
 export 'graph_series.dart';
 

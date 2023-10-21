@@ -7,24 +7,24 @@ class TreeMapLayoutHelper {
   late TreemapLayout _layout;
   bool _round = true;
   Map<int, num> _paddingStack = {};
-  Fun3<TreeMapNode, TreeMapNode, int>? _sort;
+  Fun3<TreeMapData, TreeMapData, int>? _sort;
 
   ///内部Children之间的间隔
-  Fun2<TreeMapNode, num> _paddingInner = (a) {
+  Fun2<TreeMapData, num> _paddingInner = (a) {
     return 0;
   };
 
   ///自身的内容间距
-  Fun2<TreeMapNode, num> _paddingTop = (a) {
+  Fun2<TreeMapData, num> _paddingTop = (a) {
     return 0;
   };
-  Fun2<TreeMapNode, num> _paddingRight = (a) {
+  Fun2<TreeMapData, num> _paddingRight = (a) {
     return 0;
   };
-  Fun2<TreeMapNode, num> _paddingBottom = (a) {
+  Fun2<TreeMapData, num> _paddingBottom = (a) {
     return 0;
   };
-  Fun2<TreeMapNode, num> _paddingLeft = (a) {
+  Fun2<TreeMapData, num> _paddingLeft = (a) {
     return 0;
   };
 
@@ -50,7 +50,7 @@ class TreeMapLayoutHelper {
   Rect boxBound = Rect.zero;
   Rect globalBoxBound = Rect.zero;
 
-  TreeMapNode layout(Rect boxBound, Rect globalBoxBound) {
+  TreeMapData layout(Rect boxBound, Rect globalBoxBound) {
     this.boxBound = boxBound;
     this.globalBoxBound = globalBoxBound;
     // root.setPosition(boxBound);
@@ -70,7 +70,7 @@ class TreeMapLayoutHelper {
   }
 
   ///布局该节点(不包含子节点)
-  void _layoutNodeChildren(TreeMapNode node) {
+  void _layoutNodeChildren(TreeMapData node) {
     var p = _paddingStack[node.deep] ?? 0;
 
     ///处理自身的padding
@@ -97,7 +97,7 @@ class TreeMapLayoutHelper {
     }
   }
 
-  bool roundNode(TreeMapNode node, int index, TreeMapNode other) {
+  bool roundNode(TreeMapData node, int index, TreeMapData other) {
     var rect = node.attr;
     var r2 = Rect.fromLTRB(
       rect.left.roundToDouble(),
@@ -111,17 +111,17 @@ class TreeMapLayoutHelper {
 
   set round(bool v) => _round = v;
 
-  set paddingInner(Fun2<TreeMapNode, num> fun) => _paddingInner = fun;
+  set paddingInner(Fun2<TreeMapData, num> fun) => _paddingInner = fun;
 
-  set paddingTop(Fun2<TreeMapNode, num> fun) => _paddingTop = fun;
+  set paddingTop(Fun2<TreeMapData, num> fun) => _paddingTop = fun;
 
-  set paddingRight(Fun2<TreeMapNode, num> fun) => _paddingRight = fun;
+  set paddingRight(Fun2<TreeMapData, num> fun) => _paddingRight = fun;
 
-  set paddingBottom(Fun2<TreeMapNode, num> fun) => _paddingBottom = fun;
+  set paddingBottom(Fun2<TreeMapData, num> fun) => _paddingBottom = fun;
 
-  set paddingLeft(Fun2<TreeMapNode, num> fun) => _paddingLeft = fun;
+  set paddingLeft(Fun2<TreeMapData, num> fun) => _paddingLeft = fun;
 
-  TreeMapLayoutHelper sort(Fun3<TreeMapNode, TreeMapNode, int> fun) {
+  TreeMapLayoutHelper sort(Fun3<TreeMapData, TreeMapData, int> fun) {
     _sort = fun;
     return this;
   }

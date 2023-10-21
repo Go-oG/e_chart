@@ -1,16 +1,14 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class PieNode extends DataNode<Arc, ItemData> {
-  PieNode(
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+class PieData extends RenderData<Arc> {
+  num value;
+
+  PieData(
+    this.value, {
+    super.id,
+    super.name,
+  }) : super.attr(Arc.zero);
 
   ///计算文字的位置
   Path? guidLinePath;
@@ -84,9 +82,9 @@ class PieNode extends DataNode<Arc, ItemData> {
 
   @override
   void updateStyle(Context context, PieSeries series) {
-    itemStyle = series.getAreaStyle(context, data, dataIndex, status) ?? AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status) ?? LineStyle.empty;
-    var style = series.getLabelStyle(context, data, dataIndex, status) ?? LabelStyle.empty;
+    itemStyle = series.getAreaStyle(context, this) ?? AreaStyle.empty;
+    borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
+    var style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
     label.updatePainter(style: style);
   }
 }

@@ -1,46 +1,56 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/animation.dart';
+import 'package:flutter/material.dart';
 
-import 'heat_map_node.dart';
-
-class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
+class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
   HeatMapHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
-    List<HeatMapNode> oldList = nodeList;
-    List<HeatMapNode> newList = convertData(series.data);
-    layoutNode(newList);
-    each(newList, (node, p1) {
-      node.updateStyle(context, series);
-    });
-    var an = DiffUtil.diffLayout2<HeatMapNode>(
+    var oldList = nodeList;
+    var newList = [...series.data];
+    initData(newList);
+    var an = DiffUtil.diff<HeatMapData>(
       getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
-      (node, add) => add ? 0 : node.symbol.scale,
-      (node, add) => add ? 1 : 0,
-      (node, t) => node.symbol.scale = t,
-      (resultList, t) {
-        nodeList = resultList;
+      (dataList) => layoutNode(dataList),
+      (data, type) {
+        if (type == DiffType.add) {
+          return {'scale': 0};
+        }
+        return {'scale': data.symbol.scale};
+      },
+      (data, type) {
+        if (type == DiffType.add || type == DiffType.update) {
+          return {'scale': 1};
+        }
+        return {'scale': 0};
+      },
+      (data, s, e, t, type) {
+        num ss = s['scale'];
+        num es = e['scale'];
+        data.symbol.scale = lerpDouble(ss, es, t)!;
+      },
+      (dataList, t) {
+        nodeList = dataList;
         notifyLayoutUpdate();
       },
       onStart: () => inAnimation = true,
       onEnd: () => inAnimation = false,
     );
-    context.addAnimationToQueue(an);
+    addAnimationToQueue(an);
   }
 
-  List<HeatMapNode> convertData(List<HeatMapData> dataList) {
-    List<HeatMapNode> rl = [];
-    each(dataList, (e, i) {
-      var node = HeatMapNode(e, i);
-      rl.add(node);
+  @override
+  void initData(List<HeatMapData> dataList) {
+    each(dataList, (data, p1) {
+      data.dataIndex = p1;
     });
-    return rl;
   }
 
-  void layoutNode(List<HeatMapNode> nodeList) {
+  void layoutNode(List<HeatMapData> nodeList) {
     GridCoord? gridLayout;
     CalendarCoord? calendarLayout;
     if (series.coordType == CoordType.grid) {
@@ -48,8 +58,7 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
     } else {
       calendarLayout = findCalendarCoord();
     }
-    for (var node in nodeList) {
-      var data = node.data;
+    for (var data in nodeList) {
       Rect? rect;
       if (gridLayout != null) {
         rect = gridLayout.dataToRect(0, data.x, 0, data.y);
@@ -59,14 +68,15 @@ class HeatMapHelper extends LayoutHelper2<HeatMapNode, HeatMapSeries> {
       if (rect == null) {
         throw ChartError('无法布局 $gridLayout  $calendarLayout');
       }
-      node.attr = rect;
+      data.attr = rect;
+      data.updateStyle(context, series);
       //文字
-      var label = data.name;
-      if (label != null) {
-        node.label = TextDraw(label, LabelStyle.empty, TextDraw.offsetByRect(node.attr, node.labelAlign),
-            align: TextDraw.alignConvert(node.labelAlign));
+      var label = data.label.text;
+      if (label.isNotEmpty) {
+        data.label = TextDraw(label, LabelStyle.empty, TextDraw.offsetByRect(data.attr, data.labelAlign),
+            align: TextDraw.alignConvert(data.labelAlign));
       } else {
-        node.label = TextDraw.empty;
+        data.label = TextDraw.empty;
       }
     }
   }

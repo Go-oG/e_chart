@@ -9,7 +9,7 @@ class XForce extends Force {
   ForceFun _strengthFun = (node, i, list, w, h) {
     return 0.1;
   };
-  List<GraphNode> _nodes = [];
+  List<GraphData> _nodes = [];
   Map<String, num> _strengthMap = {};
   Map<String, num> _xzMap = {};
 

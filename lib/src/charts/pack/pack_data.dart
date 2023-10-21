@@ -2,20 +2,17 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class PackNode extends TreeNode<TreeData, Rect, PackNode> {
-  PackNode(
+class PackData extends BaseTreeData<Rect, PackData> {
+  PackData(
     super.parent,
-    super.data,
-    super.dataIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle, {
+    super.children, {
     super.deep,
     super.maxDeep,
     super.value,
-    super.groupIndex,
-  });
+    super.id,
+  }) {
+    attr = Rect.zero;
+  }
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
@@ -55,5 +52,4 @@ class PackNode extends TreeNode<TreeData, Rect, PackNode> {
     label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
     label.updatePainter();
   }
-
 }

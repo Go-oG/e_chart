@@ -2,18 +2,14 @@ import 'dart:ui';
 import 'package:e_chart/src/core/context.dart';
 import 'package:e_chart/src/core/render/ccanvas.dart';
 import 'package:flutter/material.dart';
-import '../../component/style/index.dart';
-import '../../core/data_node.dart';
+import '../../core/render/render_data.dart';
 import '../../model/delaunay/d_shape.dart';
 import 'delaunay_series.dart';
 
-class DelaunayNode extends DataNode<DShape, List<Offset>> {
-  DelaunayNode(
-    List<Offset> data,
-    int dataIndex,
-    int groupIndex,
-    DShape attr,
-  ) : super.empty(data, dataIndex, groupIndex, attr);
+class DelaunayData extends RenderData<DShape> {
+  DelaunayData(DShape shape) {
+    attr = shape;
+  }
 
   @override
   bool contains(Offset offset) {
@@ -29,7 +25,7 @@ class DelaunayNode extends DataNode<DShape, List<Offset>> {
 
   @override
   void updateStyle(Context context, covariant DelaunaySeries series) {
-    itemStyle = series.getAreaStyle(context, attr, attr.index, status);
-    borderStyle = series.getBorderStyle(context, attr, attr.index, status);
+    itemStyle = series.getAreaStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
   }
 }

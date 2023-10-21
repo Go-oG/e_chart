@@ -4,16 +4,16 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/graph/graph_view.dart';
 
 class GraphSeries extends RectSeries {
-  List<GraphItemData> nodes;
-  List<EdgeItemData> edges;
+  List<GraphData> nodes;
+  List<EdgeData> edges;
   GraphLayout layout;
 
   bool enableDrag;
   bool onlyDragNode;
 
-  Fun2<GraphItemData, Size>? sizeFun;
-  Fun5<GraphItemData, int, Size, Set<ViewState>, ChartSymbol>? symbolFun;
-  Fun4<GraphItemData, GraphItemData, Set<ViewState>, LineStyle>? lineFun;
+  Fun2<GraphData, Size>? sizeFun;
+  Fun2<GraphData, ChartSymbol>? symbolFun;
+  Fun3<GraphData, GraphData, LineStyle>? lineFun;
 
   GraphSeries(
     this.nodes,
@@ -50,17 +50,17 @@ class GraphSeries extends RectSeries {
   ///给定一个节点返回节点的大小
   final _defaultSize = const Size.square(16);
 
-  Size getNodeSize(GraphItemData data) {
+  Size getNodeSize(GraphData data) {
     var fun = sizeFun;
     if (fun != null) {
       return fun.call(data);
     }
     double w = 16, h = 16;
-    if (data.width != null && data.width! > 0) {
-      w = data.width!.toDouble();
+    if (data.data.width != null && data.data.width! > 0) {
+      w = data.data.width!.toDouble();
     }
-    if (data.height != null && data.height! > 0) {
-      h = data.height!.toDouble();
+    if (data.data.height != null && data.data.height! > 0) {
+      h = data.data.height!.toDouble();
     }
     if (w == _defaultSize.width && h == _defaultSize.height) {
       return _defaultSize;
@@ -68,20 +68,20 @@ class GraphSeries extends RectSeries {
     return Size(w, h);
   }
 
-  ChartSymbol getSymbol(Context context, GraphItemData data, int dataIndex, Size size, Set<ViewState> status) {
+  ChartSymbol getSymbol(Context context, GraphData data) {
     var fun = symbolFun;
     if (fun != null) {
-      return fun.call(data, dataIndex, size, status);
+      return fun.call(data);
     }
-    var as = context.option.theme.getAreaStyle(dataIndex).convert(status);
+    var as = context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
     var bs = context.option.theme.graphTheme.getStyle() ?? LineStyle.empty;
-    return CircleSymbol(radius: size.shortestSide / 2, itemStyle: as, borderStyle: bs).convert(status);
+    return CircleSymbol(radius: data.size.shortestSide / 2, itemStyle: as, borderStyle: bs).convert(data.status);
   }
 
-  LineStyle getBorderStyle(Context context, GraphItemData source, GraphItemData target, Set<ViewState> status) {
+  LineStyle getBorderStyle(Context context, GraphData source, GraphData target, Set<ViewState> status) {
     var fun = lineFun;
     if (fun != null) {
-      return fun.call(source, target, status);
+      return fun.call(source, target);
     }
     return context.option.theme.graphTheme.getStyle() ?? LineStyle.empty;
   }
@@ -96,6 +96,7 @@ class GraphSeries extends RectSeries {
     });
     return nodes.length;
   }
+
   @override
   SeriesType get seriesType => SeriesType.graph;
 }

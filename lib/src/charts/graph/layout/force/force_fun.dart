@@ -1,4 +1,4 @@
 
-import '../../model/graph_node.dart';
+import '../../graph_data.dart';
 
-typedef ForceFun<T extends GraphNode> = num Function(T node, int i, List<T>, num width, num height);
+typedef ForceFun<T extends GraphData> = num Function(T node, int i, List<T>, num width, num height);

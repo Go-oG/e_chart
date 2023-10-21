@@ -1,17 +1,15 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
+///todo 展开折叠有BUG(死循环)
+class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
   TreeHelper(super.context, super.view, super.series);
 
-  ///保存数据和节点之间的映射关系，以便在O(1)时间中处理数据
-  Map<TreeData, TreeRenderNode> _nodeMap = {};
+  TreeData _rootNode = TreeData.empty;
 
-  TreeRenderNode _rootNode = TreeRenderNode(null, TreeData.empty, 0, TreeAttr.of());
+  TreeData get rootNode => _rootNode;
 
-  TreeRenderNode get rootNode => _rootNode;
-
-  final RBush<TreeRenderNode> _rBush = RBush(
+  final RBush<TreeData> _rBush = RBush(
     (p0) => p0.center.dx - p0.size.width / 2,
     (p0) => p0.center.dy - p0.size.height / 2,
     (p0) => p0.center.dx + p0.size.width / 2,
@@ -24,26 +22,34 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    Map<TreeData, TreeRenderNode> nodeMap={};
-    int i = 0;
-    var root = toTree<TreeData, TreeAttr, TreeRenderNode>(series.data, (p0) => p0.children, (p0, p1) {
-      var node = TreeRenderNode(p0, p1, i, TreeAttr.of());
-      node.attr.symbol = series.getSymbol(context, node);
-      i += 1;
-      nodeMap[p1] = node;
-      node.updateStyle(context, series);
-      node.size = node.attr.symbol.size;
-      return node;
-    });
+    var root = series.data;
+    initData2(root);
+
     _startLayout(root);
     _rootNode = root;
-    _nodeMap=nodeMap;
     _rBush.clear();
     _rBush.addAll(root.iterator());
     updateShowNodeList();
   }
 
-  void _startLayout(TreeRenderNode root) {
+  void initData2(TreeData root) {
+    root.each((node, index, startNode) {
+      node.dataIndex = index;
+      node.attr.symbol = series.getSymbol(context, node);
+      node.updateStyle(context, series);
+      node.size = node.attr.symbol.size;
+      return false;
+    });
+    root.sum((p0) => p0.value);
+    root.computeHeight();
+    int maxDeep = root.height;
+    root.each((node, index, startNode) {
+      node.maxDeep = maxDeep;
+      return false;
+    });
+  }
+
+  void _startLayout(TreeData root) {
     ///计算树的深度和高度
     root.setDeep(0);
     root.computeHeight();
@@ -72,7 +78,6 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
         return false;
       });
     }
-
   }
 
   @override
@@ -115,7 +120,7 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
   }
 
   ///折叠一个节点
-  void collapseNode(TreeRenderNode node) {
+  void collapseNode(TreeData node) {
     var clickNode = node;
     if (clickNode.notChild) {
       notifyLayoutUpdate();
@@ -126,13 +131,13 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
     Map<TreeData, Offset> oldPositionMap = {};
     Map<TreeData, Size> oldSizeMap = {};
     _rootNode.each((node, index, startNode) {
-      oldPositionMap[node.data] = node.center;
-      oldSizeMap[node.data] = node.size;
+      oldPositionMap[node] = node.center;
+      oldSizeMap[node] = node.size;
       return false;
     });
 
     ///先保存折叠节点的子节点
-    List<TreeRenderNode> removedNodes = List.from(clickNode.children);
+    List<TreeData> removedNodes = List.from(clickNode.children);
     clickNode.clear();
 
     ///移除其父节点
@@ -143,29 +148,29 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
     ///移除节点后-重新布局位置并记录
     ///这里先不更新显示节点
     _startLayout(_rootNode);
-    List<TreeRenderNode> nodeSet=List.from(nodeList);
-    var rect=getViewPortRect();
-    _rootNode.each((node, index, startNode){
-      if(rect.overlaps(Rect.fromCircle(center: node.center, radius: node.size.shortestSide/2))){
+    List<TreeData> nodeSet = List.from(nodeList);
+    var rect = getViewPortRect();
+    _rootNode.each((node, index, startNode) {
+      if (rect.overlaps(Rect.fromCircle(center: node.center, radius: node.size.shortestSide / 2))) {
         nodeSet.add(node);
       }
       return false;
     });
-    nodeList=nodeSet;
+    nodeList = nodeSet;
 
     Map<TreeData, Offset> positionMap = {};
     Map<TreeData, Size> sizeMap = {};
     _rootNode.each((node, index, startNode) {
-      positionMap[node.data] = node.center;
-      sizeMap[node.data] = node.size;
+      positionMap[node] = node.center;
+      sizeMap[node] = node.size;
       return false;
     });
 
     ///为了保证动画正常，需要补齐以前节点的位置
     each(removedNodes, (node, i) {
       node.each((cNode, index, startNode) {
-        positionMap[cNode.data] = clickNode.center;
-        sizeMap[cNode.data] = Size.zero;
+        positionMap[cNode] = clickNode.center;
+        sizeMap[cNode] = Size.zero;
         return false;
       });
     });
@@ -191,24 +196,21 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
   }
 
   ///展开一个节点
-  void expandNode(TreeRenderNode node) {
-    var data = node.data;
-    var clickNode = _nodeMap[data]!;
-    if (clickNode.hasChild || data.children.isEmpty) {
+  void expandNode(TreeData clickNode) {
+    if (clickNode.hasChild || clickNode.children.isEmpty) {
       notifyLayoutUpdate();
       return;
     }
 
-    var animation=getAnimation(LayoutType.update);
-    if (animation==null) {
-      for (var c in data.children) {
-        clickNode.add(_nodeMap[c]!);
+    var animation = getAnimation(LayoutType.update);
+    if (animation == null) {
+      for (var c in clickNode.children) {
+        clickNode.add(c);
       }
       _startLayout(_rootNode);
       _rBush.clear();
       _rBush.addAll(_rootNode.iterator());
       updateShowNodeList();
-
       notifyLayoutUpdate();
       return;
     }
@@ -217,15 +219,14 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
     Map<TreeData, Offset> oldPositionMap = {};
     Map<TreeData, Size> oldSizeMap = {};
     _rootNode.each((node, index, startNode) {
-      oldPositionMap[node.data] = node.center;
-      oldSizeMap[node.data] = node.size;
+      oldPositionMap[node] = node.center;
+      oldSizeMap[node] = node.size;
       return false;
     });
 
     ///添加节点并保存当前点击节点的位置
-    for (var c in data.children) {
-      TreeRenderNode cNode = _nodeMap[c]!;
-      clickNode.add(cNode);
+    for (var c in clickNode.children) {
+      clickNode.add(c);
     }
     Offset oldOffset = clickNode.center;
 
@@ -238,20 +239,20 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
     Map<TreeData, Offset> positionMap = {};
     Map<TreeData, Size> sizeMap = {};
     _rootNode.each((node, index, startNode) {
-      if (!oldPositionMap.containsKey(node.data)) {
+      if (!oldPositionMap.containsKey(node)) {
         ///如果是新增节点
-        oldPositionMap[node.data] = oldOffset;
-        oldSizeMap[node.data] = Size.zero;
+        oldPositionMap[node] = oldOffset;
+        oldSizeMap[node] = Size.zero;
       }
-      positionMap[node.data] = node.center;
-      sizeMap[node.data] = node.size;
+      positionMap[node] = node.center;
+      sizeMap[node] = node.size;
       return false;
     });
     doAnimator(_rootNode, oldPositionMap, positionMap, oldSizeMap, sizeMap);
   }
 
   void doAnimator(
-    TreeRenderNode root,
+    TreeData root,
     Map<TreeData, Offset> oldPositionMap,
     Map<TreeData, Offset> positionMap,
     Map<TreeData, Size> oldSizeMap,
@@ -261,10 +262,10 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
     var animation = getAnimation(LayoutType.update);
     if (animation == null) {
       root.each((node, index, startNode) {
-        Offset end = positionMap[node.data] ?? node.center;
+        Offset end = positionMap[node] ?? node.center;
         node.x = end.dx;
         node.y = end.dy;
-        node.size = sizeMap[node.data] ?? node.size;
+        node.size = sizeMap[node] ?? node.size;
         return false;
       });
       notifyLayoutUpdate();
@@ -274,15 +275,15 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
     var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
       double v = tween.value;
-      root.each((node, index, startNode) {
-        Offset begin = oldPositionMap[node.data] ?? node.center;
-        Offset end = positionMap[node.data] ?? node.center;
+      root.each((data, index, startNode) {
+        Offset begin = oldPositionMap[data] ?? data.center;
+        Offset end = positionMap[data] ?? data.center;
         Offset p = Offset.lerp(begin, end, v)!;
-        node.x = p.dx;
-        node.y = p.dy;
-        Size beginSize = oldSizeMap[node.data] ?? Size.zero;
-        Size endSize = sizeMap[node.data] ?? node.size;
-        node.size = Size.lerp(beginSize, endSize, v)!;
+        data.x = p.dx;
+        data.y = p.dy;
+        Size beginSize = oldSizeMap[data] ?? Size.zero;
+        Size endSize = sizeMap[data] ?? data.size;
+        data.size = Size.lerp(beginSize, endSize, v)!;
         return false;
       });
       notifyLayoutUpdate();
@@ -294,7 +295,7 @@ class TreeHelper extends LayoutHelper2<TreeRenderNode, TreeSeries> {
   }
 
   @override
-  TreeRenderNode? findNode(Offset offset, [bool overlap = false]) {
+  TreeData? findNode(Offset offset, [bool overlap = false]) {
     var result = _rBush.search2(Rect.fromCircle(center: offset, radius: 4));
     for (var node in result) {
       if (node.contains(offset)) {

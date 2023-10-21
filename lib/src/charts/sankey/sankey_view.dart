@@ -21,7 +21,7 @@ class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
     canvas.clipRect(clipRect);
     _drawLink(canvas, clipRect);
     for (var node in layoutHelper.nodes) {
-      if (!node.attr.overlaps(clipRect)) {
+      if (!node.attr.rect.overlaps(clipRect)) {
         continue;
       }
       node.onDraw(canvas, mPaint);

@@ -17,7 +17,7 @@ class HexParallelLayout extends HexbinLayout {
   HexParallelLayout({this.type = 0});
 
   @override
-  void onLayout(List<HexbinNode> data, LayoutType type,HexbinLayoutParams params) {
+  void onLayout(List<HexbinData> data, LayoutType type,HexbinLayoutParams params) {
     row = computeRow(data.length);
     col=data.length~/row;
     if(row*col<data.length){

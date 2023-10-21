@@ -18,7 +18,7 @@ class GraphGridLayout extends GraphLayout {
   bool preventOverlap;
 
   ///位置函数(可用于固定位置)
-  Fun4<GraphNode, int, int, m.Point<int>?>? positionFun;
+  Fun4<GraphData, int, int, m.Point<int>?>? positionFun;
 
   GraphGridLayout({
     this.rows,
@@ -49,7 +49,7 @@ class GraphGridLayout extends GraphLayout {
       return;
     }
 
-    List<GraphNode> layoutNodes = [...graph.nodes];
+    List<GraphData> layoutNodes = [...graph.nodes];
 
     ///排序
     sortNode(graph, layoutNodes);
@@ -92,7 +92,7 @@ class GraphGridLayout extends GraphLayout {
 
     // 防重叠处理(重新计算格子宽度)
     if (preventOverlap || nodeSpaceFun != null) {
-      Fun2<GraphNode, num> spaceFun = nodeSpaceFun ?? (a) => 10;
+      Fun2<GraphData, num> spaceFun = nodeSpaceFun ?? (a) => 10;
       for (var node in layoutNodes) {
         Size res = node.size;
         num nodeW;
@@ -179,7 +179,7 @@ class GraphGridLayout extends GraphLayout {
     }
   }
 
-  void computePosition(LayoutProps props, GraphNode node) {
+  void computePosition(LayoutProps props, GraphData node) {
     num x;
     num y;
     var rcPos = props.id2manPos[node.id];

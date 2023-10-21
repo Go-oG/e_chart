@@ -12,7 +12,7 @@ class MindMapLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData rootNode, TreeLayoutParams params) {
     if (rootNode.childCount <= 1) {
       CompactLayout(
         levelAlign: Align2.start,
@@ -22,8 +22,8 @@ class MindMapLayout extends TreeLayout {
       ).onLayout(rootNode, params);
       return;
     }
-    var leftRoot = TreeRenderNode(null, rootNode.data, 0, TreeAttr.of());
-    var rightRoot = TreeRenderNode(null, rootNode.data, 0, TreeAttr.of());
+    var leftRoot = TreeData(null, []);
+    var rightRoot = TreeData(null, []);
     int rightTreeSize = (rootNode.childCount / 2).round();
     int i = 0;
     for (var node in rootNode.children) {

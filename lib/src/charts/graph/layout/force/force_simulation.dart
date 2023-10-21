@@ -111,7 +111,7 @@ class ForceSimulation extends ChangeNotifier {
     }
 
     //存储其迭代开始前的旧位置
-    Map<GraphNode, List<num>> oldPxMap = {};
+    Map<GraphData, List<num>> oldPxMap = {};
 
     for (var k = 0; k < iterations; ++k) {
       _alpha += (_alphaTarget - _alpha) * _alphaDecay;
@@ -149,7 +149,7 @@ class ForceSimulation extends ChangeNotifier {
     return this;
   }
 
-  bool _evaluatingStability(Map<GraphNode, List<num>> oldPxMap) {
+  bool _evaluatingStability(Map<GraphData, List<num>> oldPxMap) {
     int positionCount = 0;
     int velCount = 0;
     double minPixelFactory = 0.9 / context.devicePixelRatio;
@@ -199,7 +199,7 @@ class ForceSimulation extends ChangeNotifier {
     return this;
   }
 
-  ForceSimulation nodes(List<GraphNode> list) {
+  ForceSimulation nodes(List<GraphData> list) {
     _graph.nodes.clear();
     _graph.nodes.addAll(list);
     _initializeNodes();
@@ -292,15 +292,15 @@ class ForceSimulation extends ChangeNotifier {
     return this;
   }
 
-  GraphNode? find(num x, num y, [num? radius]) {
-    GraphNode? closest;
+  GraphData? find(num x, num y, [num? radius]) {
+    GraphData? closest;
     if (radius == null) {
       radius = double.infinity;
     } else {
       radius *= radius;
     }
     for (int i = 0; i < _graph.nodes.length; ++i) {
-      GraphNode node = _graph.nodes[i];
+      GraphData node = _graph.nodes[i];
       num dx = x - node.x;
       num dy = y - node.y;
       num d2 = dx * dx + dy * dy;

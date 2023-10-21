@@ -3,21 +3,21 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../graph/layout/force/lcg.dart';
-import '../pack_node.dart';
+import '../pack_data.dart';
 
-extension PackNodeExt on PackNode {
+extension PackNodeExt on PackData {
   toCircle() {
     return PackCircle(x.toDouble(), y.toDouble(), r);
   }
 }
 
-PackCircle packEncloseRandom(List<PackNode> circles, LCG random) {
+PackCircle packEncloseRandom(List<PackData> circles, LCG random) {
   shuffle(circles, random);
   int i = 0, n = circles.length;
   List<PackCircle> B = [];
   PackCircle? e;
   while (i < n) {
-    PackNode p = circles[i];
+    PackData p = circles[i];
     var pc = p.toCircle();
     if (e != null && enclosesWeak(e, pc)) {
       i++;

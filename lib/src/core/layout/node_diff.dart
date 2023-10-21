@@ -1,6 +1,6 @@
-import '../data_node.dart';
+import '../render/render_data.dart';
 
-class NodeDiff<N extends DataNode> {
+class NodeDiff<N extends RenderData> {
   final N node;
   final NodeAttr startAttr;
   final NodeAttr endAttr;

@@ -1,10 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'pie_node.dart';
-
 ///饼图布局
-class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
+class PieHelper extends LayoutHelper2<PieData, PieSeries> {
   PieHelper(super.context, super.view, super.series);
 
   num maxData = double.minPositive;
@@ -20,48 +18,79 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    pieAngle = series.sweepAngle.abs();
-    if (pieAngle > 360) {
-      pieAngle = 360;
-    }
-    dir = series.sweepAngle >= 0 ? 1 : -1;
-    center = computeCenterPoint(series.center);
+    var oldList = nodeList;
+    var newList = [...series.data];
     oldHoverNode = null;
-    _preHandleRadius();
-    List<PieNode> oldList = nodeList;
-    List<PieNode> newList = convertData(series.data);
-    layoutNode(newList);
-
-    var an = DiffUtil.diffLayout<Arc, ItemData, PieNode>(
+    initData(newList);
+    var an = DiffUtil.diff<PieData>(
       getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
-      (data, node, add) {
-        PieAnimatorStyle style = series.animatorStyle;
-        Arc arc = node.attr;
-        if (!add) {
-          return arc.copy(sweepAngle: 0, outRadius: arc.innerRadius);
+      (dataList) => layoutData(dataList),
+      (node, type) {
+        var style = series.animatorStyle;
+        if (type == DiffType.remove || type == DiffType.update) {
+          return {'arc': node.attr};
         }
+        Arc arc = node.attr;
         if (style == PieAnimatorStyle.expandScale || style == PieAnimatorStyle.originExpandScale) {
           arc = arc.copy(outRadius: arc.innerRadius);
         }
         if (style == PieAnimatorStyle.expand || style == PieAnimatorStyle.expandScale) {
           arc = arc.copy(startAngle: series.offsetAngle);
         }
-        return arc.copy(sweepAngle: 0);
+        return {'arc': arc.copy(sweepAngle: 0)};
       },
-      (s, e, t) => Arc.lerp(s, e, t),
-      (p0,t) {
+      (data, type) {
+        if (type == DiffType.add || type == DiffType.update) {
+          return {'arc': data.attr};
+        }
+        return {'arc': data.attr.copy(sweepAngle: 0)};
+      },
+      (data, s, e, t, type) => data.attr = Arc.lerp(s['arc']!, e['arc']!, t),
+      (p0, t) {
         nodeList = p0;
         notifyLayoutUpdate();
       },
-      () => inAnimation = true,
-      () => inAnimation = false,
+      onStart: () => inAnimation = true,
+      onEnd: () => inAnimation = false,
     );
     context.addAnimationToQueue(an);
   }
 
-  void layoutNode(List<PieNode> nodeList) {
+  @override
+  void initData(List<PieData> dataList) {
+    num maxSize = min([width, height]);
+    minRadius = series.innerRadius.convert(maxSize);
+    maxRadius = series.outerRadius.convert(maxSize);
+    if (maxRadius < minRadius) {
+      num a = minRadius;
+      minRadius = maxRadius;
+      maxRadius = a;
+    }
+    maxData = double.minPositive;
+    minData = double.maxFinite;
+    allData = 0;
+    each(dataList, (data, i) {
+      data.dataIndex = i;
+      data.updateStyle(context, series);
+      maxData = max([data.value, maxData]);
+      minData = min([data.value, minData]);
+      allData += data.value;
+    });
+    if (allData == 0) {
+      allData = 1;
+    }
+  }
+
+  void layoutData(List<PieData> nodeList) {
+    pieAngle = series.sweepAngle.abs();
+    if (pieAngle > 360) {
+      pieAngle = 360;
+    }
+    dir = series.sweepAngle >= 0 ? 1 : -1;
+    center = computeCenterPoint(series.center);
+
     if (nodeList.isEmpty) {
       return;
     }
@@ -76,41 +105,8 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     }
   }
 
-  void _preHandleRadius() {
-    num maxSize = min([width, height]);
-    minRadius = series.innerRadius.convert(maxSize);
-    maxRadius = series.outerRadius.convert(maxSize);
-    if (maxRadius < minRadius) {
-      num a = minRadius;
-      minRadius = maxRadius;
-      maxRadius = a;
-    }
-  }
-
-  List<PieNode> convertData(List<ItemData> list) {
-    maxData = double.minPositive;
-    minData = double.maxFinite;
-    allData = 0;
-
-    List<PieNode> nodeList = [];
-    Set<ViewState> es = {};
-    each(list, (data, i) {
-      var as = series.getAreaStyle(context, data, i, es) ?? AreaStyle.empty;
-      var bs = series.getBorderStyle(context, data, i, es) ?? LineStyle.empty;
-      var ls = series.getLabelStyle(context, data, i, es) ?? LabelStyle.empty;
-      nodeList.add(PieNode(data, i, -1, Arc.zero, as, bs, ls));
-      maxData = max([data.value, maxData]);
-      minData = min([data.value, minData]);
-      allData += data.value;
-    });
-    if (allData == 0) {
-      allData = 1;
-    }
-    return nodeList;
-  }
-
   //普通饼图
-  void _layoutForNormal(List<PieNode> nodeList) {
+  void _layoutForNormal(List<PieData> nodeList) {
     if (nodeList.isEmpty) {
       return;
     }
@@ -123,7 +119,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     num startAngle = series.offsetAngle;
     num angleGap = series.angleGap * dir;
     each(nodeList, (node, i) {
-      var pieData = node.data;
+      var pieData = node;
       num sw = dir * remainAngle * pieData.value / allData;
       Offset c = center;
       double off = series.getOffset(context, pieData);
@@ -144,7 +140,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
   }
 
   // 南丁格尔玫瑰图
-  void _layoutForNightingale(List<PieNode> nodeList) {
+  void _layoutForNightingale(List<PieData> nodeList) {
     if (nodeList.isEmpty) {
       return;
     }
@@ -161,7 +157,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       double itemAngle = dir * remainAngle / count;
       num radiusDiff = maxRadius - minRadius;
       each(nodeList, (node, i) {
-        var pieData = node.data;
+        var pieData = node;
         Offset c = center;
         double off = series.getOffset(context, pieData);
         if (off.abs() > 1e-6) {
@@ -181,7 +177,7 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
     } else {
       //扇区圆心角展示数据百分比，半径表示数据大小
       each(nodeList, (node, i) {
-        var pieData = node.data;
+        var pieData = node;
         num or = minRadius + (maxRadius - minRadius) * pieData.value / maxData;
         double sweepAngle = dir * remainAngle * pieData.value / allData;
         Offset c = center;
@@ -218,8 +214,8 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
 
   @override
   void onRunUpdateAnimation(var list, var animation) {
-    List<PieNode> oldList = [];
-    List<PieNode> newList = [];
+    List<PieData> oldList = [];
+    List<PieData> newList = [];
     for (var diff in list) {
       if (diff.old) {
         oldList.add(diff.node);
@@ -228,11 +224,11 @@ class PieHelper extends LayoutHelper2<PieNode, PieSeries> {
       }
     }
     const double rDiff = 8;
-    DiffUtil.diffUpdate<Arc, ItemData, PieNode>(
+    DiffUtil.diffUpdate<Arc, PieData>(
       animation,
       oldList,
       newList,
-      (data, node, isOld) {
+      (node, isOld) {
         num? originR = node.extGetNull("originR");
         if (originR == null) {
           originR = node.attr.outRadius;

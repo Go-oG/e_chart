@@ -7,22 +7,22 @@ import 'package:flutter/material.dart';
 class SankeyHelper extends LayoutHelper<SankeySeries> {
   /// 整个视图区域坐标坐标
   double left = 0, top = 0, right = 1, bottom = 1;
-  List<SankeyNode> _nodes = [];
+  List<SankeyData> _nodes = [];
 
-  List<SankeyNode> get nodes => _nodes;
+  List<SankeyData> get nodes => _nodes;
 
-  List<SankeyLink> _links = [];
+  List<SankeyLinkData> _links = [];
 
-  List<SankeyLink> get links => _links;
+  List<SankeyLinkData> get links => _links;
 
   double animationProcess = 1;
 
   num _nodeGap = 0;
 
-  final RBush<SankeyNode> _nodeBush =
+  final RBush<SankeyData> _nodeBush =
       RBush((p0) => p0.attr.left, (p0) => p0.attr.top, (p0) => p0.attr.right, (p0) => p0.attr.bottom);
 
-  final RBush<SankeyLink> _linkBush = RBush(
+  final RBush<SankeyLinkData> _linkBush = RBush(
     (p0) => m.min(p0.source.attr.left, p0.target.attr.left),
     (p0) => m.min(p0.source.attr.top, p0.target.attr.top),
     (p0) => m.max(p0.source.attr.right, p0.target.attr.right),
@@ -40,39 +40,45 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     bottom = height;
     _oldHoverNode = null;
     _oldHoverLink = null;
-    List<SankeyNode> nodes = dataToNode(series.data.data, series.data.links, 0);
-    List<SankeyLink> links = dataToLink(nodes, series.data.links);
+    List<SankeyData> nodes = [...series.data];
+    List<SankeyLinkData> links = [...series.links];
+    nodes = initData(nodes, links, series.nodeWidth);
+
+    _nodes=nodes;
+    _links=links;
+
     layoutNode(nodes, links);
     _nodeBush.clear().addAll(nodes);
     _linkBush.clear().addAll(links);
 
-    ///动画
-    var animation = getAnimation(type, 1);
-    if (animation == null) {
-      animationProcess = 1;
-      _nodes = nodes;
-      _links = links;
-      return;
-    }
-
-    var dt = ChartDoubleTween(option: animation);
-    animationProcess = 0;
-    dt.addStartListener(() {
-      _nodes = nodes;
-      _links = links;
-      inAnimation = true;
-    });
-    dt.addListener(() {
-      animationProcess = dt.value;
-      notifyLayoutUpdate();
-    });
-    dt.addEndListener(() {
-      inAnimation = false;
-    });
-    context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
+    // ///动画
+    // var animation = getAnimation(type, 1);
+    // if (animation == null) {
+    //   animationProcess = 1;
+    //   _nodes = nodes;
+    //   _links = links;
+    //   return;
+    // }
+    //
+    // var dt = ChartDoubleTween(option: animation);
+    // animationProcess = 0;
+    // dt.addStartListener(() {
+    //   _nodes = nodes;
+    //   _links = links;
+    //   inAnimation = true;
+    // });
+    // dt.addListener(() {
+    //   animationProcess = dt.value;
+    //   notifyLayoutUpdate();
+    // });
+    // dt.addEndListener(() {
+    //   inAnimation = false;
+    // });
+    //
+    // addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
   }
 
-  void layoutNode(List<SankeyNode> nodes, List<SankeyLink> links) {
+  void layoutNode(List<SankeyData> nodes, List<SankeyLinkData> links) {
     _computeNodeLinks(nodes, links);
     _computeNodeValues(nodes);
     _computeNodeDeep(nodes);
@@ -102,8 +108,8 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     _handleCancel();
   }
 
-  SankeyNode? _oldHoverNode;
-  SankeyLink? _oldHoverLink;
+  SankeyData? _oldHoverNode;
+  SankeyLinkData? _oldHoverLink;
 
   void handleHoverAndClick(Offset local, bool click) {
     var offset = local.translate(-translationX, -translationY);
@@ -116,15 +122,15 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     _oldHoverLink = null;
     _oldHoverNode = null;
 
-    if (clickNode is SankeyLink) {
-      SankeyLink link = clickNode;
+    if (clickNode is SankeyLinkData) {
+      SankeyLinkData link = clickNode;
       _oldHoverLink = link;
       changeNodeStatus(null, link);
       notifyLayoutUpdate();
       return;
     }
-    if (clickNode is SankeyNode) {
-      SankeyNode node = clickNode;
+    if (clickNode is SankeyData) {
+      SankeyData node = clickNode;
       _oldHoverNode = node;
       changeNodeStatus(node, null);
       notifyLayoutUpdate();
@@ -162,20 +168,20 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     if (searchList.isEmpty) {
       return null;
     }
-    SankeyLink result = searchList.first;
+    SankeyLinkData result = searchList.first;
     if (searchList.length == 1) {
       return result;
     }
     for (var i = 1; i < searchList.length; i++) {
       var next = searchList[i];
-      num sub = next.width - result.width;
+      num sub = next.attr.width - result.attr.width;
       if (sub.abs() <= 1e-6) {
         sub = 0;
       }
       if (sub < 0) {
         result = next;
       } else if (sub == 0) {
-        if ((next.target.left - next.source.right) < (result.target.left - next.source.right)) {
+        if ((next.target.attr.left - next.source.attr.right) < (result.target.attr.left - next.source.attr.right)) {
           result = next;
         }
       }
@@ -184,9 +190,9 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   //处理数据状态
-  void changeNodeStatus(SankeyNode? node, SankeyLink? link) {
-    Set<SankeyLink> linkSet = {};
-    Set<SankeyNode> nodeSet = {};
+  void changeNodeStatus(SankeyData? node, SankeyLinkData? link) {
+    Set<SankeyLinkData> linkSet = {};
+    Set<SankeyData> nodeSet = {};
     if (link != null) {
       linkSet.add(link);
       nodeSet.add(link.target);
@@ -195,12 +201,12 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
     if (node != null) {
       nodeSet.add(node);
-      linkSet.addAll(node.inputLinks);
-      linkSet.addAll(node.outLinks);
-      for (var element in node.inputLinks) {
+      linkSet.addAll(node.attr.inputLinks);
+      linkSet.addAll(node.attr.outLinks);
+      for (var element in node.attr.inputLinks) {
         nodeSet.add(element.source);
       }
-      for (var element in node.outLinks) {
+      for (var element in node.attr.outLinks) {
         nodeSet.add(element.target);
       }
     }
@@ -247,57 +253,60 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   /// 计算链接位置
-  void _computeLinkPosition(List<SankeyLink> links, List<SankeyNode> nodes) {
+  void _computeLinkPosition(List<SankeyLinkData> links, List<SankeyData> nodes) {
     for (var node in nodes) {
-      node.attr = Rect.fromLTRB(node.left, node.top, node.right, node.bottom);
+      node.attr.rect = Rect.fromLTRB(node.attr.left, node.attr.top, node.attr.right, node.attr.bottom);
+      if(node.attr.rect.isInfinite){
+        throw ChartError('$node ${node.attr.rect}');
+      }
     }
     for (var link in links) {
       link.computeAreaPath(series.smooth);
     }
   }
 
-  void _computeNodeLinks(List<SankeyNode> nodes, List<SankeyLink> links) {
+  void _computeNodeLinks(List<SankeyData> nodes, List<SankeyLinkData> links) {
     each(nodes, (p0, p1) {
-      p0.index = p1;
+      p0.attr.index = p1;
     });
     each(links, (link, i) {
-      link.index = i;
-      link.source.outLinks.add(link);
-      link.target.inputLinks.add(link);
+      link.attr.index = i;
+      link.source.attr.outLinks.add(link);
+      link.target.attr.inputLinks.add(link);
     });
 
     if (series.linkSort != null) {
       for (var element in nodes) {
-        element.outLinks.sort(series.linkSort);
-        element.inputLinks.sort(series.linkSort);
+        element.attr.outLinks.sort(series.linkSort);
+        element.attr.inputLinks.sort(series.linkSort);
       }
     }
   }
 
   ///计算节点数值(统计流入和流出取最大值)
-  void _computeNodeValues(List<SankeyNode> nodes) {
+  void _computeNodeValues(List<SankeyData> nodes) {
     for (var node in nodes) {
       if (node.fixedValue != null) {
-        node.value = node.fixedValue!;
+        node.attr.value = node.fixedValue!;
         continue;
       }
-      num sv = sumBy(node.inputLinks, (p0) => p0.value);
-      num tv = sumBy(node.outLinks, (p0) => p0.value);
-      node.value = m.max(sv, tv);
+      num sv = sumBy(node.attr.inputLinks, (p0) => p0.value);
+      num tv = sumBy(node.attr.outLinks, (p0) => p0.value);
+      node.attr.value = m.max(sv, tv);
     }
   }
 
   ///计算节点图深度
   ///同时判断是否存在环路
-  void _computeNodeDeep(List<SankeyNode> nodes) {
+  void _computeNodeDeep(List<SankeyData> nodes) {
     int n = nodes.length;
-    Set<SankeyNode> current = Set.from(nodes);
-    Set<SankeyNode> next = {};
+    Set<SankeyData> current = Set.from(nodes);
+    Set<SankeyData> next = {};
     int x = 0;
     while (current.isNotEmpty) {
       for (var node in current) {
-        node.deep = x;
-        for (var element in node.outLinks) {
+        node.attr.deep = x;
+        for (var element in node.attr.outLinks) {
           next.add(element.target);
         }
       }
@@ -310,15 +319,15 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   ///计算节点图高度(同时判断是否存在环路)
-  void _computeNodeHeights(List<SankeyNode> nodes) {
+  void _computeNodeHeights(List<SankeyData> nodes) {
     int n = nodes.length;
-    Set<SankeyNode> current = Set.from(nodes);
-    Set<SankeyNode> next = {};
+    Set<SankeyData> current = Set.from(nodes);
+    Set<SankeyData> next = {};
     int x = 0;
     while (current.isNotEmpty) {
       for (var node in current) {
-        node.graphHeight = x;
-        for (var link in node.inputLinks) {
+        node.attr.graphHeight = x;
+        for (var link in node.attr.inputLinks) {
           next.add(link.source);
         }
       }
@@ -330,17 +339,17 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   ///计算节点层次结构用于确定横向坐标
-  List<List<SankeyNode>> _computeNodeLayers(List<SankeyNode> nodes) {
-    int x = maxBy<SankeyNode>(nodes, (p0) => p0.deep).deep + 1;
+  List<List<SankeyData>> _computeNodeLayers(List<SankeyData> nodes) {
+    int x = maxBy<SankeyData>(nodes, (p0) => p0.attr.deep).attr.deep + 1;
     double kx = (right - left - series.nodeWidth) / (x - 1);
 
-    List<List<SankeyNode>> columns = List.generate(x, (index) => []);
+    List<List<SankeyData>> columns = List.generate(x, (index) => []);
 
     for (var node in nodes) {
       int i = m.max(0, m.min(x - 1, series.align.align(node, x).floor()));
-      node.layer = i;
-      node.left = left + i * kx;
-      node.right = node.left + series.nodeWidth;
+      node.attr.layer = i;
+      node.attr.left = left + i * kx;
+      node.attr.right = node.attr.left + series.nodeWidth;
       columns[i].add(node);
     }
     if (series.nodeSort != null) {
@@ -352,36 +361,36 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   ///初始化给定列数的每个节点的高度
-  void _initializeNodeBreadths(List<List<SankeyNode>> columns) {
+  void _initializeNodeBreadths(List<List<SankeyData>> columns) {
     //计算比例尺
-    double ky = minBy2<List<SankeyNode>>(columns, (c) {
+    double ky = minBy2<List<SankeyData>>(columns, (c) {
       var v = (bottom - top - (c.length - 1) * _nodeGap);
-      var sv = sumBy<SankeyNode>(c, (p0) => p0.value);
+      var sv = sumBy<SankeyData>(c, (p0) => p0.attr.value);
       return v / sv;
     }).toDouble();
     for (var nodes in columns) {
       double y = top;
       for (var node in nodes) {
-        node.top = y;
-        node.bottom = y + node.value * ky;
-        y = node.bottom + _nodeGap;
-        for (var link in node.outLinks) {
-          link.width = link.value * ky;
+        node.attr.top = y;
+        node.attr.bottom = y + node.attr.value * ky;
+        y = node.attr.bottom + _nodeGap;
+        for (var link in node.attr.outLinks) {
+          link.attr.width = link.value * ky;
         }
       }
 
       y = (bottom - y + _nodeGap) / (nodes.length + 1);
       each(nodes, (node, i) {
-        node.top += y * (i + 1);
-        node.bottom += y * (i + 1);
+        node.attr.top += y * (i + 1);
+        node.attr.bottom += y * (i + 1);
       });
       _reorderLinks(nodes);
     }
   }
 
   ///计算节点高度(多次迭代)
-  void _computeNodeBreadths(List<SankeyNode> nodes) {
-    List<List<SankeyNode>> columns = _computeNodeLayers(nodes);
+  void _computeNodeBreadths(List<SankeyData> nodes) {
+    List<List<SankeyData>> columns = _computeNodeLayers(nodes);
 
     ///计算节点间距(目前可能不需要，因为series已经定义了)
     num dy = 8;
@@ -398,22 +407,22 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   /// 根据传入目标链接重新定位每个节点
-  void _relaxLeftToRight(List<List<SankeyNode>> columns, double alpha, double beta) {
+  void _relaxLeftToRight(List<List<SankeyData>> columns, double alpha, double beta) {
     each(columns, (column, i) {
       for (var target in column) {
         num y = 0;
         num w = 0;
-        for (var link in target.inputLinks) {
-          num v = link.value * (target.layer - link.source.layer);
+        for (var link in target.attr.inputLinks) {
+          num v = link.value * (target.attr.layer - link.source.attr.layer);
           y += _targetTop(link.source, target) * v;
           w += v;
         }
         if (w <= 0) {
           continue;
         }
-        double dy = (y / w - target.top) * alpha;
-        target.top += dy;
-        target.bottom += dy;
+        double dy = (y / w - target.attr.top) * alpha;
+        target.attr.top += dy;
+        target.attr.bottom += dy;
         _reorderNodeLinks(target);
       }
       if (series.nodeSort == null) {
@@ -424,23 +433,23 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   ///根据传入目标链接重新定位每个节点
-  void _relaxRightToLeft(List<List<SankeyNode>> columns, double alpha, double beta) {
+  void _relaxRightToLeft(List<List<SankeyData>> columns, double alpha, double beta) {
     for (int n = columns.length, i = n - 2; i >= 0; --i) {
       var column = columns[i];
       for (var source in column) {
         double y = 0;
         double w = 0;
-        for (var link in source.outLinks) {
-          num v = link.value * (link.target.layer - source.layer);
+        for (var link in source.attr.outLinks) {
+          num v = link.value * (link.target.attr.layer - source.attr.layer);
           y += _sourceTop(source, link.target) * v;
           w += v;
         }
         if (w <= 0) {
           continue;
         }
-        double dy = (y / w - source.top) * alpha;
-        source.top += dy;
-        source.bottom += dy;
+        double dy = (y / w - source.attr.top) * alpha;
+        source.attr.top += dy;
+        source.attr.bottom += dy;
         _reorderNodeLinks(source);
       }
       if (series.nodeSort == null) {
@@ -450,7 +459,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     }
   }
 
-  void _resolveCollisions(List<SankeyNode> nodes, double alpha) {
+  void _resolveCollisions(List<SankeyData> nodes, double alpha) {
     if (nodes.isEmpty) {
       return;
     }
@@ -458,180 +467,130 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
     /// 算数右移
     var subject = nodes[i];
-    _resolveCollisionsBottomToTop(nodes, subject.top - _nodeGap, i - 1, alpha);
-    _resolveCollisionsTopToBottom(nodes, subject.bottom + _nodeGap, i + 1, alpha);
+    _resolveCollisionsBottomToTop(nodes, subject.attr.top - _nodeGap, i - 1, alpha);
+    _resolveCollisionsTopToBottom(nodes, subject.attr.bottom + _nodeGap, i + 1, alpha);
     _resolveCollisionsBottomToTop(nodes, bottom, nodes.length - 1, alpha);
     _resolveCollisionsTopToBottom(nodes, top, 0, alpha);
   }
 
   ///向下推任何重叠的节点
-  void _resolveCollisionsTopToBottom(List<SankeyNode> nodes, double y, int arrayIndex, double alpha) {
+  void _resolveCollisionsTopToBottom(List<SankeyData> nodes, double y, int arrayIndex, double alpha) {
     for (; arrayIndex < nodes.length; ++arrayIndex) {
       var node = nodes[arrayIndex];
-      var dy = (y - node.top) * alpha;
+      var dy = (y - node.attr.top) * alpha;
       if (dy > 1e-6) {
-        node.top += dy;
-        node.bottom += dy;
+        node.attr.top += dy;
+        node.attr.bottom += dy;
       }
-      y = node.bottom + _nodeGap;
+      y = node.attr.bottom + _nodeGap;
     }
   }
 
   ///向上推任何重叠的节点。
-  void _resolveCollisionsBottomToTop(List<SankeyNode> nodes, double y, int arrayIndex, double alpha) {
+  void _resolveCollisionsBottomToTop(List<SankeyData> nodes, double y, int arrayIndex, double alpha) {
     for (; arrayIndex >= 0; --arrayIndex) {
       var node = nodes[arrayIndex];
-      double dy = (node.bottom - y) * alpha;
+      double dy = (node.attr.bottom - y) * alpha;
       if (dy > 1e-6) {
-        node.top -= dy;
-        node.bottom -= dy;
+        node.attr.top -= dy;
+        node.attr.bottom -= dy;
       }
-      y = node.top - _nodeGap;
+      y = node.attr.top - _nodeGap;
     }
   }
 
-  void _reorderNodeLinks(SankeyNode node) {
+  void _reorderNodeLinks(SankeyData node) {
     if (series.linkSort != null) {
       return;
     }
 
-    for (var link in node.inputLinks) {
-      link.source.outLinks.sort(_ascTargetBreadth);
+    for (var link in node.attr.inputLinks) {
+      link.source.attr.outLinks.sort(_ascTargetBreadth);
     }
-    for (var link in node.outLinks) {
-      link.target.inputLinks.sort(_ascSourceBreadth);
+    for (var link in node.attr.outLinks) {
+      link.target.attr.inputLinks.sort(_ascSourceBreadth);
     }
   }
 
-  void _reorderLinks(List<SankeyNode> nodes) {
+  void _reorderLinks(List<SankeyData> nodes) {
     if (series.linkSort != null) {
       return;
     }
     for (var node in nodes) {
-      node.outLinks.sort(_ascTargetBreadth);
-      node.inputLinks.sort(_ascSourceBreadth);
+      node.attr.outLinks.sort(_ascTargetBreadth);
+      node.attr.inputLinks.sort(_ascSourceBreadth);
     }
   }
 
   ///返回target.top，它将生成从源到目标的理想链接
-  double _targetTop(SankeyNode source, SankeyNode target) {
-    double y = source.top - (source.outLinks.length - 1) * _nodeGap / 2;
-    for (var link in source.outLinks) {
+  double _targetTop(SankeyData source, SankeyData target) {
+    double y = source.attr.top - (source.attr.outLinks.length - 1) * _nodeGap / 2;
+    for (var link in source.attr.outLinks) {
       if (link.target == target) {
         break;
       }
-      y += link.width + _nodeGap;
+      y += link.attr.width + _nodeGap;
     }
 
-    for (var link in target.inputLinks) {
+    for (var link in target.attr.inputLinks) {
       if (link.source == source) {
         break;
       }
-      y -= link.width;
+      y -= link.attr.width;
     }
     return y;
   }
 
   ///返回source.top，它将生成从源到目标的理想链接
-  double _sourceTop(SankeyNode source, SankeyNode target) {
-    double y = target.top - (target.inputLinks.length - 1) * _nodeGap / 2;
-    for (var link in target.inputLinks) {
+  double _sourceTop(SankeyData source, SankeyData target) {
+    double y = target.attr.top - (target.attr.inputLinks.length - 1) * _nodeGap / 2;
+    for (var link in target.attr.inputLinks) {
       if (link.source == source) {
         break;
       }
-      y += link.width + _nodeGap;
+      y += link.attr.width + _nodeGap;
     }
-    for (var link in source.outLinks) {
+    for (var link in source.attr.outLinks) {
       if (link.target == target) {
         break;
       }
-      y -= link.width;
+      y -= link.attr.width;
     }
     return y;
   }
 
-  List<SankeyNode> dataToNode(List<ItemData> dataList, List<SankeyLinkData> links, double nodeWidth) {
-    List<SankeyNode> resultList = [];
-    Set<ItemData> dataSet = {};
-    int index = 0;
-    Set<ViewState> emptyVS = {};
+  List<SankeyData> initData(List<SankeyData> dataList, List<SankeyLinkData> links, double nodeWidth) {
+    Map<String, SankeyData> dataMap = {};
     each(dataList, (data, i) {
-      if (dataSet.contains(data)) {
+      if (dataMap.containsKey(data.id)) {
         return;
       }
-      dataSet.add(data);
-      SankeyNode layoutNode = SankeyNode(
-        data,
-        [],
-        [],
-        index,
-        series.getItemStyle(context, data, index, emptyVS) ?? AreaStyle.empty,
-        series.getBorderStyle(context, data, index, emptyVS) ?? LineStyle.empty,
-        series.getLabelStyle(context, data, index, emptyVS) ?? LabelStyle.empty,
-      );
-      resultList.add(layoutNode);
-      index += 1;
+      dataMap[data.id] = data;
+      data.updateStyle(context, series);
     });
-
-    for (var link in links) {
-      if (!dataSet.contains(link.src)) {
-        dataSet.add(link.src);
-        SankeyNode layoutNode = SankeyNode(
-          link.src,
-          [],
-          [],
-          index,
-          series.getItemStyle(context, link.src, index, emptyVS) ?? AreaStyle.empty,
-          series.getBorderStyle(context, link.src, index, emptyVS) ?? LineStyle.empty,
-          series.getLabelStyle(context, link.src, index, emptyVS) ?? LabelStyle.empty,
-        );
-        index += 1;
-        resultList.add(layoutNode);
-      }
-      if (!dataSet.contains(link.target)) {
-        dataSet.add(link.target);
-        SankeyNode layoutNode = SankeyNode(
-          link.target,
-          [],
-          [],
-          index,
-          series.getItemStyle(context, link.target, index, emptyVS) ?? AreaStyle.empty,
-          series.getBorderStyle(context, link.target, index, emptyVS) ?? LineStyle.empty,
-          series.getLabelStyle(context, link.target, index, emptyVS) ?? LabelStyle.empty,
-        );
-        index += 1;
-        resultList.add(layoutNode);
-      }
-    }
-    return resultList;
-  }
-
-  List<SankeyLink> dataToLink(List<SankeyNode> nodes, List<SankeyLinkData> links) {
-    Set<ViewState> emptyVS = {};
-    Map<String, SankeyNode> nodeMap = {};
-    for (var element in nodes) {
-      nodeMap[element.data.id] = element;
-    }
-    List<SankeyLink> resultList = [];
+    int index = dataMap.length;
     each(links, (link, i) {
-      SankeyNode srcNode = nodeMap[link.src.id]!;
-      SankeyNode targetNode = nodeMap[link.target.id]!;
-      var src = link.src;
-      var srcIndex = srcNode.dataIndex;
-      var target = link.target;
-      var targetIndex = targetNode.dataIndex;
-      resultList.add(SankeyLink(
-        srcNode,
-        targetNode,
-        link.value,
-        i,
-        0,
-        series.getLinkStyle(context, src, srcIndex, target, targetIndex, i, emptyVS),
-        series.getLinkBorderStyle(context, src, srcIndex, target, targetIndex, i, emptyVS),
-        series.getLinkLabelStyle(context, src, srcIndex, target, targetIndex, i, emptyVS),
-      ));
+      link.dataIndex = i;
+      if (dataMap.containsKey(link.source.id)) {
+        link.source = dataMap[link.source.id]!;
+      } else {
+        dataMap[link.source.id] = link.source;
+        link.source.dataIndex = index;
+        link.source.updateStyle(context, series);
+        index++;
+      }
+
+      if (dataMap.containsKey(link.target.id)) {
+        link.target = dataMap[link.target.id]!;
+      } else {
+        dataMap[link.target.id] = link.target;
+        link.target.dataIndex = index;
+        link.target.updateStyle(context, series);
+        index++;
+      }
+      link.updateStyle(context, series);
     });
-    return resultList;
+    return List.from(dataMap.values);
   }
 
   @override
@@ -640,38 +599,38 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 }
 
-int _ascSourceBreadth(SankeyLink a, SankeyLink b) {
+int _ascSourceBreadth(SankeyLinkData a, SankeyLinkData b) {
   int ab = _ascBreadth(a.source, b.source);
   if (ab != 0) {
     return ab;
   }
-  return (a.index - b.index);
+  return (a.attr.index - b.attr.index);
 }
 
-int _ascTargetBreadth(SankeyLink a, SankeyLink b) {
+int _ascTargetBreadth(SankeyLinkData a, SankeyLinkData b) {
   int ab = _ascBreadth(a.target, b.target);
   if (ab != 0) {
     return ab;
   }
-  return (a.index - b.index);
+  return (a.attr.index - b.attr.index);
 }
 
-int _ascBreadth(SankeyNode a, SankeyNode b) {
-  return a.top.compareTo(b.top);
+int _ascBreadth(SankeyData a, SankeyData b) {
+  return a.attr.top.compareTo(b.attr.top);
 }
 
-void _computeLinkBreadths(List<SankeyNode> nodes) {
+void _computeLinkBreadths(List<SankeyData> nodes) {
   for (var node in nodes) {
-    double y0 = node.top;
+    double y0 = node.attr.top;
 
-    for (var link in node.outLinks) {
-      link.sourceY = y0;
-      y0 += link.width;
+    for (var link in node.attr.outLinks) {
+      link.attr.sourceY = y0;
+      y0 += link.attr.width;
     }
-    double y1 = node.top;
-    for (var link in node.inputLinks) {
-      link.targetY = y1;
-      y1 += link.width;
+    double y1 = node.attr.top;
+    for (var link in node.attr.inputLinks) {
+      link.attr.targetY = y1;
+      y1 += link.attr.width;
     }
   }
 }

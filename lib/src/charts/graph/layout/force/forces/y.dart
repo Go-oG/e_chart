@@ -10,7 +10,7 @@ class YForce extends Force {
   ForceFun _yFun = (a, b, c, w, h) {
     return 0;
   };
-  List<GraphNode> _nodes = [];
+  List<GraphData> _nodes = [];
 
   Map<String, num> _strengthMap = {};
   Map<String, num> _yzMap = {};

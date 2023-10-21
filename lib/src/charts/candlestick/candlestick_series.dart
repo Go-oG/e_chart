@@ -43,39 +43,39 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
   }
 
   @override
-  AreaStyle getAreaStyle(Context context, CandleStickData? data, CandleStickGroup group, [Set<ViewState>? status]) {
+  AreaStyle getAreaStyle(Context context, StackData<CandleStickData, CandleStickGroup> data, CandleStickGroup group) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, group, status ?? {}) ?? AreaStyle.empty;
+      return areaStyleFun?.call(data, group) ?? AreaStyle.empty;
     }
-    if (data == null) {
+    if (data.dataIsNull) {
       return AreaStyle.empty;
     }
     var theme = context.option.theme.kLineTheme;
     if (theme.fill) {
-      Color color = data.isUp ? theme.upColor : theme.downColor;
-      return AreaStyle(color: color).convert(status);
+      Color color = data.data.isUp ? theme.upColor : theme.downColor;
+      return AreaStyle(color: color).convert(data.status);
     }
     return AreaStyle.empty;
   }
 
   @override
-  LineStyle getLineStyle(Context context, CandleStickData? data, CandleStickGroup group, [Set<ViewState>? status]) {
+  LineStyle getLineStyle(Context context, var data, CandleStickGroup group) {
     if (lineStyleFun != null) {
-      return lineStyleFun!.call(data, group, status ?? {}) ?? LineStyle.empty;
+      return lineStyleFun!.call(data, group) ?? LineStyle.empty;
     }
-    if (data == null) {
+    if (data.dataIsNull) {
       return LineStyle.empty;
     }
     var theme = context.option.theme.kLineTheme;
-    Color color = data.isUp ? theme.upColor : theme.downColor;
-    return LineStyle(color: color, width: theme.borderWidth).convert(status);
+    Color color = data.data.isUp ? theme.upColor : theme.downColor;
+    return LineStyle(color: color, width: theme.borderWidth).convert(data.status);
   }
 
   @override
   SeriesType get seriesType => SeriesType.candlestick;
 }
 
-class CandleStickGroup extends StackGroupData<CandleStickData> {
+class CandleStickGroup extends StackGroupData<CandleStickData,CandleStickGroup> {
   CandleStickGroup(
     super.data, {
     super.xAxisIndex = 0,

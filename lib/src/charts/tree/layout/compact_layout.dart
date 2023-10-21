@@ -21,29 +21,29 @@ class CompactLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData rootNode, TreeLayoutParams params) {
     var l = _InnerLayout(rootNode, direction: direction, levelGapFun: levelGapFun, gapFun: gapFun, levelAlign: levelAlign);
     l.layout(params.width, params.height);
   }
 }
 
 class _InnerLayout {
-  late final TreeRenderNode root;
+  late final TreeData root;
   final Direction2 direction;
   final Align2 levelAlign;
-  Fun3<TreeRenderNode, TreeRenderNode, Offset>? gapFun;
+  Fun3<TreeData, TreeData, Offset>? gapFun;
   Fun3<int, int, num>? levelGapFun;
 
   ///存储数据运算
   final List<double> _sizeOfLevel = [];
-  final Map<TreeRenderNode, num> _modMap = {};
-  final Map<TreeRenderNode, TreeRenderNode> _threadMap = {};
-  final Map<TreeRenderNode, num> _prelimMap = {};
-  final Map<TreeRenderNode, num> _changeMap = {};
-  final Map<TreeRenderNode, num> _shiftMap = {};
-  final Map<TreeRenderNode, TreeRenderNode> _ancestorMap = {};
-  final Map<TreeRenderNode, int> _numberMap = {};
-  final Map<TreeRenderNode, Point> _positionsMap = {};
+  final Map<TreeData, num> _modMap = {};
+  final Map<TreeData, TreeData> _threadMap = {};
+  final Map<TreeData, num> _prelimMap = {};
+  final Map<TreeData, num> _changeMap = {};
+  final Map<TreeData, num> _shiftMap = {};
+  final Map<TreeData, TreeData> _ancestorMap = {};
+  final Map<TreeData, int> _numberMap = {};
+  final Map<TreeData, Point> _positionsMap = {};
   double _boundsLeft = _max;
   double _boundsRight = _min;
   double _boundsTop = _max;
@@ -57,7 +57,7 @@ class _InnerLayout {
     this.gapFun,
   });
 
-  TreeRenderNode layout(num width, num height) {
+  TreeData layout(num width, num height) {
     _firstWalk(root, null);
     _calcSizeOfLevels(root, 0);
     _secondWalk(root, -_getPrelim(root), 0, 0);
@@ -70,16 +70,16 @@ class _InnerLayout {
     return root;
   }
 
-  double _getWidthOrHeightOfNode(TreeRenderNode node, bool returnWidth) {
+  double _getWidthOrHeightOfNode(TreeData node, bool returnWidth) {
     Size size = node.size;
     return returnWidth ? size.width : size.height;
   }
 
-  double _getNodeThickness(TreeRenderNode treeNode) {
+  double _getNodeThickness(TreeData treeNode) {
     return _getWidthOrHeightOfNode(treeNode, !_isLevelChangeInYAxis());
   }
 
-  double _getNodeSize(TreeRenderNode treeNode) {
+  double _getNodeSize(TreeData treeNode) {
     return _getWidthOrHeightOfNode(treeNode, _isLevelChangeInYAxis());
   }
 
@@ -87,7 +87,7 @@ class _InnerLayout {
     return direction == Direction2.ttb || direction == Direction2.btt || direction == Direction2.v;
   }
 
-  void _updateBounds(TreeRenderNode node, num centerX, num centerY) {
+  void _updateBounds(TreeData node, num centerX, num centerY) {
     Size size = node.size;
     double width = size.width;
     double height = size.height;
@@ -113,7 +113,7 @@ class _InnerLayout {
     return Rectangle(0, 0, _boundsRight - _boundsLeft, _boundsBottom - _boundsTop);
   }
 
-  void _calcSizeOfLevels(TreeRenderNode node, int level) {
+  void _calcSizeOfLevels(TreeData node, int level) {
     double oldSize;
     if (_sizeOfLevel.length <= level) {
       _sizeOfLevel.add(0);
@@ -128,7 +128,7 @@ class _InnerLayout {
     }
 
     if (!node.isLeaf) {
-      for (TreeRenderNode child in node.children) {
+      for (TreeData child in node.children) {
         _calcSizeOfLevels(child, level + 1);
       }
     }
@@ -144,23 +144,23 @@ class _InnerLayout {
     return _sizeOfLevel[level];
   }
 
-  num _getMod(TreeRenderNode? node) {
+  num _getMod(TreeData? node) {
     return _modMap[node] ?? 0;
   }
 
-  TreeRenderNode? _nextLeft(TreeRenderNode v) {
+  TreeData? _nextLeft(TreeData v) {
     return v.isLeaf ? _threadMap[v] : v.firstChild;
   }
 
-  TreeRenderNode? _nextRight(TreeRenderNode v) {
+  TreeData? _nextRight(TreeData v) {
     return v.isLeaf ? _threadMap[v] : v.lastChild;
   }
 
-  int _getNumber(TreeRenderNode node, TreeRenderNode parentNode) {
+  int _getNumber(TreeData node, TreeData parentNode) {
     int? n = _numberMap[node];
     if (n == null) {
       int i = 1;
-      for (TreeRenderNode child in parentNode.children) {
+      for (TreeData child in parentNode.children) {
         _numberMap[child] = i++;
       }
       n = _numberMap[node];
@@ -169,16 +169,16 @@ class _InnerLayout {
     return n!;
   }
 
-  TreeRenderNode _ancestor(TreeRenderNode vIMinus, TreeRenderNode v, TreeRenderNode parentOfV, TreeRenderNode defaultAncestor) {
-    TreeRenderNode ancestor = (_ancestorMap[vIMinus] ?? vIMinus);
+  TreeData _ancestor(TreeData vIMinus, TreeData v, TreeData parentOfV, TreeData defaultAncestor) {
+    TreeData ancestor = (_ancestorMap[vIMinus] ?? vIMinus);
     return isChildOfParent(ancestor, parentOfV) ? ancestor : defaultAncestor;
   }
 
-  bool isChildOfParent(TreeRenderNode node, TreeRenderNode parentNode) {
+  bool isChildOfParent(TreeData node, TreeData parentNode) {
     return parentNode == node.parent;
   }
 
-  void _moveSubtree(TreeRenderNode wMinus, TreeRenderNode wPlus, TreeRenderNode parent, num shift) {
+  void _moveSubtree(TreeData wMinus, TreeData wPlus, TreeData parent, num shift) {
     int subtrees = _getNumber(wPlus, parent) - _getNumber(wMinus, parent);
     _changeMap[wPlus] = _getChange(wPlus) - shift / subtrees;
     _shiftMap[wPlus] = _getShift(wPlus) + shift;
@@ -187,23 +187,23 @@ class _InnerLayout {
     _modMap[wPlus] = _getMod(wPlus) + shift;
   }
 
-  TreeRenderNode _apportion(TreeRenderNode v, TreeRenderNode defaultAncestor, TreeRenderNode? leftSibling, TreeRenderNode parentOfV) {
-    TreeRenderNode? w = leftSibling;
+  TreeData _apportion(TreeData v, TreeData defaultAncestor, TreeData? leftSibling, TreeData parentOfV) {
+    TreeData? w = leftSibling;
     if (w == null) {
       return defaultAncestor;
     }
-    TreeRenderNode? vOPlus = v;
-    TreeRenderNode? vIPlus = v;
-    TreeRenderNode? vIMinus = w;
-    TreeRenderNode? vOMinus = parentOfV.firstChild;
+    TreeData? vOPlus = v;
+    TreeData? vIPlus = v;
+    TreeData? vIMinus = w;
+    TreeData? vOMinus = parentOfV.firstChild;
 
     num sIPlus = _getMod(vIPlus);
     num sOPlus = _getMod(vOPlus);
     num sIMinus = _getMod(vIMinus);
     num sOMinus = _getMod(vOMinus);
 
-    TreeRenderNode? nextRightVIMinus = _nextRight(vIMinus);
-    TreeRenderNode? nextLeftVIPlus = _nextLeft(vIPlus);
+    TreeData? nextRightVIMinus = _nextRight(vIMinus);
+    TreeData? nextLeftVIPlus = _nextLeft(vIPlus);
 
     while (nextRightVIMinus != null && nextLeftVIPlus != null) {
       vIMinus = nextRightVIMinus;
@@ -240,10 +240,10 @@ class _InnerLayout {
     return defaultAncestor;
   }
 
-  void _executeShifts(TreeRenderNode v) {
+  void _executeShifts(TreeData v) {
     num shift = 0;
     num change = 0;
-    for (TreeRenderNode w in v.childrenReverse) {
+    for (TreeData w in v.childrenReverse) {
       change = change + _getChange(w);
       _prelimMap[w] = _getPrelim(w) + shift;
       _modMap[w] = _getMod(w) + shift;
@@ -251,23 +251,23 @@ class _InnerLayout {
     }
   }
 
-  void _firstWalk(TreeRenderNode v, TreeRenderNode? leftSibling) {
+  void _firstWalk(TreeData v, TreeData? leftSibling) {
     if (v.isLeaf) {
-      TreeRenderNode? w = leftSibling;
+      TreeData? w = leftSibling;
       if (w != null) {
         _prelimMap[v] = _getPrelim(w) + _getDistance(v, w);
       }
     } else {
-      TreeRenderNode defaultAncestor = v.firstChild;
-      TreeRenderNode? previousChild;
-      for (TreeRenderNode w in v.children) {
+      TreeData defaultAncestor = v.firstChild;
+      TreeData? previousChild;
+      for (TreeData w in v.children) {
         _firstWalk(w, previousChild);
         defaultAncestor = _apportion(w, defaultAncestor, previousChild, v);
         previousChild = w;
       }
       _executeShifts(v);
       num midpoint = (_getPrelim(v.firstChild) + _getPrelim(v.lastChild)) / 2.0;
-      TreeRenderNode? w = leftSibling;
+      TreeData? w = leftSibling;
       if (w != null) {
         _prelimMap[v] = _getPrelim(w) + _getDistance(v, w);
         _modMap[v] = _getPrelim(v) - midpoint;
@@ -277,7 +277,7 @@ class _InnerLayout {
     }
   }
 
-  void _secondWalk(TreeRenderNode v, num m, int level, num levelStart) {
+  void _secondWalk(TreeData v, num m, int level, num levelStart) {
     int levelChangeSign = (direction == Direction2.btt || direction == Direction2.rtl) ? -1 : 1;
     bool levelChangeOnYAxis = _isLevelChangeInYAxis();
     num levelSize = getSizeOfLevel(level);
@@ -299,41 +299,41 @@ class _InnerLayout {
     _updateBounds(v, x, y);
     if (!v.isLeaf) {
       num nextLevelStart = levelStart + (levelSize + _levelGap(level, level + 1)) * levelChangeSign;
-      for (TreeRenderNode w in v.children) {
+      for (TreeData w in v.children) {
         _secondWalk(w, m + _getMod(v), level + 1, nextLevelStart);
       }
     }
   }
 
-  void _addUniqueNodes(Map<TreeRenderNode, TreeRenderNode> nodes, TreeRenderNode newNode) {
-    TreeRenderNode? old = nodes[newNode];
+  void _addUniqueNodes(Map<TreeData, TreeData> nodes, TreeData newNode) {
+    TreeData? old = nodes[newNode];
     if (old != null) {
       throw FlutterError("Node used more than once in tree: %s");
     }
     nodes[newNode] = newNode;
-    for (TreeRenderNode n in newNode.children) {
+    for (TreeData n in newNode.children) {
       _addUniqueNodes(nodes, n);
     }
   }
 
   void checkTree() {
-    Map<TreeRenderNode, TreeRenderNode> nodes = {};
+    Map<TreeData, TreeData> nodes = {};
     _addUniqueNodes(nodes, root);
   }
 
-  num _getPrelim(TreeRenderNode? node) {
+  num _getPrelim(TreeData? node) {
     return _prelimMap[node] ?? 0;
   }
 
-  num _getChange(TreeRenderNode? node) {
+  num _getChange(TreeData? node) {
     return _changeMap[node] ?? 0;
   }
 
-  num _getShift(TreeRenderNode? node) {
+  num _getShift(TreeData? node) {
     return _shiftMap[node] ?? 0;
   }
 
-  num _getDistance(TreeRenderNode v, TreeRenderNode w) {
+  num _getDistance(TreeData v, TreeData w) {
     double sizeOfNodes = _getNodeSize(v) + _getNodeSize(w);
     num distance = sizeOfNodes / 2 + _nodeGap(v, w);
     return distance;
@@ -346,7 +346,7 @@ class _InnerLayout {
     return 16;
   }
 
-  num _nodeGap(TreeRenderNode v, TreeRenderNode w) {
+  num _nodeGap(TreeData v, TreeData w) {
     if (gapFun != null) {
       Offset gap = gapFun!.call(v, w);
       if (direction == Direction2.rtl || direction == Direction2.ltr) {

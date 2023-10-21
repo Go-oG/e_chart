@@ -19,7 +19,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   void onLayoutNode(var columnNode, LayoutType type) {
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
-      var data = node.originData;
+      var data = node.dataNull;
       if (data == null) {
         continue;
       }
@@ -36,14 +36,14 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     }
   }
 
-  void _setPath(SingleNode<CandleStickData, CandleStickGroup> node, Offset lowC, Offset highC, Offset openC,
+  void _setPath(StackData<CandleStickData, CandleStickGroup> node, Offset lowC, Offset highC, Offset openC,
       Offset closeC, Rect colRect) {
     final double tx = colRect.width / 2;
 
     node.extSet(_colRectK, colRect);
     Rect boxRect = Rect.fromPoints(highC.translate(-tx, 0), lowC.translate(tx, 0));
     Rect areaRect;
-    if (node.originData!.isUp) {
+    if (node.data.isUp) {
       areaRect = Rect.fromPoints(closeC.translate(-tx, 0), openC.translate(tx, 0));
     } else {
       areaRect = Rect.fromPoints(openC.translate(-tx, 0), closeC.translate(tx, 0));
@@ -52,7 +52,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     List<List<Offset>> borderList = [];
     borderList
         .add([areaRect.bottomLeft, areaRect.bottomRight, areaRect.topRight, areaRect.topLeft, areaRect.bottomLeft]);
-    if (node.originData!.isUp) {
+    if (node.data.isUp) {
       borderList.add([lowC, openC]);
       borderList.add([closeC, highC]);
     } else {
@@ -72,7 +72,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
 
   @override
   StackAnimatorNode onCreateAnimatorNode(var node, DiffType diffType, bool isStart) {
-    if (node.originData == null) {
+    if (node.dataIsNull) {
       return StackAnimatorNode();
     }
 
@@ -159,16 +159,16 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
     return [rMin, rMax];
   }
 
-  List<List<Offset>> getBorderList(SingleNode<CandleStickData, CandleStickGroup> node) {
+  List<List<Offset>> getBorderList(StackData<CandleStickData, CandleStickGroup> node) {
     return node.extGet(_borderListK);
   }
 
-  Rect getAreaRect(SingleNode<CandleStickData, CandleStickGroup> node) {
+  Rect getAreaRect(StackData<CandleStickData, CandleStickGroup> node) {
     return node.rect;
   }
 
   @override
-  SingleNode<CandleStickData, CandleStickGroup>? findNode(Offset offset, [bool overlap = false]) {
+  StackData<CandleStickData, CandleStickGroup>? findNode(Offset offset, [bool overlap = false]) {
     var node = super.findNode(offset);
     if (node != null) {
       return node;
@@ -181,7 +181,7 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
         }
       }
     }
-    for (var node in series.getHelper(context).nodeMap.values) {
+    for (var node in series.getHelper(context).dataList) {
       List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
       for (var l in bl) {
         if (offset.inPolygon(l)) {

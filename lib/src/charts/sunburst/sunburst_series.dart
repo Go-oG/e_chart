@@ -1,13 +1,13 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/sunburst/sunburst_view.dart';
 
-import 'sunburst_node.dart';
+import 'sunburst_data.dart';
 
 typedef RadiusDiffFun = num Function(int deep, int maxDeep, num radius);
 
 /// 旭日图
 class SunburstSeries extends RectSeries {
-  TreeData data;
+  SunburstData data;
   List<SNumber> center;
   List<SNumber> radius;
 
@@ -45,20 +45,20 @@ class SunburstSeries extends RectSeries {
   AreaStyle? backStyle;
 
   ///填充区域的样式
-  Fun2<SunburstNode, AreaStyle?>? areaStyleFun;
-  Fun2<SunburstNode, LineStyle?>? borderStyleFun;
+  Fun2<SunburstData, AreaStyle?>? areaStyleFun;
+  Fun2<SunburstData, LineStyle?>? borderStyleFun;
 
   ///文字标签的样式
-  Fun2<SunburstNode, LabelStyle?>? labelStyleFun;
+  Fun2<SunburstData, LabelStyle?>? labelStyleFun;
 
   ///标签旋转角度函数 -1 径向旋转 -2 切向旋转  >=0 旋转角度
-  Fun2<SunburstNode, double>? rotateFun;
+  Fun2<SunburstData, double>? rotateFun;
 
   ///标签对齐函数
-  Fun2<SunburstNode, Align2?>? labelAlignFun;
+  Fun2<SunburstData, Align2?>? labelAlignFun;
 
   ///标签间距函数
-  Fun2<SunburstNode, double>? labelMarginFun;
+  Fun2<SunburstData, double>? labelMarginFun;
 
   SunburstSeries(
     this.data, {
@@ -97,21 +97,21 @@ class SunburstSeries extends RectSeries {
     return SunburstView(this);
   }
 
-  AreaStyle getAreaStyle(Context context, SunburstNode node) {
+  AreaStyle getAreaStyle(Context context, SunburstData node) {
     if (areaStyleFun != null) {
       return areaStyleFun!.call(node) ?? AreaStyle.empty;
     }
     return AreaStyle(color: context.option.theme.getColor(node.dataIndex)).convert(node.status);
   }
 
-  LineStyle getBorderStyle(Context context, SunburstNode node) {
+  LineStyle getBorderStyle(Context context, SunburstData node) {
     if (borderStyleFun != null) {
       return borderStyleFun?.call(node) ?? LineStyle.empty;
     }
     return LineStyle.empty;
   }
 
-  LabelStyle getLabelStyle(Context context, SunburstNode node) {
+  LabelStyle getLabelStyle(Context context, SunburstData node) {
     if (labelStyleFun != null) {
       return labelStyleFun!.call(node) ?? LabelStyle.empty;
     }
@@ -119,7 +119,7 @@ class SunburstSeries extends RectSeries {
     return theme.getLabelStyle() ?? LabelStyle.empty;
   }
 
-  Align2 getLabelAlign(Context context, SunburstNode node) {
+  Align2 getLabelAlign(Context context, SunburstData node) {
     if (labelAlignFun != null) {
       return labelAlignFun!.call(node) ?? Align2.center;
     }
@@ -132,18 +132,14 @@ class SunburstSeries extends RectSeries {
   @override
   int onAllocateStyleIndex(int start) {
     int c = 0;
-    List<TreeData> dl = [data];
-    List<TreeData> next = [];
-    while (dl.isNotEmpty) {
-      each(dl, (p0, p1) {
-        p0.styleIndex = c;
-        c++;
-      });
-      next.addAll(dl);
-      dl = next;
-    }
+    data.each((p0, index, startNode) {
+      p0.styleIndex = c;
+      c++;
+      return false;
+    });
     return c;
   }
+
   @override
   SeriesType get seriesType => SeriesType.sunburst;
 }

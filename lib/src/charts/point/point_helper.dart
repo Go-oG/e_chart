@@ -1,14 +1,13 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'point_node.dart';
 
-class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
+class PointHelper extends LayoutHelper2<PointData, PointSeries> {
   PointHelper(super.context, super.view, super.series);
 
-  RBush<PointNode> rBush = RBush((p0) => p0.left, (p0) => p0.top, (p0) => p0.right, (p0) => p0.bottom);
+  RBush<PointData> rBush = RBush((p0) => p0.left, (p0) => p0.top, (p0) => p0.right, (p0) => p0.bottom);
 
-  List<PointNode> showNodeList = [];
+  List<PointData> showNodeList = [];
 
   @override
   void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
@@ -21,25 +20,28 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    List<PointNode> oldList = nodeList;
-    List<PointNode> newList = [];
-    each(series.data, (group, i) {
-      each(group.data, (e, ci) {
-        var node = PointNode(series.getSymbol(context, e, ci, group, {}), group, e, ci, i);
-        newList.add(node);
-      });
-    });
-    layoutNode(newList);
-    var an = DiffUtil.diffLayout2(
+    var oldList = nodeList;
+    var newList = [...series.data];
+    initData(newList);
+    var an = DiffUtil.diff(
       getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
-      (node, add) {
-        return add ? 0 : node.symbol.scale;
+      (dataList) => layoutNode(dataList),
+      (node, type) {
+        if (type == DiffType.add) {
+          return {'scale': 0};
+        }
+        return {'scale': node.symbol.scale};
       },
-      (node, add) => add ? 1 : 0,
-      (node, t) {
-        node.symbol.scale = t;
+      (node, type) {
+        if (type == DiffType.remove) {
+          return {'scale': 0};
+        }
+        return {'scale': 1};
+      },
+      (data, s, e, t, type) {
+        data.symbol.scale = lerpDouble(s['scale'], e['scale'], t)!;
       },
       (resultList, t) {
         nodeList = resultList;
@@ -62,7 +64,15 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     context.addAnimationToQueue(an);
   }
 
-  void layoutNode(List<PointNode> nodeList) {
+  @override
+  void initData(List<PointData> dataList) {
+    each(dataList, (data, i) {
+      data.dataIndex = i;
+      data.setSymbol(series.getSymbol(context, data), true);
+    });
+  }
+
+  void layoutNode(List<PointData> nodeList) {
     if (CoordType.polar == series.coordType) {
       _layoutForPolar(nodeList, findPolarCoord());
       return;
@@ -78,13 +88,13 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     Logger.w('暂不支持其它坐标系 ${series.coordType}');
   }
 
-  void _layoutForCalendar(List<PointNode> nodeList, CalendarCoord coord) {
-    for (var node in nodeList) {
+  void _layoutForCalendar(List<PointData> dataList, CalendarCoord coord) {
+    for (var node in dataList) {
       DateTime t;
-      if (node.data.x.isDate) {
-        t = node.data.x.value;
-      } else if (node.data.y.isDate) {
-        t = node.data.y.value;
+      if (node.x.isDate) {
+        t = node.x.value;
+      } else if (node.y.isDate) {
+        t = node.y.value;
       } else {
         throw ChartError('x 或y 必须有一个是DateTime');
       }
@@ -92,17 +102,17 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
     }
   }
 
-  void _layoutForPolar(List<PointNode> nodeList, PolarCoord coord) {
-    for (var node in nodeList) {
-      var position = coord.dataToPosition(node.data.x, node.data.y);
-      node.attr = position.position;
+  void _layoutForPolar(List<PointData> dataList, PolarCoord coord) {
+    for (var data in dataList) {
+      var position = coord.dataToPosition(data.x, data.y);
+      data.attr = position.position;
     }
   }
 
-  void _layoutForGrid(List<PointNode> nodeList, GridCoord coord) {
-    for (var node in nodeList) {
-      var x = coord.dataToPoint(node.group.xAxisIndex, node.data.x, true);
-      var y = coord.dataToPoint(node.group.yAxisIndex, node.data.y, false);
+  void _layoutForGrid(List<PointData> dataList, GridCoord coord) {
+    for (var node in dataList) {
+      var x = coord.dataToPoint(node.xAxisIndex, node.x, true);
+      var y = coord.dataToPoint(node.yAxisIndex, node.y, false);
       double ox;
       if (x.length == 1) {
         ox = x.first.dx;
@@ -149,8 +159,8 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
 
   @override
   void onRunUpdateAnimation(var list, var animation) {
-    List<PointNode> oldList = [];
-    List<PointNode> newList = [];
+    List<PointData> oldList = [];
+    List<PointData> newList = [];
     for (var diff in list) {
       diff.node.drawIndex = diff.old ? 0 : 100;
       if (diff.old) {
@@ -181,7 +191,7 @@ class PointHelper extends LayoutHelper2<PointNode, PointSeries> {
   }
 
   @override
-  PointNode? findNode(Offset offset, [bool overlap = false]) {
+  PointData? findNode(Offset offset, [bool overlap = false]) {
     var hoveNode = oldHoverNode;
     if (hoveNode != null && hoveNode.contains(offset)) {
       return hoveNode;

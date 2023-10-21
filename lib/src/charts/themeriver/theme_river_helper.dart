@@ -1,58 +1,52 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-import 'theme_river_node.dart';
+import 'theme_river_data.dart';
 
-class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
+class ThemeRiverHelper extends LayoutHelper2<ThemeRiverData, ThemeRiverSeries> {
   num maxTransX = 0, maxTransY = 0;
   double animatorPercent = 1;
 
-  ThemeRiverHelper(super.context,super.view, super.series);
+  ThemeRiverHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
-   resetTranslation();
-    List<ThemeRiverNode> newList = [];
-    Set<ViewState> emptyVS = {};
-    each(series.data, (d, i) {
-      var node = ThemeRiverNode(
-        d,
-        i,
-        0,
-        ThemeRiverAttr.empty,
-        series.getAreaStyle(context, d, i, emptyVS) ?? AreaStyle.empty,
-        series.getBorderStyle(context, d, i, emptyVS) ?? LineStyle.empty,
-        series.getLabelStyle(context, d, i, emptyVS) ?? LabelStyle.empty,
-      );
-      newList.add(node);
+    resetTranslation();
+    List<ThemeRiverData> newList = [...series.data];
+    each(newList, (d, i) {
+      d.dataIndex = i;
+      d.groupIndex = 0;
+      d.updateStyle(context, series);
     });
     layoutNode(newList);
 
-   var animation = getAnimation(type,newList.length);
-   if (animation == null) {
-     nodeList = newList;
-     animatorPercent=1;
-     return;
-   }
+    var animation = getAnimation(type, newList.length);
+    if (animation == null) {
+      nodeList = newList;
+      animatorPercent = 1;
+      return;
+    }
     var tween = ChartDoubleTween(option: animation);
     tween.addStartListener(() {
-      inAnimation=true;
+      inAnimation = true;
       nodeList = newList;
     });
     tween.addListener(() {
       animatorPercent = tween.value;
       notifyLayoutUpdate();
     });
-    tween.addEndListener(() {inAnimation=false;});
+    tween.addEndListener(() {
+      inAnimation = false;
+    });
     context.addAnimationToQueue([AnimationNode(tween, animation, type)]);
   }
 
-  void layoutNode(List<ThemeRiverNode> newList) {
+  void layoutNode(List<ThemeRiverData> newList) {
     final List<List<_InnerNode>> innerNodeList = [];
     for (var ele in newList) {
       List<_InnerNode> tmp = [];
-      for (var e2 in ele.data.data) {
-        tmp.add(_InnerNode(e2.value));
+      for (var e2 in ele.value) {
+        tmp.add(_InnerNode(e2));
       }
       if (tmp.isNotEmpty) {
         innerNodeList.add(tmp);
@@ -86,7 +80,7 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
     }
 
     for (int j = 0; j < innerNodeList.length; j++) {
-      ThemeRiverNode node = newList[j];
+      ThemeRiverData node = newList[j];
       var ele = innerNodeList[j];
       List<Offset> pList = [];
       List<Offset> pList2 = [];
@@ -137,18 +131,18 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverNode, ThemeRiverSeries> {
     return {'y0': y0, 'max': max};
   }
 
-  AreaStyle getStyle(ThemeRiverNode node) {
-    return series.getAreaStyle(context, node.data, node.dataIndex, node.status)??AreaStyle.empty;
+  AreaStyle getStyle(ThemeRiverData node) {
+    return series.getAreaStyle(context,node);
   }
 
-  LabelStyle? getLabelStyle(ThemeRiverNode node) {
-    return series.getLabelStyle(context, node.data, node.dataIndex, node.status);
+  LabelStyle? getLabelStyle(ThemeRiverData node) {
+    return series.getLabelStyle(context, node);
   }
 
   @override
   void onRunUpdateAnimation(var list, var animation) {
-    for(var diff in list){
-      diff.node.attr.index=diff.old?0:100;
+    for (var diff in list) {
+      diff.node.attr.index = diff.old ? 0 : 100;
     }
     nodeList.sort((a, b) {
       return a.attr.index.compareTo(b.attr.index);

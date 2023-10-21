@@ -1,11 +1,10 @@
-import 'edge_node.dart';
-import 'graph_node.dart';
+import '../graph_data.dart';
 
 class Graph {
-  late final List<GraphNode> nodes;
-  late final List<Edge> edges;
+  late final List<GraphData> nodes;
+  late final List<EdgeData> edges;
 
-  Graph(List<GraphNode> nodes, {List<Edge>? edges}) {
+  Graph(List<GraphData> nodes, {List<EdgeData>? edges}) {
     this.nodes = [...nodes];
     this.edges = [];
     if (edges != null) {
@@ -13,7 +12,7 @@ class Graph {
     }
   }
 
-  Graph addNode(GraphNode node) {
+  Graph addNode(GraphData node) {
     if (nodes.contains(node)) {
       return this;
     }
@@ -21,12 +20,12 @@ class Graph {
     return this;
   }
 
-  Graph removeNode(GraphNode node) {
+  Graph removeNode(GraphData node) {
     nodes.remove(node);
     return this;
   }
 
-  Graph addEdge(Edge edge) {
+  Graph addEdge(EdgeData edge) {
     if (edges.contains(edge)) {
       return this;
     }
@@ -34,7 +33,7 @@ class Graph {
     return this;
   }
 
-  Graph removeEdge(Edge edge) {
+  Graph removeEdge(EdgeData edge) {
     edges.remove(edge);
     return this;
   }

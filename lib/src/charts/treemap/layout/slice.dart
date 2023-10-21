@@ -6,12 +6,12 @@ import 'package:flutter/widgets.dart';
 /// 从上到下
 class SliceLayout extends TreemapLayout {
   @override
-  void onLayout2(TreeMapNode root, LayoutType type) {
+  void onLayout2(TreeMapData root, LayoutType type) {
     layoutChildren(boxBound, root.children);
   }
 
   ///从上到下
-  static void layoutChildren(Rect rect, List<TreeMapNode> nodeList) {
+  static void layoutChildren(Rect rect, List<TreeMapData> nodeList) {
     double w = rect.width;
     double h = rect.height;
     double allValue = computeAllRatio(nodeList);

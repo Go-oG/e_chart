@@ -9,7 +9,7 @@ import 'package:scidart/numdart.dart' as sv;
 ///Ref:https://github.com/antvis/layout/blob/master/src/layout/mds.ts
 class MDSLayout extends GraphLayout {
   List<SNumber> center;
-  Fun3<GraphNode, GraphNode, num>? distanceFun;
+  Fun3<GraphData, GraphData, num>? distanceFun;
   num linkDistance;
 
   ///存储距离矩阵
@@ -31,7 +31,7 @@ class MDSLayout extends GraphLayout {
   void onLayout(Graph graph, GraphLayoutParams params, LayoutType type) {
     clear();
     _center = Offset(center[0].convert(params.width), center[1].convert(params.height));
-    List<GraphNode> nodes = graph.nodes;
+    List<GraphData> nodes = graph.nodes;
     if (nodes.isEmpty) {
       return;
     }
@@ -156,8 +156,8 @@ class MDSLayout extends GraphLayout {
 }
 
 List<List<double>> getAdjMatrix(Graph graph, bool directed) {
-  List<GraphNode> nodes = graph.nodes;
-  List<Edge> edges = graph.edges;
+  List<GraphData> nodes = graph.nodes;
+  List<EdgeData> edges = graph.edges;
   List<List<double>> matrix = [];
   Map<String, int> nodeMap = {};
 

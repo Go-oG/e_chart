@@ -2,19 +2,22 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class CircleNode extends DataNode<Arc, CircleItemData> {
-  AreaStyle backgroundStyle = AreaStyle.empty;
-  Arc backgroundArc = Arc();
+class CircleData extends RenderData<Arc> {
+  num value;
+  num max;
+  num offsetAngle;
 
-  CircleNode(
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  );
+  ///Attr
+  AreaStyle backgroundStyle = AreaStyle.empty;
+  Arc backgroundArc = Arc.zero;
+
+  CircleData(
+    this.value,
+    this.max, {
+    this.offsetAngle = 0,
+  }) {
+    attr = Arc.zero;
+  }
 
   @override
   bool contains(Offset offset) {
@@ -37,8 +40,8 @@ class CircleNode extends DataNode<Arc, CircleItemData> {
 
   @override
   void updateStyle(Context context, covariant CircleSeries series) {
-    itemStyle = series.getAreaStyle(context, data, dataIndex, status);
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status);
-    label.style = series.getLabelStyle(context, data, dataIndex, status);
+    itemStyle = series.getAreaStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
+    label.style = series.getLabelStyle(context, this);
   }
 }

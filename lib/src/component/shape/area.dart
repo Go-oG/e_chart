@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 ///代表一个封闭的图形
 ///其路径由给定的点组成
 class Area implements Shape {
+  static final Area empty=Area([], []);
   final List<Offset> upList;
   final List<Offset> downList;
   final num upSmooth;

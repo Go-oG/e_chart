@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/heatmap/heat_map_helper.dart';
 import 'package:flutter/material.dart';
 
-import 'heat_map_node.dart';
+import 'heat_map_data.dart';
 
 /// 热力图
 class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChild, CalendarChild {
@@ -60,11 +60,11 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   @override
   bool get enableDrag => true;
 
-  AreaStyle? getAreaStyle(HeatMapNode node, int index) {
-    return series.getAreaStyle(context, node.data, index, node.status);
+  AreaStyle? getAreaStyle(HeatMapData data) {
+    return series.getAreaStyle(context, data);
   }
 
-  LineStyle? getBorderStyle(HeatMapNode node, int index) {
-    return series.getBorderStyle(context, node.data, index, node.status);
+  LineStyle? getBorderStyle(HeatMapData data) {
+    return series.getBorderStyle(context, data);
   }
 }

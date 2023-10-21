@@ -5,26 +5,70 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 import 'layout/siblings.dart';
 
-class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
-  Fun2<PackNode, num>? _radiusFun;
-  Fun2<PackNode, num> _paddingFun = (a) {
+class PackHelper extends LayoutHelper2<PackData, PackSeries> {
+  Fun2<PackData, num>? _radiusFun;
+  Fun2<PackData, num> _paddingFun = (a) {
     return 3;
   };
-  PackNode? rootNode;
-
-  List<PackNode> showNodeList = [];
+  PackData? rootNode;
 
   PackHelper(super.context, super.view, super.series);
 
   @override
   void onLayout(LayoutType type) {
-    var root = convertData(series.data);
+    var root = series.data;
+    var c = initData2(root);
+    var animation = getAnimation(type, c);
+    if (animation == null) {
+      layoutData(root);
+      rootNode = root;
+      return;
+    }
+
+    var oldList = rootNode?.iterator() ?? [];
+    var newList = root.iterator();
+
+    var an = DiffUtil.diff<PackData>(
+      animation,
+      oldList,
+      newList,
+      (dataList) => layoutData(root),
+      (node, type) {
+        return {'scale': type == DiffType.add ? 0 : node.scale};
+      },
+      (node, type) {
+        return {'scale': type == DiffType.remove ? 0 : 1};
+      },
+      (node, s, e, t, type) {
+        node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
+      },
+      (resultList, t) {
+        nodeList = resultList;
+        notifyLayoutUpdate();
+      },
+      onStart: () {
+        rootNode = root;
+      },
+    );
+    context.addAnimationToQueue(an);
+  }
+
+  int initData2(PackData root) {
+    root.sum((p0) => p0.value);
+    root.computeHeight();
+    int c = 0;
+    root.each((node, index, startNode) {
+      node.dataIndex = index;
+      node.maxDeep = root.height;
+      node.updateStyle(context, series);
+      c++;
+      return false;
+    });
     var h = root.height;
     root.each((node, index, startNode) {
       node.maxDeep = h;
       return false;
     });
-
     if (series.sortFun != null) {
       root.sort(series.sortFun!);
     } else {
@@ -36,7 +80,12 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
     if (series.radiusFun != null) {
       radius(series.radiusFun!);
     }
+    return c;
+  }
 
+  void layoutData(PackData rootData) {
+    var root = series.data;
+    initData2(root);
     LCG random = DefaultLCG();
     root.x = width / 2;
     root.y = height / 2;
@@ -56,13 +105,12 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
     }
 
     ///计算文字位置
-    int c = 0;
     root.each((node, p1, p2) {
       double r = node.r;
       var align = series.getLabelAlign(node);
       if (align == Alignment.center) {
         node.label.updatePainter(
-          text: node.data.name ?? DynamicText.empty,
+          text: node.label.text,
           offset: node.center,
           align: Alignment.center,
           maxWidth: r * 2 * 0.98,
@@ -75,61 +123,15 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
           node.label.style,
           Direction.vertical,
         );
-        node.label.updatePainter(text: node.data.name ?? DynamicText.empty, maxWidth: r * 2 * 0.98, maxLines: 1);
+        node.label.updatePainter(text: node.label.text, maxWidth: r * 2 * 0.98, maxLines: 1);
       }
-      c++;
       return false;
     });
-
-    var animation = getAnimation(type, c);
-    if (animation == null) {
-      rootNode = root;
-      return;
-    }
-    var an = DiffUtil.diffLayout3<PackNode>(
-      animation,
-      [],
-      root.iterator(),
-      (node, type) {
-        return {'scale': type == DiffType.add ? 0 : node.scale};
-      },
-      (node, type) {
-        return {'scale': type == DiffType.remove ? 0 : 1};
-      },
-      (node, s, e, t, type) {
-        node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
-      },
-      (resultList, t) {
-        showNodeList = resultList;
-        notifyLayoutUpdate();
-      },
-      onStart: () {
-        rootNode = root;
-      },
-    );
-    context.addAnimationToQueue(an);
-  }
-
-  PackNode convertData(TreeData data) {
-    int i = 0;
-    var rn = toTree<TreeData, Rect, PackNode>(data, (p0) => p0.children, (p0, p1) {
-      var node = PackNode(p0, p1, i, Rect.zero, AreaStyle.empty, LineStyle.empty, LabelStyle.empty, value: p1.value);
-      i++;
-      return node;
-    });
-    rn.sum((p0) => p0.value);
-    rn.computeHeight();
-    rn.each((node, index, startNode) {
-      node.maxDeep = rn.height;
-      node.updateStyle(context, series);
-      return false;
-    });
-    return rn;
   }
 
   @override
   void onClick(Offset localOffset) {
-    PackNode? clickNode = findNode(localOffset);
+    PackData? clickNode = findNode(localOffset);
     if (clickNode != oldHoverNode) {
       var oldHover = oldHoverNode;
       oldHoverNode = null;
@@ -143,7 +145,7 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
 
     sendClickEvent(localOffset, clickNode);
     var parent = clickNode.parent;
-    PackNode pn = parent ?? clickNode;
+    PackData pn = parent ?? clickNode;
 
     ///计算新的缩放系数
     double oldScale = view.scaleX;
@@ -189,7 +191,7 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
   }
 
   void updateDrawNodeList() {
-    List<PackNode> nodeList = [];
+    List<PackData> nodeList = [];
     rootNode?.eachBefore((node, p1, p2) {
       if (needDraw(node)) {
         nodeList.add(node);
@@ -197,18 +199,18 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
       }
       return true;
     }, false);
-    showNodeList = nodeList;
+    this.nodeList = nodeList;
   }
 
   @override
-  PackNode? findNode(Offset offset, [bool overlap = false]) {
+  PackData? findNode(Offset offset, [bool overlap = false]) {
     if (rootNode == null) {
       return null;
     }
-    PackNode? parent;
+    PackData? parent;
     var scale = view.scaleX;
-    List<PackNode> rl = showNodeList;
-    List<PackNode> next = [];
+    List<PackData> rl = nodeList;
+    List<PackData> next = [];
     while (rl.isNotEmpty) {
       for (var node in rl) {
         var dx = node.x * scale + view.translationX;
@@ -228,17 +230,17 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
     return parent;
   }
 
-  PackHelper radius(Fun2<PackNode, num> fun1) {
+  PackHelper radius(Fun2<PackData, num> fun1) {
     _radiusFun = fun1;
     return this;
   }
 
-  PackHelper padding(Fun2<PackNode, num> fun1) {
+  PackHelper padding(Fun2<PackData, num> fun1) {
     _paddingFun = fun1;
     return this;
   }
 
-  bool needDraw(PackNode node) {
+  bool needDraw(PackData node) {
     Rect rect = boxBound;
     var scale = view.scaleX;
     var cx = node.x * scale;
@@ -252,12 +254,12 @@ class PackHelper extends LayoutHelper2<PackNode, PackSeries> {
   }
 }
 
-double _defaultRadius(PackNode d) {
+double _defaultRadius(PackData d) {
   return m.sqrt(d.value);
 }
 
-bool Function(PackNode, int, PackNode) _radiusLeaf(Fun2<PackNode, num> radiusFun) {
-  return (PackNode node, int b, PackNode c) {
+bool Function(PackData, int, PackData) _radiusLeaf(Fun2<PackData, num> radiusFun) {
+  return (PackData node, int b, PackData c) {
     if (node.notChild) {
       double r = m.max(0, radiusFun.call(node)).toDouble();
       node.r = r;
@@ -266,9 +268,9 @@ bool Function(PackNode, int, PackNode) _radiusLeaf(Fun2<PackNode, num> radiusFun
   };
 }
 
-bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> paddingFun, num k, LCG random) {
-  return (PackNode node, int b, PackNode c) {
-    List<PackNode> children = node.children;
+bool Function(PackData, int, PackData) _packChildrenRandom(Fun2<PackData, num> paddingFun, num k, LCG random) {
+  return (PackData node, int b, PackData c) {
+    List<PackData> children = node.children;
     if (children.isNotEmpty) {
       int i, n = children.length;
       num r = paddingFun(node) * k, e;
@@ -289,8 +291,8 @@ bool Function(PackNode, int, PackNode) _packChildrenRandom(Fun2<PackNode, num> p
   };
 }
 
-bool Function(PackNode, int, PackNode) _translateChild(num k) {
-  return (PackNode node, int b, PackNode c) {
+bool Function(PackData, int, PackData) _translateChild(num k) {
+  return (PackData node, int b, PackData c) {
     var parent = node.parent;
     node.r *= k;
     if (parent != null) {

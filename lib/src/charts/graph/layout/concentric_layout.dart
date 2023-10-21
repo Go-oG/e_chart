@@ -30,7 +30,7 @@ class ConcentricLayout extends GraphLayout {
   num? maxLevelDiff;
 
   ///权重函数
-  Fun2<GraphNode, num> weightFun = (a) {
+  Fun2<GraphData, num> weightFun = (a) {
     return a.weight;
   };
 
@@ -44,7 +44,7 @@ class ConcentricLayout extends GraphLayout {
     this.maxLevelDiff,
     this.preventOverlap = true,
     this.maxIterations = 360,
-    Fun2<GraphNode, num>? weightFun,
+    Fun2<GraphData, num>? weightFun,
     super.nodeSpaceFun,
     super.workerThread,
   }) {
@@ -64,7 +64,7 @@ class ConcentricLayout extends GraphLayout {
     if (graph.nodes.isEmpty) {
       return;
     }
-    List<GraphNode> nodes = graph.nodes;
+    List<GraphData> nodes = graph.nodes;
     int n = graph.nodes.length;
     if (n == 1) {
       nodes[0].x = _center.dx;
@@ -74,16 +74,16 @@ class ConcentricLayout extends GraphLayout {
     }
 
     ///数据分层
-    List<List<GraphNode>> levelList = levelData(graph);
+    List<List<GraphData>> levelList = levelData(graph);
     List<LevelInfo> levelInfoList = [];
     num lastRadius = 0;
 
     ///计算每层最大半径的节点
-    List<GraphNode> maxRadiusList = [];
+    List<GraphData> maxRadiusList = [];
     for (int i = 1; i < levelList.length; i++) {
-      maxRadiusList.add(maxBy<GraphNode>(levelList[i], (p0) => p0.r));
+      maxRadiusList.add(maxBy<GraphData>(levelList[i], (p0) => p0.r));
     }
-    num maxRadius = maxBy2<GraphNode>(maxRadiusList, (p0) => p0.r);
+    num maxRadius = maxBy2<GraphData>(maxRadiusList, (p0) => p0.r);
 
     ///计算每个分层的半径大小
     for (int i = 0; i < levelList.length; i++) {
@@ -100,7 +100,7 @@ class ConcentricLayout extends GraphLayout {
         info.r = lastRadius + maxRadius + minRadiusGap;
         lastRadius = info.r + maxRadius;
       } else {
-        GraphNode maxNode = maxRadiusList[i - 1];
+        GraphData maxNode = maxRadiusList[i - 1];
         info.r = lastRadius + maxNode.r + minRadiusGap;
         lastRadius = info.r + maxNode.r;
       }
@@ -140,8 +140,8 @@ class ConcentricLayout extends GraphLayout {
   }
 
   ///对数据分层
-  List<List<GraphNode>> levelData(Graph graph) {
-    Map<GraphNode, num> weightMap = {};
+  List<List<GraphData>> levelData(Graph graph) {
+    Map<GraphData, num> weightMap = {};
     for (var c in graph.nodes) {
       num w = weightFun.call(c);
       if (w < 0) {
@@ -150,26 +150,26 @@ class ConcentricLayout extends GraphLayout {
       weightMap[c] = w;
     }
 
-    List<GraphNode> nodes = List.from(graph.nodes);
+    List<GraphData> nodes = List.from(graph.nodes);
     nodes.sort((a, b) {
       return weightMap[b]!.compareTo(weightMap[a]!);
     });
 
-    GraphNode maxWeightNode = nodes.first;
-    GraphNode minWeightNode = nodes.last;
+    GraphData maxWeightNode = nodes.first;
+    GraphData minWeightNode = nodes.last;
     num weightDiff = maxLevelDiff ?? -1;
     if (weightDiff <= 0) {
       weightDiff = (weightMap[maxWeightNode]! - weightMap[minWeightNode]!) / 4;
     }
 
-    List<List<GraphNode>> rl = [];
+    List<List<GraphData>> rl = [];
     rl.add([nodes.removeAt(0)]);
     for (var c in nodes) {
       if (rl.length == 1) {
         rl.add([c]);
         continue;
       }
-      List<GraphNode> cl = rl.last;
+      List<GraphData> cl = rl.last;
       num firstWeight = weightMap[cl.first]!;
       num curWeight = weightMap[c]!;
       if ((firstWeight - curWeight).abs() > weightDiff) {

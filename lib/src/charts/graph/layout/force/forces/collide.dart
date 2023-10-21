@@ -23,17 +23,17 @@ class CollideForce extends Force {
   int _iterations = 2;
 
   ///半径函数，返回每个节点的半径大小
-  ForceFun<GraphNode> _radiusFun = (node, i, nodes, w, h) {
+  ForceFun<GraphData> _radiusFun = (node, i, nodes, w, h) {
     return 1;
   };
 
   //============布局过程中的临时变量=====================
-  List<GraphNode> _nodes = [];
+  List<GraphData> _nodes = [];
 
   //存放节点对应的半径
-  Map<GraphNode, num> _radiusMap = {};
+  Map<GraphData, num> _radiusMap = {};
 
-  CollideForce({ForceFun<GraphNode>? radiusFun, int? iterations, num? strength}) {
+  CollideForce({ForceFun<GraphData>? radiusFun, int? iterations, num? strength}) {
     if (radiusFun != null) {
       _radiusFun = radiusFun;
     }
@@ -69,7 +69,7 @@ class CollideForce extends Force {
       return;
     }
     for (int k = 0; k < _iterations; ++k) {
-      QuadTree<GraphNode> tree = QuadTree.simple<GraphNode>((d) => d.x + d.vx, (d) => d.y + d.vy, _nodes).eachAfter(_prepare);
+      QuadTree<GraphData> tree = QuadTree.simple<GraphData>((d) => d.x + d.vx, (d) => d.y + d.vy, _nodes).eachAfter(_prepare);
       for (var node in _nodes) {
         var ri = _radiusMap[node]!;
         var ri2 = ri * ri;
@@ -108,7 +108,7 @@ class CollideForce extends Force {
     }
   }
 
-  bool _prepare(QuadNode<GraphNode> quad, num x0, num y0, num x1, num y1) {
+  bool _prepare(QuadNode<GraphData> quad, num x0, num y0, num x1, num y1) {
     if (quad.data != null) {
       num r = _radiusMap[quad.data]!;
       quad.extSet('r', r);
@@ -134,7 +134,7 @@ class CollideForce extends Force {
     return this;
   }
 
-  CollideForce radius(ForceFun<GraphNode> fun) {
+  CollideForce radius(ForceFun<GraphData> fun) {
     _radiusFun = fun;
     _initialize();
     return this;

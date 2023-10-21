@@ -24,7 +24,7 @@ class HexRectLayout extends HexbinLayout {
   HexRectLayout({this.rowPriority = false, this.evenLineIndent = true, this.maxCount, this.minCount});
 
   @override
-  void onLayout(List<HexbinNode> data, LayoutType type, HexbinLayoutParams params) {
+  void onLayout(List<HexbinData> data, LayoutType type, HexbinLayoutParams params) {
     var width = params.width;
     var height = params.height;
     var radius = params.radius;

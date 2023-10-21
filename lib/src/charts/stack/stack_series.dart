@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>> extends ChartSeries {
+abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T,G>> extends ChartSeries {
   static const defaultAnimatorAttrs = AnimatorOption(
     curve: Curves.linear,
     updateDuration: Duration(milliseconds: 600),
@@ -15,7 +15,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
   SelectedMode selectedMode;
 
   Corner corner;
-  Fun4<T, G, Set<ViewState>, Corner>? cornerFun;
+  Fun2<StackData<T, G>, Corner>? cornerFun;
 
   /// Group组的间隔
   SNumber groupGap;
@@ -45,23 +45,23 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
   GridAnimatorStyle animatorStyle;
 
   ///在折线图中 area对应分割区域，柱状图中为Bar的区域
-  Fun4<T?, G, Set<ViewState>, AreaStyle?>? areaStyleFun;
+  Fun3<StackData<T, G>, G, AreaStyle?>? areaStyleFun;
 
   ///在折线图中，Line对应线条 柱状图中为border
-  Fun4<T?, G, Set<ViewState>, LineStyle?>? lineStyleFun;
+  Fun3<StackData<T, G>, G, LineStyle?>? lineStyleFun;
 
   /// 标签转换
-  Fun4<dynamic, G, Set<ViewState>, DynamicText?>? labelFormatFun;
+  Fun3<dynamic, G, DynamicText?>? labelFormatFun;
 
   /// 标签对齐
-  Fun4<T, G, Set<ViewState>, ChartAlign>? labelAlignFun;
+  Fun2<StackData<T, G>, ChartAlign>? labelAlignFun;
 
   /// 标签样式
   LabelStyle? labelStyle;
-  Fun4<T, G, Set<ViewState>, LabelStyle?>? labelStyleFun;
+  Fun2<StackData<T, G>, LabelStyle?>? labelStyleFun;
 
   /// 背景样式
-  Fun4<T?, G, Set<ViewState>, AreaStyle?>? groupStyleFun;
+  Fun2<G, AreaStyle?>? groupStyleFun;
 
   /// 标记点、线相关的
   /// 标记点、线相关的
@@ -107,15 +107,15 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
     super.tooltip,
   }) : super(radarIndex: -1, parallelIndex: -1, calendarIndex: -1);
 
-  DataHelper<T, G, StackSeries<T, G>>? _helper;
+  DataHelper<T, G>? _helper;
 
-  DataHelper<T, G, StackSeries<T, G>> getHelper(Context context) {
+  DataHelper<T, G> getHelper(Context context) {
     _helper ??= buildHelper(context);
     return _helper!;
   }
 
-  DataHelper<T, G, StackSeries<T, G>> buildHelper(Context context) {
-    return DataHelper(this, data, direction, realtimeSort, sort,sortCount);
+  DataHelper<T, G> buildHelper(Context context) {
+    return DataHelper<T,G>(coordType ?? CoordType.grid, polarIndex, data, direction, realtimeSort, sort, sortCount);
   }
 
   @override
@@ -159,67 +159,60 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
     return [];
   }
 
-  DynamicText? formatData(Context context, dynamic, data, G group, Set<ViewState> status) {
+  DynamicText? formatData(Context context, dynamic data, G group) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data, group, status);
+      return labelFormatFun?.call(data, group);
     }
     return formatNumber(data.stackUp).toText();
   }
 
-  AreaStyle getAreaStyle(Context context, T? data, G group, Set<ViewState> status) {
+  AreaStyle getAreaStyle(Context context, StackData<T, G> data, G group) {
     var fun = areaStyleFun;
     if (fun != null) {
-      return fun.call(data, group, status) ?? AreaStyle.empty;
+      return fun.call(data, group) ?? AreaStyle.empty;
     }
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
       var theme = chartTheme.lineTheme;
       if (theme.fill) {
         var fillColor = chartTheme.getColor(group.styleIndex).withOpacity(theme.opacity);
-        return AreaStyle(color: fillColor).convert(status);
+        return AreaStyle(color: fillColor).convert(data.status);
       }
     } else {
-      return chartTheme.getAreaStyle(group.styleIndex).convert(status);
+      return chartTheme.getAreaStyle(group.styleIndex).convert(data.status);
     }
     return AreaStyle.empty;
   }
 
-  LineStyle getLineStyle(Context context, T? data, G group, Set<ViewState> status) {
+  LineStyle getLineStyle(Context context, StackData<T, G> data, G group) {
     var fun = lineStyleFun;
     if (fun != null) {
-      return fun.call(data, group, status) ?? LineStyle.empty;
+      return fun.call(data, group) ?? LineStyle.empty;
     }
     var chartTheme = context.option.theme;
     if (this is LineSeries) {
       var theme = chartTheme.lineTheme;
-      return theme.getLineStyle(chartTheme, group.styleIndex).convert(status);
+      return theme.getLineStyle(chartTheme, group.styleIndex).convert(data.status);
     } else {
       return context.option.theme.barTheme.getBorderStyle() ?? LineStyle.empty;
     }
   }
 
-  LabelStyle getLabelStyle(Context context, T? data, G group, Set<ViewState> status) {
-    if (data == null) {
-      return LabelStyle.empty;
-    }
+  LabelStyle getLabelStyle(Context context, StackData<T, G> data) {
     var fun = labelStyleFun;
     if (fun != null) {
-      return fun.call(data, group, status) ?? LabelStyle.empty;
+      return fun.call(data) ?? LabelStyle.empty;
     }
     if (labelStyle != null) {
       return labelStyle!;
     }
     var theme = context.option.theme;
-
-    return (theme.getLabelStyle()?.convert(status)) ?? LabelStyle.empty;
+    return (theme.getLabelStyle()?.convert(data.status)) ?? LabelStyle.empty;
   }
 
-  ChartAlign getLabelAlign(Context context, T? data, G group, Set<ViewState> status) {
-    if (data == null) {
-      return ChartAlign.center;
-    }
+  ChartAlign getLabelAlign(Context context, StackData<T, G> data) {
     if (labelAlignFun != null) {
-      return labelAlignFun!.call(data, group, status);
+      return labelAlignFun!.call(data);
     }
     if (labelAlign != null) {
       return labelAlign!;
@@ -231,13 +224,13 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T>>
     }
   }
 
-  Corner? getCorner(T? data, G group, Set<ViewState> status) {
-    if (data == null) {
+  Corner? getCorner(StackData<T, G> data) {
+    if (data.dataIsNull) {
       return null;
     }
     var fun = cornerFun;
     if (fun != null) {
-      return fun.call(data, group, status);
+      return fun.call(data);
     }
     return corner;
   }

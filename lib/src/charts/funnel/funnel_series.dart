@@ -3,24 +3,22 @@ import 'package:e_chart/src/charts/funnel/funnel_view.dart';
 import 'package:flutter/material.dart';
 
 class FunnelSeries extends RectSeries {
-  List<ItemData> dataList;
+  List<FunnelData> dataList;
   double? maxValue;
   SNumber? itemHeight;
   ChartAlign? labelAlign;
   Direction direction;
   Sort sort;
   double gap;
-
   Align2 align;
-
   LabelStyle? labelStyle;
 
-  Fun3<ItemData, Set<ViewState>, AreaStyle>? areaStyleFun;
-  Fun3<ItemData, Set<ViewState>, LineStyle?>? borderStyleFun;
-  Fun3<ItemData, Set<ViewState>, LabelStyle>? labelStyleFun;
-  Fun3<ItemData, Set<ViewState>, LineStyle>? labelLineStyleFun;
-  Fun3<ItemData, Set<ViewState>, ChartAlign>? labelAlignFun;
-  Fun3<ItemData, Set<ViewState>, DynamicText>? labelFormatFun;
+  Fun2<FunnelData, AreaStyle>? areaStyleFun;
+  Fun2<FunnelData, LineStyle?>? borderStyleFun;
+  Fun2<FunnelData, LabelStyle>? labelStyleFun;
+  Fun2<FunnelData, LineStyle>? labelLineStyleFun;
+  Fun2<FunnelData, ChartAlign>? labelAlignFun;
+  Fun2<FunnelData, DynamicText>? labelFormatFun;
 
   FunnelSeries(
     this.dataList, {
@@ -59,29 +57,29 @@ class FunnelSeries extends RectSeries {
     return FunnelView(this);
   }
 
-  AreaStyle getAreaStyle(Context context, ItemData data, int index, Set<ViewState> status) {
+  AreaStyle getAreaStyle(Context context, FunnelData data) {
     if (areaStyleFun != null) {
-      return areaStyleFun!.call(data, status);
+      return areaStyleFun!.call(data);
     }
     var theme = context.option.theme.funnelTheme;
     if (theme.colors.isNotEmpty) {
-      return AreaStyle(color: theme.colors[index % theme.colors.length]);
+      return AreaStyle(color: theme.colors[data.dataIndex % theme.colors.length]);
     }
     var ctheme = context.option.theme;
-    return AreaStyle(color: ctheme.colors[index % ctheme.colors.length]).convert(status);
+    return AreaStyle(color: ctheme.colors[data.dataIndex % ctheme.colors.length]).convert(data.status);
   }
 
-  LineStyle? getBorderStyle(Context context, ItemData data, int index, Set<ViewState> status) {
+  LineStyle? getBorderStyle(Context context, FunnelData data) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, status);
+      return borderStyleFun!.call(data);
     }
     var theme = context.option.theme.funnelTheme;
     return theme.getBorderStyle();
   }
 
-  LabelStyle? getLabelStyle(Context context, ItemData data, int index, Set<ViewState> status) {
+  LabelStyle? getLabelStyle(Context context, FunnelData data) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, status);
+      return labelStyleFun!.call(data);
     }
     if (labelStyle != null) {
       return labelStyle;
@@ -90,9 +88,9 @@ class FunnelSeries extends RectSeries {
     return theme.getLabelStyle();
   }
 
-  ChartAlign getLabelAlign(ItemData data, Set<ViewState> status) {
+  ChartAlign getLabelAlign(FunnelData data) {
     if (labelAlignFun != null) {
-      return labelAlignFun!.call(data, status);
+      return labelAlignFun!.call(data);
     }
     if (labelAlign != null) {
       return labelAlign!;
@@ -104,9 +102,9 @@ class FunnelSeries extends RectSeries {
     }
   }
 
-  DynamicText? formatData(Context context, ItemData data, Set<ViewState> status) {
+  DynamicText? formatData(Context context, FunnelData data) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data, status);
+      return labelFormatFun?.call(data);
     }
     return formatNumber(data.value).toText();
   }
@@ -115,11 +113,11 @@ class FunnelSeries extends RectSeries {
   List<LegendItem> getLegendItem(Context context) {
     List<LegendItem> list = [];
     each(dataList, (item, i) {
-      var name = item.name;
-      if (name == null || name.isEmpty) {
+      var name = item.label.text;
+      if (name.isEmpty) {
         return;
       }
-      list.add(LegendItem(name, RectSymbol()..itemStyle = getAreaStyle(context, item, i, {}), seriesId: id));
+      list.add(LegendItem(name, RectSymbol()..itemStyle = getAreaStyle(context, item), seriesId: id));
     });
     return list;
   }

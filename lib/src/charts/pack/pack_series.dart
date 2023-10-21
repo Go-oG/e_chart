@@ -8,15 +8,16 @@ class PackSeries extends RectSeries {
     updateDuration: Duration(milliseconds: 1000),
   );
 
-  TreeData data;
+  PackData data;
+
   bool optTextDraw;
-  Fun2<PackNode, AreaStyle?>? itemStyleFun;
-  Fun2<PackNode, LineStyle?>? borderStyleFun;
-  Fun2<PackNode, LabelStyle?>? labelStyleFun;
-  Fun2<PackNode, num>? paddingFun;
-  Fun2<PackNode, num>? radiusFun;
-  Fun3<PackNode, PackNode, int>? sortFun;
-  Fun2<PackNode, Alignment>? labelAlignFun;
+  Fun2<PackData, AreaStyle?>? itemStyleFun;
+  Fun2<PackData, LineStyle?>? borderStyleFun;
+  Fun2<PackData, LabelStyle?>? labelStyleFun;
+  Fun2<PackData, num>? paddingFun;
+  Fun2<PackData, num>? radiusFun;
+  Fun3<PackData, PackData, int>? sortFun;
+  Fun2<PackData, Alignment>? labelAlignFun;
 
   PackSeries(
     this.data, {
@@ -46,28 +47,28 @@ class PackSeries extends RectSeries {
     return PackView(this);
   }
 
-  AreaStyle? getItemStyle(Context context, PackNode node) {
+  AreaStyle? getItemStyle(Context context, PackData node) {
     if (itemStyleFun != null) {
       return itemStyleFun?.call(node);
     }
     return context.option.theme.packTheme.getAreaStyle(node.deep, node.maxDeep).convert(node.status);
   }
 
-  LineStyle? getBorderStyle(Context context, PackNode node) {
+  LineStyle? getBorderStyle(Context context, PackData node) {
     if (borderStyleFun != null) {
       return borderStyleFun?.call(node);
     }
     return context.option.theme.packTheme.getBorderStyle();
   }
 
-  LabelStyle? getLabelStyle(Context context, PackNode node) {
+  LabelStyle? getLabelStyle(Context context, PackData node) {
     if (labelStyleFun != null) {
       return labelStyleFun?.call(node);
     }
     return null;
   }
 
-  Alignment getLabelAlign(PackNode node) {
+  Alignment getLabelAlign(PackData node) {
     var fun = labelAlignFun;
     if (fun != null) {
       return fun.call(node);

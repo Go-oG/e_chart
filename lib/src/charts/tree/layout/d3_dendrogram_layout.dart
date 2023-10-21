@@ -7,7 +7,7 @@ import 'package:e_chart/e_chart.dart';
 /// 并且所有的叶子节点总是占满对应的尺寸
 class D3DendrogramLayout extends TreeLayout {
   ///分隔函数，用于分隔节点间距
-  Fun3<TreeRenderNode, TreeRenderNode, num> splitFun = (a, b) {
+  Fun3<TreeData, TreeData, num> splitFun = (a, b) {
     return a.parent == b.parent ? 1 : 2;
   };
   /// 当该参数为true时，表示布局传入的参数为每层之间的间距
@@ -29,7 +29,7 @@ class D3DendrogramLayout extends TreeLayout {
 
   ///生态树布局中，节点之间的连线只能是stepBefore
   @override
-  Path? onLayoutNodeLink(TreeRenderNode parent, TreeRenderNode child) {
+  Path? onLayoutNodeLink(TreeData parent, TreeData child) {
     Line line = Line([parent.center, child.center]);
     line = Line(line.stepBefore(),smooth:smooth);
     return line.toPath();
@@ -37,24 +37,24 @@ class D3DendrogramLayout extends TreeLayout {
 
 
   @override
-  void onLayout(TreeRenderNode rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData rootNode, TreeLayoutParams params) {
     bool v = direction == Direction2.ttb || direction == Direction2.btt || direction == Direction2.v;
     num w = v ? params.width : params.height;
     num h = v ? params.height : params.width;
     _innerLayout(rootNode, useCompactGap, w, h);
   }
 
-  void _innerLayout(TreeRenderNode root, bool diff, num dx, num dy) {
+  void _innerLayout(TreeData root, bool diff, num dx, num dy) {
     ///第一步计算初始化位置(归一化)
-    TreeRenderNode? preNode;
+    TreeData? preNode;
     num x = 0;
     root.eachAfter((node, index, startNode) {
       if (node.hasChild) {
         //求平均值(居中)
-        node.x = aveBy<TreeRenderNode>(node.children, (p0) => p0.x);
+        node.x = aveBy<TreeData>(node.children, (p0) => p0.x);
 
         ///Y方向倒序(root在最下面(值最大))
-        node.y = 1 + maxBy<TreeRenderNode>(node.children, (p0) => p0.y).y;
+        node.y = 1 + maxBy<TreeData>(node.children, (p0) => p0.y).y;
       } else {
         node.x = preNode != null ? (x += splitFun(node, preNode!)) : 0;
         node.y = 0;
@@ -64,22 +64,22 @@ class D3DendrogramLayout extends TreeLayout {
     });
 
     ///进行坐标映射
-    TreeFun<TreeData,TreeAttr,TreeRenderNode> fun;
+    TreeFun<TreeAttr,TreeData> fun;
     if (diff) {
       ///将坐标直接进行映射
-      fun = (TreeRenderNode node, b, c) {
+      fun = (TreeData node, b, c) {
         node.x = (node.x - root.x) * dx;
         node.y = (root.y - node.y) * dy;
         return false;
       };
     } else {
-      TreeRenderNode left = root.leafLeft();
-      TreeRenderNode right = root.leafRight();
+      TreeData left = root.leafLeft();
+      TreeData right = root.leafRight();
 
       ///修正偏移
       num x0 = left.x - splitFun.call(left, right) / 2;
       num x1 = right.x + splitFun.call(right, left) / 2;
-      fun = (TreeRenderNode node, b, c) {
+      fun = (TreeData node, b, c) {
         node.x = (node.x - x0) / (x1 - x0) * dx;
         ///将 Y倒置并映射位置
         node.y = (1 - (root.y != 0 ? (node.y / root.y) : 1)) * dy;
@@ -91,7 +91,7 @@ class D3DendrogramLayout extends TreeLayout {
       return;
     }
     var ll = root.leaves();
-    num maxV = maxBy<TreeRenderNode>(ll, (p0) => p0.y).y;
+    num maxV = maxBy<TreeData>(ll, (p0) => p0.y).y;
 
     ///修正方向
     root.each((node, index, startNode) {

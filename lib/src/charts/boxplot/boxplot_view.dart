@@ -13,7 +13,7 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
     canvas.save();
     canvas.translate(of.dx, of.dy);
     each(layoutHelper.nodeList, (node, p1) {
-      var data = node.originData;
+      var data = node.data;
       if (data == null) {
         return;
       }

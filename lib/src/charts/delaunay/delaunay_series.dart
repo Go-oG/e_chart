@@ -5,8 +5,8 @@ import 'delaunay_view.dart';
 class DelaunaySeries extends RectSeries {
   List<ChartOffset> data;
   bool triangle;
-  Fun3<DShape, Set<ViewState>, AreaStyle?>? areaStyleFun;
-  Fun3<DShape, Set<ViewState>, LineStyle?>? borderFun;
+  Fun2<DelaunayData, AreaStyle?>? areaStyleFun;
+  Fun2<DelaunayData, LineStyle?>? borderFun;
 
   DelaunaySeries(
     this.data, {
@@ -33,16 +33,16 @@ class DelaunaySeries extends RectSeries {
   @override
   SeriesType get seriesType => SeriesType.delaunay;
 
-  AreaStyle getAreaStyle(Context context, DShape data, int dataIndex, Set<ViewState> status) {
+  AreaStyle getAreaStyle(Context context, DelaunayData data) {
     if (areaStyleFun != null) {
-      return areaStyleFun?.call(data, status) ?? AreaStyle.empty;
+      return areaStyleFun?.call(data) ?? AreaStyle.empty;
     }
-    return context.option.theme.getAreaStyle(dataIndex).convert(status);
+    return context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
   }
 
-  LineStyle getBorderStyle(Context context, DShape data, int dataIndex, Set<ViewState> status) {
+  LineStyle getBorderStyle(Context context, DelaunayData data) {
     if (borderFun != null) {
-      return borderFun?.call(data, status) ?? LineStyle.empty;
+      return borderFun?.call(data) ?? LineStyle.empty;
     }
     return LineStyle.empty;
   }

@@ -3,7 +3,7 @@ import 'package:e_chart/src/charts/hexbin/hex_bin_view.dart';
 
 class HexbinSeries extends RectSeries {
   HexbinLayout layout = HexagonsLayout();
-  List<ItemData> data;
+  List<HexbinData> data;
   List<SNumber> center;
 
   ///是否为平角在上
@@ -13,11 +13,11 @@ class HexbinSeries extends RectSeries {
   num radius;
 
   LineStyle? border;
-  Fun3<ItemData, Set<ViewState>, LineStyle?>? borderFun;
+  Fun2<HexbinData, LineStyle?>? borderFun;
   AreaStyle? itemStyle;
-  Fun3<ItemData, Set<ViewState>, AreaStyle?>? itemStyleFun;
+  Fun2<HexbinData, AreaStyle?>? itemStyleFun;
   LabelStyle? label;
-  Fun3<ItemData, Set<ViewState>, LabelStyle>? labelStyleFun;
+  Fun2<HexbinData, LabelStyle>? labelStyleFun;
   bool clock = false;
 
   HexbinSeries(
@@ -54,52 +54,50 @@ class HexbinSeries extends RectSeries {
     return HexbinView(this);
   }
 
-  AreaStyle? getItemStyle(Context context, ItemData data, int dataIndex, Set<ViewState>? status) {
-    status ??= {};
+  AreaStyle? getItemStyle(Context context, HexbinData data) {
     if (itemStyleFun != null) {
-      return itemStyleFun?.call(data, status);
+      return itemStyleFun?.call(data);
     }
     if (itemStyle != null) {
-      return itemStyle?.convert(status);
+      return itemStyle?.convert(data.status);
     }
     var theme = context.option.theme;
-    return AreaStyle(color: theme.getColor(dataIndex)).convert(status);
+    return AreaStyle(color: theme.getColor(data.dataIndex)).convert(data.status);
   }
 
-  LineStyle? getBorderStyle(Context context, ItemData data, int dataIndex, Set<ViewState>? status) {
-    status ??= {};
+  LineStyle? getBorderStyle(Context context, HexbinData data) {
     if (borderFun != null) {
-      return borderFun?.call(data, status);
+      return borderFun?.call(data);
     }
     if (border != null) {
-      return border?.convert(status);
+      return border?.convert(data.status);
     }
     var theme = context.option.theme;
-    return theme.hexbinTheme.getBorderStyle()?.convert(status);
+    return theme.hexbinTheme.getBorderStyle()?.convert(data.status);
   }
 
-  LabelStyle? getLabelStyle(Context context, ItemData data, int dataIndex, Set<ViewState>? status) {
-    status ??= {};
+  LabelStyle? getLabelStyle(Context context, HexbinData data) {
     if (labelStyleFun != null) {
-      return labelStyleFun?.call(data, status);
+      return labelStyleFun?.call(data);
     }
     if (label != null) {
-      return label?.convert(status);
+      return label?.convert(data.status);
     }
     var theme = context.option.theme;
-    return theme.hexbinTheme.labelStyle?.convert(status);
+    return theme.hexbinTheme.labelStyle?.convert(data.status);
   }
 
   @override
-  List<LegendItem> getLegendItem(Context context) =>[];
+  List<LegendItem> getLegendItem(Context context) => [];
 
   @override
   int onAllocateStyleIndex(int start) {
     each(data, (p0, p1) {
-      p0.styleIndex=p1+start;
+      p0.styleIndex = p1 + start;
     });
     return data.length;
   }
+
   @override
   SeriesType get seriesType => SeriesType.hexbin;
 }

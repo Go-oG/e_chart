@@ -23,7 +23,7 @@ class HexTriangleLayout extends HexbinLayout {
   }
 
   @override
-  void onLayout(List<HexbinNode> data, LayoutType type, HexbinLayoutParams params) {
+  void onLayout(List<HexbinData> data, LayoutType type, HexbinLayoutParams params) {
     params.flat = checkFlat();
     Direction2 direction = this.direction;
     if (direction == Direction2.v) {

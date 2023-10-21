@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'pie_helper.dart';
-import 'pie_node.dart';
+import 'pie_data.dart';
 
 /// 饼图
 class PieView extends SeriesView<PieSeries, PieHelper> {
@@ -8,7 +8,7 @@ class PieView extends SeriesView<PieSeries, PieHelper> {
 
   @override
   void onDraw(CCanvas canvas) {
-    List<PieNode> nodeList = layoutHelper.nodeList;
+    List<PieData> nodeList = layoutHelper.nodeList;
     each(nodeList, (node, i) {
       node.onDraw(canvas, mPaint);
     });

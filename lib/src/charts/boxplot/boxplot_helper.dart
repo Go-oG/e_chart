@@ -15,13 +15,13 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   static const String _colRectK = "colRect";
 
   @override
-  dynamic getNodeUpValue(SingleNode<BoxplotData, BoxplotGroup> node) {
-    return node.originData!.max;
+  dynamic getNodeUpValue(StackData<BoxplotData, BoxplotGroup> node) {
+    return node.data.max;
   }
 
   @override
-  dynamic getNodeDownValue(SingleNode<BoxplotData, BoxplotGroup> node) {
-    return node.originData!.min;
+  dynamic getNodeDownValue(StackData<BoxplotData, BoxplotGroup> node) {
+    return node.data.min;
   }
 
   @override
@@ -29,7 +29,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
     final bool vertical = series.direction == Direction.vertical;
     final Rect colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
-      var data = node.originData;
+      var data = node.dataNull;
       if (data == null) {
         continue;
       }
@@ -96,7 +96,7 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
   }
 
   void _setPath(
-    SingleNode<BoxplotData, BoxplotGroup> node,
+    StackData<BoxplotData, BoxplotGroup> node,
     bool vertical,
     Offset minC,
     Offset downC,
@@ -150,11 +150,11 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
     );
   }
 
-  List<List<Offset>> getBorderList(SingleNode<BoxplotData, BoxplotGroup> node) {
+  List<List<Offset>> getBorderList(StackData<BoxplotData, BoxplotGroup> node) {
     return node.extGet(_borderListK);
   }
 
-  Rect getAreaRect(SingleNode<BoxplotData, BoxplotGroup> node) {
+  Rect getAreaRect(StackData<BoxplotData, BoxplotGroup> node) {
     return node.rect;
   }
 }

@@ -1,15 +1,24 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+
 import '../../animation/index.dart';
 import '../../component/style/index.dart';
 import '../index.dart';
 
-abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends LayoutHelper<S> {
+abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extends LayoutHelper<S> {
   List<N> nodeList = [];
 
   LayoutHelper2(super.context, super.view, super.series);
 
   LayoutHelper2.lazy() : super.lazy();
+
+  void initData(List<N> dataList){
+    each(dataList, (data, p1) {
+      data.dataIndex=p1;
+      data.updateStyle(context, series);
+    });
+  }
 
   @override
   void onClick(Offset localOffset) {
@@ -159,15 +168,4 @@ abstract class LayoutHelper2<N extends DataNode, S extends ChartSeries> extends 
     return null;
   }
 
-  N? findNodeByData(covariant dynamic data) {
-    if (data == null) {
-      return null;
-    }
-    for (var e in nodeList) {
-      if (e.data == data) {
-        return e;
-      }
-    }
-    return null;
-  }
 }

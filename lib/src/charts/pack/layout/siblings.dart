@@ -2,15 +2,15 @@ import 'dart:core';
 import 'dart:math' as m;
 import '../../graph/layout/force/lcg.dart';
 import 'enclose.dart';
-import '../pack_node.dart';
+import '../pack_data.dart';
 
 class Siblings {
-  static List<PackNode> siblings(List<PackNode> circles) {
+  static List<PackData> siblings(List<PackData> circles) {
     packSiblingsRandom(circles, DefaultLCG());
     return circles;
   }
 
-  static void _place(PackNode b, PackNode a, PackNode c) {
+  static void _place(PackData b, PackData a, PackData c) {
     num dx = b.x - a.x, x, a2, dy = b.y - a.y, y, b2, d2 = dx * dx + dy * dy;
     if (d2 != 0) {
       a2 = a.r + c.r;
@@ -34,7 +34,7 @@ class Siblings {
     }
   }
 
-  static bool _intersects(PackNode a, PackNode b) {
+  static bool _intersects(PackData a, PackData b) {
     var dr = a.r + b.r - 1e-6, dx = b.x - a.x, dy = b.y - a.y;
     return dr > 0 && dr * dr > dx * dx + dy * dy;
   }
@@ -46,11 +46,11 @@ class Siblings {
     return dx * dx + dy * dy;
   }
 
-  static num packSiblingsRandom(List<PackNode> circles, LCG random) {
+  static num packSiblingsRandom(List<PackData> circles, LCG random) {
     int n = circles.length;
     if (n == 0) return 0;
 
-    PackNode? an, bn, cn;
+    PackData? an, bn, cn;
 
     var aa, ca, sj, sk;
 
@@ -130,7 +130,7 @@ class Siblings {
     }
 
     // Compute the enclosing circle of the front chain.
-    List<PackNode> cl = [b!.node];
+    List<PackData> cl = [b!.node];
     c = b;
     while ((c = c?.next) != b) {
       cl.add(c!.node);
@@ -148,7 +148,7 @@ class Siblings {
 }
 
 class InnerNode {
-  PackNode node;
+  PackData node;
   InnerNode? next;
   InnerNode? previous;
   InnerNode(this.node);

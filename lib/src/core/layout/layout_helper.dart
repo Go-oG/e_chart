@@ -117,25 +117,21 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   void onDragEnd() {}
 
   ///==============事件发送============
-  void sendClickEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
+  void sendClickEvent(Offset offset, RenderData node, [ComponentType componentType = ComponentType.series]) {
     if (context.hasEventListener(EventType.click)) {
       var event = UserClickEvent(offset, toGlobal(offset), buildEvent(node, componentType));
       context.dispatchEvent(event);
     }
   }
 
-  bool equalsEvent(EventInfo old, DataNode node, ComponentType type) {
+  bool equalsEvent(EventInfo old, RenderData data, ComponentType type) {
     return old.seriesIndex == series.seriesIndex &&
         old.componentType == type &&
-        old.data == node.data &&
-        old.dataType == node.dataType &&
-        old.dataIndex == node.dataIndex &&
-        old.node == node &&
-        old.groupIndex == node.groupIndex &&
+        old.data == data &&
         old.seriesType == series.seriesType;
   }
 
-  void sendHoverStartEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
+  void sendHoverStartEvent(Offset offset, RenderData node, [ComponentType componentType = ComponentType.series]) {
     if (!context.hasEventListener(EventType.hoverStart)) {
       return;
     }
@@ -144,7 +140,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   UserHoverUpdateEvent? _lastHoverEvent;
 
-  void sendHoverEvent(Offset offset, DataNode node, [ComponentType componentType = ComponentType.series]) {
+  void sendHoverEvent(Offset offset, RenderData node, [ComponentType componentType = ComponentType.series]) {
     if (context.hasEventListener(EventType.hoverUpdate)) {
       var lastEvent = _lastHoverEvent;
       UserHoverUpdateEvent? event;
@@ -166,21 +162,17 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     }
   }
 
-  void sendHoverEndEvent(DataNode node, [ComponentType componentType = ComponentType.series]) {
+  void sendHoverEndEvent(RenderData node, [ComponentType componentType = ComponentType.series]) {
     if (!context.hasEventListener(EventType.hoverEnd)) {
       return;
     }
     context.dispatchEvent(UserHoverEndEvent(buildEvent(node, componentType)));
   }
 
-  EventInfo buildEvent(DataNode node, [ComponentType componentType = ComponentType.series]) {
+  EventInfo buildEvent(RenderData data, [ComponentType componentType = ComponentType.series]) {
     return EventInfo(
       componentType: componentType,
-      data: node.data,
-      node: node,
-      dataIndex: node.dataIndex,
-      dataType: node.dataType,
-      groupIndex: node.groupIndex,
+      data: data,
       seriesType: series.seriesType,
       seriesIndex: series.seriesIndex,
     );
@@ -293,6 +285,13 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   double get width => boxBound.width;
 
   double get height => boxBound.height;
+
+  void addAnimationToQueue(List<AnimationNode> nodes) {
+    if (_context == null) {
+      Logger.w("Context is  Null,AnimationNode not Add");
+    }
+    _context?.addAnimationToQueue(nodes);
+  }
 
   ///获取裁剪路径
   Rect getClipRect(Direction direction, [double animationPercent = 1]) {

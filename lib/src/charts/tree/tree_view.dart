@@ -11,8 +11,8 @@ class TreeView extends SeriesView<TreeSeries, TreeHelper> {
     var list = layoutHelper.nodeList;
     canvas.save();
     canvas.translate(translationX, translationY);
-    List<TreeRenderNode> leaves = layoutHelper.rootNode.leaves();
-    List<TreeRenderNode> pres = [];
+    List<TreeData> leaves = layoutHelper.rootNode.leaves();
+    List<TreeData> pres = [];
     while (leaves.isNotEmpty) {
       for (var node in leaves) {
         if (node.parent != null) {
@@ -29,9 +29,9 @@ class TreeView extends SeriesView<TreeSeries, TreeHelper> {
     canvas.restore();
   }
 
-  void drawSymbol(CCanvas canvas, TreeRenderNode node) {}
+  void drawSymbol(CCanvas canvas, TreeData node) {}
 
-  void drawLine(CCanvas canvas, TreeRenderNode parent, TreeRenderNode child) {
+  void drawLine(CCanvas canvas, TreeData parent, TreeData child) {
     Path? path = series.layout.onLayoutNodeLink(parent, child);
     if (path != null) {
       series.getLinkStyle(context, parent, child).drawPath(canvas, mPaint, path);

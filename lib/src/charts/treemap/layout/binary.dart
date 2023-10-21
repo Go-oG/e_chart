@@ -6,7 +6,7 @@ import 'package:e_chart/e_chart.dart';
 /// 由于权重只能为int 因此内部会进行相关的double->int的转换
 class BinaryLayout extends TreemapLayout {
   @override
-  void onLayout2(TreeMapNode root, LayoutType type) {
+  void onLayout2(TreeMapData root, LayoutType type) {
     Rect area = boxBound;
     BinaryNode binaryNode = _convertToBinaryNode(null, root, false);
     binaryNode.x = area.center.dx;
@@ -26,7 +26,7 @@ class BinaryLayout extends TreemapLayout {
     }
     List<double> sumList = [0];
     for (var element in nodeList) {
-      sumList.add(element.data.value + sumList.last);
+      sumList.add(element.value + sumList.last);
     }
 
     _partition(
@@ -34,7 +34,7 @@ class BinaryLayout extends TreemapLayout {
       nodeList,
       0,
       nodeList.length,
-      parent.data.value,
+      parent.value,
       area.left,
       area.top,
       area.right,
@@ -42,11 +42,10 @@ class BinaryLayout extends TreemapLayout {
     );
   }
 
-  static BinaryNode _convertToBinaryNode(BinaryNode? parent, TreeMapNode layoutNode, bool exit) {
-    BinaryNode node = BinaryNode(
-        parent, layoutNode.data, 0, Rect.zero, AreaStyle.empty, LineStyle.empty, LabelStyle.empty, layoutNode);
+  static BinaryNode _convertToBinaryNode(BinaryNode? parent, TreeMapData layoutNode, bool exit) {
+    BinaryNode node = BinaryNode(parent, [], Rect.zero, layoutNode);
     if (!exit) {
-      for (TreeMapNode element in layoutNode.children) {
+      for (TreeMapData element in layoutNode.children) {
         node.add(_convertToBinaryNode(node, element, true));
       }
     }
@@ -114,22 +113,19 @@ class BinaryLayout extends TreemapLayout {
   }
 }
 
-class BinaryNode extends TreeNode<TreeData, Rect, BinaryNode> {
-  final TreeMapNode layoutNode;
+class BinaryNode extends BaseTreeData<Rect, BinaryNode> {
+  final TreeMapData layoutNode;
 
   BinaryNode(
     super.parent,
     super.data,
-    super.dataIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
+    Rect attr,
     this.layoutNode, {
-    super.deep,
-    super.maxDeep,
     super.value,
-  });
+    super.id,
+  }) {
+    this.attr = attr;
+  }
 
   @override
   bool contains(Offset offset) => false;
@@ -138,6 +134,5 @@ class BinaryNode extends TreeNode<TreeData, Rect, BinaryNode> {
   void onDraw(CCanvas canvas, Paint paint) {}
 
   @override
-  void updateStyle(Context context, covariant ChartSeries series) {
-  }
+  void updateStyle(Context context, covariant ChartSeries series) {}
 }

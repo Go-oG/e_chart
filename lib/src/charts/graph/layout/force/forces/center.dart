@@ -17,7 +17,7 @@ class CenterForce extends Force {
 
   //==========布局相关参数=============
   late double _x, _y;
-  List<GraphNode> _nodes = [];
+  List<GraphData> _nodes = [];
 
   @override
   void initialize(Context context, Graph graph, LCG lcg, num width, num height) {

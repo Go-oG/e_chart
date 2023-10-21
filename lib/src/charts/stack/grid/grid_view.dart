@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../stack_view.dart';
 
-abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S extends StackSeries<T, G>,
+abstract class GridView<T extends StackItemData, G extends StackGroupData<T,G>, S extends StackSeries<T, G>,
     L extends GridHelper<T, G, S>> extends StackView<T, G, S, L> with GridChild {
   GridView(super.series);
 
@@ -17,7 +17,7 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
       if (rectSet.contains(column)) {
         return;
       }
-      var style = series.groupStyleFun?.call(node.originData, node.parent, node.status);
+      var style = series.groupStyleFun?.call(node.parent);
       if (style != null) {
         if (series.coordType == CoordType.polar) {
           style.drawPath(canvas, mPaint, column.arc.toPath());
@@ -37,7 +37,7 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T>, S 
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     each(layoutHelper.nodeList, (node, p1) {
-      if (node.originData == null) {
+      if (node.dataIsNull) {
         return;
       }
       if (node.rect.isEmpty) {

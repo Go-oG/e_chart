@@ -4,12 +4,12 @@ import '../../../core/index.dart';
 import '../../../functions.dart';
 
 import '../model/graph.dart';
-import '../model/graph_node.dart';
+import '../graph_data.dart';
 import '../graph_series.dart';
 
 abstract class GraphLayout extends ChartNotifier<Command> {
-  Fun2<List<GraphNode>, Map<GraphNode, num>>? sort;
-  Fun2<GraphNode, num>? nodeSpaceFun;
+  Fun2<List<GraphData>, Map<GraphData, num>>? sort;
+  Fun2<GraphData, num>? nodeSpaceFun;
   late final bool _workerThread;
 
   GraphLayout({
@@ -38,15 +38,15 @@ abstract class GraphLayout extends ChartNotifier<Command> {
   Offset getTranslation()=>Offset.zero;
 
   ///获取节点间距
-  num getNodeSpace(GraphNode node) {
+  num getNodeSpace(GraphData node) {
     return nodeSpaceFun?.call(node) ?? 8;
   }
 
-  void sortNode(Graph graph, List<GraphNode> list, [bool asc = false]) {
+  void sortNode(Graph graph, List<GraphData> list, [bool asc = false]) {
     if (sort == null) {
       return;
     }
-    Map<GraphNode, num> sortMap = sort!.call(list);
+    Map<GraphData, num> sortMap = sort!.call(list);
     list.sort((a, b) {
       num av = sortMap[a] ?? 0;
       num bv = sortMap[b] ?? 0;

@@ -3,21 +3,14 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class TreeMapNode extends TreeNode<TreeData, Rect, TreeMapNode> {
-  TreeMapNode(
-    super.parent,
-    super.data,
-    super.dataIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle, {
-    super.deep,
-    super.maxDeep,
-    super.value,
-  }) {
+class TreeMapData extends BaseTreeData<Rect, TreeMapData> {
+  TreeMapData(TreeMapData? parent,
+      List<TreeMapData> children, {
+        super.value,
+        super.id,
+        super.name,
+      }) : super.attr(parent, children, Rect.zero) {
     setExpand(false, false);
-    label.text = data.name ?? DynamicText.empty;
   }
 
   ///计算面积比

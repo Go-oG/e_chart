@@ -57,7 +57,7 @@ class CircularLayout extends GraphLayout {
     var angleStep = sweepAngle / (nodeCount - 1);
 
     ///节点排序
-    List<GraphNode> layoutNodes = nodes;
+    List<GraphData> layoutNodes = nodes;
     sortNode(graph, layoutNodes);
     each(layoutNodes, (node, i) {
       num r = radiusList[0] + radiusList[2] * i;
@@ -71,8 +71,8 @@ class CircularLayout extends GraphLayout {
   }
 
   @override
-  void sortNode(Graph graph, List<GraphNode> list, [bool asc = false]) {
-    Map<GraphNode, num> sortMap;
+  void sortNode(Graph graph, List<GraphData> list, [bool asc = false]) {
+    Map<GraphData, num> sortMap;
     if (sort != null) {
       sortMap = sort!.call(list);
     } else {
@@ -122,9 +122,9 @@ class CircularLayout extends GraphLayout {
   }
 }
 
-Map<GraphNode, num> _defaultSort(Graph graph, [int type = 0]) {
+Map<GraphData, num> _defaultSort(Graph graph, [int type = 0]) {
   ///按照度排列
-  Map<GraphNode, Degree> degreeMap = {};
+  Map<GraphData, Degree> degreeMap = {};
   for (var element in graph.edges) {
     var source = element.source;
     Degree degree = degreeMap[source] ?? Degree();
@@ -138,7 +138,7 @@ Map<GraphNode, num> _defaultSort(Graph graph, [int type = 0]) {
     degree.inter += 1;
     degree.all += 1;
   }
-  Map<GraphNode, num> map = {};
+  Map<GraphData, num> map = {};
   degreeMap.forEach((key, value) {
     if (type == 0) {
       map[key] = value.all;

@@ -21,7 +21,7 @@ class ManyBodyForce extends Force {
 
   ///========运行中变量========
   Map<String, num> _strengthsMap = {};
-  List<GraphNode> _nodes = [];
+  List<GraphData> _nodes = [];
 
   ManyBodyForce({ForceFun? strengthFun, num? minDistance, num? maxDistance, num? theta}) {
     if (strengthFun != null) {
@@ -54,7 +54,7 @@ class ManyBodyForce extends Force {
   @override
   void force([double alpha = 1]) {
     int n = _nodes.length;
-    QuadTree<GraphNode> tree = QuadTree.simple<GraphNode>((d) => d.x, (d) => d.y, _nodes).eachAfter(_accumulate);
+    QuadTree<GraphData> tree = QuadTree.simple<GraphData>((d) => d.x, (d) => d.y, _nodes).eachAfter(_accumulate);
     for (int i = 0; i < n; ++i) {
       var node = _nodes[i];
       tree.each((quad, x1, y1, x2, y2) {
@@ -63,10 +63,10 @@ class ManyBodyForce extends Force {
     }
   }
 
-  bool _accumulate(QuadNode<GraphNode> quad, x0, y0, x1, y1) {
+  bool _accumulate(QuadNode<GraphData> quad, x0, y0, x1, y1) {
     num strength = 0;
     num weight = 0;
-    QuadNode<GraphNode>? q;
+    QuadNode<GraphData>? q;
     if (quad.hasChild) {
       num x = 0;
       num y = 0;
@@ -93,7 +93,7 @@ class ManyBodyForce extends Force {
     return false;
   }
 
-  bool _apply(QuadNode<GraphNode> quad, x1, y1, x2, y2, GraphNode node, double alpha) {
+  bool _apply(QuadNode<GraphData> quad, x1, y1, x2, y2, GraphData node, double alpha) {
     if (!isTrue(quad.extGet('value'))) return true;
     num x = quad.extGet('x') - node.x;
     num y = quad.extGet('y') - node.y;
@@ -134,7 +134,7 @@ class ManyBodyForce extends Force {
         l = sqrt(_minDistance * l);
       }
     }
-    QuadNode<GraphNode>? tmp = quad;
+    QuadNode<GraphData>? tmp = quad;
     do {
       if (node != tmp!.data) {
         w = _strengthsMap[tmp.data!.id]! * alpha / l;
@@ -145,7 +145,7 @@ class ManyBodyForce extends Force {
     return false;
   }
 
-  ManyBodyForce setStrength(ForceFun<GraphNode> fun) {
+  ManyBodyForce setStrength(ForceFun<GraphData> fun) {
     _strengthFun = fun;
     _initialize();
     return this;

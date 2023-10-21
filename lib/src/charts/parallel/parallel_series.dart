@@ -1,12 +1,13 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/charts/parallel/parallel_data.dart';
 
 import 'parallel_view.dart';
 
 class ParallelSeries extends ChartSeries {
-  List<ParallelGroup> data;
-  Fun4<ParallelGroup, int, Set<ViewState>, LineStyle>? borderStyleFun;
-  Fun4<ParallelGroup, int, Set<ViewState>, LabelStyle>? labelStyleFun;
-  Fun6<dynamic, ParallelGroup, int, int, Set<ViewState>?, ChartSymbol?>? symbolFun;
+  List<ParallelData> data;
+  Fun2<ParallelData, LineStyle>? borderStyleFun;
+  Fun2<ParallelData, LabelStyle>? labelStyleFun;
+  Fun3<dynamic, ParallelData, ChartSymbol?>? symbolFun;
 
   bool connectNull;
 
@@ -28,36 +29,36 @@ class ParallelSeries extends ChartSeries {
     return ParallelView(this);
   }
 
-  ChartSymbol getSymbol(dynamic data, ParallelGroup group, int dataIndex, int groupIndex) {
+  ChartSymbol getSymbol(dynamic data, ParallelData group) {
     var fun = symbolFun;
     if (fun != null) {
-      return fun.call(data, group, dataIndex, groupIndex, null)??EmptySymbol.empty;
+      return fun.call(data, group) ?? EmptySymbol.empty;
     }
     return EmptySymbol.empty;
   }
 
-  LineStyle getBorderStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
+  LineStyle getBorderStyle(Context context, ParallelData data) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data, index, status ?? {});
+      return borderStyleFun!.call(data);
     }
     var theme = context.option.theme.parallelTheme;
-    return theme.getItemStyle(context, index)??LineStyle.empty;
+    return theme.getItemStyle(context, data.dataIndex) ?? LineStyle.empty;
   }
 
-  LabelStyle getLabelStyle(Context context, ParallelGroup data, int index, [Set<ViewState>? status]) {
+  LabelStyle getLabelStyle(Context context, ParallelData data) {
     if (labelStyleFun != null) {
-      return labelStyleFun!.call(data, index, status ?? {});
+      return labelStyleFun!.call(data);
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(status)??LabelStyle.empty;
+    return theme.getLabelStyle()?.convert(data.status) ?? LabelStyle.empty;
   }
 
   @override
   List<LegendItem> getLegendItem(Context context) {
     List<LegendItem> list = [];
     each(data, (item, i) {
-      var name = item.name;
-      if (name == null || name.isEmpty) {
+      var name = item.label.text;
+      if (name.isEmpty) {
         return;
       }
       var color = context.option.theme.getColor(i);
@@ -93,7 +94,7 @@ class ParallelSeries extends ChartSeries {
       maxValue = max([maxValue, group.data.length]).toInt();
     });
 
-    ExtremeHelper<ParallelGroup> helper = ExtremeHelper(
+    ExtremeHelper<ParallelData> helper = ExtremeHelper(
       (p0) => List.generate(maxValue, (index) => '$index', growable: false),
       (p0, index) {
         var di = int.parse(index);
@@ -123,8 +124,4 @@ class ParallelSeries extends ChartSeries {
     clearExtreme();
     super.notifyConfigChange();
   }
-}
-
-class ParallelGroup extends BaseGroupData<dynamic> {
-  ParallelGroup(super.data, {super.id, super.name});
 }

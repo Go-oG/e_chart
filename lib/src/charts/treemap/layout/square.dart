@@ -8,7 +8,7 @@ class SquareLayout extends TreemapLayout {
   num ratio = phi;
 
   @override
-  void onLayout2(TreeMapNode root, LayoutType type) {
+  void onLayout2(TreeMapData root, LayoutType type) {
     root.children.sort((a, b) {
       return b.value.compareTo(a.value);
     });
@@ -16,9 +16,9 @@ class SquareLayout extends TreemapLayout {
     layoutChildren(ratio, root, rect.left, rect.top, rect.right, rect.bottom);
   }
 
-  static List<Row> layoutChildren(num ratio, TreeMapNode parent, double left, double top, double right, double bottom) {
+  static List<Row> layoutChildren(num ratio, TreeMapData parent, double left, double top, double right, double bottom) {
     List<Row> rows = [];
-    List<TreeMapNode> nodes = parent.children;
+    List<TreeMapData> nodes = parent.children;
     num value = parent.value;
 
     num minValue;
@@ -93,7 +93,7 @@ class SquareLayout extends TreemapLayout {
 class Row {
   num value;
   bool dice;
-  List<TreeMapNode> children;
+  List<TreeMapData> children;
 
   Row(this.value, this.dice, this.children);
 }

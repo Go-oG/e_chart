@@ -1,18 +1,15 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 
-class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
-  ThemeRiverNode(
-    super.data,
-    super.dataIndex,
-    super.groupIndex,
-    super.attr,
-    super.itemStyle,
-    super.borderStyle,
-    super.labelStyle,
-  ) {
-    label.text = data.name ?? DynamicText.empty;
-  }
+class ThemeRiverData extends RenderData<ThemeRiverAttr> {
+  List<num> value;
+
+  ThemeRiverData(
+    this.value, {
+    super.id,
+    super.name,
+  }) : super.attr(ThemeRiverAttr([], Area.empty));
 
   void update(List<Offset> pList, List<Offset> pList2, num smooth, Direction direction) {
     Area area;
@@ -55,9 +52,9 @@ class ThemeRiverNode extends DataNode<ThemeRiverAttr, GroupData> {
 
   @override
   void updateStyle(Context context, covariant ThemeRiverSeries series) {
-    itemStyle = series.getAreaStyle(context, data, dataIndex, status);
-    borderStyle = series.getBorderStyle(context, data, dataIndex, status);
-    var s = series.getLabelStyle(context, data, dataIndex, status);
+    itemStyle = series.getAreaStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
+    var s = series.getLabelStyle(context, this);
     label.updatePainter(style: s);
   }
 }

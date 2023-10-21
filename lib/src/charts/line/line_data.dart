@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class LineGroupData extends StackGroupData<StackItemData> {
+class LineGroupData extends StackGroupData<StackItemData,LineGroupData> {
   bool? smooth;
 
   LineGroupData(

@@ -49,7 +49,7 @@ class RadialForce extends Force {
     }
   }
 
-  List<GraphNode> _nodes = [];
+  List<GraphData> _nodes = [];
 
   @override
   void initialize(Context context, Graph graph, lcg, num width, num height) {
