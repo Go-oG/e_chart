@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-
 /// 旭日图布局计算(以中心点为计算中心)
 class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   SunburstHelper(super.context, super.view, super.series);
@@ -81,23 +80,13 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   }
 
   void initData2(SunburstData rootData) {
-    rootData.each((node, index, startNode) {
-      node.dataIndex = index;
-      return false;
-    });
     if (series.sort != Sort.none) {
-      rootData.eachBefore((node, index, startNode) {
-        if (node.childCount <= 1) {
-          return false;
+      rootData.sort((a, b){
+        if (series.sort == Sort.asc) {
+          return a.value.compareTo(b.value);
+        } else {
+          return b.value.compareTo(a.value);
         }
-        node.children.sort((a, b) {
-          if (series.sort == Sort.asc) {
-            return a.value.compareTo(b.value);
-          } else {
-            return b.value.compareTo(a.value);
-          }
-        });
-        return false;
       });
     }
     rootData.sum((p0) => p0.value);
@@ -111,11 +100,14 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
       rootData.sum();
     }
     rootData.computeHeight();
+    rootData.setDeep(0);
     int maxDeep = rootData.height;
     rootData.each((node, index, startNode) {
       node.maxDeep = maxDeep;
+      node.dataIndex=index;
       return false;
     });
+
   }
 
   void _layoutNodeIterator(SunburstData parent, int maxDeep, bool updateStyle) {

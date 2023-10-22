@@ -347,7 +347,7 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   T sort(int Function(T, T) compare, [bool iterator = true]) {
     if (iterator) {
       return eachBefore((T node, b, c) {
-        if (node.hasChild) {
+        if (node.childCount>1) {
           node._childrenList.sort(compare);
         }
         return false;
@@ -461,8 +461,6 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   //=======坐标相关的操作========
-
-
 
   ///找到一个节点是否在[offset]范围内
   T? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {

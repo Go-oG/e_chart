@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
   SunburstData(
     super.parent,
-    super.children, {
-    super.value,
+    super.children,
+    num value, {
     super.id,
     super.name,
   }) {
+    this.value = value;
     attr = SunburstAttr.zero();
   }
 
@@ -103,7 +104,7 @@ class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
 }
 
 class SunburstVirtualNode extends SunburstData {
-  SunburstVirtualNode(SunburstData child, SunburstAttr attr) : super(null, [child]) {
+  SunburstVirtualNode(SunburstData child, SunburstAttr attr) : super(null, [child], 0) {
     child.parent = null;
     add(child);
     value = child.value;
