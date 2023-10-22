@@ -202,8 +202,6 @@ class InnerNode extends BaseTreeData<Offset, InnerNode> {
   num c = 0; // change
   num s = 0; // shift
   InnerNode? t; // thread
-  num x = 0;
-  num y = 0;
 
   InnerNode(
     InnerNode? parent,

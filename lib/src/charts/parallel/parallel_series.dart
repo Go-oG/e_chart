@@ -1,6 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/parallel/parallel_data.dart';
-
 import 'parallel_view.dart';
 
 class ParallelSeries extends ChartSeries {
@@ -42,7 +40,7 @@ class ParallelSeries extends ChartSeries {
       return borderStyleFun!.call(data);
     }
     var theme = context.option.theme.parallelTheme;
-    return theme.getItemStyle(context, data.dataIndex) ?? LineStyle.empty;
+    return theme.getItemStyle(context, data.styleIndex) ?? LineStyle.empty;
   }
 
   LabelStyle getLabelStyle(Context context, ParallelData data) {

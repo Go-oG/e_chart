@@ -25,6 +25,15 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   num value = 0;
 
+  ///节点中心位置和其大小
+  num x = 0;
+  num y = 0;
+  Size size = Size.zero;
+
+  ///缩放
+  double scale = 1;
+
+
   bool _expand = true; //是否展开
 
   BaseTreeData(
@@ -453,13 +462,7 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   //=======坐标相关的操作========
 
-  ///节点中心位置和其大小
-  num x = 0;
-  num y = 0;
-  Size size = Size.zero;
 
-  ///缩放
-  double scale = 1;
 
   ///找到一个节点是否在[offset]范围内
   T? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {

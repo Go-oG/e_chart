@@ -67,10 +67,8 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       each(group.value, (c, i) {
         c.groupIndex = gi;
         c.dataIndex = i;
-        // c.attr=coord.dataToPoint(i, c.value).point;
         c.updateStyle(context, series);
       });
-      group.updatePath();
     });
   }
 

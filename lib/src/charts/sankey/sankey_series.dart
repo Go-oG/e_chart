@@ -57,7 +57,7 @@ class SankeySeries extends RectSeries {
     if (fun != null) {
       return fun.call(data);
     }
-    return context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
+    return context.option.theme.getAreaStyle(data.styleIndex).convert(data.status);
   }
 
   LineStyle? getBorderStyle(Context context, SankeyData data) {

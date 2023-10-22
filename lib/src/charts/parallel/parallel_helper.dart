@@ -1,8 +1,6 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import 'parallel_data.dart';
-
 class ParallelHelper extends LayoutHelper<ParallelSeries> {
   List<ParallelData> nodeList = [];
 
@@ -13,7 +11,9 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
   @override
   void onLayout(LayoutType type) {
     List<ParallelData> oldList = nodeList;
-    List<ParallelData> newList = convertData(series.data);
+    List<ParallelData> newList = [...series.data];
+    initData(newList);
+
     layoutNode(newList);
     var animation = getAnimation(type, newList.length);
     if (animation == null || type == LayoutType.none || type == LayoutType.update) {
@@ -48,7 +48,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     }
   }
 
-  List<ParallelData> convertData(List<ParallelData> list) {
+  void initData(List<ParallelData> list) {
     each(list, (data, p1) {
       List<SymbolNode> snl = [];
       data.attr = snl;
@@ -59,7 +59,6 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
         snl.add(node);
       });
     });
-    return list;
   }
 
   @override

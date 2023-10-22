@@ -8,6 +8,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   /// 整个视图区域坐标坐标
   double left = 0, top = 0, right = 1, bottom = 1;
   List<SankeyData> _nodes = [];
+
   List<SankeyData> get nodes => _nodes;
   List<SankeyLinkData> _links = [];
 
@@ -57,8 +58,8 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     var dt = ChartDoubleTween(option: animation);
     animationProcess = 0;
     dt.addStartListener(() {
-      _nodes = nodes;
-      _links = links;
+      _nodes = dataList;
+      _links = linkList;
       inAnimation = true;
     });
     dt.addListener(() {
@@ -249,7 +250,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   void _computeLinkPosition(List<SankeyLinkData> links, List<SankeyData> nodes) {
     for (var node in nodes) {
       node.attr.rect = Rect.fromLTRB(node.attr.left, node.attr.top, node.attr.right, node.attr.bottom);
-      if(node.attr.rect.hasNaN){
+      if (node.attr.rect.hasNaN) {
         throw ChartError('$node ${node.attr.rect}');
       }
     }
@@ -361,9 +362,9 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
       var sv = sumBy<SankeyData>(c, (p0) => p0.attr.value);
       return v / sv;
     }).toDouble();
-    if(ky.isNaN||ky.isInfinite){
+    if (ky.isNaN || ky.isInfinite) {
       Logger.w("比例尺计算异常 ky=$ky,将固定比例尺");
-      ky=0.3;
+      ky = 0.3;
     }
 
     for (var nodes in columns) {
