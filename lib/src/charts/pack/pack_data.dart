@@ -10,6 +10,7 @@ class PackData extends BaseTreeData<Rect, PackData> {
     super.maxDeep,
     super.value,
     super.id,
+    super.name,
   }) {
     attr = Rect.zero;
   }
@@ -51,5 +52,10 @@ class PackData extends BaseTreeData<Rect, PackData> {
     borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
     label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
     label.updatePainter();
+  }
+
+  @override
+  String toString() {
+    return "$runtimeType [${x.toStringAsFixed(2)},${y.toStringAsFixed(2)}] R:${r.toStringAsFixed(2)}";
   }
 }

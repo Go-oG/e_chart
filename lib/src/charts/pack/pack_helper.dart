@@ -2,6 +2,7 @@ import 'dart:math' as m;
 
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'layout/siblings.dart';
 
@@ -57,18 +58,15 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
     root.sum((p0) => p0.value);
     root.computeHeight();
     int c = 0;
+    var h = root.height;
     root.each((node, index, startNode) {
       node.dataIndex = index;
-      node.maxDeep = root.height;
+      node.maxDeep = h;
       node.updateStyle(context, series);
       c++;
       return false;
     });
-    var h = root.height;
-    root.each((node, index, startNode) {
-      node.maxDeep = h;
-      return false;
-    });
+
     if (series.sortFun != null) {
       root.sort(series.sortFun!);
     } else {
@@ -85,7 +83,6 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
 
   void layoutData(PackData rootData) {
     var root = series.data;
-    initData2(root);
     LCG random = DefaultLCG();
     root.x = width / 2;
     root.y = height / 2;
@@ -106,6 +103,7 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
 
     ///计算文字位置
     root.each((node, p1, p2) {
+      debugPrint('节点数据：${node} ');
       double r = node.r;
       var align = series.getLabelAlign(node);
       if (align == Alignment.center) {
