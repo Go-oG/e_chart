@@ -8,9 +8,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   /// 整个视图区域坐标坐标
   double left = 0, top = 0, right = 1, bottom = 1;
   List<SankeyData> _nodes = [];
-
   List<SankeyData> get nodes => _nodes;
-
   List<SankeyLinkData> _links = [];
 
   List<SankeyLinkData> get links => _links;
@@ -40,42 +38,37 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     bottom = height;
     _oldHoverNode = null;
     _oldHoverLink = null;
-    List<SankeyData> nodes = [...series.data];
-    List<SankeyLinkData> links = [...series.links];
-    nodes = initData(nodes, links, series.nodeWidth);
+    var dataList = [...series.data];
+    var linkList = [...series.links];
+    dataList = initData(dataList, linkList, 0);
+    layoutNode(dataList, linkList);
+    _nodeBush.clear().addAll(dataList);
+    _linkBush.clear().addAll(linkList);
 
-    _nodes=nodes;
-    _links=links;
+    ///动画
+    var animation = getAnimation(type, 1);
+    if (animation == null) {
+      animationProcess = 1;
+      _nodes = dataList;
+      _links = linkList;
+      return;
+    }
 
-    layoutNode(nodes, links);
-    _nodeBush.clear().addAll(nodes);
-    _linkBush.clear().addAll(links);
-
-    // ///动画
-    // var animation = getAnimation(type, 1);
-    // if (animation == null) {
-    //   animationProcess = 1;
-    //   _nodes = nodes;
-    //   _links = links;
-    //   return;
-    // }
-    //
-    // var dt = ChartDoubleTween(option: animation);
-    // animationProcess = 0;
-    // dt.addStartListener(() {
-    //   _nodes = nodes;
-    //   _links = links;
-    //   inAnimation = true;
-    // });
-    // dt.addListener(() {
-    //   animationProcess = dt.value;
-    //   notifyLayoutUpdate();
-    // });
-    // dt.addEndListener(() {
-    //   inAnimation = false;
-    // });
-    //
-    // addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
+    var dt = ChartDoubleTween(option: animation);
+    animationProcess = 0;
+    dt.addStartListener(() {
+      _nodes = nodes;
+      _links = links;
+      inAnimation = true;
+    });
+    dt.addListener(() {
+      animationProcess = dt.value;
+      notifyLayoutUpdate();
+    });
+    dt.addEndListener(() {
+      inAnimation = false;
+    });
+    context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
   }
 
   void layoutNode(List<SankeyData> nodes, List<SankeyLinkData> links) {
@@ -256,7 +249,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   void _computeLinkPosition(List<SankeyLinkData> links, List<SankeyData> nodes) {
     for (var node in nodes) {
       node.attr.rect = Rect.fromLTRB(node.attr.left, node.attr.top, node.attr.right, node.attr.bottom);
-      if(node.attr.rect.isInfinite){
+      if(node.attr.rect.hasNaN){
         throw ChartError('$node ${node.attr.rect}');
       }
     }
@@ -368,6 +361,11 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
       var sv = sumBy<SankeyData>(c, (p0) => p0.attr.value);
       return v / sv;
     }).toDouble();
+    if(ky.isNaN||ky.isInfinite){
+      Logger.w("比例尺计算异常 ky=$ky,将固定比例尺");
+      ky=0.3;
+    }
+
     for (var nodes in columns) {
       double y = top;
       for (var node in nodes) {
@@ -561,35 +559,37 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
 
   List<SankeyData> initData(List<SankeyData> dataList, List<SankeyLinkData> links, double nodeWidth) {
     Map<String, SankeyData> dataMap = {};
-    each(dataList, (data, i) {
-      if (dataMap.containsKey(data.id)) {
-        return;
-      }
-      dataMap[data.id] = data;
-      data.updateStyle(context, series);
+    each(dataList, (p0, p1) {
+      dataMap[p0.id] = p0;
+      p0.dataIndex = p1;
+      p0.updateStyle(context, series);
     });
     int index = dataMap.length;
-    each(links, (link, i) {
-      link.dataIndex = i;
-      if (dataMap.containsKey(link.source.id)) {
-        link.source = dataMap[link.source.id]!;
+
+    each(links, (link, p1) {
+      link.dataIndex = p1;
+      var source = link.source;
+      if (dataMap.containsKey(source.id)) {
+        link.source = dataMap[source.id]!;
       } else {
-        dataMap[link.source.id] = link.source;
-        link.source.dataIndex = index;
-        link.source.updateStyle(context, series);
+        dataMap[source.id] = source;
+        source.dataIndex = index;
         index++;
+        source.updateStyle(context, series);
       }
 
-      if (dataMap.containsKey(link.target.id)) {
-        link.target = dataMap[link.target.id]!;
+      var target = link.target;
+      if (dataMap.containsKey(target.id)) {
+        link.target = dataMap[target.id]!;
       } else {
-        dataMap[link.target.id] = link.target;
-        link.target.dataIndex = index;
-        link.target.updateStyle(context, series);
+        dataMap[target.id] = target;
+        target.dataIndex = index;
         index++;
+        target.updateStyle(context, series);
       }
       link.updateStyle(context, series);
     });
+
     return List.from(dataMap.values);
   }
 
