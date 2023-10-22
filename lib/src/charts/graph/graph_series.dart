@@ -73,9 +73,9 @@ class GraphSeries extends RectSeries {
     if (fun != null) {
       return fun.call(data);
     }
-    var as = context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
+    var as = context.option.theme.getAreaStyle(data.styleIndex).convert(data.status);
     var bs = context.option.theme.graphTheme.getStyle() ?? LineStyle.empty;
-    return CircleSymbol(radius: data.size.shortestSide / 2, itemStyle: as, borderStyle: bs).convert(data.status);
+    return CircleSymbol(radius: data.size.shortestSide / 2, itemStyle: as, borderStyle: bs);
   }
 
   LineStyle getBorderStyle(Context context, GraphData source, GraphData target, Set<ViewState> status) {

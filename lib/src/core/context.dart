@@ -151,7 +151,7 @@ class Context {
     _coordMap.clear();
     _axisMap.clear();
     _coordList.clear();
-
+    allocateIndex();
     ///创建组件
     _createComponent();
 

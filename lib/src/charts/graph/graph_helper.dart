@@ -11,7 +11,7 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
   void onLayout(LayoutType type) {
     view.translationX = 0;
     view.translationY = 0;
-    var newGraph = convertDataToGraph(series.nodes, series.edges);
+    var newGraph = initData2(series.nodes, series.edges);
     var params = GraphLayoutParams(context, series, boxBound, globalBoxBound, width, height);
     _oldLayout?.clearListener();
     _oldLayout = series.layout;
@@ -98,7 +98,7 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     }
   }
 
-  Graph convertDataToGraph(List<GraphData> nodes, List<EdgeData> links) {
+  Graph initData2(List<GraphData> nodes, List<EdgeData> links) {
     Set<GraphData> nodeSet = {};
     each(nodes, (data, i) {
       data.index = i;
