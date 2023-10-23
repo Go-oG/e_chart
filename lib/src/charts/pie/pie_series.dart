@@ -1,11 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/pie/pie_view.dart';
 
-import 'pie_data.dart';
-
 /// 饼图系列
-class PieSeries extends RectSeries {
-  List<PieData> data;
+class PieSeries extends RectSeries2<PieData> {
   List<SNumber> center;
 
   //内圆半径(<=0时为圆)
@@ -32,17 +29,14 @@ class PieSeries extends RectSeries {
   //布局类型
   RoseType roseType;
   CircleAlign labelAlign;
-  PieAnimatorStyle animatorStyle;
 
-  Fun2<PieData, LabelStyle?>? labelStyleFun;
-  Fun2<PieData, AreaStyle?>? areaStyleFun;
-  Fun2<PieData, LineStyle?>? borderFun;
+  PieAnimatorStyle animatorStyle;
 
   ///用于实现偏移
   Fun2<PieData, num>? offsetFun;
 
   PieSeries(
-    this.data, {
+    super.data, {
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
     this.innerRadius = const SNumber.percent(15),
     this.outerRadius = const SNumber.percent(45),
@@ -52,11 +46,11 @@ class PieSeries extends RectSeries {
     this.corner = 0,
     this.roseType = RoseType.radius,
     this.angleGap = 0,
-    this.labelStyleFun,
+    super.labelStyleFun,
     this.labelAlign = CircleAlign.inside,
     this.animatorStyle = PieAnimatorStyle.expandScale,
-    this.areaStyleFun,
-    this.borderFun,
+    super.itemStyleFun,
+    super.borderStyleFun,
     this.offsetFun,
     super.leftMargin,
     super.topMargin,
@@ -78,60 +72,11 @@ class PieSeries extends RectSeries {
     return PieView(this);
   }
 
-  AreaStyle? getAreaStyle(Context context, PieData data) {
-    if (areaStyleFun != null) {
-      return areaStyleFun?.call(data);
-    }
-    return context.option.theme.getAreaStyle(data.dataIndex).convert(data.status);
-  }
-
-  LineStyle? getBorderStyle(Context context, PieData data) {
-    if (borderFun != null) {
-      return borderFun?.call(data);
-    }
-    var theme = context.option.theme.pieTheme;
-    return theme.getBorderStyle();
-  }
-
-  LabelStyle? getLabelStyle(Context context, PieData data) {
-    if (labelStyleFun != null) {
-      return labelStyleFun!.call(data);
-    }
-    var theme = context.option.theme;
-    return theme.getLabelStyle();
-  }
-
   double getOffset(Context context, PieData data) {
     if (offsetFun == null) {
       return 0;
     }
     return offsetFun!.call(data).toDouble();
-  }
-
-  @override
-  List<LegendItem> getLegendItem(Context context) {
-    List<LegendItem> list = [];
-    each(data, (item, i) {
-      var name = item.label.text;
-      if (name.isEmpty) {
-        return;
-      }
-      var color = context.option.theme.getColor(i);
-      list.add(LegendItem(
-        name,
-        RectSymbol()..itemStyle = AreaStyle(color: color),
-        seriesId: id,
-      ));
-    });
-    return list;
-  }
-
-  @override
-  int onAllocateStyleIndex(int start) {
-    each(data, (p0, p1) {
-      p0.styleIndex = p1 + start;
-    });
-    return data.length;
   }
 
   @override

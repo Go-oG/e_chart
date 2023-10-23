@@ -7,9 +7,7 @@ class PackSeries extends RectSeries {
     duration: Duration(seconds: 1),
     updateDuration: Duration(milliseconds: 1000),
   );
-
   PackData data;
-
   bool optTextDraw;
   Fun2<PackData, AreaStyle?>? itemStyleFun;
   Fun2<PackData, LineStyle?>? borderStyleFun;

@@ -103,7 +103,6 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
 
     ///计算文字位置
     root.each((node, p1, p2) {
-      debugPrint('节点数据：${node} ');
       double r = node.r;
       var align = series.getLabelAlign(node);
       if (align == Alignment.center) {

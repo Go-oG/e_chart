@@ -2,36 +2,29 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/funnel/funnel_view.dart';
 import 'package:flutter/material.dart';
 
-class FunnelSeries extends RectSeries {
-  List<FunnelData> dataList;
+class FunnelSeries extends RectSeries2<FunnelData> {
   double? maxValue;
   SNumber? itemHeight;
-  ChartAlign? labelAlign;
   Direction direction;
   Sort sort;
   double gap;
   Align2 align;
-  LabelStyle? labelStyle;
 
-  Fun2<FunnelData, AreaStyle>? areaStyleFun;
-  Fun2<FunnelData, LineStyle?>? borderStyleFun;
-  Fun2<FunnelData, LabelStyle>? labelStyleFun;
-  Fun2<FunnelData, LineStyle>? labelLineStyleFun;
+  ChartAlign? labelAlign;
   Fun2<FunnelData, ChartAlign>? labelAlignFun;
-  Fun2<FunnelData, DynamicText>? labelFormatFun;
 
   FunnelSeries(
-    this.dataList, {
+    super.data, {
     this.labelAlign = const ChartAlign(),
     this.maxValue,
     this.direction = Direction.vertical,
     this.sort = Sort.none,
     this.gap = 2,
     this.align = Align2.center,
-    this.labelStyleFun,
-    this.labelLineStyleFun,
-    this.areaStyleFun,
-    this.borderStyleFun,
+    super.labelStyleFun,
+    super.labelLineStyleFun,
+    super.itemStyleFun,
+    super.borderStyleFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -57,9 +50,10 @@ class FunnelSeries extends RectSeries {
     return FunnelView(this);
   }
 
-  AreaStyle getAreaStyle(Context context, FunnelData data) {
-    if (areaStyleFun != null) {
-      return areaStyleFun!.call(data);
+  @override
+  AreaStyle getItemStyle(Context context, FunnelData data) {
+    if (itemStyleFun != null) {
+      return super.getItemStyle(context, data);
     }
     var theme = context.option.theme.funnelTheme;
     if (theme.colors.isNotEmpty) {
@@ -69,23 +63,13 @@ class FunnelSeries extends RectSeries {
     return AreaStyle(color: ctheme.colors[data.dataIndex % ctheme.colors.length]).convert(data.status);
   }
 
-  LineStyle? getBorderStyle(Context context, FunnelData data) {
-    if (borderStyleFun != null) {
-      return borderStyleFun!.call(data);
-    }
-    var theme = context.option.theme.funnelTheme;
-    return theme.getBorderStyle();
-  }
-
-  LabelStyle? getLabelStyle(Context context, FunnelData data) {
-    if (labelStyleFun != null) {
-      return labelStyleFun!.call(data);
-    }
-    if (labelStyle != null) {
-      return labelStyle;
+  @override
+  LabelStyle getLabelStyle(Context context, FunnelData data) {
+    if (labelStyleFun != null || labelStyle != null) {
+      return super.getLabelStyle(context, data);
     }
     var theme = context.option.theme;
-    return theme.getLabelStyle();
+    return theme.getLabelStyle() ?? LabelStyle.empty;
   }
 
   ChartAlign getLabelAlign(FunnelData data) {
@@ -102,32 +86,12 @@ class FunnelSeries extends RectSeries {
     }
   }
 
-  DynamicText? formatData(Context context, FunnelData data) {
+  @override
+  DynamicText formatData(Context context, FunnelData data) {
     if (labelFormatFun != null) {
-      return labelFormatFun?.call(data);
+      return super.formatData(context, data);
     }
     return formatNumber(data.value).toText();
-  }
-
-  @override
-  List<LegendItem> getLegendItem(Context context) {
-    List<LegendItem> list = [];
-    each(dataList, (item, i) {
-      var name = item.label.text;
-      if (name.isEmpty) {
-        return;
-      }
-      list.add(LegendItem(name, RectSymbol()..itemStyle = getAreaStyle(context, item), seriesId: id));
-    });
-    return list;
-  }
-
-  @override
-  int onAllocateStyleIndex(int start) {
-    each(dataList, (p0, p1) {
-      p0.styleIndex = p1 + start;
-    });
-    return dataList.length;
   }
 
   @override

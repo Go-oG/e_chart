@@ -82,9 +82,9 @@ class PieData extends RenderData<Arc> {
 
   @override
   void updateStyle(Context context, PieSeries series) {
-    itemStyle = series.getAreaStyle(context, this) ?? AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
-    var style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
+    itemStyle = series.getItemStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
+    var style = series.getLabelStyle(context, this);
     label.updatePainter(style: style);
   }
 }

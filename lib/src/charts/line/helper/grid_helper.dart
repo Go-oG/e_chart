@@ -19,65 +19,59 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
     return _lineList;
   }
 
-  @override
-  void onLayoutColumn(var axisGroup, var groupNode, LayoutType type) {
-    var xData = groupNode.getXData();
-    var axisIndex = AxisIndex(CoordType.grid, groupNode.getXAxisIndex());
-    int groupInnerCount = axisGroup.getColumnCount(axisIndex);
-    int columnCount = groupInnerCount;
-    if (columnCount <= 1) {
-      columnCount = 0;
-    }
-    final bool vertical = series.direction == Direction.vertical;
-    final Rect groupRect = groupNode.rect;
-    var coord = context.findGridCoord();
-    each(groupNode.nodeList, (node, i) {
-      var upNode = node.getUpNode();
-      var downNode = node.getDownNode();
-      if (upNode == null || downNode == null) {
-        Logger.w("内部状态异常 无法找到 upValue 或者downValue");
-        return;
-      }
-      dynamic upValue = getNodeUpValue(upNode), downValue = getNodeDownValue(downNode);
-      if (upValue == null || downValue == null) {
-        return;
-      }
-      if (vertical) {
-        int yIndex = upNode.parent.yAxisIndex;
-        var uo = coord.dataToPoint(yIndex, upValue, false).last;
-        var downo = coord.dataToPoint(yIndex, downValue, false).first;
-        node.rect = Rect.fromLTRB(groupRect.left, uo.dy, groupRect.right, downo.dy);
-      } else {
-        var lo = coord.dataToPoint(axisIndex.axisIndex, xData, true).first;
-        var ro = coord.dataToPoint(axisIndex.axisIndex, xData, true).last;
-        node.rect = Rect.fromLTRB(lo.dx, groupRect.top, ro.dx, groupRect.bottom);
-      }
-    });
-  }
+  // @override
+  // void onLayoutColumn(var axisGroup, var groupNode, LayoutType type) {
+  //   var xData = groupNode.getXData();
+  //   var axisIndex = AxisIndex(CoordType.grid, groupNode.getXAxisIndex());
+  //   int groupInnerCount = axisGroup.getColumnCount(axisIndex);
+  //   int columnCount = groupInnerCount;
+  //   if (columnCount <= 1) {
+  //     columnCount = 0;
+  //   }
+  //   final bool vertical = series.direction == Direction.vertical;
+  //   final Rect groupRect = groupNode.rect;
+  //   var coord = context.findGridCoord();
+  //   each(groupNode.nodeList, (node, i) {
+  //     var upNode = node.getUpNode();
+  //     var downNode = node.getDownNode();
+  //     if (upNode == null || downNode == null) {
+  //       Logger.w("内部状态异常 无法找到 upValue 或者downValue");
+  //       return;
+  //     }
+  //     dynamic upValue = getNodeUpValue(upNode), downValue = getNodeDownValue(downNode);
+  //     if (upValue == null || downValue == null) {
+  //       return;
+  //     }
+  //     if (vertical) {
+  //       int yIndex = upNode.parent.yAxisIndex;
+  //       var uo = coord.dataToPoint(yIndex, upValue, false).last;
+  //       var downo = coord.dataToPoint(yIndex, downValue, false).first;
+  //       node.rect = Rect.fromLTRB(groupRect.left, uo.dy, groupRect.right, downo.dy);
+  //     } else {
+  //       var lo = coord.dataToPoint(axisIndex.axisIndex, xData, true).first;
+  //       var ro = coord.dataToPoint(axisIndex.axisIndex, xData, true).last;
+  //       node.rect = Rect.fromLTRB(lo.dx, groupRect.top, ro.dx, groupRect.bottom);
+  //     }
+  //   });
+  // }
 
   @override
   void onLayoutNode(var columnNode, LayoutType type) {
+    super.onLayoutNode(columnNode, type);
     var xIndex = columnNode.parentNode.getXAxisIndex();
-
     final bool vertical = series.direction == Direction.vertical;
-    final coord = findGridCoord();
-    final colRect = columnNode.rect;
     GridAxis xAxis = findGridCoord().getAxis(xIndex, true);
     for (var node in columnNode.nodeList) {
       if (node.dataIsNull) {
         continue;
       }
       if (vertical) {
-        var uo = coord.dataToPoint(node.parent.yAxisIndex, getNodeUpValue(node), false).last;
-        node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, uo.dy);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topLeft;
         } else {
           node.position = node.rect.topCenter;
         }
       } else {
-        var uo = coord.dataToPoint(node.parent.xAxisIndex, getNodeUpValue(node), true).last;
-        node.rect = Rect.fromLTRB(uo.dx, colRect.top, uo.dx, colRect.height);
         if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
           node.position = node.rect.topRight;
         } else {
@@ -85,22 +79,53 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         }
       }
     }
+
+    // var xIndex = columnNode.parentNode.getXAxisIndex();
+    // final bool vertical = series.direction == Direction.vertical;
+    // final coord = findGridCoord();
+    // final colRect = columnNode.rect;
+    // GridAxis xAxis = findGridCoord().getAxis(xIndex, true);
+    // for (var node in columnNode.nodeList) {
+    //   if (node.dataIsNull) {
+    //     continue;
+    //   }
+    //   if (vertical) {
+    //     var uo = coord.dataToPoint(node.parent.yAxisIndex, getNodeUpValue(node), false).last;
+    //     node.rect = Rect.fromLTRB(colRect.left, uo.dy, colRect.right, uo.dy);
+    //     if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
+    //       node.position = node.rect.topLeft;
+    //     } else {
+    //       node.position = node.rect.topCenter;
+    //     }
+    //   } else {
+    //     var uo = coord.dataToPoint(node.parent.xAxisIndex, getNodeUpValue(node), true).last;
+    //     node.rect = Rect.fromLTRB(uo.dx, colRect.top, uo.dx, colRect.height);
+    //     if (xAxis.isCategoryAxis && !xAxis.categoryCenter) {
+    //       node.position = node.rect.topRight;
+    //     } else {
+    //       node.position = node.rect.centerRight;
+    //     }
+    //   }
+    // }
   }
 
-  // @override
-  // void onLayoutEnd(var oldNodeList, var newNodeList, var startMap, var endMap, LayoutType type) {
-  //   if (series.animation == null || type == LayoutType.none) {
-  //     _lineList = _layoutLineNode(newNodeList);
-  //     _animatorPercent = 1;
-  //   } else {
-  //     _cacheLineList = _layoutLineNode(newNodeList);
-  //   }
-  //   super.onLayoutEnd(oldNodeList, newNodeList, startMap, endMap, type);
-  // }
+  @override
+  void onLayoutData(DataHelper<StackItemData, LineGroupData> helper,
+      List<StackData<StackItemData, LineGroupData>> dataList, LayoutType type) {
+    super.onLayoutData(helper, dataList, type);
+    if (series.animation == null || type == LayoutType.none) {
+      _lineList = _layoutLineNode(dataList);
+      _animatorPercent = 1;
+    } else {
+      _cacheLineList = _layoutLineNode(dataList);
+    }
+  }
 
   @override
   StackAnimatorNode onCreateAnimatorNode(var node, DiffType diffType, bool isStart) {
-    if (diffType == DiffType.update) {
+    if (diffType == DiffType.update ||
+        (isStart && diffType == DiffType.remove) ||
+        (!isStart && diffType == DiffType.add)) {
       return StackAnimatorNode(offset: node.position);
     }
     return StackAnimatorNode(offset: Offset(node.position.dx, height));

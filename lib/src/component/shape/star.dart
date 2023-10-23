@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
 ///N角星形图案
-class Star implements Shape {
+class Star extends Shape {
   final Offset center;
   late final num count;
   final num ir;

@@ -27,4 +27,10 @@ class DShape extends Polygon {
     }
     return super.getBound();
   }
+
+  @override
+  void dispose() {
+    path = null;
+    super.dispose();
+  }
 }

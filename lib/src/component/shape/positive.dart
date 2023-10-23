@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///正多边形
-class PositiveShape implements Shape {
+class PositiveShape extends Shape {
   final Offset center;
   final num r;
   final int count;
@@ -80,4 +80,10 @@ class PositiveShape implements Shape {
 
   @override
   bool get isClosed => true;
+
+  @override
+  void dispose() {
+    _path = null;
+    super.dispose();
+  }
 }

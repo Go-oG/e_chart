@@ -3,10 +3,10 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-typedef TreeFun<A, T extends BaseTreeData<A, T>> = bool Function(T node, int index, T startNode);
+typedef TreeFun<A , T extends BaseTreeData<A, T>> = bool Function(T node, int index, T startNode);
 
 ///通用的树节点抽象表示
-abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<A> {
+abstract class BaseTreeData<A , T extends BaseTreeData<A, T>> extends RenderData<A> {
   T? parent;
 
   List<T> _childrenList = [];
@@ -32,7 +32,6 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   ///缩放
   double scale = 1;
-
 
   bool _expand = true; //是否展开
 
@@ -146,7 +145,7 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   void addAll(Iterable<T> nodes) {
-    for(var node in nodes){
+    for (var node in nodes) {
       add(node);
     }
   }
@@ -347,7 +346,7 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   T sort(int Function(T, T) compare, [bool iterator = true]) {
     if (iterator) {
       return eachBefore((T node, b, c) {
-        if (node.childCount>1) {
+        if (node.childCount > 1) {
           node._childrenList.sort(compare);
         }
         return false;

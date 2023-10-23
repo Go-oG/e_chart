@@ -301,6 +301,14 @@ class Polygon extends Shape {
     _path = path;
     return path;
   }
+
+  @override
+  void dispose() {
+    points.clear();
+    _path = null;
+    _rect = null;
+    super.dispose();
+  }
 }
 
 class Hull {

@@ -118,7 +118,7 @@ class FunnelData extends RenderData<Polygon> {
 
   @override
   void updateStyle(Context context, FunnelSeries series) {
-    itemStyle = series.getAreaStyle(context, this);
+    itemStyle = series.getItemStyle(context, this);
     borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
     var s = series.getLabelStyle(context, this) ?? LabelStyle.empty;
     label.style = s;

@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:e_chart/src/ext/offset_ext.dart';
 
-import '../../model/chart_error.dart';
 import '../../utils/log_util.dart';
 
 ///线段

@@ -1,17 +1,13 @@
 import 'package:e_chart/e_chart.dart';
 import 'parallel_view.dart';
 
-class ParallelSeries extends ChartSeries {
-  List<ParallelData> data;
-  Fun2<ParallelData, LineStyle>? borderStyleFun;
-  Fun2<ParallelData, LabelStyle>? labelStyleFun;
+class ParallelSeries extends ChartSeries2<ParallelData> {
   Fun3<dynamic, ParallelData, ChartSymbol?>? symbolFun;
 
   bool connectNull;
 
-  ParallelSeries({
-    required this.data,
-    this.borderStyleFun,
+  ParallelSeries(
+    super.data, {
     this.symbolFun,
     this.connectNull = true,
     super.animation,
@@ -20,6 +16,14 @@ class ParallelSeries extends ChartSeries {
     super.tooltip,
     super.backgroundColor,
     super.id,
+    super.borderStyleFun,
+    super.itemStyleFun,
+    super.labelFormatFun,
+    super.labelLineStyleFun,
+    super.labelStyle,
+    super.labelStyleFun,
+    super.name,
+    super.useSingleLayer,
   }) : super(coordType: CoordType.parallel, gridIndex: -1, calendarIndex: -1, polarIndex: -1, radarIndex: -1);
 
   @override
@@ -35,46 +39,18 @@ class ParallelSeries extends ChartSeries {
     return EmptySymbol.empty;
   }
 
+  @override
   LineStyle getBorderStyle(Context context, ParallelData data) {
     if (borderStyleFun != null) {
-      return borderStyleFun!.call(data);
+      return super.getBorderStyle(context, data);
     }
     var theme = context.option.theme.parallelTheme;
     return theme.getItemStyle(context, data.styleIndex) ?? LineStyle.empty;
   }
 
-  LabelStyle getLabelStyle(Context context, ParallelData data) {
-    if (labelStyleFun != null) {
-      return labelStyleFun!.call(data);
-    }
-    var theme = context.option.theme;
-    return theme.getLabelStyle()?.convert(data.status) ?? LabelStyle.empty;
-  }
-
   @override
-  List<LegendItem> getLegendItem(Context context) {
-    List<LegendItem> list = [];
-    each(data, (item, i) {
-      var name = item.label.text;
-      if (name.isEmpty) {
-        return;
-      }
-      var color = context.option.theme.getColor(i);
-      list.add(LegendItem(
-        name,
-        RectSymbol()..itemStyle = AreaStyle(color: color),
-        seriesId: id,
-      ));
-    });
-    return list;
-  }
-
-  @override
-  int onAllocateStyleIndex(int start) {
-    each(data, (p0, p1) {
-      p0.styleIndex = p1 + start;
-    });
-    return data.length;
+  AreaStyle getItemStyle(Context context, ParallelData data) {
+    return AreaStyle.empty;
   }
 
   @override

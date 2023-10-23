@@ -23,9 +23,9 @@ class HexbinData extends RenderData2<HexAttr, PositiveSymbol> {
 
   @override
   void updateStyle(Context context, HexbinSeries series) {
-    itemStyle = series.getItemStyle(context, this) ?? AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
-    label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
+    itemStyle = series.getItemStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
+    label.style = series.getLabelStyle(context, this);
     symbol.itemStyle = itemStyle;
     symbol.borderStyle = borderStyle;
   }

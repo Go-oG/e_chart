@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class Circle implements Shape {
+class Circle extends Shape {
   final num r;
   final Offset center;
 
@@ -33,4 +33,10 @@ class Circle implements Shape {
 
   @override
   bool get isClosed => true;
+
+  @override
+  void dispose() {
+    _path = null;
+    super.dispose();
+  }
 }

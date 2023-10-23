@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///https://m3.material.io/foundations/interaction/states/overview
 mixin StateProvider {
-  final Set<ViewState> _stateSet = {};
+  Set<ViewState> _stateSet = {};
 
   bool get isEnabled => !_stateSet.contains(ViewState.disabled);
 
@@ -73,7 +73,7 @@ mixin StateProvider {
     if (_stateSet.isEmpty) {
       return _changed = false;
     }
-    _stateSet.clear();
+    _stateSet = {};
     return _changed = true;
   }
 

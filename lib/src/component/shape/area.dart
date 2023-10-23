@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 ///代表一个封闭的图形
 ///其路径由给定的点组成
-class Area implements Shape {
+class Area extends Shape {
   static final Area empty=Area([], []);
   final List<Offset> upList;
   final List<Offset> downList;
@@ -154,4 +154,11 @@ class Area implements Shape {
 
   @override
   bool get isClosed => true;
+  @override
+  void dispose() {
+    _path=null;
+    upList.clear();
+    downList.clear();
+    super.dispose();
+  }
 }

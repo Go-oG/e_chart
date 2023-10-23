@@ -2,19 +2,12 @@ import 'package:e_chart/e_chart.dart';
 
 import 'point_view.dart';
 
-class PointSeries extends RectSeries {
-  List<PointData> data;
+class PointSeries extends ChartSeries2<PointData> {
   Fun2<PointData, ChartSymbol>? symbolFun;
 
   PointSeries(
-    this.data, {
+    super.data, {
     this.symbolFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
     super.gridIndex,
     super.polarIndex = 0,
     super.calendarIndex = 0,
@@ -24,6 +17,14 @@ class PointSeries extends RectSeries {
     super.backgroundColor,
     super.id,
     super.clip,
+    super.borderStyleFun,
+    super.itemStyleFun,
+    super.labelFormatFun,
+    super.labelLineStyleFun,
+    super.labelStyle,
+    super.labelStyleFun,
+    super.name,
+    super.useSingleLayer,
   }) : super(radarIndex: -1, parallelIndex: -1);
 
   @override
@@ -46,13 +47,6 @@ class PointSeries extends RectSeries {
   @override
   List<LegendItem> getLegendItem(Context context) => [];
 
-  @override
-  int onAllocateStyleIndex(int start) {
-    each(data, (p0, p1) {
-      p0.styleIndex = p1 + start;
-    });
-    return data.length;
-  }
 
   @override
   SeriesType get seriesType => SeriesType.point;

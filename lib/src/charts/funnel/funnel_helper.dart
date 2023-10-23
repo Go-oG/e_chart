@@ -12,7 +12,7 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
   void onLayout(LayoutType type) {
     oldHoverNode = null;
     var oldList = nodeList;
-    var newList = [...series.dataList];
+    var newList = [...series.data];
     initData(newList);
     var an = DiffUtil.diff<FunnelData>(
       getAnimation(type),

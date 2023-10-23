@@ -52,7 +52,7 @@ class ThemeRiverData extends RenderData<ThemeRiverAttr> {
 
   @override
   void updateStyle(Context context, covariant ThemeRiverSeries series) {
-    itemStyle = series.getAreaStyle(context, this);
+    itemStyle = series.getItemStyle(context, this);
     borderStyle = series.getBorderStyle(context, this);
     var s = series.getLabelStyle(context, this);
     label.updatePainter(style: s);

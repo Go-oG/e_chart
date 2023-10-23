@@ -1,6 +1,6 @@
 mixin ExtProps {
   ///拓展字段属性
-  final Map<String, dynamic> _extendProps = {};
+  Map<String, dynamic> _extendProps = {};
 
   void extSet(String key, dynamic data) {
     _extendProps[key] = data;
@@ -17,7 +17,7 @@ mixin ExtProps {
   }
 
   void extClear() {
-    _extendProps.clear();
+    _extendProps = {};
   }
 
   T extGet<T>(String key) {

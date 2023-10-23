@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'chart_shape.dart';
 
 ///棱形
-class Prism implements Shape {
+class Prism extends Shape {
   final Rect rect;
 
   Prism(this.rect);
@@ -31,9 +31,15 @@ class Prism implements Shape {
 
   @override
   bool contains(Offset offset) {
-  return toPath().contains(offset);
+    return toPath().contains(offset);
   }
 
   @override
   bool get isClosed => true;
+
+  @override
+  void dispose() {
+    _path = null;
+    super.dispose();
+  }
 }

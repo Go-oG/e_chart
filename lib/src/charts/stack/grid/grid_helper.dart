@@ -171,8 +171,8 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S exten
     if (event.coordViewId != findGridCoord().id) {
       return;
     }
-
     ///坐标轴发生更新 只需要更新当前显示数据的坐标
+    ///TODO 坐标轴发生更新 只需要更新当前显示数据的坐标 待完成
   }
 
   @override

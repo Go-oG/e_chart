@@ -6,7 +6,8 @@ import 'package:flutter/rendering.dart';
 
 ///用于优化文字绘制避免每次都需要测量
 class TextDraw {
-  static final empty = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
+  static final empty = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero, emptyFlag: true);
+  late final bool _emptyFlag;
   late LabelStyle _style;
   late DynamicText _text;
   Offset offset;
@@ -37,20 +38,28 @@ class TextDraw {
     this.maxHeight = double.maxFinite,
     this.ellipsis,
     this.ignoreOverText = false,
+    bool emptyFlag = false,
   }) {
     _text = text;
     _style = style;
+    _emptyFlag = emptyFlag;
   }
 
   DynamicText get text => _text;
 
   set text(DynamicText d) {
+    if (_emptyFlag) {
+      return;
+    }
     updatePainter(text: d);
   }
 
   LabelStyle get style => _style;
 
   set style(LabelStyle s) {
+    if (_emptyFlag) {
+      return;
+    }
     updatePainter(style: s);
   }
 
@@ -63,6 +72,9 @@ class TextDraw {
   TextPainter? _painter;
 
   TextPainter? _getPainter() {
+    if (_emptyFlag) {
+      return null;
+    }
     if (text.isEmpty || !style.show || text.isParagraph) {
       return null;
     }
@@ -101,6 +113,9 @@ class TextDraw {
   ParagraphConstraints? _constraints;
 
   Paragraph? _getParagraph() {
+    if (_emptyFlag) {
+      return null;
+    }
     if (!text.isParagraph) {
       return null;
     }
@@ -140,6 +155,9 @@ class TextDraw {
     String? ellipsis,
     bool? ignoreOverText,
   }) {
+    if (_emptyFlag) {
+      return;
+    }
     _text = text ?? this.text;
     _style = style ?? this.style;
     this.offset = offset ?? this.offset;
@@ -163,6 +181,9 @@ class TextDraw {
   }
 
   Size draw(CCanvas canvas, Paint paint) {
+    if (_emptyFlag) {
+      return Size.zero;
+    }
     Size s1 = _drawTextSpan(canvas, paint);
     Size s2 = _drawParagraph(canvas, paint);
     if (s2.isEmpty) {
@@ -226,7 +247,17 @@ class TextDraw {
   }
 
   bool get notDraw {
-    return text.isEmpty || !style.show;
+    return text.isEmpty || !style.show || _emptyFlag;
+  }
+
+  void dispose() {
+    if (_emptyFlag) {
+      return;
+    }
+    _style = LabelStyle.empty;
+    _text = DynamicText.empty;
+    _painter = null;
+    _constraints = null;
   }
 
   static Offset offsetByRect(Rect rect, Alignment align) {

@@ -1,7 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-import 'theme_river_data.dart';
 
 class ThemeRiverHelper extends LayoutHelper2<ThemeRiverData, ThemeRiverSeries> {
   num maxTransX = 0, maxTransY = 0;
@@ -129,14 +128,6 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverData, ThemeRiverSeries> {
       }
     }
     return {'y0': y0, 'max': max};
-  }
-
-  AreaStyle getStyle(ThemeRiverData node) {
-    return series.getAreaStyle(context,node);
-  }
-
-  LabelStyle? getLabelStyle(ThemeRiverData node) {
-    return series.getLabelStyle(context, node);
   }
 
   @override

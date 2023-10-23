@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-extension TreeNodeExt<D, A, T extends BaseTreeData<A, T>> on BaseTreeData<A, T> {
+extension TreeNodeExt<D,  A, T extends BaseTreeData<A, T>> on BaseTreeData<A, T> {
   void updateSelectStatus(bool status, {SelectedMode mode = SelectedMode.single}) {
     if (status) {
       addState(ViewState.selected);

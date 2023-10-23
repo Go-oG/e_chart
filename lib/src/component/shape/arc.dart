@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/utils/platform_util.dart';
 
-class Arc implements Shape {
+class Arc extends Shape {
   static final zero = Arc();
   static const double circleMinAngle = 359.99;
   static const double cornerMin = 0.001;
@@ -538,6 +538,11 @@ class Arc implements Shape {
 
   @override
   bool get isClosed => true;
+  @override
+  void dispose() {
+    _closePath=null;
+    super.dispose();
+  }
 }
 
 class InnerOffset {

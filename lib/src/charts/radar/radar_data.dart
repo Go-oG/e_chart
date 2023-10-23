@@ -76,8 +76,8 @@ class RadarData extends RenderData<Path> {
 
   @override
   void updateStyle(Context context, covariant RadarSeries series) {
-    itemStyle = series.getAreaStyle(context, this) ?? AreaStyle.empty;
-    borderStyle = series.getLineStyle(context, this) ?? LineStyle.empty;
+    itemStyle = series.getItemStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
     label.style = LabelStyle.empty;
     label.updatePainter();
   }

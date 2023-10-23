@@ -6,7 +6,7 @@ import '../../static_config.dart';
 import '../../utils/assert_check.dart';
 import 'chart_shape.dart';
 
-class Line implements Shape {
+class Line extends Shape {
   final List<Offset> _pointList = [];
   final num smooth;
   final List<num> _dashList = [];
@@ -34,7 +34,7 @@ class Line implements Shape {
       return _path!;
     }
     Path path = Path();
-    if (smooth>0) {
+    if (smooth > 0) {
       path = _smooth();
     } else {
       Offset first = _pointList.first;
@@ -188,4 +188,11 @@ class Line implements Shape {
 
   @override
   bool get isClosed => false;
+
+  @override
+  void dispose() {
+    _pointList.clear();
+    _path=null;
+    super.dispose();
+  }
 }

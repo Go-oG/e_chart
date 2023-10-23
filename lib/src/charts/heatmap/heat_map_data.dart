@@ -36,7 +36,7 @@ class HeatMapData extends RenderData<Rect> {
       itemStyle = symbol.itemStyle;
       borderStyle = symbol.borderStyle;
     } else {
-      itemStyle = series.getAreaStyle(context, this) ?? AreaStyle.empty;
+      itemStyle = series.getItemStyle(context, this) ?? AreaStyle.empty;
       borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
       this.symbol = RectSymbol(borderStyle: borderStyle, itemStyle: itemStyle, rectSize: attr.size);
     }

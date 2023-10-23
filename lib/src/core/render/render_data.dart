@@ -1,15 +1,17 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 
 ///基础渲染数据
-abstract class RenderData<P> with StateProvider, ExtProps {
+abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
   late final String id;
   bool show = true;
 
   int groupIndex = 0;
   int dataIndex = -1;
   int styleIndex = -1;
+
   ///绘制顺序(从小到到绘制，最大的最后绘制)
   int drawIndex = -1;
 
@@ -17,8 +19,18 @@ abstract class RenderData<P> with StateProvider, ExtProps {
 
   P get attr => _attr!;
 
+  P? get attrNull => _attr;
+
   set attr(P a) {
+    var old = _attr;
     _attr = a;
+    if (!identical(a, old) && old != null) {
+      if (old is Disposable) {
+        old.dispose();
+      } else if (old is Disposable) {
+        old.dispose();
+      }
+    }
   }
 
   AreaStyle itemStyle = AreaStyle.empty;
@@ -107,9 +119,33 @@ abstract class RenderData<P> with StateProvider, ExtProps {
 
   void updateLabelPosition(Context context, covariant ChartSeries series) {}
 
+  Color pickColor() {
+    var c = itemStyle.pickColor();
+    if (c != null && c != Colors.transparent) {
+      return c;
+    }
+    c = borderStyle.pickColor();
+    if (c != null && c != Colors.transparent) {
+      return c;
+    }
+    return Colors.transparent;
+  }
+
   DataType get dataType => DataType.nodeData;
 
-  void dispose() {}
+  @override
+  void dispose() {
+    super.dispose();
+    cleanState();
+    var old = _attr;
+    _attr = null;
+    if (old != null && old is Disposable) {
+      old.dispose();
+    }
+    itemStyle = AreaStyle.empty;
+    borderStyle = LineStyle.empty;
+    label.dispose();
+  }
 }
 
 abstract class RenderData2<P, S extends ChartSymbol> extends RenderData<P> {

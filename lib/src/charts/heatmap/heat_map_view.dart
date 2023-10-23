@@ -61,7 +61,7 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   bool get enableDrag => true;
 
   AreaStyle? getAreaStyle(HeatMapData data) {
-    return series.getAreaStyle(context, data);
+    return series.getItemStyle(context, data);
   }
 
   LineStyle? getBorderStyle(HeatMapData data) {

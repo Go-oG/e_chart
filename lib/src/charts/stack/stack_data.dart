@@ -109,9 +109,16 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
   num get up => attr.up;
 
   num get down => attr.down;
+
+  @override
+  void dispose() {
+    attrNull?._parentNode?.nodeList.remove(this);
+    attrNull?._parent?.data.remove(this);
+    super.dispose();
+  }
 }
 
-class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> {
+class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> extends Disposable {
   ///只在二维坐标系下使用
   Rect rect = Rect.zero;
   Corner? corner;
@@ -126,8 +133,17 @@ class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> {
   dynamic dynamicLabel;
 
   late CoordType coord;
-  late ColumnNode<T, P> parentNode;
-  late P parent;
+  ColumnNode<T, P>? _parentNode;
+
+  ColumnNode<T, P> get parentNode => _parentNode!;
+
+  set parentNode(ColumnNode<T, P> cp) => _parentNode = cp;
+
+  P? _parent;
+
+  P get parent => _parent!;
+
+  set parent(P p) => _parent = p;
 
   ///标识是否是一个堆叠数据
   late bool stack;
@@ -136,9 +152,17 @@ class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> {
   num up = 0;
 
   num down = 0;
+
+  @override
+  void dispose() {
+    super.dispose();
+    dynamicLabel = null;
+    _parentNode = null;
+    _parent = null;
+  }
 }
 
-class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> {
+class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> extends Disposable {
   late final String id;
   late final String name;
   int styleIndex = 0;
@@ -191,6 +215,11 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> {
   bool get isNotStack {
     return !isStack;
   }
+  @override
+  void dispose() {
+    super.dispose();
+    data=[];
+  }
 }
 
 class StackItemData extends BaseItemData {
@@ -233,6 +262,6 @@ class StackItemData extends BaseItemData {
 
   @override
   String toString() {
-    return '$runtimeType x:${x} y:$y';
+    return '$runtimeType x:$x y:$y';
   }
 }
