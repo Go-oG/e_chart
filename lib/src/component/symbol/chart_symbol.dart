@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///Symbol实现
-abstract class ChartSymbol {
+abstract class ChartSymbol extends Disposable {
   static final EmptySymbol empty = EmptySymbol();
 
   Size get size;
@@ -17,6 +17,13 @@ abstract class ChartSymbol {
   double rotate = 0;
 
   ChartSymbol({this.itemStyle = AreaStyle.empty, this.borderStyle = LineStyle.empty});
+
+  @override
+  void dispose() {
+    itemStyle = AreaStyle.empty;
+    borderStyle = LineStyle.empty;
+    super.dispose();
+  }
 
   void draw(CCanvas canvas, Paint paint, Offset offset) {
     if (scale <= 0) {
@@ -63,7 +70,6 @@ abstract class ChartSymbol {
   String toString() {
     return '$runtimeType size:$size scale:$scale';
   }
-
 }
 
 class SymbolAttr {

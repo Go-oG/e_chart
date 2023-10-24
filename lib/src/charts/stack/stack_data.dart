@@ -264,4 +264,5 @@ class StackItemData extends BaseItemData {
   String toString() {
     return '$runtimeType x:$x y:$y';
   }
+  
 }

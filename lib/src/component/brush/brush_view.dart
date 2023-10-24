@@ -5,14 +5,18 @@ import 'package:e_chart/e_chart.dart';
 ///BrushView 只能在坐标系中出现
 ///覆盖在单个坐标系的最顶层(比TooltipView 低)
 class BrushView extends GestureView {
-  final CoordLayout coord;
-  final Brush brush;
+  CoordLayout? _coord;
+
+  CoordLayout get coord => _coord!;
+  Brush? _brush;
+
+  Brush get brush => _brush!;
   List<BrushArea> _brushList = [];
   late final BrushEndEvent _endEvent;
   late final BrushStartEvent _startEvent;
   late final BrushUpdateEvent _updateEvent;
 
-  BrushView(this.coord, this.brush) {
+  BrushView(this._coord, this._brush) {
     layoutParams = const LayoutParams.matchAll();
     zLevel = 10000;
     _endEvent = BrushEndEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
@@ -37,15 +41,14 @@ class BrushView extends GestureView {
   void handleBrushCommand() {
     var c = brush.value;
     if (c.code == Command.showBrush.code || c.code == Command.hideBrush.code) {
-      invalidate();
+      requestDraw();
       return;
     }
-    if (c.code == Command.clearBrush.code||c.code==Command.configChange.code) {
+    if (c.code == Command.clearBrush.code || c.code == Command.configChange.code) {
       _brushList = [];
-      invalidate();
+      requestDraw();
       return;
     }
-
   }
 
   @override
@@ -68,7 +71,7 @@ class BrushView extends GestureView {
       if (action.brushId == brush.id) {
         _brushList = [];
         context.dispatchEvent(_endEvent);
-        invalidate();
+        requestDraw();
         return true;
       }
       return false;
@@ -76,14 +79,14 @@ class BrushView extends GestureView {
     if (action is BrushAction) {
       if (_handleActionList(action.actionList) > 0) {
         _sendBrushEvent(_brushList);
-        invalidate();
+        requestDraw();
       }
       return false;
     }
     if (action is BrushEndAction) {
       if (_handleActionList(action.actionList) > 0) {
         _sendBrushEndEvent(_brushList);
-        invalidate();
+        requestDraw();
       }
       return false;
     }
@@ -109,14 +112,14 @@ class BrushView extends GestureView {
     _updateEvent.areas = brushList;
     context.dispatchEvent(_updateEvent);
     if (redraw) {
-      invalidate();
+      requestDraw();
     }
   }
 
   void _sendBrushEndEvent(List<BrushArea> brushList, [bool redraw = true]) {
     context.dispatchEvent(_endEvent);
     if (redraw) {
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -134,8 +137,10 @@ class BrushView extends GestureView {
 
   @override
   void onDestroy() {
-    _brushList = [];
     brush.removeListener(handleBrushCommand);
+    _coord = null;
+    _brush = null;
+    _brushList = [];
     super.onDestroy();
   }
 
@@ -171,7 +176,7 @@ class BrushView extends GestureView {
       var first = _brushList.first;
       if (!first.path.contains(offset)) {
         _brushList = [];
-        invalidate();
+        requestDraw();
         context.dispatchEvent(_endEvent);
       }
     }

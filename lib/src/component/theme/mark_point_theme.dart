@@ -1,6 +1,13 @@
-import '../style/label.dart';
+import 'package:e_chart/e_chart.dart';
 
-class MarkPointTheme {
+class MarkPointTheme extends Disposable {
   LabelStyle labelStyle = const LabelStyle();
   LabelStyle labelHoverStyle = const LabelStyle();
+
+  @override
+  void dispose() {
+    labelStyle = LabelStyle.empty;
+    labelHoverStyle = LabelStyle.empty;
+    super.dispose();
+  }
 }

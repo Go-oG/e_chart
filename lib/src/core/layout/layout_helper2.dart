@@ -16,6 +16,7 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
   void initData(List<N> dataList){
     each(dataList, (data, p1) {
       data.dataIndex=p1;
+      data.styleIndex=p1;
       data.updateStyle(context, series);
     });
   }

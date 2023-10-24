@@ -1,13 +1,12 @@
 import 'package:e_chart/e_chart.dart';
 
-class LegendItem {
+class LegendItem extends Disposable {
   late final String seriesId;
-  DynamicText name;
-  ChartSymbol symbol;
+  late DynamicText name;
+  late ChartSymbol symbol;
   num gap;
   LabelStyle? textStyle;
-
-  bool selected=true;
+  bool selected = true;
 
   LegendItem(
     this.name,
@@ -23,4 +22,25 @@ class LegendItem {
     }
   }
 
+  LegendItem.empty({
+    String? seriesId,
+    this.gap = 8,
+    this.textStyle,
+  }) {
+    name = DynamicText.empty;
+    symbol = EmptySymbol.empty;
+    if (seriesId == null || seriesId.isEmpty) {
+      this.seriesId = randomId();
+    } else {
+      this.seriesId = seriesId;
+    }
+  }
+
+  @override
+  void dispose() {
+    name = DynamicText.empty;
+    symbol = EmptySymbol.empty;
+    textStyle = null;
+    super.dispose();
+  }
 }

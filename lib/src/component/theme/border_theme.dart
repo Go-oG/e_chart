@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
-class BorderTheme {
+class BorderTheme extends Disposable{
   Color _color = const Color(0xDD000000);
 
   Color get color => _color;

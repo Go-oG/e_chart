@@ -104,6 +104,12 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     }
     return null;
   }
+
+  @override
+  void dispose() {
+    animation = null;
+    super.dispose();
+  }
 }
 
 abstract class ChartSeries2<T extends RenderData> extends ChartSeries {
@@ -195,5 +201,16 @@ abstract class ChartSeries2<T extends RenderData> extends ChartSeries {
       p0.styleIndex = p1 + start;
     });
     return data.length;
+  }
+
+  @override
+  void dispose() {
+    data = [];
+    itemStyleFun = null;
+    borderStyleFun = null;
+    labelStyle = null;
+    labelLineStyleFun = null;
+    labelFormatFun = null;
+    super.dispose();
   }
 }

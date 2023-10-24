@@ -10,8 +10,6 @@ import '../../index.dart';
 
 class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordLayout>
     extends BaseAxisImpl<T, P, LineAxisLayoutResult, C> {
-  final tmpTick = MainTick();
-  final MinorTick tmpMinorTick = MinorTick();
 
   LineAxisImpl(super.context, super.coord, super.axis, {super.axisIndex = 0});
 
@@ -75,8 +73,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       tickCount = 1;
     }
     final double interval = distance / (tickCount - 1);
-    MainTick tick = axis.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ??  BaseAxisImpl.tmpMinorTick;
     final double tickOffset = (tick.inside ? -tick.length : tick.length).toDouble();
     final double minorOffset = (tick.inside ? -minorTick.length : minorTick.length).toDouble();
     int minorSN = minorTick.splitNumber;
@@ -116,8 +114,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       tickCount = 1;
     }
     final double interval = distance / (tickCount - 1);
-    MainTick tick = axis.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ??  BaseAxisImpl.tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ??  BaseAxisImpl.tmpMinorTick;
     AxisLabel axisLabel = axis.axisLabel;
     List<DynamicText> labels = obtainLabel();
     double labelOffset = axisLabel.padding + axisLabel.margin + 0;

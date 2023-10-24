@@ -62,8 +62,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
     final double interval = scale.tickInterval.toDouble();
     List<int> indexList = computeRangeIndex(distance, tickCount, interval);
-    MainTick tick = axis.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? BaseAxisImpl.tmpMinorTick;
     int minorSN = minorTick.splitNumber;
     if (minorSN < 0) {
       minorSN = 0;
@@ -104,8 +104,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     ///计算索引
     List<int> indexList = computeRangeIndex(distance, scale.tickCount, interval);
 
-    MainTick tick = axis.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? BaseAxisImpl.tmpMinorTick;
     int sn = minorTick.splitNumber;
     if (sn < 0) {
       sn = 0;

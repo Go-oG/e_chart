@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +35,7 @@ abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
   AreaStyle itemStyle = AreaStyle.empty;
   LineStyle borderStyle = LineStyle.empty;
   late TextDraw label = TextDraw(DynamicText.empty, const LabelStyle(), Offset.zero);
-  List<Offset> labelLine = [];
+  late List<Offset> labelLine = [];
 
   late final DataStatusChangeEvent _dataStateChangeEvent;
 

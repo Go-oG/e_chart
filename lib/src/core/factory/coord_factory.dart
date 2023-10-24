@@ -9,7 +9,7 @@ class CoordFactory {
 
   factory CoordFactory() => _instance;
 
-  final List<CoordConvert> _convertList = [];
+  late final List<CoordConvert> _convertList = [];
 
   void addConvert(CoordConvert convert) {
     _convertList.insert(0, convert);

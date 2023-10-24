@@ -55,6 +55,6 @@ class ScrollLayout extends ChartViewGroup {
     if (_dy >= 0) {
       _dy = 0;
     }
-    invalidate();
+    requestDraw();
   }
 }

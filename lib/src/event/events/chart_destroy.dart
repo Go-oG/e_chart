@@ -2,11 +2,11 @@ import 'package:e_chart/src/event/chart_event_dispatcher.dart';
 
 import '../chart_event.dart';
 
-class ChartDestroyEvent extends ChartEvent {
-  static const single = ChartDestroyEvent();
+class ChartDisposeEvent extends ChartEvent {
+  static const single = ChartDisposeEvent();
 
-  const ChartDestroyEvent();
+  const ChartDisposeEvent();
 
   @override
-  EventType get eventType => EventType.chartDestroy;
+  EventType get eventType => EventType.chartDispose;
 }

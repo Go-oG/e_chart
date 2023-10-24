@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class ToolTipItemView extends GestureView {
-  final MenuItem item;
+  MenuItem item;
   final LabelStyle _defaultSubStyle = const LabelStyle(textStyle: TextStyle(color: Colors.black87, fontSize: 13));
 
   late TextDraw _label;
@@ -53,8 +53,8 @@ class ToolTipItemView extends GestureView {
   void onLayout(double left, double top, double right, double bottom) {
     super.onLayout(left, top, right, bottom);
     double c = padding.top + height / 2;
-    double lf=padding.left;
-    if(item.symbol!=null){
+    double lf = padding.left;
+    if (item.symbol != null) {
       Size s = item.symbol!.size;
       lf += s.width + 8;
     }
@@ -71,5 +71,13 @@ class ToolTipItemView extends GestureView {
     }
     _label.draw(canvas, mPaint);
     _subLabel?.draw(canvas, mPaint);
+  }
+
+  @override
+  void onDestroy() {
+    item = MenuItem.empty;
+    _label = TextDraw.empty;
+    _subLabel = TextDraw.empty;
+    super.onDestroy();
   }
 }

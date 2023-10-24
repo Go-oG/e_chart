@@ -1,12 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-
-class ChartTitle extends ChartNotifier2{
+class ChartTitle extends ChartNotifier2 {
   bool show = false;
 
   Align2 position = Align2.start;
-  Align2 align=Align2.start;
+  Align2 align = Align2.start;
   Offset offset = const Offset(8, 8);
 
   String text = '';
@@ -28,4 +27,14 @@ class ChartTitle extends ChartNotifier2{
   VoidCallback? subTextClick;
 
   ChartTitle();
+
+  @override
+  void dispose() {
+    textStyle = LabelStyle.empty;
+    subTextStyle = LabelStyle.empty;
+    decoration = const BoxDecoration();
+    textClick = null;
+    subTextClick = null;
+    super.dispose();
+  }
 }

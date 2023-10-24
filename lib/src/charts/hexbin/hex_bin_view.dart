@@ -21,7 +21,6 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinHelper> {
 
   @override
   HexbinHelper buildLayoutHelper(var oldHelper) {
-    oldHelper?.clearRef();
     if (oldHelper != null) {
       oldHelper.context = context;
       oldHelper.view = this;

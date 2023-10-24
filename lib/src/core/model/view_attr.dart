@@ -5,13 +5,13 @@ import 'layout_params.dart';
 
 mixin ViewAttr {
   ///存储当前节点的布局方式
-  LayoutParams layoutParams = const LayoutParams.matchAll();
+  late LayoutParams layoutParams = const LayoutParams.matchAll();
 
   ///存储当前视图在父视图中的位置属性
-  Rect boundRect = const Rect.fromLTRB(0, 0, 0, 0);
+  Rect boundRect = Rect.zero;
 
   ///记录旧的边界位置，可用于动画相关的计算
-  Rect oldBound = const Rect.fromLTRB(0, 0, 0, 0);
+  Rect oldBound = Rect.zero;
 
   ///记录其全局位置
   Rect globalBound = Rect.zero;
@@ -61,5 +61,4 @@ mixin ViewAttr {
   double scaleY = 1;
 
   Offset get scale => Offset(scaleX, scaleY);
-
 }

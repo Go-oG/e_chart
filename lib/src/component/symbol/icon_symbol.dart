@@ -3,12 +3,15 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class IconSymbol extends ChartSymbol {
-  final Icon icon;
+  Icon? _icon;
+
+  Icon get icon => _icon!;
+
   late final LabelStyle style;
 
   late TextDraw _label;
 
-  IconSymbol(this.icon) {
+  IconSymbol(this._icon) {
     IconData data = icon.icon!;
     double? iconSize = icon.size ?? 8;
     double? iconFill = icon.fill;
@@ -59,5 +62,14 @@ class IconSymbol extends ChartSymbol {
   @override
   ChartSymbol copy(SymbolAttr? attr) {
     return this;
+  }
+
+  @override
+  void dispose() {
+    _icon = const Icon(null);
+    style = LabelStyle.empty;
+    _label.dispose();
+    _label = TextDraw.empty;
+    super.dispose();
   }
 }

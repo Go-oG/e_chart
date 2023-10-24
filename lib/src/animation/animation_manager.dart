@@ -1,14 +1,8 @@
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
-import 'package:uuid/uuid.dart';
-
-import '../utils/log_util.dart';
-import 'animation_attrs.dart';
-import 'animation_node.dart';
 
 ///全局的动画管理者
-class AnimationManager {
-  final Uuid _uuid = const Uuid();
-
+class AnimationManager extends Disposable {
   AnimationManager();
 
   ///存储已经创建的控制器
@@ -24,7 +18,7 @@ class AnimationManager {
       upperBound: 1,
       animationBehavior: props.behavior,
     );
-    key ??= _uuid.v4().replaceAll('-', '');
+    key ??= randomId();
     if (_map.containsKey(key)) {
       _map.remove(key)?.dispose();
     }
@@ -35,7 +29,7 @@ class AnimationManager {
   AnimationController unbounded(TickerProvider provider, {String? key}) {
     _collate();
     AnimationController c = AnimationController.unbounded(vsync: provider, duration: const Duration(days: 999));
-    key ??= _uuid.v4().replaceAll('-', '');
+    key ??= randomId();
     if (_map.containsKey(key)) {
       _map.remove(key)?.dispose();
     }
@@ -100,6 +94,7 @@ class AnimationManager {
 
   void cancelAllAnimator() {
     var map = _map;
+    _count = 0;
     _map = {};
     map.forEach((key, value) {
       try {
@@ -108,7 +103,9 @@ class AnimationManager {
     });
   }
 
+  @override
   void dispose() {
     cancelAllAnimator();
+    super.dispose();
   }
 }

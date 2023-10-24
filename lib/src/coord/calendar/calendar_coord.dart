@@ -301,7 +301,7 @@ class CalendarCoordImpl extends CalendarCoord {
       } else {
         context.dispatchEvent(AxisScrollEvent(this, [], sc.dy, null));
       }
-      invalidate();
+      requestDraw();
     }
   }
 

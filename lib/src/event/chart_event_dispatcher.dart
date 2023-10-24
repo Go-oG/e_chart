@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///事件分发器
 ///用于处理
-class EventDispatcher {
+class EventDispatcher extends Disposable {
   final Map<EventType, Set<VoidFun1<ChartEvent>>> _callMap = {};
 
   EventDispatcher();
@@ -18,7 +18,8 @@ class EventDispatcher {
       value.remove(call);
     });
   }
-  void removeCall2(EventType type,VoidFun1<ChartEvent> call) {
+
+  void removeCall2(EventType type, VoidFun1<ChartEvent> call) {
     _callMap[type]?.remove(call);
   }
 
@@ -40,8 +41,10 @@ class EventDispatcher {
     });
   }
 
+  @override
   void dispose() {
     _callMap.clear();
+    super.dispose();
   }
 
   bool hasEventListener(EventType? type) {
@@ -60,7 +63,7 @@ class EventType {
   static const normal = EventType("normal");
 
   ///图表被销毁
-  static const chartDestroy = EventType("destroy");
+  static const chartDispose = EventType("destroy");
 
   ///单帧渲染结束事件
   static const rendered = EventType("render");

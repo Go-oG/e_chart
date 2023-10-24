@@ -17,7 +17,6 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
   bool flat = false;
   double radius = 0;
   List<HexbinData> showNodeList = [];
-
   ///用于加速节点查找
   late final RBush<HexbinData> _rBush;
 
@@ -32,9 +31,9 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    var oldNodeList = nodeList;
     translationX = translationY = 0;
     var rect = getViewPortRect();
+    var oldNodeList = nodeList;
     var newList = [...series.data];
     initData(newList);
 
@@ -42,30 +41,7 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
       getAnimation(type, series.data.length),
       oldNodeList,
       newList,
-      (nodes) {
-        flat = series.flat;
-        radius = series.radius.toDouble();
-        var params = HexbinLayoutParams(series, width, height, radius.toDouble(), series.flat);
-        var hexLayout = series.layout;
-        hexLayout.onLayout(nodes, type, params);
-        flat = params.flat;
-
-        ///坐标转换
-        final angleOffset = flat ? _flat.angle : _pointy.angle;
-        _zeroCenter = hexLayout.computeZeroCenter(params);
-        final size = Size.square(radius * 1);
-        each(nodes, (data, i) {
-          var center = hexToPixel(_zeroCenter, data.attr.hex, size);
-          data.attr.center = center;
-          data.label.updatePainter(offset: center, textAlign: TextAlign.center);
-          var s = PositiveSymbol(r: series.radius, count: 6, fixRotate: 0);
-          s.rotate = angleOffset;
-          data.setSymbol(s, false);
-          data.updateStyle(context, series);
-        });
-        _rBush.clear();
-        _rBush.addAll(nodes);
-      },
+      (nodes) => layoutData(nodes, type),
       (node, type) {
         Map<String, dynamic> dm = {};
         dm['center'] = node.attr.center;
@@ -120,17 +96,30 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
     context.addAnimationToQueue(an);
   }
 
+  void layoutData(List<HexbinData> dataList, LayoutType type) {
+    flat = series.flat;
+    radius = series.radius.toDouble();
+    var params = HexbinLayoutParams(series, width, height, radius.toDouble(), series.flat);
+    var hexLayout = series.layout;
+    hexLayout.onLayout(dataList, type, params);
+    flat = params.flat;
 
-  // @override
-  // void initData(List<HexbinData> dataList) {
-  //   each(dataList, (data, p1) {
-  //     data.dataIndex = p1;
-  //     data.groupIndex = 0;
-  //     data.attr = HexAttr(Hex(0, 0, 0));
-  //     data.cleanState();
-  //     data.updateStyle(context, series);
-  //   });
-  // }
+    ///坐标转换
+    final angleOffset = flat ? _flat.angle : _pointy.angle;
+    _zeroCenter = hexLayout.computeZeroCenter(params);
+    final size = Size.square(radius * 1);
+    each(dataList, (data, i) {
+      var center = hexToPixel(_zeroCenter, data.attr.hex, size);
+      data.attr.center = center;
+      data.label.updatePainter(offset: center, textAlign: TextAlign.center);
+      var s = PositiveSymbol(r: series.radius, count: 6, fixRotate: 0);
+      s.rotate = angleOffset;
+      data.setSymbol(s, false);
+      data.updateStyle(context, series);
+    });
+    _rBush.clear();
+    _rBush.addAll(dataList);
+  }
 
   ///计算方块中心坐标(center表示Hex(0,0,0)的位置)
   ///将Hex转换为Pixel

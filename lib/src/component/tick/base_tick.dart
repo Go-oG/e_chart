@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-abstract class BaseTick extends ChartNotifier2{
+abstract class BaseTick extends ChartNotifier2 {
   bool show;
 
   ///坐标轴刻度是否朝内
@@ -26,4 +26,9 @@ abstract class BaseTick extends ChartNotifier2{
     this.interval = -1,
   });
 
+  @override
+  void dispose() {
+    lineStyle = LineStyle.empty;
+    super.dispose();
+  }
 }

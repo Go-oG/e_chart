@@ -5,4 +5,5 @@ class AngleAxisLayoutResult extends AxisLayoutResult {
   final List<Arc> splitList;
 
   AngleAxisLayoutResult(this.arc, this.splitList, super.line, super.tick, super.label);
+
 }

@@ -1,8 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
-import '../core/view/render_node.dart';
-
 ///坐标系
 abstract class Coord extends ChartNotifier<Command> {
   late final String id;

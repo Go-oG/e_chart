@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///行为分发器
 ///用于程序模拟用户操作
-class ActionDispatcher {
+class ActionDispatcher extends Disposable {
   final Set<Fun2<ChartAction, bool>> _callSet = {};
 
   ActionDispatcher();
@@ -15,8 +15,10 @@ class ActionDispatcher {
     _callSet.remove(call);
   }
 
+  @override
   void dispose() {
     _callSet.clear();
+    super.dispose();
   }
 
   void dispatch(ChartAction action) {

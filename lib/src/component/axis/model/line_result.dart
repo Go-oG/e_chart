@@ -1,6 +1,8 @@
 import 'dart:ui';
 
-class LineResult{
+import '../../../core/disposable.dart';
+
+class LineResult extends Disposable{
   final int index;
   final int maxIndex;
   final Offset start;

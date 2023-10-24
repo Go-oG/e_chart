@@ -7,7 +7,6 @@ import '../../component/index.dart';
 import '../../model/index.dart';
 import '../../utils/log_util.dart';
 import 'chart_render.dart';
-import '../view/view.dart';
 import 'ccanvas.dart';
 
 class DefaultRender extends ChartRender {
@@ -26,8 +25,7 @@ class DefaultRender extends ChartRender {
     legendView.measure(w, h);
 
     h -= legendView.height;
-    List<ChartView> renderList = context.coordList;
-    for (var v in renderList) {
+    for (var v in context.coordList) {
       v.measure(parentWidth, parentHeight - legendView.height);
     }
   }

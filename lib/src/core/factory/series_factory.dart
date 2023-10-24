@@ -9,7 +9,7 @@ class SeriesFactory {
   SeriesFactory._();
 
   factory SeriesFactory() => _instance;
-  final List<SeriesConvert> _convertList = [];
+  late final List<SeriesConvert> _convertList = [];
 
   void addConvert(SeriesConvert convert) {
     _convertList.insert(0, convert);

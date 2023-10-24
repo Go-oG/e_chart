@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 ///负责处理和布局所有的子View
 ///包括了Brush、ToolTip相关组件
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
-  final T props;
+  T? _props;
+  T get props => _props!;
   final ViewPort viewPort = ViewPort.zero();
 
   ///存储内容的边界
@@ -13,11 +14,12 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   BrushView? _brushView;
   ToolTipView? _tipView;
 
-  CoordLayout(this.props) : super() {
+  CoordLayout(T props) : super() {
+    _props = props;
     layoutParams = props.layoutParams;
   }
 
-  CoordType get coordType=>props.coordSystem;
+  CoordType get coordType => props.coordSystem;
 
   @override
   void onCreate() {
@@ -32,6 +34,14 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
       _tipView = ToolTipView(toolTip);
       addView(_tipView!);
     }
+  }
+
+  @override
+  void onDestroy() {
+    _props=null;
+    _brushView = null;
+    _tipView = null;
+    super.onDestroy();
   }
 
   ToolTip? findToolTip() {
@@ -143,5 +153,4 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   @override
   bool get freeLongPress => props.freeLongPress;
-
 }

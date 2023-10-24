@@ -10,7 +10,7 @@ import 'package:vector_math/vector_math.dart' as vector;
 ///处理手势分发(click,hover,doubleClick,longPress,scale,drag)
 ///手势处理部分来源:https://github.com/taodo2291/xgesture_flutter
 class GestureDispatcher {
-  final Set<ChartGesture> _gestureNodeSet = {};
+  Set<ChartGesture> _gestureNodeSet = {};
   final bool enableDoubleTap;
   final bool enableDrag;
   final bool enableScale;
@@ -57,10 +57,11 @@ class GestureDispatcher {
     _longPressNodeSet.clear();
     _dragNodeList.clear();
     _scaleNodeList.clear();
-    for (ChartGesture gesture in _gestureNodeSet) {
+    var old = _gestureNodeSet;
+    _gestureNodeSet = {};
+    for (ChartGesture gesture in old) {
       gesture.clear();
     }
-    _gestureNodeSet.clear();
   }
 
   bool _allowGesture = true;

@@ -27,6 +27,16 @@ class RadarCoordImpl extends RadarCoord {
     }
   }
 
+  @override
+  void onDestroy() {
+    axisMap.forEach((key, value) {
+      value.dispose();
+    });
+    axisMap.clear();
+    splitList.clear();
+    super.onDestroy();
+  }
+
   Size measureSize = Size.zero;
 
   @override

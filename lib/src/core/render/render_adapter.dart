@@ -1,7 +1,11 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 
 import 'chart_render.dart';
+import 'default_render.dart';
 
 ///该类负责将Flutter原生的布局、渲染流程映射到我们的ChartRender中
 class RenderAdapter extends RenderBox {
@@ -9,31 +13,51 @@ class RenderAdapter extends RenderBox {
   BoxConstraints? oldConstraints;
   Size oldSize = Size.zero;
   ChartRender? _render;
+  TickerProvider? _provider;
 
-  ChartRender get render => _render!;
+  RenderAdapter(ChartOption option, Size? size, this._provider) {
+    _initRender(option, _provider!, size);
+  }
 
-  set render(ChartRender? r) {
-    if (_render == r) {
-      markNeedsPaint();
+  void onUpdateRender(ChartOption option, Size? size, TickerProvider provider) {
+    Logger.i('onUpdateRender');
+    _provider=provider;
+    _disPoseRender(_render);
+    _render = null;
+
+    ///直接重建
+    _initRender(option, provider, size);
+    _clearOldLayoutSize();
+    _render?.onStart();
+    markNeedsLayout();
+    markNeedsCompositingBitsUpdate();
+    markNeedsSemanticsUpdate();
+  }
+
+  void onUnmountRender() {
+    _disPoseRender(_render);
+  }
+
+  void _disPoseRender(ChartRender? render) {
+    if (render == null) {
       return;
     }
-    var old = _render;
-    _render = r;
-    r?.onStart();
-    onMeasure();
-    onLayout();
-    didUpdateRender(r, old);
+    render.clearListener();
+    render.onStop();
+    try {
+      render.dispose();
+    } catch (e) {
+      Logger.e(e);
+    }
   }
 
-  RenderAdapter(ChartRender render, this.defaultSize) {
-    _render = render;
-  }
+  void _initRender(ChartOption option, TickerProvider provider, Size? size) {
+    defaultSize = size;
+    oldSize=Size.zero;
 
-  @override
-  void attach(covariant PipelineOwner owner) {
-    super.attach(owner);
-    _render?.clearListener();
-    _render?.addListener(() {
+    var ra = PlatformDispatcher.instance.views.first.devicePixelRatio;
+    var render = DefaultRender(option, provider, ra);
+    render.addListener(() {
       var c = render.value;
       if (c.code == Command.invalidate.code) {
         markNeedsCompositingBitsUpdate();
@@ -43,14 +67,30 @@ class RenderAdapter extends RenderBox {
         markNeedsLayout();
       }
     });
+    option.calendarList;
+    option.addListener(() {
+      var c = option.value;
+      if (c == Command.configChange) {
+        onUpdateRender(option, defaultSize, provider);
+      }
+    });
+    render.onCreate();
+    _render = render;
+  }
+
+  void _clearOldLayoutSize(){
+    oldConstraints=null;
+    oldSize=Size.zero;
+  }
+
+  @override
+  void attach(covariant PipelineOwner owner) {
+    super.attach(owner);
     _render?.onStart();
-    _render?.context.gestureDispatcher.enable();
   }
 
   @override
   void detach() {
-    _render?.context.gestureDispatcher.disable();
-    _render?.clearListener();
     _render?.onStop();
     super.detach();
   }
@@ -58,6 +98,8 @@ class RenderAdapter extends RenderBox {
   @override
   void dispose() {
     _render?.dispose();
+    _render = null;
+    _provider=null;
     super.dispose();
   }
 
@@ -65,6 +107,7 @@ class RenderAdapter extends RenderBox {
   void performResize() {
     if (oldConstraints != null && constraints == oldConstraints && oldSize != Size.zero) {
       size = oldSize;
+      Logger.i('performResize() 前后约束不变 不进行测量');
       return;
     }
     oldConstraints = constraints;
@@ -76,7 +119,6 @@ class RenderAdapter extends RenderBox {
     double h = adjustSize(maxH, minH, defaultSize?.height);
     size = Size(w, h);
     oldSize = size;
-    onMeasure();
   }
 
   double adjustSize(double maxSize, double minSize, double? defaultSize) {
@@ -107,8 +149,8 @@ class RenderAdapter extends RenderBox {
   @override
   void performLayout() {
     super.performLayout();
+    onMeasure();
     onLayout();
-    markNeedsSemanticsUpdate();
   }
 
   @override
@@ -124,26 +166,6 @@ class RenderAdapter extends RenderBox {
 
   @override
   bool get alwaysNeedsCompositing => true;
-
-  void didUpdateRender(ChartRender? newRender, ChartRender? oldRender) {
-    if (!attached) {
-      return;
-    }
-    oldRender?.clearListener();
-    newRender?.clearListener();
-    newRender?.addListener(() {
-      var c = newRender.value;
-      if (c.code == Command.invalidate.code) {
-        markNeedsPaint();
-      } else if (c.code == Command.reLayout.code) {
-        markNeedsLayout();
-      }
-    });
-    newRender?.context.gestureDispatcher.enable();
-    markNeedsSemanticsUpdate();
-    markNeedsCompositingBitsUpdate();
-    markNeedsPaint();
-  }
 
   @override
   bool hitTestSelf(Offset position) => true;

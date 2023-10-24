@@ -1,17 +1,27 @@
 import 'package:e_chart/e_chart.dart';
 
-class LabelResult {
+class LabelResult extends Disposable {
   final int originIndex;
   final int index;
   final int maxIndex;
   final TextDraw textConfig;
-  final List<LabelResult> minorLabel;
+   List<LabelResult> minorLabel;
 
   LabelResult(
     this.originIndex,
     this.index,
     this.maxIndex,
-    this.textConfig,[
+    this.textConfig, [
     this.minorLabel = const [],
   ]);
+
+  @override
+  void dispose() {
+    textConfig.dispose();
+    each(minorLabel, (p0, p1) {
+      p0.dispose();
+    });
+    minorLabel=[];
+    super.dispose();
+  }
 }

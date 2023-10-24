@@ -17,6 +17,12 @@ abstract class GestureView extends ChartView {
     _gesture = buildGesture;
   }
 
+  @override
+  void onDestroy() {
+    _gesture.clear();
+    super.onDestroy();
+  }
+
   @mustCallSuper
   @override
   void onLayoutEnd() {

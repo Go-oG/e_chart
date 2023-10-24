@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///坐标轴主题
-class AxisTheme {
+class AxisTheme extends Disposable{
   bool showAxisLine = true;
   Color axisLineColor = const Color(0xFF000000);
   num axisLineWidth = 1;

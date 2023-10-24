@@ -15,12 +15,14 @@ class ToolTipMenu {
 }
 
 class MenuItem {
-  DynamicText title;
-  LabelStyle titleStyle;
-  DynamicText? desc;
-  LabelStyle? descStyle;
+  static final MenuItem empty=MenuItem(DynamicText.empty, LabelStyle.empty);
 
-  ChartSymbol? symbol;
+
+  final DynamicText title;
+  final LabelStyle titleStyle;
+  final DynamicText? desc;
+  final LabelStyle? descStyle;
+  final ChartSymbol? symbol;
 
   MenuItem(
     this.title,

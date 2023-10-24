@@ -1,5 +1,4 @@
-
-import 'dart:ui'  as ui;
+import 'dart:ui' as ui;
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
@@ -31,7 +30,7 @@ class LabelStyle {
   LabelStyle copy({
     bool? show,
     double? rotate,
-   TextStyle? textStyle,
+    TextStyle? textStyle,
     AreaStyle? decoration,
     OverFlow? overFlow,
     String? ellipsis,

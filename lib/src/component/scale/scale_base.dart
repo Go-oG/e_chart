@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///将给定的domain映射到range
-abstract class BaseScale<D, R extends num> {
+abstract class BaseScale<D, R extends num> extends Disposable {
   ///表示域的范围(数据)
   late final List<D> domain;
 
@@ -14,6 +14,13 @@ abstract class BaseScale<D, R extends num> {
     }
     this.domain = List.from(domain);
     this.range = List.from(range);
+  }
+
+  @override
+  void dispose() {
+    domain.clear();
+    range.clear();
+    super.dispose();
   }
 
   BaseScale<D, R> copyWithRange(List<R> range);

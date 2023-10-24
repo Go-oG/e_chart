@@ -8,7 +8,7 @@ abstract class ChartView extends RenderNode {
   Context get context => _context!;
 
   ///绘图缓存(可以优化绘制效率)
-  LayerHandle<Layer> cacheLayer = LayerHandle();
+  late LayerHandle<Layer> cacheLayer = LayerHandle();
 
   ///=========生命周期回调方法开始==================
   ///所有的生命周期函数都是由Context进行调用
@@ -34,12 +34,20 @@ abstract class ChartView extends RenderNode {
   ///当该方法被调用时标志着当前View即将被销毁
   ///你可以在这里进行资源释放等操作
   void destroy() {
+    onDestroy();
+    dispose();
+  }
+
+  @override
+  void dispose() {
+    clearCommand();
+    _defaultCommandCallback = null;
     if (cacheLayer.layer != null) {
       cacheLayer.layer == null;
     }
     unBindSeries();
-    onDestroy();
     _context = null;
+    super.dispose();
   }
 
   void onDestroy() {}
@@ -181,8 +189,14 @@ abstract class ChartView extends RenderNode {
 
   @override
   void markDirty() {
-    clearCacheLayer();
     super.markDirty();
+    clearCacheLayer();
+  }
+
+  @override
+  void markDirtyWithChild() {
+    super.markDirtyWithChild();
+    clearCacheLayer();
   }
 
   bool get useSingleLayer => false;
@@ -211,10 +225,10 @@ abstract class ChartView extends RenderNode {
   ChartSeries? _series;
 
   ///存储命令执行相关的操作
-  final Map<Command, VoidFun1<Command>> _commandMap = {};
+  Map<Command, VoidFun1<Command>> _commandMap = {};
 
   void clearCommand() {
-    _commandMap.clear();
+    _commandMap = {};
   }
 
   void registerCommand(Command c, VoidFun1<Command> callback, [bool allowReplace = true]) {
@@ -274,15 +288,15 @@ abstract class ChartView extends RenderNode {
       Logger.w('$c 无法找到能出来该命令相关的回调');
       return;
     }
-   // try {
-      op.call(c);
+    // try {
+    op.call(c);
     // } catch (e) {
     //   Logger.e(e);
     // }
   }
 
   void onInvalidateCommand(covariant Command c) {
-    invalidate();
+    requestDraw();
   }
 
   void onRelayoutCommand(covariant Command c) {
@@ -297,7 +311,7 @@ abstract class ChartView extends RenderNode {
   }
 
   void onUpdateDataCommand(covariant Command c) {
-    invalidate();
+    requestDraw();
   }
 
   ///分配索引
@@ -310,5 +324,4 @@ abstract class ChartView extends RenderNode {
   bool ignoreAllocateDataIndex() {
     return false;
   }
-
 }

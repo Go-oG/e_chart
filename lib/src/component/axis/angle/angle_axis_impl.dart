@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 ///角度轴(是一个完整的环,类似于Y轴)
 class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult, C> {
   static const int maxAngle = 360;
-  final tmpTick = MainTick();
-  final MinorTick tmpMinorTick = MinorTick();
 
   AngleAxisImpl(super.context, super.coord, super.axis, {super.axisIndex});
 
@@ -91,8 +89,8 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
 
     List<TickResult> tickList = [];
 
-    MainTick tick = axis.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? BaseAxisImpl.tmpMinorTick;
     int minorSN = minorTick.splitNumber;
     if (minorSN < 0) {
       minorSN = 0;
@@ -149,8 +147,8 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     }
 
     final num angleInterval = dir * maxAngle / count;
-    MainTick tick = axis.axisTick.tick ?? tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ?? tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
+    MinorTick minorTick = axis.minorTick?.tick ?? BaseAxisImpl.tmpMinorTick;
 
     AxisLabel axisLabel = axis.axisLabel;
     num r = attrs.radius.last;
@@ -410,5 +408,11 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   List<num> dataToAngle(dynamic data) {
     checkDataType(data);
     return scale.toRange(data);
+  }
+
+  @override
+  void dispose() {
+    _axisPointerTD.dispose();
+    super.dispose();
   }
 }

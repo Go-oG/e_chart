@@ -5,8 +5,13 @@ import 'package:flutter/material.dart';
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
-  late AngleAxisImpl<PolarCoord> _angleAxis;
-  late RadiusAxisImpl<PolarCoord> _radiusAxis;
+  AngleAxisImpl<PolarCoord>? _angleAxis;
+
+  AngleAxisImpl<PolarCoord> get angleAxis => _angleAxis!;
+
+  RadiusAxisImpl<PolarCoord>? _radiusAxis;
+
+  RadiusAxisImpl<PolarCoord> get radiusAxis => _radiusAxis!;
   Offset center = Offset.zero;
 
   PolarCoordImpl(super.props);
@@ -16,6 +21,15 @@ class PolarCoordImpl extends PolarCoord {
     super.onCreate();
     _angleAxis = AngleAxisImpl(context, this, props.angleAxis);
     _radiusAxis = RadiusAxisImpl(context, this, props.radiusAxis);
+  }
+
+  @override
+  void onDestroy() {
+    _angleAxis?.dispose();
+    _angleAxis = null;
+    _radiusAxis?.dispose();
+    _radiusAxis = null;
+    super.onDestroy();
   }
 
   @override
@@ -31,8 +45,8 @@ class PolarCoordImpl extends PolarCoord {
     double size = m.min(parentWidth, parentHeight);
     measureSize = Size(parentWidth, parentHeight);
     size = props.radius.last.convert(size) * 2;
-    _angleAxis.doMeasure(size, size);
-    _radiusAxis.doMeasure(size, size);
+    angleAxis.doMeasure(size, size);
+    radiusAxis.doMeasure(size, size);
     return Size.square(size);
   }
 
@@ -44,23 +58,23 @@ class PolarCoordImpl extends PolarCoord {
     double ir = props.radius.length > 1 ? props.radius.first.convert(size) : 0;
     double or = width / 2;
 
-    AngleAxis angleAxis = props.angleAxis;
     var angleAttrs = AngleAxisAttrs(
       center,
-      angleAxis.offsetAngle.toDouble(),
+      props.angleAxis.offsetAngle.toDouble(),
       [ir, or],
       scaleY,
       translationY,
-      clockwise: angleAxis.clockwise,
+      clockwise: props.angleAxis.clockwise,
     );
-    _angleAxis.doLayout(angleAttrs, _getAngleDataSet());
+
+    angleAxis.doLayout(angleAttrs, _getAngleDataSet());
 
     num angle = props.radiusAxis.offsetAngle;
     Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
     Offset eo = circlePoint(or, angle, center);
 
     var radiusAttrs = RadiusAxisAttrs(center, angle, 1, 1, contentBox, so, eo);
-    _radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
+    radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
 
     for (var c in children) {
       c.layout(0, 0, width, height);
@@ -93,18 +107,18 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   void onDraw(CCanvas canvas) {
-    _angleAxis.draw(canvas, mPaint, selfBoxBound);
-    _radiusAxis.draw(canvas, mPaint, selfBoxBound);
+    angleAxis.draw(canvas, mPaint, selfBoxBound);
+    radiusAxis.draw(canvas, mPaint, selfBoxBound);
   }
 
   @override
   PolarPosition dataToPosition(dynamic radiusData, dynamic angleData) {
     checkDataType(radiusData);
     checkDataType(angleData);
-    List<num> angles = _angleAxis.dataToAngle(angleData);
-    List<num> r = _radiusAxis.dataToRadius(radiusData);
+    List<num> angles = angleAxis.dataToAngle(angleData);
+    List<num> r = radiusAxis.dataToRadius(radiusData);
     if (props.radius.length > 1) {
-      double ir = _radiusAxis.attrs.start.distance2(_radiusAxis.attrs.center);
+      double ir = radiusAxis.attrs.start.distance2(radiusAxis.attrs.center);
       for (int i = 0; i < r.length; i++) {
         r[i] = r[i] + ir;
       }
@@ -118,34 +132,34 @@ class PolarCoordImpl extends PolarCoord {
   @override
   BaseScale<dynamic, num> getScale(bool angleAxis) {
     if (angleAxis) {
-      return _angleAxis.scale;
+      return this.angleAxis.scale;
     }
-    return _radiusAxis.scale;
+    return radiusAxis.scale;
   }
 
   @override
   num getStartAngle() {
-    return _angleAxis.axis.offsetAngle;
+    return angleAxis.axis.offsetAngle;
   }
 
   @override
   List<double> getRadius() {
-    return _angleAxis.attrs.radius;
+    return angleAxis.attrs.radius;
   }
 
   @override
   PolarPosition dataToAnglePosition(dynamic angleData) {
     checkDataType(angleData);
-    List<num> angles = _angleAxis.dataToAngle(angleData);
+    List<num> angles = angleAxis.dataToAngle(angleData);
     return PolarPosition(center, [], angles);
   }
 
   @override
   PolarPosition dataToRadiusPosition(dynamic radiusData) {
     checkDataType(radiusData);
-    List<num> r = _radiusAxis.dataToRadius(radiusData);
+    List<num> r = radiusAxis.dataToRadius(radiusData);
     if (props.radius.length > 1) {
-      double ir = _radiusAxis.attrs.start.distance2(_radiusAxis.attrs.center);
+      double ir = radiusAxis.attrs.start.distance2(radiusAxis.attrs.center);
       for (int i = 0; i < r.length; i++) {
         r[i] = r[i] + ir;
       }
@@ -169,10 +183,10 @@ class PolarCoordImpl extends PolarCoord {
   }
 
   @override
-  AxisType get angleAxisType => _angleAxis.axisType;
+  AxisType get angleAxisType => angleAxis.axisType;
 
   @override
-  AxisType get radiusAxisType => _radiusAxis.axisType;
+  AxisType get radiusAxisType => radiusAxis.axisType;
 }
 
 abstract class PolarCoord extends CircleCoordLayout<Polar> {

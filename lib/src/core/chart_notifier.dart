@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 
 class ChartNotifier<T> extends Disposable implements ValueListenable<T> {
   final bool equalsObject;
-  Set<VoidCallback> _listenerSet = {};
+  late Set<VoidCallback> _listenerSet = {};
 
   ChartNotifier(this._value, [this.equalsObject = false]);
 

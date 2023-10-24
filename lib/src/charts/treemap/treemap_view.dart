@@ -48,7 +48,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreemapLayout> {
   void onDragMove(Offset offset, Offset diff) {
     tx += diff.dx;
     ty += diff.dy;
-    invalidate();
+    requestDraw();
   }
 
   @override

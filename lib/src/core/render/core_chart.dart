@@ -1,7 +1,6 @@
+
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/render/chart_render.dart';
 import 'package:flutter/material.dart';
-import 'default_render.dart';
 import 'render_adapter.dart';
 
 class Chart extends StatefulWidget {
@@ -16,58 +15,36 @@ class Chart extends StatefulWidget {
 }
 
 class ChartState extends State<Chart> with TickerProviderStateMixin {
-  ChartRender? render;
-
-  @override
-  void initState() {
-    super.initState();
-    render = DefaultRender(widget.option, this, 1);
-  }
-
-  @override
-  void didUpdateWidget(covariant Chart oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.option != widget.option) {
-      render?.onStop();
-      render?.dispose();
-      render = DefaultRender(widget.option, this, 1);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child: _buildPainter(widget.option),
+      child: _InnerWidget(widget.option, this, null),
     );
-  }
-
-  Widget _buildPainter(ChartOption config) {
-    var devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-    render?.context.devicePixelRatio = devicePixelRatio;
-    return _InnerWidget(render!, null);
   }
 }
 
 class _InnerWidget extends LeafRenderObjectWidget {
-  final ChartRender render;
+  final ChartOption option;
   final Size? size;
 
-  const _InnerWidget(this.render, this.size, {super.key});
+  final TickerProvider tickerProvider;
+
+  const _InnerWidget(this.option, this.tickerProvider, this.size);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderAdapter(render, size);
+    return RenderAdapter(option,size,tickerProvider);
   }
 
   @override
   void updateRenderObject(BuildContext context, RenderAdapter renderObject) {
-    renderObject.render = render;
+    renderObject.onUpdateRender(option, size, tickerProvider);
   }
 
   @override
   void didUnmountRenderObject(RenderAdapter renderObject) {
-    renderObject.render = null;
+    renderObject.onUnmountRender();
   }
 }

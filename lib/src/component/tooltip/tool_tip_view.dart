@@ -1,5 +1,3 @@
-import 'dart:math' as m;
-
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/title/title_view.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +7,7 @@ import 'tool_tip_item_view.dart';
 
 ///单个坐标系只有一个ToolTip
 class ToolTipView extends LinearLayout {
-  final ToolTip toolTip;
+  ToolTip toolTip;
   ToolTipMenu? menu;
 
   ToolTipView(this.toolTip) : super(direction: Direction.vertical) {
@@ -18,6 +16,14 @@ class ToolTipView extends LinearLayout {
   }
 
   TitleView? titleView;
+
+  @override
+  void onDestroy() {
+    menu = null;
+    toolTip = ToolTip(show: false);
+    titleView = null;
+    super.onDestroy();
+  }
 
   void updateView(ToolTipMenu? menu) {
     this.menu = menu;

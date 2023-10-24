@@ -3,16 +3,21 @@ import 'package:flutter/material.dart';
 
 ///整个图表渲染的开始
 abstract class ChartRender extends RenderNode {
-  late final Context context;
+  Context? _context;
+  Context get context => _context!;
+
   final ChartNotifier<Command> _notifier = ChartNotifier(Command.none);
+
+  Lifecycle _lifecycle = Lifecycle.none;
+
+  Lifecycle get lifecycle => _lifecycle;
 
   ChartRender(
     ChartOption option,
     TickerProvider tickerProvider, [
     double devicePixelRatio = 1,
   ]) {
-    context = Context(this, option, tickerProvider, devicePixelRatio);
-    context.onCreate();
+    _context = Context(this, option, tickerProvider, devicePixelRatio);
   }
 
   @override
@@ -39,13 +44,12 @@ abstract class ChartRender extends RenderNode {
     if (context.hasEventListener(EventType.rendered)) {
       context.dispatchEvent(RenderedEvent.rendered);
     }
-
   }
 
   void onDraw(CCanvas canvas);
 
   @override
-  void invalidate() {
+  void requestDraw() {
     if (inDrawing) {
       return;
     }
@@ -57,19 +61,33 @@ abstract class ChartRender extends RenderNode {
     _notifier.value = Command.reLayout;
   }
 
+  void onCreate() {
+    _lifecycle = Lifecycle.created;
+    context.onCreate();
+
+  }
+
   void onStart() {
+    _lifecycle = Lifecycle.starting;
+    context.gestureDispatcher.enable();
     context.onStart();
   }
 
   void onStop() {
+    _lifecycle = Lifecycle.stop;
+    context.gestureDispatcher.disable();
+    clearListener();
     context.onStop();
   }
 
   @override
   void dispose() {
-    context.dispatchEvent(ChartDestroyEvent.single);
-    context.destroy();
+    _context?.dispatchEvent(ChartDisposeEvent.single);
+    _context?.dispose();
+    _context = null;
+    _notifier.clearListener();
     super.dispose();
+    _lifecycle = Lifecycle.dispose;
   }
 
   void addListener(VoidCallback call) => _notifier.addListener(call);
@@ -77,4 +95,12 @@ abstract class ChartRender extends RenderNode {
   void clearListener() => _notifier.clearListener();
 
   Command get value => _notifier.value;
+}
+
+enum Lifecycle {
+  none,
+  created,
+  starting,
+  stop,
+  dispose,
 }

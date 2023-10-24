@@ -9,6 +9,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
   void initAxis() {
     axisMap.clear();
+
     ///翻转方向
     var direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
@@ -21,6 +22,13 @@ class ParallelCoordImpl extends ParallelCoord {
   void onCreate() {
     super.onCreate();
     initAxis();
+  }
+
+  @override
+  void onDestroy() {
+    axisMap.forEach((key, value) {value.dispose();});
+    axisMap.clear();
+    super.onDestroy();
   }
 
   @override
@@ -153,7 +161,8 @@ class ParallelCoordImpl extends ParallelCoord {
         end = rect.topRight.translate(-textSize[1].width, 0);
       }
 
-      var attrs = ParallelAxisAttrs(1, translationX, rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
+      var attrs =
+          ParallelAxisAttrs(1, translationX, rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
       node.doLayout(attrs, dataSet);
     }
 

@@ -35,4 +35,7 @@ class ChartOption extends ChartNotifier<Command> {
       this.theme = theme;
     }
   }
+
+
+
 }

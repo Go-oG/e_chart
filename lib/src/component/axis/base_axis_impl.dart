@@ -6,18 +6,71 @@ import 'package:flutter/material.dart';
 
 abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisLayoutResult, C extends CoordLayout>
     extends ChartNotifier2 {
+  static final tmpTick = MainTick();
+  static final MinorTick tmpMinorTick = MinorTick();
+
   final int axisIndex;
-  final C coord;
-  final Context context;
-  final T axis;
-  late L attrs;
-  late BaseScale scale;
-  late R layoutResult;
+  C? _coord;
 
-  late final AxisTitleNode titleNode;
+  C get coord => _coord!;
 
-  BaseAxisImpl(this.context, this.coord, this.axis, {this.axisIndex = 0}) {
+  Context? _context;
+
+  Context get context => _context!;
+
+  T? _axis;
+
+  T get axis => _axis!;
+
+  L? _attrs;
+
+  L get attrs => _attrs!;
+
+  set attrs(L l) => _attrs = l;
+
+  BaseScale? _scale;
+
+  BaseScale get scale => _scale!;
+
+  set scale(BaseScale bs) {
+    _scale?.dispose();
+    _scale = bs;
+  }
+
+  R? _layoutResult;
+
+  R get layoutResult => _layoutResult!;
+
+  set layoutResult(R r) {
+    _layoutResult?.dispose();
+    _layoutResult = r;
+  }
+
+  AxisTitleNode? _titleNode;
+
+  AxisTitleNode get titleNode => _titleNode!;
+
+  set titleNode(AxisTitleNode titleNode) {
+    _titleNode?.dispose();
+    _titleNode = titleNode;
+  }
+
+  BaseAxisImpl(this._context, this._coord, this._axis, {this.axisIndex = 0}) {
     titleNode = AxisTitleNode(axis.axisName);
+  }
+
+  @override
+  void dispose() {
+    _coord = null;
+    _context = null;
+    _axis = null;
+    _attrs = null;
+    layoutResult.dispose();
+    titleNode.dispose();
+    scale.dispose();
+    titleNode = AxisTitleNode(null);
+
+    super.dispose();
   }
 
   void doMeasure(double parentWidth, double parentHeight) {}
@@ -25,6 +78,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   void doLayout(L attrs, List<dynamic> dataSet) {
     this.attrs = attrs;
     scale = onBuildScale(attrs, dataSet);
+    titleNode.config.dispose();
     titleNode.config = onLayoutAxisName();
     layoutResult = onLayout(attrs, scale);
   }
@@ -33,6 +87,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     this.attrs = attrs;
     List<dynamic> dl = scale.domain;
     scale = onBuildScale(attrs, dl);
+    titleNode.config.dispose();
     titleNode.config = onLayoutAxisName();
     layoutResult = onLayout(attrs, scale);
   }

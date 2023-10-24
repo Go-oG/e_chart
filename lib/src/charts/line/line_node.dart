@@ -2,9 +2,9 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///该节点的存在是为了优化折线图在大数据量下的绘制
-class LineNode {
-  final int groupIndex;
-  final LineGroupData data;
+class LineNode <T extends StackItemData,P extends StackGroupData<T,P>>{
+  final StackData<T,P> data;
+
   final List<Offset?> offsetList;
   final Map<StackData, LineSymbolNode> symbolMap;
   final List<OptLinePath> borderList;

@@ -769,7 +769,7 @@ class CalendarView extends ChartView {
     if (_props.maxChooseCount != null && _props.maxChooseCount! >= 1 && _selectSet.length > _props.maxChooseCount!) {
       _changeSelectData(_parsePropsDefaultDate(_props.defaultDate));
     }
-    invalidate();
+    requestDraw();
   }
 
   void changeChooseRange(DateRange? range) {
@@ -795,11 +795,11 @@ class CalendarView extends ChartView {
       }
       if (hasChange) {
         _changeSelectData(_parsePropsDefaultDate(_props.defaultDate));
-        invalidate();
+        requestDraw();
       }
     } else {
       _changeSelectData(_parsePropsDefaultDate(_props.defaultDate));
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -819,7 +819,7 @@ class CalendarView extends ChartView {
       }
       if (hasChange) {
         _changeSelectData(_parsePropsDefaultDate(_props.defaultDate));
-        invalidate();
+        requestDraw();
       }
     }
   }
@@ -830,7 +830,7 @@ class CalendarView extends ChartView {
     if (oldSize != newSize) {
       _changeSelectData(_parsePropsDefaultDate(list));
       _props.defaultDate = list;
-      invalidate();
+      requestDraw();
     } else if (newSize > 0) {
       var oldKeySet = <String>{};
       for (var value in _oldSelectSet) {
@@ -851,7 +851,7 @@ class CalendarView extends ChartView {
         }
         _props.defaultDate = list;
         _changeSelectData(_parsePropsDefaultDate(_props.defaultDate));
-        invalidate();
+        requestDraw();
       }
     }
   }
@@ -863,7 +863,7 @@ class CalendarView extends ChartView {
     _props.year = year;
     _props.month = month;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void changeShapeSize(num shapeSize) {
@@ -872,7 +872,7 @@ class CalendarView extends ChartView {
     }
     _props.shapeSize = shapeSize;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void changeDividerHeight(num dividerHeight) {
@@ -881,7 +881,7 @@ class CalendarView extends ChartView {
     }
     _props.dividerHeight = dividerHeight;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void changeHeaderHeight(num headerHeight) {
@@ -890,7 +890,7 @@ class CalendarView extends ChartView {
     }
     _props.headerHeight = headerHeight;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void changeMarkingSize(double markingSize) {
@@ -899,7 +899,7 @@ class CalendarView extends ChartView {
     }
     _props.markingSize = markingSize;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void changeMarkingTopMargin(double margin) {
@@ -908,7 +908,7 @@ class CalendarView extends ChartView {
     }
     _props.markingTopMargin = margin;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void changeSunFirst(bool sunFirst) {
@@ -917,7 +917,7 @@ class CalendarView extends ChartView {
     }
     _props.sunFirst = sunFirst;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void changeNeedDrawMarking(bool needDrawMarking) {
@@ -926,7 +926,7 @@ class CalendarView extends ChartView {
     }
     _props.needDrawMarking = needDrawMarking;
     _markReCreateData();
-    invalidate();
+    requestDraw();
   }
 
   void _markReCreateData() {
@@ -979,7 +979,7 @@ class CalendarView extends ChartView {
         var newData = _correctSelectData(node);
         if (newData != null) {
           _changeSelectData(newData);
-          invalidate();
+          requestDraw();
         }
         break;
       }

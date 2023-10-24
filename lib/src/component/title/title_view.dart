@@ -24,4 +24,13 @@ class TitleView extends ChartView {
   void onDraw(CCanvas canvas) {
     label.draw(canvas, mPaint);
   }
+
+  @override
+  void onDestroy() {
+    title = DynamicText.empty;
+    style = LabelStyle.empty;
+    label = TextDraw.empty;
+    super.onDestroy();
+  }
+
 }

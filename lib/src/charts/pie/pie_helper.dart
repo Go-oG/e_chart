@@ -73,6 +73,7 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
     allData = 0;
     each(dataList, (data, i) {
       data.dataIndex = i;
+      data.styleIndex = i;
       data.updateStyle(context, series);
       maxData = max([data.value, maxData]);
       minData = min([data.value, minData]);

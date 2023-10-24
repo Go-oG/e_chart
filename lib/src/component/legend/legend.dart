@@ -37,6 +37,28 @@ class Legend extends ChartNotifier2 {
     this.padding = EdgeInsets.zero,
     this.triggerOn = TriggerOn.click,
   });
+  Legend.empty({
+    this.show = false,
+    this.scroll = false,
+    this.data,
+    this.labelPosition = Position.right,
+    this.vAlign = Align2.start,
+    this.hAlign = Align2.center,
+    this.offset = Offset.zero,
+    this.direction = Direction.horizontal,
+    this.itemGap = 10,
+    this.allowSelectMulti = true,
+    this.inactiveStyle =  AreaStyle.empty,
+    this.inactiveBorderStyle = LineStyle.empty,
+    this.animator,
+    this.decoration,
+    this.padding = EdgeInsets.zero,
+    this.triggerOn = TriggerOn.click,
+  });
+
+
+
+
 
   void inverseSelect() {
     value = Command.inverseSelectLegend;

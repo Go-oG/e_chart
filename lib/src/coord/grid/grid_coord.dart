@@ -25,6 +25,19 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
+  void onDestroy() {
+    xMap.forEach((key, value) {
+      value.dispose();
+    });
+    yMap.forEach((key, value) {
+      value.dispose();
+    });
+    xMap.clear();
+    yMap.clear();
+    super.onDestroy();
+  }
+
+  @override
   Size onMeasure(double parentWidth, double parentHeight) {
     var lp = layoutParams;
     double pw = lp.width.convert(parentWidth - padding.horizontal),
@@ -295,7 +308,7 @@ class GridCoordImpl extends GridCoord {
         xAxis ? xMap.values.toList(growable: false) : yMap.values.toList(growable: false),
         xAxis ? Direction.horizontal : Direction.vertical));
     if (notifyInvalidate) {
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -357,7 +370,7 @@ class GridCoordImpl extends GridCoord {
       } else {
         context.dispatchEvent(AxisScrollEvent(this, yMap.values.toList(growable: false), diff.dy, Direction.vertical));
       }
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -399,7 +412,7 @@ class GridCoordImpl extends GridCoord {
       ///TODO 缩放更新
       // context.dispatchEvent(AxisChangeEvent(this, [], null));
 
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -410,7 +423,7 @@ class GridCoordImpl extends GridCoord {
     super.onHoverStart(offset);
     if (needInvalidateAxisPointer(false)) {
       _axisPointerOffset = offset.translate(viewPort.scrollX.abs(), viewPort.scrollY.abs());
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -419,7 +432,7 @@ class GridCoordImpl extends GridCoord {
     super.onHoverMove(offset, last);
     if (needInvalidateAxisPointer(false)) {
       _axisPointerOffset = offset.translate(viewPort.scrollX.abs(), viewPort.scrollY.abs());
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -428,7 +441,7 @@ class GridCoordImpl extends GridCoord {
     super.onHoverEnd();
     if (needInvalidateAxisPointer(false)) {
       _axisPointerOffset = null;
-      invalidate();
+      requestDraw();
     }
   }
 
@@ -439,7 +452,7 @@ class GridCoordImpl extends GridCoord {
       if (!contentBox.contains(offset)) {
         _axisPointerOffset = null;
       }
-      invalidate();
+      requestDraw();
     }
   }
 

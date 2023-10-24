@@ -1,4 +1,6 @@
-class AxisAttrs {
+import 'package:e_chart/e_chart.dart';
+
+class AxisAttrs extends Disposable{
   //缩放比例
   final double scaleRatio;
   final int? splitCount;

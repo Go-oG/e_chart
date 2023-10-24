@@ -2,10 +2,12 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class LegendComponent extends FlexLayout {
-  late final Legend legend;
+  late Legend? _legend;
+
+  Legend get legend => _legend!;
 
   LegendComponent(Legend? legend) : super(align: Align2.center, direction: legend?.direction ?? Direction.horizontal) {
-    this.legend = legend ?? Legend(show: false);
+    _legend = legend ?? Legend(show: false);
   }
 
   late Align2 hAlign;
@@ -39,7 +41,7 @@ class LegendComponent extends FlexLayout {
           unselectedList.add(child.item);
         }
       }
-      invalidate();
+      requestDraw();
       context.dispatchEvent(LegendInverseSelectEvent(selectedList, unselectedList));
       return;
     }
@@ -58,7 +60,7 @@ class LegendComponent extends FlexLayout {
         selectedList.add(child.item);
       }
       if (count > 0) {
-        invalidate();
+        requestDraw();
         context.dispatchEvent(LegendSelectAllEvent(selectedList));
       }
       return;
@@ -78,7 +80,7 @@ class LegendComponent extends FlexLayout {
         unselectedList.add(child.item);
       }
       if (count > 0) {
-        invalidate();
+        requestDraw();
         context.dispatchEvent(LegendUnSelectedEvent(unselectedList));
       }
       return;
@@ -95,12 +97,13 @@ class LegendComponent extends FlexLayout {
 
   @override
   void onDestroy() {
-    legend.removeListener(handleCommand);
+    _legend?.removeListener(handleCommand);
+    _legend = null;
     super.onDestroy();
   }
 
   void loadData() {
-    if (!legend.show) {
+    if (_legend == null || !_legend!.show) {
       return;
     }
     List<LegendItem> dataList = [];
@@ -122,7 +125,7 @@ class LegendComponent extends FlexLayout {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
-    if (!legend.show || childCount <= 0) {
+    if (_legend == null || !legend.show || childCount <= 0) {
       return Size.zero;
     }
     return super.onMeasure(parentWidth, parentHeight);
@@ -130,14 +133,14 @@ class LegendComponent extends FlexLayout {
 
   @override
   void onLayout(double left, double top, double right, double bottom) {
-    if (!legend.show || childCount <= 0) {
+    if (_legend == null || !legend.show || childCount <= 0) {
       return;
     }
     super.onLayout(left, top, right, bottom);
   }
 
   void onChildClick(LegendItemView child) {
-    if (!legend.show) {
+    if (_legend == null || !legend.show) {
       return;
     }
 
@@ -154,11 +157,11 @@ class LegendComponent extends FlexLayout {
         context.dispatchEvent(LegendSelectChangeEvent(c.item));
       }
     }
-    invalidate();
+    requestDraw();
   }
 
   void onChildHover(LegendItemView child, bool select) {
-    if (!legend.show) {
+    if (_legend == null || !legend.show) {
       return;
     }
     if (child.isSelected && select) {
@@ -183,13 +186,13 @@ class LegendComponent extends FlexLayout {
         }
       }
     }
-    invalidate();
+    requestDraw();
   }
 }
 
 class LegendItemView extends GestureView with StateProvider {
-  final Legend legend;
-  final LegendItem item;
+  Legend legend;
+  LegendItem item;
   LabelStyle labelStyle = LabelStyle.empty;
 
   LegendItemView(this.legend, this.item) {
@@ -198,6 +201,18 @@ class LegendItemView extends GestureView with StateProvider {
 
   Offset symbolOffset = Offset.zero;
   TextDraw? label;
+
+  @override
+  void onDestroy() {
+    legend = Legend.empty();
+    item.dispose();
+    item = LegendItem.empty();
+    labelStyle = LabelStyle.empty;
+    symbolOffset = Offset.zero;
+    label?.dispose();
+    label = null;
+    super.onDestroy();
+  }
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {

@@ -7,22 +7,25 @@ import 'package:e_chart/e_chart.dart' as ec;
 ///一个Context 对应一个图表实例
 ///每个Context各包含一个 TickerProvider
 /// GestureDispatcher、AnimationManager、EventDispatcher、ActionDispatcher
-class Context {
-  final RenderNode root;
-  final ChartOption option;
+class Context extends Disposable {
+  RenderNode get root => _root!;
+  RenderNode? _root;
+
+  ChartOption get option => _option!;
+  ChartOption? _option;
 
   ///这里不将其暴露出去是为了能更好的管理动画的生命周期
-  late TickerProvider _provider;
-  final GestureDispatcher _gestureDispatcher = GestureDispatcher();
+  TickerProvider? _provider;
 
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
-
+  final GestureDispatcher _gestureDispatcher = GestureDispatcher();
   final AnimationManager _animationManager = AnimationManager();
   final EventDispatcher _eventDispatcher = EventDispatcher();
   final ec.ActionDispatcher _actionDispatcher = ec.ActionDispatcher();
+
   double devicePixelRatio;
 
-  Context(this.root, this.option, TickerProvider provider, [this.devicePixelRatio = 1]) {
+  Context(this._root, this._option, TickerProvider provider, [this.devicePixelRatio = 1]) {
     _provider = provider;
   }
 
@@ -35,19 +38,16 @@ class Context {
     _animationManager.updateTickerProvider(p);
   }
 
-  ///坐标轴
-  final Map<BaseAxis, ChartView> _axisMap = {};
-
   ///坐标系
-  final Map<Coord, CoordLayout> _coordMap = {};
-
-  ///存放普通的渲染组件
-  final Map<ChartSeries, ChartView> _seriesViewMap = {};
+  Map<Coord, CoordLayout> _coordMap = {};
 
   ///存放坐标系组件
-  final List<CoordLayout> _coordList = [];
+  List<CoordLayout> _coordList = [];
 
   List<CoordLayout> get coordList => _coordList;
+
+  ///存放普通的渲染组件
+  Map<ChartSeries, ChartView> _seriesViewMap = {};
 
   ///Title(全局只会存在一个)
   TitleView? _title;
@@ -149,9 +149,9 @@ class Context {
   void onCreate() {
     _seriesViewMap.clear();
     _coordMap.clear();
-    _axisMap.clear();
     _coordList.clear();
     allocateIndex();
+
     ///创建组件
     _createComponent();
 
@@ -191,16 +191,20 @@ class Context {
     }
   }
 
-  void destroy() {
+  @override
+  void dispose() {
     _eventDispatcher.dispose();
     _actionDispatcher.dispose();
     _gestureDispatcher.dispose();
     _animationManager.dispose();
     _destroyView();
-    _seriesViewMap.clear();
-    _axisMap.clear();
-    _coordMap.clear();
-    _coordList.clear();
+    _seriesViewMap = {};
+    _coordMap = {};
+    _coordList = [];
+    _root = null;
+    _option = null;
+    _provider = null;
+    super.dispose();
   }
 
   void _destroyView() {
@@ -208,7 +212,7 @@ class Context {
       coord.destroy();
     }
     _coordList.clear();
-    _legend!.destroy();
+    _legend?.destroy();
     _legend = null;
     _title?.destroy();
     _title = null;
@@ -365,11 +369,11 @@ class Context {
 
   ///=========动画管理==================
   AnimationController boundedAnimation(AnimatorOption props, [bool useUpdate = false]) {
-    return _animationManager.bounded(_provider, props, useUpdate: useUpdate);
+    return _animationManager.bounded(_provider!, props, useUpdate: useUpdate);
   }
 
   AnimationController unboundedAnimation() {
-    return _animationManager.unbounded(_provider);
+    return _animationManager.unbounded(_provider!);
   }
 
   void removeAnimation(AnimationController? c, [bool cancel = true]) {

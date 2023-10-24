@@ -1,16 +1,12 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
-import '../../utils/uuid_util.dart';
-import '../render/ccanvas.dart';
-import '../model/view_attr.dart';
-
 ///渲染节点
-abstract class RenderNode with ViewAttr {
+abstract class RenderNode extends Disposable with ViewAttr {
   final String id = randomId();
-
   RenderNode? _parent;
 
   RenderNode? get parent => _parent;
@@ -43,20 +39,20 @@ abstract class RenderNode with ViewAttr {
 
   void draw(CCanvas canvas);
 
-  void invalidate() {
+  void requestDraw() {
     if (inDrawing) {
       return;
     }
     markDirty();
-    parent?.invalidate();
+    parent?.requestDraw();
   }
 
   void markDirty() {
     _dirty = true;
   }
 
-  void markDirtyWithChild(){
-    _dirty=true;
+  void markDirtyWithChild() {
+    _dirty = true;
   }
 
   bool get isDirty => _dirty;
@@ -80,7 +76,7 @@ abstract class RenderNode with ViewAttr {
     markDirty();
     _forceLayout = true;
     layout(left, top, right, bottom);
-    invalidate();
+    requestDraw();
   }
 
   Rect getGlobalBounds() {
@@ -105,17 +101,22 @@ abstract class RenderNode with ViewAttr {
       return;
     }
     _show = true;
-    invalidate();
+    requestDraw();
   }
 
   void hide() {
     if (!_show) {
       _show = false;
-      invalidate();
+      requestDraw();
     }
   }
 
-  void dispose() {}
+  @override
+  void dispose() {
+    _parent = null;
+    layoutParams = const LayoutParams.matchAll();
+    super.dispose();
+  }
 
   ///=====Debug 相关方法===============
   void debugDraw(CCanvas canvas, Offset offset, {Color color = const Color(0xFF673AB7), bool fill = true, num r = 6}) {

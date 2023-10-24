@@ -2,13 +2,12 @@ import 'dart:math' as m;
 import 'package:flutter/rendering.dart';
 
 import '../../event/index.dart';
-import '../../model/chart_error.dart';
 import '../../utils/log_util.dart';
 import '../index.dart';
 
 /// ViewGroup
 abstract class ChartViewGroup extends GestureView {
-  final List<ChartView> _children = [];
+  late List<ChartView> _children = [];
 
   ChartViewGroup() : super();
 
@@ -49,6 +48,7 @@ abstract class ChartViewGroup extends GestureView {
     for (var c in _children) {
       c.destroy();
     }
+    _children=[];
     super.destroy();
   }
 
@@ -67,6 +67,7 @@ abstract class ChartViewGroup extends GestureView {
       c.markDirtyWithChild();
     }
   }
+
 
   ///=========Event和Action分发处理==================
   bool dispatchAction(ChartAction action) {
@@ -170,7 +171,7 @@ abstract class ChartViewGroup extends GestureView {
   }
 
   /// 负责绘制单独的一个ChildView，同时负责Canvas的坐标的正确转换
-  /// 如果在方法中调用了[invalidate]则返回true
+  /// 如果在方法中调用了[requestDraw]则返回true
   bool drawChild(ChartView child, CCanvas canvas) {
     child.drawSelf(canvas, this);
     return false;

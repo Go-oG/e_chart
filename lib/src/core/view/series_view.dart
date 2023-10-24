@@ -122,14 +122,14 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   void onStart() {
     super.onStart();
     bindSeries(series);
-    layoutHelper.addListener(invalidate);
+    layoutHelper.addListener(requestDraw);
   }
 
   @mustCallSuper
   @override
   void onStop() {
     unBindSeries();
-    layoutHelper.removeListener(invalidate);
+    layoutHelper.removeListener(requestDraw);
     super.onStop();
   }
 
