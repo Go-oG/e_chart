@@ -387,6 +387,28 @@ class LineStyle {
     );
   }
 
+  Path buildPath(List<Offset> points){
+    if(points.length<2){
+      throw ChartError('points length must >2');
+    }
+    Path path=Path();
+    if(smooth<=0){
+      each(points, (p0, p1) {
+        if(p1==0){
+          path.moveTo(p0.dx, p0.dy);
+        }else{
+          path.lineTo(p0.dx, p0.dy);
+        }
+      });
+    }else{
+      path=Line(points,smooth: smooth).toPath();
+    }
+    if(dash.isNotEmpty){
+      path=path.dashPath(dash);
+    }
+    return path;
+  }
+
   bool get notDraw => width <= 0;
 
   bool get canDraw => width > 0;
@@ -417,4 +439,5 @@ class LineStyle {
       align: (end?.align ?? start?.align)!,
     );
   }
+
 }

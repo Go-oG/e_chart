@@ -13,10 +13,10 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
 
   LayoutHelper2.lazy() : super.lazy();
 
-  void initData(List<N> dataList){
+  void initData(List<N> dataList) {
     each(dataList, (data, p1) {
-      data.dataIndex=p1;
-      data.styleIndex=p1;
+      data.dataIndex = p1;
+      data.styleIndex = p1;
       data.updateStyle(context, series);
     });
   }
@@ -63,7 +63,7 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
     offset = offset.translate(-translationX, -translationY);
     var clickNode = findNode(offset);
     if (oldHoverNode == clickNode) {
-      if (clickNode != null) {
+      if (clickNode != null && !clickNode.isDispose) {
         click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
       }
       return;
@@ -79,7 +79,7 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
 
     List<NodeDiff<N>> nl = [];
 
-    if (oldNode != null) {
+    if (oldNode != null&&!oldNode.isDispose) {
       var oldAttr = oldNode.toAttr();
       oldNode.removeState(ViewState.hover);
       onUpdateNodeStyle(oldNode);
@@ -105,7 +105,7 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
     onHandleHoverAndClickEnd(oldNode, clickNode);
   }
 
-  int getAnimatorCountLimit(){
+  int getAnimatorCountLimit() {
     return -1;
   }
 
@@ -168,5 +168,4 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
     }
     return null;
   }
-
 }

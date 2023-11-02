@@ -111,4 +111,10 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T,P>> {
   void dispose() {
     nodeList = [];
   }
+
+  int indexOf(StackData<T,P> data){
+    return nodeList.indexOf(data);
+  }
+  StackData<T,P> getAt(int index)=>nodeList[index];
+
 }

@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/line/line_view.dart';
 class LineSeries extends GridSeries<StackItemData, LineGroupData> {
   bool connectNulls; // 是否连接空数据
   /// 符号样式
-  Fun3<StackData<StackItemData, LineGroupData>, LineGroupData, ChartSymbol?>? symbolFun;
+  Fun2<StackData<StackItemData, LineGroupData>, ChartSymbol?>? symbolFun;
 
   ///返回非空值表示是阶梯折线图
   Fun2<LineGroupData, LineType?>? stepLineFun;
@@ -42,6 +42,17 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
   ChartView? toView() {
     return LineView(this);
   }
+
   @override
   SeriesType get seriesType => SeriesType.line;
+
+  ChartSymbol? getSymbol(Context context, StackData<StackItemData, LineGroupData> data) {
+    if (symbolFun != null) {
+      return symbolFun?.call(data);
+    }
+    if (context.option.theme.lineTheme.showSymbol) {
+      return context.option.theme.lineTheme.symbol;
+    }
+    return null;
+  }
 }

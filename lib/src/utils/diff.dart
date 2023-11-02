@@ -49,12 +49,13 @@ class DiffUtil {
     void Function(List<D> dataList, double t) updateCall, {
     VoidCallback? onStart,
     VoidCallback? onEnd,
-    bool disposeRemoveData = false,
+    void Function(List<D> removeList)? removeDataCall,
   }) {
     if (oldList.isEmpty && newList.isEmpty) {
       onStart?.call();
       updateCall.call([], 1);
       onEnd?.call();
+      removeDataCall?.call([]);
       return [];
     }
     final List<D> newList2 = toListIfNeed(newList);
@@ -63,12 +64,7 @@ class DiffUtil {
       onStart?.call();
       updateCall.call(newList2, 1);
       onEnd?.call();
-      if (disposeRemoveData) {
-        each(oldList, (p0, p1) {
-          p0.dispose();
-        });
-      }
-
+      removeDataCall?.call(List.from(oldList));
       return [];
     }
 
@@ -164,15 +160,11 @@ class DiffUtil {
       });
     }
 
-    if (onEnd != null||(disposeRemoveData&&diffResult.removeSet.isNotEmpty)) {
+    if (onEnd != null||removeDataCall!=null) {
       var endTween = option.duration.inMilliseconds >= option.updateDuration.inMilliseconds ? addTween : updateTween;
       endTween.addEndListener(() {
         onEnd?.call();
-        if (disposeRemoveData) {
-          each(diffResult.removeSet, (p0, p1) {
-            p0.dispose();
-          });
-        }
+        removeDataCall?.call(List.from(diffResult.removeSet));
       });
     }
 

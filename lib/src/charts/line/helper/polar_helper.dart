@@ -102,131 +102,129 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     _animatorPercent = 1;
   }
 
-  void _updateLine(List<StackData<StackItemData, LineGroupData>> list) {
-    Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> tmpNodeMap = {};
-    for (var node in list) {
-      List<StackData<StackItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];
-      tmpNodeMap[node.parent] = tmpList;
-      tmpList.add(node);
-    }
-    tmpNodeMap.removeWhere((key, value) => value.isEmpty);
+  // void _updateLine(List<StackData<StackItemData, LineGroupData>> list) {
+  //   Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> tmpNodeMap = {};
+  //   for (var node in list) {
+  //     List<StackData<StackItemData, LineGroupData>> tmpList = tmpNodeMap[node.parent] ?? [];
+  //     tmpNodeMap[node.parent] = tmpList;
+  //     tmpList.add(node);
+  //   }
+  //   tmpNodeMap.removeWhere((key, value) => value.isEmpty);
+  //
+  //   List<LineNode> resultList = [];
+  //   Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> stackMap = {};
+  //
+  //   tmpNodeMap.forEach((key, value) {
+  //     if (key.isNotStack) {
+  //       var index = value.first.groupIndex;
+  //       resultList.add(buildNormalResult(index, key, value));
+  //     } else {
+  //       stackMap[key] = value;
+  //     }
+  //   });
+  //
+  //   ///处理堆叠数据
+  //   List<LineGroupData> keyList = List.from(stackMap.keys);
+  //   keyList.sort((a, b) {
+  //     var ai = stackMap[a]!.first.groupIndex;
+  //     var bi = stackMap[b]!.first.groupIndex;
+  //     return ai.compareTo(bi);
+  //   });
+  //   each(keyList, (key, list) {
+  //     var nl = stackMap[key]!;
+  //     var first = nl.first;
+  //     resultList.add(buildStackResult(first.groupIndex, key, nl, resultList, list));
+  //   });
+  //   _lineList = resultList;
+  // }
 
-    List<LineNode> resultList = [];
-    Map<LineGroupData, List<StackData<StackItemData, LineGroupData>>> stackMap = {};
-
-    tmpNodeMap.forEach((key, value) {
-      if (key.isNotStack) {
-        var index = value.first.groupIndex;
-        resultList.add(buildNormalResult(index, key, value));
-      } else {
-        stackMap[key] = value;
-      }
-    });
-
-    ///处理堆叠数据
-    List<LineGroupData> keyList = List.from(stackMap.keys);
-    keyList.sort((a, b) {
-      var ai = stackMap[a]!.first.groupIndex;
-      var bi = stackMap[b]!.first.groupIndex;
-      return ai.compareTo(bi);
-    });
-    each(keyList, (key, list) {
-      var nl = stackMap[key]!;
-      var first = nl.first;
-      resultList.add(buildStackResult(first.groupIndex, key, nl, resultList, list));
-    });
-    _lineList = resultList;
-  }
-
-  LineNode buildNormalResult(int groupIndex, LineGroupData group, List<StackData<StackItemData, LineGroupData>> list) {
-    List<OptLinePath> borderList = _buildBorderPath(list);
-    List<Offset?> ol = _collectOffset(list);
-    Map<StackData, LineSymbolNode> nodeMap = {};
-    each(ol, (off, i) {
-      if (off == null) {
-        return;
-      }
-      if (i >= group.data.length) {
-        return;
-      }
-      var data = group.data[i];
-      var symbol = getSymbol(data, group);
-      if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
-      }
-    });
-    var itemStyle = series.getAreaStyle(context, list.first, list.first.parent);
-    var border = series.getLineStyle(context, list.first, list.first.parent);
-    return LineNode(groupIndex, group, ol, borderList, [], nodeMap, itemStyle, border);
-  }
-
-  LineNode buildStackResult(
-    int groupIndex,
-    LineGroupData group,
-    List<StackData<StackItemData, LineGroupData>> nodeList,
-    List<LineNode> resultList,
-    int curIndex,
-  ) {
-    if (nodeList.isEmpty) {
-      return LineNode(groupIndex, group, [], [], [], {}, AreaStyle.empty, LineStyle.empty);
-    }
-    List<OptLinePath> borderList = _buildBorderPath(nodeList);
-
-    List<Offset?> ol = _collectOffset(nodeList);
-    Map<StackData, LineSymbolNode> nodeMap = {};
-    each(ol, (off, i) {
-      if (off == null) {
-        return;
-      }
-      var data = group.data[i];
-      var symbol = getSymbol(data, group);
-      if (symbol != null) {
-        nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
-      }
-    });
-    var itemStyle = series.getAreaStyle(context, nodeList.first, nodeList.first.parent);
-    var border = series.getLineStyle(context, nodeList.first, nodeList.first.parent);
-    return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, [], nodeMap, itemStyle, border);
-  }
-
-  ///公用部分
-  List<OptLinePath> _buildBorderPath(List<StackData<StackItemData, LineGroupData>> nodeList) {
-    if (nodeList.length < 2) {
-      return [];
-    }
-    var group = nodeList.first.parent;
-    var olList = _splitList(nodeList);
-    olList.removeWhere((element) => element.length < 2);
-    List<OptLinePath> borderList = [];
-    LineType? stepType = series.stepLineFun?.call(group);
-
-    each(olList, (list, p1) {
-      var style = list.first.borderStyle;
-      num smooth = stepType != null ? 0 : style.smooth;
-      List<Offset> ol = List.from(list.map((e) => e.position));
-      if (stepType == null) {
-        borderList.add(OptLinePath.build(ol, smooth, style.dash));
-      } else {
-        Line line = _buildLine(ol, stepType, 0, []);
-        borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
-      }
-    });
-    return borderList;
-  }
-
-  Line _buildLine(List<Offset> offsetList, LineType? type, num smooth, List<num> dash) {
-    Line line = Line(offsetList, smooth: smooth, dashList: dash);
-    if (type != null) {
-      if (type == LineType.step) {
-        line = Line(line.step(), dashList: dash);
-      } else if (type == LineType.after) {
-        line = Line(line.stepAfter(), dashList: dash);
-      } else {
-        line = Line(line.stepBefore(), dashList: dash);
-      }
-    }
-    return line;
-  }
+  // LineNode buildNormalResult(int groupIndex, LineGroupData group, List<StackData<StackItemData, LineGroupData>> list) {
+  //   List<OptLinePath> borderList = _buildBorderPath(list);
+  //   List<Offset?> ol = _collectOffset(list);
+  //   Map<StackData, LineSymbolNode> nodeMap = {};
+  //   each(ol, (off, i) {
+  //     if (off == null) {
+  //       return;
+  //     }
+  //     if (i >= group.data.length) {
+  //       return;
+  //     }
+  //     var data = group.data[i];
+  //     var symbol = getSymbol(data, group);
+  //     if (symbol != null) {
+  //       nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
+  //     }
+  //   });
+  //   var itemStyle = series.getAreaStyle(context, list.first, list.first.parent);
+  //   return LineNode( group, ol, borderList, [], nodeMap, itemStyle);
+  // }
+  //
+  // LineNode buildStackResult(
+  //   int groupIndex,
+  //   LineGroupData group,
+  //   List<StackData<StackItemData, LineGroupData>> nodeList,
+  //   List<LineNode> resultList,
+  //   int curIndex,
+  // ) {
+  //   if (nodeList.isEmpty) {
+  //     return LineNode( group, [], [], [], {}, AreaStyle.empty);
+  //   }
+  //   List<OptLinePath> borderList = _buildBorderPath(nodeList);
+  //
+  //   List<Offset?> ol = _collectOffset(nodeList);
+  //   Map<StackData, LineSymbolNode> nodeMap = {};
+  //   each(ol, (off, i) {
+  //     if (off == null) {
+  //       return;
+  //     }
+  //     var data = group.data[i];
+  //     var symbol = getSymbol(data, group);
+  //     if (symbol != null) {
+  //       nodeMap[data] = LineSymbolNode(group, data, symbol, i, groupIndex)..center = off;
+  //     }
+  //   });
+  //   var itemStyle = series.getAreaStyle(context, nodeList.first, nodeList.first.parent);
+  //   return LineNode(groupIndex, group, _collectOffset(nodeList), borderList, [], nodeMap, itemStyle);
+  // }
+  //
+  // ///公用部分
+  // List<OptLinePath> _buildBorderPath(List<StackData<StackItemData, LineGroupData>> nodeList) {
+  //   if (nodeList.length < 2) {
+  //     return [];
+  //   }
+  //   var group = nodeList.first.parent;
+  //   var olList = _splitList(nodeList);
+  //   olList.removeWhere((element) => element.length < 2);
+  //   List<OptLinePath> borderList = [];
+  //   LineType? stepType = series.stepLineFun?.call(group);
+  //
+  //   each(olList, (list, p1) {
+  //     var style = list.first.borderStyle;
+  //     num smooth = stepType != null ? 0 : style.smooth;
+  //     List<Offset> ol = List.from(list.map((e) => e.position));
+  //     if (stepType == null) {
+  //       borderList.add(OptLinePath.build(ol, smooth, style.dash));
+  //     } else {
+  //       Line line = _buildLine(ol, stepType, 0, []);
+  //       borderList.add(OptLinePath.build(line.pointList, smooth, style.dash));
+  //     }
+  //   });
+  //   return borderList;
+  // }
+  //
+  // Line _buildLine(List<Offset> offsetList, LineType? type, num smooth, List<num> dash) {
+  //   Line line = Line(offsetList, smooth: smooth, dashList: dash);
+  //   if (type != null) {
+  //     if (type == LineType.step) {
+  //       line = Line(line.step(), dashList: dash);
+  //     } else if (type == LineType.after) {
+  //       line = Line(line.stepAfter(), dashList: dash);
+  //     } else {
+  //       line = Line(line.stepBefore(), dashList: dash);
+  //     }
+  //   }
+  //   return line;
+  // }
 
   List<List<StackData<StackItemData, LineGroupData>>> _splitList(
       Iterable<StackData<StackItemData, LineGroupData>> nodeList) {
@@ -266,13 +264,4 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
     return _animatorPercent;
   }
 
-  ChartSymbol? getSymbol(StackData data, LineGroupData group) {
-    if (series.symbolFun != null) {
-      return series.symbolFun?.call(data as StackData<StackItemData, LineGroupData>, group);
-    }
-    if (context.option.theme.lineTheme.showSymbol) {
-      return context.option.theme.lineTheme.symbol;
-    }
-    return null;
-  }
 }

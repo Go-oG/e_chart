@@ -12,12 +12,18 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
   int? sortCount;
 
   List<StackData<T, P>> dataList = [];
+  Map<String,StackData<T, P>> _dataMap={};
 
   AxisGroup<T, P>? _result;
 
   AxisGroup<T, P> get result {
     return _result!;
   }
+
+  bool hasData(StackData<T,P> data){
+    return _dataMap.containsKey(data.id);
+  }
+
 
   DataHelper(this.coord, this.polarIndex, List<P> list, this.direction, this.realSort, this.sort, this.sortCount) {
     if (coord != CoordType.grid && coord != CoordType.polar) {
@@ -57,10 +63,11 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
       }
     }
     this.dataList = [];
-
+    this._dataMap={};
     each(groupList, (group, p1) {
       each(group.data, (p0, p1) {
         this.dataList.add(p0);
+        _dataMap[p0.id]=p0;
       });
     });
 
@@ -121,6 +128,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
       each(group.data, (cd, i) {
         cd.dataIndex = i;
         cd.groupIndex = groupIndex;
+        cd.styleIndex=groupIndex;
         cd.attr.parent = group;
         cd.attr.coord = coord;
       });

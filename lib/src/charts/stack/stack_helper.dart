@@ -53,7 +53,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
       onEnd: () {
         inAnimation = false;
       },
-      disposeRemoveData: true,
+      removeDataCall: (removeList) {
+        each(removeList, (p0, p1) {
+          if (!helper.hasData(p0)) {
+            p0.dispose();
+          }
+        });
+      },
     );
     addAnimationToQueue(an);
   }
@@ -94,12 +100,16 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         }
       }
     }
+
     each(dataList, (p0, p1) {
       p0.updateStyle(context, series);
       p0.updateLabelPosition(context, series);
     });
     layoutMarkPointAndLine(helper, series.data, dataList);
+    onLayoutDataEnd(helper, dataList, type);
   }
+
+  void onLayoutDataEnd(DataHelper<T, P> helper, List<StackData<T, P>> dataList, LayoutType type) {}
 
   ///返回当前需要布局的数据
   List<StackData<T, P>> onComputeNeedLayoutData(DataHelper<T, P> helper) {
@@ -127,7 +137,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
       var index = key.axisIndex;
       var info = infoMap[key.axisIndex] ?? coord.getAxisViewportDataRange(key.axisIndex, series.isVertical);
       infoMap[index] = info;
-      resultList.addAll(value.getDataByRange(info));
+      var list = value.getDataByRange(info);
+      resultList.addAll(list);
     });
     return resultList;
   }

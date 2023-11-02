@@ -29,15 +29,15 @@ class EventDispatcher extends Disposable {
       Logger.i('$runtimeType dispatch($event)');
     }
     var set = _callMap[event.eventType];
-    if (set == null) {
+    if (set == null||set.isEmpty) {
       return;
     }
     each(set, (call, p1) {
-      try {
+     // try {
         call.call(event);
-      } catch (e) {
-        Logger.e(e);
-      }
+      // } catch (e) {
+      //   Logger.e(e);
+      // }
     });
   }
 

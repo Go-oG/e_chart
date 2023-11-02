@@ -7,7 +7,7 @@ import 'package:e_chart/e_chart.dart';
 class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends RenderData<StackAttr<T, P>> {
   T? value;
 
-  StackData(this.value, {super.id, super.name}) : super.attr(StackAttr()) {
+  StackData(this.value, {super.id, super.name}) : super.attr(StackAttr(CoordType.grid)) {
     if (value != null) {
       label.text = value!.name ?? DynamicText.empty;
     }
@@ -15,6 +15,9 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   bool contains(Offset offset) {
+    if (attrNull == null) {
+      return false;
+    }
     if (attr.coord == CoordType.polar) {
       return attr.arc.contains(offset);
     }
@@ -23,6 +26,9 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
+    if (attrNull == null) {
+      return;
+    }
     if (attr.coord == CoordType.grid) {
       itemStyle.drawRect(canvas, paint, rect, attr.corner);
       borderStyle.drawRect(canvas, paint, rect, attr.corner);
@@ -112,9 +118,10 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   void dispose() {
+    super.dispose();
     attrNull?._parentNode?.nodeList.remove(this);
     attrNull?._parent?.data.remove(this);
-    super.dispose();
+    attrNull?.dispose();
   }
 }
 
@@ -127,7 +134,7 @@ class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> extends
   Arc arc = Arc.zero;
 
   ///通用的节点位置，一般只有折线图和散点图使用
-  Offset position = Offset.zero;
+  Offset position = const Offset(-1, -1);
 
   ///动态数据标签(一般使用在动态排序中)
   dynamic dynamicLabel;
@@ -153,12 +160,18 @@ class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   num down = 0;
 
+  StackAttr(this.coord);
+
   @override
   void dispose() {
     super.dispose();
     dynamicLabel = null;
     _parentNode = null;
     _parent = null;
+  }
+
+  bool hasLayout() {
+    return position.dx >= 0;
   }
 }
 
@@ -215,10 +228,11 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
   bool get isNotStack {
     return !isStack;
   }
+
   @override
   void dispose() {
     super.dispose();
-    data=[];
+    data = [];
   }
 }
 
@@ -264,5 +278,4 @@ class StackItemData extends BaseItemData {
   String toString() {
     return '$runtimeType x:$x y:$y';
   }
-  
 }
