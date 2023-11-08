@@ -9,7 +9,7 @@ import 'default_render.dart';
 
 ///该类负责将Flutter原生的布局、渲染流程映射到我们的ChartRender中
 class RenderAdapter extends RenderBox {
-  Size? defaultSize;
+  Size? configSize;
   BoxConstraints? oldConstraints;
   Size oldSize = Size.zero;
   ChartRender? _render;
@@ -21,11 +21,25 @@ class RenderAdapter extends RenderBox {
 
   void onUpdateRender(ChartOption option, Size? size, TickerProvider provider) {
     Logger.i('onUpdateRender');
-    _provider=provider;
+    var oldRender = _render;
+    if (oldRender != null && option == oldRender.context.option) {
+      ///相同的对象
+      if (size != null && configSize != size) {
+        configSize = size;
+        markNeedsLayout();
+      } else {
+        markNeedsPaint();
+      }
+      markNeedsCompositingBitsUpdate();
+      markNeedsSemanticsUpdate();
+      return;
+    }
+    Logger.i('onUpdateRender 重建');
+    ///直接重建
+    _provider = provider;
     _disPoseRender(_render);
     _render = null;
 
-    ///直接重建
     _initRender(option, provider, size);
     _clearOldLayoutSize();
     _render?.onStart();
@@ -52,8 +66,8 @@ class RenderAdapter extends RenderBox {
   }
 
   void _initRender(ChartOption option, TickerProvider provider, Size? size) {
-    defaultSize = size;
-    oldSize=Size.zero;
+    configSize = size;
+    oldSize = Size.zero;
 
     var ra = PlatformDispatcher.instance.views.first.devicePixelRatio;
     var render = DefaultRender(option, provider, ra);
@@ -71,16 +85,16 @@ class RenderAdapter extends RenderBox {
     option.addListener(() {
       var c = option.value;
       if (c == Command.configChange) {
-        onUpdateRender(option, defaultSize, provider);
+        onUpdateRender(option, configSize, provider);
       }
     });
     render.onCreate();
     _render = render;
   }
 
-  void _clearOldLayoutSize(){
-    oldConstraints=null;
-    oldSize=Size.zero;
+  void _clearOldLayoutSize() {
+    oldConstraints = null;
+    oldSize = Size.zero;
   }
 
   @override
@@ -99,7 +113,7 @@ class RenderAdapter extends RenderBox {
   void dispose() {
     _render?.dispose();
     _render = null;
-    _provider=null;
+    _provider = null;
     super.dispose();
   }
 
@@ -115,8 +129,8 @@ class RenderAdapter extends RenderBox {
     double minH = constraints.minHeight;
     double maxW = constraints.maxWidth;
     double maxH = constraints.maxHeight;
-    double w = adjustSize(maxW, minW, defaultSize?.width);
-    double h = adjustSize(maxH, minH, defaultSize?.height);
+    double w = adjustSize(maxW, minW, configSize?.width);
+    double h = adjustSize(maxH, minH, configSize?.height);
     size = Size(w, h);
     oldSize = size;
   }

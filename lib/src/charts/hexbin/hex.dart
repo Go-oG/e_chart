@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 
 class Hex {
+  static final Hex zero=Hex(0, 0, 0);
   final int q;
   final int r;
   final int s;

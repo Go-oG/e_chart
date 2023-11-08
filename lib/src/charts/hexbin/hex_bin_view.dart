@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 import 'hex_bin_helper.dart';
 
-class HexbinView extends SeriesView<HexbinSeries, HexbinHelper> {
+class HexbinView extends SeriesView<HexbinSeries, HexBinHelper> {
   HexbinView(super.series);
 
   @override
@@ -20,14 +20,14 @@ class HexbinView extends SeriesView<HexbinSeries, HexbinHelper> {
   }
 
   @override
-  HexbinHelper buildLayoutHelper(var oldHelper) {
+  HexBinHelper buildLayoutHelper(var oldHelper) {
     if (oldHelper != null) {
       oldHelper.context = context;
       oldHelper.view = this;
       oldHelper.series = series;
       return oldHelper;
     }
-    return HexbinHelper(context, this, series);
+    return HexBinHelper(context, this, series);
   }
 
 }

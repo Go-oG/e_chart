@@ -1,6 +1,5 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/hexbin/layout/hex_bin_layout.dart';
 import 'package:flutter/widgets.dart';
 
 ///三角形布局
@@ -23,7 +22,7 @@ class HexTriangleLayout extends HexbinLayout {
   }
 
   @override
-  void onLayout(List<HexbinData> data, LayoutType type, HexbinLayoutParams params) {
+  void onLayout(List<HexBinData> data, LayoutType type, HexbinLayoutParams params) {
     params.flat = checkFlat();
     Direction2 direction = this.direction;
     if (direction == Direction2.v) {
@@ -34,7 +33,7 @@ class HexTriangleLayout extends HexbinLayout {
     _level = computeLevel(data.length);
     List<Hex> hexList = triangle(_level, direction);
     each(data, (node, i) {
-      node.attr = HexAttr(hexList[i]);
+      node.hex=hexList[i];
     });
   }
 

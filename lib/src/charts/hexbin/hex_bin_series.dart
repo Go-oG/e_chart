@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/hexbin/hex_bin_view.dart';
 
-class HexbinSeries extends RectSeries2<HexbinData> {
+class HexbinSeries extends RectSeries2<HexBinData> {
   HexbinLayout layout = HexagonsLayout();
   List<SNumber> center;
 
@@ -11,7 +11,7 @@ class HexbinSeries extends RectSeries2<HexbinData> {
   ///形状的大小(由外接圆半径描述)
   num radius;
 
-  Fun2<HexbinData, LineStyle?>? borderFun;
+  Fun2<HexBinData, LineStyle?>? borderFun;
 
   bool clock = false;
 
@@ -53,7 +53,7 @@ class HexbinSeries extends RectSeries2<HexbinData> {
   }
 
   @override
-  LineStyle getBorderStyle(Context context, HexbinData data) {
+  LineStyle getBorderStyle(Context context, HexBinData data) {
     if (borderFun != null) {
       return super.getBorderStyle(context, data);
     }
@@ -63,7 +63,7 @@ class HexbinSeries extends RectSeries2<HexbinData> {
   }
 
   @override
-  LabelStyle getLabelStyle(Context context, HexbinData data) {
+  LabelStyle getLabelStyle(Context context, HexBinData data) {
     if (labelStyleFun != null) {
       return super.getLabelStyle(context, data);
     }

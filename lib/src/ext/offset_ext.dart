@@ -124,10 +124,15 @@ Offset circlePoint(num radius, num angle, [Offset center = Offset.zero]) {
   return Offset(x, y);
 }
 
-Offset offsetLerp(Offset a,Offset b,double t){
-  if(t==0){
+Offset offsetLerp(Offset a, Offset b, double t) {
+  if (a == b) {
+    return b;
+  }
+  if (t == 0) {
     return a;
   }
-  if(t==1){return b;}
+  if (t == 1) {
+    return b;
+  }
   return Offset.lerp(a, b, t)!;
 }

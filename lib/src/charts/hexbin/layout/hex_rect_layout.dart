@@ -3,8 +3,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import 'hex_bin_layout.dart';
-
 ///矩形布局
 ///建议将 [rowPriority] 和[flat] 设置为不同的值
 class HexRectLayout extends HexbinLayout {
@@ -24,7 +22,7 @@ class HexRectLayout extends HexbinLayout {
   HexRectLayout({this.rowPriority = false, this.evenLineIndent = true, this.maxCount, this.minCount});
 
   @override
-  void onLayout(List<HexbinData> data, LayoutType type, HexbinLayoutParams params) {
+  void onLayout(List<HexBinData> data, LayoutType type, HexbinLayoutParams params) {
     var width = params.width;
     var height = params.height;
     var radius = params.radius;
@@ -48,7 +46,7 @@ class HexRectLayout extends HexbinLayout {
       }
     }
     each(data, (node, i) {
-      node.attr = HexAttr(hexList[i]);
+      node.hex=hexList[i];
     });
   }
 

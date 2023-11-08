@@ -73,14 +73,14 @@ abstract class ChartSymbol extends Disposable {
 }
 
 class SymbolAttr {
-  static const empty = SymbolAttr();
-  final Size? size;
-  final double? ratio;
-  final double? rotate;
-  final int? borderCount;
-  final Corner? corner;
+  static final empty = SymbolAttr();
+  Size? size;
+  double? ratio;
+  double? rotate;
+  int? borderCount;
+  Corner? corner;
 
-  const SymbolAttr({
+  SymbolAttr({
     this.size,
     this.rotate,
     this.ratio,

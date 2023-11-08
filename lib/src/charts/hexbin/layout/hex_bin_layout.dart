@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 abstract class HexbinLayout {
 
-  void onLayout(List<HexbinData> data, LayoutType type, HexbinLayoutParams params);
+  void onLayout(List<HexBinData> data, LayoutType type, HexbinLayoutParams params);
 
   //计算Hex(0，0，0)节点的中心位置(其它节点需要根据该节点位置来计算当前位置)
   ///子类可以复写该方法实现不同的位置中心

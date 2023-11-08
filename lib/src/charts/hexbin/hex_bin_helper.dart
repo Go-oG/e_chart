@@ -5,98 +5,86 @@ import 'package:e_chart/e_chart.dart';
 
 ///正六边形布局
 /// https://www.redblobgames.com/grids/hexagons/implementation.html#rounding
-class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
+class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
   static const double _sqrt3 = 1.7320508; //sqrt(3)
-  static const _Orientation _pointy =
-      _Orientation(_sqrt3, _sqrt3 / 2.0, 0.0, 3.0 / 2.0, _sqrt3 / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0, 90);
-  static const _Orientation _flat =
-      _Orientation(3.0 / 2.0, 0.0, _sqrt3 / 2.0, _sqrt3, 2.0 / 3.0, 0.0, -1.0 / 3.0, _sqrt3 / 3.0, 0);
+  static const _Orientation _pointy = _Orientation(_sqrt3, _sqrt3 / 2.0, 0.0, 3.0 / 2.0, _sqrt3 / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0, 90);
+  static const _Orientation _flat = _Orientation(3.0 / 2.0, 0.0, _sqrt3 / 2.0, _sqrt3, 2.0 / 3.0, 0.0, -1.0 / 3.0, _sqrt3 / 3.0, 0);
 
   ///Hex(0,0,0)的位置
   Offset _zeroCenter = Offset.zero;
   bool flat = false;
   double radius = 0;
-  List<HexbinData> showNodeList = [];
-  ///用于加速节点查找
-  late final RBush<HexbinData> _rBush;
+  List<HexBinData> showNodeList = [];
 
-  HexbinHelper(super.context, super.view, super.series) {
+  ///用于加速节点查找
+  late final RBush<HexBinData> _rBush;
+
+  HexBinHelper(super.context, super.view, super.series) {
     _rBush = RBush(
-      (p0) => p0.attr.center.dx - radius,
-      (p0) => p0.attr.center.dy - radius,
-      (p0) => p0.attr.center.dx + radius,
-      (p0) => p0.attr.center.dy + radius,
+      (p0) => p0.center.dx - radius,
+      (p0) => p0.center.dy - radius,
+      (p0) => p0.center.dx + radius,
+      (p0) => p0.center.dy + radius,
     );
   }
 
   @override
   void onLayout(LayoutType type) {
     translationX = translationY = 0;
-    var rect = getViewPortRect();
     var oldNodeList = nodeList;
     var newList = [...series.data];
     initData(newList);
-
-    var an = diffLayoutOpt<HexbinData>(
+    var an = DiffUtil.diff<HexBinData>(
       getAnimation(type, series.data.length),
       oldNodeList,
       newList,
-      (nodes) => layoutData(nodes, type),
-      (node, type) {
+      (dataList) => layoutData(dataList, type),
+      (data, type) {
         Map<String, dynamic> dm = {};
-        dm['center'] = node.attr.center;
-        dm['rotate'] = node.symbol.rotate;
-        dm['scale'] = type == DiffType.add ? 0 : node.symbol.scale;
+        dm['center'] = data.center;
+        dm['rotate'] = data.rotate;
+        dm['scale'] = type == DiffType.add ? 0 : data.scale;
         return dm;
       },
-      (node, type) {
+      (data, type) {
         Map<String, dynamic> dm = {};
-        dm['center'] = node.attr.center;
-        dm['rotate'] = node.symbol.rotate;
+        dm['center'] = data.center;
+        dm['rotate'] = data.rotate;
         dm['scale'] = type == DiffType.remove ? 0 : 1;
         return dm;
       },
-      (node, s, e, t, type) {
+      (data, s, e, t, type) {
         Offset sc = s['center']!;
         Offset ec = e['center']!;
         num sr = s['rotate']!;
         num er = e['rotate']!;
         num ss = s['scale']!;
         num es = e['scale']!;
-        node.attr.center = sc == ec ? ec : offsetLerp(sc, ec, t);
-        node.symbol.rotate = lerpDouble(sr, er, t)!;
-        node.symbol.scale = lerpDouble(ss, es, t)!;
-        node.updateLabelPosition(context, series);
+        data.center = offsetLerp(sc, ec, t);
+        data.rotate = lerpDouble(sr, er, t)!;
+        data.scale = lerpDouble(ss, es, t)!;
+        data.updateLabelPosition(context, series);
       },
-      (resultList, t) {
-        nodeList = resultList;
-        updateShowNodeList(resultList);
+      (dataList, t) {
+        nodeList = dataList;
+        updateShowNodeList(dataList);
         notifyLayoutUpdate();
       },
       onStart: () {
         inAnimation = true;
       },
-      onEnd: (nodes) {
+      onEnd: () {
         _rBush.clear();
-        _rBush.addAll(nodes);
-        nodeList = nodes;
+        _rBush.addAll(nodeList);
         var sRect = getViewPortRect().inflate(radius * 2);
         showNodeList = _rBush.search2(sRect);
         inAnimation = false;
-      },
-      testFun: (node, map) {
-        var center = map['center'] as Offset;
-        var scale = map['scale'] as num;
-        if (scale <= 0) {
-          return false;
-        }
-        return rect.overlapCircle2(center.dx, center.dy, radius * scale);
       },
     );
     context.addAnimationToQueue(an);
   }
 
-  void layoutData(List<HexbinData> dataList, LayoutType type) {
+  void layoutData(List<HexBinData> dataList, LayoutType type) {
     flat = series.flat;
     radius = series.radius.toDouble();
     var params = HexbinLayoutParams(series, width, height, radius.toDouble(), series.flat);
@@ -108,17 +96,16 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
     final angleOffset = flat ? _flat.angle : _pointy.angle;
     _zeroCenter = hexLayout.computeZeroCenter(params);
     final size = Size.square(radius * 1);
+    var sPath = PositiveShape(r: radius, count: 6).toPath();
     each(dataList, (data, i) {
-      var center = hexToPixel(_zeroCenter, data.attr.hex, size);
-      data.attr.center = center;
-      data.label.updatePainter(offset: center, textAlign: TextAlign.center);
-      var s = PositiveSymbol(r: series.radius, count: 6, fixRotate: 0);
-      s.rotate = angleOffset;
-      data.setSymbol(s, false);
+      var center = hexToPixel(_zeroCenter, data.hex, size);
+      data.center = center;
+      data.rotate = angleOffset;
+      data.scale = 1;
+      data.shapePath = sPath;
       data.updateStyle(context, series);
+      data.updateLabelPosition(context, series);
     });
-    _rBush.clear();
-    _rBush.addAll(dataList);
   }
 
   ///计算方块中心坐标(center表示Hex(0,0,0)的位置)
@@ -142,7 +129,7 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
   }
 
   @override
-  void onHandleHoverAndClickEnd(HexbinData? oldNode, HexbinData? newNode) {
+  void onHandleHoverAndClickEnd(HexBinData? oldNode, HexBinData? newNode) {
     oldNode?.drawIndex = 0;
     newNode?.drawIndex = 100;
     if (newNode != null) {}
@@ -166,9 +153,9 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
         node.itemStyle = AreaStyle.lerp(startAttr.itemStyle, endAttr.itemStyle, t);
         node.borderStyle = LineStyle.lerp(startAttr.borderStyle, endAttr.borderStyle, t);
         if (diff.old) {
-          node.symbol.scale = lerpDouble(startAttr.symbolScale, 1, t)!;
+          node.scale = lerpDouble(startAttr.symbolScale, 1, t)!;
         } else {
-          node.symbol.scale = lerpDouble(startAttr.symbolScale, 1.1, t)!;
+          node.scale = lerpDouble(startAttr.symbolScale, 1.1, t)!;
         }
         notifyLayoutUpdate();
       });
@@ -200,7 +187,7 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
   }
 
   @override
-  HexbinData? findNode(Offset offset, [bool overlap = false]) {
+  HexBinData? findNode(Offset offset, [bool overlap = false]) {
     var rect = Rect.fromCircle(center: offset, radius: radius);
     var result = _rBush.search2(rect);
     result.sort((a, b) {
@@ -214,11 +201,11 @@ class HexbinHelper extends LayoutHelper2<HexbinData, HexbinSeries> {
     return null;
   }
 
-  void updateShowNodeList(List<HexbinData> nodeList) {
-    List<HexbinData> nl = [];
+  void updateShowNodeList(List<HexBinData> nodeList) {
+    List<HexBinData> nl = [];
     var sRect = getViewPortRect();
     each(nodeList, (node, p1) {
-      if (sRect.overlapCircle(node.attr.center, node.symbol.r)) {
+      if (sRect.overlapCircle(node.center, radius)) {
         nl.add(node);
       }
     });

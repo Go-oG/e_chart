@@ -6,11 +6,9 @@ import 'package:flutter/material.dart';
 abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
   late final String id;
   bool show = true;
-
   int groupIndex = 0;
   int dataIndex = -1;
   int styleIndex = -1;
-
   ///绘制顺序(从小到到绘制，最大的最后绘制)
   int drawIndex = -1;
 
