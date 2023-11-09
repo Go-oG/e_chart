@@ -29,7 +29,7 @@ class PinSymbol extends ChartSymbol {
     canvas.save();
     canvas.rotate(fixRotate * pi / 180);
     itemStyle.drawPath(canvas, paint, path);
-    borderStyle.drawPath(canvas, paint, path, needSplit: false, drawDash: true);
+    borderStyle.drawPath(canvas, paint, path, drawDash: true);
     canvas.restore();
   }
 

@@ -89,13 +89,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
         center: attrs.center,
       );
     }
-    axisPointer.lineStyle.drawPath(
-      canvas,
-      paint,
-      arc.toPath(),
-      drawDash: true,
-      needSplit: false,
-    );
+    axisPointer.lineStyle.drawPath(canvas, paint, arc.toPath(), drawDash: true);
   }
 
   List<num> dataToRadius(dynamic data) {

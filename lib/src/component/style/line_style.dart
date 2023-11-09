@@ -35,8 +35,7 @@ class LineStyle {
 
   @override
   int get hashCode {
-    return Object.hashAll(
-        [color, width, cap, join, Object.hashAll(dash), Object.hashAll(shadow), shader, smooth, align]);
+    return Object.hashAll([color, width, cap, join, Object.hashAll(dash), Object.hashAll(shadow), shader, smooth, align]);
   }
 
   @override
@@ -325,8 +324,7 @@ class LineStyle {
   ///请注意该方法在Path 路径过长时会出现
   ///此时应该将needSplit 指定为true进行优化
   ///绘制效率严重低下的问题
-  void drawPath(CCanvas canvas, Paint paint, Path path,
-      {bool drawDash = false, bool needSplit = true, num splitLength = 200, Rect? bound}) {
+  void drawPath(CCanvas canvas, Paint paint, Path path, {bool drawDash = false, Rect? bound}) {
     if (notDraw) {
       return;
     }
@@ -334,21 +332,11 @@ class LineStyle {
     if (drawDash && dash.isNotEmpty) {
       path = path.dashPath(dash);
     }
-
     if (shadow.isNotEmpty) {
       path.drawShadows(canvas, path, shadow);
     }
-
     fillPaint(paint, shader == null ? null : (bound ?? path.getBounds()));
-
-    if (!needSplit) {
-      canvas.drawPath(path, paint);
-      return;
-    }
-
-    for (var p in path.split(splitLength)) {
-      canvas.drawPath(p, paint);
-    }
+    canvas.drawPath(path, paint);
   }
 
   LineStyle convert(Set<ViewState>? states) {
@@ -387,26 +375,11 @@ class LineStyle {
     );
   }
 
-  Path buildPath(List<Offset> points){
-    if(points.length<2){
+  Path buildPath(List<Offset> points) {
+    if (points.length < 2) {
       throw ChartError('points length must >2');
     }
-    Path path=Path();
-    if(smooth<=0){
-      each(points, (p0, p1) {
-        if(p1==0){
-          path.moveTo(p0.dx, p0.dy);
-        }else{
-          path.lineTo(p0.dx, p0.dy);
-        }
-      });
-    }else{
-      path=Line(points,smooth: smooth).toPath();
-    }
-    if(dash.isNotEmpty){
-      path=path.dashPath(dash);
-    }
-    return path;
+    return Line(points, smooth: smooth, dashList: dash).toPath();
   }
 
   bool get notDraw => width <= 0;
@@ -439,5 +412,4 @@ class LineStyle {
       align: (end?.align ?? start?.align)!,
     );
   }
-
 }

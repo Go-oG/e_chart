@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 ///代表一个封闭的图形
 ///其路径由给定的点组成
 class Area extends Shape {
-  static final Area empty=Area([], []);
+  static final Area empty = Area([], []);
   final List<Offset> upList;
   final List<Offset> downList;
   final num upSmooth;
   final num downSmooth;
-  final num ratioStartX;
-  final num ratioStartY;
-  final num ratioEndX;
-  final num ratioEndY;
+  late final num ratioStartX;
+  late final num ratioStartY;
+  late final num ratioEndX;
+  late final num ratioEndY;
 
   Area(
     this.upList,
@@ -20,21 +20,23 @@ class Area extends Shape {
     this.upSmooth = 0,
     this.downSmooth = 0,
     this.ratioStartX = 0.5,
-    this.ratioStartY = 0,
     this.ratioEndX = 0.5,
-    this.ratioEndY = 0,
-  });
+  }) {
+    ratioStartY = 0;
+    ratioEndY = 0;
+  }
 
   Area.vertical(
     this.upList,
     this.downList, {
     this.upSmooth = 0,
     this.downSmooth = 0,
-    this.ratioStartX = 0,
     this.ratioStartY = 0.5,
-    this.ratioEndX = 0,
     this.ratioEndY = 0.5,
-  });
+  }) {
+    ratioStartX = 0;
+    ratioEndX = 0;
+  }
 
   Path? _path;
 
@@ -154,9 +156,10 @@ class Area extends Shape {
 
   @override
   bool get isClosed => true;
+
   @override
   void dispose() {
-    _path=null;
+    _path = null;
     upList.clear();
     downList.clear();
     super.dispose();

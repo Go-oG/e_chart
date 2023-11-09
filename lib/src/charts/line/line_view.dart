@@ -70,7 +70,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (path == null) {
       return;
     }
-    lineNode.data.borderStyle.drawPath(canvas, mPaint, path, drawDash: false, needSplit: false);
+    lineNode.data.borderStyle.drawPath(canvas, mPaint, path, drawDash: false);
   }
 
 

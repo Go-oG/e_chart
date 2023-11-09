@@ -1,8 +1,8 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/ext/index.dart';
 
-import '../../static_config.dart';
 import '../../utils/assert_check.dart';
 import 'chart_shape.dart';
 
@@ -33,10 +33,11 @@ class Line extends Shape {
     if (_path != null) {
       return _path!;
     }
-    Path path = Path();
+    Path path;
     if (smooth > 0) {
       path = _smooth();
     } else {
+      path = Path();
       Offset first = _pointList.first;
       path.moveTo(first.dx, first.dy);
       for (int i = 1; i < _pointList.length; i++) {
@@ -115,6 +116,7 @@ class Line extends Shape {
       Offset cur = _pointList[i];
       Offset next = _pointList[i + 1];
       List<Offset> cl = _getCtrPoint(cur, next);
+
       if (cl.length != 2) {
         path.lineTo(next.dx, next.dy);
       } else {
@@ -128,19 +130,17 @@ class Line extends Shape {
 
   ///获取贝塞尔曲线控制点
   List<Offset> _getCtrPoint(Offset start, Offset end) {
-    var v = StaticConfig.smoothRatio;
-    assertCheck(v >= 0 && v <= 1, "smoothRatio must >=0&&<=1 ");
+    var v = smooth;
     if (start.dx == end.dx || start.dy == end.dy) {
       return [];
     }
     double dx = end.dx - start.dx;
-    double dy = end.dy - start.dy;
-    double c1x = start.dx + dx * v;
-    double c1y = start.dy + dy * v;
-    double c2x = end.dx - dx * v;
-    double c2y = end.dy - dy * v;
-    return [Offset(c1x, c1y), Offset(c2x, c2y)];
+    return [
+      Offset(start.dx + dx * v, start.dy),
+      Offset(end.dx - dx * v, end.dy),
+    ];
   }
+
 
   @override
   bool contains(Offset offset) {
@@ -192,7 +192,7 @@ class Line extends Shape {
   @override
   void dispose() {
     _pointList.clear();
-    _path=null;
+    _path = null;
     super.dispose();
   }
 }

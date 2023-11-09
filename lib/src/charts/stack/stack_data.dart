@@ -35,7 +35,7 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
       return;
     }
     itemStyle.drawPath(canvas, paint, arc.toPath());
-    borderStyle.drawPath(canvas, paint, arc.toPath(), drawDash: true, needSplit: false);
+    borderStyle.drawPath(canvas, paint, arc.toPath(), drawDash: true);
   }
 
   void onDrawText(CCanvas canvas, Paint paint) {

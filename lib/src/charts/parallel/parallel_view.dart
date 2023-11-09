@@ -19,7 +19,7 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     }
     canvas.save();
     canvas.clipRect(clipRect);
-    var nodeList = layoutHelper.nodeList;
+    var nodeList = layoutHelper.dataList;
     for (var ele in nodeList) {
       ele.onDraw(canvas, mPaint);
     }
@@ -51,8 +51,5 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     return ParallelHelper(context, this, series);
   }
 
-  @override
-  void onParallelAxisChange(List<int> dims) {
-    layoutHelper.onParallelAxisChange(dims);
-  }
+
 }

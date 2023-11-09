@@ -1,9 +1,9 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 import 'parallel_view.dart';
 
-class ParallelSeries extends ChartSeries2<ParallelData> {
-  Fun3<dynamic, ParallelData, ChartSymbol?>? symbolFun;
-
+class ParallelSeries extends ChartSeries3<ParallelChildData, ParallelData> {
+  Fun3<ParallelChildData, ParallelData, ChartSymbol?>? symbolFun;
   bool connectNull;
 
   ParallelSeries(
@@ -31,7 +31,7 @@ class ParallelSeries extends ChartSeries2<ParallelData> {
     return ParallelView(this);
   }
 
-  ChartSymbol getSymbol(dynamic data, ParallelData group) {
+  ChartSymbol getSymbol(ParallelChildData data, ParallelData group) {
     var fun = symbolFun;
     if (fun != null) {
       return fun.call(data, group) ?? EmptySymbol.empty;
@@ -40,42 +40,42 @@ class ParallelSeries extends ChartSeries2<ParallelData> {
   }
 
   @override
-  LineStyle getBorderStyle(Context context, ParallelData data) {
+  LineStyle getBorderStyle(Context context, ParallelChildData data, ParallelData parent) {
     if (borderStyleFun != null) {
-      return super.getBorderStyle(context, data);
+      return super.getBorderStyle(context, data, parent);
     }
     var theme = context.option.theme.parallelTheme;
     return theme.getItemStyle(context, data.styleIndex) ?? LineStyle.empty;
   }
 
   @override
-  AreaStyle getItemStyle(Context context, ParallelData data) {
+  AreaStyle getItemStyle(Context context, ParallelChildData data,ParallelData parent) {
     return AreaStyle.empty;
   }
 
   @override
   SeriesType get seriesType => SeriesType.parallel;
 
-  ExtremeHelper<dynamic>? _extremeHelper;
+  ExtremeHelper<ParallelData>? _extremeHelper;
 
-  ExtremeHelper<dynamic> getExtremeHelper() {
+  ExtremeHelper<ParallelData> getExtremeHelper() {
     if (_extremeHelper != null) {
       return _extremeHelper!;
     }
 
-    int maxValue = 0;
+    int maxDim = 0;
     each(data, (group, p0) {
-      maxValue = max([maxValue, group.data.length]).toInt();
+      maxDim = max([maxDim, group.data.length]).toInt();
     });
 
     ExtremeHelper<ParallelData> helper = ExtremeHelper(
-      (p0) => List.generate(maxValue, (index) => '$index', growable: false),
+      (p0) => List.generate(maxDim, (index) => '$index', growable: false),
       (p0, index) {
         var di = int.parse(index);
         if (p0.data.length <= di) {
           return null;
         }
-        return p0.data[di];
+        return p0.data[di].data;
       },
       data,
     );
@@ -97,5 +97,33 @@ class ParallelSeries extends ChartSeries2<ParallelData> {
   void notifyConfigChange() {
     clearExtreme();
     super.notifyConfigChange();
+  }
+
+  @override
+  List<LegendItem> getLegendItem(Context context) {
+    List<LegendItem> list = [];
+    each(data, (item, i) {
+      var name = item.label.text;
+      if (name.isEmpty) {
+        return;
+      }
+      if(item.data.isEmpty){
+        list.add(LegendItem(name, CircleSymbol()..itemStyle = const AreaStyle(color:Colors.blue), seriesId: id));
+      }else{
+        list.add(LegendItem(name, CircleSymbol()..itemStyle = AreaStyle(color:item.data.first.borderStyle.pickColor()), seriesId: id));
+      }
+    });
+    return list;
+  }
+
+  @override
+  int onAllocateStyleIndex(int start) {
+    each(data, (p0, p1) {
+      p0.styleIndex = start + p1;
+      each(p0.data, (child, p2) {
+        child.styleIndex = p1;
+      });
+    });
+    return data.length;
   }
 }

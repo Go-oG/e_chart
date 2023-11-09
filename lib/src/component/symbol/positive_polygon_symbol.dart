@@ -39,7 +39,7 @@ class PositiveSymbol extends ChartSymbol {
       return;
     }
     itemStyle.drawPath(canvas, paint, path, bound);
-    borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false, bound: bound);
+    borderStyle.drawPath(canvas, paint, path, drawDash: true,  bound: bound);
   }
 
   @override

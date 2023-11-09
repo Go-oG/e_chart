@@ -151,7 +151,7 @@ class BrushView extends GestureView {
     }
     for (var area in _brushList) {
       brush.areaStyle.drawPath(canvas, mPaint, area.path);
-      brush.borderStyle?.drawPath(canvas, mPaint, area.path, needSplit: false);
+      brush.borderStyle?.drawPath(canvas, mPaint, area.path);
     }
     var ol = _ol;
     if (ol.isNotEmpty) {

@@ -283,7 +283,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     int maxCount = layoutResult.splitList.length;
     each(layoutResult.splitList, (arc, index) {
       var s = axisLine.getAxisLineStyle(index, maxCount, theme);
-      s?.drawPath(canvas, paint, arc.arcOpen(), drawDash: true, needSplit: false);
+      s?.drawPath(canvas, paint, arc.arcOpen(), drawDash: true);
     });
   }
 

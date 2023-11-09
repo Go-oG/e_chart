@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class ParallelHelper extends LayoutHelper<ParallelSeries> {
-  List<ParallelData> nodeList = [];
+  List<ParallelData> dataList = [];
 
   ParallelHelper(super.context, super.view, super.series);
 
@@ -10,21 +10,20 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    List<ParallelData> oldList = nodeList;
+    List<ParallelData> oldList = dataList;
     List<ParallelData> newList = [...series.data];
     initData(newList);
-
-    layoutNode(newList);
+    layoutData(newList);
     var animation = getAnimation(type, newList.length);
     if (animation == null || type == LayoutType.none || type == LayoutType.update) {
-      nodeList = newList;
+      dataList = newList;
       animationProcess = 1;
       return;
     }
 
     var tween = ChartDoubleTween(option: animation);
     tween.addStartListener(() {
-      nodeList = newList;
+      dataList = newList;
     });
     tween.addListener(() {
       animationProcess = tween.value;
@@ -33,31 +32,39 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     context.addAnimationToQueue([AnimationNode(tween, animation, LayoutType.layout)]);
   }
 
-  void layoutNode(List<ParallelData> nodeList) {
-    var coord = findParallelCoord();
-    for (var node in nodeList) {
-      eachNull(node.attr, (symbol, i) {
-        var data = node.data[i];
-        if (data == null) {
-          node.attr[i].symbol = EmptySymbol.empty;
+  void layoutData(List<ParallelData> dataList) {
+    var parallelCoord = findParallelCoord();
+    for (var parent in dataList) {
+      ParallelChildData? preData;
+      each(parent.data, (data, i) {
+        if (data.dataIsNull) {
+          if (!parent.connectNull) {
+            preData = null;
+          }
         } else {
-          symbol?.center = coord.dataToPosition(i, data).center;
+          data.point = parallelCoord.dataToPosition(i, data.data).center;
+          if (preData != null) {
+            preData!.lines = [preData!.point, data.point];
+          }
+          preData = data;
         }
       });
-      node.updatePath(context, series);
+      each(parent.data, (p0, p1) {
+        p0.updatePath();
+      });
     }
   }
 
   void initData(List<ParallelData> list) {
-    each(list, (data, p1) {
-      List<SymbolNode> snl = [];
-      data.attr = snl;
-      data.updateStyle(context, series);
-      each(data.data, (cd, i) {
-        var node = SymbolNode(cd, series.getSymbol(cd, data), i, p1);
-        node.data = data;
-        snl.add(node);
+    each(list, (parent, p1) {
+      parent.dataIndex=p1;
+      parent.groupIndex=p1;
+      each(parent.data, (cd, i) {
+        cd.parent = parent;
+        cd.groupIndex = p1;
+        cd.dataIndex = i;
       });
+      parent.updateStyle(context, series);
     });
   }
 
@@ -75,16 +82,27 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     }
     var oldNode = _oldHoverNode;
     _oldHoverNode = node;
-    node?.addState(ViewState.hover);
-    node?.addState(ViewState.selected);
-    oldNode?.removeState(ViewState.hover);
-    oldNode?.removeState(ViewState.selected);
+    if(node!=null){
+      each(node.data, (p0, p1) {
+        p0.addState(ViewState.hover);
+        p0.addState(ViewState.selected);
+      });
+    }
+    if(oldNode!=null){
+      each(oldNode.data, (p0, p1) {
+        p0.removeState(ViewState.hover);
+        p0.removeState(ViewState.selected);
+      });
+    }
+
     if (node != null) {
       click ? sendClickEvent(offset, node) : sendHoverEvent(offset, node);
     }
+
     if (oldNode != null) {
       sendHoverEndEvent(oldNode);
     }
+
     notifyLayoutUpdate();
   }
 
@@ -110,10 +128,8 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
   }
 
   ParallelData? findNode(Offset offset) {
-    for (var node in nodeList) {
-      if (node.contains(offset)) {
-        return node;
-      }
+    for (var node in dataList) {
+      if(node.contains(offset)){return node;}
     }
     return null;
   }
@@ -123,25 +139,26 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
       return;
     }
     var coord = findParallelCoord();
-    each(nodeList, (node, p1) {
+    each(dataList, (parent, p1) {
       bool hasChange = false;
       for (var dim in dims) {
-        if (node.attr.length <= dim) {
+        if (parent.data.length <= dim) {
           continue;
         }
-        var cn = node.attr[dim];
+        var cn = parent.data[dim];
         if (cn.data == null) {
           continue;
         }
-        var old = cn.center;
-        cn.center = coord.dataToPosition(dim, cn.data!).center;
-
-        if (old != cn.center) {
+        var old = cn.point;
+        cn.point = coord.dataToPosition(dim, cn.data!).center;
+        if (old != cn.point) {
           hasChange = true;
         }
       }
       if (hasChange) {
-        node.updatePath(context, series);
+        each(parent.data, (p0, p1) {
+          p0.updatePath();
+        });
       }
     });
   }

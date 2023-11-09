@@ -65,7 +65,7 @@ class RadarData extends RenderData<Path> {
       canvas.scale(scale);
       canvas.translate(-center.dx, -center.dy);
       itemStyle.drawPath(canvas, paint, path);
-      borderStyle.drawPath(canvas, paint, path, drawDash: true, needSplit: false);
+      borderStyle.drawPath(canvas, paint, path, drawDash: true);
       canvas.restore();
     }
 
