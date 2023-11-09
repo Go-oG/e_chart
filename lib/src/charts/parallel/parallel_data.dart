@@ -1,53 +1,18 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class ParallelData extends RenderData<Offset> {
-  List<ParallelChildData> data;
+class ParallelData extends RenderGroupData<ParallelChildData> {
   bool connectNull = false;
-
   ParallelData(
-    this.data, {
+    super.data, {
     super.id,
     super.name,
     this.connectNull = false,
   });
-
-  @override
-  bool contains(Offset offset) {
-    for (var c in data) {
-      if (c.contains(offset)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @override
-  void onDraw(CCanvas canvas, Paint paint) {
-    each(data, (p0, p1) {
-      p0.onDraw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawSymbol(CCanvas canvas, Paint paint) {
-    each(data, (p0, p1) {
-      p0.onDrawSymbol(canvas, paint);
-    });
-  }
-
-  @override
-  void updateStyle(Context context, covariant ParallelSeries series) {
-    each(data, (p0, p1) {
-      p0.updateStyle(context, series);
-    });
-  }
 }
 
-class ParallelChildData extends RenderData<Offset> {
-  dynamic data;
-
-  ParallelChildData(this.data, {super.id, super.name});
+class ParallelChildData extends RenderChildData<dynamic,ParallelData,Offset> {
+  ParallelChildData(super.data, {super.id, super.name});
 
   @override
   bool contains(Offset offset) {
@@ -72,7 +37,7 @@ class ParallelChildData extends RenderData<Offset> {
 
   @override
   void onDrawSymbol(CCanvas canvas, Paint paint) {
-    symbol?.draw(canvas, paint, point);
+    symbol?.draw(canvas, paint, center);
   }
 
   @override
@@ -96,25 +61,11 @@ class ParallelChildData extends RenderData<Offset> {
     }
   }
 
-  ParallelData get parent => extGet("parent");
-
-  set parent(ParallelData p) => extSet("parent", p);
-
-  ChartSymbol? get symbol => extGetNull("symbol");
-
-  set symbol(ChartSymbol? s) => extSet("symbol", s);
-
-  Offset get point => extGet("point");
-
-  set point(Offset p) => extSet("point", p);
-
   List<Offset> get lines => extGetNull("lines") ?? [];
-
   set lines(List<Offset> v) => extSet("lines", v);
 
   Path? get path => extGetNull("path");
 
   set path(Path? p) => extSet("path", p);
 
-  bool get dataIsNull => data == null;
 }

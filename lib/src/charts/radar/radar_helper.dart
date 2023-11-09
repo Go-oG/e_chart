@@ -27,7 +27,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       newList,
       (dataList) {
         each(dataList, (group, gi) {
-          each(group.value, (c, i) {
+          each(group.data, (c, i) {
             c.attr = coord.dataToPoint(i, c.value).point;
           });
           group.updatePath();
@@ -64,7 +64,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
       group.dataIndex = gi;
       group.center = center;
       group.updateStyle(context, series);
-      each(group.value, (c, i) {
+      each(group.data, (c, i) {
         c.groupIndex = gi;
         c.dataIndex = i;
         c.updateStyle(context, series);

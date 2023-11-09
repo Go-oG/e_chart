@@ -17,8 +17,8 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
   List<num> getRadarExtreme(int dim) {
     List<num> resultList = [];
     for (var group in series.data) {
-      if (group.value.length > dim) {
-        resultList.add(group.value[dim].value);
+      if (group.data.length > dim) {
+        resultList.add(group.data[dim].value);
       }
     }
     return resultList;

@@ -92,9 +92,9 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
     for (var node in dataList) {
       DateTime t;
       if (node.x.isDate) {
-        t = node.x.value;
+        t = node.x.data;
       } else if (node.y.isDate) {
-        t = node.y.value;
+        t = node.y.data;
       } else {
         throw ChartError('x 或y 必须有一个是DateTime');
       }

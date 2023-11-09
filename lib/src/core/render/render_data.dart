@@ -1,4 +1,3 @@
-
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +8,7 @@ abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
   int groupIndex = 0;
   int dataIndex = -1;
   int styleIndex = -1;
+
   ///绘制顺序(从小到到绘制，最大的最后绘制)
   int drawIndex = -1;
 
@@ -191,6 +191,67 @@ abstract class RenderData2<P, S extends ChartSymbol> extends RenderData<P> {
   NodeAttr toAttr() {
     return NodeAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, symbol.scale);
   }
+}
+
+abstract class RenderGroupData<T extends RenderData> extends RenderData<Offset> {
+  List<T> data;
+
+  RenderGroupData(
+    this.data, {
+    super.id,
+    super.name,
+  });
+
+  @override
+  bool contains(Offset offset) {
+    for (var c in data) {
+      if (c.contains(offset)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  void onDraw(CCanvas canvas, Paint paint) {
+    each(data, (p0, p1) {
+      p0.onDraw(canvas, paint);
+    });
+  }
+
+  @override
+  void onDrawSymbol(CCanvas canvas, Paint paint) {
+    each(data, (p0, p1) {
+      p0.onDrawSymbol(canvas, paint);
+    });
+  }
+
+  @override
+  void updateStyle(Context context, covariant ChartSeries series) {
+    each(data, (p0, p1) {
+      p0.updateStyle(context, series);
+    });
+  }
+}
+
+abstract class RenderChildData<T, P extends RenderGroupData,A> extends RenderData<A> {
+  T? data;
+
+  RenderChildData(this.data, {super.id, super.name});
+
+  @override
+  void onDrawSymbol(CCanvas canvas, Paint paint) {
+    symbol?.draw(canvas, paint, center);
+  }
+
+  P get parent => extGet("exParent");
+  set parent(P p) => extSet("exParent", p);
+  ChartSymbol? get symbol => extGetNull("exSymbol");
+  set symbol(ChartSymbol? s) => extSet("exSymbol", s);
+  Offset get center => extGet("exCenter");
+  set center(Offset p) => extSet("exCenter", p);
+  bool get dataIsNull => data == null;
+
 }
 
 class SymbolNode<T> with StateProvider, ExtProps {

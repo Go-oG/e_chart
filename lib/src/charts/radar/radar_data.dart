@@ -4,13 +4,13 @@ import 'package:e_chart/e_chart.dart';
 
 class RadarData extends RenderData<Path> {
   static final Path emptyPath = Path();
-  List<RadarChildData> value;
+  List<RadarChildData> data;
 
   double scale = 1;
   Offset center = Offset.zero;
 
   RadarData(
-    this.value, {
+    this.data, {
     super.id,
     super.name,
   }) : super.attr(emptyPath);
@@ -35,8 +35,8 @@ class RadarData extends RenderData<Path> {
 
   Path buildPath() {
     Path path = Path();
-    for (int i = 0; i < value.length; i++) {
-      var node = value[i];
+    for (int i = 0; i < data.length; i++) {
+      var node = data[i];
       if (i == 0) {
         path.moveTo(node.attr.dx, node.attr.dy);
       } else {
@@ -69,7 +69,7 @@ class RadarData extends RenderData<Path> {
       canvas.restore();
     }
 
-    each(value, (node, p1) {
+    each(data, (node, p1) {
       node.onDraw(canvas, paint);
     });
   }

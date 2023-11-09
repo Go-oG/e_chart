@@ -42,9 +42,9 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
             preData = null;
           }
         } else {
-          data.point = parallelCoord.dataToPosition(i, data.data).center;
+          data.center = parallelCoord.dataToPosition(i, data.data).center;
           if (preData != null) {
-            preData!.lines = [preData!.point, data.point];
+            preData!.lines = [preData!.center, data.center];
           }
           preData = data;
         }
@@ -57,8 +57,8 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
 
   void initData(List<ParallelData> list) {
     each(list, (parent, p1) {
-      parent.dataIndex=p1;
-      parent.groupIndex=p1;
+      parent.dataIndex = p1;
+      parent.groupIndex = p1;
       each(parent.data, (cd, i) {
         cd.parent = parent;
         cd.groupIndex = p1;
@@ -82,13 +82,13 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     }
     var oldNode = _oldHoverNode;
     _oldHoverNode = node;
-    if(node!=null){
+    if (node != null) {
       each(node.data, (p0, p1) {
         p0.addState(ViewState.hover);
         p0.addState(ViewState.selected);
       });
     }
-    if(oldNode!=null){
+    if (oldNode != null) {
       each(oldNode.data, (p0, p1) {
         p0.removeState(ViewState.hover);
         p0.removeState(ViewState.selected);
@@ -129,7 +129,9 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
 
   ParallelData? findNode(Offset offset) {
     for (var node in dataList) {
-      if(node.contains(offset)){return node;}
+      if (node.contains(offset)) {
+        return node;
+      }
     }
     return null;
   }
@@ -149,9 +151,9 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
         if (cn.data == null) {
           continue;
         }
-        var old = cn.point;
-        cn.point = coord.dataToPosition(dim, cn.data!).center;
-        if (old != cn.point) {
+        var old = cn.center;
+        cn.center = coord.dataToPosition(dim, cn.data!).center;
+        if (old != cn.center) {
           hasChange = true;
         }
       }
