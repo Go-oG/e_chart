@@ -1,3 +1,5 @@
+export 'collections/safe_list.dart';
+
 export 'delaunay/d_edge.dart';
 export 'delaunay/delaunay.dart';
 export 'delaunay/d_shape.dart';

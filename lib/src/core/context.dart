@@ -183,11 +183,7 @@ class Context extends Disposable {
     _legend?.onStop();
     _title?.onStop();
     for (var coord in coordList) {
-      try {
-        coord.onStop();
-      } catch (e) {
-        Logger.e(e);
-      }
+      coord.onStop();
     }
   }
 
@@ -384,7 +380,7 @@ class Context extends Disposable {
   }
 
   void addAnimationToQueue(List<AnimationNode> nodes) {
-    _animationManager.addAnimatorToQueue(nodes);
+    _animationManager.addAnimators(nodes);
   }
 
   List<AnimationNode> getAndResetAnimationQueue() {

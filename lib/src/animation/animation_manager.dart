@@ -2,6 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 ///全局的动画管理者
+///负责管理所有的AnimationController 以及相关联的动画节点
 class AnimationManager extends Disposable {
   AnimationManager();
 
@@ -37,19 +38,8 @@ class AnimationManager extends Disposable {
     return c;
   }
 
-  int _count = 0;
-
   void _collate() {
-    _count++;
-    if (_count < 30) {
-      return;
-    }
-    _count = 0;
-    try {
-      _map.removeWhere((key, value) => value.isCompleted);
-    } catch (e) {
-      Logger.e(e);
-    }
+    _map.removeWhere((key, value) => value.isCompleted);
   }
 
   void remove(AnimationController c, [bool dispose = true]) {
@@ -79,22 +69,9 @@ class AnimationManager extends Disposable {
     });
   }
 
-  ///存储动画队列
-  List<AnimationNode> _animatorQueue = [];
-
-  List<AnimationNode> getAndRestAnimatorQueue() {
-    List<AnimationNode> nodeList = _animatorQueue;
-    _animatorQueue = [];
-    return nodeList;
-  }
-
-  void addAnimatorToQueue(List<AnimationNode> nodes) {
-    _animatorQueue.addAll(nodes);
-  }
-
+  ///取消所有的动画
   void cancelAllAnimator() {
     var map = _map;
-    _count = 0;
     _map = {};
     map.forEach((key, value) {
       try {
@@ -103,9 +80,39 @@ class AnimationManager extends Disposable {
     });
   }
 
+  ///存储动画队列
+  final SafeList<AnimationNode> _animatorQueue = SafeList();
+
+  static final List<AnimationNode> _emptyList = List.empty(growable: false);
+
+  List<AnimationNode> getAndRestAnimatorQueue() {
+    if (_animatorQueue.isEmpty) {
+      return _emptyList;
+    }
+    List<AnimationNode> nodeList = [];
+    _animatorQueue.each((value) {
+      nodeList.add(value);
+    });
+    _animatorQueue.clear();
+    return nodeList;
+  }
+
+  void addAnimators(List<AnimationNode> nodes) {
+    _animatorQueue.addAll(nodes);
+  }
+
+  void addAnimator(AnimationNode node) {
+    _animatorQueue.add(node);
+  }
+
+  void removeAnimator(AnimationNode node) {
+    _animatorQueue.remove(node);
+  }
+
   @override
   void dispose() {
-    cancelAllAnimator();
     super.dispose();
+    cancelAllAnimator();
+    _animatorQueue.dispose();
   }
 }
