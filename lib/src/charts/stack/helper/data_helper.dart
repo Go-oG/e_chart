@@ -4,15 +4,15 @@ import 'package:e_chart/e_chart.dart';
 ///处理二维坐标系下堆叠数据
 class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
   late List<P> groupList;
-  CoordType coord;
-  int polarIndex;
-  Direction direction;
-  bool realSort;
-  Sort sort;
-  int? sortCount;
+  final CoordType coord;
+  final int polarIndex;
+  final Direction direction;
+  final bool realSort;
+  final Sort sort;
+  final int? sortCount;
 
   List<StackData<T, P>> dataList = [];
-  Map<String,StackData<T, P>> _dataMap={};
+  Map<String, StackData<T, P>> _dataMap = {};
 
   AxisGroup<T, P>? _result;
 
@@ -20,11 +20,9 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
     return _result!;
   }
 
-  bool hasData(StackData<T,P> data){
+  bool hasData(StackData<T, P> data) {
     return _dataMap.containsKey(data.id);
   }
-
-
   DataHelper(this.coord, this.polarIndex, List<P> list, this.direction, this.realSort, this.sort, this.sortCount) {
     if (coord != CoordType.grid && coord != CoordType.polar) {
       throw ChartError('only support Grid and Polar Coord');
@@ -35,42 +33,39 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
         throw ChartError("当启用了实时排序后，只支持一个数据组");
       }
       if (groupList.isNotEmpty) {
-        P group = groupList.first;
-        int c = sortCount ?? -1;
-        if (c <= 0) {
-          c = group.data.length;
-        }
-        if (c > group.data.length) {
-          c = group.data.length;
-        }
-        bool isVertical = direction == Direction.vertical;
-        group.data.sort((a, b) {
-          var ad = a.dataNull;
-          var bd = a.dataNull;
-
-          num ai =
-              ad == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? ad.y : ad.x);
-          num bi =
-              bd == null ? (sort == Sort.desc ? double.maxFinite : double.minPositive) : (isVertical ? bd.y : bd.x);
-          if (sort == Sort.desc) {
-            return bi.compareTo(ai);
+        each(groupList, (group, p1) {
+          int c = sortCount ?? -1;
+          if (c <= 0) {
+            c = group.data.length;
           }
-          return ai.compareTo(bi);
+          if (c > group.data.length) {
+            c = group.data.length;
+          }
+          double defaultV = sort == Sort.desc ? double.maxFinite : double.minPositive;
+          group.data.sort((a, b) {
+            var ad = a.dataNull;
+            var bd = b.dataNull;
+            num ai = ad == null ? defaultV : ad.maxValue;
+            num bi = bd == null ? defaultV : bd.maxValue;
+            if (sort == Sort.desc) {
+              return bi.compareTo(ai);
+            }
+            return ai.compareTo(bi);
+          });
+          if (c < group.data.length) {
+            group.data.removeRange(c, group.data.length);
+          }
         });
-        if (c != group.data.length) {
-          group.data.removeRange(c, group.data.length);
-        }
       }
     }
     this.dataList = [];
-    this._dataMap={};
+    this._dataMap = {};
     each(groupList, (group, p1) {
       each(group.data, (p0, p1) {
         this.dataList.add(p0);
-        _dataMap[p0.id]=p0;
+        _dataMap[p0.id] = p0;
       });
     });
-
     _result = _parse();
   }
 
@@ -109,7 +104,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
 
     ///最后进行数据合并整理
     AxisGroup<T, P> group = AxisGroup(resultMap);
-
     group.mergeData(direction);
     _xAxisExtreme = _collectExtreme(group, true);
     _yAxisExtreme = _collectExtreme(group, false);
@@ -128,7 +122,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
       each(group.data, (cd, i) {
         cd.dataIndex = i;
         cd.groupIndex = groupIndex;
-        cd.styleIndex=groupIndex;
+        cd.styleIndex = groupIndex;
         cd.attr.parent = group;
         cd.attr.coord = coord;
       });
@@ -136,7 +130,6 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
   }
 
   ///将给定的数据按照其使用的坐标轴进行分割
-  ///对于竖直方向 X轴为主轴，水平方向 Y轴为主轴
   Map<AxisIndex, List<GroupNode<T, P>>> _splitDataByAxis(List<P> dataList) {
     Map<AxisIndex, List<P>> axisGroupMap = {};
     for (var group in dataList) {
@@ -172,19 +165,19 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
     int barGroupCount = _computeMaxGroupCount(list);
 
     ///存放分组数据
-    List<List<StackData<T, P>>> groupDataSetList = List.generate(barGroupCount, (index) => []);
+    List<List<StackData<T, P>>> groupDataList = List.generate(barGroupCount, (index) => []);
     for (int i = 0; i < barGroupCount; i++) {
       for (var data in list) {
         if (i >= data.data.length) {
-          continue;
+          break;
         }
-        groupDataSetList[i].add(data.data[i]);
+        groupDataList[i].add(data.data[i]);
       }
     }
     List<GroupNode<T, P>> groupNodeList = List.generate(barGroupCount, (index) => GroupNode(axisIndex, index, []));
 
     ///合并数据
-    each(groupDataSetList, (group, index) {
+    each(groupDataList, (group, index) {
       GroupNode<T, P> groupNode = groupNodeList[index];
 
       ///<stackId>
@@ -224,23 +217,24 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
     ///排序
     for (var group in groupNodeList) {
       //排序孩子
-      for (var child in group.nodeList) {
-        if (child.nodeList.length > 1) {
-          child.nodeList.sort((a, b) {
-            var ai = a.groupIndex;
-            var bi = b.groupIndex;
-            return ai.compareTo(bi);
-          });
-        }
-      }
+      // for (var child in group.nodeList) {
+      //   if (child.nodeList.length > 1) {
+      //     child.nodeList.sort((a, b) {
+      //       var ai = a.groupIndex;
+      //       var bi = b.groupIndex;
+      //       return ai.compareTo(bi);
+      //     });
+      //   }
+      // }
+
       //排序自身
-      if (group.nodeList.length > 1) {
-        group.nodeList.sort((a, b) {
-          var ai = a.nodeList.first.groupIndex;
-          var bi = b.nodeList.first.groupIndex;
-          return ai.compareTo(bi);
-        });
-      }
+      // if (group.nodeList.length > 1) {
+      //   group.nodeList.sort((a, b) {
+      //     var ai = a.nodeList.first.groupIndex;
+      //     var bi = b.nodeList.first.groupIndex;
+      //     return ai.compareTo(bi);
+      //   });
+      // }
     }
     return groupNodeList;
   }
@@ -265,6 +259,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
             } else {
               dl.add(x ? node.dataNull?.x : node.dataNull?.y);
             }
+
             for (var data in dl) {
               if (data == null) {
                 continue;

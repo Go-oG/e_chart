@@ -4,8 +4,7 @@ import 'package:flutter/rendering.dart';
 ///用于处理堆叠数据的布局帮助者
 ///一般用于笛卡尔坐标系和极坐标系的布局
 ///需要支持部分布局
-abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, P>, S extends StackSeries<T, P>>
-    extends LayoutHelper2<StackData<T, P>, S> {
+abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, P>, S extends StackSeries<T, P>> extends LayoutHelper2<StackData<T, P>, S> {
   List<MarkPointNode> markPointList = [];
 
   List<MarkLineNode> markLineList = [];
@@ -154,10 +153,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
 
   ///布局MarkLine和MarkPoint
   void layoutMarkPointAndLine(DataHelper<T, P> helper, List<P> groupList, List<StackData<T, P>> newNodeList) {
-    if (series.markPoint == null &&
-        series.markLine == null &&
-        series.markPointFun == null &&
-        series.markLineFun == null) {
+    if (series.markPoint == null && series.markLine == null && series.markPointFun == null && series.markLineFun == null) {
       markLineList = [];
       markPointList = [];
       return;
@@ -306,8 +302,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         var xr = x / coord.getAxisLength(xIndex, true);
         var y = data[1].convert(coord.getAxisLength(yIndex, false));
         var yr = y / coord.getAxisLength(yIndex, false);
-        var dd =
-            vertical ? coord.getScale(yIndex, false).convertRatio(yr) : coord.getScale(xIndex, true).convertRatio(xr);
+        var dd = vertical ? coord.getScale(yIndex, false).convertRatio(yr) : coord.getScale(xIndex, true).convertRatio(xr);
         node = MarkPointNode(markPoint, dd);
         node.offset = Offset(x, y);
       }
@@ -391,7 +386,18 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
   ///获取当前显示窗口内的极值数据
   List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     List<dynamic> dl = [];
-    each(nodeList, (value, i) {
+    List<StackData<T, P>> list =nodeList;
+    if (series.realtimeSort) {
+      list=List.from(nodeList);
+      list.sort((a, b) {
+        if (series.sort == Sort.asc) {
+          return a.up.compareTo(b.up);
+        }
+        return b.up.compareTo(a.up);
+      });
+    }
+
+    each(list, (value, i) {
       if (value.dataIsNull) {
         return;
       }
@@ -413,6 +419,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         }
       }
     });
+
     return dl;
   }
 

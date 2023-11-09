@@ -123,6 +123,11 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
     attrNull?._parent?.data.remove(this);
     attrNull?.dispose();
   }
+
+  @override
+  String toString() {
+    return 'value:X:${value?.x} y:${value?.y}';
+  }
 }
 
 class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> extends Disposable {

@@ -75,7 +75,7 @@ class DiffUtil {
 
     ///保留旧的数据
     var diffResult = diffData(oldList, newList);
-    diffInfoCall?.call(diffResult);
+     diffInfoCall?.call(diffResult);
 
     var newLen = diffResult.newUpdateSet.length;
     var oldLen = diffResult.oldUpdateSet.length;

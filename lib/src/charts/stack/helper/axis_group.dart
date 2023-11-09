@@ -40,15 +40,18 @@ class AxisGroup<T extends StackItemData, P extends StackGroupData<T,P>> {
   }
 
   void dispose() {
-    storeMap.forEach((key, value) {
+    var old=storeMap;
+    storeMap={};
+    old.forEach((key, value) {
       value.dispose();
     });
-    storeMap = {};
-    for (var gl in groupMap.values) {
+
+    var old2=groupMap;
+    groupMap = {};
+    for (var gl in old2.values) {
       each(gl, (p0, p1) {
         p0.dispose();
       });
     }
-    groupMap = {};
   }
 }
