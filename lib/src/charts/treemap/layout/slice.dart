@@ -4,10 +4,10 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
 /// 从上到下
-class SliceLayout extends TreemapLayout {
+class SliceLayout extends HierarchyLayout<TreeMapData,TreeMapSeries> {
   @override
-  void onLayout2(TreeMapData root, LayoutType type) {
-    layoutChildren(boxBound, root.children);
+  void onLayout(TreeMapData data, var params) {
+    layoutChildren(params.boxBound, data.children);
   }
 
   ///从上到下

@@ -218,7 +218,7 @@ class LegendItemView extends GestureView with StateProvider {
   Size onMeasure(double parentWidth, double parentHeight) {
     num w = item.symbol.size.width;
     num h = item.symbol.size.height;
-    Size textSize = labelStyle.measure(item.name, maxLine: 1);
+    Size textSize = labelStyle.measure(item.name);
     var p = legend.labelPosition;
     if (p == Position.left || p == Position.right) {
       w += textSize.width + item.gap;

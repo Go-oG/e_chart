@@ -55,7 +55,7 @@ abstract class RectSeries extends ChartSeries {
   }
 }
 
-abstract class RectSeries2<T extends RenderData> extends ChartSeries2<T> {
+abstract class RectSeries2<T extends RenderData> extends ChartListSeries<T> {
   /// 定义布局的上下左右间距或者宽高，
   /// 宽高的优先级大于上下间距的优先级(如果定义了)
   SNumber leftMargin;

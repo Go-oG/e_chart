@@ -3,14 +3,14 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
 //从左至右
-class DiceLayout extends TreemapLayout {
+class DiceLayout extends HierarchyLayout<TreeMapData,TreeMapSeries> {
 
   @override
- void onLayout2(TreeMapData root,LayoutType type) {
-    if (root.notChild) {
+ void onLayout(TreeMapData data,var params) {
+    if (data.notChild) {
       return ;
     }
-    layoutChildren(boxBound, root.children);
+    layoutChildren(params.boxBound, data.children);
   }
 
   static void layoutChildren(Rect area, List<TreeMapData> nodeList) {

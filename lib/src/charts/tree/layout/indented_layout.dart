@@ -18,7 +18,7 @@ class IndentedLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeData rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData data, HierarchyOption<TreeSeries> params) {
     var width = params.width;
     var height = params.height;
     Direction2 direction = this.direction;
@@ -26,9 +26,9 @@ class IndentedLayout extends TreeLayout {
       direction = Direction2.ltr;
     }
     if (direction == Direction2.ltr || direction == Direction2.rtl) {
-      _layoutTree(rootNode, width, height, direction);
+      _layoutTree(data, width, height, direction);
     } else {
-      _layoutCenter(rootNode, width, height);
+      _layoutCenter(data, width, height);
     }
   }
 

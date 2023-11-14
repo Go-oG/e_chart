@@ -1,4 +1,6 @@
 enum OverFlow {
-  cut,
-  newLine;
+  notDraw,
+  ignore,
+  clip,
+  scale,
 }

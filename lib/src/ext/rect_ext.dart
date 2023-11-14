@@ -54,6 +54,14 @@ extension RectExt on Rect {
   String toString2() {
     return 'LTRB(${left.toStringAsFixed(1)}, ${top.toStringAsFixed(1)}, ${right.toStringAsFixed(1)}, ${bottom.toStringAsFixed(1)})';
   }
+
+  ///返回一个新矩形 其每条边向内缩减指定量
+  Rect deflate2({num left = 0, num right = 0, num top = 0, num bottom = 0}) {
+    if (left == 0 && right == 0 && top == 0 && bottom == 0) {
+      return this;
+    }
+    return Rect.fromLTRB(this.left - left, this.top - top, this.right - right, this.bottom - bottom);
+  }
 }
 
 ///判断两条线段是否相交

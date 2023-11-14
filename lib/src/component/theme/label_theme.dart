@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../style/label.dart';
+import '../style/label_style.dart';
 
 class LabelTheme {
   Color _textColor = const Color(0xDD000000);

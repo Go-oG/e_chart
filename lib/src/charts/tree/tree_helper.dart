@@ -78,7 +78,15 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     root.setMaxDeep(root.height);
 
     ///开始布局
-    series.layout.onLayout(root, TreeLayoutParams(series, width, height));
+    series.layout.onLayout(
+        root,
+        HierarchyOption<TreeSeries>(
+          series,
+          width,
+          height,
+          boxBound,
+          globalBoxBound,
+        ));
 
     ///布局完成计算偏移量并更新节点
     double x = series.center[0].convert(width);

@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/circle/circle_view.dart';
 
-class CircleSeries extends ChartSeries2<CircleData> {
+class CircleSeries extends ChartListSeries<CircleData> {
   List<SNumber> center;
   SNumber innerRadius;
   SNumber radiusGap;

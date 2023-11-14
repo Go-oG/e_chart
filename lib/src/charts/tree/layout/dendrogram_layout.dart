@@ -16,25 +16,25 @@ class DendrogramLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeData rootNode, TreeLayoutParams params) {
-    List<num> yList = List.filled(rootNode.height + 1, 0);
-    for (int i = 1; i <= rootNode.height; i++) {
+  void onLayout(TreeData data, HierarchyOption<TreeSeries> params) {
+    List<num> yList = List.filled(data.height + 1, 0);
+    for (int i = 1; i <= data.height; i++) {
       num levelGap = getLevelGap(i - 1, i);
       yList[i] = levelGap + yList[i - 1];
     }
     if (direction != Direction2.v && direction != Direction2.h) {
-      return _layoutNode(rootNode, direction, yList);
+      return _layoutNode(data, direction, yList);
     }
-    int c = rootNode.childCount;
+    int c = data.childCount;
     if (c <= 1) {
       Direction2 d = direction == Direction2.v ? Direction2.ttb : Direction2.ltr;
-      return _layoutNode(rootNode, d, yList);
+      return _layoutNode(data, d, yList);
     }
     var leftNode = TreeData(null, []);
     var rightNode = TreeData(null, []);
     int middle = c ~/ 2;
-    List<TreeData> cd = List.from(rootNode.children);
-    rootNode.clear();
+    List<TreeData> cd = List.from(data.children);
+    data.clear();
     each(cd, (node, i) {
       if (i <= middle) {
         leftNode.add(node);
@@ -71,16 +71,16 @@ class DendrogramLayout extends TreeLayout {
     }
 
     ///还原节点层次关系
-    rootNode.size = rightNode.size;
-    rootNode.x = b ? leftNode.x : rightNode.x;
-    rootNode.y = b ? leftNode.y : rightNode.y;
+    data.size = rightNode.size;
+    data.x = b ? leftNode.x : rightNode.x;
+    data.y = b ? leftNode.y : rightNode.y;
     for (var node in [...leftNode.children, ...rightNode.children]) {
       node.parent = null;
-      rootNode.add(node);
+      data.add(node);
     }
     ///还原树的高度和深度
-    rootNode.setDeep(0, false);
-    rootNode.setHeight(max<int>([leftNode.height, rightNode.height]), false);
+    data.setDeep(0, false);
+    data.setHeight(max<int>([leftNode.height, rightNode.height]), false);
   }
 
   void _layoutNode(TreeData root, Direction2 direction, List<num> yList) {

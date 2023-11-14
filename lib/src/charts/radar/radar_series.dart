@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/radar/radar_view.dart';
 
-class RadarSeries extends ChartSeries2<RadarData> {
+class RadarSeries extends ChartListSeries<RadarData> {
   int splitNumber;
   Fun2<RadarChildData, ChartSymbol?>? symbolFun;
   num nameGap;

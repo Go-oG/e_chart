@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 import 'point_view.dart';
 
-class PointSeries extends ChartSeries2<PointData> {
+class PointSeries extends ChartListSeries<PointData> {
   Fun2<PointData, ChartSymbol>? symbolFun;
 
   PointSeries(

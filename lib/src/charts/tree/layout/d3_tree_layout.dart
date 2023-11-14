@@ -23,24 +23,24 @@ class D3TreeLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeData rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData data, HierarchyOption<TreeSeries> params) {
     num dx = params.width;
     num dy = params.height;
-    InnerNode t = _treeRoot(rootNode);
+    InnerNode t = _treeRoot(data);
     t.eachAfter(_firstWalk);
     t.parent!.m = -t.z;
     t.eachBefore(_secondWalk);
 
     if (diff) {
-      rootNode.eachBefore((node, b, c) {
+      data.eachBefore((node, b, c) {
         _sizeNode(node, dx, dy);
         return false;
       });
     } else {
-      var left = rootNode, right = rootNode, bottom = rootNode;
+      var left = data, right = data, bottom = data;
 
       ///找到最右 最左 最低的节点
-      rootNode.eachBefore((node, b, c) {
+      data.eachBefore((node, b, c) {
         if (node.x < left.x) left = node;
         if (node.x > right.x) right = node;
         if (node.deep > bottom.deep) bottom = node;
@@ -48,7 +48,7 @@ class D3TreeLayout extends TreeLayout {
       });
       var split = left == right ? 1 : splitFun.call(left, right) / 2;
       var tx = split - left.x, kx = dx / (right.x + split + tx), ky = dy / (jsOr(bottom.deep, 1));
-      rootNode.eachBefore((node, b, c) {
+      data.eachBefore((node, b, c) {
         node.x = (node.x + tx) * kx;
         node.y = node.deep * ky;
         return false;

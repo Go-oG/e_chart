@@ -1,3 +1,6 @@
+
+export 'common/hierarchy/hierarchy_layout.dart';
+
 export 'bar/bar_data.dart';
 export 'bar/bar_series.dart';
 
@@ -73,7 +76,7 @@ export 'tree/tree_series.dart';
 
 export 'treemap/layout/binary.dart' hide BinaryNode;
 export 'treemap/layout/dice.dart';
-export 'treemap/layout/layout.dart';
+export 'treemap/tree_map_util.dart';
 export 'treemap/layout/resquarify.dart';
 export 'treemap/layout/slice.dart';
 export 'treemap/layout/slice_dice.dart';

@@ -4,6 +4,9 @@ import 'dart:math';
 class StaticConfig {
   static const angleUnit = pi / 180;
 
+  ///这里取53 是为了兼容Web
+  static const int intMax = 2 ^ 53 - 1;
+
   ///贝塞尔曲线曲率
   static double smoothRatio = 0.18;
 

@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-abstract class TreeLayout extends Disposable{
+abstract class TreeLayout extends HierarchyLayout<TreeData,TreeSeries>{
   ///连接线的类型(某些布局只支持某些特定类型)
   LineType lineType;
 
@@ -25,8 +25,6 @@ abstract class TreeLayout extends Disposable{
     this.levelGapSize,
     this.levelGapFun,
   });
-
-  void onLayout(TreeData rootNode, TreeLayoutParams params);
 
   Path? onLayoutNodeLink(TreeData parent, TreeData child) {
     Line line = Line([parent.center, child.center]);
@@ -64,12 +62,4 @@ abstract class TreeLayout extends Disposable{
 
   bool get optShowNode=>true;
 
-}
-
-class TreeLayoutParams {
-  final TreeSeries series;
-  final double width;
-  final double height;
-
-  TreeLayoutParams(this.series, this.width, this.height);
 }

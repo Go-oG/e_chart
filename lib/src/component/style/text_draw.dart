@@ -12,15 +12,14 @@ class TextDraw {
   late DynamicText _text;
   Offset offset;
   Alignment align; //用于感知文本绘制位置
-  num maxWidth;
-  num minWidth;
-  num maxHeight;
+  double maxWidth;
+  double minWidth;
+  double maxHeight;
   num rotate; //文本相对于水平旋转的角度
   TextAlign textAlign;
   TextDirection textDirection;
   int? maxLines;
   String? ellipsis;
-  bool ignoreOverText; //是否忽略绘制越界的文本
   num scaleFactor = 1; //文本缩放参数
 
   TextDraw(
@@ -37,7 +36,6 @@ class TextDraw {
     this.maxLines,
     this.maxHeight = double.maxFinite,
     this.ellipsis,
-    this.ignoreOverText = false,
     bool emptyFlag = false,
   }) {
     _text = text;
@@ -46,7 +44,6 @@ class TextDraw {
   }
 
   DynamicText get text => _text;
-
   set text(DynamicText d) {
     if (_emptyFlag) {
       return;
@@ -55,7 +52,6 @@ class TextDraw {
   }
 
   LabelStyle get style => _style;
-
   set style(LabelStyle s) {
     if (_emptyFlag) {
       return;
@@ -64,56 +60,105 @@ class TextDraw {
   }
 
   Rect _textRect = Rect.zero;
-  Size _testSize = Size.zero;
-
+  Size _textSize = Size.zero;
   Offset _textCenter = Offset.zero;
   Offset _textOffset = Offset.zero;
-
   TextPainter? _painter;
+
+  ///标识是否越界了
+  bool _cross = false;
 
   TextPainter? _getPainter() {
     if (_emptyFlag) {
       return null;
     }
-    if (text.isEmpty || !style.show || text.isParagraph) {
+    if (text.isEmpty || !style.show || text.isParagraph || _cross) {
       return null;
     }
     var p = _painter;
     if (p != null) {
       return p;
     }
-    TextSpan ts;
-    if (text.isString) {
-      ts = TextSpan(text: text.text, style: style.textStyle);
-    } else {
-      ts = text.text;
-    }
-    p = TextPainter(
-        text: ts, textAlign: textAlign, textDirection: textDirection, textScaleFactor: 1, maxLines: maxLines);
-    var textOverflow = style.overFlow == OverFlow.cut ? TextOverflow.clip : null;
+
+    TextSpan ts = text.isString ? TextSpan(text: text.text, style: style.textStyle) : text.text;
+    p = TextPainter(text: ts, textAlign: textAlign, textDirection: textDirection, textScaleFactor: 1, maxLines: maxLines);
+    var textOverflow = style.overFlow == OverFlow.clip ? TextOverflow.clip : null;
     var ellipsis = textOverflow == TextOverflow.ellipsis ? '\u2026' : null;
     if (ellipsis != null) {
       p.ellipsis = ellipsis;
     }
-    p.layout(minWidth: minWidth.toDouble(), maxWidth: maxWidth.toDouble());
-    if (p.height > maxHeight) {
-      int maxLineCount = maxHeight ~/ (p.height / p.computeLineMetrics().length);
-      maxLineCount = max([1, maxLineCount]).toInt();
-      p.maxLines = maxLineCount;
-      p.layout(minWidth: minWidth.toDouble(), maxWidth: maxWidth.toDouble());
+    p.layout(minWidth: minWidth, maxWidth: maxWidth);
+
+    ///越界处理
+    List<LineMetrics> metricsList = p.computeLineMetrics();
+    int maxCounts = (maxLines == null || maxLines! <= 0) ? StaticConfig.intMax : maxLines!;
+    if (p.height > maxHeight || metricsList.length > maxCounts) {
+      var over = style.overFlow;
+      if (over == OverFlow.notDraw) {
+        _textRect = Rect.zero;
+        _textSize = Size.zero;
+        _textCenter = Offset.zero;
+        _textOffset = Offset.zero;
+        _painter?.dispose();
+        _painter = null;
+        _constraints = null;
+        _cross = true;
+        return null;
+      }
+      if (over == OverFlow.clip) {
+        int lineCount;
+        if (maxHeight.isInfinite || maxHeight.isNaN) {
+          lineCount = maxCounts;
+        } else {
+          double lineHeight = metricsList.first.height;
+          lineCount = (maxHeight / lineHeight).floor();
+        }
+        double lineHeight = metricsList.first.height;
+        var position = p.getPositionForOffset(Offset(p.width, lineCount * lineHeight));
+        String str = p.plainText.substring(0, position.offset);
+        p = TextPainter(
+          text: TextSpan(text: str, style: style.textStyle),
+          textAlign: textAlign,
+          textDirection: textDirection,
+          textScaleFactor: 1,
+        );
+        p.layout(minWidth: minWidth, maxWidth: maxWidth);
+      } else if (over == OverFlow.scale) {
+        var stepper = 0.05;
+        var scale = 1 - stepper;
+        while (true) {
+          p.textScaleFactor = scale;
+          p.layout(minWidth: minWidth, maxWidth: maxWidth);
+          List<LineMetrics> metricsList = p.computeLineMetrics();
+          int maxCounts = (maxLines == null || maxLines! <= 0) ? StaticConfig.intMax : maxLines!;
+          if (p.height > maxHeight || metricsList.length > maxCounts) {
+            scale -= stepper;
+            if (scale <= 0) {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+      } else {
+        //ignore 不处理
+      }
     }
+
+    _painter?.dispose();
     _painter = p;
     _textRect = Rect.fromCenter(center: Offset.zero, width: p.width, height: p.height);
-    _testSize = _textRect.size;
+    _textSize = _textRect.size;
     _textCenter = _computeAlignOffset(offset, align, p.width, p.height).translate(p.width / 2, p.height / 2);
     _textOffset = Offset(-p.width / 2, -p.height / 2);
-    return p;
+    _cross = false;
+    return _painter;
   }
 
   ParagraphConstraints? _constraints;
 
   Paragraph? _getParagraph() {
-    if (_emptyFlag) {
+    if (_emptyFlag || _cross) {
       return null;
     }
     if (!text.isParagraph) {
@@ -123,7 +168,6 @@ class TextDraw {
     if (paragraph == null) {
       return null;
     }
-
     var cs = _constraints;
     if (cs == null) {
       cs = ParagraphConstraints(width: maxWidth.toDouble());
@@ -134,7 +178,7 @@ class TextDraw {
       _textCenter = _computeAlignOffset(offset, align, w, h).translate(w / 2, h / 2);
       _textOffset = Offset(-w / 2, -h / 2);
       _textRect = Rect.fromCenter(center: Offset.zero, width: w, height: h);
-      _testSize = _textRect.size;
+      _textSize = _textRect.size;
     }
     return text.text;
   }
@@ -153,7 +197,6 @@ class TextDraw {
     int? maxLines,
     double? maxHeight,
     String? ellipsis,
-    bool? ignoreOverText,
   }) {
     if (_emptyFlag) {
       return;
@@ -171,13 +214,15 @@ class TextDraw {
     this.maxLines = maxLines ?? this.maxLines;
     this.maxHeight = maxHeight ?? this.maxHeight;
     this.ellipsis = ellipsis ?? this.ellipsis;
-    this.ignoreOverText = ignoreOverText ?? this.ignoreOverText;
+
+    _painter?.dispose();
     _painter = null;
     _constraints = null;
     _textRect = Rect.zero;
-    _testSize = Size.zero;
+    _textSize = Size.zero;
     _textCenter = Offset.zero;
     _textOffset = Offset.zero;
+    _cross = false;
   }
 
   Size draw(CCanvas canvas, Paint paint) {
@@ -208,7 +253,7 @@ class TextDraw {
     style.decoration?.drawRect(canvas, paint, _textRect);
     painter.paint(canvas.canvas, _textOffset);
     canvas.restore();
-    return _testSize;
+    return _textSize;
   }
 
   Size _drawParagraph(CCanvas canvas, Paint paint) {
@@ -227,13 +272,13 @@ class TextDraw {
     style.decoration?.drawRect(canvas, paint, _textRect);
     canvas.drawParagraph(paragraph, _textOffset);
     canvas.restore();
-    return _testSize;
+    return _textSize;
   }
 
   Size getSize() {
     _getPainter();
     _getParagraph();
-    return _testSize;
+    return _textSize;
   }
 
   static Offset _computeAlignOffset(Offset offset, Alignment align, double textWidth, double textHeight) {
@@ -256,6 +301,7 @@ class TextDraw {
     }
     _style = LabelStyle.empty;
     _text = DynamicText.empty;
+    _painter?.dispose();
     _painter = null;
     _constraints = null;
   }

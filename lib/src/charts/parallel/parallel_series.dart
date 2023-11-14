@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'parallel_view.dart';
 
-class ParallelSeries extends ChartSeries3<ParallelChildData, ParallelData> {
+class ParallelSeries extends ChartGroupSeries<ParallelChildData, ParallelData> {
   Fun3<ParallelChildData, ParallelData, ChartSymbol?>? symbolFun;
   bool connectNull;
 

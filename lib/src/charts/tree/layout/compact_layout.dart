@@ -21,8 +21,8 @@ class CompactLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeData rootNode, TreeLayoutParams params) {
-    var l = _InnerLayout(rootNode, direction: direction, levelGapFun: levelGapFun, gapFun: gapFun, levelAlign: levelAlign);
+  void onLayout(TreeData data, HierarchyOption<TreeSeries> params) {
+    var l = _InnerLayout(data, direction: direction, levelGapFun: levelGapFun, gapFun: gapFun, levelAlign: levelAlign);
     l.layout(params.width, params.height);
     l.dispose();
   }

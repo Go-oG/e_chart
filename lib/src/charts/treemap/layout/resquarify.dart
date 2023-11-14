@@ -3,13 +3,13 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'square.dart';
 
-class ResquareLayout extends TreemapLayout {
+class ResquareLayout extends HierarchyLayout<TreeMapData,TreeMapSeries> {
   double rowsRatio = phi;
 
   @override
-  void onLayout2(TreeMapData root, LayoutType type) {
-    Rect rect = boxBound;
-    resquarify(root, rowsRatio, rect.left, rect.top, rect.right, rect.bottom);
+  void onLayout(TreeMapData data, var params) {
+    Rect rect = params.boxBound;
+    resquarify(data, rowsRatio, rect.left, rect.top, rect.right, rect.bottom);
   }
 
   static void resquarify(TreeMapData parent, double ratio, double x0, double y0, double x1, double y1) {

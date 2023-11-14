@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../../style/label.dart';
+import '../../style/label_style.dart';
 import '../../style/line_style.dart';
 
 class FunnelTheme {

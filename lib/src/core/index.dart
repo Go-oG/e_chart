@@ -20,8 +20,11 @@ export 'model/view_state.dart';
 export 'render/ccanvas.dart';
 export 'render/core_chart.dart';
 
+export 'series/group_series.dart';
+export 'series/hierarchy_series.dart';
+export 'series/list_series.dart';
+export 'series/rect_series.dart';
 export 'series/series.dart';
-export 'series/series_rect.dart';
 
 export 'view/coord_child_view.dart';
 export 'view/gesture_view.dart';

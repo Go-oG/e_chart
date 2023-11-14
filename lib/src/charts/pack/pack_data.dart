@@ -48,9 +48,9 @@ class PackData extends BaseTreeData<Rect, PackData> {
 
   @override
   void updateStyle(Context context, covariant PackSeries series) {
-    itemStyle = series.getItemStyle(context, this) ?? AreaStyle.empty;
-    borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
-    label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
+    itemStyle = series.getAreaStyle(context, this);
+    borderStyle = series.getBorderStyle(context, this);
+    label.style = series.getLabelStyle(context, this);
     label.updatePainter();
   }
 

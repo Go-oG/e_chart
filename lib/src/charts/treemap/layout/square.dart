@@ -4,16 +4,16 @@ import 'package:e_chart/e_chart.dart';
 
 double phi = (1 + m.sqrt(5)) / 2;
 
-class SquareLayout extends TreemapLayout {
+class SquareLayout extends HierarchyLayout<TreeMapData, TreeMapSeries> {
   num ratio = phi;
 
   @override
-  void onLayout2(TreeMapData root, LayoutType type) {
-    root.children.sort((a, b) {
+  void onLayout(TreeMapData data, var params) {
+    data.children.sort((a, b) {
       return b.value.compareTo(a.value);
     });
-    Rect rect = boxBound;
-    layoutChildren(ratio, root, rect.left, rect.top, rect.right, rect.bottom);
+    Rect rect = params.boxBound;
+    layoutChildren(ratio, data, rect.left, rect.top, rect.right, rect.bottom);
   }
 
   static List<Row> layoutChildren(num ratio, TreeMapData parent, double left, double top, double right, double bottom) {

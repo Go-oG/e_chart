@@ -214,6 +214,26 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
     return resultList;
   }
 
+  ///层序遍历
+  List<List<T>> levelEach([int level = -1]) {
+    List<List<T>> resultList = [];
+    List<T> list = [this as T];
+    List<T> next = [];
+    if (level <= 0) {
+      level = 2 ^ 16;
+    }
+    while (list.isNotEmpty && level > 0) {
+      resultList.add(list);
+      for (var c in list) {
+        next.addAll(c.children);
+      }
+      list = next;
+      next = [];
+      level--;
+    }
+    return resultList;
+  }
+
   T each(TreeFun<A, T> callback, [bool exitUseBreak = true]) {
     int index = -1;
     for (var node in iterator()) {

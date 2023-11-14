@@ -2,31 +2,28 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/pack/pack_view.dart';
 import 'package:flutter/painting.dart';
 
-class PackSeries extends RectSeries {
+class PackSeries extends HierarchySeries<PackData> {
   static const _defaultAnimation = AnimatorOption(
     duration: Duration(seconds: 1),
     updateDuration: Duration(milliseconds: 1000),
   );
-  PackData data;
+
   bool optTextDraw;
-  Fun2<PackData, AreaStyle?>? itemStyleFun;
-  Fun2<PackData, LineStyle?>? borderStyleFun;
-  Fun2<PackData, LabelStyle?>? labelStyleFun;
   Fun2<PackData, num>? paddingFun;
   Fun2<PackData, num>? radiusFun;
   Fun3<PackData, PackData, int>? sortFun;
   Fun2<PackData, Alignment>? labelAlignFun;
 
   PackSeries(
-    this.data, {
+    super.data, {
     this.optTextDraw = true,
     this.radiusFun,
-    this.itemStyleFun,
-    this.borderStyleFun,
-    this.labelStyleFun,
     this.labelAlignFun,
     this.paddingFun,
     this.sortFun,
+    super.borderStyleFun,
+    super.itemStyleFun,
+    super.labelStyleFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -41,29 +38,19 @@ class PackSeries extends RectSeries {
   }) : super(parallelIndex: -1, polarIndex: -1, calendarIndex: -1, gridIndex: -1, radarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return PackView(this);
-  }
-
-  AreaStyle? getItemStyle(Context context, PackData node) {
+  AreaStyle getAreaStyle(Context context, PackData data) {
     if (itemStyleFun != null) {
-      return itemStyleFun?.call(node);
+      return super.getAreaStyle(context, data);
     }
-    return context.option.theme.packTheme.getAreaStyle(node.deep, node.maxDeep).convert(node.status);
+    return context.option.theme.packTheme.getAreaStyle(data.deep, data.maxDeep).convert(data.status);
   }
 
-  LineStyle? getBorderStyle(Context context, PackData node) {
+  @override
+  LineStyle getBorderStyle(Context context, PackData data) {
     if (borderStyleFun != null) {
-      return borderStyleFun?.call(node);
+      return super.getBorderStyle(context, data);
     }
-    return context.option.theme.packTheme.getBorderStyle();
-  }
-
-  LabelStyle? getLabelStyle(Context context, PackData node) {
-    if (labelStyleFun != null) {
-      return labelStyleFun?.call(node);
-    }
-    return null;
+    return context.option.theme.packTheme.getBorderStyle() ?? LineStyle.empty;
   }
 
   Alignment getLabelAlign(PackData node) {
@@ -75,13 +62,10 @@ class PackSeries extends RectSeries {
   }
 
   @override
-  List<LegendItem> getLegendItem(Context context) => [];
-
-  @override
-  int onAllocateStyleIndex(int start) {
-    return 0;
-  }
-
-  @override
   SeriesType get seriesType => SeriesType.pack;
+
+  @override
+  ChartView? toView() {
+    return PackView(this);
+  }
 }

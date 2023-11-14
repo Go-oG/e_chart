@@ -37,11 +37,11 @@ class D3DendrogramLayout extends TreeLayout {
 
 
   @override
-  void onLayout(TreeData rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData data, HierarchyOption<TreeSeries> params) {
     bool v = direction == Direction2.ttb || direction == Direction2.btt || direction == Direction2.v;
     num w = v ? params.width : params.height;
     num h = v ? params.height : params.width;
-    _innerLayout(rootNode, useCompactGap, w, h);
+    _innerLayout(data, useCompactGap, w, h);
   }
 
   void _innerLayout(TreeData root, bool diff, num dx, num dy) {

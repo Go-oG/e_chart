@@ -8,6 +8,7 @@ class LabelStyle {
   final bool show;
   final double rotate;
   final TextStyle textStyle;
+  final int? maxLines;
   final AreaStyle? decoration;
   final OverFlow overFlow;
   final String ellipsis;
@@ -18,9 +19,10 @@ class LabelStyle {
   const LabelStyle({
     this.show = true,
     this.rotate = 0,
+    this.maxLines,
     this.textStyle = const TextStyle(color: Color(0xFFFFFFFF), fontSize: 13, fontWeight: FontWeight.normal),
     this.decoration,
-    this.overFlow = OverFlow.cut,
+    this.overFlow = OverFlow.notDraw,
     this.ellipsis = '',
     this.guideLine,
     this.lineMargin = 4,
@@ -37,36 +39,41 @@ class LabelStyle {
     GuideLine? guideLine,
     double? lineMargin,
     double? minAngle,
+    int? maxLines,
+    TextTransborder? transborder,
   }) {
     return LabelStyle(
-        show: show ?? this.show,
-        rotate: rotate ?? this.rotate,
-        textStyle: textStyle ?? this.textStyle,
-        decoration: decoration ?? this.decoration,
-        overFlow: overFlow ?? this.overFlow,
-        ellipsis: ellipsis ?? this.ellipsis,
-        guideLine: guideLine ?? this.guideLine,
-        lineMargin: lineMargin ?? this.lineMargin,
-        minAngle: minAngle ?? this.minAngle);
+      show: show ?? this.show,
+      rotate: rotate ?? this.rotate,
+      textStyle: textStyle ?? this.textStyle,
+      decoration: decoration ?? this.decoration,
+      overFlow: overFlow ?? this.overFlow,
+      ellipsis: ellipsis ?? this.ellipsis,
+      guideLine: guideLine ?? this.guideLine,
+      lineMargin: lineMargin ?? this.lineMargin,
+      maxLines: maxLines ?? this.maxLines,
+      minAngle: minAngle ?? this.minAngle,
+    );
   }
 
-  Size measure(DynamicText text, {num maxWidth = double.infinity, int? maxLine}) {
+  Size measure(DynamicText text, {num maxWidth = double.infinity}) {
     if (text.isEmpty) {
       return Size.zero;
     }
     if (text.isString) {
-      TextPainter painter = textStyle.toPainter(text.text as String, maxLines: maxLine);
+      var painter = textStyle.toPainter(text.text as String, maxLines: maxLines);
       painter.layout(maxWidth: maxWidth.toDouble());
       return painter.size;
     }
     if (text.isTextSpan) {
-      TextPainter painter = TextPainter(
-          text: text.text as TextSpan,
-          textAlign: TextAlign.center,
-          textDirection: TextDirection.ltr,
-          textScaleFactor: 1,
-          maxLines: maxLine,
-          ellipsis: ellipsis);
+      var painter = TextPainter(
+        text: text.text as TextSpan,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        textScaleFactor: 1,
+        maxLines: maxLines,
+        ellipsis: ellipsis,
+      );
       painter.layout(maxWidth: maxWidth.toDouble());
       return painter.size;
     }
@@ -83,4 +90,12 @@ class LabelStyle {
     }
     return this;
   }
+
+}
+
+///文本超出绘制范围后的处理方式
+enum TextTransborder {
+  ignore,
+  clip,
+  scale,
 }

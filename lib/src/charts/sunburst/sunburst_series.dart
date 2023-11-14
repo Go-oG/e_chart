@@ -1,19 +1,14 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/sunburst/sunburst_view.dart';
 
-import 'sunburst_data.dart';
-
 typedef RadiusDiffFun = num Function(int deep, int maxDeep, num radius);
 
 /// 旭日图
-class SunburstSeries extends RectSeries {
-  SunburstData data;
+class SunburstSeries extends HierarchySeries<SunburstData> {
   List<SNumber> center;
   List<SNumber> radius;
-
   ///起始角度
   num startAngle;
-
   ///扫过的角度 负数为逆时针
   num sweepAngle;
 
@@ -44,13 +39,6 @@ class SunburstSeries extends RectSeries {
   ///返回区域样式
   AreaStyle? backStyle;
 
-  ///填充区域的样式
-  Fun2<SunburstData, AreaStyle?>? areaStyleFun;
-  Fun2<SunburstData, LineStyle?>? borderStyleFun;
-
-  ///文字标签的样式
-  Fun2<SunburstData, LabelStyle?>? labelStyleFun;
-
   ///标签旋转角度函数 -1 径向旋转 -2 切向旋转  >=0 旋转角度
   Fun2<SunburstData, double>? rotateFun;
 
@@ -61,7 +49,7 @@ class SunburstSeries extends RectSeries {
   Fun2<SunburstData, double>? labelMarginFun;
 
   SunburstSeries(
-    this.data, {
+    super.data, {
     this.center = const [SNumber.percent(50), SNumber.percent(50)],
     this.radius = const [SNumber.number(0), SNumber.percent(50)],
     this.startAngle = 0,
@@ -74,11 +62,11 @@ class SunburstSeries extends RectSeries {
     this.sort = Sort.none,
     this.selectedMode = SelectedMode.group,
     this.radiusDiffFun,
-    this.labelStyleFun,
     this.labelAlignFun,
     this.rotateFun,
     this.labelMarginFun,
-    this.areaStyleFun,
+    super.labelStyleFun,
+    super.itemStyleFun,
     super.leftMargin,
     super.topMargin,
     super.rightMargin,
@@ -93,30 +81,19 @@ class SunburstSeries extends RectSeries {
   }) : super(gridIndex: -1, polarIndex: -1, parallelIndex: -1, calendarIndex: -1, radarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return SunburstView(this);
-  }
-
-  AreaStyle getAreaStyle(Context context, SunburstData node) {
-    if (areaStyleFun != null) {
-      return areaStyleFun!.call(node) ?? AreaStyle.empty;
+  AreaStyle getAreaStyle(Context context, SunburstData data) {
+    if (itemStyleFun != null) {
+      return super.getAreaStyle(context, data);
     }
-    return AreaStyle(color: context.option.theme.getColor(node.dataIndex)).convert(node.status);
+    return AreaStyle(color: context.option.theme.getColor(data.dataIndex)).convert(data.status);
   }
 
-  LineStyle getBorderStyle(Context context, SunburstData node) {
+  @override
+  LineStyle getBorderStyle(Context context, SunburstData data) {
     if (borderStyleFun != null) {
-      return borderStyleFun?.call(node) ?? LineStyle.empty;
+      return super.getBorderStyle(context, data);
     }
     return LineStyle.empty;
-  }
-
-  LabelStyle getLabelStyle(Context context, SunburstData node) {
-    if (labelStyleFun != null) {
-      return labelStyleFun!.call(node) ?? LabelStyle.empty;
-    }
-    var theme = context.option.theme;
-    return theme.getLabelStyle() ?? LabelStyle.empty;
   }
 
   Align2 getLabelAlign(Context context, SunburstData node) {
@@ -127,19 +104,10 @@ class SunburstSeries extends RectSeries {
   }
 
   @override
-  List<LegendItem> getLegendItem(Context context) => [];
-
-  @override
-  int onAllocateStyleIndex(int start) {
-    int c = 0;
-    data.each((p0, index, startNode) {
-      p0.styleIndex = c;
-      c++;
-      return false;
-    });
-    return c;
-  }
-
-  @override
   SeriesType get seriesType => SeriesType.sunburst;
+
+  @override
+  ChartView? toView() {
+    return SunburstView(this);
+  }
 }

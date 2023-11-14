@@ -12,21 +12,21 @@ class MindMapLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeData rootNode, TreeLayoutParams params) {
-    if (rootNode.childCount <= 1) {
+  void onLayout(TreeData data, HierarchyOption<TreeSeries> params) {
+    if (data.childCount <= 1) {
       CompactLayout(
         levelAlign: Align2.start,
         direction: Direction2.ltr,
         gapFun: gapFun,
         levelGapFun: levelGapFun,
-      ).onLayout(rootNode, params);
+      ).onLayout(data, params);
       return;
     }
     var leftRoot = TreeData(null, []);
     var rightRoot = TreeData(null, []);
-    int rightTreeSize = (rootNode.childCount / 2).round();
+    int rightTreeSize = (data.childCount / 2).round();
     int i = 0;
-    for (var node in rootNode.children) {
+    for (var node in data.children) {
       node.parent=null;
       if (i < rightTreeSize) {
         leftRoot.add(node);
@@ -44,14 +44,14 @@ class MindMapLayout extends TreeLayout {
         CompactLayout(levelAlign: Align2.start, direction: Direction2.ltr, gapFun: gapFun, levelGapFun: levelGapFun);
     rightLayout.onLayout(rightRoot, params);
 
-    rootNode.children.clear();
+    data.children.clear();
     for (var element in leftRoot.children) {
       element.parent=null;
-      rootNode.add(element);
+      data.add(element);
     }
     for (var element in rightRoot.children) {
       element.parent=null;
-      rootNode.add(element);
+      data.add(element);
     }
 
     num tx = leftRoot.x - rightRoot.x;
@@ -61,7 +61,7 @@ class MindMapLayout extends TreeLayout {
       node.y += ty;
       return false;
     });
-    rootNode.x = leftRoot.x;
-    rootNode.y = leftRoot.y;
+    data.x = leftRoot.x;
+    data.y = leftRoot.y;
   }
 }

@@ -33,17 +33,17 @@ class RadialTreeLayout extends TreeLayout {
   });
 
   @override
-  void onLayout(TreeData rootNode, TreeLayoutParams params) {
+  void onLayout(TreeData data, HierarchyOption<TreeSeries> params) {
     num width = params.width;
     num height = params.height;
 
     var center = Offset(params.series.center[0].convert(width), params.series.center[1].convert(height));
-    int maxDeep = rootNode.findMaxDeep();
+    int maxDeep = data.findMaxDeep();
     num maxH = 0;
     for (int i = 1; i <= maxDeep; i++) {
       maxH += getLevelGap(i - 1, i);
     }
-    List<TreeData> nodeList = [rootNode];
+    List<TreeData> nodeList = [data];
     List<TreeData> next = [];
     while (nodeList.isNotEmpty) {
       num v = 0;
@@ -58,11 +58,11 @@ class RadialTreeLayout extends TreeLayout {
     }
     num radius = maxH / 2;
     if (useTidy) {
-      _layoutForTidy(params.series, rootNode, sweepAngle, radius);
+      _layoutForTidy(params.series, data, sweepAngle, radius);
     } else {
-      _layoutForDendrogram(params.series, rootNode, sweepAngle, radius);
+      _layoutForDendrogram(params.series, data, sweepAngle, radius);
     }
-    rootNode.each((node, index, startNode) {
+    data.each((node, index, startNode) {
       Offset c;
       if (clockwise) {
         c = circlePoint(node.y, node.x + rotateAngle, center);
@@ -73,8 +73,8 @@ class RadialTreeLayout extends TreeLayout {
       node.y = c.dy;
       return false;
     });
-    rootNode.x = center.dx;
-    rootNode.y = center.dy;
+    data.x = center.dx;
+    data.y = center.dy;
   }
 
   void _layoutForDendrogram(TreeSeries series, TreeData root, num sweepAngle, num radius) {
@@ -83,7 +83,7 @@ class RadialTreeLayout extends TreeLayout {
     if (splitFun != null) {
       layout.splitFun = splitFun!;
     }
-    var lp = TreeLayoutParams(series, sweepAngle.toDouble(), radius.toDouble());
+    var lp = HierarchyOption<TreeSeries>(series, sweepAngle.toDouble(), radius.toDouble(),Rect.zero,Rect.zero);
     layout.onLayout(root, lp);
   }
 
@@ -92,7 +92,7 @@ class RadialTreeLayout extends TreeLayout {
     if (splitFun != null) {
       layout.splitFun = splitFun!;
     }
-    var lp = TreeLayoutParams(series, sweepAngle.toDouble(), radius.toDouble());
+    var lp = HierarchyOption<TreeSeries>(series, sweepAngle.toDouble(), radius.toDouble(),Rect.zero,Rect.zero);
     layout.onLayout(root, lp);
   }
 }
