@@ -22,7 +22,6 @@ class DendrogramLayout extends TreeLayout {
       num levelGap = getLevelGap(i - 1, i);
       yList[i] = levelGap + yList[i - 1];
     }
-
     if (direction != Direction2.v && direction != Direction2.h) {
       return _layoutNode(rootNode, direction, yList);
     }
@@ -34,19 +33,20 @@ class DendrogramLayout extends TreeLayout {
     var leftNode = TreeData(null, []);
     var rightNode = TreeData(null, []);
     int middle = c ~/ 2;
-    each(rootNode.children, (node, i) {
-      node.parent = null;
+    List<TreeData> cd = List.from(rootNode.children);
+    rootNode.clear();
+    each(cd, (node, i) {
       if (i <= middle) {
         leftNode.add(node);
       } else {
         rightNode.add(node);
       }
     });
-    rootNode.clear();
 
     ///重新计算树的深度和高度
     leftNode.setDeep(0, true);
     leftNode.computeHeight();
+
     rightNode.setDeep(0, true);
     rightNode.computeHeight(0);
     if (direction == Direction2.v) {
@@ -78,10 +78,9 @@ class DendrogramLayout extends TreeLayout {
       node.parent = null;
       rootNode.add(node);
     }
-
     ///还原树的高度和深度
     rootNode.setDeep(0, false);
-    rootNode.setHeight(max([leftNode.height, rightNode.height]).toInt(), false);
+    rootNode.setHeight(max<int>([leftNode.height, rightNode.height]), false);
   }
 
   void _layoutNode(TreeData root, Direction2 direction, List<num> yList) {

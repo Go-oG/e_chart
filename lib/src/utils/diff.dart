@@ -51,6 +51,7 @@ class DiffUtil {
     VoidCallback? onEnd,
     void Function(List<D> removeList)? removeDataCall,
     void Function(DiffResult<D> diffInfo)? diffInfoCall,
+    bool forceUseUpdate = false,
   }) {
     if (oldList.isEmpty && newList.isEmpty) {
       onStart?.call();
@@ -75,7 +76,7 @@ class DiffUtil {
 
     ///保留旧的数据
     var diffResult = diffData(oldList, newList);
-     diffInfoCall?.call(diffResult);
+    diffInfoCall?.call(diffResult);
 
     var newLen = diffResult.newUpdateSet.length;
     var oldLen = diffResult.oldUpdateSet.length;
@@ -109,6 +110,7 @@ class DiffUtil {
     each(diffResult.newUpdateSet, (data, p1) {
       endMap[data] = endFun.call(data, DiffType.update);
     });
+
     ///还原需要布局数据的初始状态
     each(diffResult.addSet, (data, p1) {
       var s = startMap[data]!;
@@ -121,7 +123,7 @@ class DiffUtil {
       lerpFun.call(data, s, e, 0, DiffType.update);
     });
 
-    final List<D> animatorList = [...diffResult.addSet, ...diffResult.newUpdateSet,...diffResult.removeSet];
+    final List<D> animatorList = [...diffResult.addSet, ...diffResult.newUpdateSet, ...diffResult.removeSet];
     List<D> updateCallList = animatorList;
 
     List<TweenWrap> tweenList = [];
@@ -135,7 +137,7 @@ class DiffUtil {
       }
       updateCall.call(updateCallList, t);
     });
-    tweenList.add(TweenWrap(addTween, DiffType.add));
+    tweenList.add(TweenWrap(addTween,forceUseUpdate?DiffType.update: DiffType.add));
     var removeTween = ChartDoubleTween(option: option);
     removeTween.addListener(() {
       double t = removeTween.value;
@@ -149,8 +151,7 @@ class DiffUtil {
     removeTween.addEndListener(() {
       updateCallList = newList2;
     });
-    tweenList.add(TweenWrap(removeTween, DiffType.remove));
-
+    tweenList.add(TweenWrap(removeTween,forceUseUpdate?DiffType.update: DiffType.remove));
     var updateTween = ChartDoubleTween(option: option);
     updateTween.addListener(() {
       double t = updateTween.value;

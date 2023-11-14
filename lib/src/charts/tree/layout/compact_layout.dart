@@ -24,11 +24,17 @@ class CompactLayout extends TreeLayout {
   void onLayout(TreeData rootNode, TreeLayoutParams params) {
     var l = _InnerLayout(rootNode, direction: direction, levelGapFun: levelGapFun, gapFun: gapFun, levelAlign: levelAlign);
     l.layout(params.width, params.height);
+    l.dispose();
   }
 }
 
-class _InnerLayout {
-  late final TreeData root;
+class _InnerLayout extends Disposable {
+  static final Map<TreeData, num> _emptyMap1 = {};
+  static final Map<TreeData, TreeData> _emptyMap2 = Map.identity();
+  static final Map<TreeData, int> _emptyMap3 = {};
+  static final Map<TreeData, Point> _emptyMap4 = {};
+
+  late TreeData root;
   final Direction2 direction;
   final Align2 levelAlign;
   Fun3<TreeData, TreeData, Offset>? gapFun;
@@ -36,14 +42,14 @@ class _InnerLayout {
 
   ///存储数据运算
   final List<double> _sizeOfLevel = [];
-  final Map<TreeData, num> _modMap = {};
-  final Map<TreeData, TreeData> _threadMap = {};
-  final Map<TreeData, num> _prelimMap = {};
-  final Map<TreeData, num> _changeMap = {};
-  final Map<TreeData, num> _shiftMap = {};
-  final Map<TreeData, TreeData> _ancestorMap = {};
-  final Map<TreeData, int> _numberMap = {};
-  final Map<TreeData, Point> _positionsMap = {};
+  Map<TreeData, num> _modMap = {};
+  Map<TreeData, TreeData> _threadMap = {};
+  Map<TreeData, num> _prelimMap = {};
+  Map<TreeData, num> _changeMap = {};
+  Map<TreeData, num> _shiftMap = {};
+  Map<TreeData, TreeData> _ancestorMap = {};
+  Map<TreeData, int> _numberMap = {};
+  Map<TreeData, Point> _positionsMap = {};
   double _boundsLeft = _max;
   double _boundsRight = _min;
   double _boundsTop = _max;
@@ -56,6 +62,22 @@ class _InnerLayout {
     this.levelGapFun,
     this.gapFun,
   });
+
+  @override
+  void dispose() {
+    super.dispose();
+    root = TreeData(null, []);
+    gapFun = null;
+    levelGapFun = null;
+    _modMap = _emptyMap1;
+    _threadMap = _emptyMap2;
+    _prelimMap = _emptyMap1;
+    _changeMap = _emptyMap1;
+    _shiftMap = _emptyMap1;
+    _ancestorMap = _emptyMap2;
+    _numberMap = _emptyMap3;
+    _positionsMap = _emptyMap4;
+  }
 
   TreeData layout(num width, num height) {
     _firstWalk(root, null);

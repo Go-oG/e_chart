@@ -74,9 +74,10 @@ class TreeSeries extends RectSeries {
       each(dl, (p0, p1) {
         p0.styleIndex = c;
         c++;
+        next.addAll(p0.children);
       });
-      next.addAll(dl);
       dl = next;
+      next=[];
     }
     return c;
   }

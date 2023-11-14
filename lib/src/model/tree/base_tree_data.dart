@@ -3,10 +3,10 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-typedef TreeFun<A , T extends BaseTreeData<A, T>> = bool Function(T node, int index, T startNode);
+typedef TreeFun<A, T extends BaseTreeData<A, T>> = bool Function(T node, int index, T startNode);
 
 ///通用的树节点抽象表示
-abstract class BaseTreeData<A , T extends BaseTreeData<A, T>> extends RenderData<A> {
+abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<A> {
   T? parent;
 
   List<T> _childrenList = [];
@@ -155,7 +155,11 @@ abstract class BaseTreeData<A , T extends BaseTreeData<A, T>> extends RenderData
   }
 
   void clear() {
-    _childrenList.clear();
+    var cs = _childrenList;
+    _childrenList = [];
+    for (var c in cs) {
+      c.parent = null;
+    }
   }
 
   /// 返回其所有的叶子结点
@@ -437,6 +441,15 @@ abstract class BaseTreeData<A , T extends BaseTreeData<A, T>> extends RenderData
     if (iterator) {
       for (var node in _childrenList) {
         node.setDeep(deep + 1, true);
+      }
+    }
+  }
+
+  void setMaxDeep(int maxDeep, [bool iterator = true]) {
+    this.maxDeep = maxDeep;
+    if (iterator) {
+      for (var node in _childrenList) {
+        node.setMaxDeep(maxDeep, iterator);
       }
     }
   }

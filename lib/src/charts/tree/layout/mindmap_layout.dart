@@ -27,6 +27,7 @@ class MindMapLayout extends TreeLayout {
     int rightTreeSize = (rootNode.childCount / 2).round();
     int i = 0;
     for (var node in rootNode.children) {
+      node.parent=null;
       if (i < rightTreeSize) {
         leftRoot.add(node);
       } else {
@@ -45,9 +46,11 @@ class MindMapLayout extends TreeLayout {
 
     rootNode.children.clear();
     for (var element in leftRoot.children) {
+      element.parent=null;
       rootNode.add(element);
     }
     for (var element in rightRoot.children) {
+      element.parent=null;
       rootNode.add(element);
     }
 

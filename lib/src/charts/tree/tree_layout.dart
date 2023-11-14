@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-abstract class TreeLayout {
+abstract class TreeLayout extends Disposable{
   ///连接线的类型(某些布局只支持某些特定类型)
   LineType lineType;
 
@@ -61,6 +61,8 @@ abstract class TreeLayout {
     }
     return 24;
   }
+
+  bool get optShowNode=>true;
 
 }
 

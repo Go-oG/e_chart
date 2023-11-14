@@ -103,4 +103,8 @@ class IndentedLayout extends TreeLayout {
       return false;
     });
   }
+
+  @override
+  bool get optShowNode => false;
+
 }

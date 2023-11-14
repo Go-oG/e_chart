@@ -11,19 +11,10 @@ class TreeView extends SeriesView<TreeSeries, TreeHelper> {
     var list = layoutHelper.nodeList;
     canvas.save();
     canvas.translate(translationX, translationY);
-    List<TreeData> leaves = layoutHelper.rootNode.leaves();
-    List<TreeData> pres = [];
-    while (leaves.isNotEmpty) {
-      for (var node in leaves) {
-        if (node.parent != null) {
-          drawLine(canvas, node.parent!, node);
-          pres.add(node.parent!);
-        }
-      }
-      leaves = pres;
-      pres = [];
-    }
     each(list, (node, p1) {
+      if (node.parent != null) {
+        drawLine(canvas, node.parent!, node);
+      }
       node.onDraw(canvas, mPaint);
     });
     canvas.restore();

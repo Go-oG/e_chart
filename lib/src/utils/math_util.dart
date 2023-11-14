@@ -2,8 +2,8 @@ import 'dart:math' as math;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-num max(Iterable<num> list) {
-  return maxBy<num>(list, (p0) => p0);
+T max<T extends num>(Iterable<T> list) {
+  return maxBy<T>(list, (p0) => p0);
 }
 
 T maxBy<T>(Iterable<T> list, num Function(T) convert) {

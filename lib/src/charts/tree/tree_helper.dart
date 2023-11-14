@@ -1,13 +1,19 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-///todo 展开折叠有BUG(死循环)
 class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
   TreeHelper(super.context, super.view, super.series);
 
   TreeData _rootNode = TreeData.empty;
 
   TreeData get rootNode => _rootNode;
+
+  ///存放依赖关系
+  //<parent-child>
+  Map<TreeData, List<TreeData>> _childMap = {};
+
+  //<child-parent>
+  Map<TreeData, TreeData> _parentMap = {};
 
   final RBush<TreeData> _rBush = RBush(
     (p0) => p0.center.dx - p0.size.width / 2,
@@ -16,24 +22,38 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     (p0) => p0.center.dy + p0.size.height / 2,
   );
 
-  void updateShowNodeList() {
-    nodeList = _rBush.search(getViewPortRect());
+  void updateNodeList(TreeData root) {
+    _rBush.clear();
+    List<TreeData> list = root.iterator();
+    _rBush.addAll(list);
+    if (series.layout.optShowNode) {
+      nodeList = _rBush.search(getViewPortRect());
+    } else {
+      nodeList = list;
+    }
   }
 
   @override
   void onLayout(LayoutType type) {
     var root = series.data;
     initData2(root);
-
-    _startLayout(root);
+    _startLayout(root, true);
     _rootNode = root;
-    _rBush.clear();
-    _rBush.addAll(root.iterator());
-    updateShowNodeList();
+    updateNodeList(root);
   }
 
   void initData2(TreeData root) {
+    Map<TreeData, List<TreeData>> childMap = {};
+    //<child-parent>
+    Map<TreeData, TreeData> parentMap = {};
     root.each((node, index, startNode) {
+      if (node.hasChild) {
+        childMap[node] = List.from(node.children);
+      }
+      var p = node.parent;
+      if (p != null) {
+        parentMap[node] = p;
+      }
       node.dataIndex = index;
       node.attr.symbol = series.getSymbol(context, node);
       node.updateStyle(context, series);
@@ -47,12 +67,15 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
       node.maxDeep = maxDeep;
       return false;
     });
+    _childMap = childMap;
+    _parentMap = parentMap;
   }
 
-  void _startLayout(TreeData root) {
+  void _startLayout(TreeData root, bool clearTranslation) {
     ///计算树的深度和高度
     root.setDeep(0);
     root.computeHeight();
+    root.setMaxDeep(root.height);
 
     ///开始布局
     series.layout.onLayout(root, TreeLayoutParams(series, width, height));
@@ -62,7 +85,9 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     double y = series.center[1].convert(height);
 
     ///布局完成后，需要再次更新节点位置和大小
-    translationX = translationY = 0;
+    if (clearTranslation) {
+      translationX = translationY = 0;
+    }
 
     ///root中心点坐标
     var center = root.center;
@@ -119,178 +144,132 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     collapseNode(node);
   }
 
+  @override
+  void onDragMove(Offset offset, Offset diff) {
+    view.translationX += diff.dx;
+    view.translationY += diff.dy;
+    if (series.layout.optShowNode) {
+      nodeList = _rBush.search(getViewPortRect());
+    }
+    notifyLayoutUpdate();
+  }
+
   ///折叠一个节点
-  void collapseNode(TreeData node) {
-    var clickNode = node;
-    if (clickNode.notChild) {
+  void collapseNode(TreeData data) {
+    if (data.notChild) {
+      return;
+    }
+    List<TreeData> oldList = _rootNode.iterator();
+    var option = getAnimation(LayoutType.update, oldList.length);
+    if (option == null) {
+      data.clear();
+      _startLayout(_rootNode, false);
+      updateNodeList(_rootNode);
       notifyLayoutUpdate();
       return;
     }
 
-    ///存储旧位置
-    Map<TreeData, Offset> oldPositionMap = {};
-    Map<TreeData, Size> oldSizeMap = {};
+    final Set<TreeData> childSet = {};
+    each(data.children, (p0, p1) {
+      childSet.addAll(p0.iterator());
+    });
+    Map<TreeData, Offset> oldCenterMap = {};
+    each(oldList, (p0, p1) {
+      oldCenterMap[p0] = p0.center;
+    });
+
+    data.clear();
+    _startLayout(_rootNode, false);
+    Map<TreeData, Offset> newCenterMap = {};
     _rootNode.each((node, index, startNode) {
-      oldPositionMap[node] = node.center;
-      oldSizeMap[node] = node.size;
+      newCenterMap[node] = node.center;
       return false;
     });
-
-    ///先保存折叠节点的子节点
-    List<TreeData> removedNodes = List.from(clickNode.children);
-    clickNode.clear();
-
-    ///移除其父节点
-    each(removedNodes, (p0, p1) {
-      p0.parent = null;
+    var tween = ChartDoubleTween(option: option);
+    tween.addStartListener(() {
+      nodeList = oldList;
     });
-
-    ///移除节点后-重新布局位置并记录
-    ///这里先不更新显示节点
-    _startLayout(_rootNode);
-    List<TreeData> nodeSet = List.from(nodeList);
-    var rect = getViewPortRect();
-    _rootNode.each((node, index, startNode) {
-      if (rect.overlaps(Rect.fromCircle(center: node.center, radius: node.size.shortestSide / 2))) {
-        nodeSet.add(node);
-      }
-      return false;
-    });
-    nodeList = nodeSet;
-
-    Map<TreeData, Offset> positionMap = {};
-    Map<TreeData, Size> sizeMap = {};
-    _rootNode.each((node, index, startNode) {
-      positionMap[node] = node.center;
-      sizeMap[node] = node.size;
-      return false;
-    });
-
-    ///为了保证动画正常，需要补齐以前节点的位置
-    each(removedNodes, (node, i) {
-      node.each((cNode, index, startNode) {
-        positionMap[cNode] = clickNode.center;
-        sizeMap[cNode] = Size.zero;
-        return false;
+    tween.addListener(() {
+      var t = tween.value;
+      each(oldList, (p0, p1) {
+        if (childSet.contains(p0)) {
+          p0.center = lerpOffset(oldCenterMap[p0]!, data.center, t);
+        } else {
+          p0.center = lerpOffset(oldCenterMap[p0]!, newCenterMap[p0]!, t);
+        }
+        var scale = childSet.contains(p0) ? 0 : 1;
+        p0.attr.symbol.scale = lerpNum(1, scale, t);
       });
+      notifyLayoutUpdate();
     });
-
-    ///还原移除的节点
-    for (var n in removedNodes) {
-      clickNode.add(n);
-    }
-
-    doAnimator(_rootNode, oldPositionMap, positionMap, oldSizeMap, sizeMap, () {
-      ///动画结束后，重新移除节点
-      clickNode.clear();
-      each(removedNodes, (p0, p1) {
-        p0.parent = null;
-      });
-
-      ///动画结束更新区域
-      _rBush.clear();
-      _rBush.addAll(_rootNode.iterator());
-      updateShowNodeList();
-      notifyLayoutEnd();
+    tween.addEndListener(() {
+      updateNodeList(_rootNode);
+      notifyLayoutUpdate();
     });
+    tween.start(context, true);
   }
 
   ///展开一个节点
   void expandNode(TreeData clickNode) {
-    if (clickNode.hasChild || clickNode.children.isEmpty) {
-      notifyLayoutUpdate();
+    var children = _childMap[clickNode];
+    if (children == null || children.isEmpty) {
+      ///没有孩子无法展开
       return;
     }
+    final cOffset = clickNode.center;
+    final Set<TreeData> childrenSet = {};
+    each(children, (p0, p1) {
+      childrenSet.addAll(p0.iterator());
+    });
 
-    var animation = getAnimation(LayoutType.update);
-    if (animation == null) {
-      for (var c in clickNode.children) {
-        clickNode.add(c);
-      }
-      _startLayout(_rootNode);
+    Map<TreeData, Offset> oldCenterMap = {};
+
+    _rootNode.each((node, index, startNode) {
+      oldCenterMap[node] = node.center;
+      return false;
+    });
+    var option = getAnimation(LayoutType.update, childrenSet.length + oldCenterMap.length);
+    if (option == null) {
+      clickNode.clear();
+      clickNode.addAll(children);
+      _startLayout(_rootNode, false);
+      nodeList = _rootNode.iterator();
       _rBush.clear();
-      _rBush.addAll(_rootNode.iterator());
-      updateShowNodeList();
+      _rBush.addAll(nodeList);
       notifyLayoutUpdate();
       return;
     }
 
-    ///记录原始的大小和位置
-    Map<TreeData, Offset> oldPositionMap = {};
-    Map<TreeData, Size> oldSizeMap = {};
+    clickNode.clear();
+    clickNode.addAll(children);
+    _startLayout(_rootNode, false);
+
+    Map<TreeData, Offset> newCenterMap = {};
+    Map<TreeData, Size> newSizeMap = {};
     _rootNode.each((node, index, startNode) {
-      oldPositionMap[node] = node.center;
-      oldSizeMap[node] = node.size;
+      newCenterMap[node] = node.center;
+      newSizeMap[node] = node.size;
       return false;
     });
-
-    ///添加节点并保存当前点击节点的位置
-    for (var c in clickNode.children) {
-      clickNode.add(c);
-    }
-    Offset oldOffset = clickNode.center;
-
-    ///二次测量位置
-    _startLayout(_rootNode);
-    _rBush.clear();
-    _rBush.addAll(_rootNode.iterator());
-    updateShowNodeList();
-
-    Map<TreeData, Offset> positionMap = {};
-    Map<TreeData, Size> sizeMap = {};
-    _rootNode.each((node, index, startNode) {
-      if (!oldPositionMap.containsKey(node)) {
-        ///如果是新增节点
-        oldPositionMap[node] = oldOffset;
-        oldSizeMap[node] = Size.zero;
-      }
-      positionMap[node] = node.center;
-      sizeMap[node] = node.size;
-      return false;
+    var tween = ChartDoubleTween(option: option);
+    tween.addStartListener(() {
+      nodeList = _rootNode.iterator();
     });
-    doAnimator(_rootNode, oldPositionMap, positionMap, oldSizeMap, sizeMap);
-  }
-
-  void doAnimator(
-    TreeData root,
-    Map<TreeData, Offset> oldPositionMap,
-    Map<TreeData, Offset> positionMap,
-    Map<TreeData, Size> oldSizeMap,
-    Map<TreeData, Size> sizeMap, [
-    VoidCallback? endCallback,
-  ]) {
-    var animation = getAnimation(LayoutType.update);
-    if (animation == null) {
-      root.each((node, index, startNode) {
-        Offset end = positionMap[node] ?? node.center;
-        node.x = end.dx;
-        node.y = end.dy;
-        node.size = sizeMap[node] ?? node.size;
-        return false;
-      });
-      notifyLayoutUpdate();
-      return;
-    }
-
-    var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
-      double v = tween.value;
-      root.each((data, index, startNode) {
-        Offset begin = oldPositionMap[data] ?? data.center;
-        Offset end = positionMap[data] ?? data.center;
-        Offset p = Offset.lerp(begin, end, v)!;
-        data.x = p.dx;
-        data.y = p.dy;
-        Size beginSize = oldSizeMap[data] ?? Size.zero;
-        Size endSize = sizeMap[data] ?? data.size;
-        data.size = Size.lerp(beginSize, endSize, v)!;
+      var t = tween.value;
+      _rootNode.each((node, index, startNode) {
+        Offset offset = childrenSet.contains(node) ? cOffset : oldCenterMap[node]!;
+        node.center = lerpOffset(offset, newCenterMap[node]!, t);
+        double scale = childrenSet.contains(node) ? 0 : 1;
+        node.attr.symbol.scale = lerpNum(scale, 1, t);
         return false;
       });
       notifyLayoutUpdate();
     });
-    if (endCallback != null) {
-      tween.addEndListener(endCallback);
-    }
+    tween.addEndListener(() {
+      updateNodeList(_rootNode);
+      notifyLayoutUpdate();
+    });
     tween.start(context, true);
   }
 
@@ -308,5 +287,14 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
   @override
   Offset getTranslation() {
     return view.translation;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _rootNode = TreeData.empty;
+    _childMap = {};
+    _parentMap = {};
+    _rBush.clear();
   }
 }

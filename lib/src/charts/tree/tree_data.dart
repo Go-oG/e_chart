@@ -5,11 +5,7 @@ import 'package:e_chart/e_chart.dart';
 class TreeData extends BaseTreeData<TreeAttr, TreeData> {
   static final TreeData empty = TreeData(null, []);
 
-  TreeData(super.parent,
-      super.children, {
-        super.id,
-        super.value,
-      }) {
+  TreeData(super.parent, super.children, {super.id, super.value}) {
     attr = TreeAttr(EmptySymbol.empty);
   }
 

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/utils/lerp.dart';
 
 ///正六边形布局
 /// https://www.redblobgames.com/grids/hexagons/implementation.html#rounding
@@ -60,7 +61,7 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
         num er = e['rotate']!;
         num ss = s['scale']!;
         num es = e['scale']!;
-        data.center = offsetLerp(sc, ec, t);
+        data.center = lerpOffset(sc, ec, t);
         data.rotate = lerpDouble(sr, er, t)!;
         data.scale = lerpDouble(ss, es, t)!;
         data.updateLabelPosition(context, series);

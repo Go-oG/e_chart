@@ -123,16 +123,3 @@ Offset circlePoint(num radius, num angle, [Offset center = Offset.zero]) {
   double y = center.dy + radius * m.sin(angle * StaticConfig.angleUnit);
   return Offset(x, y);
 }
-
-Offset offsetLerp(Offset a, Offset b, double t) {
-  if (a == b) {
-    return b;
-  }
-  if (t == 0) {
-    return a;
-  }
-  if (t == 1) {
-    return b;
-  }
-  return Offset.lerp(a, b, t)!;
-}

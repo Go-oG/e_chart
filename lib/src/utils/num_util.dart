@@ -17,17 +17,3 @@ List<int> range(int start, int end, [int step = 1]) {
   }
   return rl;
 }
-
-int lerpInt(int s, int e, num t) {
-  if (s == e || (s.isNaN && e.isNaN)) {
-    return s;
-  }
-  return (s + (e - s) * t).round();
-}
-
-double lerpNum(num s, num e, num t) {
-  if (s == e || (s.isNaN && e.isNaN)) {
-    return s.toDouble();
-  }
-  return s.toDouble() + (e - s) * t;
-}

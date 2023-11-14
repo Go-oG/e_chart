@@ -4,6 +4,7 @@ export 'assert_check.dart';
 export 'color_util.dart';
 export 'diff.dart' hide TweenWrap;
 export 'js_util.dart';
+export 'lerp.dart';
 export 'list_util.dart';
 export 'log_util.dart';
 export 'math_util.dart';
