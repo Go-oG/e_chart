@@ -7,6 +7,9 @@ class StaticConfig {
   ///这里取53 是为了兼容Web
   static const int intMax = 2 ^ 53 - 1;
 
+  ///精度
+  static const double accuracy = 0.000001;
+
   ///贝塞尔曲线曲率
   static double smoothRatio = 0.18;
 

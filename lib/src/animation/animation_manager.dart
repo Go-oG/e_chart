@@ -91,7 +91,9 @@ class AnimationManager extends Disposable {
     }
     List<AnimationNode> nodeList = [];
     _animatorQueue.each((value) {
-      nodeList.add(value);
+      if (!value.isDispose) {
+        nodeList.add(value);
+      }
     });
     _animatorQueue.clear();
     return nodeList;
@@ -109,10 +111,22 @@ class AnimationManager extends Disposable {
     _animatorQueue.remove(node);
   }
 
+  void disposeAnimatorQueue() {
+    _animatorQueue.each((value) {
+      try {
+        value.dispose();
+      } catch (e) {
+        Logger.e(e);
+      }
+    });
+    _animatorQueue.clear();
+  }
+
   @override
   void dispose() {
     super.dispose();
     cancelAllAnimator();
+    disposeAnimatorQueue();
     _animatorQueue.dispose();
   }
 }

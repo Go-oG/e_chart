@@ -74,10 +74,10 @@ class ToolTipItemView extends GestureView {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     item = MenuItem.empty;
     _label = TextDraw.empty;
     _subLabel = TextDraw.empty;
-    super.onDestroy();
+    super.onDispose();
   }
 }

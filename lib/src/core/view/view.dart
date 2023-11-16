@@ -33,13 +33,9 @@ abstract class ChartView extends RenderNode {
   ///由Context负责回调
   ///当该方法被调用时标志着当前View即将被销毁
   ///你可以在这里进行资源释放等操作
-  void destroy() {
-    onDestroy();
-    dispose();
-  }
-
   @override
   void dispose() {
+    onDispose();
     clearCommand();
     _defaultCommandCallback = null;
     if (cacheLayer.layer != null) {
@@ -50,7 +46,7 @@ abstract class ChartView extends RenderNode {
     super.dispose();
   }
 
-  void onDestroy() {}
+  void onDispose() {}
 
   ///=======布局测量相关方法==============
   @override
@@ -59,16 +55,20 @@ abstract class ChartView extends RenderNode {
       return;
     }
     inMeasure = true;
-    bool minDiff = (boxBound.width - parentWidth).abs() <= 0.00001 && (boxBound.height - parentHeight).abs() <= 0.00001;
+    const accurate = StaticConfig.accuracy;
+    bool minDiff = (width - parentWidth).abs() <= accurate && (height - parentHeight).abs() <= accurate;
     if (minDiff && !forceLayout) {
       inMeasure = false;
       return;
     }
+
+    ///大小发生改变 需要重新布局
+    forceLayout = true;
     oldBound = boxBound;
     margin.clear();
     padding.clear();
     Size size = onMeasure(parentWidth, parentHeight);
-    boundRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    boxBound = Rect.fromLTWH(0, 0, size.width, size.height);
     inMeasure = false;
   }
 
@@ -89,6 +89,9 @@ abstract class ChartView extends RenderNode {
     return Size(w, h);
   }
 
+  ///记录布局次数
+  int _layoutCount = 0;
+
   @override
   void layout(double left, double top, double right, double bottom) {
     if (inLayout) {
@@ -96,26 +99,27 @@ abstract class ChartView extends RenderNode {
       return;
     }
     inLayout = true;
-    if (!forceLayout && boxBound.width > 0 && boxBound.height > 0) {
-      bool b1 = (left - boxBound.left).abs() < 1;
-      bool b2 = (top - boxBound.top).abs() < 1;
-      bool b3 = (right - boxBound.right).abs() < 1;
-      bool b4 = (bottom - boxBound.bottom).abs() < 1;
-      if (b1 && b2 && b3 && b4) {
-        inLayout = false;
-        Logger.i("前后未变化且没强制布局");
-        return;
-      }
+    const accurate = StaticConfig.accuracy;
+    bool b1 = (left - boxBound.left).abs() < accurate;
+    bool b2 = (top - boxBound.top).abs() < accurate;
+    bool b3 = (right - boxBound.right).abs() < accurate;
+    bool b4 = (bottom - boxBound.bottom).abs() < accurate;
+    if ((b1 && b2 && b3 && b4) && !forceLayout) {
+      inLayout = false;
+      Logger.i("前后未变化且没强制布局");
+      return;
     }
-
+    _layoutCount++;
     oldBound = boxBound;
-    boundRect = Rect.fromLTRB(left, top, right, bottom);
+    boxBound = Rect.fromLTRB(left, top, right, bottom);
     globalBound = getGlobalBounds();
     onLayout(left, top, right, bottom);
     onLayoutEnd();
     inLayout = false;
     forceLayout = false;
   }
+
+  bool get isFirstLayout => _layoutCount == 1;
 
   void onLayout(double left, double top, double right, double bottom) {}
 

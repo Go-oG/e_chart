@@ -18,11 +18,11 @@ class ToolTipView extends LinearLayout {
   TitleView? titleView;
 
   @override
-  void onDestroy() {
+  void onDispose() {
     menu = null;
     toolTip = ToolTip(show: false);
     titleView = null;
-    super.onDestroy();
+    super.onDispose();
   }
 
   void updateView(ToolTipMenu? menu) {

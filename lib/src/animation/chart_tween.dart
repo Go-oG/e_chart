@@ -3,25 +3,31 @@ import 'dart:async';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-/// 抽象的补间动画
-abstract class ChartTween<T> extends ValueNotifier<T> {
-  final AnimatorOption option;
+/// 图表动画抽象实现
+abstract class ChartTween<T> extends ChartNotifier<T> {
+  AnimatorOption get option => _option!;
+  AnimatorOption? _option;
   AnimationController? _controller;
-  T _begin;
-  T _end;
+
+  T? _begin;
+  T? _end;
+
   late bool _allowCross;
 
   ChartTween(
-    this._begin,
-    this._end, {
+    T begin,
+    T end, {
     bool allowCross = true,
-    this.option = const AnimatorOption(),
-  }) : super(_begin) {
+    AnimatorOption option = AnimatorOption.normal,
+  }) : super(begin) {
+    _begin = begin;
+    _end = end;
     _allowCross = allowCross;
+    _option = option;
   }
 
-  List<VoidCallback> _starListenerList = [];
-  List<VoidCallback> _endListenerList = [];
+  final SafeList<VoidCallback> _starListenerList = SafeList();
+  final SafeList<VoidCallback> _endListenerList = SafeList();
 
   void addStartListener(VoidCallback call) {
     _starListenerList.remove(call);
@@ -38,43 +44,48 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   Timer? _waitTimer;
 
   void start(Context context, [bool useUpdate = false]) {
+    if (isDispose) {
+      Logger.w("current Object is disposed");
+      return;
+    }
+    var option = _option!;
     var delay = useUpdate ? option.updateDelay : option.delay;
     if (delay.inMilliseconds <= 0) {
-      _startInner(context, useUpdate);
+      _startInner(context, option, useUpdate);
       return;
     }
     _cancelFlag = true;
     _waitTimer?.cancel();
     _waitTimer = Timer(delay, () {
-      _startInner(context, useUpdate);
+      _startInner(context, option, useUpdate);
     });
   }
 
   void _callOnStart() {
-    for (var l in _starListenerList) {
+    _starListenerList.each((v) {
       try {
-        l.call();
+        v.call();
       } catch (e) {
         Logger.e(e);
       }
-    }
+    });
   }
 
   void _callOnEnd() {
-    for (var l in _endListenerList) {
+    _endListenerList.each((v) {
       try {
-        l.call();
+        v.call();
       } catch (e) {
         Logger.e(e);
       }
-    }
+    });
   }
 
-  void _startInner(Context context, [bool useUpdate = false]) {
-    var duration=useUpdate?option.updateDuration:option.duration;
-    if(duration.inMilliseconds<=0){
+  void _startInner(Context context, AnimatorOption option, [bool useUpdate = false]) {
+    var duration = useUpdate ? option.updateDuration : option.duration;
+    if (duration.inMilliseconds <= 0) {
       _callOnStart();
-      value=_getValue(1);
+      value = _getValue(1);
       _callOnEnd();
       return;
     }
@@ -107,8 +118,10 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
   void stop() {
     try {
       _waitTimer?.cancel();
+      _waitTimer = null;
       _cancelFlag = true;
       _controller?.stop(canceled: true);
+      _controller?.dispose();
     } catch (e) {
       Logger.e(e);
     }
@@ -116,22 +129,9 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     notifyListeners();
   }
 
-  @override
-  void dispose() {
-    stop();
-    _starListenerList = [];
-    _endListenerList = [];
-    super.dispose();
-  }
+  T get begin => _begin!;
 
-  @override
-  String toString() {
-    return '$runtimeType begin:$begin  end:$end';
-  }
-
-  T get begin => _begin;
-
-  T get end => _end;
+  T get end => _end!;
 
   bool get isAnimating => _controller != null && _controller!.isAnimating;
 
@@ -167,11 +167,23 @@ abstract class ChartTween<T> extends ValueNotifier<T> {
     return convert(t);
   }
 
-  T safeGetValue(double t) {
-    return _getValue(t);
-  }
-
   ///该方法由子类复写且只能在getValue内部调用
   @protected
   T convert(double animatorPercent);
+
+  @override
+  void dispose() {
+    super.dispose();
+    stop();
+    _starListenerList.dispose();
+    _endListenerList.dispose();
+    _option = null;
+    _begin = null;
+    _end = null;
+  }
+
+  @override
+  String toString() {
+    return '$runtimeType begin:$begin  end:$end';
+  }
 }

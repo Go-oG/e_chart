@@ -11,7 +11,6 @@ export 'chart_action_dispatcher.dart';
 export 'events/axis.dart';
 export 'events/brush.dart';
 export 'events/chart_destroy.dart';
-export 'events/coord.dart';
 export 'events/data_event.dart';
 export 'events/legend.dart';
 export 'events/parallel.dart';

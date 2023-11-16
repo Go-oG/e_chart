@@ -4,6 +4,8 @@ abstract class ChartEvent {
   const ChartEvent();
 
   EventType get eventType;
+
+  void dispose() {}
 }
 
 class EventInfo {
@@ -34,11 +36,7 @@ class EventInfo {
 
   @override
   bool operator ==(Object other) {
-    return other is EventInfo &&
-        other.seriesIndex == seriesIndex &&
-        other.componentType == componentType &&
-        other.data == data &&
-        other.seriesType == seriesType;
+    return other is EventInfo && other.seriesIndex == seriesIndex && other.componentType == componentType && other.data == data && other.seriesType == seriesType;
   }
 
   @override

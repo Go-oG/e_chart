@@ -25,10 +25,10 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     axisMap.forEach((key, value) {value.dispose();});
     axisMap.clear();
-    super.onDestroy();
+    super.onDispose();
   }
 
   @override

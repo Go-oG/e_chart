@@ -25,7 +25,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     xMap.forEach((key, value) {
       value.dispose();
     });
@@ -34,7 +34,7 @@ class GridCoordImpl extends GridCoord {
     });
     xMap.clear();
     yMap.clear();
-    super.onDestroy();
+    super.onDispose();
   }
 
   @override

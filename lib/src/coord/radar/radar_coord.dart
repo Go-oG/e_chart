@@ -28,13 +28,13 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     axisMap.forEach((key, value) {
       value.dispose();
     });
     axisMap.clear();
     splitList.clear();
-    super.onDestroy();
+    super.onDispose();
   }
 
   Size measureSize = Size.zero;

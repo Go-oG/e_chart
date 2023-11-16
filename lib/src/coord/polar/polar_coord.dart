@@ -24,12 +24,12 @@ class PolarCoordImpl extends PolarCoord {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     _angleAxis?.dispose();
     _angleAxis = null;
     _radiusAxis?.dispose();
     _radiusAxis = null;
-    super.onDestroy();
+    super.onDispose();
   }
 
   @override

@@ -26,11 +26,11 @@ class TitleView extends ChartView {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     title = DynamicText.empty;
     style = LabelStyle.empty;
     label = TextDraw.empty;
-    super.onDestroy();
+    super.onDispose();
   }
 
 }

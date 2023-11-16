@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/title/title_view.dart';
 import 'package:flutter/widgets.dart';
-import 'package:e_chart/e_chart.dart' as ec;
+import 'package:e_chart/src/event/chart_action_dispatcher.dart' as ac;
 
 ///存放整个图表的配置.包含所有的图形实例和动画、手势
 ///一个Context 对应一个图表实例
@@ -19,9 +19,15 @@ class Context extends Disposable {
 
   GestureDispatcher get gestureDispatcher => _gestureDispatcher;
   final GestureDispatcher _gestureDispatcher = GestureDispatcher();
+
+  AnimationManager get animationManager => _animationManager;
   final AnimationManager _animationManager = AnimationManager();
+
+  EventDispatcher get eventDispatcher => _eventDispatcher;
   final EventDispatcher _eventDispatcher = EventDispatcher();
-  final ec.ActionDispatcher _actionDispatcher = ec.ActionDispatcher();
+
+  ac.ActionDispatcher get actionDispatcher => _actionDispatcher;
+  final ac.ActionDispatcher _actionDispatcher = ac.ActionDispatcher();
 
   double devicePixelRatio;
 
@@ -193,7 +199,7 @@ class Context extends Disposable {
     _actionDispatcher.dispose();
     _gestureDispatcher.dispose();
     _animationManager.dispose();
-    _destroyView();
+    _disposeView();
     _seriesViewMap = {};
     _coordMap = {};
     _coordList = [];
@@ -203,14 +209,14 @@ class Context extends Disposable {
     super.dispose();
   }
 
-  void _destroyView() {
+  void _disposeView() {
     for (var coord in _coordList) {
-      coord.destroy();
+      coord.dispose();
     }
-    _coordList.clear();
-    _legend?.destroy();
+    _coordList=[];
+    _legend?.dispose();
     _legend = null;
-    _title?.destroy();
+    _title?.dispose();
     _title = null;
   }
 
@@ -364,6 +370,7 @@ class Context extends Disposable {
   }
 
   ///=========动画管理==================
+
   AnimationController boundedAnimation(AnimatorOption props, [bool useUpdate = false]) {
     return _animationManager.bounded(_provider!, props, useUpdate: useUpdate);
   }

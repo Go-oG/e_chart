@@ -61,6 +61,14 @@ abstract class ChartRender extends RenderNode {
     _notifier.value = Command.reLayout;
   }
 
+  @mustCallSuper
+  @override
+  void measure(double parentWidth, double parentHeight) {
+    _context?.animationManager.cancelAllAnimator();
+
+
+  }
+
   void onCreate() {
     _lifecycle = Lifecycle.created;
     context.onCreate();

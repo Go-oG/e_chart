@@ -8,7 +8,7 @@ mixin ViewAttr {
   late LayoutParams layoutParams = const LayoutParams.matchAll();
 
   ///存储当前视图在父视图中的位置属性
-  Rect boundRect = Rect.zero;
+  Rect boxBound = Rect.zero;
 
   ///记录旧的边界位置，可用于动画相关的计算
   Rect oldBound = Rect.zero;
@@ -28,23 +28,21 @@ mixin ViewAttr {
     return Offset(local.dx + globalBound.left, local.dy + globalBound.top);
   }
 
-  double get width => boundRect.width;
+  double get width => boxBound.width;
 
-  double get height => boundRect.height;
+  double get height => boxBound.height;
 
-  double get left => boundRect.left;
+  double get left => boxBound.left;
 
-  double get top => boundRect.top;
+  double get top => boxBound.top;
 
-  double get right => boundRect.right;
+  double get right => boxBound.right;
 
-  double get bottom => boundRect.bottom;
+  double get bottom => boxBound.bottom;
 
   double get centerX => width / 2.0;
 
   double get centerY => height / 2.0;
-
-  Rect get boxBound => boundRect;
 
   Rect get selfBoxBound => Rect.fromLTWH(0, 0, width, height);
 

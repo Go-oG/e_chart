@@ -136,12 +136,12 @@ class BrushView extends GestureView {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     brush.removeListener(handleBrushCommand);
     _coord = null;
     _brush = null;
     _brushList = [];
-    super.onDestroy();
+    super.onDispose();
   }
 
   @override

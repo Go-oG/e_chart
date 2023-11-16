@@ -2,14 +2,24 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/animation.dart';
 
 class AnimatorOption {
+  static const AnimatorOption none = AnimatorOption(
+    delay: Duration.zero,
+    updateCurve: Curves.linear,
+    updateDuration: Duration.zero,
+    updateDelay: Duration.zero,
+    curve: Curves.linear,
+    behavior: AnimationBehavior.normal,
+    threshold: 0,
+  );
+
+  static const AnimatorOption normal = AnimatorOption();
+
   final Duration duration;
   final Duration updateDuration;
   final Duration delay;
   final Duration updateDelay;
-
   final Curve curve;
   final Curve updateCurve;
-
   final AnimationBehavior behavior;
 
   ///动画的阈值(超过该值将不会执行动画)
@@ -28,7 +38,7 @@ class AnimatorOption {
     this.updateCurve = Curves.linear,
   });
 
-  bool check(LayoutType type,[int count=-1]){
+  bool check(LayoutType type, [int count = -1]) {
     if (type == LayoutType.none) {
       return false;
     }
@@ -36,10 +46,10 @@ class AnimatorOption {
       return false;
     }
     if (type == LayoutType.layout) {
-      return duration.inMilliseconds>0;
+      return duration.inMilliseconds > 0;
     }
     if (type == LayoutType.update) {
-      return updateDuration.inMilliseconds>0;
+      return updateDuration.inMilliseconds > 0;
     }
     return false;
   }

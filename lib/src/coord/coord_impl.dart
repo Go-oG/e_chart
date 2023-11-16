@@ -37,11 +37,11 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     _props=null;
     _brushView = null;
     _tipView = null;
-    super.onDestroy();
+    super.onDispose();
   }
 
   ToolTip? findToolTip() {

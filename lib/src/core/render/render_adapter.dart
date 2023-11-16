@@ -12,6 +12,7 @@ class RenderAdapter extends RenderBox {
   Size? configSize;
   BoxConstraints? oldConstraints;
   Size oldSize = Size.zero;
+  bool oldHasSize =false;
   ChartRender? _render;
   TickerProvider? _provider;
 
@@ -35,6 +36,7 @@ class RenderAdapter extends RenderBox {
       return;
     }
     Logger.i('onUpdateRender 重建');
+
     ///直接重建
     _provider = provider;
     _disPoseRender(_render);
@@ -119,8 +121,7 @@ class RenderAdapter extends RenderBox {
 
   @override
   void performResize() {
-    if (oldConstraints != null && constraints == oldConstraints && oldSize != Size.zero) {
-      size = oldSize;
+    if (hasSize&&oldConstraints != null && constraints == oldConstraints && oldSize ==size) {
       Logger.i('performResize() 前后约束不变 不进行测量');
       return;
     }
@@ -131,8 +132,9 @@ class RenderAdapter extends RenderBox {
     double maxH = constraints.maxHeight;
     double w = adjustSize(maxW, minW, configSize?.width);
     double h = adjustSize(maxH, minH, configSize?.height);
+    oldHasSize=hasSize;
+    oldSize = hasSize ? size : Size.zero;
     size = Size(w, h);
-    oldSize = size;
   }
 
   double adjustSize(double maxSize, double minSize, double? defaultSize) {
@@ -150,6 +152,13 @@ class RenderAdapter extends RenderBox {
     throw ChartError("size constraints is NaN Or Infinite and defaultSize is Null");
   }
 
+  @override
+  void performLayout() {
+    super.performLayout();
+    onMeasure();
+    onLayout();
+  }
+
   void onMeasure() {
     double w = size.width;
     double h = size.height;
@@ -158,13 +167,6 @@ class RenderAdapter extends RenderBox {
 
   void onLayout() {
     _render?.layout(0, 0, size.width, size.height);
-  }
-
-  @override
-  void performLayout() {
-    super.performLayout();
-    onMeasure();
-    onLayout();
   }
 
   @override

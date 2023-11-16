@@ -96,10 +96,10 @@ class LegendComponent extends FlexLayout {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     _legend?.removeListener(handleCommand);
     _legend = null;
-    super.onDestroy();
+    super.onDispose();
   }
 
   void loadData() {
@@ -203,7 +203,7 @@ class LegendItemView extends GestureView with StateProvider {
   TextDraw? label;
 
   @override
-  void onDestroy() {
+  void onDispose() {
     legend = Legend.empty();
     item.dispose();
     item = LegendItem.empty();
@@ -211,7 +211,7 @@ class LegendItemView extends GestureView with StateProvider {
     symbolOffset = Offset.zero;
     label?.dispose();
     label = null;
-    super.onDestroy();
+    super.onDispose();
   }
 
   @override

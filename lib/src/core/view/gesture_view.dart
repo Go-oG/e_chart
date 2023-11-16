@@ -18,9 +18,10 @@ abstract class GestureView extends ChartView {
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
     _gesture.clear();
-    super.onDestroy();
+    context.removeGesture(_gesture);
+    super.onDispose();
   }
 
   @mustCallSuper

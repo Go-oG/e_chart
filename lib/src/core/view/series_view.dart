@@ -7,15 +7,19 @@ import 'package:flutter/rendering.dart';
 ///强制要求提供一个Series和Layout;并简单包装了部分手势操作
 ///除此之外，每个SeriesView 默认添加一个Layer
 abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends GestureView {
-  final T series;
+  T? _series;
+
+  T get series => _series!;
+
   L? _layoutHelper;
 
   L get layoutHelper => _layoutHelper!;
 
-  SeriesView(this.series) {
+  SeriesView(T series) {
+    _series = series;
     zLevel = series.seriesType.priority;
     if (series is RectSeries) {
-      layoutParams = (series as RectSeries).toLayoutParams();
+      layoutParams = series.toLayoutParams();
     }
   }
 
@@ -26,10 +30,14 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   }
 
   @override
-  void onDestroy() {
+  void onDispose() {
+    _translationEvent = null;
+    _scaleEvent = null;
     _layoutHelper?.dispose();
-    series.dispose();
-    super.onDestroy();
+    _layoutHelper = null;
+    layoutParams = LayoutParams.none;
+    _series = null;
+    super.onDispose();
   }
 
   L buildLayoutHelper(L? oldHelper);
@@ -132,7 +140,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     layoutHelper.removeListener(requestDraw);
     super.onStop();
   }
-
 
   @override
   bool get useSingleLayer => series.useSingleLayer;

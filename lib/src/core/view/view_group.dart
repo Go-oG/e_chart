@@ -44,12 +44,13 @@ abstract class ChartViewGroup extends GestureView {
   }
 
   @override
-  void destroy() {
-    for (var c in _children) {
-      c.destroy();
-    }
+  void onDispose() {
+    var cl=_children;
     _children=[];
-    super.destroy();
+    for (var c in cl) {
+      c.dispose();
+    }
+    super.onDispose();
   }
 
   @override
@@ -67,7 +68,6 @@ abstract class ChartViewGroup extends GestureView {
       c.markDirtyWithChild();
     }
   }
-
 
   ///=========Event和Action分发处理==================
   bool dispatchAction(ChartAction action) {
@@ -209,44 +209,6 @@ abstract class ChartViewGroup extends GestureView {
     children.sort((a, b) {
       return a.zLevel.compareTo(b.zLevel);
     });
-  }
-
-  int _binarySearchLast<T>(List<T> sortList, int Function(T a) compareFun) {
-    int left = 0;
-    int right = sortList.length - 1;
-
-    if (compareFun.call(sortList.last) <= 0) {
-      return right;
-    }
-    if (compareFun.call(sortList.first) > 0) {
-      return 0;
-    }
-
-    while (left < right) {
-      final int mid = left + ((right - left) >> 1);
-      int comp = compareFun.call(sortList[mid]);
-      if (comp == 0) {
-        if (right - left == 1) {
-          return right;
-        }
-        left = mid;
-        continue;
-      }
-
-      if (right - left == 1) {
-        comp = compareFun.call(sortList[right]);
-        if (comp <= 0) {
-          return left;
-        }
-        return right;
-      }
-      if (comp < 0) {
-        left = mid + 1;
-      } else {
-        right = mid;
-      }
-    }
-    return -1;
   }
 
   void removeView(ChartView view) {
