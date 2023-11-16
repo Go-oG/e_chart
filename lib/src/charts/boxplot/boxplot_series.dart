@@ -94,7 +94,7 @@ class BoxplotData extends StackItemData {
 
   @override
   String toString() {
-    return '$runtimeType x:$x name:$name id:$id\n'
+    return '$runtimeType x:$domain name:$name id:$id\n'
         'max:${max.toStringAsFixed(2)} upAve4:${upAve4.toStringAsFixed(2)}\n'
         'middle:${middle.toStringAsFixed(2)} downAve4:${downAve4.toStringAsFixed(2)} '
         'min:${min.toStringAsFixed(2)}';

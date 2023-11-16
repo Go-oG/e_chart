@@ -181,7 +181,7 @@ abstract class GestureView extends ChartView {
   ///当为false时 拖拽将固定为只能在水平或者竖直方向
   bool get freeLongPress => true;
 
-  bool get enableHover => isWeb;
+  bool get enableHover => isDesktop;
 
   bool get enableDrag => false;
 

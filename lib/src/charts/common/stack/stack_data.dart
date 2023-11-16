@@ -126,7 +126,7 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   String toString() {
-    return 'value:X:${value?.x} y:${value?.y}';
+    return 'value:X:${value?.domain} y:${value?.value}';
   }
 }
 
@@ -185,8 +185,10 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
   late final String name;
   int styleIndex = 0;
   List<StackData<T, P>> data;
+
   //主轴索引(一般当图表为竖直时，对应X轴)
   int domainAxis;
+
   //数值轴索引
   int valueAxis;
 
@@ -244,29 +246,30 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
 }
 
 class StackItemData extends BaseItemData {
-  dynamic x;
-  dynamic y;
+  dynamic domain;
+  dynamic value;
 
-  StackItemData(this.x, this.y, {super.id, super.name}) {
-    checkDataType(x);
-    checkDataType(y);
-    if (x is! num && y is! num) {
+  StackItemData(this.domain, this.value, {super.id, super.name}) {
+    checkDataType(domain);
+    checkDataType(value);
+    if (domain is! num && value is! num) {
       throw ChartError('x 和 y 必须有一个是num类型的数据');
     }
-    if (x == null || y == null) {
+    if (domain == null || value == null) {
       throw ChartError("NullPointException");
     }
   }
 
-  num get value {
-    if (y is num && x is num) {
-      return y;
+  ///返回应该要测量的值
+  num get measureValue {
+    if (value is num && domain is num) {
+      return value;
       // ChartError(" x 和 y都是num 请重写该方法并返回正确的值");
     }
-    if (y is num) {
-      return y;
+    if (value is num) {
+      return value;
     }
-    return x;
+    return domain;
   }
 
   num get minValue {
@@ -274,15 +277,15 @@ class StackItemData extends BaseItemData {
   }
 
   num get maxValue {
-    return value;
+    return measureValue;
   }
 
   num get aveValue {
-    return value / 2;
+    return measureValue / 2;
   }
 
   @override
   String toString() {
-    return '$runtimeType x:$x y:$y';
+    return '$runtimeType x:$domain y:$value';
   }
 }

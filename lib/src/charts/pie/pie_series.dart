@@ -44,7 +44,7 @@ class PieSeries extends RectSeries2<PieData> {
     this.sweepAngle = 360,
     this.offsetAngle = 0,
     this.corner = 0,
-    this.roseType = RoseType.radius,
+    this.roseType = RoseType.normal,
     this.angleGap = 0,
     super.labelStyleFun,
     this.labelAlign = CircleAlign.inside,

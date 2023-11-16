@@ -1,6 +1,4 @@
-import '../../../model/chart_error.dart';
-import '../../../model/range_info.dart';
-import '../../../utils/math_util.dart';
+import 'package:e_chart/e_chart.dart';
 
 ///用于优化解决大数据量下数据的获取
 ///支持按时间维度、字符串维度、数字维度来进行数据的管理

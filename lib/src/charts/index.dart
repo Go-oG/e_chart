@@ -1,5 +1,5 @@
-
 export 'common/hierarchy/hierarchy_layout.dart';
+export 'common/stack/index.dart';
 
 export 'bar/bar_data.dart';
 export 'bar/bar_series.dart';
@@ -54,8 +54,6 @@ export 'radar/radar_data.dart';
 export 'sankey/sankey_series.dart';
 export 'sankey/sankey_align.dart';
 export 'sankey/sankey_data.dart';
-
-export 'stack/index.dart';
 
 export 'sunburst/sunburst_series.dart';
 export 'sunburst/sunburst_data.dart';

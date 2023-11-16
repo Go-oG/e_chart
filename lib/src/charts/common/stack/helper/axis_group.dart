@@ -23,9 +23,9 @@ class AxisGroup<T extends StackItemData, P extends StackGroupData<T,P>> {
       }
       DataStore<StackData<T, P>> store = DataStore(nodeList, (data) {
         if (direction == Direction.vertical) {
-          return data.dataNull?.x;
+          return data.dataNull?.domain;
         }
-        return data.dataNull?.y;
+        return data.dataNull?.value;
       });
       storeMap[key] = store;
     });
