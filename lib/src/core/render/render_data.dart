@@ -80,8 +80,8 @@ abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
 
   bool contains(Offset offset);
 
-  NodeAttr toAttr() {
-    return NodeAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, 1);
+  DataAttr toAttr() {
+    return DataAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, 1);
   }
 
   void updateStyle(Context context, covariant ChartSeries series);
@@ -110,9 +110,6 @@ abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
       context.dispatchEvent(_dataStateChangeEvent);
     }
   }
-
-  ///更新当前符号的大小
-  void updateSymbolSize(Size size) {}
 
   void updateLabelPosition(Context context, covariant ChartSeries series) {}
 
@@ -146,20 +143,13 @@ abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
 }
 
 abstract class RenderData2<P, S extends ChartSymbol> extends RenderData<P> {
-  late S symbol;
+  S? _symbol;
 
-  RenderData2(this.symbol, {super.id});
+  S get symbol => _symbol!;
 
-  RenderData2.attr(
-    this.symbol,
-    P attr, {
-    super.id,
-    super.name,
-  }) {
-    _attr = attr;
-  }
+  set symbol(S s) => _symbol = s;
 
-  RenderData2.of({
+  RenderData2({
     super.id,
     super.name,
   });
@@ -188,8 +178,8 @@ abstract class RenderData2<P, S extends ChartSymbol> extends RenderData<P> {
   }
 
   @override
-  NodeAttr toAttr() {
-    return NodeAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, symbol.scale);
+  DataAttr toAttr() {
+    return DataAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, symbol.scale);
   }
 }
 
@@ -234,7 +224,7 @@ abstract class RenderGroupData<T extends RenderData> extends RenderData<Offset> 
   }
 }
 
-abstract class RenderChildData<T, P extends RenderGroupData,A> extends RenderData<A> {
+abstract class RenderChildData<T, P extends RenderGroupData, A> extends RenderData<A> {
   T? data;
 
   RenderChildData(this.data, {super.id, super.name});
@@ -245,35 +235,21 @@ abstract class RenderChildData<T, P extends RenderGroupData,A> extends RenderDat
   }
 
   P get parent => extGet("exParent");
+
   set parent(P p) => extSet("exParent", p);
+
   ChartSymbol? get symbol => extGetNull("exSymbol");
+
   set symbol(ChartSymbol? s) => extSet("exSymbol", s);
+
   Offset get center => extGet("exCenter");
+
   set center(Offset p) => extSet("exCenter", p);
+
   bool get dataIsNull => data == null;
-
 }
 
-class SymbolNode<T> with StateProvider, ExtProps {
-  T data;
-  ChartSymbol symbol = EmptySymbol();
-  int dataIndex;
-  int groupIndex;
-
-  Offset center = Offset.zero;
-
-  SymbolNode(this.data, this.symbol, this.dataIndex, this.groupIndex);
-
-  void onDraw(CCanvas canvas, Paint paint) {
-    symbol.draw(canvas, paint, center);
-  }
-
-  bool contains(Offset offset) {
-    return symbol.contains(center, offset);
-  }
-}
-
-class NodeAttr {
+class DataAttr {
   final dynamic attr;
   final int drawIndex;
   final TextDraw label;
@@ -282,7 +258,7 @@ class NodeAttr {
   final LineStyle borderStyle;
   final double symbolScale;
 
-  const NodeAttr(
+  const DataAttr(
     this.attr,
     this.drawIndex,
     this.label,

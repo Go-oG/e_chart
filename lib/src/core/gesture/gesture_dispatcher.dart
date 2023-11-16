@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/gestures.dart';
 import '../../utils/platform_util.dart';
-import 'chart_gesture.dart';
-import 'gesture_event.dart';
 import 'package:vector_math/vector_math.dart' as vector;
 
 ///手势分发器
@@ -75,19 +74,19 @@ class GestureDispatcher {
       return;
     }
     if (event is PointerHoverEvent) {
-      if (!isPhone) {
+      if (isDesktop) {
         onHoverMove(event);
       }
       return;
     }
     if (event is PointerEnterEvent) {
-      if (isWeb) {
+      if (isDesktop) {
         onHoverStart(event);
       }
       return;
     }
     if (event is PointerExitEvent) {
-      if (isWeb) {
+      if (isDesktop) {
         onHoverEnd(event);
       }
       return;

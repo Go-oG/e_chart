@@ -20,14 +20,14 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    var oldList = nodeList;
+    var oldList = dataSet;
     var newList = [...series.data];
-    initData(newList);
+    initDataIndexAndStyle(newList);
     var an = DiffUtil.diff(
       getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
-      (dataList) => layoutNode(dataList),
+      (dataList) => layoutData(dataList),
       (node, type) {
         if (type == DiffType.add) {
           return {'scale': 0};
@@ -44,7 +44,7 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
         data.symbol.scale = lerpDouble(s['scale'], e['scale'], t)!;
       },
       (resultList, t) {
-        nodeList = resultList;
+        dataSet = resultList;
         notifyLayoutUpdate();
       },
       onStart: () {
@@ -65,14 +65,17 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
   }
 
   @override
-  void initData(List<PointData> dataList) {
+  void initDataIndexAndStyle(List<PointData> dataList, [bool updateStyle = true]) {
     each(dataList, (data, i) {
       data.dataIndex = i;
-      data.setSymbol(series.getSymbol(context, data), true);
+      data.styleIndex = i;
+      if (updateStyle) {
+        data.updateStyle(context, series);
+      }
     });
   }
 
-  void layoutNode(List<PointData> nodeList) {
+  void layoutData(List<PointData> nodeList) {
     if (CoordType.polar == series.coordType) {
       _layoutForPolar(nodeList, findPolarCoord());
       return;
@@ -91,10 +94,10 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
   void _layoutForCalendar(List<PointData> dataList, CalendarCoord coord) {
     for (var node in dataList) {
       DateTime t;
-      if (node.x.isDate) {
-        t = node.x.data;
-      } else if (node.y.isDate) {
-        t = node.y.data;
+      if (node.domain is DateTime) {
+        t = node.domain;
+      } else if (node.value is DateTime) {
+        t = node.value;
       } else {
         throw ChartError('x 或y 必须有一个是DateTime');
       }
@@ -104,15 +107,15 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
 
   void _layoutForPolar(List<PointData> dataList, PolarCoord coord) {
     for (var data in dataList) {
-      var position = coord.dataToPosition(data.x, data.y);
+      var position = coord.dataToPosition(data.domain, data.value);
       data.attr = position.position;
     }
   }
 
   void _layoutForGrid(List<PointData> dataList, GridCoord coord) {
-    for (var node in dataList) {
-      var x = coord.dataToPoint(node.xAxisIndex, node.x, true);
-      var y = coord.dataToPoint(node.yAxisIndex, node.y, false);
+    for (var data in dataList) {
+      var x = coord.dataToPoint(data.domainAxis, data.domain, true);
+      var y = coord.dataToPoint(data.valueAxis, data.value, false);
       double ox;
       if (x.length == 1) {
         ox = x.first.dx;
@@ -125,7 +128,7 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
       } else {
         oy = (y.first.dy + y.last.dy) / 2;
       }
-      node.attr = Offset(ox, oy);
+      data.attr = Offset(ox, oy);
     }
   }
 
@@ -145,9 +148,7 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
 
   @override
   void onDragMove(Offset offset, Offset diff) {
-    if (series.coordType == CoordType.grid ||
-        series.coordType == CoordType.polar ||
-        series.coordType == CoordType.calendar) {
+    if (series.coordType == CoordType.grid || series.coordType == CoordType.polar || series.coordType == CoordType.calendar) {
       return;
     }
 
@@ -162,17 +163,17 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
     List<PointData> oldList = [];
     List<PointData> newList = [];
     for (var diff in list) {
-      diff.node.drawIndex = diff.old ? 0 : 100;
+      diff.data.drawIndex = diff.old ? 0 : 100;
       if (diff.old) {
-        oldList.add(diff.node);
+        oldList.add(diff.data);
       } else {
-        newList.add(diff.node);
+        newList.add(diff.data);
       }
     }
     sortList(showNodeList);
     List<ChartTween> tl = [];
     for (var diff in list) {
-      var node = diff.node;
+      var node = diff.data;
       var scale = diff.startAttr.symbolScale;
       var end = diff.old ? 1 : (1 + 8 / node.symbol.size.shortestSide);
       var tw = ChartDoubleTween(option: animation);
@@ -191,8 +192,8 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
   }
 
   @override
-  PointData? findNode(Offset offset, [bool overlap = false]) {
-    var hoveNode = oldHoverNode;
+  PointData? findData(Offset offset, [bool overlap = false]) {
+    var hoveNode = oldHoverData;
     if (hoveNode != null && hoveNode.contains(offset)) {
       return hoveNode;
     }

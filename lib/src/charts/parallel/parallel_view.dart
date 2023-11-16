@@ -19,7 +19,7 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     }
     canvas.save();
     canvas.clipRect(clipRect);
-    var nodeList = layoutHelper.dataList;
+    var nodeList = layoutHelper.dataSet;
     for (var ele in nodeList) {
       ele.onDraw(canvas, mPaint);
     }

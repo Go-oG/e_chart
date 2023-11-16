@@ -42,7 +42,7 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     List<dynamic> dl = [];
     each(layoutHelper.showNodeList, (data, p1) {
-      var index = isXAxis ? data.xAxisIndex : data.yAxisIndex;
+      var index = isXAxis ? data.domainAxis : data.valueAxis;
       if (index < 0) {
         index = 0;
       }
@@ -51,9 +51,9 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
       }
 
       if (isXAxis) {
-        dl.add(data.x);
+        dl.add(data.domain);
       } else {
-        dl.add(data.y);
+        dl.add(data.value);
       }
     });
     return dl;

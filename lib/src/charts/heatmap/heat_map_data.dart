@@ -36,16 +36,16 @@ class HeatMapData extends RenderData<Rect> {
       itemStyle = symbol.itemStyle;
       borderStyle = symbol.borderStyle;
     } else {
-      itemStyle = series.getItemStyle(context, this) ?? AreaStyle.empty;
-      borderStyle = series.getBorderStyle(context, this) ?? LineStyle.empty;
+      itemStyle = series.getItemStyle(context, this);
+      borderStyle = series.getBorderStyle(context, this);
       this.symbol = RectSymbol(borderStyle: borderStyle, itemStyle: itemStyle, rectSize: attr.size);
     }
-    label.style = series.getLabelStyle(context, this) ?? LabelStyle.empty;
+    label.updatePainter(style: series.getLabelStyle(context, this));
   }
 
   @override
-  void updateSymbolSize(Size size) {
-    symbol = symbol.copyBySize(size);
+  void updateLabelPosition(Context context, covariant HeatMapSeries series) {
+    label.updatePainter(offset: TextDraw.offsetByRect(attr, labelAlign), align: TextDraw.alignConvert(labelAlign));
   }
 
   @override

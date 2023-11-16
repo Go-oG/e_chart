@@ -59,12 +59,12 @@ class PointSeries extends ChartListSeries<PointData> {
     }
 
     ExtremeHelper<PointData> helper = ExtremeHelper(
-      (p0) => ['x${p0.xAxisIndex}', 'y${p0.yAxisIndex}'],
+      (p0) => ['x${p0.domainAxis}', 'y${p0.valueAxis}'],
       (p0, index) {
         if (index.startsWith('x')) {
-          return p0.x;
+          return p0.domain;
         }
-        return p0.y;
+        return p0.value;
       },
       data,
     );

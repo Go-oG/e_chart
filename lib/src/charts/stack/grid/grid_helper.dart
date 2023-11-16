@@ -149,7 +149,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S exten
     final colRect = columnNode.rect;
     for (var node in columnNode.nodeList) {
       bool isX = !series.isVertical;
-      int index = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
+      int index = series.isVertical ? node.parent.valueAxis : node.parent.domainAxis;
       var upv = getNodeUpValue(node);
       var dowv = getNodeDownValue(node);
       final uo = coord.dataToPoint(index, upv, isX).last;

@@ -34,11 +34,11 @@ class BoxplotHelper extends GridHelper<BoxplotData, BoxplotGroup, BoxplotSeries>
         continue;
       }
       var group = node.parent;
-      Offset minC = _computeOffset(colRect, data.min, group.xAxisIndex, vertical);
-      Offset downC = _computeOffset(colRect, data.downAve4, group.xAxisIndex, vertical);
-      Offset middleC = _computeOffset(colRect, data.middle, group.xAxisIndex, vertical);
-      Offset upC = _computeOffset(colRect, data.upAve4, group.xAxisIndex, vertical);
-      Offset maxC = _computeOffset(colRect, data.max, group.xAxisIndex, vertical);
+      Offset minC = _computeOffset(colRect, data.min, group.domainAxis, vertical);
+      Offset downC = _computeOffset(colRect, data.downAve4, group.domainAxis, vertical);
+      Offset middleC = _computeOffset(colRect, data.middle, group.domainAxis, vertical);
+      Offset upC = _computeOffset(colRect, data.upAve4, group.domainAxis, vertical);
+      Offset maxC = _computeOffset(colRect, data.max, group.domainAxis, vertical);
 
       node.extSet(_minCK, minC);
       node.extSet(_downCK, downC);

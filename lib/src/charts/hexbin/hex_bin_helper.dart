@@ -32,9 +32,9 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
   @override
   void onLayout(LayoutType type) {
     translationX = translationY = 0;
-    var oldNodeList = nodeList;
+    var oldNodeList = dataSet;
     var newList = [...series.data];
-    initData(newList);
+    initDataIndexAndStyle(newList);
     var an = DiffUtil.diff<HexBinData>(
       getAnimation(type, series.data.length),
       oldNodeList,
@@ -67,7 +67,7 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
         data.updateLabelPosition(context, series);
       },
       (dataList, t) {
-        nodeList = dataList;
+        dataSet = dataList;
         updateShowNodeList(dataList);
         notifyLayoutUpdate();
       },
@@ -76,7 +76,7 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
       },
       onEnd: () {
         _rBush.clear();
-        _rBush.addAll(nodeList);
+        _rBush.addAll(dataSet);
         var sRect = getViewPortRect().inflate(radius * 2);
         showNodeList = _rBush.search2(sRect);
         inAnimation = false;
@@ -139,14 +139,14 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
   @override
   void onRunUpdateAnimation(var list, var animation) {
     for (var diff in list) {
-      diff.node.drawIndex = diff.old ? 0 : 100;
+      diff.data.drawIndex = diff.old ? 0 : 100;
     }
     sortList(showNodeList);
 
     List<ChartTween> tl = [];
     for (var diff in list) {
       var tween = ChartDoubleTween(option: animation);
-      var node = diff.node;
+      var node = diff.data;
       var startAttr = diff.startAttr;
       var endAttr = diff.endAttr;
       tween.addListener(() {
@@ -188,7 +188,7 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
   }
 
   @override
-  HexBinData? findNode(Offset offset, [bool overlap = false]) {
+  HexBinData? findData(Offset offset, [bool overlap = false]) {
     var rect = Rect.fromCircle(center: offset, radius: radius);
     var result = _rBush.search2(rect);
     result.sort((a, b) {

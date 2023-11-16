@@ -36,8 +36,8 @@ num maxBy2<T>(Iterable<T> list, num Function(T) convert) {
   return v;
 }
 
-num min(Iterable<num> list) {
-  return minBy<num>(list, (p0) => p0);
+T min<T extends num>(Iterable<T> list) {
+  return minBy<T>(list, (p0) => p0);
 }
 
 T minBy<T>(Iterable<T> list, num Function(T) convert) {

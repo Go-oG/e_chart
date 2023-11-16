@@ -3,8 +3,8 @@ import 'package:e_chart/e_chart.dart';
 class BarGroupData extends StackGroupData<StackItemData, BarGroupData> {
   BarGroupData(
     super.data, {
-    super.xAxisIndex,
-    super.yAxisIndex,
+    super.domainAxis,
+    super.valueAxis,
     super.id,
     super.name,
     super.barSize,

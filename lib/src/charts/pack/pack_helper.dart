@@ -44,14 +44,14 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
         node.scale = lerpDouble(s['scale'] as num, e['scale'] as num, t)!;
       },
       (resultList, t) {
-        nodeList = resultList;
+        dataSet = resultList;
         notifyLayoutUpdate();
       },
       onStart: () {
         rootNode = root;
       },
     );
-    context.addAnimationToQueue(an);
+    addAnimationToQueue(an);
   }
 
   int initData2(PackData root) {
@@ -128,10 +128,10 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
 
   @override
   void onClick(Offset localOffset) {
-    PackData? clickNode = findNode(localOffset);
-    if (clickNode != oldHoverNode) {
-      var oldHover = oldHoverNode;
-      oldHoverNode = null;
+    PackData? clickNode = findData(localOffset);
+    if (clickNode != oldHoverData) {
+      var oldHover = oldHoverData;
+      oldHoverData = null;
       if (oldHover != null) {
         sendHoverEndEvent(oldHover);
       }
@@ -196,17 +196,17 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
       }
       return true;
     }, false);
-    this.nodeList = nodeList;
+    this.dataSet = nodeList;
   }
 
   @override
-  PackData? findNode(Offset offset, [bool overlap = false]) {
+  PackData? findData(Offset offset, [bool overlap = false]) {
     if (rootNode == null) {
       return null;
     }
     PackData? parent;
     var scale = view.scaleX;
-    List<PackData> rl = nodeList;
+    List<PackData> rl = dataSet;
     List<PackData> next = [];
     while (rl.isNotEmpty) {
       for (var node in rl) {

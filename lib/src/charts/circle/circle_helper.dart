@@ -15,9 +15,9 @@ class CircleHelper extends LayoutHelper2<CircleData, CircleSeries> {
     if (series.center.isEmpty) {
       throw ChartError("center must not null");
     }
-    var oldList = nodeList;
+    var oldList = dataSet;
     var newList = [...series.data];
-    initData(newList);
+    initDataIndexAndStyle(newList);
     var an = DiffUtil.diff<CircleData>(
       getAnimation(type),
       oldList,
@@ -41,7 +41,7 @@ class CircleHelper extends LayoutHelper2<CircleData, CircleSeries> {
         node.attr = Arc.lerp(sa, ea, t);
       },
       (dataList, t) {
-        nodeList = dataList;
+        dataSet = dataList;
         notifyLayoutUpdate();
       },
       onStart: () => inAnimation = true,
@@ -102,11 +102,12 @@ class CircleHelper extends LayoutHelper2<CircleData, CircleSeries> {
   }
 
   @override
-  void initData(List<CircleData> dataList) {
+  void initDataIndexAndStyle(List<CircleData> dataList, [bool updateStyle = true]) {
     each(dataList, (data, p1) {
       data.dataIndex = p1;
-      data.updateStyle(context, series);
+      data.styleIndex = p1;
       data.backgroundStyle = series.getBackStyle(context, data);
+      data.updateStyle(context, series);
     });
   }
 }

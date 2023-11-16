@@ -61,7 +61,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with Sta
   int getYAxisIndex() {
     for (var list in nodeList) {
       for (var d in list.nodeList) {
-        var index = d.parent.yAxisIndex;
+        var index = d.parent.valueAxis;
         if (index < 0) {
           index = 0;
         }
@@ -74,7 +74,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with Sta
   int getXAxisIndex() {
     for (var list in nodeList) {
       for (var d in list.nodeList) {
-        var index = d.parent.xAxisIndex;
+        var index = d.parent.domainAxis;
         if (index < 0) {
           index = 0;
         }

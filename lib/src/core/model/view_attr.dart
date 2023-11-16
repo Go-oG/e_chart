@@ -4,7 +4,7 @@ import '../../model/chart_edgeinset.dart';
 import 'layout_params.dart';
 
 mixin ViewAttr {
-  ///存储当前节点的布局方式
+  ///存储当前节点的布局属性
   late LayoutParams layoutParams = const LayoutParams.matchAll();
 
   ///存储当前视图在父视图中的位置属性

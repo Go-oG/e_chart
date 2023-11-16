@@ -20,6 +20,8 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     zLevel = series.seriesType.priority;
     if (series is RectSeries) {
       layoutParams = series.toLayoutParams();
+    }else if(series is RectSeries2){
+      layoutParams = series.toLayoutParams();
     }
   }
 

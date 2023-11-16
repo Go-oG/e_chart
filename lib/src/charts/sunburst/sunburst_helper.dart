@@ -255,7 +255,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   @override
   void onClick(Offset localOffset) {
     Offset offset = localOffset;
-    var clickNode = findNode(offset);
+    var clickNode = findData(offset);
     if (clickNode == null || clickNode == rootNode) {
       return;
     }
@@ -417,9 +417,9 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
     if (sn == null) {
       return;
     }
-    var hoverNode = findNode(offset);
-    var oldNode = oldHoverNode;
-    oldHoverNode = hoverNode;
+    var hoverNode = findData(offset);
+    var oldNode = oldHoverData;
+    oldHoverData = hoverNode;
     if (hoverNode == oldNode) {
       if (hoverNode != null && hoverNode is! SunburstVirtualNode) {
         //   sendHoverEvent(offset, hoverNode);
@@ -462,7 +462,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   }
 
   @override
-  SunburstData? findNode(Offset offset, [bool overlap = false]) {
+  SunburstData? findData(Offset offset, [bool overlap = false]) {
     return showRootNode?.find((node, index, startNode) {
       Arc arc = node.attr.arc;
       return arc.contains(offset);

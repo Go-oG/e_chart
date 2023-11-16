@@ -21,14 +21,14 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverData, ThemeRiverSeries> {
 
     var animation = getAnimation(type, newList.length);
     if (animation == null) {
-      nodeList = newList;
+      dataSet = newList;
       animatorPercent = 1;
       return;
     }
     var tween = ChartDoubleTween(option: animation);
     tween.addStartListener(() {
       inAnimation = true;
-      nodeList = newList;
+      dataSet = newList;
     });
     tween.addListener(() {
       animatorPercent = tween.value;
@@ -133,9 +133,9 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverData, ThemeRiverSeries> {
   @override
   void onRunUpdateAnimation(var list, var animation) {
     for (var diff in list) {
-      diff.node.attr.index = diff.old ? 0 : 100;
+      diff.data.attr.index = diff.old ? 0 : 100;
     }
-    nodeList.sort((a, b) {
+    dataSet.sort((a, b) {
       return a.attr.index.compareTo(b.attr.index);
     });
     super.onRunUpdateAnimation(list, animation);

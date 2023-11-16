@@ -44,6 +44,10 @@ class Logger {
     _printLog(Level.E, _config.getErrorColor(), tag, content, StackTrace.current);
   }
 
+  static void e2(dynamic content, {String? tag, StackTrace? trace}) {
+    _printLog(Level.E, _config.getErrorColor(), tag, content, trace ?? StackTrace.current);
+  }
+
   static void _printLog(Level level, LogColor color, String? tag, dynamic content, StackTrace stackTrace) {
     if (!_config.enablePrint) {
       return;

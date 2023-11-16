@@ -31,7 +31,7 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreeMapHelper> {
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
     canvas.translate(translationX, translationY);
-    for (var c in layoutHelper.nodeList) {
+    for (var c in layoutHelper.dataSet) {
       c.onDraw(canvas, mPaint);
     }
     canvas.restore();

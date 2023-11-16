@@ -18,10 +18,10 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    var oldList = nodeList;
+    var oldList = dataSet;
     var newList = [...series.data];
-    oldHoverNode = null;
-    initData(newList);
+    oldHoverData = null;
+    initDataIndexAndStyle(newList);
     var an = DiffUtil.diff<PieData>(
       getAnimation(type, oldList.length + newList.length),
       oldList,
@@ -49,7 +49,7 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
       },
       (data, s, e, t, type) => data.attr = Arc.lerp(s['arc']!, e['arc']!, t),
       (p0, t) {
-        nodeList = p0;
+        dataSet = p0;
         notifyLayoutUpdate();
       },
       onStart: () => inAnimation = true,
@@ -59,7 +59,7 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
   }
 
   @override
-  void initData(List<PieData> dataList) {
+  void initDataIndexAndStyle(List<PieData> dataList,[bool updateStyle=true]) {
     num maxSize = min([width, height]);
     minRadius = series.innerRadius.convert(maxSize);
     maxRadius = series.outerRadius.convert(maxSize);
@@ -72,12 +72,15 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
     minData = double.maxFinite;
     allData = 0;
     each(dataList, (data, i) {
-      data.dataIndex = i;
-      data.styleIndex = i;
-      data.updateStyle(context, series);
       maxData = max([data.value, maxData]);
       minData = min([data.value, minData]);
       allData += data.value;
+
+      data.dataIndex = i;
+      data.styleIndex = i;
+      if(updateStyle){
+        data.updateStyle(context, series);
+      }
     });
     if (allData == 0) {
       allData = 1;
@@ -219,9 +222,9 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
     List<PieData> newList = [];
     for (var diff in list) {
       if (diff.old) {
-        oldList.add(diff.node);
+        oldList.add(diff.data);
       } else {
-        newList.add(diff.node);
+        newList.add(diff.data);
       }
     }
     const double rDiff = 8;

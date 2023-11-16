@@ -2,20 +2,18 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/heatmap/heat_map_helper.dart';
 import 'package:flutter/material.dart';
 
-import 'heat_map_data.dart';
-
 /// 热力图
 class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChild, CalendarChild {
   HeatMapView(super.series);
 
   @override
   void onDraw(CCanvas canvas) {
-    var coord = layoutHelper.findCalendarCoord();
-    var to = coord.translation;
-    var sRect = Rect.fromLTWH(to.dx.abs(), to.dy.abs(), width, height);
+    var tx = layoutHelper.translationX;
+    var ty = layoutHelper.translationY;
+    var sRect = Rect.fromLTWH(tx.abs(), ty.abs(), width, height);
     canvas.save();
-    canvas.translate(to.dx, to.dy);
-    each(layoutHelper.nodeList, (node, index) {
+    canvas.translate(tx, ty);
+    each(layoutHelper.dataSet, (node, index) {
       Rect rect = node.attr;
       if (!rect.overlaps(sRect)) {
         return;

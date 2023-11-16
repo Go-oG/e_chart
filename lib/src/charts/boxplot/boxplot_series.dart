@@ -57,14 +57,14 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
   }
 }
 
-class BoxplotGroup extends StackGroupData<BoxplotData,BoxplotGroup> {
+class BoxplotGroup extends StackGroupData<BoxplotData, BoxplotGroup> {
   BoxplotGroup(
     super.data, {
     super.barMaxSize,
     super.barMinSize,
     super.barSize,
-    super.xAxisIndex = 0,
-    super.yAxisIndex = 0,
+    super.domainAxis,
+    super.valueAxis,
     super.id,
   });
 

@@ -1,13 +1,13 @@
 import 'package:e_chart/e_chart.dart';
 
-class LineGroupData extends StackGroupData<StackItemData,LineGroupData> {
+class LineGroupData extends StackGroupData<StackItemData, LineGroupData> {
   bool? smooth;
 
   LineGroupData(
     super.data, {
     this.smooth,
-    super.xAxisIndex,
-    super.yAxisIndex,
+    super.domainAxis,
+    super.valueAxis,
     super.id,
     super.stackId,
     super.barMaxSize,

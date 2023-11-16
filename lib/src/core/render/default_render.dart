@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:e_chart/src/component/title/title_view.dart';
 import 'package:e_chart/src/coord/index.dart';
+import 'package:e_chart/src/ext/paint_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import '../../component/index.dart';
@@ -14,6 +15,7 @@ class DefaultRender extends ChartRender {
 
   @override
   void measure(double parentWidth, double parentHeight) {
+    super.measure(parentWidth, parentHeight);
     double w = parentWidth;
     double h = parentHeight;
     if (context.title != null) {
@@ -23,15 +25,17 @@ class DefaultRender extends ChartRender {
     }
     var legendView = context.legend;
     legendView.measure(w, h);
-
     h -= legendView.height;
     for (var v in context.coordList) {
       v.measure(parentWidth, parentHeight - legendView.height);
     }
+    boxBound = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
   }
 
   @override
   void layout(double left, double top, double right, double bottom) {
+    boxBound = Rect.fromLTRB(left, top, right, bottom);
+    globalBound = getGlobalBounds();
     double width = right - left;
     double height = bottom - top;
     Rect rect = layoutTitleAndLegend(width, height);
@@ -39,19 +43,15 @@ class DefaultRender extends ChartRender {
       if (v is CircleCoordLayout) {
         double dx = v.props.center[0].convert(rect.width);
         double dy = v.props.center[1].convert(rect.height);
-        double s = v.props.radius.last.convert(min(rect.width, rect.height)) * 2;
+        double s = v.props.radius.last.convert(min<double>(rect.width, rect.height)) * 2;
         Rect r2 = Rect.fromCenter(center: Offset(dx, dy), width: s, height: s);
         v.layout(r2.left, r2.top, r2.right, r2.bottom);
         continue;
       }
       var margin = v.margin;
-      // v.layout(
-      //   rect.left + margin.left,
-      //   rect.top + margin.top,
-      //   rect.left + margin.left + v.width,
-      //   rect.top + margin.top + v.height,
-      // );
-      v.layout(rect.left + margin.left, rect.top + margin.top, rect.right - margin.right, rect.bottom - margin.bottom);
+      double l = rect.left + margin.left;
+      double t = rect.top + margin.top;
+      v.layout(l, t, l + v.width, t + v.height);
     }
   }
 
@@ -140,12 +140,16 @@ class DefaultRender extends ChartRender {
     return Rect.fromLTRB(l, t, r, b);
   }
 
+  final Paint _paint = Paint();
+
   @override
   void onDraw(CCanvas canvas) {
-    Paint mPaint = Paint();
-    mPaint.color = context.option.theme.backgroundColor;
-    mPaint.style = PaintingStyle.fill;
-    canvas.drawRect(selfBoxBound, mPaint);
+    var bc = context.option.theme.backgroundColor;
+    if (bc != null) {
+      _paint.color = bc;
+      _paint.style = PaintingStyle.fill;
+      canvas.drawRect(selfBoxBound, mPaint);
+    }
 
     for (var v in context.coordList) {
       try {
@@ -153,9 +157,8 @@ class DefaultRender extends ChartRender {
         canvas.translate(v.left, v.top);
         v.draw(canvas);
         canvas.restore();
-      } catch (e) {
-        debugPrint('$e');
-        Logger.e(e);
+      } catch (e, trace) {
+        Logger.e2(e, trace: trace);
         rethrow;
       }
     }
@@ -165,10 +168,15 @@ class DefaultRender extends ChartRender {
       canvas.translate(legend.left, legend.top);
       legend.draw(canvas);
       canvas.restore();
-    } catch (e) {
-      debugPrint('$e');
-      Logger.e(e);
+    } catch (e, trace) {
+      Logger.e2(e, trace: trace);
       rethrow;
     }
+  }
+
+  @override
+  void dispose() {
+    _paint.reset();
+    super.dispose();
   }
 }

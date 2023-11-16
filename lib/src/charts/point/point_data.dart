@@ -3,20 +3,22 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class PointData extends RenderData2<Offset, ChartSymbol> {
-  dynamic x;
-  dynamic y;
+  dynamic domain;
   dynamic value;
 
-  int xAxisIndex;
-  int yAxisIndex;
+  int domainAxis;
+  int valueAxis;
 
   PointData(
-    this.x,
-    this.y,
+    this.domain,
     this.value, {
-    this.xAxisIndex = 0,
-    this.yAxisIndex = 0,
-  }) : super.attr(EmptySymbol.empty, Offset.zero);
+    this.domainAxis = 0,
+    this.valueAxis = 0,
+    super.id,
+    super.name,
+  }) {
+    symbol = EmptySymbol.empty;
+  }
 
   @override
   bool contains(Offset offset) {
@@ -35,8 +37,8 @@ class PointData extends RenderData2<Offset, ChartSymbol> {
   }
 
   @override
-  NodeAttr toAttr() {
-    return NodeAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, symbol.scale);
+  DataAttr toAttr() {
+    return DataAttr(attr, drawIndex, label, labelLine, itemStyle, borderStyle, symbol.scale);
   }
 
   double get left => attr.dx - symbol.size.width / 2;

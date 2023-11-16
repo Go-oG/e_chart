@@ -24,10 +24,10 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
         continue;
       }
       var group = node.parent;
-      Offset lowC = _computeOffset(colRect, data.lowest, group.xAxisIndex);
-      Offset highC = _computeOffset(colRect, data.highest, group.xAxisIndex);
-      Offset openC = _computeOffset(colRect, data.open, group.xAxisIndex);
-      Offset closeC = _computeOffset(colRect, data.close, group.xAxisIndex);
+      Offset lowC = _computeOffset(colRect, data.lowest, group.domainAxis);
+      Offset highC = _computeOffset(colRect, data.highest, group.domainAxis);
+      Offset openC = _computeOffset(colRect, data.open, group.domainAxis);
+      Offset closeC = _computeOffset(colRect, data.close, group.domainAxis);
       node.extSet(_lowK, lowC);
       node.extSet(_highK, highC);
       node.extSet(_openK, openC);
@@ -168,12 +168,12 @@ class CandlestickHelper extends GridHelper<CandleStickData, CandleStickGroup, Ca
   }
 
   @override
-  StackData<CandleStickData, CandleStickGroup>? findNode(Offset offset, [bool overlap = false]) {
-    var node = super.findNode(offset);
+  StackData<CandleStickData, CandleStickGroup>? findData(Offset offset, [bool overlap = false]) {
+    var node = super.findData(offset);
     if (node != null) {
       return node;
     }
-    for (var node in nodeList) {
+    for (var node in dataSet) {
       List<List<Offset>> bl = node.extGetNull(_borderListK) ?? [];
       for (var l in bl) {
         if (offset.inPolygon(l)) {

@@ -28,7 +28,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
   @override
   void onLayout(LayoutType type) {
     var helper = series.getHelper(context);
-    var oldList = nodeList;
+    var oldList = dataSet;
     List<StackData<T, P>> newNodeList = onComputeNeedLayoutData(helper);
     newNodeList.removeWhere((element) => element.dataIsNull);
     var an = DiffUtil.diff(
@@ -42,8 +42,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         onAnimatorUpdate(data, t, s['anNode'], e['anNode']);
       },
       (dataList, t) {
-        nodeList = dataList;
-        onAnimatorUpdateEnd(nodeList, t);
+        dataSet = dataList;
+        onAnimatorUpdateEnd(dataSet, t);
         notifyLayoutUpdate();
       },
       onStart: () {
@@ -194,7 +194,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
     }
 
     void hc() {
-      layoutMarkPointAndLine(helper, series.data, nodeList);
+      layoutMarkPointAndLine(helper, series.data, dataSet);
     }
 
     for (var mpn in mpnl) {
@@ -222,13 +222,13 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         node.offset = circlePoint(radius, angle, position.center);
       } else {
         var gridCoord = findGridCoord();
-        List<Offset> xl = gridCoord.dataToPoint(group.xAxisIndex, dl[0], true);
-        List<Offset> yl = gridCoord.dataToPoint(group.yAxisIndex, dl[1], false);
+        List<Offset> xl = gridCoord.dataToPoint(group.domainAxis, dl[0], true);
+        List<Offset> yl = gridCoord.dataToPoint(group.valueAxis, dl[1], false);
         double dx, dy;
         if (xl.length == 1) {
           dx = xl[0].dx;
         } else {
-          var xAxis = gridCoord.getAxis(group.xAxisIndex, true);
+          var xAxis = gridCoord.getAxis(group.domainAxis, true);
           if (xAxis.isCategoryAxis && xAxis.categoryCenter) {
             dx = (xl[0].dx + xl[1].dx) / 2;
           } else {
@@ -238,7 +238,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         if (yl.length == 1) {
           dy = yl[0].dy;
         } else {
-          var yAxis = gridCoord.getAxis(group.yAxisIndex, false);
+          var yAxis = gridCoord.getAxis(group.valueAxis, false);
           if (yAxis.isCategoryAxis && yAxis.categoryCenter) {
             dy = (yl[0].dy + yl[1].dy) / 2;
           } else {
@@ -296,8 +296,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         node.offset = Offset(x, y);
       } else {
         var coord = findGridCoord();
-        final xIndex = group.xAxisIndex;
-        final yIndex = group.yAxisIndex;
+        final xIndex = group.domainAxis;
+        final yIndex = group.valueAxis;
         var x = data[0].convert(coord.getAxisLength(xIndex, true));
         var xr = x / coord.getAxisLength(xIndex, true);
         var y = data[1].convert(coord.getAxisLength(yIndex, false));
@@ -334,7 +334,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
 
     node.attr.position = node.rect.center;
     if (series.realtimeSort && series.dynamicLabel) {
-      var axisIndex = series.isVertical ? node.parent.yAxisIndex : node.parent.xAxisIndex;
+      var axisIndex = series.isVertical ? node.parent.valueAxis : node.parent.domainAxis;
       var pos = series.isVertical ? node.rect.top : node.rect.right;
       var s = findGridCoord().pxToData(axisIndex, series.isHorizontal, pos);
       node.attr.dynamicLabel = s;
@@ -386,9 +386,9 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
   ///获取当前显示窗口内的极值数据
   List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
     List<dynamic> dl = [];
-    List<StackData<T, P>> list =nodeList;
+    List<StackData<T, P>> list =dataSet;
     if (series.realtimeSort) {
-      list=List.from(nodeList);
+      list=List.from(dataSet);
       list.sort((a, b) {
         if (series.sort == Sort.asc) {
           return a.up.compareTo(b.up);
@@ -401,7 +401,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
       if (value.dataIsNull) {
         return;
       }
-      var index = isXAxis ? value.parent.xAxisIndex : value.parent.yAxisIndex;
+      var index = isXAxis ? value.parent.domainAxis : value.parent.valueAxis;
       if (index < 0) {
         index = 0;
       }
@@ -436,7 +436,7 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
   }
 
   void onHandleBrush(List<BrushArea> areas) {
-    each(nodeList, (node, i) {
+    each(dataSet, (node, i) {
       bool has = false;
       for (var area in areas) {
         if (coordSystem == CoordType.grid && area.path.overlapRect(node.rect)) {
@@ -463,8 +463,8 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
   CoordType get coordSystem;
 
   @override
-  StackData<T, P>? findNode(Offset offset, [bool overlap = false]) {
-    for (var ele in nodeList) {
+  StackData<T, P>? findData(Offset offset, [bool overlap = false]) {
+    for (var ele in dataSet) {
       if (ele.contains(offset)) {
         return ele;
       }

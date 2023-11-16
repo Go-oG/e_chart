@@ -19,9 +19,9 @@ class DelaunayHelper extends LayoutHelper2<DelaunayData, DelaunaySeries> {
 
   @override
   void onLayout(LayoutType type) {
-    oldHoverNode = null;
+    oldHoverData = null;
     if (series.data.isEmpty) {
-      nodeList = [];
+      dataSet = [];
       return;
     }
     if (series.data.length > 400) {
@@ -92,7 +92,7 @@ class DelaunayHelper extends LayoutHelper2<DelaunayData, DelaunaySeries> {
 
     bush.clear();
     bush.addAll(resultList);
-    nodeList = resultList;
+    dataSet = resultList;
   }
 
   @override
@@ -104,8 +104,8 @@ class DelaunayHelper extends LayoutHelper2<DelaunayData, DelaunaySeries> {
   }
 
   @override
-  DelaunayData? findNode(Offset offset, [bool overlap = false]) {
-    var hoveNode = oldHoverNode;
+  DelaunayData? findData(Offset offset, [bool overlap = false]) {
+    var hoveNode = oldHoverData;
     if (hoveNode != null && hoveNode.contains(offset)) {
       return hoveNode;
     }

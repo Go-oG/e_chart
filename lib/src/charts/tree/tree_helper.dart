@@ -27,9 +27,9 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     List<TreeData> list = root.iterator();
     _rBush.addAll(list);
     if (series.layout.optShowNode) {
-      nodeList = _rBush.search(getViewPortRect());
+      dataSet = _rBush.search(getViewPortRect());
     } else {
-      nodeList = list;
+      dataSet = list;
     }
   }
 
@@ -116,11 +116,11 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
   @override
   void onClick(Offset localOffset) {
     var offset = localOffset.translate(-translationX, -translationY);
-    var node = findNode(offset);
+    var node = findData(offset);
 
     if (node == null) {
-      var oh = oldHoverNode;
-      oldHoverNode = null;
+      var oh = oldHoverData;
+      oldHoverData = null;
       if (oh == null) {
         return;
       }
@@ -131,10 +131,10 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
       return;
     }
 
-    if (node != oldHoverNode) {
-      var oh = oldHoverNode;
+    if (node != oldHoverData) {
+      var oh = oldHoverData;
       if (oh != null) {
-        oldHoverNode = null;
+        oldHoverData = null;
         oh.removeStates([ViewState.hover, ViewState.selected]);
         oh.updateStyle(context, series);
         sendHoverEndEvent(oh);
@@ -142,7 +142,7 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
       node.addStates([ViewState.hover, ViewState.selected]);
       node.updateStyle(context, series);
       sendClickEvent(offset, node);
-      oldHoverNode = node;
+      oldHoverData = node;
     }
 
     if (node.notChild) {
@@ -157,7 +157,7 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     view.translationX += diff.dx;
     view.translationY += diff.dy;
     if (series.layout.optShowNode) {
-      nodeList = _rBush.search(getViewPortRect());
+      dataSet = _rBush.search(getViewPortRect());
     }
     notifyLayoutUpdate();
   }
@@ -195,7 +195,7 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     });
     var tween = ChartDoubleTween(option: option);
     tween.addStartListener(() {
-      nodeList = oldList;
+      dataSet = oldList;
     });
     tween.addListener(() {
       var t = tween.value;
@@ -241,9 +241,9 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
       clickNode.clear();
       clickNode.addAll(children);
       _startLayout(_rootNode, false);
-      nodeList = _rootNode.iterator();
+      dataSet = _rootNode.iterator();
       _rBush.clear();
-      _rBush.addAll(nodeList);
+      _rBush.addAll(dataSet);
       notifyLayoutUpdate();
       return;
     }
@@ -261,7 +261,7 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     });
     var tween = ChartDoubleTween(option: option);
     tween.addStartListener(() {
-      nodeList = _rootNode.iterator();
+      dataSet = _rootNode.iterator();
     });
     tween.addListener(() {
       var t = tween.value;
@@ -282,7 +282,7 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
   }
 
   @override
-  TreeData? findNode(Offset offset, [bool overlap = false]) {
+  TreeData? findData(Offset offset, [bool overlap = false]) {
     var result = _rBush.search2(Rect.fromCircle(center: offset, radius: 4));
     for (var node in result) {
       if (node.contains(offset)) {

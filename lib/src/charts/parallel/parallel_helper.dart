@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class ParallelHelper extends LayoutHelper<ParallelSeries> {
-  List<ParallelData> dataList = [];
+  List<ParallelData> dataSet = [];
 
   ParallelHelper(super.context, super.view, super.series);
 
@@ -10,20 +10,20 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    List<ParallelData> oldList = dataList;
+    List<ParallelData> oldList = dataSet;
     List<ParallelData> newList = [...series.data];
     initData(newList);
     layoutData(newList);
     var animation = getAnimation(type, newList.length);
     if (animation == null || type == LayoutType.none || type == LayoutType.update) {
-      dataList = newList;
+      dataSet = newList;
       animationProcess = 1;
       return;
     }
 
     var tween = ChartDoubleTween(option: animation);
     tween.addStartListener(() {
-      dataList = newList;
+      dataSet = newList;
     });
     tween.addListener(() {
       animationProcess = tween.value;
@@ -73,15 +73,15 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
     handleHoverAndClick(localOffset, true);
   }
 
-  ParallelData? _oldHoverNode;
+  ParallelData? _oldHoverData;
 
   void handleHoverAndClick(Offset offset, bool click) {
     var node = findNode(offset);
-    if (node == _oldHoverNode) {
+    if (node == _oldHoverData) {
       return;
     }
-    var oldNode = _oldHoverNode;
-    _oldHoverNode = node;
+    var oldNode = _oldHoverData;
+    _oldHoverData = node;
     if (node != null) {
       each(node.data, (p0, p1) {
         p0.addState(ViewState.hover);
@@ -118,8 +118,8 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
 
   @override
   void onHoverEnd() {
-    var oldNode = _oldHoverNode;
-    _oldHoverNode = null;
+    var oldNode = _oldHoverData;
+    _oldHoverData = null;
     oldNode?.removeState(ViewState.selected);
     oldNode?.removeState(ViewState.hover);
     if (oldNode != null) {
@@ -128,7 +128,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
   }
 
   ParallelData? findNode(Offset offset) {
-    for (var node in dataList) {
+    for (var node in dataSet) {
       if (node.contains(offset)) {
         return node;
       }
@@ -141,7 +141,7 @@ class ParallelHelper extends LayoutHelper<ParallelSeries> {
       return;
     }
     var coord = findParallelCoord();
-    each(dataList, (parent, p1) {
+    each(dataSet, (parent, p1) {
       bool hasChange = false;
       for (var dim in dims) {
         if (parent.data.length <= dim) {

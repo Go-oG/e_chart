@@ -39,7 +39,7 @@ class ChartTheme extends ChartNotifier2 {
     return colors[index % colors.length];
   }
 
-  Color backgroundColor = const Color(0xFFFDFDFD);
+  Color? backgroundColor;
 
   LabelTheme title = LabelTheme.of(const Color(0xFF464646), 15);
   LabelTheme subTitle = LabelTheme.of(const Color(0xFF464646), 13);

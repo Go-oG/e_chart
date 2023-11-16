@@ -138,9 +138,9 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
         mainAxisIndex = polarIndex;
       } else {
         if (direction == Direction.vertical) {
-          mainAxisIndex = group.xAxisIndex;
+          mainAxisIndex = group.domainAxis;
         } else {
-          mainAxisIndex = group.yAxisIndex;
+          mainAxisIndex = group.valueAxis;
         }
       }
       if (mainAxisIndex < 0) {
@@ -251,7 +251,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
       for (var group in value) {
         for (var column in group.nodeList) {
           for (var node in column.nodeList) {
-            int axisIndex = m.min(x ? node.parent.xAxisIndex : node.parent.yAxisIndex, 0);
+            int axisIndex = m.min(x ? node.parent.domainAxis : node.parent.valueAxis, 0);
             List<dynamic> dl = [];
             if (x != vertical) {
               dl.add(node.attr.up);

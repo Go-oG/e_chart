@@ -24,18 +24,12 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
     super.markLineFun,
     super.markPoint,
     super.markPointFun,
-    super.animation =
-        const AnimatorOption(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
+    super.animation = const AnimatorOption(duration: Duration(milliseconds: 400), updateDuration: Duration(milliseconds: 300)),
     super.tooltip,
     super.backgroundColor,
     super.id,
     super.clip,
-  }) : super(
-            coordType: CoordType.grid,
-            polarIndex: -1,
-            direction: Direction.vertical,
-            realtimeSort: false,
-            selectedMode: SelectedMode.single);
+  }) : super(coordType: CoordType.grid, polarIndex: -1, direction: Direction.vertical, realtimeSort: false, selectedMode: SelectedMode.single);
 
   @override
   ChartView? toView() {
@@ -75,11 +69,11 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
   SeriesType get seriesType => SeriesType.candlestick;
 }
 
-class CandleStickGroup extends StackGroupData<CandleStickData,CandleStickGroup> {
+class CandleStickGroup extends StackGroupData<CandleStickData, CandleStickGroup> {
   CandleStickGroup(
     super.data, {
-    super.xAxisIndex = 0,
-    super.yAxisIndex = 0,
+    super.domainAxis,
+    super.valueAxis,
     super.barMaxSize,
     super.barMinSize,
     super.barSize = const SNumber.percent(80),

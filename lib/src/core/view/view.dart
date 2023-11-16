@@ -86,6 +86,9 @@ abstract class ChartView extends RenderNode {
       padding.bottom = lp.getBottomPadding(parentHeight);
       h += padding.vertical;
     }
+    w = min<double>([w, parentWidth]);
+    h = min<double>([h, parentHeight]);
+
     return Size(w, h);
   }
 

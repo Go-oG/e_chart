@@ -8,7 +8,7 @@ class PieView extends SeriesView<PieSeries, PieHelper> {
 
   @override
   void onDraw(CCanvas canvas) {
-    List<PieData> nodeList = layoutHelper.nodeList;
+    List<PieData> nodeList = layoutHelper.dataSet;
     each(nodeList, (node, i) {
       node.onDraw(canvas, mPaint);
     });

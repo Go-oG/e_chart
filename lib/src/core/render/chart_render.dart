@@ -64,15 +64,12 @@ abstract class ChartRender extends RenderNode {
   @mustCallSuper
   @override
   void measure(double parentWidth, double parentHeight) {
-    _context?.animationManager.cancelAllAnimator();
-
-
+   // _context?.animationManager.cancelAllAnimator();
   }
 
   void onCreate() {
     _lifecycle = Lifecycle.created;
     context.onCreate();
-
   }
 
   void onStart() {
@@ -90,12 +87,13 @@ abstract class ChartRender extends RenderNode {
 
   @override
   void dispose() {
+    _lifecycle = Lifecycle.dispose;
     _context?.dispatchEvent(ChartDisposeEvent.single);
     _context?.dispose();
     _context = null;
     _notifier.clearListener();
     super.dispose();
-    _lifecycle = Lifecycle.dispose;
+
   }
 
   void addListener(VoidCallback call) => _notifier.addListener(call);

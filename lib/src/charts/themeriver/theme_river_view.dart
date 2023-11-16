@@ -6,7 +6,7 @@ class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
 
   @override
   void onDraw(CCanvas canvas) {
-    var nodeList = layoutHelper.nodeList;
+    var nodeList = layoutHelper.dataSet;
     var tx = layoutHelper.translationX;
     var ty = layoutHelper.translationY;
     var ap = layoutHelper.animatorPercent;

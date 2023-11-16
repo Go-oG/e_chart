@@ -185,8 +185,10 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
   late final String name;
   int styleIndex = 0;
   List<StackData<T, P>> data;
-  int xAxisIndex;
-  int yAxisIndex;
+  //主轴索引(一般当图表为竖直时，对应X轴)
+  int domainAxis;
+  //数值轴索引
+  int valueAxis;
 
   String? stackId;
   bool stackUsePercent;
@@ -197,8 +199,8 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
 
   StackGroupData(
     this.data, {
-    this.xAxisIndex = 0,
-    this.yAxisIndex = 0,
+    this.domainAxis = 0,
+    this.valueAxis = 0,
     this.barSize,
     this.barMaxSize,
     this.barMinSize = const SNumber(1, false),

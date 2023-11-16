@@ -47,8 +47,8 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
     List<TreeMapData> drawList = List.from(drawSet);
 
     _rootData = root;
-    nodeList = drawList;
-    nodeList.sort((a, b) {
+    dataSet = drawList;
+    dataSet.sort((a, b) {
       return a.height.compareTo(b.height);
     });
   }
@@ -136,7 +136,7 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
 
   ///处理点击事件
   void handleClick(Offset offset) {
-    var clickNode = findNode(offset);
+    var clickNode = findData(offset);
     if (clickNode == null) {
       Logger.i('无法找到点击节点');
       return;
@@ -154,8 +154,8 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
   }
 
   @override
-  TreeMapData? findNode(Offset offset, [bool overlap = false]) {
-    for (var c in nodeList) {
+  TreeMapData? findData(Offset offset, [bool overlap = false]) {
+    for (var c in dataSet) {
       if (c.contains(offset)) {
         return c;
       }

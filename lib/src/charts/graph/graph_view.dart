@@ -13,7 +13,7 @@ class GraphView extends SeriesView<GraphSeries, GraphHelper> {
     for (var edge in graph.edges) {
       edge.onDraw(canvas, mPaint);
     }
-    for (var node in layoutHelper.nodeList) {
+    for (var node in layoutHelper.dataSet) {
       node.onDraw(canvas, mPaint);
     }
     canvas.restore();

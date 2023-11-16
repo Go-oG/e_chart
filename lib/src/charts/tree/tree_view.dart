@@ -8,7 +8,7 @@ class TreeView extends SeriesView<TreeSeries, TreeHelper> {
 
   @override
   void onDraw(CCanvas canvas) {
-    var list = layoutHelper.nodeList;
+    var list = layoutHelper.dataSet;
     canvas.save();
     canvas.translate(translationX, translationY);
     each(list, (node, p1) {

@@ -16,7 +16,7 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
     double w = of.dx.abs() > 0 ? (maxDx.abs() > 0 ? width + 10 : width) : width;
     canvas.clipRect(Rect.fromLTWH(of.dx.abs() == 0 ? -10 : 0, 0, w, height));
     canvas.translate(of.dx, of.dy);
-    each(layoutHelper.nodeList, (node, index) {
+    each(layoutHelper.dataSet, (node, index) {
       var data = node.dataNull;
       if (data == null) {
         return;

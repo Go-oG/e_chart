@@ -9,9 +9,10 @@ class GraphData extends RenderData2<GraphAttr, ChartSymbol> {
   GraphData(
     this.data, {
     super.id,
-  }) : super.of() {
+    super.name,
+  }) {
     symbol = EmptySymbol.empty;
-    attr=GraphAttr();
+    attr = GraphAttr();
   }
 
   @override

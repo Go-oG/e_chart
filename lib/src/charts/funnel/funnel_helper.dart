@@ -10,10 +10,10 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    oldHoverNode = null;
-    var oldList = nodeList;
+    oldHoverData = null;
+    var oldList = dataSet;
     var newList = [...series.data];
-    initData(newList);
+    initDataIndexAndStyle(newList,true);
     var an = DiffUtil.diff<FunnelData>(
       getAnimation(type),
       oldList,
@@ -29,7 +29,7 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
         node.scale = lerpDouble(s['scale'], e['scale'], t)!;
       },
       (dataList, t) {
-        nodeList = dataList;
+        dataSet = dataList;
         notifyLayoutUpdate();
       },
       onStart: () => inAnimation = true,
@@ -38,9 +38,8 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
     context.addAnimationToQueue(an);
   }
 
-
   @override
-  void initData(List<FunnelData> dataList) {
+  void initDataIndexAndStyle(List<FunnelData> dataList,[bool updateStyle=true]) {
     for (int i = 0; i < dataList.length; i++) {
       var data = dataList[i];
       var preData = i == 0 ? null : dataList[i - 1];
@@ -48,6 +47,9 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
       data.groupIndex = 0;
       data.preData = preData;
       data.groupIndex = 0;
+      if(updateStyle){
+        data.updateStyle(context, series);
+      }
     }
     ///直接降序处理
     dataList.sort((a, b) {
@@ -78,7 +80,6 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
     }
     for (var node in nodeList) {
       node.updateLabelPosition(context, series);
-      node.updateStyle(context, series);
     }
   }
 
@@ -199,7 +200,7 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
     tween2.addListener(() {
       var t = tween2.value;
       for (var diff in list) {
-        var node = diff.node;
+        var node = diff.data;
         var startAttr = diff.startAttr;
         var endAttr = diff.endAttr;
         var s = startAttr.label.scaleFactor;

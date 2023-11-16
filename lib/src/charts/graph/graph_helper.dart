@@ -23,7 +23,7 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     });
     _oldLayout?.doLayout(newGraph, params, type);
     graph = newGraph;
-    nodeList = graph.nodes;
+    dataSet = graph.nodes;
   }
 
   @override
@@ -44,7 +44,7 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     var old = offset;
     var center = _oldLayout?.getTranslation() ?? Offset.zero;
     offset = offset.translate(-center.dx, -center.dy).translate(view.translationX.abs(), view.translationY.abs());
-    var node = findNode(offset);
+    var node = findData(offset);
     if (node == null && series.onlyDragNode) {
       return;
     }
@@ -57,7 +57,7 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
       node.drawIndex = 100;
       node.addState(ViewState.dragged);
       node.updateStyle(context, series);
-      sortList(nodeList);
+      sortList(dataSet);
       notifyLayoutUpdate();
       return;
     }

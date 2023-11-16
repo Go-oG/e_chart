@@ -15,7 +15,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
     Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, 0);
-    each(layoutHelper.nodeList, (node, p1) {
+    each(layoutHelper.dataSet, (node, p1) {
       var group = node.parentNode.parentNode;
       if (rectSet.contains(group)) {
         return;
@@ -38,7 +38,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
     Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    each(layoutHelper.nodeList, (node, p1) {
+    each(layoutHelper.dataSet, (node, p1) {
       if (node.data == null) {
         return;
       }
@@ -56,7 +56,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
     Offset offset = layoutHelper.getTranslation();
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    each(layoutHelper.nodeList, (node, p1) {
+    each(layoutHelper.dataSet, (node, p1) {
       if (node.attr.arc.isEmpty) {
         return;
       }

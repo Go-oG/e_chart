@@ -2,20 +2,21 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-
 class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
   HeatMapHelper(super.context, super.view, super.series);
 
+  final RBush<HeatMapData> _rBush = RBush.from((p0) => p0.attr);
+
   @override
   void onLayout(LayoutType type) {
-    var oldList = nodeList;
+    var oldList = dataSet;
     var newList = [...series.data];
-    initData(newList);
+    initDataIndexAndStyle(newList,false);
     var an = DiffUtil.diff<HeatMapData>(
       getAnimation(type, oldList.length + newList.length),
       oldList,
       newList,
-      (dataList) => layoutNode(dataList),
+      (dataList) => layoutData(dataList),
       (data, type) {
         if (type == DiffType.add) {
           return {'scale': 0};
@@ -34,23 +35,19 @@ class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
         data.symbol.scale = lerpDouble(ss, es, t)!;
       },
       (dataList, t) {
-        nodeList = dataList;
+        dataSet = dataList;
         notifyLayoutUpdate();
       },
       onStart: () => inAnimation = true,
-      onEnd: () => inAnimation = false,
+      onEnd: () {
+        dataSet = _rBush.search2(getViewPortRect());
+        inAnimation = false;
+      },
     );
     addAnimationToQueue(an);
   }
 
-  @override
-  void initData(List<HeatMapData> dataList) {
-    each(dataList, (data, p1) {
-      data.dataIndex = p1;
-    });
-  }
-
-  void layoutNode(List<HeatMapData> nodeList) {
+  void layoutData(List<HeatMapData> dataList) {
     GridCoord? gridLayout;
     CalendarCoord? calendarLayout;
     if (series.coordType == CoordType.grid) {
@@ -58,7 +55,7 @@ class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
     } else {
       calendarLayout = findCalendarCoord();
     }
-    for (var data in nodeList) {
+    for (var data in dataList) {
       Rect? rect;
       if (gridLayout != null) {
         rect = gridLayout.dataToRect(0, data.x, 0, data.y);
@@ -70,14 +67,25 @@ class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
       }
       data.attr = rect;
       data.updateStyle(context, series);
-      //文字
-      var label = data.label.text;
-      if (label.isNotEmpty) {
-        data.label = TextDraw(label, LabelStyle.empty, TextDraw.offsetByRect(data.attr, data.labelAlign),
-            align: TextDraw.alignConvert(data.labelAlign));
-      } else {
-        data.label = TextDraw.empty;
-      }
+      data.updateLabelPosition(context, series);
     }
+
+    _rBush.clear();
+    _rBush.addAll(dataList);
+  }
+
+  @override
+  Offset getTranslation() {
+    var type = series.coordType;
+    if (type == CoordType.calendar) {
+      return findCalendarCoord().translation;
+    }
+    return findGridCoord().translation;
+  }
+
+  @override
+  HeatMapData? findData(Offset offset, [bool overlap = false]) {
+    // TODO: implement findNode
+    return super.findData(offset, overlap);
   }
 }

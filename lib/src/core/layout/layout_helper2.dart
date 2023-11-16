@@ -1,23 +1,26 @@
 import 'dart:ui';
 
-import 'package:e_chart/e_chart.dart';
-
 import '../../animation/index.dart';
 import '../../component/style/index.dart';
+import '../../utils/list_util.dart';
 import '../index.dart';
 
-abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extends LayoutHelper<S> {
-  List<N> nodeList = [];
+abstract class LayoutHelper2<D extends RenderData, S extends ChartSeries> extends LayoutHelper<S> {
+  List<D> dataSet = [];
 
   LayoutHelper2(super.context, super.view, super.series);
 
   LayoutHelper2.lazy() : super.lazy();
 
-  void initData(List<N> dataList) {
+  ///初始化数据索引和样式
+  ///包含样式索引和数据索引
+  void initDataIndexAndStyle(List<D> dataList,[bool updateStyle=true]) {
     each(dataList, (data, p1) {
       data.dataIndex = p1;
       data.styleIndex = p1;
-      data.updateStyle(context, series);
+      if(updateStyle){
+        data.updateStyle(context, series);
+      }
     });
   }
 
@@ -38,8 +41,8 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
 
   @override
   void onHoverEnd() {
-    var old = oldHoverNode;
-    oldHoverNode = null;
+    var old = oldHoverData;
+    oldHoverData = null;
     if (old == null) {
       return;
     }
@@ -56,76 +59,76 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
     onRunUpdateAnimation([NodeDiff(old, oldAttr, old.toAttr(), true)], animation);
   }
 
-  N? oldHoverNode;
+  D? oldHoverData;
 
   void onHandleHoverAndClick(Offset offset, bool click) {
     var oldOffset = offset;
     offset = offset.translate(-translationX, -translationY);
-    var clickNode = findNode(offset);
-    if (oldHoverNode == clickNode) {
-      if (clickNode != null && !clickNode.isDispose) {
-        click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
+    var clickData = findData(offset);
+    if (oldHoverData == clickData) {
+      if (clickData != null && !clickData.isDispose) {
+        click ? sendClickEvent(oldOffset, clickData) : sendHoverEvent(oldOffset, clickData);
       }
       return;
     }
-    var oldNode = oldHoverNode;
-    oldHoverNode = clickNode;
-    if (oldNode != null) {
-      sendHoverEndEvent(oldNode);
+    var oldData = oldHoverData;
+    oldHoverData = clickData;
+    if (oldData != null) {
+      sendHoverEndEvent(oldData);
     }
-    if (clickNode != null) {
-      click ? sendClickEvent(oldOffset, clickNode) : sendHoverEvent(oldOffset, clickNode);
-    }
-
-    List<NodeDiff<N>> nl = [];
-
-    if (oldNode != null&&!oldNode.isDispose) {
-      var oldAttr = oldNode.toAttr();
-      oldNode.removeState(ViewState.hover);
-      onUpdateNodeStyle(oldNode);
-      nl.add(NodeDiff(oldNode, oldAttr, oldNode.toAttr(), true));
+    if (clickData != null) {
+      click ? sendClickEvent(oldOffset, clickData) : sendHoverEvent(oldOffset, clickData);
     }
 
-    if (clickNode != null) {
-      var newAttr = clickNode.toAttr();
-      clickNode.addState(ViewState.hover);
-      onUpdateNodeStyle(clickNode);
-      nl.add(NodeDiff(clickNode, newAttr, clickNode.toAttr(), false));
+    List<NodeDiff<D>> nl = [];
+
+    if (oldData != null && !oldData.isDispose) {
+      var oldAttr = oldData.toAttr();
+      oldData.removeState(ViewState.hover);
+      onUpdateNodeStyle(oldData);
+      nl.add(NodeDiff(oldData, oldAttr, oldData.toAttr(), true));
+    }
+
+    if (clickData != null) {
+      var newAttr = clickData.toAttr();
+      clickData.addState(ViewState.hover);
+      onUpdateNodeStyle(clickData);
+      nl.add(NodeDiff(clickData, newAttr, clickData.toAttr(), false));
     }
 
     var animator = getAnimation(LayoutType.update, getAnimatorCountLimit());
     if (animator == null) {
-      onHandleHoverAndClickEnd(oldNode, clickNode);
+      onHandleHoverAndClickEnd(oldData, clickData);
       notifyLayoutUpdate();
       return;
     }
     if (nl.isNotEmpty) {
       onRunUpdateAnimation(nl, animator);
     }
-    onHandleHoverAndClickEnd(oldNode, clickNode);
+    onHandleHoverAndClickEnd(oldData, clickData);
   }
 
   int getAnimatorCountLimit() {
     return -1;
   }
 
-  void onHandleHoverAndClickEnd(N? oldNode, N? newNode) {}
+  void onHandleHoverAndClickEnd(D? oldData, D? newData) {}
 
-  void onUpdateNodeStyle(N node) {
-    node.updateStyle(context, series);
+  void onUpdateNodeStyle(D data) {
+    data.updateStyle(context, series);
   }
 
-  void onRunUpdateAnimation(List<NodeDiff<N>> list, AnimatorOption animation) {
+  void onRunUpdateAnimation(List<NodeDiff<D>> list, AnimatorOption animation) {
     List<ChartTween> tl = [];
     for (var diff in list) {
-      var node = diff.node;
+      var data = diff.data;
       var s = diff.startAttr;
       var e = diff.endAttr;
       var tween = ChartDoubleTween(option: animation);
       tween.addListener(() {
         var t = tween.value;
-        node.itemStyle = AreaStyle.lerp(s.itemStyle, e.itemStyle, t);
-        node.borderStyle = LineStyle.lerp(s.borderStyle, e.borderStyle, t);
+        data.itemStyle = AreaStyle.lerp(s.itemStyle, e.itemStyle, t);
+        data.borderStyle = LineStyle.lerp(s.borderStyle, e.borderStyle, t);
         notifyLayoutUpdate();
       });
       tl.add(tween);
@@ -136,7 +139,7 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
   }
 
   ///按照节点的绘制顺序排序
-  void sortList(List<N> nodeList) {
+  void sortList(List<D> nodeList) {
     nodeList.sort((a, b) {
       if (a.drawIndex == 0 && b.drawIndex == 0) {
         return a.dataIndex.compareTo(b.dataIndex);
@@ -152,14 +155,14 @@ abstract class LayoutHelper2<N extends RenderData, S extends ChartSeries> extend
   ///如果overlap为 true，那么说明可能会存在重叠的View
   ///此时我们需要进行更加精确的判断
   ///父类默认没有实现该方法
-  N? findNode(Offset offset, [bool overlap = false]) {
-    var hoveNode = oldHoverNode;
+  D? findData(Offset offset, [bool overlap = false]) {
+    var hoveNode = oldHoverData;
     if (hoveNode != null && hoveNode.contains(offset)) {
       return hoveNode;
     }
 
     ///这里倒序查找是因为当绘制顺序不一致时需要从最后查找
-    var list = nodeList;
+    var list = dataSet;
     for (int i = list.length - 1; i >= 0; i--) {
       var node = list[i];
       if (node.contains(offset)) {
