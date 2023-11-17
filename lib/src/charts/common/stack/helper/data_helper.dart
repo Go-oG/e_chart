@@ -2,8 +2,9 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 
 ///处理二维坐标系下堆叠数据
-class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
+class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> extends Disposable {
   late List<P> groupList;
+  final bool stackIsPercent;
   final CoordType coord;
   final int polarIndex;
   final Direction direction;
@@ -23,7 +24,17 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
   bool hasData(StackData<T, P> data) {
     return _dataMap.containsKey(data.id);
   }
-  DataHelper(this.coord, this.polarIndex, List<P> list, this.direction, this.realSort, this.sort, this.sortCount) {
+
+  DataHelper(
+    this.coord,
+    this.polarIndex,
+    List<P> list,
+    this.direction,
+    this.realSort,
+    this.sort,
+    this.sortCount, {
+    this.stackIsPercent = false,
+  }) {
     if (coord != CoordType.grid && coord != CoordType.polar) {
       throw ChartError('only support Grid and Polar Coord');
     }
@@ -104,7 +115,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
 
     ///最后进行数据合并整理
     AxisGroup<T, P> group = AxisGroup(resultMap);
-    group.mergeData(direction);
+    group.mergeData(direction,stackIsPercent);
     _xAxisExtreme = _collectExtreme(group, true);
     _yAxisExtreme = _collectExtreme(group, false);
     return group;
@@ -410,7 +421,9 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> {
     return max;
   }
 
+  @override
   void dispose() {
+    super.dispose();
     _result?.dispose();
     _result = null;
     groupList = [];

@@ -21,6 +21,7 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
     super.markPoint,
     super.markPointFun,
     super.markLineFun,
+    super.stackIsPercent,
     super.realtimeSort,
     super.sort,
     super.sortCount,

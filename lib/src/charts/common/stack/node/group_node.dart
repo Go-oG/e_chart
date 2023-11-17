@@ -84,9 +84,9 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with Sta
     return 0;
   }
 
-  void mergeData() {
+  void mergeData(bool stackIsPercent) {
     for (var col in nodeList) {
-      col.mergeData();
+      col.mergeData(stackIsPercent);
     }
   }
 

@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T,G>> extends ChartSeries {
+abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T, G>> extends ChartSeries {
   static const defaultAnimatorAttrs = AnimatorOption(
     curve: Curves.linear,
     updateDuration: Duration(milliseconds: 600),
@@ -36,6 +36,9 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T,G
   bool dynamicLabel;
   Sort sort;
   int? sortCount;
+
+  ///当图表有层叠布局时是否表示为百分比
+  bool stackIsPercent;
 
   ///是否启用坐标轴数据动态范围(如果启用了，那么坐标轴将实时变化)
   ///需要搭配 坐标轴start0 使用
@@ -75,6 +78,7 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T,G
     this.direction = Direction.vertical,
     this.selectedMode = SelectedMode.group,
     this.animatorStyle = GridAnimatorStyle.expand,
+    this.stackIsPercent = false,
     this.dynamicRange = false,
     this.legendHoverLink = true,
     this.realtimeSort = false,
@@ -115,7 +119,16 @@ abstract class StackSeries<T extends StackItemData, G extends StackGroupData<T,G
   }
 
   DataHelper<T, G> buildHelper(Context context) {
-    return DataHelper<T,G>(coordType ?? CoordType.grid, polarIndex, data, direction, realtimeSort, sort, sortCount);
+    return DataHelper<T, G>(
+      coordType ?? CoordType.grid,
+      polarIndex,
+      data,
+      direction,
+      realtimeSort,
+      sort,
+      sortCount,
+      stackIsPercent: stackIsPercent,
+    );
   }
 
   @override

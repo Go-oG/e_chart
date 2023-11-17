@@ -12,11 +12,11 @@ class AxisGroup<T extends StackItemData, P extends StackGroupData<T,P>> {
 
   AxisGroup(this.groupMap);
 
-  void mergeData(Direction direction) {
+  void mergeData(Direction direction,bool stackIsPercent) {
     groupMap.forEach((key, value) {
       List<StackData<T, P>> nodeList = [];
       for (var ele in value) {
-        ele.mergeData();
+        ele.mergeData(stackIsPercent);
         for (var col in ele.nodeList) {
           nodeList.addAll(col.nodeList);
         }

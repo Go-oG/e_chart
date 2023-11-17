@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-class ColumnNode<T extends StackItemData, P extends StackGroupData<T,P>> {
+class ColumnNode<T extends StackItemData, P extends StackGroupData<T, P>> {
   final GroupNode<T, P> parentNode;
   List<StackData<T, P>> nodeList;
   final bool isStack;
@@ -45,7 +45,7 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T,P>> {
     return null;
   }
 
-  void mergeData() {
+  void mergeData(bool stackIsPercent) {
     if (nodeList.isEmpty) {
       return;
     }
@@ -55,8 +55,14 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T,P>> {
       if (itemData == null) {
         return;
       }
-      first.attr.up = itemData.maxValue;
-      first.attr.down = itemData.minValue;
+      if (stackIsPercent) {
+        ///单个占比百分百
+        first.attr.up = 100;
+        first.attr.down = 0;
+      } else {
+        first.attr.up = itemData.maxValue;
+        first.attr.down = itemData.minValue;
+      }
       return;
     }
 
@@ -76,35 +82,74 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T,P>> {
         crossList.add(node);
       }
     });
+    num allValue = 0;
+    if (stackIsPercent) {
+      allValue = sumBy<StackData<T, P>>(positiveList, (p0) => p0.dataIsNull ? 0 : p0.data.subValue);
+    }
 
     List<List<StackData<T, P>>> tmpList = [positiveList, crossList];
     for (var list in tmpList) {
       if (list.isEmpty) {
         continue;
       }
-      var first = list.first;
-      var firstData = first.data;
-      num down = firstData.minValue;
-      num up = firstData.maxValue;
-      each(list, (node, p1) {
-        node.attr.up = up;
-        node.attr.down = down;
-        down = up;
-        up += (node.data.maxValue - node.data.minValue);
-      });
+      if (stackIsPercent) {
+        double dv = 0;
+        each(list, (node, p1) {
+          if (allValue > 0) {
+            node.attr.down = 100 * dv;
+            dv += node.data.subValue / allValue;
+            if (dv > 1) {
+              throw ChartError('Percent more than 1');
+            }
+            node.attr.up = 100 * dv;
+          } else {
+            node.attr.down = 0;
+            node.attr.up = 0;
+          }
+        });
+      } else {
+        var first = list.first;
+        var firstData = first.data;
+        num down = firstData.minValue;
+        num up = firstData.maxValue;
+        each(list, (node, p1) {
+          node.attr.up = up;
+          node.attr.down = down;
+          down = up;
+          up += node.data.subValue;
+        });
+      }
+    }
+
+    if (stackIsPercent) {
+      allValue = sumBy<StackData<T, P>>(positiveList, (p0) => p0.dataIsNull ? 0 : p0.data.maxValue - p0.data.minValue);
     }
 
     if (negativeList.isNotEmpty) {
-      var first = negativeList.first;
-      var firstData = first.data;
-      num up = firstData.maxValue;
-      num down = firstData.minValue;
-      each(negativeList, (node, p1) {
-        node.attr.up = up;
-        node.attr.down = down;
-        up = down;
-        down -= (node.data.maxValue - node.data.minValue);
-      });
+      if (stackIsPercent) {
+        double dv = 0;
+        each(negativeList, (node, p1) {
+          if (allValue <= 0) {
+            node.attr.down = dv;
+            dv += node.data.subValue / allValue;
+            node.attr.up = 100 * dv;
+          } else {
+            node.attr.down = 0;
+            node.attr.up = 0;
+          }
+        });
+      } else {
+        var first = negativeList.first;
+        var firstData = first.data;
+        num up = firstData.maxValue;
+        num down = firstData.minValue;
+        each(negativeList, (node, p1) {
+          node.attr.up = up;
+          node.attr.down = down;
+          up = down;
+          down -= (node.data.maxValue - node.data.minValue);
+        });
+      }
     }
   }
 
@@ -112,9 +157,9 @@ class ColumnNode<T extends StackItemData, P extends StackGroupData<T,P>> {
     nodeList = [];
   }
 
-  int indexOf(StackData<T,P> data){
+  int indexOf(StackData<T, P> data) {
     return nodeList.indexOf(data);
   }
-  StackData<T,P> getAt(int index)=>nodeList[index];
 
+  StackData<T, P> getAt(int index) => nodeList[index];
 }

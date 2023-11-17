@@ -191,9 +191,7 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
 
   //数值轴索引
   int valueAxis;
-
   String? stackId;
-  bool stackUsePercent;
 
   SNumber? barSize;
   SNumber? barMaxSize;
@@ -209,7 +207,6 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
     String? id,
     String? name,
     this.stackId,
-    this.stackUsePercent = false,
     this.styleIndex = 0,
   }) {
     if (id == null || id.isEmpty) {
@@ -279,6 +276,8 @@ class StackItemData extends BaseItemData {
   num get maxValue {
     return measureValue;
   }
+
+  num get subValue=>maxValue-minValue;
 
   num get aveValue {
     return measureValue / 2;
