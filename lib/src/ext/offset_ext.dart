@@ -123,3 +123,9 @@ Offset circlePoint(num radius, num angle, [Offset center = Offset.zero]) {
   double y = center.dy + radius * m.sin(angle * StaticConfig.angleUnit);
   return Offset(x, y);
 }
+
+Offset circlePointRadian(num radius, num radian, [Offset center = Offset.zero]) {
+  double x = center.dx + radius * m.cos(radian);
+  double y = center.dy + radius * m.sin(radian);
+  return Offset(x, y);
+}

@@ -56,7 +56,7 @@ class Arc extends Shape {
     } else {
       this.maxRadius = outRadius;
     }
-    if(innerRadius>outRadius){
+    if (innerRadius > outRadius) {
       throw ChartError("参数违法");
     }
   }
@@ -95,6 +95,12 @@ class Arc extends Shape {
     return startAngle + (sweepAngle / 2);
   }
 
+  double get startRadian => startAngle * StaticConfig.angleUnit;
+
+  double get endRadian => endAngle * StaticConfig.angleUnit;
+
+  double get sweepRadian => sweepAngle * StaticConfig.angleUnit;
+
   bool get isEmpty {
     return (sweepAngle.abs()) == 0 || (outRadius - innerRadius).abs() == 0;
   }
@@ -106,8 +112,8 @@ class Arc extends Shape {
     return _closePath ??= _arc();
   }
 
-  Rect getBound(bool useCircleRect){
-    if(useCircleRect){
+  Rect getBound(bool useCircleRect) {
+    if (useCircleRect) {
       return Rect.fromCircle(center: center, radius: outRadius.toDouble());
     }
     return toPath().getBounds();
@@ -433,8 +439,7 @@ class Arc extends Shape {
     Path path = Path();
     Offset op = circlePoint(r, startAngle, center);
     path.moveTo(op.dx, op.dy);
-    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * StaticConfig.angleUnit,
-        sweepAngle * StaticConfig.angleUnit, false);
+    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * StaticConfig.angleUnit, sweepAngle * StaticConfig.angleUnit, false);
     return path;
   }
 
@@ -538,9 +543,10 @@ class Arc extends Shape {
 
   @override
   bool get isClosed => true;
+
   @override
   void dispose() {
-    _closePath=null;
+    _closePath = null;
     super.dispose();
   }
 }

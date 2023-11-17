@@ -8,6 +8,10 @@ export 'boxplot/boxplot_series.dart';
 
 export 'calendar/calendar_series.dart';
 
+export 'chord/chord_data.dart';
+export 'chord/chord_series.dart';
+
+
 export 'candlestick/candlestick_series.dart';
 
 export 'circle/circle_series.dart';

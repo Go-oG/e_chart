@@ -7,6 +7,7 @@ export 'gesture/gesture_event.dart';
 
 export 'layout/layout_helper.dart';
 export 'layout/layout_helper2.dart';
+export 'layout/layout_helper3.dart';
 export 'layout/layout_type.dart';
 export 'layout/node_diff.dart';
 

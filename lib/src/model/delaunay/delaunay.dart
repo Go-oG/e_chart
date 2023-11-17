@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:math' as math;
 import 'package:e_chart/e_chart.dart';
 
-var epsilon = pow(2, -52);
 
 List<int> edgeStack = List.filled(512, 0);
 
@@ -201,7 +200,7 @@ class Delaunay<T> {
       var y = coords[2 * i + 1];
 
 // 跳过重复点附近
-      if (k > 0 && (x - xp).abs() <= epsilon && (y - yp).abs() <= epsilon) continue;
+      if (k > 0 && (x - xp).abs() <= StaticConfig.epsilon && (y - yp).abs() <= StaticConfig.epsilon) continue;
 
       xp = x;
       yp = y;

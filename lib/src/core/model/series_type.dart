@@ -20,6 +20,7 @@ class SeriesType {
   static const SeriesType treemap = SeriesType("treemap", 1);
   static const SeriesType circle = SeriesType("circle", 1);
   static const SeriesType delaunay = SeriesType("delaunay", 1);
+  static const SeriesType chord = SeriesType("chord", 1);
 
   final String type;
 

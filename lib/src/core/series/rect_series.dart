@@ -28,6 +28,8 @@ abstract class RectSeries extends ChartSeries {
     super.tooltip,
     super.clip,
     super.id,
+    super.name,
+    super.useSingleLayer,
   });
 
   LayoutParams toLayoutParams() {

@@ -9,5 +9,10 @@ class Link<T> {
   ///存储位置
   final List<Offset> points = [];
 
-  Link(this.source, this.target);
+  Link(
+    this.source,
+    this.target, {
+    this.weight = 0,
+    this.index = 0,
+  });
 }
