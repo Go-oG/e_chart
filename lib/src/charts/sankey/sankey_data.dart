@@ -53,8 +53,8 @@ class SankeyData extends RenderData<SankeyAttr> {
 
 class SankeyAttr {
   num value = 0;
-  List<SankeyLinkData> outLinks = []; //以当前节点为源的输出边(source)
-  List<SankeyLinkData> inputLinks = []; //以当前节点为尾的输入边(target)
+  List<SankeyLink> outLinks = []; //以当前节点为源的输出边(source)
+  List<SankeyLink> inputLinks = []; //以当前节点为尾的输入边(target)
 
   ///标识坐标
   double _left = 0;
@@ -115,12 +115,12 @@ class SankeyAttr {
   Rect rect = Rect.zero;
 }
 
-class SankeyLinkData extends RenderData<SankeyLinkAttr> {
+class SankeyLink extends RenderData<SankeyLinkAttr> {
   SankeyData source;
   SankeyData target;
   num value;
 
-  SankeyLinkData(
+  SankeyLink(
     this.source,
     this.target,
     this.value,

@@ -15,6 +15,13 @@ abstract class LayoutHelper3<D extends RenderData, L extends RenderData, S exten
   }
 
   @override
+  void onDragMove(Offset offset, Offset diff) {
+    view.translationX += diff.dx;
+    view.translationY += diff.dy;
+    notifyLayoutUpdate();
+  }
+
+  @override
   void onHoverStart(Offset localOffset) {
     handleHoverAndClick(localOffset, false);
   }
@@ -188,4 +195,16 @@ abstract class LayoutHelper3<D extends RenderData, L extends RenderData, S exten
   List<L> getDataInLink(D data);
 
   List<L> getDataOutLink(D data);
+
+  void sortList(List<D> nodeList) {
+    nodeList.sort((a, b) {
+      if (a.drawIndex == 0 && b.drawIndex == 0) {
+        return a.dataIndex.compareTo(b.dataIndex);
+      }
+      if (a.drawIndex != 0) {
+        return 1;
+      }
+      return 0;
+    });
+  }
 }

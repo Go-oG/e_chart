@@ -4,24 +4,15 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///布局参考：Ref:https://github.com/d3/d3-sankey/blob/master/src/sankey.js
-class SankeyHelper extends LayoutHelper<SankeySeries> {
+class SankeyHelper extends LayoutHelper3<SankeyData, SankeyLink, SankeySeries> {
   /// 整个视图区域坐标坐标
   double left = 0, top = 0, right = 1, bottom = 1;
-  List<SankeyData> _nodes = [];
-
-  List<SankeyData> get nodes => _nodes;
-  List<SankeyLinkData> _links = [];
-
-  List<SankeyLinkData> get links => _links;
-
   double animationProcess = 1;
-
   num _nodeGap = 0;
 
-  final RBush<SankeyData> _nodeBush =
-      RBush((p0) => p0.attr.left, (p0) => p0.attr.top, (p0) => p0.attr.right, (p0) => p0.attr.bottom);
+  final RBush<SankeyData> _nodeBush = RBush((p0) => p0.attr.left, (p0) => p0.attr.top, (p0) => p0.attr.right, (p0) => p0.attr.bottom);
 
-  final RBush<SankeyLinkData> _linkBush = RBush(
+  final RBush<SankeyLink> _linkBush = RBush(
     (p0) => m.min(p0.source.attr.left, p0.target.attr.left),
     (p0) => m.min(p0.source.attr.top, p0.target.attr.top),
     (p0) => m.max(p0.source.attr.right, p0.target.attr.right),
@@ -37,8 +28,8 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     left = top = 0;
     right = width;
     bottom = height;
-    _oldHoverNode = null;
-    _oldHoverLink = null;
+    oldHoverData = null;
+    oldHoverLink = null;
     var dataList = [...series.data];
     var linkList = [...series.links];
     dataList = initData(dataList, linkList, 0);
@@ -50,16 +41,16 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     var animation = getAnimation(type, 1);
     if (animation == null) {
       animationProcess = 1;
-      _nodes = dataList;
-      _links = linkList;
+      dataSet = dataList;
+      linkSet = linkList;
       return;
     }
 
     var dt = ChartDoubleTween(option: animation);
     animationProcess = 0;
     dt.addStartListener(() {
-      _nodes = dataList;
-      _links = linkList;
+      dataSet = dataList;
+      linkSet = linkList;
       inAnimation = true;
     });
     dt.addListener(() {
@@ -72,7 +63,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     context.addAnimationToQueue([AnimationNode(dt, animation, LayoutType.layout)]);
   }
 
-  void layoutNode(List<SankeyData> nodes, List<SankeyLinkData> links) {
+  void layoutNode(List<SankeyData> nodes, List<SankeyLink> links) {
     _computeNodeLinks(nodes, links);
     _computeNodeValues(nodes);
     _computeNodeDeep(nodes);
@@ -83,86 +74,20 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   }
 
   @override
-  void onClick(Offset localOffset) {
-    handleHoverAndClick(localOffset, true);
-  }
-
-  @override
-  void onHoverStart(Offset localOffset) {
-    handleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverMove(Offset localOffset) {
-    handleHoverAndClick(localOffset, false);
-  }
-
-  @override
-  void onHoverEnd() {
-    _handleCancel();
-  }
-
-  SankeyData? _oldHoverNode;
-  SankeyLinkData? _oldHoverLink;
-
-  void handleHoverAndClick(Offset local, bool click) {
-    var offset = local.translate(-translationX, -translationY);
-    dynamic clickNode = findEventNode(offset);
-    if (clickNode == null) {
-      _handleCancel();
-      return;
-    }
-
-    _oldHoverLink = null;
-    _oldHoverNode = null;
-
-    if (clickNode is SankeyLinkData) {
-      SankeyLinkData link = clickNode;
-      _oldHoverLink = link;
-      changeNodeStatus(null, link);
-      notifyLayoutUpdate();
-      return;
-    }
-    if (clickNode is SankeyData) {
-      SankeyData node = clickNode;
-      _oldHoverNode = node;
-      changeNodeStatus(node, null);
-      notifyLayoutUpdate();
-      return;
-    }
-  }
-
-  void _handleCancel() {
-    bool hasChange = false;
-    if (_oldHoverLink != null) {
-      _oldHoverLink?.removeStates([ViewState.selected, ViewState.hover]);
-      _oldHoverLink = null;
-      hasChange = true;
-    }
-    if (_oldHoverNode != null) {
-      _oldHoverNode?.removeStates([ViewState.selected, ViewState.hover]);
-      _oldHoverNode = null;
-      hasChange = true;
-    }
-    if (hasChange) {
-      resetDataStatus();
-      notifyLayoutUpdate();
-    }
-  }
-
-  ///找到点击节点(优先节点而不是边)
-  dynamic findEventNode(Offset offset) {
+  SankeyData? findData(Offset offset) {
     var sr = Rect.fromCenter(center: offset, width: 1, height: 1);
-    var sn = _nodeBush.searchSingle(sr, (node) => node.contains(offset));
-    if (sn != null) {
-      return sn;
-    }
+    return _nodeBush.searchSingle(sr, (node) => node.contains(offset));
+  }
+
+  @override
+  SankeyLink? findLink(Offset offset) {
+    var sr = Rect.fromCenter(center: offset, width: 1, height: 1);
     var searchList = _linkBush.search2(sr);
     searchList.removeWhere((element) => !element.contains(offset));
     if (searchList.isEmpty) {
       return null;
     }
-    SankeyLinkData result = searchList.first;
+    SankeyLink result = searchList.first;
     if (searchList.length == 1) {
       return result;
     }
@@ -183,71 +108,8 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     return result;
   }
 
-  //处理数据状态
-  void changeNodeStatus(SankeyData? node, SankeyLinkData? link) {
-    Set<SankeyLinkData> linkSet = {};
-    Set<SankeyData> nodeSet = {};
-    if (link != null) {
-      linkSet.add(link);
-      nodeSet.add(link.target);
-      nodeSet.add(link.source);
-    }
-
-    if (node != null) {
-      nodeSet.add(node);
-      linkSet.addAll(node.attr.inputLinks);
-      linkSet.addAll(node.attr.outLinks);
-      for (var element in node.attr.inputLinks) {
-        nodeSet.add(element.source);
-      }
-      for (var element in node.attr.outLinks) {
-        nodeSet.add(element.target);
-      }
-    }
-
-    bool hasSelect = linkSet.isNotEmpty || nodeSet.isNotEmpty;
-    var status = [ViewState.hover, ViewState.selected];
-
-    for (var ele in _links) {
-      ele.cleanState();
-
-      if (hasSelect) {
-        if (nodeSet.contains(ele.target) && nodeSet.contains(ele.source)) {
-          ele.addStates(status);
-        } else {
-          ele.addState(ViewState.disabled);
-        }
-      }
-      ele.updateStyle(context, series);
-    }
-
-    for (var ele in _nodes) {
-      ele.cleanState();
-      if (hasSelect) {
-        if (nodeSet.contains(ele)) {
-          ele.addStates(status);
-        } else {
-          ele.addState(ViewState.disabled);
-        }
-      }
-      ele.updateStyle(context, series);
-    }
-  }
-
-  /// 重置数据状态
-  void resetDataStatus() {
-    for (var ele in _links) {
-      ele.cleanState();
-      ele.updateStyle(context, series);
-    }
-    for (var ele in _nodes) {
-      ele.cleanState();
-      ele.updateStyle(context, series);
-    }
-  }
-
   /// 计算链接位置
-  void _computeLinkPosition(List<SankeyLinkData> links, List<SankeyData> nodes) {
+  void _computeLinkPosition(List<SankeyLink> links, List<SankeyData> nodes) {
     for (var node in nodes) {
       node.attr.rect = Rect.fromLTRB(node.attr.left, node.attr.top, node.attr.right, node.attr.bottom);
       if (node.attr.rect.hasNaN) {
@@ -259,7 +121,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     }
   }
 
-  void _computeNodeLinks(List<SankeyData> nodes, List<SankeyLinkData> links) {
+  void _computeNodeLinks(List<SankeyData> nodes, List<SankeyLink> links) {
     each(nodes, (p0, p1) {
       p0.attr.index = p1;
     });
@@ -558,7 +420,7 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
     return y;
   }
 
-  List<SankeyData> initData(List<SankeyData> dataList, List<SankeyLinkData> links, double nodeWidth) {
+  List<SankeyData> initData(List<SankeyData> dataList, List<SankeyLink> links, double nodeWidth) {
     Map<String, SankeyData> dataMap = {};
     each(dataList, (p0, p1) {
       dataMap[p0.id] = p0;
@@ -590,7 +452,6 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
       }
       link.updateStyle(context, series);
     });
-
     return List.from(dataMap.values);
   }
 
@@ -598,9 +459,21 @@ class SankeyHelper extends LayoutHelper<SankeySeries> {
   Offset getTranslation() {
     return view.translation;
   }
+
+  @override
+  List<SankeyLink> getDataInLink(SankeyData data) => data.attr.inputLinks;
+
+  @override
+  List<SankeyLink> getDataOutLink(SankeyData data) => data.attr.outLinks;
+
+  @override
+  SankeyData getLinkSource(SankeyLink link) => link.source;
+
+  @override
+  SankeyData getLinkTarget(SankeyLink link) => link.target;
 }
 
-int _ascSourceBreadth(SankeyLinkData a, SankeyLinkData b) {
+int _ascSourceBreadth(SankeyLink a, SankeyLink b) {
   int ab = _ascBreadth(a.source, b.source);
   if (ab != 0) {
     return ab;
@@ -608,7 +481,7 @@ int _ascSourceBreadth(SankeyLinkData a, SankeyLinkData b) {
   return (a.attr.index - b.attr.index);
 }
 
-int _ascTargetBreadth(SankeyLinkData a, SankeyLinkData b) {
+int _ascTargetBreadth(SankeyLink a, SankeyLink b) {
   int ab = _ascBreadth(a.target, b.target);
   if (ab != 0) {
     return ab;

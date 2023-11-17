@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class SankeySeries extends RectSeries {
   List<SankeyData> data;
-  List<SankeyLinkData> links;
+  List<SankeyLink> links;
   double nodeWidth;
   double gap;
   int iterationCount;
@@ -17,9 +17,9 @@ class SankeySeries extends RectSeries {
   Fun2<SankeyData, LineStyle?>? borderStyleFun;
   Fun2<SankeyData, LabelStyle?>? labelStyleFun;
 
-  Fun2<SankeyLinkData, AreaStyle>? linkStyleFun;
-  Fun2<SankeyLinkData, LineStyle>? linkBorderStyleFun;
-  Fun2<SankeyLinkData, LabelStyle>? linkLabelStyleFun;
+  Fun2<SankeyLink, AreaStyle>? linkStyleFun;
+  Fun2<SankeyLink, LineStyle>? linkBorderStyleFun;
+  Fun2<SankeyLink, LabelStyle>? linkLabelStyleFun;
 
   SankeySeries({
     required this.data,
@@ -76,7 +76,7 @@ class SankeySeries extends RectSeries {
     return context.option.theme.getLabelStyle();
   }
 
-  AreaStyle getLinkStyle(Context context, SankeyLinkData data) {
+  AreaStyle getLinkStyle(Context context, SankeyLink data) {
     var fun = linkStyleFun;
     if (fun != null) {
       return fun.call(data);
@@ -95,7 +95,7 @@ class SankeySeries extends RectSeries {
     return AreaStyle(color: Colors.grey.withOpacity(0.5));
   }
 
-  LineStyle getLinkBorderStyle(Context context, SankeyLinkData data) {
+  LineStyle getLinkBorderStyle(Context context, SankeyLink data) {
     var fun = linkBorderStyleFun;
     if (fun != null) {
       return fun.call(data);
@@ -103,7 +103,7 @@ class SankeySeries extends RectSeries {
     return LineStyle.empty;
   }
 
-  LabelStyle getLinkLabelStyle(Context context, SankeyLinkData data) {
+  LabelStyle getLinkLabelStyle(Context context, SankeyLink data) {
     var fun = linkLabelStyleFun;
     if (fun != null) {
       return fun.call(data);
@@ -126,6 +126,6 @@ class SankeySeries extends RectSeries {
   SeriesType get seriesType => SeriesType.sankey;
 }
 
-typedef LinkSort = int Function(SankeyLinkData, SankeyLinkData);
+typedef LinkSort = int Function(SankeyLink, SankeyLink);
 
 typedef NodeSort = int Function(SankeyData, SankeyData);

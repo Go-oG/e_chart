@@ -1,8 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
+class GraphHelper extends LayoutHelper3<GraphData, EdgeData, GraphSeries> {
   GraphHelper(super.context, super.view, super.series);
+
+  Map<GraphData, List<EdgeData>> sourceLinkMap = {};
+  Map<GraphData, List<EdgeData>> targetLinkMap = {};
 
   Graph graph = Graph([]);
   GraphLayout? _oldLayout;
@@ -11,7 +14,7 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
   void onLayout(LayoutType type) {
     view.translationX = 0;
     view.translationY = 0;
-    var newGraph = initData2(series.nodes, series.edges);
+    var newGraph = initData(series.nodes, series.edges);
     var params = GraphLayoutParams(context, series, boxBound, globalBoxBound, width, height);
     _oldLayout?.clearListener();
     _oldLayout = series.layout;
@@ -24,11 +27,6 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     _oldLayout?.doLayout(newGraph, params, type);
     graph = newGraph;
     dataSet = graph.nodes;
-  }
-
-  @override
-  void onRunUpdateAnimation(var list, var animation) {
-    notifyLayoutUpdate();
   }
 
   @override
@@ -69,7 +67,6 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     if (node == null && series.onlyDragNode) {
       return;
     }
-
     if (node == null) {
       view.translationX += diff.dx;
       view.translationY += diff.dy;
@@ -98,9 +95,13 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     }
   }
 
-  Graph initData2(List<GraphData> nodes, List<EdgeData> links) {
+  Graph initData(List<GraphData> nodes, List<EdgeData> links) {
+    Map<GraphData, List<EdgeData>> sourceMap = {};
+    Map<GraphData, List<EdgeData>> targetMap = {};
+
     Set<GraphData> nodeSet = {};
     each(nodes, (data, i) {
+      sourceLinkMap[data] = [];
       data.index = i;
       data.size = series.getNodeSize(data);
       var symbol = series.getSymbol(context, data);
@@ -111,6 +112,10 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     List<EdgeData> edgeList = [];
     each(links, (data, i) {
       var source = data.source;
+      List<EdgeData> sl = sourceMap[source] ?? [];
+      sourceMap[source] = sl;
+      sl.add(data);
+
       if (!nodeSet.contains(source)) {
         source.index = index;
         source.size = series.getNodeSize(source);
@@ -119,7 +124,12 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
         nodeSet.add(source);
         index += 1;
       }
+
       var target = data.target;
+      sl = targetMap[source] ?? [];
+      targetMap[source] = sl;
+      sl.add(data);
+
       if (!nodeSet.contains(target)) {
         target.index = index;
         target.size = series.getNodeSize(target);
@@ -132,13 +142,27 @@ class GraphHelper extends LayoutHelper2<GraphData, GraphSeries> {
     });
     List<GraphData> nodeList = List.from(nodeSet);
     nodeList.sort((a, b) => a.dataIndex - b.dataIndex);
-
     each(nodeSet, (p0, p1) {
       p0.attr.fx = p0.data.fx;
       p0.attr.fy = p0.data.fy;
       p0.attr.weight = p0.data.weight;
     });
 
+    sourceLinkMap = sourceMap;
+    targetLinkMap = targetMap;
+
     return Graph(nodeList, edges: edgeList);
   }
+
+  @override
+  List<EdgeData> getDataInLink(GraphData data) => targetLinkMap[data] ?? [];
+
+  @override
+  List<EdgeData> getDataOutLink(GraphData data) => sourceLinkMap[data] ?? [];
+
+  @override
+  GraphData getLinkSource(EdgeData link) => link.source;
+
+  @override
+  GraphData getLinkTarget(EdgeData link) => link.target;
 }
