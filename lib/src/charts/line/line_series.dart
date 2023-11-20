@@ -36,6 +36,15 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
     super.id,
     super.clip,
     super.tooltip,
+    super.corner,
+    super.cornerFun,
+    super.dynamicLabel,
+    super.dynamicRange,
+    super.sort,
+    super.sortCount,
+    super.stackIsPercent,
+    super.labelAlignFun,
+    super.groupStyleFun,
   }) : super(groupGap: SNumber.zero, columnGap: SNumber.zero);
 
   @override
@@ -55,4 +64,6 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
     }
     return null;
   }
+
+  LineType? getLineType(Context context,LineGroupData group)=>stepLineFun?.call(group);
 }

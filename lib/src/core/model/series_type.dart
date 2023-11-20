@@ -1,7 +1,7 @@
 class SeriesType {
   static const SeriesType bar = SeriesType("bar", 1);
   static const SeriesType line = SeriesType("line", 99);
-  static const SeriesType boxplot = SeriesType("boxplot", 1);
+  static const SeriesType boxplot = SeriesType("boxplot.md", 1);
   static const SeriesType candlestick = SeriesType("candlestick", 1);
   static const SeriesType calendar = SeriesType("calendar", 1);
   static const SeriesType funnel = SeriesType("funnel", 1);

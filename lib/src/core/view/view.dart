@@ -109,7 +109,7 @@ abstract class ChartView extends RenderNode {
     bool b4 = (bottom - boxBound.bottom).abs() < accurate;
     if ((b1 && b2 && b3 && b4) && !forceLayout) {
       inLayout = false;
-      Logger.i("前后未变化且没强制布局");
+//      Logger.i("前后未变化且没强制布局");
       return;
     }
     _layoutCount++;

@@ -8,7 +8,7 @@ class PieData extends RenderData<Arc> {
     this.value, {
     super.id,
     super.name,
-  }) : super.attr(Arc.zero);
+  }) : super.attr(Arc.zero) ;
 
   ///计算文字的位置
   Path? guidLinePath;
@@ -36,10 +36,6 @@ class PieData extends RenderData<Arc> {
       label.updatePainter(offset: offset, align: align);
     } else {
       label.updatePainter(style: LabelStyle.empty);
-    }
-
-    if (label.notDraw) {
-      return;
     }
 
     if (series.labelAlign == CircleAlign.outside) {
@@ -72,19 +68,13 @@ class PieData extends RenderData<Arc> {
     if (guidLinePath != null) {
       ls.guideLine?.style.drawPath(canvas, paint, guidLinePath!);
     }
-
-    if (!label.notDraw && attr.center == label.offset) {
-      if (isHover || isFocused || isActivated || isDragged || isPressed) {
-        label.draw(canvas, paint);
-      }
-    }
+    label.draw(canvas, paint);
   }
 
   @override
   void updateStyle(Context context, PieSeries series) {
     itemStyle = series.getItemStyle(context, this);
     borderStyle = series.getBorderStyle(context, this);
-    var style = series.getLabelStyle(context, this);
-    label.updatePainter(style: style);
+    label.updatePainter(style: series.getLabelStyle(context, this));
   }
 }

@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-abstract class TreeLayout extends HierarchyLayout<TreeData,TreeSeries>{
+abstract class TreeLayout extends HierarchyLayout<TreeData, TreeSeries> {
   ///连接线的类型(某些布局只支持某些特定类型)
   LineType lineType;
 
@@ -27,18 +27,15 @@ abstract class TreeLayout extends HierarchyLayout<TreeData,TreeSeries>{
   });
 
   Path? onLayoutNodeLink(TreeData parent, TreeData child) {
-    Line line = Line([parent.center, child.center]);
-    List<Offset> ol = [];
+    List<Offset> ol = [parent.center, child.center];
     if (lineType == LineType.step) {
-      ol = line.step();
+      ol = Line.step(ol);
     } else if (lineType == LineType.before) {
-      ol = line.stepBefore();
+      ol = Line.stepBefore(ol);
     } else if (lineType == LineType.after) {
-      ol = line.stepAfter();
-    } else {
-      ol = [parent.center, child.center];
+      ol = Line.stepAfter(ol);
     }
-    return Line(ol, smooth: smooth).toPath();
+    return Line(ol, smooth: lineType == LineType.line ? smooth : 0).toPath();
   }
 
   ///========普通函数=============
@@ -60,6 +57,5 @@ abstract class TreeLayout extends HierarchyLayout<TreeData,TreeSeries>{
     return 24;
   }
 
-  bool get optShowNode=>true;
-
+  bool get optShowNode => true;
 }

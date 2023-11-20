@@ -21,7 +21,7 @@ class RenderAdapter extends RenderBox {
   }
 
   void onUpdateRender(ChartOption option, Size? size, TickerProvider provider) {
-    Logger.i('onUpdateRender');
+//    Logger.i('onUpdateRender');
     var oldRender = _render;
     if (oldRender != null && option == oldRender.context.option) {
       ///相同的对象

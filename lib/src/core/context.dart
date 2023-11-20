@@ -274,8 +274,8 @@ class Context extends Disposable {
     if (gridIndex < 0) {
       gridIndex = 0;
     }
-    if (gridIndex > option.polarList.length) {
-      gridIndex = option.polarList.length - 1;
+    if (gridIndex > option.gridList.length) {
+      gridIndex = option.gridList.length - 1;
     }
     return _coordMap[option.gridList[gridIndex]] as GridCoord?;
   }

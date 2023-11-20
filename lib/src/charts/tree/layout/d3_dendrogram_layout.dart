@@ -31,7 +31,7 @@ class D3DendrogramLayout extends TreeLayout {
   @override
   Path? onLayoutNodeLink(TreeData parent, TreeData child) {
     Line line = Line([parent.center, child.center]);
-    line = Line(line.stepBefore(),smooth:smooth);
+    line = Line(Line.stepBefore([parent.center, child.center]),smooth: smooth);
     return line.toPath();
   }
 

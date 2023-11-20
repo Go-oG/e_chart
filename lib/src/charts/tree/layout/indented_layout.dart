@@ -36,11 +36,11 @@ class IndentedLayout extends TreeLayout {
   @override
   Path? onLayoutNodeLink(TreeData parent, TreeData child) {
     smooth = 0;
-    Line line = Line([parent.center, child.center]);
+    Line line;
     if (lineType == LineType.after) {
-      line = Line(line.stepAfter());
+      line = Line(Line.stepAfter([parent.center, child.center]));
     } else {
-      line = Line(line.stepBefore());
+      line = Line(Line.stepBefore([parent.center, child.center]));
     }
     return line.toPath();
   }
@@ -106,5 +106,4 @@ class IndentedLayout extends TreeLayout {
 
   @override
   bool get optShowNode => false;
-
 }

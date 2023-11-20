@@ -130,10 +130,10 @@ class Area extends Shape {
 
   ///获取贝塞尔曲线控制点
   List<Offset> _getCtrPoint(Offset start, Offset end) {
-    assertCheck(ratioStartX >= 0 && ratioStartX <= 1, "ratioStarX must >=0&&<=1 ");
-    assertCheck(ratioStartY >= 0 && ratioStartY <= 1, "ratioStartY must >=0&&<=1");
-    assertCheck(ratioEndX >= 0 && ratioEndX <= 1, "ratioEndX must >=0&&<=1");
-    assertCheck(ratioEndY >= 0 && ratioEndY <= 1, "ratioEndY must >=0&&<=1");
+    checkArguments(ratioStartX >= 0 && ratioStartX <= 1, "ratioStarX must >=0&&<=1 ");
+    checkArguments(ratioStartY >= 0 && ratioStartY <= 1, "ratioStartY must >=0&&<=1");
+    checkArguments(ratioEndX >= 0 && ratioEndX <= 1, "ratioEndX must >=0&&<=1");
+    checkArguments(ratioEndY >= 0 && ratioEndY <= 1, "ratioEndY must >=0&&<=1");
     if (start.dx == end.dx || start.dy == end.dy) {
       return [];
     }

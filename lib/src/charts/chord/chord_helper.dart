@@ -106,6 +106,7 @@ class ChordHelper extends LayoutHelper3<ChordData, ChordLink, ChordSeries> {
     rect = Rect.fromCircle(center: center, radius: targetRadius);
     path.arcTo(rect, targetStartAngle, targetEndAngle - targetStartAngle, false);
     path.quadraticBezierTo(center.dx, center.dy, sourceStart.dx, sourceStart.dy);
+    path.close();
     return path;
   }
 
@@ -114,6 +115,8 @@ class ChordHelper extends LayoutHelper3<ChordData, ChordLink, ChordSeries> {
     var y = series.center.last.convert(height);
     return Offset(x, y);
   }
+
+
 
   @override
   List<ChordLink> getDataInLink(ChordData data) {

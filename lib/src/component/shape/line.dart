@@ -1,10 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/ext/index.dart';
-
-import '../../utils/assert_check.dart';
-import 'chart_shape.dart';
 
 class Line extends Shape {
   final List<Offset> _pointList = [];
@@ -52,58 +48,6 @@ class Line extends Shape {
     return path;
   }
 
-  /// 返回其 step图形样式坐标点
-  List<Offset> step([double ratio = 0.5]) {
-    if (_pointList.length <= 1) {
-      return [..._pointList];
-    }
-    List<Offset> list = [];
-    for (int i = 0; i < _pointList.length - 1; i++) {
-      Offset cur = _pointList[i];
-      Offset next = _pointList[i + 1];
-      list.add(cur);
-      double x = (cur.dx + next.dx) * ratio;
-      list.add(Offset(x, cur.dy));
-      list.add(Offset(x, next.dy));
-    }
-    list.add(_pointList[_pointList.length - 1]);
-    return list;
-  }
-
-  /// 返回其 step图形样式(after)坐标点
-  List<Offset> stepAfter() {
-    if (_pointList.length <= 1) {
-      return [..._pointList];
-    }
-    List<Offset> list = [];
-
-    for (int i = 0; i < _pointList.length - 1; i++) {
-      Offset cur = _pointList[i];
-      Offset next = _pointList[i + 1];
-      list.add(cur);
-      list.add(Offset(next.dx, cur.dy));
-    }
-    list.add(_pointList[_pointList.length - 1]);
-    return list;
-  }
-
-  ///返回其 step图形样式(before)坐标点
-  List<Offset> stepBefore() {
-    if (_pointList.length <= 1) {
-      return [..._pointList];
-    }
-    int n = _pointList.length - 1;
-    List<Offset> list = [];
-    for (int i = 0; i < n; i++) {
-      Offset cur = _pointList[i];
-      Offset next = _pointList[i + 1];
-      list.add(cur);
-      list.add(Offset(cur.dx, next.dy));
-    }
-    list.add(_pointList[n]);
-    return list;
-  }
-
   ///返回平滑曲线路径(返回的路径是未封闭的)
   Path _smooth() {
     Path path = Path();
@@ -140,7 +84,6 @@ class Line extends Shape {
       Offset(end.dx - dx * v, end.dy),
     ];
   }
-
 
   @override
   bool contains(Offset offset) {
@@ -194,5 +137,57 @@ class Line extends Shape {
     _pointList.clear();
     _path = null;
     super.dispose();
+  }
+
+  /// 返回其 step图形样式坐标点
+  static List<Offset> step(List<Offset> points, [double ratio = 0.5]) {
+    if (points.length <= 1) {
+      return [...points];
+    }
+    List<Offset> list = [];
+    for (int i = 0; i < points.length - 1; i++) {
+      Offset cur = points[i];
+      Offset next = points[i + 1];
+      list.add(cur);
+      double x = (cur.dx + next.dx) * ratio;
+      list.add(Offset(x, cur.dy));
+      list.add(Offset(x, next.dy));
+    }
+    list.add(points[points.length - 1]);
+    return list;
+  }
+
+  /// 返回其 step图形样式(after)坐标点
+  static List<Offset> stepAfter(List<Offset> points) {
+    if (points.length <= 1) {
+      return [...points];
+    }
+    List<Offset> list = [];
+
+    for (int i = 0; i < points.length - 1; i++) {
+      Offset cur = points[i];
+      Offset next = points[i + 1];
+      list.add(cur);
+      list.add(Offset(next.dx, cur.dy));
+    }
+    list.add(points[points.length - 1]);
+    return list;
+  }
+
+  ///返回其 step图形样式(before)坐标点
+  static List<Offset> stepBefore(List<Offset> points) {
+    if (points.length <= 1) {
+      return [...points];
+    }
+    int n = points.length - 1;
+    List<Offset> list = [];
+    for (int i = 0; i < n; i++) {
+      Offset cur = points[i];
+      Offset next = points[i + 1];
+      list.add(cur);
+      list.add(Offset(cur.dx, next.dy));
+    }
+    list.add(points[n]);
+    return list;
   }
 }

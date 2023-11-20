@@ -1,6 +1,6 @@
 export 'base_util.dart';
 export 'align_util.dart';
-export 'assert_check.dart';
+export 'check.dart';
 export 'color_util.dart';
 export 'diff.dart' hide TweenWrap;
 export 'js_util.dart';

@@ -13,5 +13,7 @@ class LineGroupData extends StackGroupData<StackItemData, LineGroupData> {
     super.barMaxSize,
     super.barMinSize,
     super.barSize,
+    super.name,
+    super.styleIndex,
   });
 }

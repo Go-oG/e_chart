@@ -60,8 +60,9 @@ abstract class ChartListSeries<T extends RenderData> extends ChartSeries {
     if (fun != null) {
       return fun.call(data);
     }
-    if (labelStyle != null) {
-      return labelStyle!;
+    var ls=labelStyle;
+    if (ls != null) {
+      return ls;
     }
     var theme = context.option.theme;
     return theme.getLabelStyle() ?? LabelStyle.empty;

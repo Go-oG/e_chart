@@ -65,6 +65,11 @@ class PieSeries extends RectSeries2<PieData> {
     super.clip,
     super.backgroundColor,
     super.id,
+    super.labelFormatFun,
+    super.labelLineStyleFun,
+    super.labelStyle,
+    super.name,
+    super.useSingleLayer,
   }) : super(gridIndex: -1, parallelIndex: -1, radarIndex: -1, polarIndex: -1);
 
   @override

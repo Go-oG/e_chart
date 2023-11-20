@@ -35,7 +35,8 @@ class LineStyle {
 
   @override
   int get hashCode {
-    return Object.hashAll([color, width, cap, join, Object.hashAll(dash), Object.hashAll(shadow), shader, smooth, align]);
+    return Object.hashAll(
+        [color, width, cap, join, Object.hashAll(dash), Object.hashAll(shadow), shader, smooth, align]);
   }
 
   @override
@@ -375,11 +376,22 @@ class LineStyle {
     );
   }
 
-  Path buildPath(List<Offset> points) {
+  Path buildPath(List<Offset> points, {LineType? lineType}) {
     if (points.length < 2) {
       throw ChartError('points length must >2');
     }
-    return Line(points, smooth: smooth, dashList: dash).toPath();
+    bool hasStep = false;
+    if (lineType != null && lineType != LineType.line) {
+      hasStep = true;
+      if (lineType == LineType.before) {
+        points = Line.stepBefore(points);
+      } else if (lineType == LineType.after) {
+        points = Line.stepAfter(points);
+      } else {
+        points = Line.step(points);
+      }
+    }
+    return Line(points, smooth: hasStep ? 0 : smooth, dashList: dash).toPath();
   }
 
   bool get notDraw => width <= 0;

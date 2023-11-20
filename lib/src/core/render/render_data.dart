@@ -44,7 +44,6 @@ abstract class RenderData<P> extends Disposable with StateProvider, ExtProps {
       this.id = id;
     }
     this.label.text = name ?? DynamicText.empty;
-
     _dataStateChangeEvent = DataStatusChangeEvent(this, status);
   }
 
