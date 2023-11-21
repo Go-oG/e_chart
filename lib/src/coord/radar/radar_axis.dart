@@ -9,12 +9,10 @@ class RadarAxis extends BaseAxis {
     super.min,
     super.max,
     super.splitNumber,
-    super.start0,
     super.logBase,
     super.interval,
     super.maxInterval,
     super.minInterval,
-    super.timeFormatFun,
     super.timeType,
     super.axisLabel,
     super.axisLine,
@@ -23,9 +21,8 @@ class RadarAxis extends BaseAxis {
     super.axisTick,
     super.categoryCenter,
     super.inverse,
-    super.minorSplitLine,
-    super.minorTick,
     super.splitArea,
     super.splitLine,
+    super.id,
   }) : super(type: AxisType.value, categoryList: const [], timeRange: null);
 }

@@ -118,23 +118,13 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   void _drawShape(CCanvas canvas) {
-    var theme = context.option.theme.radarTheme;
+    var axisTheme = context.option.theme.valueAxisTheme;
     each(splitList, (sp, i) {
-      AreaStyle? style;
-      if (props.splitAreaStyleFun != null) {
-        style = props.splitAreaStyleFun?.call(i, i - 1);
-      } else {
-        style = theme.getSplitAreaStyle(i);
-      }
-      style?.drawPath(canvas, mPaint, sp.splitPath);
+      var style = props.splitArea.getStyle(i, splitList.length, axisTheme);
+      style.drawPath(canvas, mPaint, sp.splitPath);
 
-      LineStyle? lineStyle;
-      if (props.splitAreaStyleFun != null) {
-        lineStyle = props.splitLineStyleFun?.call(i, i - 1);
-      } else {
-        lineStyle = theme.getSplitLineStyle(i);
-      }
-      lineStyle?.drawPath(canvas, mPaint, sp.splitPath);
+      var lineStyle = props.splitLine.getStyle(i, splitList.length, axisTheme);
+      lineStyle.drawPath(canvas, mPaint, sp.splitPath);
     });
   }
 

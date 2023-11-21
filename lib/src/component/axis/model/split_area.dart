@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class SplitArea extends ChartNotifier2{
+class SplitArea extends ChartNotifier2 {
   bool show;
   int interval;
   AreaStyle? style;
@@ -13,9 +13,9 @@ class SplitArea extends ChartNotifier2{
     this.splitAreaFun,
   });
 
-  AreaStyle? getSplitAreaStyle(int index, int maxIndex, AxisTheme theme) {
-    if(!show){
-      return null;
+  AreaStyle getStyle(int index, int maxIndex, AxisTheme theme) {
+    if (!show) {
+      return AreaStyle.empty;
     }
     AreaStyle? style;
     if (splitAreaFun != null) {
@@ -27,7 +27,11 @@ class SplitArea extends ChartNotifier2{
         style = theme.getSplitAreaStyle(index);
       }
     }
-    return style;
+    return style ?? AreaStyle.empty;
   }
+
+
+
+
 
 }

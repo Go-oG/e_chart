@@ -6,41 +6,29 @@ class YAxisImpl extends XAxisImpl {
   YAxisImpl(super.direction, super.context, super.coord, super.axis, {super.axisIndex});
 
   @override
-  void doMeasure(double parentWidth, double parentHeight) {
-    double length = parentHeight;
-    double width = 0;
-    if (axis.show) {
-      var lineStyle = axis.getAxisLineStyle(0, 1, getAxisTheme());
-      width += (lineStyle?.width) ?? 0;
-      num tickLength = 0;
-      MainTick? tick = axis.getMainTick(0, 1, getAxisTheme());
-      if (tick != null && tick.show) {
-        tickLength = tick.length;
-      }
-      MinorTick? minorTick = axis.getMinorTick(0, 1, getAxisTheme());
-      if (minorTick != null && minorTick.show) {
-        tickLength = max([tickLength, minorTick.length]);
-      }
-      width += tickLength;
-      var axisLabel = axis.axisLabel;
-      if (axisLabel.show) {
-        double tmp = axisLabel.margin + axisLabel.padding + 0;
-        var maxStr = getMaxStr(Direction.vertical);
-        Size textSize = axisLabel.getLabelStyle(0, 1, getAxisTheme()).measure(maxStr, maxWidth: 100);
-        tmp += textSize.width * 0.5;
-        width += tmp;
-      }
+  void onMeasure(double parentWidth, double parentHeight) {
+    axisInfo.reset();
+    if (!axis.show) {
+      return;
     }
 
-    Rect rect = Rect.fromLTWH(0, 0, width, length);
-    axisInfo.bound = rect;
-    if (axis.position == Align2.end) {
-      axisInfo.start = rect.bottomLeft;
-      axisInfo.end = rect.topLeft;
-    } else {
-      axisInfo.start = rect.bottomRight;
-      axisInfo.end = rect.topRight;
+    var lineWidth = axis.axisLine.getLength();
+    var tickWidth = axis.axisTick.getMaxTickSize();
+
+    double width = lineWidth + tickWidth;
+    AxisLabel axisLabel = axis.axisLabel;
+    if (axisLabel.show) {
+      var labelWidth = axisLabel.margin + axisLabel.padding;
+      var maxStr = getMaxStr(Direction.vertical);
+      labelWidth += axisLabel.getStyle(0, 1, getAxisTheme()).measure(maxStr).width;
+      if (axisLabel.inside == axis.axisTick.inside) {
+        width += labelWidth;
+      } else {
+        width = max<double>([width, labelWidth + lineWidth]).toDouble();
+      }
     }
+    axisInfo.width = width;
+    axisInfo.height = parentHeight;
   }
 
   @override

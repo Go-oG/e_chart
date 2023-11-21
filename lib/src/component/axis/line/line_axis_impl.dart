@@ -9,8 +9,7 @@ import '../../../utils/index.dart';
 import '../../index.dart';
 
 class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordLayout>
-    extends BaseAxisImpl<T, P, LineAxisLayoutResult, C> {
-
+    extends BaseAxisImpl<T, P, LineAxisPainter, C> {
   LineAxisImpl(super.context, super.coord, super.axis, {super.axisIndex = 0});
 
   @override
@@ -23,7 +22,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     }
     if (old.scaleRatio != attrs.scaleRatio) {
       scale = onBuildScale(attrs, scale.domain);
-      layoutResult = onLayout(attrs, scale);
+      axisPainter = onLayout(attrs, scale);
     }
   }
 
@@ -33,62 +32,62 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     if (distance.isNaN || distance.isInfinite) {
       throw ChartError('$runtimeType 长度未知：$distance');
     }
-    return BaseAxisImpl.toScale(axis, [0, distance], dataSet, attrs.splitCount, attrs.scaleRatio);
+    return axis.toScale([0, distance], dataSet, attrs.splitCount, attrs.scaleRatio);
   }
 
   @override
-  LineAxisLayoutResult onLayout(P attrs, BaseScale<dynamic, num> scale) {
+  LineAxisPainter onLayout(P attrs, BaseScale<dynamic, num> scale) {
     num viewSize = attrs.start.distance2(attrs.end);
     final double distance = attrs.distance;
 
     ///夹角
     final angle = attrs.end.angle(attrs.start);
     final Offset end = circlePoint(distance, angle, attrs.start);
-    List<LineResult> lineResult = onBuildLineResult(scale, attrs.start, distance, angle);
-    List<TickResult> tickResult = onBuildTickResult(scale, attrs.start, distance, angle);
+    List<LinePainter> lineResult = onBuildLineResult(scale, attrs.start, distance, angle);
+    List<TickPainter> tickResult = onBuildTickResult(scale, attrs.start, distance, angle);
     List<LineSplitResult> splitResult = onBuildSplitResult(tickResult, attrs.start);
-    List<LabelResult> labelResult = onBuildLabelResult(scale, attrs.start, distance, angle);
-    return LineAxisLayoutResult(viewSize, attrs.start, end, splitResult, lineResult, tickResult, labelResult);
+    List<LabelPainter> labelResult = onBuildLabelResult(scale, attrs.start, distance, angle);
+    return LineAxisPainter(viewSize, attrs.start, end, splitResult, lineResult, tickResult, labelResult);
   }
 
-  List<LineResult> onBuildLineResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+  List<LinePainter> onBuildLineResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
     }
     final double interval = scale.tickInterval.toDouble();
-    List<LineResult> resultList = [];
+    List<LinePainter> resultList = [];
     for (int i = 0; i < tickCount - 1; i++) {
       Offset offset = center.translate(interval * i, 0);
       Offset start = offset.rotate(angle, center: center);
       Offset end = center.translate(interval * (i + 1), 0).rotate(angle, center: center);
-      resultList.add(LineResult(i, tickCount - 1, start, end));
+      resultList.add(LinePainter(i, tickCount - 1, start, end));
     }
     return resultList;
   }
 
-  List<TickResult> onBuildTickResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+  List<TickPainter> onBuildTickResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
     }
     final double interval = distance / (tickCount - 1);
-    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ??  BaseAxisImpl.tmpMinorTick;
-    final double tickOffset = (tick.inside ? -tick.length : tick.length).toDouble();
-    final double minorOffset = (tick.inside ? -minorTick.length : minorTick.length).toDouble();
+    var tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
+    var minorTick = axis.axisTick.minorTick ?? BaseAxisImpl.tmpMinorTick;
+    final double tickOffset = (axis.axisTick.inside ? -tick.length : tick.length).toDouble();
+    final double minorOffset = (axis.axisTick.inside ? -minorTick.length : minorTick.length).toDouble();
     int minorSN = minorTick.splitNumber;
     if (minorSN < 0) {
       minorSN = 0;
     }
 
-    List<TickResult> resultList = [];
+    List<TickPainter> resultList = [];
     for (int i = 0; i < tickCount; i++) {
       Offset offset = center.translate(interval * i, 0);
       Offset start = offset.rotate(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
-      int oi = i * minorSN;
-      TickResult result = TickResult(oi, i, tickCount, start, end, []);
+
+      TickPainter result = TickPainter(i, tickCount, start, end, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -102,28 +101,28 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
 
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        result.minorTickList.add(TickResult(oi + j, i, tickCount, ms, me));
+        result.minorList.add(TickPainter(i, tickCount, ms, me));
       }
     }
     return resultList;
   }
 
-  List<LabelResult> onBuildLabelResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
+  List<LabelPainter> onBuildLabelResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
     }
     final double interval = distance / (tickCount - 1);
-    MainTick tick = axis.axisTick.tick ??  BaseAxisImpl.tmpTick;
-    MinorTick minorTick = axis.minorTick?.tick ??  BaseAxisImpl.tmpMinorTick;
+    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
+    MinorTick minorTick = axis.axisTick.minorTick ?? BaseAxisImpl.tmpMinorTick;
     AxisLabel axisLabel = axis.axisLabel;
     List<DynamicText> labels = obtainLabel();
     double labelOffset = axisLabel.padding + axisLabel.margin + 0;
-    if (axisLabel.inside == tick.inside) {
+    if (axisLabel.inside == axis.axisTick.inside) {
       labelOffset += tick.length;
     }
     labelOffset *= axisLabel.inside ? -1 : 1;
-    List<LabelResult> resultList = [];
+    List<LabelPainter> resultList = [];
     for (int i = 0; i < tickCount; i++) {
       double d = i.toDouble();
       if (scale.isCategory && axis.categoryCenter) {
@@ -137,7 +136,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       Offset offset = center.translate(parenDis, 0);
       Offset textOffset = offset.translate(0, labelOffset);
       textOffset = textOffset.rotate(angle, center: center);
-      var ls = axisLabel.getLabelStyle(i, tickCount, getAxisTheme());
+      var ls = axisLabel.getStyle(i, tickCount, getAxisTheme());
       var config = TextDraw(
         text ?? DynamicText.empty,
         ls,
@@ -146,7 +145,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
         rotate: axisLabel.rotate,
       );
 
-      var result = LabelResult(i, i, tickCount, config, []);
+      var result = LabelPainter(i, i, tickCount, config, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -155,7 +154,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       }
 
       ///构建minorLabel
-      var minorLS = axisLabel.getMinorLabelStyle(i, tickCount, getAxisTheme());
+      var minorLS = axisLabel.getMinorStyle(i, tickCount, getAxisTheme());
       double minorInterval = interval / (minorCount + 1);
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         num dis = parenDis + minorInterval * j;
@@ -170,19 +169,19 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
           align: toAlignment(angle + 90, axisLabel.inside),
           rotate: axisLabel.rotate,
         );
-        result.minorLabel.add(LabelResult(i + j, i, tickCount, minorConfig));
+        result.minorLabel.add(LabelPainter(i + j, i, tickCount, minorConfig));
       }
     }
 
     return resultList;
   }
 
-  List<LineSplitResult> onBuildSplitResult(List<TickResult> tickResult, Offset center) {
+  List<LineSplitResult> onBuildSplitResult(List<TickPainter> tickResult, Offset center) {
     List<LineSplitResult> resultList = [];
     int c = tickResult.length - 1;
     for (int i = 0; i < c; i++) {
-      TickResult pre = tickResult[i];
-      TickResult next = tickResult[i + 1];
+      TickPainter pre = tickResult[i];
+      TickPainter next = tickResult[i + 1];
       LineSplitResult result = LineSplitResult(pre.index, pre.maxIndex - 1, center, pre.start, next.start);
       resultList.add(result);
     }
@@ -215,36 +214,17 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   @override
   void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {
     AxisTheme theme = getAxisTheme();
-    int c = layoutResult.split.length;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
-    each(layoutResult.line, (line, i) {
-      LineStyle? style = axis.getAxisLineStyle(i, c, theme);
-      style?.drawPolygon(canvas, paint, [line.start, line.end]);
-    });
+    axisPainter.drawLine(canvas, paint, axis.axisLine.getStyle(theme));
     canvas.restore();
   }
 
   @override
   void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {
-    var theme = getAxisTheme();
-    int maxCount = layoutResult.tick.length;
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
-    each(layoutResult.tick, (line, i) {
-      MainTick? tick = axis.getMainTick(i, maxCount, theme);
-      bool b1 = (tick != null && tick.show);
-      var minorTick = axis.getMinorTick(i, maxCount, theme);
-      bool b2 = (minorTick != null && minorTick.show);
-      if (b1) {
-        tick.lineStyle.drawPolygon(canvas, paint, [line.start, line.end]);
-      }
-      if (b2) {
-        each(line.minorTickList, (at, p2) {
-          minorTick.lineStyle.drawPolygon(canvas, paint, [at.start, at.end]);
-        });
-      }
-    });
+    axisPainter.drawTick(canvas, paint, axis.axisTick.tick, axis.axisTick.minorTick);
     canvas.restore();
   }
 
@@ -252,14 +232,7 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
     canvas.save();
     canvas.translate(scroll.dx, scroll.dy);
-    each(layoutResult.label, (label, i) {
-      label.textConfig.draw(canvas, paint);
-      if (label.minorLabel.isNotEmpty && label.minorLabel.first.textConfig.style.show) {
-        each(label.minorLabel, (minor, p1) {
-          minor.textConfig.draw(canvas, paint);
-        });
-      }
-    });
+    axisPainter.drawLabel(canvas, paint, axis.axisLabel.interval);
     canvas.restore();
   }
 

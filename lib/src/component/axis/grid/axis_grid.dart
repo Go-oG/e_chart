@@ -4,16 +4,18 @@ import 'package:e_chart/e_chart.dart';
 class GridAxis extends BaseAxis {
   Align2 position;
   double offset;
+  bool alignStart;
 
-  GridAxis({this.position = Align2.end,
+  GridAxis({
+    this.position = Align2.end,
     this.offset = 8,
+    this.alignStart = true,
     super.alignTicks,
     super.show,
     super.type,
     super.min,
     super.max,
     super.splitNumber,
-    super.start0,
     super.logBase,
     super.interval,
     super.maxInterval,
@@ -23,15 +25,13 @@ class GridAxis extends BaseAxis {
     super.categoryCenter,
     super.timeRange,
     super.timeType,
-    super.timeFormatFun,
     super.axisName,
     super.axisLine,
     super.axisLabel,
     super.splitLine,
-    super.minorSplitLine,
     super.splitArea,
     super.axisTick,
-    super.minorTick,
     super.axisPointer,
+    super.id,
   });
 }

@@ -2,7 +2,6 @@ import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import 'axis/grid_axis_impl.dart';
 
 ///实现二维坐标系
 class GridCoordImpl extends GridCoord {
@@ -69,10 +68,10 @@ class GridCoordImpl extends GridCoord {
     }
 
     xMap.forEach((key, value) {
-      value.doMeasure(pw, ph);
+      value.onMeasure(pw, ph);
     });
     yMap.forEach((key, value) {
-      value.doMeasure(pw, ph);
+      value.onMeasure(pw, ph);
     });
     return Size(pw, ph);
   }
@@ -193,7 +192,7 @@ class GridCoordImpl extends GridCoord {
     double topOffset = contentBox.top;
     each(topList, (value, i) {
       var axisInfo = value.axisInfo;
-      var h = axisInfo.bound.height;
+      var h = axisInfo.height;
       var rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
       var attrs =
           LineAxisAttrs(scaleX, viewPort.scrollX, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
@@ -207,7 +206,7 @@ class GridCoordImpl extends GridCoord {
     double bottomOffset = contentBox.bottom;
     each(bottomList, (value, i) {
       var axisInfo = value.axisInfo;
-      var h = axisInfo.bound.height;
+      var h = axisInfo.height;
       var rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
       var attrs = LineAxisAttrs(scaleX, viewPort.scrollX, rect, rect.topLeft, rect.topRight, splitCount: splitCount);
       bottomOffset += (h + value.axis.offset);
@@ -251,7 +250,7 @@ class GridCoordImpl extends GridCoord {
       if (i != 0) {
         rightOffset -= value.axis.offset;
       }
-      double w = value.axisInfo.bound.width;
+      double w = value.axisInfo.width;
       var rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
       var attrs =
           LineAxisAttrs(scaleY, viewPort.scrollY, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
@@ -277,7 +276,7 @@ class GridCoordImpl extends GridCoord {
       if (i != 0) {
         leftOffset += value.axis.offset;
       }
-      double w = value.axisInfo.bound.width;
+      double w = value.axisInfo.width;
       var rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
       var attrs = LineAxisAttrs(scaleY, viewPort.scrollY, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
       leftOffset += w;
@@ -592,9 +591,9 @@ class GridCoordImpl extends GridCoord {
     double size = 0;
     each(axisList, (axis, i) {
       if (computeWidth) {
-        size += axis.axisInfo.bound.width;
+        size += axis.axisInfo.width;
       } else {
-        size += axis.axisInfo.bound.height;
+        size += axis.axisInfo.height;
       }
       if (i != 0) {
         size += axis.axis.offset;

@@ -3,28 +3,35 @@ export 'axis/angle/angle_axis.dart';
 export 'axis/angle/angle_axis_impl.dart';
 export 'axis/angle/angle_layout_result.dart';
 
-export 'axis/decor/axis_label.dart';
-export 'axis/decor/axis_line.dart';
-export 'axis/decor/axis_minor_tick.dart';
-export 'axis/decor/axis_name.dart';
-export 'axis/decor/axis_pointer.dart';
-export 'axis/decor/axis_symbol.dart';
-export 'axis/decor/axis_tick.dart';
-export 'axis/decor/minor_split_line.dart';
-export 'axis/decor/split_area.dart';
-export 'axis/decor/split_line.dart';
+export 'axis/grid/axis_grid.dart';
+export 'axis/grid/axis_info.dart';
+export 'axis/grid/axis_x.dart';
+export 'axis/grid/axis_y.dart';
+export 'axis/grid/grid_axis_impl.dart';
+export 'axis/grid/x_axis_impl.dart';
+export 'axis/grid/y_axis_impl.dart';
 
 export 'axis/line/line_attrs.dart';
 export 'axis/line/line_axis_impl.dart';
-export 'axis/line/line_layout_result.dart';
+export 'axis/line/line_axis_painter.dart';
 export 'axis/line/line_split_area.dart';
 
-export 'axis/model/axis_layout_result.dart';
-export 'axis/model/axis_tile_node.dart';
-export 'axis/model/label_result.dart';
-export 'axis/model/tick_result.dart';
-export 'axis/model/line_result.dart';
+export 'axis/model/painter/axis_painter.dart';
+export 'axis/model/painter/axis_tile_painter.dart';
+export 'axis/model/painter/label_painter.dart';
+export 'axis/model/painter/line_painter.dart';
+export 'axis/model/painter/tick_painter.dart';
+export 'axis/model/axis_label.dart';
+export 'axis/model/axis_line.dart';
+export 'axis/model/axis_name.dart';
+
+export 'axis/model/axis_pointer.dart';
+export 'axis/model/axis_symbol.dart';
+export 'axis/model/axis_tick.dart';
 export 'axis/model/axis_type.dart';
+export 'axis/model/split_area.dart';
+export 'axis/model/split_line.dart';
+
 
 export 'axis/radius/radius_attrs.dart';
 export 'axis/radius/radius_axis.dart';

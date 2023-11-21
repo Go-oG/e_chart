@@ -45,8 +45,8 @@ class PolarCoordImpl extends PolarCoord {
     double size = m.min(parentWidth, parentHeight);
     measureSize = Size(parentWidth, parentHeight);
     size = props.radius.last.convert(size) * 2;
-    angleAxis.doMeasure(size, size);
-    radiusAxis.doMeasure(size, size);
+    angleAxis.onMeasure(size, size);
+    radiusAxis.onMeasure(size, size);
     return Size.square(size);
   }
 

@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class AngleAxisLayoutResult extends AxisLayoutResult {
+class AngleAxisLayoutResult extends AxisPainter {
   final Arc arc;
   final List<Arc> splitList;
 

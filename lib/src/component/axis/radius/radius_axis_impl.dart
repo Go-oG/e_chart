@@ -9,9 +9,9 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
   @override
   void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
-    each(layoutResult.split, (split, i) {
-      LineStyle? style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
-      if (style == null) {
+    each(axisPainter.split, (split, i) {
+      var style = axis.splitLine.getStyle(split.index, split.maxIndex, theme);
+      if (style.notDraw) {
         return;
       }
       style.drawArc(canvas, paint, split.start.distance2(attrs.center), attrs.offsetAngle, 360, attrs.center);
@@ -21,12 +21,12 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
   @override
   void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
     var theme = getAxisTheme();
-    each(layoutResult.split, (split, i) {
-      AreaStyle? style = axis.getSplitAreaStyle(split.index, split.maxIndex, theme);
-      if (style == null) {
+    each(axisPainter.split, (split, i) {
+      var style = axis.splitArea.getStyle(split.index, split.maxIndex, theme);
+      if (style.notDraw) {
         return;
       }
-      Arc arc = Arc(
+      var arc = Arc(
         innerRadius: split.start.distance2(split.center),
         outRadius: split.end.distance2(split.center),
         startAngle: attrs.offsetAngle,
