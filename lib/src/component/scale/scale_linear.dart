@@ -4,11 +4,10 @@ class LinearScale extends BaseScale<num, num> {
   final num step;
 
   ///表示域的范围
-  LinearScale(
-    super.domain,
-    super.range, {
-    required this.step,
-  }) {
+  LinearScale(super.domain,
+      super.range, {
+        required this.step,
+      }) {
     if (domain.length < 2) {
       throw ChartError('LinearScale Domain必须大于等于2');
     }
@@ -92,4 +91,10 @@ class LinearScale extends BaseScale<num, num> {
     }
     return tl;
   }
+
+  @override
+  bool get hasZero {
+    return (domain[0] <= 0 && domain[1] >= 0) || (domain[0] >= 0 && domain[1] <= 0);
+  }
+
 }

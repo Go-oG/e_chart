@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 class TickPainter extends Disposable {
+  final dynamic data;
   final int index;
   final int maxIndex;
   final Offset start;
@@ -10,7 +11,7 @@ class TickPainter extends Disposable {
 
   List<TickPainter> minorList;
 
-  TickPainter(this.index, this.maxIndex, this.start, this.end, [this.minorList = const []]);
+  TickPainter(this.data, this.index, this.maxIndex, this.start, this.end, [this.minorList = const []]);
 
   @override
   void dispose() {
@@ -20,8 +21,4 @@ class TickPainter extends Disposable {
     });
     minorList = [];
   }
-
-
-
-
 }

@@ -1,44 +1,21 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/axis/grid/grid_attrs.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, GridCoord> {
+abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
   final Direction direction;
 
-  BaseGridAxisImpl(this.direction, super.context, super.coord, super.axis, {super.axisIndex});
+  BaseGridAxisImpl(this.direction, super.context, super.axis, super.attrs);
 
   ///表示轴的大小
   final AxisInfo axisInfo = AxisInfo(Offset.zero, Offset.zero);
-
-  DynamicText getMaxStr(Direction direction) {
-    DynamicText maxStr = DynamicText.empty;
-    Size size = Size.zero;
-    bool isXAxis = direction == Direction.horizontal;
-    for (var ele in coord.getGridChildList()) {
-      DynamicText text = ele.getAxisMaxText(axisIndex, isXAxis);
-      if ((maxStr.isString || maxStr.isTextSpan) && (text.isString || text.isTextSpan)) {
-        if (text.length > maxStr.length) {
-          maxStr = text;
-        }
-      } else {
-        if (size == Size.zero) {
-          size = maxStr.getTextSize();
-        }
-        Size size2 = text.getTextSize();
-        if ((size2.height > size.height && isXAxis) || (!isXAxis && size2.width > size.width)) {
-          maxStr = text;
-          size = size2;
-        }
-      }
-    }
-    return maxStr;
-  }
 
   void onScrollChange(double scroll) {
     axisPainter = onLayout(attrs, scale);
   }
 
   @override
-  LineAxisPainter onLayout(LineAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+  LineAxisPainter onLayout(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     axisInfo.start = attrs.start;
     axisInfo.end = attrs.end;
     return super.onLayout(attrs, scale);
@@ -78,12 +55,11 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
     List<TickPainter> resultList = [];
     for (int i = indexList[0]; i < indexList[1]; i++) {
-      double t = i.toDouble();
-      final Offset offset = center.translate(interval * t, 0);
+      double dis = i * interval;
+      final Offset offset = center.translate(dis, 0);
       Offset start = offset.rotate(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
-
-      TickPainter result = TickPainter(i, tickCount, start, end, []);
+      TickPainter result = TickPainter(scale.toData(dis), i, tickCount, start, end, []);
       resultList.add(result);
       int minorCount = minorTick.splitNumber;
       if (minorCount <= 0) {
@@ -91,12 +67,12 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       }
       double minorInterval = interval / (minorCount + 1);
       for (int j = 1; j <= minorTick.splitNumber; j++) {
+        var dis2 = minorInterval * j + dis;
         Offset ms = offset.translate(minorInterval * j, 0);
         Offset me = ms.translate(0, minorOffset);
-
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        result.minorList.add(TickPainter(i, tickCount, ms, me));
+        result.minorList.add(TickPainter(scale.toData(dis2), i, tickCount, ms, me));
       }
     }
     return resultList;
@@ -187,17 +163,18 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
     var splitArea = axis.splitArea;
     if (!splitArea.show) {
       return;
     }
 
     AxisTheme theme = getAxisTheme();
-    var box = coord.contentBox;
+    var box = attrs.contentBox;
+    final left = attrs.scrollX.abs() + box.left;
     canvas.save();
-    canvas.translate(scroll.dx, scroll.dy);
-    canvas.clipRect(getClipRect(scroll));
+    canvas.translate(attrs.scrollX, attrs.scrollY);
+    canvas.clipRect(getSplitClipRect());
     each(axisPainter.split, (split, p1) {
       var style = splitArea.getStyle(split.index, split.maxIndex, theme);
       if (style.notDraw) {
@@ -208,7 +185,6 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
         rect = Rect.fromLTRB(split.start.dx, box.top, split.end.dx, box.bottom);
       } else {
         var dis = split.start.distance2(split.end);
-        double left = scroll.dx.abs() + box.left;
         rect = Rect.fromLTWH(left, split.start.dy, box.width, dis);
       }
       style.drawRect(canvas, paint, rect);
@@ -217,14 +193,14 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
       return;
     }
     bool vertical = direction != Direction.vertical;
-    double w = coord.contentBox.width;
-    double h = coord.contentBox.height;
+    double w = attrs.contentBox.width;
+    double h = attrs.contentBox.height;
     AxisTheme theme = getAxisTheme();
     int dir;
     if (vertical) {
@@ -234,8 +210,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     }
 
     canvas.save();
-    canvas.translate(scroll.dx, scroll.dy);
-    canvas.clipRect(getClipRect(scroll));
+    canvas.translate(attrs.scrollX, attrs.scrollY);
+    canvas.clipRect(getSplitClipRect());
     each(axisPainter.split, (split, p1) {
       int interval = splitLine.interval;
       if (interval > 0) {
@@ -244,7 +220,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       if (interval > 0 && split.index % interval != 0) {
         return;
       }
-      var style = axis.splitLine.getStyle(split.index, split.maxIndex, theme);
+      var style = axis.splitLine.getStyle(split.data, split.index, split.maxIndex, theme);
       if (style.notDraw) {
         return;
       }
@@ -260,40 +236,43 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   }
 
   @override
-  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLine(CCanvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return;
     }
     final double diff = axisLine.width / 2;
     canvas.save();
-    if (direction == Direction.horizontal) {
+    if (isXAxis) {
       int dir = axis.position == Align2.start ? -1 : 1;
-      canvas.translate(scroll.dx, diff * dir);
+      canvas.translate(attrs.scrollX, diff * dir);
     } else {
       int dir = axis.position == Align2.end ? 1 : -1;
-      canvas.translate(diff * dir, scroll.dy);
+      canvas.translate(diff * dir, attrs.scrollY);
     }
-    canvas.clipRect(getAxisClipRect(scroll));
+    canvas.clipRect(getAxisClipRect());
     axisPainter.drawLine(canvas, paint, axisLine.getStyle(getAxisTheme()));
     canvas.restore();
   }
 
   @override
-  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {
-    canvas.save();
-    if (direction == Direction.horizontal) {
-      canvas.translate(scroll.dx, 0);
-    } else {
-      canvas.translate(0, scroll.dy);
+  void onDrawAxisTick(CCanvas canvas, Paint paint) {
+    if (!axis.axisTick.show) {
+      return;
     }
-    canvas.clipRect(getAxisClipRect(scroll));
+    canvas.save();
+    if (isXAxis) {
+      canvas.translate(attrs.scrollX, 0);
+    } else {
+      canvas.translate(0, attrs.scrollY);
+    }
+    canvas.clipRect(getAxisClipRect());
     axisPainter.drawTick(canvas, paint, axis.axisTick.tick, axis.axisTick.minorTick);
     canvas.restore();
   }
 
   @override
-  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLabel(CCanvas canvas, Paint paint) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
       return;
@@ -301,36 +280,12 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
     canvas.save();
     if (direction == Direction.horizontal) {
-      canvas.translate(scroll.dx, 0);
+      canvas.translate(attrs.scrollX, 0);
     } else {
-      canvas.translate(0, scroll.dy);
+      canvas.translate(0, attrs.scrollY);
     }
 
-    Rect clipRect = getAxisClipRect(scroll);
-    if (direction == Direction.horizontal) {
-      //X 轴
-      double left = coord.getLeftFirstAxisWidth() * 0.5;
-      if (left <= 0) {
-        left = 10;
-      }
-      double right = coord.getRightFirstAxisWidth() * 0.5;
-      if (right <= 0) {
-        right = 10;
-      }
-      clipRect = Rect.fromLTRB(clipRect.left - left, clipRect.top, clipRect.right + right, clipRect.bottom);
-    } else {
-      double top = coord.getTopFirstAxisHeight() * 0.5;
-      if (top <= 0) {
-        top = 10;
-      }
-      double bottom = coord.getBottomFirstAxisHeight() * 0.5;
-      if (bottom <= 0) {
-        bottom = 10;
-      }
-      clipRect = Rect.fromLTRB(clipRect.left, clipRect.top - top, clipRect.right, clipRect.bottom + bottom);
-    }
-    canvas.clipRect(clipRect);
-
+    canvas.clipRect(getAxisClipRect());
     int interval = axisLabel.interval;
     if (interval > 0) {
       interval += 1;
@@ -342,22 +297,21 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
   final TextDraw _axisPointerTD = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
 
   @override
-  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset touchOffset) {
     var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;
     }
     final bool vertical = direction == Direction.horizontal;
-    Rect rect = coord.contentBox;
-    Offset scroll = coord.translation;
-    final pointerDis = computeAxisPointerDis(axisPointer, offset);
+    Rect rect = attrs.contentBox;
+    final pointerDis = computeAxisPointerDis(axisPointer, touchOffset);
     final double paintOffset = axisPointer.lineStyle.width * 0.5;
 
     canvas.save();
     if (vertical) {
-      canvas.translate(scroll.dx, 0);
+      canvas.translate(attrs.scrollX, 0);
     } else {
-      canvas.translate(0, scroll.dy);
+      canvas.translate(0, attrs.scrollY);
     }
 
     List<Offset> ol = [];
@@ -400,9 +354,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
 
   ///计算AxisPointer的距离
   double computeAxisPointerDis(AxisPointer axisPointer, Offset offset) {
-    Offset scroll = coord.translation;
-    offset = offset.translate(-scroll.dx, -scroll.dy);
-
+    offset = offset.translate(-attrs.scrollX, -attrs.scrollY);
     bool vertical = direction == Direction.horizontal;
     double dis = vertical ? (offset.dx - attrs.start.dx).abs() : (offset.dy - attrs.start.dy).abs();
     bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
@@ -428,45 +380,42 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
     return dis;
   }
 
-  Rect getClipRect(Offset scroll) {
-    var box = coord.contentBox;
-    return Rect.fromLTWH(scroll.dx.abs() + box.left, box.top - scroll.dy, box.width, box.height);
+  ///获取分割区域的裁剪范围
+  Rect getSplitClipRect() {
+    var box = attrs.contentBox;
+    return Rect.fromLTWH(attrs.scrollX.abs() + box.left, box.top - attrs.scrollY, box.width, box.height);
   }
 
-  Rect getAxisClipRect(Offset scroll) {
-    var box = coord.contentBox;
-
-    if (direction == Direction.horizontal) {
+  ///获取坐标轴裁剪范围
+  Rect getAxisClipRect() {
+    var box = attrs.contentBox;
+    if (isXAxis) {
       //X轴
-      double left = scroll.dx.abs() + box.left;
-      var offset = coord.getAxisLayoutOffset(true);
-      left -= offset[0];
-      var w = box.width + offset[0] + offset[1];
+      double left = attrs.scrollX.abs() + box.left;
+      var w = box.width;
       if (axis.position == Align2.start) {
         return Rect.fromLTRB(left, -attrs.rect.height, left + w, box.top + attrs.rect.height);
       }
-      return Rect.fromLTRB(left, box.bottom - attrs.rect.height, left + w, coord.height);
+      return Rect.fromLTRB(left, box.bottom - attrs.rect.height, left + w, attrs.coordRect.height);
     }
     //Y轴
-    var offset = coord.getAxisLayoutOffset(false);
-    double top = box.top + scroll.dy - offset[0];
-    double h = box.height + offset[0] + offset[1];
+    double top = box.top + attrs.scrollY;
+    double h = box.height;
     if (axis.position == Align2.end) {
-      return Rect.fromLTRB(box.right - attrs.rect.width, top, coord.width + attrs.rect.width, top + h);
+      return Rect.fromLTRB(box.right - attrs.rect.width, top, attrs.coordRect.width + attrs.rect.width, top + h);
     }
     return Rect.fromLTRB(-attrs.rect.width, top, box.left + attrs.rect.width, top + h);
   }
 
   List<int> computeRangeIndex(num distance, int tickCount, num interval) {
-    Rect rect = coord.contentBox;
+    Rect rect = attrs.contentBox;
     int startIndex, endIndex;
-    if (direction == Direction.horizontal) {
-      //X 轴
+    if (isXAxis) {
       if (distance <= rect.width) {
         startIndex = 0;
         endIndex = tickCount;
       } else {
-        double scroll = coord.translationX.abs();
+        double scroll = attrs.scrollX.abs();
         startIndex = scroll ~/ interval - 2;
         if (startIndex < 0) {
           startIndex = 0;
@@ -484,7 +433,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       startIndex = 0;
       endIndex = tickCount;
     } else {
-      double scroll = coord.translationY.abs();
+      double scroll = attrs.scrollY.abs();
       startIndex = scroll ~/ interval - 2;
       if (startIndex < 0) {
         startIndex = 0;
@@ -514,14 +463,16 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, LineAxisAttrs, Gr
       return RangeInfo.time(dl as List<DateTime>);
     }
 
-    Rect rect = coord.contentBox;
+    Rect rect = attrs.contentBox;
     num viewSize = direction == Direction.horizontal ? rect.width : rect.height;
     if (distance <= viewSize) {
       RangeInfo.range(Pair<num>(scale.domain.first, scale.domain.last));
     }
-    num scroll = direction == Direction.horizontal ? coord.translationX.abs() : coord.translationY.abs();
+    num scroll = direction == Direction.horizontal ? attrs.scrollX.abs() : attrs.scrollY.abs();
     return RangeInfo.range(Pair<num>(scale.toData(scroll), scale.toData(scroll + viewSize)));
   }
 
   dynamic pxToData(num position);
+
+  bool get isXAxis => direction == Direction.horizontal;
 }

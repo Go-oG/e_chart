@@ -1,18 +1,22 @@
 import 'dart:ui';
 
+import '../../../model/data.dart';
+import '../axis_attrs.dart';
 import '../line/line_attrs.dart';
 
-class RadiusAxisAttrs extends LineAxisAttrs {
-  Offset center;
-  num offsetAngle;
+class GridAxisAttr extends LineAxisAttrs {
+  Rect coordRect;
+  Rect contentBox;
+  DynamicText maxStr;
 
-  RadiusAxisAttrs(
-    this.center,
-    this.offsetAngle,
+  GridAxisAttr(
     super.axisIndex,
     super.rect,
     super.start,
-    super.end, {
+    super.end,
+    this.coordRect,
+    this.contentBox,
+    this.maxStr, {
     super.scaleRatio,
     super.scrollX,
     super.scrollY,
@@ -20,14 +24,15 @@ class RadiusAxisAttrs extends LineAxisAttrs {
   });
 
   @override
-  RadiusAxisAttrs copy() {
-    return RadiusAxisAttrs(
-      center,
-      offsetAngle,
+  AxisAttrs copy() {
+    return GridAxisAttr(
       axisIndex,
       rect,
       start,
       end,
+      coordRect,
+      contentBox,
+      maxStr,
       scaleRatio: scaleRatio,
       scrollX: scrollX,
       scrollY: scrollY,

@@ -1,6 +1,7 @@
 import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/axis/grid/grid_attrs.dart';
 import 'package:flutter/material.dart';
 
 ///实现二维坐标系
@@ -16,10 +17,26 @@ class GridCoordImpl extends GridCoord {
     xMap.clear();
     yMap.clear();
     each(props.xAxisList, (ele, p1) {
-      xMap[ele] = XAxisImpl(Direction.horizontal, context, this, ele, axisIndex: p1);
+      var attr = GridAxisAttr(
+          p1,
+          Rect.zero,
+          Offset.zero,
+          Offset.zero,
+          Rect.zero,
+          contentBox,
+          DynamicText.empty);
+      xMap[ele] = XAxisImpl(Direction.horizontal, context, ele, attr);
     });
     each(props.yAxisList, (axis, p1) {
-      yMap[axis] = YAxisImpl(Direction.vertical, context, this, axis, axisIndex: p1);
+      var attr = GridAxisAttr(
+          p1,
+          Rect.zero,
+          Offset.zero,
+          Offset.zero,
+          Rect.zero,
+          contentBox,
+          DynamicText.empty);
+      yMap[axis] = YAxisImpl(Direction.vertical, context, axis, attr);
     });
   }
 
@@ -38,9 +55,17 @@ class GridCoordImpl extends GridCoord {
 
   @override
   Size onMeasure(double parentWidth, double parentHeight) {
+    ///赋值MaxStr
+    xMap.forEach((key, value) {
+      value.attrs.maxStr = getMaxStr(value.direction, value.attrs.axisIndex);
+    });
+    yMap.forEach((key, value) {
+      value.attrs.maxStr = getMaxStr(value.direction, value.attrs.axisIndex);
+    });
+
     var lp = layoutParams;
-    double pw = lp.width.convert(parentWidth - padding.horizontal),
-        ph = lp.height.convert(parentHeight - padding.vertical);
+    double pw = lp.width.convert(parentWidth - padding.horizontal);
+    double ph = lp.height.convert(parentHeight - padding.vertical);
     double maxW = 0;
     double maxH = 0;
     for (var child in children) {
@@ -194,10 +219,18 @@ class GridCoordImpl extends GridCoord {
       var axisInfo = value.axisInfo;
       var h = axisInfo.height;
       var rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
-      var attrs =
-          LineAxisAttrs(scaleX, viewPort.scrollX, rect, rect.bottomLeft, rect.bottomRight, splitCount: splitCount);
+      var attrs = value.attrs.copy() as GridAxisAttr;
+      attrs.scrollX = viewPort.scrollX;
+      attrs.splitCount = splitCount;
+      attrs.start = rect.bottomLeft;
+      attrs.end = rect.bottomRight;
+      attrs.rect = rect;
+      attrs.contentBox = contentBox;
+      attrs.coordRect = selfBoxBound;
+
       topOffset -= (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
+
       if (needAlignTick && i == 0) {
         splitCount = value.scale.tickCount - 1;
       }
@@ -208,7 +241,17 @@ class GridCoordImpl extends GridCoord {
       var axisInfo = value.axisInfo;
       var h = axisInfo.height;
       var rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
-      var attrs = LineAxisAttrs(scaleX, viewPort.scrollX, rect, rect.topLeft, rect.topRight, splitCount: splitCount);
+      var attrs = value.attrs.copy() as GridAxisAttr;
+      attrs.scaleRatio = scaleX;
+      attrs.scrollY = viewPort.scrollY;
+      attrs.scrollX = viewPort.scrollX;
+      attrs.splitCount = splitCount;
+      attrs.start = rect.topLeft;
+      attrs.end = rect.topRight;
+      attrs.rect = rect;
+      attrs.contentBox = contentBox;
+      attrs.coordRect = selfBoxBound;
+
       bottomOffset += (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
       if (needAlignTick && splitCount == null && i == 0) {
@@ -252,13 +295,22 @@ class GridCoordImpl extends GridCoord {
       }
       double w = value.axisInfo.width;
       var rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
-      var attrs =
-          LineAxisAttrs(scaleY, viewPort.scrollY, rect, rect.bottomRight, rect.topRight, splitCount: splitCount);
+
+      var attrs = value.attrs.copy() as GridAxisAttr;
+      attrs.scaleRatio = scaleY;
+      attrs.scrollY = viewPort.scrollY;
+      attrs.scrollX = viewPort.scrollX;
+      attrs.splitCount = splitCount;
+      attrs.start = rect.bottomRight;
+      attrs.end = rect.topRight;
+      attrs.rect = rect;
+      attrs.contentBox = contentBox;
+      attrs.coordRect = selfBoxBound;
+
       rightOffset -= w;
       if (!force && useViewPortExtreme && dl.length >= 2 && value.scale.isNum) {
         dl.sort();
-        if (value.scale.domain.first == dl.first && value.scale.domain.last == dl.last) {
-        } else {
+        if (value.scale.domain.first == dl.first && value.scale.domain.last == dl.last) {} else {
           value.doLayout(attrs, dl);
         }
       } else {
@@ -278,7 +330,17 @@ class GridCoordImpl extends GridCoord {
       }
       double w = value.axisInfo.width;
       var rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
-      var attrs = LineAxisAttrs(scaleY, viewPort.scrollY, rect, rect.bottomLeft, rect.topLeft, splitCount: splitCount);
+      var attrs = value.attrs.copy() as GridAxisAttr;
+      attrs.scaleRatio = scaleY;
+      attrs.scrollY = viewPort.scrollY;
+      attrs.scrollX = viewPort.scrollX;
+      attrs.splitCount = splitCount;
+      attrs.start = rect.bottomLeft;
+      attrs.end = rect.topLeft;
+      attrs.rect = rect;
+      attrs.contentBox = contentBox;
+      attrs.coordRect = selfBoxBound;
+
       leftOffset += w;
       value.doLayout(attrs, dl);
       if (needAlignTick && splitCount == null && i == 0) {
@@ -314,10 +376,10 @@ class GridCoordImpl extends GridCoord {
   @override
   void onDraw(CCanvas canvas) {
     xMap.forEach((key, value) {
-      value.draw(canvas, mPaint, contentBox);
+      value.draw(canvas, mPaint);
     });
     yMap.forEach((key, value) {
-      value.draw(canvas, mPaint, contentBox);
+      value.draw(canvas, mPaint);
     });
   }
 
@@ -351,14 +413,14 @@ class GridCoordImpl extends GridCoord {
     if ((sc.dx - old.dx).abs() > 1e-6) {
       hasChange = true;
       xMap.forEach((key, value) {
-        value.attrs.scroll = sc.dx;
+        value.attrs.scrollX = sc.dx;
         value.onScrollChange(sc.dx);
       });
     }
     if ((sc.dy - old.dy).abs() > 1e-6) {
       hasChange = true;
       yMap.forEach((key, value) {
-        value.attrs.scroll = sc.dy;
+        value.attrs.scrollY = sc.dy;
         value.onScrollChange(sc.dy);
       });
     }
@@ -390,7 +452,9 @@ class GridCoordImpl extends GridCoord {
       hasChange = true;
       scaleX = sx;
       xMap.forEach((key, value) {
-        value.onAttrsChange(value.attrs.copyWith(scaleRatio: scaleX));
+        var old = value.attrs.copy();
+        value.attrs.scaleRatio = scaleX;
+        value.onAttrsChange(old as GridAxisAttr);
       });
     }
     var sy = scaleY + scale * m.sin(rotation);
@@ -404,13 +468,14 @@ class GridCoordImpl extends GridCoord {
       hasChange = true;
       scaleY = sy;
       yMap.forEach((key, value) {
-        value.onAttrsChange(value.attrs.copyWith(scaleRatio: sy));
+        var old = value.attrs.copy();
+        value.attrs.scaleRatio = sy;
+        value.onAttrsChange(old as GridAxisAttr);
       });
     }
     if (hasChange) {
       ///TODO 缩放更新
       // context.dispatchEvent(AxisChangeEvent(this, [], null));
-
       requestDraw();
     }
   }
@@ -826,4 +891,28 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   @override
   double get translationY => viewPort.scrollY;
+
+  DynamicText getMaxStr(Direction direction, int axisIndex) {
+    DynamicText maxStr = DynamicText.empty;
+    Size size = Size.zero;
+    bool isXAxis = direction == Direction.horizontal;
+    for (var ele in getGridChildList()) {
+      DynamicText text = ele.getAxisMaxText(axisIndex, isXAxis);
+      if ((maxStr.isString || maxStr.isTextSpan) && (text.isString || text.isTextSpan)) {
+        if (text.length > maxStr.length) {
+          maxStr = text;
+        }
+      } else {
+        if (size == Size.zero) {
+          size = maxStr.getTextSize();
+        }
+        Size size2 = text.getTextSize();
+        if ((size2.height > size.height && isXAxis) || (!isXAxis && size2.width > size.width)) {
+          maxStr = text;
+          size = size2;
+        }
+      }
+    }
+    return maxStr;
+  }
 }

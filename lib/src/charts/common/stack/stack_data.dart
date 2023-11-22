@@ -126,7 +126,7 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   String toString() {
-    return 'value:X:${value?.domain} y:${value?.value}';
+    return 'value:X:${value?.x} y:${value?.y}';
   }
 }
 
@@ -243,48 +243,57 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
 }
 
 class StackItemData extends BaseItemData {
-  dynamic domain;
-  dynamic value;
+  dynamic x;
+  dynamic y;
 
-  StackItemData(this.domain, this.value, {super.id, super.name}) {
-    checkDataType(domain);
-    checkDataType(value);
-    if (domain is! num && value is! num) {
+  StackItemData(this.x, this.y, {super.id, super.name}) {
+    checkDataType(x);
+    checkDataType(y);
+    if (x is! num && y is! num) {
       throw ChartError('x 和 y 必须有一个是num类型的数据');
     }
-    if (domain == null || value == null) {
+    if (x == null || y == null) {
       throw ChartError("NullPointException");
+    }
+
+    if (minValue > maxValue) {
+      throw ChartError("minValue must <= maxValue");
     }
   }
 
   ///返回应该要测量的值
-  num get measureValue {
-    if (value is num && domain is num) {
-      return value;
-      // ChartError(" x 和 y都是num 请重写该方法并返回正确的值");
+  num get value {
+    if (y is num && x is num) {
+      return y;
     }
-    if (value is num) {
-      return value;
+    if (y is num) {
+      return y;
     }
-    return domain;
+    return x;
   }
 
   num get minValue {
-    return 0;
+    if (value >= 0) {
+      return 0;
+    }
+    return value;
   }
 
   num get maxValue {
-    return measureValue;
+    if (value >= 0) {
+      return value;
+    }
+    return 0;
   }
 
-  num get subValue=>maxValue-minValue;
+  num get subValue => maxValue - minValue;
 
   num get aveValue {
-    return measureValue / 2;
+    return value / 2;
   }
 
   @override
   String toString() {
-    return '$runtimeType x:$domain y:$value';
+    return '$runtimeType x:$x y:$y';
   }
 }

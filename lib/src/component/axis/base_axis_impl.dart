@@ -1,14 +1,9 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisPainter, C extends CoordLayout>
-    extends ChartNotifier2 {
+abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisPainter> extends ChartNotifier2 {
   static final tmpTick = MainTick();
   static final MinorTick tmpMinorTick = MinorTick();
-
-  final int axisIndex;
-  C? _coord;
-  C get coord => _coord!;
 
   Context? _context;
 
@@ -18,29 +13,23 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   T get axis => _axis!;
 
-  L? _attrs;
-
-  L get attrs => _attrs!;
-
-  set attrs(L l) => _attrs = l;
-
-  BaseScale? _scale;
-
-  BaseScale get scale => _scale!;
+  late L attrs;
 
   set scale(BaseScale bs) {
     _scale?.dispose();
     _scale = bs;
   }
 
-  R? _axisPainter;
-
-  R get axisPainter => _axisPainter!;
+  BaseScale get scale => _scale!;
+  BaseScale? _scale;
 
   set axisPainter(R p) {
     _axisPainter?.dispose();
     _axisPainter = p;
   }
+
+  R get axisPainter => _axisPainter!;
+  R? _axisPainter;
 
   AxisTitlePainter? _titleNode;
 
@@ -51,21 +40,21 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     _titleNode = titleNode;
   }
 
-  BaseAxisImpl(this._context, this._coord, this._axis, {this.axisIndex = 0}) {
+  int get axisIndex => attrs.axisIndex;
+
+  BaseAxisImpl(this._context, this._axis, this.attrs) {
     titleNode = AxisTitlePainter(axis.axisName);
   }
 
   @override
   void dispose() {
-    _coord = null;
     _context = null;
     _axis = null;
-    _attrs = null;
+    attrs.dispose();
     axisPainter.dispose();
     titleNode.dispose();
     scale.dispose();
     titleNode = AxisTitlePainter(null);
-
     super.dispose();
   }
 
@@ -79,8 +68,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     axisPainter = onLayout(attrs, scale);
   }
 
-  void onAttrsChange(L attrs) {
-    this.attrs = attrs;
+  void onAttrsChange(L oldAttrs) {
     List<dynamic> dl = scale.domain;
     scale = onBuildScale(attrs, dl);
     titleNode.label.dispose();
@@ -94,19 +82,18 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
 
   TextDraw onLayoutAxisName();
 
-  void draw(CCanvas canvas, Paint paint, Rect coord) {
-    Offset offset = this.coord.translation;
-    onDrawAxisSplitArea(canvas, paint, offset);
-    onDrawAxisSplitLine(canvas, paint, offset);
-    onDrawAxisTick(canvas, paint, offset);
-    onDrawAxisLine(canvas, paint, offset);
-    onDrawAxisLabel(canvas, paint, offset);
+  void draw(CCanvas canvas, Paint paint) {
+    onDrawAxisSplitArea(canvas, paint);
+    onDrawAxisSplitLine(canvas, paint);
+    onDrawAxisTick(canvas, paint);
+    onDrawAxisLine(canvas, paint);
+    onDrawAxisLabel(canvas, paint);
     onDrawAxisName(canvas, paint);
   }
 
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {}
 
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {}
 
   void onDrawAxisName(CCanvas canvas, Paint paint) {
     var name = titleNode.name?.name;
@@ -116,15 +103,14 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     titleNode.label.draw(canvas, paint);
   }
 
-  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisLine(CCanvas canvas, Paint paint) {}
 
-  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisTick(CCanvas canvas, Paint paint) {}
 
-  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisLabel(CCanvas canvas, Paint paint) {}
 
   ///绘制坐标轴指示器，该方法在[draw]之后调用
-  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {}
-
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset touchOffset) {}
 
   ///返回全部的的Label
   List<DynamicText> obtainLabel() {

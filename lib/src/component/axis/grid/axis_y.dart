@@ -10,7 +10,6 @@ class YAxis extends GridAxis {
     super.inverse,
     super.min,
     super.max,
-    super.alignStart,
     super.splitNumber,
     super.minInterval,
     super.maxInterval,

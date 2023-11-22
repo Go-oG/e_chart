@@ -413,9 +413,9 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
         dl.add(value.data.maxValue);
       } else {
         if (isXAxis) {
-          dl.add(value.data.domain);
+          dl.add(value.data.x);
         } else {
-          dl.add(value.data.value);
+          dl.add(value.data.y);
         }
       }
     });

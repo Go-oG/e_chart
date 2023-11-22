@@ -14,7 +14,8 @@ class ParallelCoordImpl extends ParallelCoord {
     var direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
-      axisMap[ele] = ParallelAxisImpl(context, this, ele, direction, axisIndex: i);
+      var attrs = ParallelAxisAttrs(i, Rect.zero, Offset.zero, Offset.zero, Size.zero, Size.zero, true);
+      axisMap[ele] = ParallelAxisImpl(context, ele, attrs, direction);
     }
   }
 
@@ -26,7 +27,9 @@ class ParallelCoordImpl extends ParallelCoord {
 
   @override
   void onDispose() {
-    axisMap.forEach((key, value) {value.dispose();});
+    axisMap.forEach((key, value) {
+      value.dispose();
+    });
     axisMap.clear();
     super.onDispose();
   }
@@ -123,14 +126,14 @@ class ParallelCoordImpl extends ParallelCoord {
     List<Size> textSize = measureAxisNameTextMaxSize(axisMap.keys, props.direction, max([interval, props.expandWidth]));
 
     for (var axis in props.axisList) {
-      var node = axisMap[axis]!;
+      var axisImpl = axisMap[axis]!;
       double tmpLeft;
       double tmpTop;
       double tmpRight;
       double tmpBottom;
       if (horizontal) {
         tmpLeft = offsetP;
-        tmpRight = tmpLeft + (node.expand ? interval : props.expandWidth);
+        tmpRight = tmpLeft + (axisImpl.expand ? interval : props.expandWidth);
         tmpTop = topOffset;
         tmpBottom = h;
         offsetP += (tmpRight - tmpLeft);
@@ -138,8 +141,8 @@ class ParallelCoordImpl extends ParallelCoord {
         tmpLeft = leftOffset;
         tmpTop = offsetP;
         tmpRight = width - rightOffset;
-        tmpBottom = tmpTop + (node.expand ? interval : props.expandWidth);
-        offsetP += (node.expand ? interval : props.expandWidth);
+        tmpBottom = tmpTop + (axisImpl.expand ? interval : props.expandWidth);
+        offsetP += (axisImpl.expand ? interval : props.expandWidth);
       }
 
       ///处理轴内部
@@ -148,7 +151,7 @@ class ParallelCoordImpl extends ParallelCoord {
       for (var ele in children) {
         if (ele is ParallelChild) {
           var child = ele as ParallelChild;
-          dataSet.addAll(child.getDimExtreme(node.axisIndex));
+          dataSet.addAll(child.getDimExtreme(axisImpl.axisIndex));
         }
       }
 
@@ -161,9 +164,13 @@ class ParallelCoordImpl extends ParallelCoord {
         end = rect.topRight.translate(-textSize[1].width, 0);
       }
 
-      var attrs =
-          ParallelAxisAttrs(1, translationX, rect, start, end, textStartSize: textSize[0], textEndSize: textSize[1]);
-      node.doLayout(attrs, dataSet);
+      var attrs = axisImpl.attrs.copy();
+      attrs.start = start;
+      attrs.end = end;
+      attrs.textStartSize = textSize[0];
+      attrs.textEndSize = textSize[1];
+      attrs.rect = rect;
+      axisImpl.doLayout(attrs, dataSet);
     }
 
     for (var ele in children) {
@@ -174,7 +181,7 @@ class ParallelCoordImpl extends ParallelCoord {
   @override
   void onDraw(CCanvas canvas) {
     for (var ele in axisMap.entries) {
-      ele.value.draw(canvas, mPaint, Rect.zero);
+      ele.value.draw(canvas, mPaint);
     }
   }
 

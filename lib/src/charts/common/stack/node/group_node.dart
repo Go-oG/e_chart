@@ -21,7 +21,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with Sta
   dynamic getXData() {
     var result = getXNodeNull();
     if (result != null) {
-      return result.data.domain;
+      return result.data.x;
     }
     throw ChartError("无法找到对应的横坐标");
   }
@@ -29,7 +29,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with Sta
   dynamic getYData() {
     var result = getYNodeNull();
     if (result != null) {
-      return result.data.value;
+      return result.data.y;
     }
     throw ChartError("无法找到对应的横坐标");
   }
@@ -37,7 +37,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with Sta
   StackData<T, P>? getXNodeNull() {
     for (var list in nodeList) {
       for (var node in list.nodeList) {
-        var x = node.dataNull?.domain;
+        var x = node.dataNull?.x;
         if (x != null) {
           return node;
         }
@@ -49,7 +49,7 @@ class GroupNode<T extends StackItemData, P extends StackGroupData<T,P>> with Sta
   StackData<T, P>? getYNodeNull() {
     for (var list in nodeList) {
       for (var node in list.nodeList) {
-        var y = node.data.value;
+        var y = node.data.y;
         if (y != null) {
           return node;
         }

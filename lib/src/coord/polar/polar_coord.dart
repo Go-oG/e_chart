@@ -5,22 +5,23 @@ import 'package:flutter/material.dart';
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
-  AngleAxisImpl<PolarCoord>? _angleAxis;
+  AngleAxisImpl? _angleAxis;
+  AngleAxisImpl get angleAxis => _angleAxis!;
 
-  AngleAxisImpl<PolarCoord> get angleAxis => _angleAxis!;
+  RadiusAxisImpl? _radiusAxis;
+  RadiusAxisImpl get radiusAxis => _radiusAxis!;
 
-  RadiusAxisImpl<PolarCoord>? _radiusAxis;
-
-  RadiusAxisImpl<PolarCoord> get radiusAxis => _radiusAxis!;
   Offset center = Offset.zero;
-
   PolarCoordImpl(super.props);
 
   @override
   void onCreate() {
     super.onCreate();
-    _angleAxis = AngleAxisImpl(context, this, props.angleAxis);
-    _radiusAxis = RadiusAxisImpl(context, this, props.radiusAxis);
+    var angleAttrs =
+        AngleAxisAttrs(1, center, props.angleAxis.offsetAngle.toDouble(), [0, 0], clockwise: props.angleAxis.clockwise);
+    _angleAxis = AngleAxisImpl(context, props.angleAxis, angleAttrs);
+    var radiusAttrs = RadiusAxisAttrs(center, 0, 0, contentBox, Offset.zero, Offset.zero);
+    _radiusAxis = RadiusAxisImpl(context, props.radiusAxis, radiusAttrs);
   }
 
   @override
@@ -59,11 +60,12 @@ class PolarCoordImpl extends PolarCoord {
     double or = width / 2;
 
     var angleAttrs = AngleAxisAttrs(
+      1,
       center,
       props.angleAxis.offsetAngle.toDouble(),
       [ir, or],
-      scaleY,
-      translationY,
+      scaleRatio: scaleY,
+      scrollY: translationY,
       clockwise: props.angleAxis.clockwise,
     );
 
@@ -73,7 +75,7 @@ class PolarCoordImpl extends PolarCoord {
     Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
     Offset eo = circlePoint(or, angle, center);
 
-    var radiusAttrs = RadiusAxisAttrs(center, angle, 1, 1, contentBox, so, eo);
+    var radiusAttrs = RadiusAxisAttrs(center, angle, 0, contentBox, so, eo);
     radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
 
     for (var c in children) {
@@ -107,8 +109,8 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   void onDraw(CCanvas canvas) {
-    angleAxis.draw(canvas, mPaint, selfBoxBound);
-    radiusAxis.draw(canvas, mPaint, selfBoxBound);
+    angleAxis.draw(canvas, mPaint);
+    radiusAxis.draw(canvas, mPaint);
   }
 
   @override

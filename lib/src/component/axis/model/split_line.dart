@@ -6,10 +6,10 @@ class SplitLine extends ChartNotifier2 {
   int interval;
 
   LineStyle? style;
-  Fun3<int, int, LineStyle>? styleFun;
+  Fun4<dynamic, int, int, LineStyle>? styleFun;
 
   LineStyle? minorStyle;
-  Fun3<int, int, LineStyle>? minorStyleFun;
+  Fun4<dynamic, int, int, LineStyle>? minorStyleFun;
 
   SplitLine({
     this.show = false,
@@ -20,13 +20,13 @@ class SplitLine extends ChartNotifier2 {
     this.minorStyleFun,
   });
 
-  LineStyle getStyle(int index, int maxIndex, AxisTheme theme) {
+  LineStyle getStyle(dynamic data, int index, int maxIndex, AxisTheme theme) {
     if (!show) {
       return LineStyle.empty;
     }
     LineStyle? style;
     if (styleFun != null) {
-      style = styleFun?.call(index, maxIndex);
+      style = styleFun?.call(data, index, maxIndex);
     } else {
       if (this.style != null) {
         style = this.style;
@@ -54,13 +54,13 @@ class SplitLine extends ChartNotifier2 {
     return false;
   }
 
-  LineStyle getMinorStyle(int index, int maxIndex, AxisTheme theme) {
+  LineStyle getMinorStyle(dynamic data, int index, int maxIndex, AxisTheme theme) {
     if (!show) {
       return LineStyle.empty;
     }
     LineStyle? style;
     if (minorStyleFun != null) {
-      style = minorStyleFun?.call(index, maxIndex);
+      style = minorStyleFun?.call(data, index, maxIndex);
     } else {
       if (minorStyle != null) {
         style = minorStyle;

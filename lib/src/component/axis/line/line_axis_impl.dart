@@ -2,25 +2,21 @@ import 'dart:math';
 import 'package:e_chart/src/ext/index.dart';
 import 'package:flutter/material.dart';
 
-import '../../../coord/coord_impl.dart';
 import '../../../core/render/ccanvas.dart';
 import '../../../model/index.dart';
 import '../../../utils/index.dart';
 import '../../index.dart';
 
-class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordLayout>
-    extends BaseAxisImpl<T, P, LineAxisPainter, C> {
-  LineAxisImpl(super.context, super.coord, super.axis, {super.axisIndex = 0});
+class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxisImpl<T, P, LineAxisPainter> {
+  LineAxisImpl(super.context, super.axis, super.attrs);
 
   @override
-  void onAttrsChange(P attrs) {
-    var old = this.attrs;
-    this.attrs = attrs;
-    if (old.rect != attrs.rect || old.start != attrs.start || old.end != attrs.end) {
+  void onAttrsChange(P oldAttrs) {
+    if (oldAttrs.rect != attrs.rect || oldAttrs.start != attrs.start || oldAttrs.end != attrs.end) {
       super.onAttrsChange(attrs);
       return;
     }
-    if (old.scaleRatio != attrs.scaleRatio) {
+    if (oldAttrs.scaleRatio != attrs.scaleRatio) {
       scale = onBuildScale(attrs, scale.domain);
       axisPainter = onLayout(attrs, scale);
     }
@@ -86,8 +82,8 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       Offset offset = center.translate(interval * i, 0);
       Offset start = offset.rotate(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
-
-      TickPainter result = TickPainter(i, tickCount, start, end, []);
+      var data = scale.toData(interval * i);
+      TickPainter result = TickPainter(data, i, tickCount, start, end, []);
       resultList.add(result);
 
       int minorCount = minorTick.splitNumber;
@@ -98,10 +94,10 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
       for (int j = 1; j <= minorTick.splitNumber; j++) {
         Offset ms = offset.translate(minorInterval * j, 0);
         Offset me = ms.translate(0, minorOffset);
-
+        var data = scale.toData(minorInterval * j + interval * i);
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        result.minorList.add(TickPainter(i, tickCount, ms, me));
+        result.minorList.add(TickPainter(data, i, tickCount, ms, me));
       }
     }
     return resultList;
@@ -180,9 +176,9 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
     List<LineSplitResult> resultList = [];
     int c = tickResult.length - 1;
     for (int i = 0; i < c; i++) {
-      TickPainter pre = tickResult[i];
-      TickPainter next = tickResult[i + 1];
-      LineSplitResult result = LineSplitResult(pre.index, pre.maxIndex - 1, center, pre.start, next.start);
+      var pre = tickResult[i];
+      var next = tickResult[i + 1];
+      var result = LineSplitResult(pre.data, pre.index, pre.maxIndex - 1, center, pre.start, next.start);
       resultList.add(result);
     }
     return resultList;
@@ -212,26 +208,26 @@ class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs, C extends CoordL
   }
 
   @override
-  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLine(CCanvas canvas, Paint paint) {
     AxisTheme theme = getAxisTheme();
     canvas.save();
-    canvas.translate(scroll.dx, scroll.dy);
+    canvas.translate(attrs.scrollX, attrs.scrollY);
     axisPainter.drawLine(canvas, paint, axis.axisLine.getStyle(theme));
     canvas.restore();
   }
 
   @override
-  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisTick(CCanvas canvas, Paint paint) {
     canvas.save();
-    canvas.translate(scroll.dx, scroll.dy);
+    canvas.translate(attrs.scrollX, attrs.scrollY);
     axisPainter.drawTick(canvas, paint, axis.axisTick.tick, axis.axisTick.minorTick);
     canvas.restore();
   }
 
   @override
-  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLabel(CCanvas canvas, Paint paint) {
     canvas.save();
-    canvas.translate(scroll.dx, scroll.dy);
+    canvas.translate(attrs.scrollX, attrs.scrollY);
     axisPainter.drawLabel(canvas, paint, axis.axisLabel.interval);
     canvas.restore();
   }

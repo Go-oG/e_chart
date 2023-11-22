@@ -2,10 +2,10 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
-class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult, C> {
+class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs, AngleAxisLayoutResult> {
   static const int maxAngle = 360;
 
-  AngleAxisImpl(super.context, super.coord, super.axis, {super.axisIndex});
+  AngleAxisImpl(super.context, super.axis, super.attrs);
 
   @override
   BaseScale onBuildScale(AngleAxisAttrs attrs, List<dynamic> dataSet) {
@@ -42,6 +42,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   AngleAxisLayoutResult onLayout(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
     double or = attrs.radius.last;
+
     Arc arc = Arc(
       center: attrs.center,
       outRadius: or,
@@ -49,31 +50,31 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       startAngle: attrs.angleOffset,
       sweepAngle: attrs.clockwise ? maxAngle : -maxAngle,
     );
-    List<Arc> splitList = buildSplitArc(attrs, scale);
+    List<ArcWrap> splitList = buildSplitArc(attrs, scale);
     List<TickPainter> tickList = buildTickResult(attrs, scale);
     List<LabelPainter> labelList = buildLabelResult(attrs, scale);
     return AngleAxisLayoutResult(arc, splitList, [], tickList, labelList);
   }
 
   ///返回分割区域
-  List<Arc> buildSplitArc(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+  List<ArcWrap> buildSplitArc(AngleAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     int count = scale.tickCount - 1;
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / count;
-    List<Arc> list = [];
+    List<ArcWrap> list = [];
     double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
     double or = attrs.radius.last;
 
     for (int i = 0; i < count; i++) {
       num sa = attrs.angleOffset + angleInterval * i;
-      Arc arc = Arc(
+      var arc = Arc(
         startAngle: sa,
         sweepAngle: angleInterval,
         outRadius: or,
         innerRadius: ir,
         center: attrs.center,
       );
-      list.add(arc);
+      list.add(ArcWrap(scale.toData(arc.startAngle), arc));
     }
     return list;
   }
@@ -111,7 +112,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       Offset eo = circlePoint(r, angle, attrs.center);
       List<TickPainter> minorList = [];
 
-      tickList.add(TickPainter(i, tickCount, so, eo, minorList));
+      tickList.add(TickPainter(scale.toData(angle), i, tickCount, so, eo, minorList));
       if (axis.isCategoryAxis || axis.isTimeAxis || i == tickCount - 1) {
         continue;
       }
@@ -125,9 +126,10 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       }
 
       for (int j = 1; j < minorTick.splitNumber; j++) {
+        var minorAngle = angle + minorInterval * j;
         Offset minorSo = circlePoint(attrs.radius.last, angle + minorInterval * j, attrs.center);
         Offset minorEo = circlePoint(minorR, angle + minorInterval * j, attrs.center);
-        minorList.add(TickPainter(i, tickCount, minorSo, minorEo));
+        minorList.add(TickPainter(scale.toData(minorAngle), i, tickCount, minorSo, minorEo));
       }
     }
     return tickList;
@@ -236,7 +238,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
     var splitArea = axis.splitArea;
     if (!splitArea.show) {
       return;
@@ -249,20 +251,21 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     int maxCount = axisPainter.splitList.length;
     each(axisPainter.splitList, (split, i) {
       var style = axis.splitArea.getStyle(i, maxCount, theme);
-      style.drawArc(canvas, paint, split);
+      style.drawArc(canvas, paint, split.arc);
     });
   }
 
   @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {
     var theme = getAxisTheme();
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
       return;
     }
     int maxCount = axisPainter.splitList.length;
-    each(axisPainter.splitList, (arc, i) {
-      LineStyle? style = axis.splitLine.getStyle(i, maxCount, theme);
+    each(axisPainter.splitList, (sp, i) {
+      var arc = sp.arc;
+      var style = axis.splitLine.getStyle(sp.data, i, maxCount, theme);
       if (style.canDraw) {
         Offset end = circlePoint(arc.outRadius, arc.startAngle, arc.center);
         Offset start = arc.innerRadius <= 0 ? attrs.center : circlePoint(arc.innerRadius, arc.startAngle, arc.center);
@@ -272,7 +275,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisLine(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLine(CCanvas canvas, Paint paint) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return;
@@ -281,13 +284,13 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
     var s = axisLine.getStyle(theme);
     if (s.canDraw) {
       each(axisPainter.splitList, (arc, index) {
-        s.drawPath(canvas, paint, arc.arcOpen(), drawDash: true);
+        s.drawPath(canvas, paint, arc.arc.arcOpen(), drawDash: true);
       });
     }
   }
 
   @override
-  void onDrawAxisTick(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisTick(CCanvas canvas, Paint paint) {
     var axisTick = axis.axisTick;
     if (!axisTick.show) {
       return;
@@ -296,7 +299,7 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   }
 
   @override
-  void onDrawAxisLabel(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisLabel(CCanvas canvas, Paint paint) {
     var axisLabel = axis.axisLabel;
     if (axisLabel.show) {
       axisPainter.drawLabel(canvas, paint, axisLabel.interval);
@@ -306,12 +309,12 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
   final TextDraw _axisPointerTD = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
 
   @override
-  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset touchOffset) {
     var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;
     }
-    num dis = offset.distance2(attrs.center);
+    num dis = touchOffset.distance2(attrs.center);
     var ir = attrs.radius.length > 1 ? attrs.radius[0] : 0;
     var or = attrs.radius.last;
     if (dis <= ir || dis >= or) {
@@ -341,17 +344,17 @@ class AngleAxisImpl<C extends CoordLayout> extends BaseAxisImpl<AngleAxis, Angle
       } else {
         dis = c * interval;
       }
-      final angle = offset.angle(attrs.center);
+      final angle = touchOffset.angle(attrs.center);
       ol = [attrs.center, circlePoint(dis, angle, attrs.center)];
     } else {
-      ol = [attrs.center, offset];
+      ol = [attrs.center, touchOffset];
     }
     axisPointer.lineStyle.drawPolygon(canvas, paint, ol);
 
     ///绘制 数据
     dis = ol.last.distance2(ol.first);
     var dt = axis.formatData(scale.toData(dis));
-    num angle = offset.angle(attrs.center);
+    num angle = touchOffset.angle(attrs.center);
     var o = circlePoint(attrs.radius.last, angle, attrs.center);
 
     if (_axisPointerTD.text != dt ||

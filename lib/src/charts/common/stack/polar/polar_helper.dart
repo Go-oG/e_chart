@@ -115,8 +115,8 @@ abstract class PolarHelper<T extends StackItemData, P extends StackGroupData<T,P
         node.position = Offset.zero;
         return;
       }
-      var up = coord.dataToPosition(data.domain, node.up);
-      var down = coord.dataToPosition(data.domain, node.down);
+      var up = coord.dataToPosition(data.x, node.up);
+      var down = coord.dataToPosition(data.x, node.down);
       if (vertical) {
         node.arc = colArc.copy(startAngle: down.angle.first, sweepAngle: up.angle.last - down.angle.first);
       } else {

@@ -2,16 +2,17 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-
 ///横向轴
 class XAxisImpl extends BaseGridAxisImpl {
-  XAxisImpl(super.direction, super.coord, super.context, super.axis, {super.axisIndex});
+  XAxisImpl(super.direction, super.context, super.axis, super.attrs);
 
   @override
   void onMeasure(double parentWidth, double parentHeight) {
+    axisInfo.reset();
     if (!axis.show) {
       axisInfo.start = axisInfo.end = Offset.zero;
-      axisInfo.width = axisInfo.height = 0;
+      axisInfo.width = parentWidth;
+      axisInfo.height = 0;
       return;
     }
     var lineHeight = axis.axisLine.getLength();
@@ -21,8 +22,7 @@ class XAxisImpl extends BaseGridAxisImpl {
     AxisLabel axisLabel = axis.axisLabel;
     if (axisLabel.show) {
       var labelHeight = axisLabel.margin + axisLabel.padding;
-      var maxStr = getMaxStr(Direction.horizontal);
-      labelHeight += axisLabel.getStyle(0, 1, getAxisTheme()).measure(maxStr).height;
+      labelHeight += axisLabel.getStyle(0, 1, getAxisTheme()).measure(attrs.maxStr).height;
       if (axisLabel.inside == axis.axisTick.inside) {
         height += labelHeight;
       } else {

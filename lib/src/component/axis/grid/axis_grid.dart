@@ -4,12 +4,10 @@ import 'package:e_chart/e_chart.dart';
 class GridAxis extends BaseAxis {
   Align2 position;
   double offset;
-  bool alignStart;
 
   GridAxis({
     this.position = Align2.end,
     this.offset = 8,
-    this.alignStart = true,
     super.alignTicks,
     super.show,
     super.type,

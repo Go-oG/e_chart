@@ -3,28 +3,35 @@ import 'dart:ui';
 import '../axis_attrs.dart';
 
 class AngleAxisAttrs extends AxisAttrs {
-  final Offset center;
-  final List<double> radius;
-  final double angleOffset;
-  final bool clockwise;
+  Offset center;
+  List<double> radius;
+  double angleOffset;
+  bool clockwise;
 
-  AngleAxisAttrs(this.center, this.angleOffset, this.radius, super.scaleRatio, super.scroll, {this.clockwise = true});
+  AngleAxisAttrs(
+    super.axisIndex,
+    this.center,
+    this.angleOffset,
+    this.radius, {
+    this.clockwise = true,
+    super.scaleRatio,
+    super.scrollX,
+    super.scrollY,
+    super.splitCount,
+  });
 
-  AngleAxisAttrs copyWith({
-    Offset? center,
-    double? angleOffset,
-    List<double>? radius,
-    double? scaleRatio,
-    double? scroll,
-    bool? clockwise,
-  }) {
+  @override
+  AxisAttrs copy() {
     return AngleAxisAttrs(
-      center ?? this.center,
-      angleOffset ?? this.angleOffset,
-      radius ?? this.radius,
-      scaleRatio ?? this.scaleRatio,
-      scroll ?? this.scroll,
-      clockwise: clockwise ?? this.clockwise,
+      axisIndex,
+      center,
+      angleOffset,
+      radius,
+      clockwise: clockwise,
+      scaleRatio: scaleRatio,
+      scrollX: scrollX,
+      scrollY: scrollY,
+      splitCount: splitCount,
     );
   }
 }

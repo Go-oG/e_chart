@@ -4,58 +4,52 @@ import '../../component/index.dart';
 import '../../core/render/ccanvas.dart';
 import '../../model/enums/direction.dart';
 import 'parallel_axis.dart';
-import 'parallel_coord.dart';
 
-class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, ParallelAxisAttrs, ParallelCoord> {
+class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, ParallelAxisAttrs> {
   final Direction direction;
-
   bool expand = true;
 
-  ParallelAxisImpl(super.context, super.coord, super.axis, this.direction, {super.axisIndex});
+  ParallelAxisImpl(super.context, super.axis, super.attrs, this.direction);
 
   @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {}
 
   @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {}
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {}
 }
 
 class ParallelAxisAttrs extends LineAxisAttrs {
-  final Size textStartSize;
-  final Size textEndSize;
-  final bool expand;
+  Size textStartSize;
+  Size textEndSize;
+  bool expand;
 
   ParallelAxisAttrs(
-    super.scaleRatio,
-    super.scroll,
+    super.axisIndex,
     super.rect,
     super.start,
-    super.end, {
-    this.expand = true,
-    this.textStartSize = Size.zero,
-    this.textEndSize = Size.zero,
+    super.end,
+    this.textStartSize,
+    this.textEndSize,
+    this.expand, {
+    super.scaleRatio,
+    super.scrollX,
+    super.scrollY,
     super.splitCount,
   });
 
   @override
-  ParallelAxisAttrs copyWith(
-      {double? scaleRatio,
-      double? scroll,
-      Rect? rect,
-      Offset? start,
-      Offset? end,
-      Size? textStartSize,
-      Size? textEndSize,
-      bool? expand,
-      int? splitCount}) {
+  ParallelAxisAttrs copy() {
     return ParallelAxisAttrs(
-      scaleRatio ?? this.scaleRatio,
-      scroll ?? this.scroll,
-      rect ?? this.rect,
-      start ?? this.start,
-      end ?? this.end,
-      textStartSize: textStartSize ?? this.textStartSize,
-      textEndSize: textEndSize ?? this.textEndSize,
+      axisIndex,
+      rect,
+      start,
+      end,
+      textStartSize,
+      textEndSize,
+      expand,
+      scaleRatio: scaleRatio,
+      scrollX: scrollX,
+      scrollY: scrollY,
       splitCount: splitCount,
     );
   }

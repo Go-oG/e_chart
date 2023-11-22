@@ -103,4 +103,7 @@ class CategoryScale extends BaseScale<String, num> {
     }
     return dl;
   }
+
+  @override
+  bool get hasZero => false;
 }

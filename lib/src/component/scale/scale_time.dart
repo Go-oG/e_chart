@@ -132,4 +132,7 @@ class TimeScale extends BaseScale<DateTime, num> {
   TimeScale copyWithRange(List<num> range) {
     return TimeScale(splitType, domain, range);
   }
+
+  @override
+  bool get hasZero => false;
 }

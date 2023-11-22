@@ -3,14 +3,14 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///半径轴
-class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, C> {
-  RadiusAxisImpl(super.context, super.coord, super.axis);
+class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs> {
+  RadiusAxisImpl(super.context, super.axis, super.attrs);
 
   @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {
     var theme = getAxisTheme();
     each(axisPainter.split, (split, i) {
-      var style = axis.splitLine.getStyle(split.index, split.maxIndex, theme);
+      var style = axis.splitLine.getStyle(split.data, split.index, split.maxIndex, theme);
       if (style.notDraw) {
         return;
       }
@@ -19,7 +19,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
   }
 
   @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
+  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
     var theme = getAxisTheme();
     each(axisPainter.split, (split, i) {
       var style = axis.splitArea.getStyle(split.index, split.maxIndex, theme);
@@ -38,14 +38,14 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
   }
 
   @override
-  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset touchOffset) {
     var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;
     }
     var ir = attrs.start.distance2(attrs.center);
     var or = attrs.end.distance2(attrs.center);
-    var dis = offset.distance2(attrs.center);
+    var dis = touchOffset.distance2(attrs.center);
     if (dis <= ir || dis >= or) {
       return;
     }
@@ -83,7 +83,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
     } else {
       arc = Arc(
         innerRadius: 0,
-        outRadius: offset.distance2(attrs.center),
+        outRadius: touchOffset.distance2(attrs.center),
         startAngle: attrs.offsetAngle,
         sweepAngle: 360,
         center: attrs.center,
