@@ -32,6 +32,4 @@ class SplitArea extends ChartNotifier2 {
 
 
 
-
-
 }

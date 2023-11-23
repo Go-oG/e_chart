@@ -22,10 +22,8 @@ class GridCoordImpl extends GridCoord {
           Rect.zero,
           Offset.zero,
           Offset.zero,
-          Rect.zero,
-          contentBox,
           DynamicText.empty);
-      xMap[ele] = XAxisImpl(Direction.horizontal, context, ele, attr);
+      xMap[ele] = XAxisImpl(Direction.horizontal,this, context, ele, attr);
     });
     each(props.yAxisList, (axis, p1) {
       var attr = GridAxisAttr(
@@ -33,10 +31,8 @@ class GridCoordImpl extends GridCoord {
           Rect.zero,
           Offset.zero,
           Offset.zero,
-          Rect.zero,
-          contentBox,
           DynamicText.empty);
-      yMap[axis] = YAxisImpl(Direction.vertical, context, axis, attr);
+      yMap[axis] = YAxisImpl(Direction.vertical, this,context, axis, attr);
     });
   }
 
@@ -225,9 +221,6 @@ class GridCoordImpl extends GridCoord {
       attrs.start = rect.bottomLeft;
       attrs.end = rect.bottomRight;
       attrs.rect = rect;
-      attrs.contentBox = contentBox;
-      attrs.coordRect = selfBoxBound;
-
       topOffset -= (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
 
@@ -249,8 +242,6 @@ class GridCoordImpl extends GridCoord {
       attrs.start = rect.topLeft;
       attrs.end = rect.topRight;
       attrs.rect = rect;
-      attrs.contentBox = contentBox;
-      attrs.coordRect = selfBoxBound;
 
       bottomOffset += (h + value.axis.offset);
       value.doLayout(attrs, extremeMap[value] ?? []);
@@ -304,8 +295,6 @@ class GridCoordImpl extends GridCoord {
       attrs.start = rect.bottomRight;
       attrs.end = rect.topRight;
       attrs.rect = rect;
-      attrs.contentBox = contentBox;
-      attrs.coordRect = selfBoxBound;
 
       rightOffset -= w;
       if (!force && useViewPortExtreme && dl.length >= 2 && value.scale.isNum) {
@@ -338,8 +327,6 @@ class GridCoordImpl extends GridCoord {
       attrs.start = rect.bottomLeft;
       attrs.end = rect.topLeft;
       attrs.rect = rect;
-      attrs.contentBox = contentBox;
-      attrs.coordRect = selfBoxBound;
 
       leftOffset += w;
       value.doLayout(attrs, dl);

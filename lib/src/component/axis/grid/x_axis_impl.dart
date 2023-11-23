@@ -4,15 +4,12 @@ import 'package:flutter/material.dart';
 
 ///横向轴
 class XAxisImpl extends BaseGridAxisImpl {
-  XAxisImpl(super.direction, super.context, super.axis, super.attrs);
+  XAxisImpl(super.direction, super.coord, super.context, super.axis, super.attrs);
 
   @override
   void onMeasure(double parentWidth, double parentHeight) {
-    axisInfo.reset();
     if (!axis.show) {
-      axisInfo.start = axisInfo.end = Offset.zero;
-      axisInfo.width = parentWidth;
-      axisInfo.height = 0;
+      axisSize = 0;
       return;
     }
     var lineHeight = axis.axisLine.getLength();
@@ -29,8 +26,7 @@ class XAxisImpl extends BaseGridAxisImpl {
         height = max<double>([height, labelHeight + lineHeight]).toDouble();
       }
     }
-    axisInfo.width = parentWidth;
-    axisInfo.height = height;
+    axisSize=height;
   }
 
   @override

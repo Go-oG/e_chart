@@ -7,33 +7,31 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs> {
   RadiusAxisImpl(super.context, super.axis, super.attrs);
 
   @override
+  void onLayoutSplitArea(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    var splitArea=axis.splitArea;
+    if(!splitArea.show){
+
+      return;
+    }
+
+
+  }
+
+
+  @override
+  void onLayoutSplitLine(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {}
+
+  @override
   void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {
-    var theme = getAxisTheme();
-    each(axisPainter.split, (split, i) {
-      var style = axis.splitLine.getStyle(split.data, split.index, split.maxIndex, theme);
-      if (style.notDraw) {
-        return;
-      }
-      style.drawArc(canvas, paint, split.start.distance2(attrs.center), attrs.offsetAngle, 360, attrs.center);
+    each(splitLineList, (split, i) {
+      split.draw(canvas, paint);
     });
   }
 
   @override
   void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
-    var theme = getAxisTheme();
-    each(axisPainter.split, (split, i) {
-      var style = axis.splitArea.getStyle(split.index, split.maxIndex, theme);
-      if (style.notDraw) {
-        return;
-      }
-      var arc = Arc(
-        innerRadius: split.start.distance2(split.center),
-        outRadius: split.end.distance2(split.center),
-        startAngle: attrs.offsetAngle,
-        sweepAngle: 360,
-        center: attrs.center,
-      );
-      style.drawArc(canvas, paint, arc);
+    each(splitAreaList, (p0, p1) {
+      p0.draw(canvas, paint);
     });
   }
 

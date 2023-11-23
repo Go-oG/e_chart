@@ -1,17 +1,15 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/component/axis/grid/grid_attrs.dart';
 
 import 'package:flutter/material.dart';
 
 class YAxisImpl extends XAxisImpl {
-  YAxisImpl(super.direction, super.context, super.axis, super.attrs);
+  YAxisImpl(super.direction, super.coord, super.context, super.axis, super.attrs);
 
   @override
   void onMeasure(double parentWidth, double parentHeight) {
-    axisInfo.reset();
     if (!axis.show) {
-      axisInfo.start = axisInfo.end = Offset.zero;
-      axisInfo.height = parentHeight;
-      axisInfo.width = 0;
+      axisSize=0;
       return;
     }
 
@@ -30,8 +28,7 @@ class YAxisImpl extends XAxisImpl {
         width = max<double>([width, labelWidth + lineWidth]).toDouble();
       }
     }
-    axisInfo.width = width;
-    axisInfo.height = parentHeight;
+    axisSize = width;
   }
 
   @override
@@ -39,10 +36,10 @@ class YAxisImpl extends XAxisImpl {
     checkDataType(data);
     List<num> nl = scale.toRange(data);
     List<Offset> ol = [];
-    final double h = attrs.contentBox.height;
+    final double h = coord.contentBox.height;
     for (var d in nl) {
       double y = d.toDouble();
-      double x = axis.position == Align2.end ? attrs.contentBox.width : 0;
+      double x = axis.position == Align2.end ? coord.contentBox.width : 0;
       ol.add(Offset(x, h - y));
     }
     return ol;
@@ -50,7 +47,7 @@ class YAxisImpl extends XAxisImpl {
 
   @override
   List<int> computeRangeIndex(num distance, int tickCount, num interval) {
-    Rect rect = attrs.contentBox;
+    Rect rect = coord.contentBox;
     int startIndex, endIndex;
     if (distance <= rect.height) {
       startIndex = 0;
@@ -73,4 +70,6 @@ class YAxisImpl extends XAxisImpl {
   dynamic pxToData(num position) {
     return scale.toData(position);
   }
+
+
 }

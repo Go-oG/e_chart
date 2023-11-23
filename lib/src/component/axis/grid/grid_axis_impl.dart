@@ -1,105 +1,125 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/axis/grid/grid_attrs.dart';
+import 'package:e_chart/src/component/axis/model/node/split_area.dart';
 import 'package:flutter/material.dart';
+
+import '../base/line/line_axis_impl.dart';
 
 abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
   final Direction direction;
+  GridCoord coord;
 
-  BaseGridAxisImpl(this.direction, super.context, super.axis, super.attrs);
+  BaseGridAxisImpl(this.direction, this.coord, super.context, super.axis, super.attrs);
 
   ///表示轴的大小
-  final AxisInfo axisInfo = AxisInfo(Offset.zero, Offset.zero);
+  double axisSize = 0;
 
   void onScrollChange(double scroll) {
-    axisPainter = onLayout(attrs, scale);
+    onLayout(attrs, scale);
   }
 
   @override
-  LineAxisPainter onLayout(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
-    axisInfo.start = attrs.start;
-    axisInfo.end = attrs.end;
-    return super.onLayout(attrs, scale);
-  }
-
-  @override
-  List<LinePainter> onBuildLineResult(BaseScale<dynamic, num> scale, Offset center, double distance, double angle) {
-    final double interval = scale.tickInterval.toDouble();
-    List<int> indexList = computeRangeIndex(distance, scale.tickCount, interval);
-    List<LinePainter> resultList = [];
-    for (int i = indexList[0]; i < indexList[1] - 1; i++) {
-      Offset s = center.translate(interval * i, 0);
-      Offset e = center.translate(interval * (i + 1), 0);
-      Offset start = s.rotate(angle, center: center);
-      Offset end = e.rotate(angle, center: center);
-      resultList.add(LinePainter(i, scale.tickCount - 1, start, end));
+  void onLayoutAxisLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+    var axisLine = axis.axisLine;
+    if (!axisLine.show) {
+      updateAxisLines([]);
+      return;
     }
-    return resultList;
+    var center = attrs.start;
+    var angle = axisAngle;
+    var style = axisLine.getStyle(getAxisTheme());
+
+    final double interval = scale.tickInterval.toDouble();
+    List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
+    List<LineSegment> resultList = [];
+
+    for (int i = indexList[0]; i < indexList[1] - 1; i++) {
+      var dis = interval * i;
+      var nextDis = dis + interval;
+      var s = center.translate(dis, 0);
+      var e = center.translate(nextDis, 0);
+      var start = s.rotate(angle, center: center);
+      var end = e.rotate(angle, center: center);
+
+      resultList
+          .add(LineSegment([scale.toData(dis), scale.toData(nextDis)], i, scale.tickCount - 1, start, end, style));
+    }
+
+    updateAxisLines(resultList);
   }
 
   @override
-  List<TickPainter> onBuildTickResult(var scale, Offset center, double distance, double angle) {
+  void onLayoutAxisTick(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+    var axisTick = axis.axisTick;
+    var tick = axisTick.tick;
+    if (!axisTick.show || (tick == null || !tick.show)) {
+      updateTicks([]);
+      return;
+    }
+
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
     }
-    final double interval = scale.tickInterval.toDouble();
-    List<int> indexList = computeRangeIndex(distance, tickCount, interval);
-    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
-    MinorTick minorTick = axis.axisTick.minorTick ?? BaseAxisImpl.tmpMinorTick;
-    int minorSN = minorTick.splitNumber;
-    if (minorSN < 0) {
-      minorSN = 0;
-    }
-    final double tickOffset = (axis.axisTick.inside ? -tick.length : tick.length).toDouble();
-    final double minorOffset = (axis.axisTick.inside ? -minorTick.length : minorTick.length).toDouble();
 
-    List<TickPainter> resultList = [];
+    final double interval = scale.tickInterval;
+    List<int> indexList = computeRangeIndex(axisLength, tickCount, interval);
+
+    var minorTick = axis.axisTick.minorTick;
+    final minorCount = minorTick?.splitNumber ?? 0;
+    final int tickDir = axisTick.inside ? -1 : 1;
+    final double tickOffset = axisTick.getTickSize() * tickDir;
+    final double minorOffset = axisTick.getMinorSize() * tickDir;
+    final minorInterval = interval / (minorCount + 1);
+
+    final center = attrs.start;
+    final angle = axisAngle;
+    List<TickNode> resultList = [];
+    var tickStyle = tick.lineStyle;
     for (int i = indexList[0]; i < indexList[1]; i++) {
       double dis = i * interval;
       final Offset offset = center.translate(dis, 0);
       Offset start = offset.rotate(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
-      TickPainter result = TickPainter(scale.toData(dis), i, tickCount, start, end, []);
-      resultList.add(result);
-      int minorCount = minorTick.splitNumber;
-      if (minorCount <= 0) {
+      var tickNode = TickNode([scale.toData(dis)], i, tickCount, start, end, tickStyle, []);
+      resultList.add(tickNode);
+      if (minorCount <= 0 || minorTick == null || !minorTick.show) {
         continue;
       }
-      double minorInterval = interval / (minorCount + 1);
-      for (int j = 1; j <= minorTick.splitNumber; j++) {
+
+      for (int j = 1; j < minorCount; j++) {
         var dis2 = minorInterval * j + dis;
         Offset ms = offset.translate(minorInterval * j, 0);
         Offset me = ms.translate(0, minorOffset);
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        result.minorList.add(TickPainter(scale.toData(dis2), i, tickCount, ms, me));
+        tickNode.minorList.add(TickNode(scale.toData(dis2), i, tickCount, ms, me, minorTick.lineStyle));
       }
     }
-    return resultList;
+    updateTicks(resultList);
   }
 
   @override
-  List<LabelPainter> onBuildLabelResult(var scale, Offset center, double distance, double angle) {
-    final double interval = scale.tickInterval.toDouble();
+  void onLayoutAxisLabel(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+    var axisLabel = axis.axisLabel;
+    if (!axisLabel.show) {
+      updateLabels([]);
+      return;
+    }
+
+    final double interval = scale.tickInterval;
 
     ///计算索引
-    List<int> indexList = computeRangeIndex(distance, scale.tickCount, interval);
+    final indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
+    final labels = obtainLabel2(indexList[0], indexList[1]);
 
-    MainTick tick = axis.axisTick.tick ?? BaseAxisImpl.tmpTick;
-    MinorTick minorTick = axis.axisTick.minorTick ?? BaseAxisImpl.tmpMinorTick;
-    int sn = minorTick.splitNumber;
-    if (sn < 0) {
-      sn = 0;
-    }
-    AxisLabel axisLabel = axis.axisLabel;
-    List<DynamicText> labels = obtainLabel2(indexList[0], indexList[1]);
     double labelOffset = axisLabel.padding + axisLabel.margin + 0;
     if (axisLabel.inside == axis.axisTick.inside) {
-      labelOffset += tick.length;
+      labelOffset += axis.axisTick.getMaxTickSize();
     }
     labelOffset *= axisLabel.inside ? -1 : 1;
-    List<LabelPainter> resultList = [];
 
+    List<AxisLabelNode> resultList = [];
     final Alignment align;
     if (direction == Direction.horizontal) {
       if (axisLabel.inside) {
@@ -115,6 +135,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       }
     }
 
+    final center = attrs.start;
+    final angle = axisAngle;
     for (int i = indexList[0]; i < indexList[1]; i++) {
       num d = i;
       if (scale.isCategory && axis.categoryCenter) {
@@ -132,34 +154,105 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       }
       var style = axisLabel.getStyle(i, scale.tickCount, getAxisTheme());
       var config = TextDraw(text ?? DynamicText.empty, style, textOffset, align: align, rotate: axisLabel.rotate);
-      int oi = i * sn;
-      var result = LabelPainter(oi, i, scale.tickCount, config, []);
+      var result = AxisLabelNode(i, scale.tickCount, config, []);
       resultList.add(result);
 
-      int minorCount = minorTick.splitNumber;
-      if (minorCount <= 0 || scale.isCategory || scale.isTime) {
-        continue;
-      }
-
-      ///构建minorLabel
-      var minorStyle = axisLabel.getMinorStyle(i, scale.tickCount, getAxisTheme());
-
-      double minorInterval = interval / (minorCount + 1);
-      for (int j = 1; j <= minorTick.splitNumber; j++) {
-        num dis = parenDis + minorInterval * j;
-        var text = axisLabel.formatter?.call(scale.toData(dis)) ?? DynamicText.empty;
-        final labelOffset = circlePoint(dis, angle, center);
-        var minorConfig = TextDraw(
-          text,
-          minorStyle,
-          labelOffset,
-          align: toAlignment(angle + 90, axisLabel.inside),
-          rotate: axisLabel.rotate,
-        );
-        result.minorLabel.add(LabelPainter(oi + j, i, scale.tickCount, minorConfig));
-      }
+      // int minorCount = minorTick.splitNumber;
+      // if (minorCount <= 0 || scale.isCategory || scale.isTime) {
+      //   continue;
+      // }
+      //
+      // ///构建minorLabel
+      // var minorStyle = axisLabel.getMinorStyle(i, scale.tickCount, getAxisTheme());
+      //
+      // double minorInterval = interval / (minorCount + 1);
+      // for (int j = 1; j <= minorTick.splitNumber; j++) {
+      //   num dis = parenDis + minorInterval * j;
+      //   var text = axisLabel.formatter?.call(scale.toData(dis)) ?? DynamicText.empty;
+      //   final labelOffset = circlePoint(dis, angle, center);
+      //   var minorConfig = TextDraw(
+      //     text,
+      //     minorStyle,
+      //     labelOffset,
+      //     align: toAlignment(angle + 90, axisLabel.inside),
+      //     rotate: axisLabel.rotate,
+      //   );
+      //   result.minorLabel.add(AxisLabelNode(i, scale.tickCount, minorConfig));
+      // }
     }
-    return resultList;
+    updateLabels(resultList);
+  }
+
+  @override
+  void onLayoutSplitArea(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+    var splitArea = axis.splitArea;
+    if (!splitArea.show) {
+      updateSplitLines([]);
+      return;
+    }
+    List<SplitAreaNode> list = [];
+    final double interval = scale.tickInterval;
+    List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
+
+    List<List<Offset>> pl = [];
+    for (int i = indexList[0]; i < indexList[1]; i++) {
+      double dis = i * interval;
+      Offset start;
+      Offset end;
+      if (isXAxis) {
+        start = Offset(dis, coord.contentBox.bottom);
+        end = start.translate(0, -coord.contentBox.height);
+      } else {
+        start = Offset(coord.contentBox.left, dis);
+        end = start.translate(coord.contentBox.width, 0);
+      }
+      var ol = [start, end];
+      if (pl.isNotEmpty) {
+        var pre = pl.last;
+        var style = splitArea.getStyle(pl.length ~/ 2, scale.tickCount - 1, getAxisTheme());
+        Path path = Path();
+        path.moveTo2(pre.first);
+        path.lineTo2(pre.last);
+        path.lineTo2(ol.last);
+        path.lineTo2(ol.first);
+        path.close();
+        list.add(SplitAreaNode([], path, style));
+      }
+      pl.add(ol);
+    }
+    updateSplitAreas(list);
+  }
+
+  @override
+  void onLayoutSplitLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+    var splitLine = axis.splitLine;
+    if (!splitLine.show) {
+      updateSplitLines([]);
+      return;
+    }
+    List<LineSegment> list = [];
+    int tickCount = scale.tickCount;
+    if (tickCount <= 0) {
+      tickCount = 1;
+    }
+    final double interval = scale.tickInterval;
+    List<int> indexList = computeRangeIndex(axisLength, tickCount, interval);
+    for (int i = indexList[0]; i < indexList[1]; i++) {
+      double dis = i * interval;
+      Offset start;
+      Offset end;
+      if (isXAxis) {
+        start = Offset(dis, coord.contentBox.bottom);
+        end = start.translate(0, -coord.contentBox.height);
+      } else {
+        start = Offset(coord.contentBox.left, dis);
+        end = start.translate(coord.contentBox.width, 0);
+      }
+      final data = scale.toData(dis);
+      var style = splitLine.getStyle(data, i, tickCount, getAxisTheme());
+      list.add(LineSegment([scale.toData(dis)], i, tickCount, start, end, style));
+    }
+    updateSplitLines(list);
   }
 
   @override
@@ -168,27 +261,10 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
     if (!splitArea.show) {
       return;
     }
-
-    AxisTheme theme = getAxisTheme();
-    var box = attrs.contentBox;
-    final left = attrs.scrollX.abs() + box.left;
     canvas.save();
     canvas.translate(attrs.scrollX, attrs.scrollY);
     canvas.clipRect(getSplitClipRect());
-    each(axisPainter.split, (split, p1) {
-      var style = splitArea.getStyle(split.index, split.maxIndex, theme);
-      if (style.notDraw) {
-        return;
-      }
-      Rect rect;
-      if (direction == Direction.horizontal) {
-        rect = Rect.fromLTRB(split.start.dx, box.top, split.end.dx, box.bottom);
-      } else {
-        var dis = split.start.distance2(split.end);
-        rect = Rect.fromLTWH(left, split.start.dy, box.width, dis);
-      }
-      style.drawRect(canvas, paint, rect);
-    });
+    super.onDrawAxisSplitArea(canvas, paint);
     canvas.restore();
   }
 
@@ -199,8 +275,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       return;
     }
     bool vertical = direction != Direction.vertical;
-    double w = attrs.contentBox.width;
-    double h = attrs.contentBox.height;
+    double w = coord.contentBox.width;
+    double h = coord.contentBox.height;
     AxisTheme theme = getAxisTheme();
     int dir;
     if (vertical) {
@@ -212,7 +288,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
     canvas.save();
     canvas.translate(attrs.scrollX, attrs.scrollY);
     canvas.clipRect(getSplitClipRect());
-    each(axisPainter.split, (split, p1) {
+    each(splitLineList, (split, p1) {
       int interval = splitLine.interval;
       if (interval > 0) {
         interval += 1;
@@ -251,7 +327,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       canvas.translate(diff * dir, attrs.scrollY);
     }
     canvas.clipRect(getAxisClipRect());
-    axisPainter.drawLine(canvas, paint, axisLine.getStyle(getAxisTheme()));
+    super.onDrawAxisLine(canvas, paint);
     canvas.restore();
   }
 
@@ -267,7 +343,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       canvas.translate(0, attrs.scrollY);
     }
     canvas.clipRect(getAxisClipRect());
-    axisPainter.drawTick(canvas, paint, axis.axisTick.tick, axis.axisTick.minorTick);
+    super.onDrawAxisTick(canvas, paint);
     canvas.restore();
   }
 
@@ -277,20 +353,18 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
     if (!axisLabel.show) {
       return;
     }
-
     canvas.save();
     if (direction == Direction.horizontal) {
       canvas.translate(attrs.scrollX, 0);
     } else {
       canvas.translate(0, attrs.scrollY);
     }
-
     canvas.clipRect(getAxisClipRect());
     int interval = axisLabel.interval;
     if (interval > 0) {
       interval += 1;
     }
-    axisPainter.drawLabel(canvas, paint, interval);
+    super.onDrawAxisLabel(canvas, paint);
     canvas.restore();
   }
 
@@ -303,7 +377,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       return;
     }
     final bool vertical = direction == Direction.horizontal;
-    Rect rect = attrs.contentBox;
+    Rect rect = coord.contentBox;
     final pointerDis = computeAxisPointerDis(axisPointer, touchOffset);
     final double paintOffset = axisPointer.lineStyle.width * 0.5;
 
@@ -382,13 +456,13 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
 
   ///获取分割区域的裁剪范围
   Rect getSplitClipRect() {
-    var box = attrs.contentBox;
+    var box = coord.contentBox;
     return Rect.fromLTWH(attrs.scrollX.abs() + box.left, box.top - attrs.scrollY, box.width, box.height);
   }
 
   ///获取坐标轴裁剪范围
   Rect getAxisClipRect() {
-    var box = attrs.contentBox;
+    var box = coord.contentBox;
     if (isXAxis) {
       //X轴
       double left = attrs.scrollX.abs() + box.left;
@@ -396,19 +470,19 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       if (axis.position == Align2.start) {
         return Rect.fromLTRB(left, -attrs.rect.height, left + w, box.top + attrs.rect.height);
       }
-      return Rect.fromLTRB(left, box.bottom - attrs.rect.height, left + w, attrs.coordRect.height);
+      return Rect.fromLTRB(left, box.bottom - attrs.rect.height, left + w, coord.height);
     }
     //Y轴
     double top = box.top + attrs.scrollY;
     double h = box.height;
     if (axis.position == Align2.end) {
-      return Rect.fromLTRB(box.right - attrs.rect.width, top, attrs.coordRect.width + attrs.rect.width, top + h);
+      return Rect.fromLTRB(box.right - attrs.rect.width, top, coord.width + attrs.rect.width, top + h);
     }
     return Rect.fromLTRB(-attrs.rect.width, top, box.left + attrs.rect.width, top + h);
   }
 
   List<int> computeRangeIndex(num distance, int tickCount, num interval) {
-    Rect rect = attrs.contentBox;
+    Rect rect = coord.contentBox;
     int startIndex, endIndex;
     if (isXAxis) {
       if (distance <= rect.width) {
@@ -463,7 +537,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       return RangeInfo.time(dl as List<DateTime>);
     }
 
-    Rect rect = attrs.contentBox;
+    Rect rect = coord.contentBox;
     num viewSize = direction == Direction.horizontal ? rect.width : rect.height;
     if (distance <= viewSize) {
       RangeInfo.range(Pair<num>(scale.domain.first, scale.domain.last));

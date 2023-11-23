@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends AxisPainter> extends ChartNotifier2 {
+abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs> extends ChartNotifier2 {
   static final tmpTick = MainTick();
   static final MinorTick tmpMinorTick = MinorTick();
 
@@ -23,19 +23,11 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   BaseScale get scale => _scale!;
   BaseScale? _scale;
 
-  set axisPainter(R p) {
-    _axisPainter?.dispose();
-    _axisPainter = p;
-  }
+  AxisTitleNode? _titleNode;
 
-  R get axisPainter => _axisPainter!;
-  R? _axisPainter;
+  AxisTitleNode get titleNode => _titleNode!;
 
-  AxisTitlePainter? _titleNode;
-
-  AxisTitlePainter get titleNode => _titleNode!;
-
-  set titleNode(AxisTitlePainter titleNode) {
+  set titleNode(AxisTitleNode titleNode) {
     _titleNode?.dispose();
     _titleNode = titleNode;
   }
@@ -43,7 +35,7 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
   int get axisIndex => attrs.axisIndex;
 
   BaseAxisImpl(this._context, this._axis, this.attrs) {
-    titleNode = AxisTitlePainter(axis.axisName);
+    titleNode = AxisTitleNode(axis.axisName);
   }
 
   @override
@@ -51,21 +43,10 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     _context = null;
     _axis = null;
     attrs.dispose();
-    axisPainter.dispose();
     titleNode.dispose();
     scale.dispose();
-    titleNode = AxisTitlePainter(null);
+    titleNode = AxisTitleNode(null);
     super.dispose();
-  }
-
-  void onMeasure(double parentWidth, double parentHeight) {}
-
-  void doLayout(L attrs, List<dynamic> dataSet) {
-    this.attrs = attrs;
-    scale = onBuildScale(attrs, dataSet);
-    titleNode.label.dispose();
-    titleNode.label = onLayoutAxisName();
-    axisPainter = onLayout(attrs, scale);
   }
 
   void onAttrsChange(L oldAttrs) {
@@ -73,14 +54,45 @@ abstract class BaseAxisImpl<T extends BaseAxis, L extends AxisAttrs, R extends A
     scale = onBuildScale(attrs, dl);
     titleNode.label.dispose();
     titleNode.label = onLayoutAxisName();
-    axisPainter = onLayout(attrs, scale);
+    onLayout(attrs, scale);
   }
 
-  R onLayout(L attrs, BaseScale scale);
+  ///================测量===================
+  void onMeasure(double parentWidth, double parentHeight) {}
+
+  ///==================布局===========
+  void doLayout(L attrs, List<dynamic> dataSet) {
+    this.attrs = attrs;
+    scale = onBuildScale(attrs, dataSet);
+    titleNode.label.dispose();
+    titleNode.label = onLayoutAxisName();
+    onLayout(attrs, scale);
+  }
+
+  void onLayout(L attrs, BaseScale scale) {
+    onLayoutAxisLine(attrs, scale);
+    onLayoutAxisTick(attrs, scale);
+    onLayoutAxisLabel(attrs, scale);
+    onLayoutSplitLine(attrs, scale);
+    onLayoutSplitArea(attrs, scale);
+  }
+
+  TextDraw onLayoutAxisName();
+
+  void onLayoutAxisLine(L attrs, BaseScale scale);
+
+  void onLayoutSplitLine(L attrs, BaseScale scale);
+
+  void onLayoutSplitArea(L attrs, BaseScale scale);
+
+  void onLayoutAxisTick(L attrs, BaseScale scale);
+
+  void onLayoutAxisLabel(L attrs, BaseScale scale);
 
   BaseScale onBuildScale(L attrs, List<dynamic> dataSet);
 
-  TextDraw onLayoutAxisName();
+
+  ///==========绘制=============
 
   void draw(CCanvas canvas, Paint paint) {
     onDrawAxisSplitArea(canvas, paint);

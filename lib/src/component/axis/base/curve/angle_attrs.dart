@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../axis_attrs.dart';
+import 'package:e_chart/e_chart.dart';
 
 class AngleAxisAttrs extends AxisAttrs {
   Offset center;

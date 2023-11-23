@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import '../line/line_attrs.dart';
+import '../base/line/line_attrs.dart';
 
 class RadiusAxisAttrs extends LineAxisAttrs {
   Offset center;

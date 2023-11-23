@@ -105,6 +105,22 @@ class LineStyle {
     }
   }
 
+  void drawLine(CCanvas canvas, Paint paint, Offset start, Offset end, [Rect? bounds]) {
+    if (notDraw) {
+      return;
+    }
+
+    if (shader == null && shadow.isEmpty && dash.isEmpty && smooth <= 0) {
+      fillPaint(paint, null);
+      canvas.drawLine(start, end, paint);
+      return;
+    }
+
+    Path path = Line([start, end], smooth: smooth, dashList: dash).toPath();
+    fillPaint(paint, bounds ?? path.getBounds());
+    canvas.drawPath(path, paint);
+  }
+
   ///绘制多边形(或者线段) 将忽略smooth参数
   ///下方这样写是为了改善Flutter上Path过长时
   ///绘制效率低下的问题

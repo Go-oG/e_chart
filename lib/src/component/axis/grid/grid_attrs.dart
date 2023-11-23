@@ -1,12 +1,8 @@
-import 'dart:ui';
-
 import '../../../model/data.dart';
 import '../axis_attrs.dart';
-import '../line/line_attrs.dart';
+import '../base/line/line_attrs.dart';
 
 class GridAxisAttr extends LineAxisAttrs {
-  Rect coordRect;
-  Rect contentBox;
   DynamicText maxStr;
 
   GridAxisAttr(
@@ -14,8 +10,6 @@ class GridAxisAttr extends LineAxisAttrs {
     super.rect,
     super.start,
     super.end,
-    this.coordRect,
-    this.contentBox,
     this.maxStr, {
     super.scaleRatio,
     super.scrollX,
@@ -30,8 +24,6 @@ class GridAxisAttr extends LineAxisAttrs {
       rect,
       start,
       end,
-      coordRect,
-      contentBox,
       maxStr,
       scaleRatio: scaleRatio,
       scrollX: scrollX,

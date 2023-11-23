@@ -1,5 +1,5 @@
-import '../base_axis.dart';
-import '../model/axis_type.dart';
+
+import 'package:e_chart/e_chart.dart';
 
 ///极坐标-角度轴
 class AngleAxis extends BaseAxis {
