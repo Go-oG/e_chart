@@ -15,11 +15,11 @@ export 'model/layout_params.dart';
 export 'model/series_type.dart';
 export 'model/size_params.dart';
 export 'model/view_port.dart';
-export 'model/view_attr.dart';
 export 'model/view_state.dart';
 
 export 'render/ccanvas.dart';
 export 'render/core_chart.dart';
+export 'render/element_render.dart';
 
 export 'series/group_series.dart';
 export 'series/hierarchy_series.dart';

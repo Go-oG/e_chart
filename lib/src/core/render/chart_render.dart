@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 ///整个图表渲染的开始
 abstract class ChartRender extends RenderNode {
   Context? _context;
+
   Context get context => _context!;
 
   final ChartNotifier<Command> _notifier = ChartNotifier(Command.none);
@@ -22,16 +23,7 @@ abstract class ChartRender extends RenderNode {
 
   @override
   void draw(CCanvas canvas) {
-    inDrawing = true;
-    try {
-      onDraw(canvas);
-    } catch (e) {
-      Logger.e(e);
-      rethrow;
-    } finally {
-      inDrawing = false;
-    }
-
+    super.draw(canvas);
     var queue = context.getAndResetAnimationQueue();
     for (var node in queue) {
       try {
@@ -46,11 +38,9 @@ abstract class ChartRender extends RenderNode {
     }
   }
 
-  void onDraw(CCanvas canvas);
-
   @override
   void requestDraw() {
-    if (inDrawing) {
+    if (nodeStatus.inDrawing) {
       return;
     }
     _notifier.value = Command.invalidate;
@@ -64,7 +54,7 @@ abstract class ChartRender extends RenderNode {
   @mustCallSuper
   @override
   void measure(double parentWidth, double parentHeight) {
-   // _context?.animationManager.cancelAllAnimator();
+    // _context?.animationManager.cancelAllAnimator();
   }
 
   void onCreate() {
@@ -93,7 +83,6 @@ abstract class ChartRender extends RenderNode {
     _context = null;
     _notifier.clearListener();
     super.dispose();
-
   }
 
   void addListener(VoidCallback call) => _notifier.addListener(call);

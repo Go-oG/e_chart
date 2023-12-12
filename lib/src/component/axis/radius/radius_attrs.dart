@@ -1,6 +1,7 @@
 import 'dart:ui';
 
-import '../base/line/line_attrs.dart';
+import '../../index.dart';
+
 
 class RadiusAxisAttrs extends LineAxisAttrs {
   Offset center;
@@ -9,7 +10,6 @@ class RadiusAxisAttrs extends LineAxisAttrs {
   RadiusAxisAttrs(
     this.center,
     this.offsetAngle,
-    super.axisIndex,
     super.rect,
     super.start,
     super.end, {
@@ -24,7 +24,6 @@ class RadiusAxisAttrs extends LineAxisAttrs {
     return RadiusAxisAttrs(
       center,
       offsetAngle,
-      axisIndex,
       rect,
       start,
       end,

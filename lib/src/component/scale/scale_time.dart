@@ -1,8 +1,4 @@
-import 'package:e_chart/src/ext/date_time_ext.dart';
-
-import '../../model/chart_error.dart';
-import '../axis/base_axis.dart';
-import 'scale_base.dart';
+import 'package:e_chart/e_chart.dart';
 
 /// 支持年月日 周
 class TimeScale extends BaseScale<DateTime, num> {

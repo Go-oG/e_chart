@@ -16,11 +16,9 @@ export 'enums/position.dart';
 export 'enums/select_mode.dart';
 export 'enums/sort.dart';
 export 'enums/step_type.dart';
+export 'enums/time_type.dart';
 export 'enums/trigger.dart';
 export 'enums/trigger_on.dart';
-
-export 'event/coord_scale.dart';
-export 'event/coord_scroll.dart';
 
 export 'quadtree/quad_node.dart';
 export 'quadtree/quadtree.dart' hide InnerQuad;
@@ -37,8 +35,7 @@ export 'corner.dart';
 export 'data.dart';
 export 'link.dart';
 export 'mixin_props.dart';
-export 'optimun.dart';
-export 'range.dart';
+export 'pair.dart';
 export 'range_info.dart';
 export 'string_number.dart';
 export 'tree/base_tree_data.dart';

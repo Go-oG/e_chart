@@ -9,7 +9,6 @@ class AngleAxisAttrs extends AxisAttrs {
   bool clockwise;
 
   AngleAxisAttrs(
-    super.axisIndex,
     this.center,
     this.angleOffset,
     this.radius, {
@@ -23,7 +22,6 @@ class AngleAxisAttrs extends AxisAttrs {
   @override
   AxisAttrs copy() {
     return AngleAxisAttrs(
-      axisIndex,
       center,
       angleOffset,
       radius,

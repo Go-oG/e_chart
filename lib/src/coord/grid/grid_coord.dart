@@ -1,7 +1,6 @@
 import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/axis/grid/grid_attrs.dart';
 import 'package:flutter/material.dart';
 
 ///实现二维坐标系
@@ -17,22 +16,10 @@ class GridCoordImpl extends GridCoord {
     xMap.clear();
     yMap.clear();
     each(props.xAxisList, (ele, p1) {
-      var attr = GridAxisAttr(
-          p1,
-          Rect.zero,
-          Offset.zero,
-          Offset.zero,
-          DynamicText.empty);
-      xMap[ele] = XAxisImpl(Direction.horizontal,this, context, ele, attr);
+      xMap[ele] = XAxisImpl(Direction.horizontal, this, context, ele, axisIndex: p1);
     });
     each(props.yAxisList, (axis, p1) {
-      var attr = GridAxisAttr(
-          p1,
-          Rect.zero,
-          Offset.zero,
-          Offset.zero,
-          DynamicText.empty);
-      yMap[axis] = YAxisImpl(Direction.vertical, this,context, axis, attr);
+      yMap[axis] = YAxisImpl(Direction.vertical, this, context, axis, axisIndex: p1);
     });
   }
 
@@ -53,10 +40,10 @@ class GridCoordImpl extends GridCoord {
   Size onMeasure(double parentWidth, double parentHeight) {
     ///赋值MaxStr
     xMap.forEach((key, value) {
-      value.attrs.maxStr = getMaxStr(value.direction, value.attrs.axisIndex);
+      value.attrs.maxStr = getMaxStr(value.direction, value.axisIndex);
     });
     yMap.forEach((key, value) {
-      value.attrs.maxStr = getMaxStr(value.direction, value.attrs.axisIndex);
+      value.attrs.maxStr = getMaxStr(value.direction, value.axisIndex);
     });
 
     var lp = layoutParams;
@@ -212,8 +199,7 @@ class GridCoordImpl extends GridCoord {
     int? splitCount;
     double topOffset = contentBox.top;
     each(topList, (value, i) {
-      var axisInfo = value.axisInfo;
-      var h = axisInfo.height;
+      var h = value.axisSize;
       var rect = Rect.fromLTWH(contentBox.left, topOffset - h, contentBox.width, h);
       var attrs = value.attrs.copy() as GridAxisAttr;
       attrs.scrollX = viewPort.scrollX;
@@ -231,8 +217,7 @@ class GridCoordImpl extends GridCoord {
 
     double bottomOffset = contentBox.bottom;
     each(bottomList, (value, i) {
-      var axisInfo = value.axisInfo;
-      var h = axisInfo.height;
+      var h = value.axisSize;
       var rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
       var attrs = value.attrs.copy() as GridAxisAttr;
       attrs.scaleRatio = scaleX;
@@ -284,7 +269,7 @@ class GridCoordImpl extends GridCoord {
       if (i != 0) {
         rightOffset -= value.axis.offset;
       }
-      double w = value.axisInfo.width;
+      double w = value.axisSize;
       var rect = Rect.fromLTRB(rightOffset - w, contentBox.top, rightOffset, contentBox.bottom);
 
       var attrs = value.attrs.copy() as GridAxisAttr;
@@ -299,7 +284,8 @@ class GridCoordImpl extends GridCoord {
       rightOffset -= w;
       if (!force && useViewPortExtreme && dl.length >= 2 && value.scale.isNum) {
         dl.sort();
-        if (value.scale.domain.first == dl.first && value.scale.domain.last == dl.last) {} else {
+        if (value.scale.domain.first == dl.first && value.scale.domain.last == dl.last) {
+        } else {
           value.doLayout(attrs, dl);
         }
       } else {
@@ -317,7 +303,7 @@ class GridCoordImpl extends GridCoord {
       if (i != 0) {
         leftOffset += value.axis.offset;
       }
-      double w = value.axisInfo.width;
+      double w = value.axisSize;
       var rect = Rect.fromLTWH(leftOffset, contentBox.top, w, contentBox.height);
       var attrs = value.attrs.copy() as GridAxisAttr;
       attrs.scaleRatio = scaleY;
@@ -642,11 +628,7 @@ class GridCoordImpl extends GridCoord {
   double computeSize(List<BaseGridAxisImpl> axisList, bool computeWidth) {
     double size = 0;
     each(axisList, (axis, i) {
-      if (computeWidth) {
-        size += axis.axisInfo.width;
-      } else {
-        size += axis.axisInfo.height;
-      }
+      size += axis.axisSize;
       if (i != 0) {
         size += axis.axis.offset;
       }

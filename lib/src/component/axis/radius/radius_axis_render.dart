@@ -3,36 +3,21 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///半径轴
-class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs> {
-  RadiusAxisImpl(super.context, super.axis, super.attrs);
+class RadiusAxisRender extends LineAxisRender<RadiusAxis, RadiusAxisAttrs> {
+  RadiusAxisRender(super.context, super.axis,{super.axisIndex});
 
   @override
-  void onLayoutSplitArea(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
-    var splitArea=axis.splitArea;
-    if(!splitArea.show){
-
-      return;
+  List<ElementRender>? onLayoutSplitArea(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    var splitArea = axis.splitArea;
+    if (!splitArea.show) {
+      return null;
     }
-
-
-  }
-
-
-  @override
-  void onLayoutSplitLine(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {}
-
-  @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {
-    each(splitLineList, (split, i) {
-      split.draw(canvas, paint);
-    });
+    return null;
   }
 
   @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
-    each(splitAreaList, (p0, p1) {
-      p0.draw(canvas, paint);
-    });
+  List<ElementRender>? onLayoutSplitLine(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    return null;
   }
 
   @override
@@ -94,4 +79,7 @@ class RadiusAxisImpl extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs> {
     checkDataType(data);
     return scale.toRange(data);
   }
+
+  @override
+  RadiusAxisAttrs onBuildDefaultAttrs() => RadiusAxisAttrs(Offset.zero, 0, Rect.zero, Offset.zero, Offset.zero);
 }

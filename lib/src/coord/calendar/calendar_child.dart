@@ -1,3 +1,3 @@
-abstract class CalendarChild{
+abstract mixin class CalendarChild{
   int get calendarIndex;
 }

@@ -1,8 +1,8 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/wzp/Develop/FlutterSDK/flutter
-FLUTTER_APPLICATION_PATH=/Users/wzp/Develop/FlutterProject/chart/e_chart
+FLUTTER_ROOT=D:\Develop\FlutterSDK\flutter
+FLUTTER_APPLICATION_PATH=D:\Develop\Project\Flutter\e_chart
 COCOAPODS_PARALLEL_CODE_SIGN=true
-FLUTTER_TARGET=lib/main.dart
+FLUTTER_TARGET=lib\main.dart
 FLUTTER_BUILD_DIR=build
 FLUTTER_BUILD_NAME=0.0.1
 FLUTTER_BUILD_NUMBER=0.0.1

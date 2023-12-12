@@ -81,7 +81,7 @@ class Context extends Disposable {
   void _createComponent() {
     ///图例
     _legend = LegendComponent(option.legend);
-    _legend!.create(this, root);
+    _legend!.attach(this, root);
 
     ///title
     if (option.title != null) {
@@ -106,7 +106,7 @@ class Context extends Disposable {
       if (c == null) {
         throw ChartError('无法转换对应的坐标系:$ele');
       }
-      c.create(this, root);
+      c.attach(this, root);
       _coordMap[ele] = c;
       _coordList.add(c);
     }
@@ -130,12 +130,12 @@ class Context extends Disposable {
       CoordLayout? layout = _findCoord(view, key);
       if (layout == null) {
         layout = SingleCoordImpl();
-        layout.create(this, root);
+        layout.attach(this, root);
         var config = SingleCoordConfig();
         _coordMap[config] = layout;
         _coordList.add(layout);
       }
-      view.create(this, layout);
+      view.attach(this, layout);
       layout.addView(view);
     });
 

@@ -58,7 +58,7 @@ class ChartNotifier<T> extends Disposable implements ValueListenable<T> {
   void clearListener() {
     _count = 0;
     _listenerList = _emptyList;
-    _removeCount=0;
+    _removeCount = 0;
   }
 
   void notifyListeners() {
@@ -102,6 +102,8 @@ class ChartNotifier<T> extends Disposable implements ValueListenable<T> {
       _count = newLength;
     }
   }
+
+  bool get hasListeners => _count > 0;
 
   @mustCallSuper
   @override

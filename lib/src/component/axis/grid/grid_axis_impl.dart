@@ -1,15 +1,11 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/axis/grid/grid_attrs.dart';
-import 'package:e_chart/src/component/axis/model/node/split_area.dart';
 import 'package:flutter/material.dart';
 
-import '../base/line/line_axis_impl.dart';
-
-abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
+abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
   final Direction direction;
   GridCoord coord;
 
-  BaseGridAxisImpl(this.direction, this.coord, super.context, super.axis, super.attrs);
+  BaseGridAxisImpl(this.direction, this.coord, super.context, super.axis, {super.axisIndex});
 
   ///表示轴的大小
   double axisSize = 0;
@@ -19,19 +15,18 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
   }
 
   @override
-  void onLayoutAxisLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutAxisLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
-      updateAxisLines([]);
-      return;
+      return null;
     }
     var center = attrs.start;
     var angle = axisAngle;
-    var style = axisLine.getStyle(getAxisTheme());
+    var style = axisLine.getStyle(axisTheme);
 
     final double interval = scale.tickInterval.toDouble();
     List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
-    List<LineSegment> resultList = [];
+    List<AxisLineRender> resultList = [];
 
     for (int i = indexList[0]; i < indexList[1] - 1; i++) {
       var dis = interval * i;
@@ -42,19 +37,18 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       var end = e.rotate(angle, center: center);
 
       resultList
-          .add(LineSegment([scale.toData(dis), scale.toData(nextDis)], i, scale.tickCount - 1, start, end, style));
+          .add(AxisLineRender([scale.toData(dis), scale.toData(nextDis)], i, scale.tickCount - 1, start, end, style));
     }
 
-    updateAxisLines(resultList);
+    return resultList;
   }
 
   @override
-  void onLayoutAxisTick(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutAxisTick(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var axisTick = axis.axisTick;
     var tick = axisTick.tick;
     if (!axisTick.show || (tick == null || !tick.show)) {
-      updateTicks([]);
-      return;
+      return null;
     }
 
     int tickCount = scale.tickCount;
@@ -74,14 +68,14 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
 
     final center = attrs.start;
     final angle = axisAngle;
-    List<TickNode> resultList = [];
+    List<TickRender> resultList = [];
     var tickStyle = tick.lineStyle;
     for (int i = indexList[0]; i < indexList[1]; i++) {
       double dis = i * interval;
       final Offset offset = center.translate(dis, 0);
       Offset start = offset.rotate(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
-      var tickNode = TickNode([scale.toData(dis)], i, tickCount, start, end, tickStyle, []);
+      var tickNode = TickRender([scale.toData(dis)], i, tickCount, start, end, tickStyle, []);
       resultList.add(tickNode);
       if (minorCount <= 0 || minorTick == null || !minorTick.show) {
         continue;
@@ -93,18 +87,17 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
         Offset me = ms.translate(0, minorOffset);
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        tickNode.minorList.add(TickNode(scale.toData(dis2), i, tickCount, ms, me, minorTick.lineStyle));
+        tickNode.minorList.add(TickRender(scale.toData(dis2), i, tickCount, ms, me, minorTick.lineStyle));
       }
     }
-    updateTicks(resultList);
+    return resultList;
   }
 
   @override
-  void onLayoutAxisLabel(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutAxisLabel(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
-      updateLabels([]);
-      return;
+      return null;
     }
 
     final double interval = scale.tickInterval;
@@ -119,7 +112,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
     }
     labelOffset *= axisLabel.inside ? -1 : 1;
 
-    List<AxisLabelNode> resultList = [];
+    List<AxisLabelRender> resultList = [];
     final Alignment align;
     if (direction == Direction.horizontal) {
       if (axisLabel.inside) {
@@ -152,45 +145,21 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       if (labels.length > t) {
         text = labels[t];
       }
-      var style = axisLabel.getStyle(i, scale.tickCount, getAxisTheme());
+      var style = axisLabel.getStyle(i, scale.tickCount, axisTheme);
       var config = TextDraw(text ?? DynamicText.empty, style, textOffset, align: align, rotate: axisLabel.rotate);
-      var result = AxisLabelNode(i, scale.tickCount, config, []);
+      var result = AxisLabelRender(i, scale.tickCount, config, []);
       resultList.add(result);
-
-      // int minorCount = minorTick.splitNumber;
-      // if (minorCount <= 0 || scale.isCategory || scale.isTime) {
-      //   continue;
-      // }
-      //
-      // ///构建minorLabel
-      // var minorStyle = axisLabel.getMinorStyle(i, scale.tickCount, getAxisTheme());
-      //
-      // double minorInterval = interval / (minorCount + 1);
-      // for (int j = 1; j <= minorTick.splitNumber; j++) {
-      //   num dis = parenDis + minorInterval * j;
-      //   var text = axisLabel.formatter?.call(scale.toData(dis)) ?? DynamicText.empty;
-      //   final labelOffset = circlePoint(dis, angle, center);
-      //   var minorConfig = TextDraw(
-      //     text,
-      //     minorStyle,
-      //     labelOffset,
-      //     align: toAlignment(angle + 90, axisLabel.inside),
-      //     rotate: axisLabel.rotate,
-      //   );
-      //   result.minorLabel.add(AxisLabelNode(i, scale.tickCount, minorConfig));
-      // }
     }
-    updateLabels(resultList);
+    return resultList;
   }
 
   @override
-  void onLayoutSplitArea(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutSplitArea(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var splitArea = axis.splitArea;
     if (!splitArea.show) {
-      updateSplitLines([]);
-      return;
+      return null;
     }
-    List<SplitAreaNode> list = [];
+    List<SplitAreaRender> list = [];
     final double interval = scale.tickInterval;
     List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
 
@@ -209,28 +178,27 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
       var ol = [start, end];
       if (pl.isNotEmpty) {
         var pre = pl.last;
-        var style = splitArea.getStyle(pl.length ~/ 2, scale.tickCount - 1, getAxisTheme());
+        var style = splitArea.getStyle(pl.length ~/ 2, scale.tickCount - 1, axisTheme);
         Path path = Path();
         path.moveTo2(pre.first);
         path.lineTo2(pre.last);
         path.lineTo2(ol.last);
         path.lineTo2(ol.first);
         path.close();
-        list.add(SplitAreaNode([], path, style));
+        list.add(SplitAreaRender([], path, style));
       }
       pl.add(ol);
     }
-    updateSplitAreas(list);
+    return list;
   }
 
   @override
-  void onLayoutSplitLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutSplitLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
-      updateSplitLines([]);
-      return;
+      return null;
     }
-    List<LineSegment> list = [];
+    List<AxisLineRender> list = [];
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
@@ -249,10 +217,10 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
         end = start.translate(coord.contentBox.width, 0);
       }
       final data = scale.toData(dis);
-      var style = splitLine.getStyle(data, i, tickCount, getAxisTheme());
-      list.add(LineSegment([scale.toData(dis)], i, tickCount, start, end, style));
+      var style = splitLine.getStyle(data, i, tickCount, axisTheme);
+      list.add(AxisLineRender([scale.toData(dis)], i, tickCount, start, end, style));
     }
-    updateSplitLines(list);
+    return list;
   }
 
   @override
@@ -277,7 +245,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
     bool vertical = direction != Direction.vertical;
     double w = coord.contentBox.width;
     double h = coord.contentBox.height;
-    AxisTheme theme = getAxisTheme();
+    AxisTheme theme = AxisTheme();
     int dir;
     if (vertical) {
       dir = axis.position == Align2.start ? 1 : -1;
@@ -288,7 +256,8 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
     canvas.save();
     canvas.translate(attrs.scrollX, attrs.scrollY);
     canvas.clipRect(getSplitClipRect());
-    each(splitLineList, (split, p1) {
+    each(splitLineList, (render, p1) {
+      var split = render as AxisLineRender;
       int interval = splitLine.interval;
       if (interval > 0) {
         interval += 1;
@@ -549,4 +518,7 @@ abstract class BaseGridAxisImpl extends LineAxisImpl<GridAxis, GridAxisAttr> {
   dynamic pxToData(num position);
 
   bool get isXAxis => direction == Direction.horizontal;
+
+  @override
+  GridAxisAttr onBuildDefaultAttrs() =>GridAxisAttr(Rect.zero, Offset.zero, Offset.zero, DynamicText.empty);
 }

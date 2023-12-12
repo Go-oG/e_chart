@@ -1,12 +1,10 @@
 import '../../../model/data.dart';
-import '../axis_attrs.dart';
-import '../base/line/line_attrs.dart';
+import '../../index.dart';
 
 class GridAxisAttr extends LineAxisAttrs {
   DynamicText maxStr;
 
   GridAxisAttr(
-    super.axisIndex,
     super.rect,
     super.start,
     super.end,
@@ -20,7 +18,6 @@ class GridAxisAttr extends LineAxisAttrs {
   @override
   AxisAttrs copy() {
     return GridAxisAttr(
-      axisIndex,
       rect,
       start,
       end,

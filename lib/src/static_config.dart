@@ -8,6 +8,7 @@ class StaticConfig {
   static const int intMax = 2 ^ 53 - 1;
 
   static final epsilon = pow(2, -52);
+
   static const halfPi = pi/2;
 
   ///精度

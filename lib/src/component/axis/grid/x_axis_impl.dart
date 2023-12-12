@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 ///横向轴
 class XAxisImpl extends BaseGridAxisImpl {
-  XAxisImpl(super.direction, super.coord, super.context, super.axis, super.attrs);
+  XAxisImpl(super.direction, super.coord, super.context, super.axis, {super.axisIndex});
 
   @override
   void onMeasure(double parentWidth, double parentHeight) {
@@ -19,14 +19,14 @@ class XAxisImpl extends BaseGridAxisImpl {
     AxisLabel axisLabel = axis.axisLabel;
     if (axisLabel.show) {
       var labelHeight = axisLabel.margin + axisLabel.padding;
-      labelHeight += axisLabel.getStyle(0, 1, getAxisTheme()).measure(attrs.maxStr).height;
+      labelHeight += axisLabel.getStyle(0, 1, axisTheme).measure(attrs.maxStr).height;
       if (axisLabel.inside == axis.axisTick.inside) {
         height += labelHeight;
       } else {
         height = max<double>([height, labelHeight + lineHeight]).toDouble();
       }
     }
-    axisSize=height;
+    axisSize = height;
   }
 
   @override

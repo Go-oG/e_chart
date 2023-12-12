@@ -12,7 +12,6 @@ class LineAxisAttrs extends AxisAttrs {
   Offset end;
 
   LineAxisAttrs(
-    super.axisIndex,
     this.rect,
     this.start,
     this.end, {
@@ -29,7 +28,6 @@ class LineAxisAttrs extends AxisAttrs {
   @override
   AxisAttrs copy() {
     return LineAxisAttrs(
-      axisIndex,
       rect,
       start,
       end,

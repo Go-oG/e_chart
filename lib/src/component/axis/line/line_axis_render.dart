@@ -2,42 +2,8 @@ import 'dart:math';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../model/node/split_area.dart';
-import 'line_attrs.dart';
-
-abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxisImpl<T, P> {
-  LineAxisImpl(super.context, super.axis, super.attrs);
-
-  ///存储坐标轴相关的节点
-  late List<LineSegment> lineList = [];
-
-  void updateAxisLines(List<LineSegment> list) {
-    lineList = list;
-  }
-
-  late List<LineSegment> splitLineList = [];
-
-  void updateSplitLines(List<LineSegment> list) {
-    splitLineList = list;
-  }
-
-  late List<SplitAreaNode> splitAreaList = [];
-
-  void updateSplitAreas(List<SplitAreaNode> list) {
-    splitAreaList = list;
-  }
-
-  late List<TickNode> tickList = [];
-
-  void updateTicks(List<TickNode> list) {
-    tickList = list;
-  }
-
-  late List<AxisLabelNode> labelList = [];
-
-  void updateLabels(List<AxisLabelNode> list) {
-    labelList = list;
-  }
+abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxisRender<T, P> {
+  LineAxisRender(super.context, super.axis, {super.axisIndex});
 
   @override
   void onAttrsChange(P oldAttrs) {
@@ -68,21 +34,20 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
   double get axisAngle => attrs.end.angle(attrs.start);
 
   @override
-  void onLayoutAxisLine(P attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutAxisLine(P attrs, BaseScale<dynamic, num> scale) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
-      updateAxisLines([]);
-      return;
+      return null;
     }
 
-    var lineStyle = axisLine.getStyle(getAxisTheme());
+    var lineStyle = axisLine.getStyle(axisTheme);
 
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
     }
     final double interval = scale.tickInterval.toDouble();
-    List<LineSegment> resultList = [];
+    List<AxisLineRender> resultList = [];
     var angle = axisAngle;
     final int maxCount = tickCount - 1;
     for (int i = 0; i < maxCount; i++) {
@@ -93,18 +58,17 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
       var startData = scale.toData(dis);
       var end = attrs.start.translate(nextDis, 0).rotate(angle, center: attrs.start);
       var endData = scale.toData(nextDis);
-      resultList.add(LineSegment([startData, endData], i, maxCount, start, end, lineStyle));
+      resultList.add(AxisLineRender([startData, endData], i, maxCount, start, end, lineStyle));
     }
-    updateAxisLines(resultList);
+    return resultList;
   }
 
   @override
-  void onLayoutAxisTick(P attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutAxisTick(P attrs, BaseScale<dynamic, num> scale) {
     var axisTick = axis.axisTick;
     var tick = axisTick.tick;
     if (!axisTick.show || (tick == null || !tick.show)) {
-      updateTicks([]);
-      return;
+      return null;
     }
 
     var minorTick = axisTick.minorTick;
@@ -121,7 +85,7 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
     final minorCount = minorTick?.splitNumber ?? 0;
     final double minorInterval = minorCount <= 0 ? 0 : (interval / (minorCount + 1));
 
-    List<TickNode> resultList = [];
+    List<TickRender> resultList = [];
     final center = attrs.start;
     final angle = axisAngle;
 
@@ -131,7 +95,7 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
       var start = offset.rotate(angle, center: center);
       var end = offset.translate(0, tickOffset).rotate(angle, center: center);
       var data = scale.toData(dis);
-      var tickNode = TickNode(data, i, tickCount, start, end, tick.lineStyle, []);
+      var tickNode = TickRender(data, i, tickCount, start, end, tick.lineStyle, []);
       resultList.add(tickNode);
       if (minorCount <= 0 || minorTick == null || !minorTick.show) {
         continue;
@@ -143,24 +107,22 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
         var data = scale.toData(dis2 + dis);
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        tickNode.minorList.add(TickNode(data, i, tickCount, ms, me, minorTick.lineStyle));
+        tickNode.minorList.add(TickRender(data, i, tickCount, ms, me, minorTick.lineStyle));
       }
     }
-    updateTicks(resultList);
+    return resultList;
   }
 
   @override
-  void onLayoutAxisLabel(P attrs, BaseScale<dynamic, num> scale) {
+  List<ElementRender>? onLayoutAxisLabel(P attrs, BaseScale<dynamic, num> scale) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
-      updateLabels([]);
-      return;
+      return null;
     }
     final labels = obtainLabel();
     final int labelCount = labels.length;
     if (labelCount <= 0) {
-      updateLabels([]);
-      return;
+      return null;
     }
 
     var axisTick = axis.axisTick;
@@ -173,7 +135,7 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
     }
     labelOffset *= axisLabel.inside ? -1 : 1;
 
-    List<AxisLabelNode> resultList = [];
+    List<AxisLabelRender> resultList = [];
     final center = attrs.start;
     final angle = axisAngle;
 
@@ -189,7 +151,7 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
       final offset = center.translate(dis, 0);
       var textOffset = offset.translate(0, labelOffset).rotate(angle, center: center);
 
-      var ls = axisLabel.getStyle(i, labelCount, getAxisTheme());
+      var ls = axisLabel.getStyle(i, labelCount, axisTheme);
       var config = TextDraw(
         label,
         ls,
@@ -197,33 +159,15 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
         align: toAlignment(angle + 90, axisLabel.inside),
         rotate: axisLabel.rotate,
       );
-      var result = AxisLabelNode(i, labelCount, config, []);
+      var result = AxisLabelRender(i, labelCount, config, []);
       resultList.add(result);
-      // ///构建minorLabel
-      // var minorLS = axisLabel.getMinorStyle(i, tickCount, getAxisTheme());
-      // double minorInterval = interval / (minorCount + 1);
-      // for (int j = 1; j <= minorTick.splitNumber; j++) {
-      //   num dis = parenDis + minorInterval * j;
-      //   final labelOffset = circlePoint(dis, angle, center);
-      //
-      //   dynamic data = scale.toData(dis);
-      //   var text = axisLabel.formatter?.call(data) ?? DynamicText.empty;
-      //   var minorConfig = TextDraw(
-      //     text,
-      //     minorLS,
-      //     labelOffset,
-      //     align: toAlignment(angle + 90, axisLabel.inside),
-      //     rotate: axisLabel.rotate,
-      //   );
-      //   result.minorLabel.add(AxisLabelNode(i, tickCount, minorConfig));
-      // }
     });
 
-    updateLabels(resultList);
+    return resultList;
   }
 
   @override
-  TextDraw onLayoutAxisName() {
+  List<ElementRender>? onLayoutAxisTitle(P attrs, BaseScale<dynamic, num> scale) {
     Offset center;
     Offset p;
     var align = axis.axisName?.align ?? Align2.end;
@@ -242,42 +186,7 @@ abstract class LineAxisImpl<T extends BaseAxis, P extends LineAxisAttrs> extends
     r += axis.axisName?.nameGap ?? 0;
     var label = axis.axisName?.name ?? DynamicText.empty;
     var s = axis.axisName?.labelStyle ?? const LabelStyle();
-    return TextDraw(label, s, circlePoint(r, a, center), align: toAlignment(a));
-  }
-
-  @override
-  void onDrawAxisLine(CCanvas canvas, Paint paint) {
-    each(lineList, (line, p1) {
-      line.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisTick(CCanvas canvas, Paint paint) {
-    each(tickList, (tick, p1) {
-      tick.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisLabel(CCanvas canvas, Paint paint) {
-    each(labelList, (label, p1) {
-      label.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {
-    each(splitLineList, (p0, p1) {
-      p0.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
-    each(splitAreaList, (p0, p1) {
-      p0.draw(canvas, paint);
-    });
+    return [TextDraw(label, s, circlePoint(r, a,center),align: toAlignment(a))];
   }
 
   List<Offset> dataToPoint(dynamic data) {

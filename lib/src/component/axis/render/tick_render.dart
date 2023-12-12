@@ -1,8 +1,9 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/render/element_render.dart';
 
-class TickNode extends Disposable {
+class TickRender extends ElementRender {
   ///数据可能为空
   List<dynamic> data;
   int index;
@@ -10,9 +11,9 @@ class TickNode extends Disposable {
   Offset start;
   Offset end;
   LineStyle style;
-  List<TickNode> minorList;
+  List<TickRender> minorList;
 
-  TickNode(
+  TickRender(
     this.data,
     this.index,
     this.maxIndex,
@@ -22,6 +23,7 @@ class TickNode extends Disposable {
     this.minorList = const [],
   ]);
 
+  @override
   void draw(CCanvas canvas, Paint paint) {
     style.drawLine(canvas, paint, start, end);
     each(minorList, (tick, p1) {

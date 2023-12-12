@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:e_chart/e_chart.dart';
 
 
-class ForceSimulation extends ChangeNotifier {
+class ForceSimulation extends ChartNotifier2 {
   static const int optMaxCount = 25;
   final List<Force> _forces = [];
   final Graph _graph = Graph([], edges: []);

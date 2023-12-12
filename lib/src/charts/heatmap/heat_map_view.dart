@@ -65,4 +65,6 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   LineStyle? getBorderStyle(HeatMapData data) {
     return series.getBorderStyle(context, data);
   }
+
+
 }

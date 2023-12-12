@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 ///平行坐标系
 class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
-
   ParallelCoordImpl(super.props);
 
   void initAxis() {
@@ -14,8 +13,7 @@ class ParallelCoordImpl extends ParallelCoord {
     var direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
-      var attrs = ParallelAxisAttrs(i, Rect.zero, Offset.zero, Offset.zero, Size.zero, Size.zero, true);
-      axisMap[ele] = ParallelAxisImpl(context, ele, attrs, direction);
+      axisMap[ele] = ParallelAxisImpl(context, ele, direction,axisIndex: i);
     }
   }
 
@@ -65,7 +63,7 @@ class ParallelCoordImpl extends ParallelCoord {
     return node;
   }
 
-  bool isFirstAxis(BaseAxisImpl node) {
+  bool isFirstAxis(BaseAxisRender node) {
     bool hasCheck = false;
     for (var axis in props.axisList) {
       var node2 = axisMap[axis]!;
@@ -76,7 +74,7 @@ class ParallelCoordImpl extends ParallelCoord {
     return false;
   }
 
-  bool isLastAxis(BaseAxisImpl node) {
+  bool isLastAxis(BaseAxisRender node) {
     bool hasCheck = false;
     for (int i = props.axisList.length - 1; i >= 0; i--) {
       var node2 = axisMap[props.axisList[i]]!;
@@ -186,8 +184,8 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   ///找到当前点击的
-  BaseAxisImpl? findClickAxis(Offset offset) {
-    BaseAxisImpl? node;
+  BaseAxisRender? findClickAxis(Offset offset) {
+    BaseAxisRender? node;
     for (var ele in axisMap.entries) {
       List<Offset> ol;
       if (props.direction == Direction.horizontal) {

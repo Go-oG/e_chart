@@ -6,22 +6,22 @@ import 'package:flutter/material.dart';
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
   AngleAxisImpl? _angleAxis;
+
   AngleAxisImpl get angleAxis => _angleAxis!;
 
-  RadiusAxisImpl? _radiusAxis;
-  RadiusAxisImpl get radiusAxis => _radiusAxis!;
+  RadiusAxisRender? _radiusAxis;
+
+  RadiusAxisRender get radiusAxis => _radiusAxis!;
 
   Offset center = Offset.zero;
+
   PolarCoordImpl(super.props);
 
   @override
   void onCreate() {
     super.onCreate();
-    var angleAttrs =
-        AngleAxisAttrs(1, center, props.angleAxis.offsetAngle.toDouble(), [0, 0], clockwise: props.angleAxis.clockwise);
-    _angleAxis = AngleAxisImpl(context, props.angleAxis, angleAttrs);
-    var radiusAttrs = RadiusAxisAttrs(center, 0, 0, contentBox, Offset.zero, Offset.zero);
-    _radiusAxis = RadiusAxisImpl(context, props.radiusAxis, radiusAttrs);
+    _angleAxis = AngleAxisImpl(context, props.angleAxis, axisIndex: 0);
+    _radiusAxis = RadiusAxisRender(context, props.radiusAxis, axisIndex: 0);
   }
 
   @override
@@ -60,7 +60,6 @@ class PolarCoordImpl extends PolarCoord {
     double or = width / 2;
 
     var angleAttrs = AngleAxisAttrs(
-      1,
       center,
       props.angleAxis.offsetAngle.toDouble(),
       [ir, or],
@@ -75,7 +74,7 @@ class PolarCoordImpl extends PolarCoord {
     Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
     Offset eo = circlePoint(or, angle, center);
 
-    var radiusAttrs = RadiusAxisAttrs(center, angle, 0, contentBox, so, eo);
+    var radiusAttrs = RadiusAxisAttrs(center, angle, contentBox, so, eo);
     radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
 
     for (var c in children) {

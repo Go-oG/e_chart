@@ -2,11 +2,11 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
 ///标识坐标轴的Title
-class AxisTitleNode extends Disposable {
+class AxisTitleRender extends ElementRender {
   AxisName? name;
   late TextDraw label;
 
-  AxisTitleNode(this.name) {
+  AxisTitleRender(this.name) {
     label = TextDraw(name?.name ?? DynamicText.empty, LabelStyle.empty, Offset.zero, align: Alignment.center);
   }
 
@@ -16,5 +16,10 @@ class AxisTitleNode extends Disposable {
     label.dispose();
     label = TextDraw.empty;
     name = null;
+  }
+
+  @override
+  void draw(CCanvas canvas, Paint paint) {
+    label.draw(canvas, paint);
   }
 }

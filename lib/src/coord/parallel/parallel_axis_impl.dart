@@ -1,21 +1,38 @@
 import 'dart:ui';
 
-import '../../component/index.dart';
-import '../../core/render/ccanvas.dart';
-import '../../model/enums/direction.dart';
-import 'parallel_axis.dart';
+import 'package:e_chart/e_chart.dart';
 
-class ParallelAxisImpl extends LineAxisImpl<ParallelAxis, ParallelAxisAttrs> {
+class ParallelAxisImpl extends LineAxisRender<ParallelAxis, ParallelAxisAttrs> {
   final Direction direction;
   bool expand = true;
 
-  ParallelAxisImpl(super.context, super.axis, super.attrs, this.direction);
+  ParallelAxisImpl(super.context, super.axis, this.direction, {super.axisIndex});
 
   @override
   void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {}
 
   @override
   void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {}
+
+  @override
+  List<ElementRender>? onLayoutSplitArea(ParallelAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    return null;
+  }
+
+  @override
+  List<ElementRender>? onLayoutSplitLine(ParallelAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    return null;
+  }
+
+  @override
+  ParallelAxisAttrs onBuildDefaultAttrs() => ParallelAxisAttrs(
+        Rect.zero,
+        Offset.zero,
+        Offset.zero,
+        Size.zero,
+        Size.zero,
+        true,
+      );
 }
 
 class ParallelAxisAttrs extends LineAxisAttrs {
@@ -24,7 +41,6 @@ class ParallelAxisAttrs extends LineAxisAttrs {
   bool expand;
 
   ParallelAxisAttrs(
-    super.axisIndex,
     super.rect,
     super.start,
     super.end,
@@ -40,7 +56,6 @@ class ParallelAxisAttrs extends LineAxisAttrs {
   @override
   ParallelAxisAttrs copy() {
     return ParallelAxisAttrs(
-      axisIndex,
       rect,
       start,
       end,

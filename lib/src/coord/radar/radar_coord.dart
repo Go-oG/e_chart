@@ -18,10 +18,8 @@ class RadarCoordImpl extends RadarCoord {
     for (int i = 0; i < props.indicator.length; i++) {
       var indicator = props.indicator[i];
       var axisName = AxisName(indicator.name, nameGap: indicator.nameGap, labelStyle: indicator.nameStyle);
-      RadarAxis axis = RadarAxis(axisName: axisName, min: indicator.min, max: indicator.max, splitNumber: 5);
-
-      var attr = LineAxisAttrs(i, Rect.zero, Offset.zero, Offset.zero);
-      axisMap[indicator] = RadarAxisImpl(context, axis, attr);
+      var axis = RadarAxis(axisName: axisName, min: indicator.min, max: indicator.max, splitNumber: 5);
+      axisMap[indicator] = RadarAxisImpl(context, axis,axisIndex: i);
     }
   }
 

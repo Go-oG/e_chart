@@ -1,8 +1,9 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/render/element_render.dart';
 
-class LineSegment extends Disposable {
+class AxisLineRender extends ElementRender {
   List<dynamic> data;
   int index;
   int maxIndex;
@@ -11,17 +12,9 @@ class LineSegment extends Disposable {
   Path? path;
   LineStyle style;
 
-  LineSegment(
-    this.data,
-    this.index,
-    this.maxIndex,
-    this.start,
-    this.end,
-    this.style);
+  AxisLineRender(this.data, this.index, this.maxIndex, this.start, this.end, this.style);
 
-
-
-
+  @override
   void draw(CCanvas canvas, Paint paint) {
     var p = path;
     if (p != null) {
@@ -32,7 +25,7 @@ class LineSegment extends Disposable {
   }
 }
 
-class CurveSegment extends Disposable {
+class AxisCurveRender extends ElementRender {
   List<dynamic> data;
   int index;
   int maxIndex;
@@ -42,7 +35,7 @@ class CurveSegment extends Disposable {
   num sweepAngle;
   LineStyle style;
 
-  CurveSegment(
+  AxisCurveRender(
     this.data,
     this.index,
     this.maxIndex,
@@ -53,6 +46,7 @@ class CurveSegment extends Disposable {
     this.style,
   );
 
+  @override
   void draw(CCanvas canvas, Paint paint) {
     style.drawArc(canvas, paint, radius, startAngle, sweepAngle, center);
   }

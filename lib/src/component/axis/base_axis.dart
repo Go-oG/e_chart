@@ -313,16 +313,6 @@ List<Size> measureAxisNameTextMaxSize(Iterable<BaseAxis> axisList, Direction dir
   return [firstSize, lastSize];
 }
 
-///时间分割类型
-enum TimeType {
-  year,
-  month,
-  day,
-  hour,
-  minute,
-  sec,
-  week,
-}
 
 Map<TimeType, Duration> _timeDurationMap = {
   TimeType.year: const Duration(days: 365),

@@ -1,44 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../model/node/split_area.dart';
-
 ///角度轴(是一个完整的环,类似于Y轴)
-class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
+class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
   static const int maxAngle = 360;
 
-  AngleAxisImpl(super.context, super.axis, super.attrs);
-
-  ///存储坐标轴相关的节点
-  late List<CurveSegment> lineList = [];
-
-  void updateAxisLines(List<CurveSegment> list) {
-    lineList = list;
-  }
-
-  late List<CurveSplitLineNode> splitLineList = [];
-
-  void updateSplitLines(List<CurveSplitLineNode> list) {
-    splitLineList = list;
-  }
-
-  late List<SplitAreaNode> splitAreaList = [];
-
-  void updateSplitAreas(List<SplitAreaNode> list) {
-    splitAreaList = list;
-  }
-
-  late List<TickNode> tickList = [];
-
-  void updateTicks(List<TickNode> list) {
-    tickList = list;
-  }
-
-  late List<AxisLabelNode> labelList = [];
-
-  void updateLabels(List<AxisLabelNode> list) {
-    labelList = list;
-  }
+  AngleAxisImpl(super.context, super.axis, {super.axisIndex});
 
   @override
   BaseScale onBuildScale(AngleAxisAttrs attrs, List<dynamic> dataSet) {
@@ -72,53 +39,57 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
   }
 
   @override
-  void onLayoutAxisLine(AngleAxisAttrs attrs, BaseScale scale) {}
+  List<ElementRender>? onLayoutAxisLine(AngleAxisAttrs attrs, BaseScale scale) {
+    var axisLine = axis.axisLine;
+    if (!axisLine.show) {
+      return null;
+    }
+    List<ElementRender> list = [];
+    int tickCount = scale.tickCount - 1;
+    var s = axisLine.getStyle(axisTheme);
+    for (int i = 0; i < tickCount; i++) {
+      var render = AxisCurveRender([], i, tickCount, attrs.center, attrs.radius.last, attrs.angleOffset, 360, s);
+      list.add(render);
+    }
+
+    return list;
+  }
 
   @override
-  void onLayoutSplitLine(AngleAxisAttrs attrs, BaseScale scale) {
+  List<ElementRender>? onLayoutSplitLine(AngleAxisAttrs attrs, BaseScale scale) {
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
-      updateSplitAreas([]);
-      return;
+      return null;
     }
 
     int count = scale.tickCount - 1;
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / count;
-    List<CurveSplitLineNode> list = [];
+    List<AxisCurveRender> list = [];
     double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
     double or = attrs.radius.last;
 
     for (int i = 0; i < count; i++) {
       num sa = attrs.angleOffset + angleInterval * i;
       var data = [];
-      var segment = CurveSplitLineNode(
-        data,
-        i,
-        count,
-        attrs.center,
-        ir,
-        or,
-        sa,
-        splitLine.getStyle(data, i, count, getAxisTheme()),
-      );
+      var style = splitLine.getStyle(data, i, count, axisTheme);
+      var segment = AxisCurveRender(data, i, count, attrs.center, ir, or, sa, style);
       list.add(segment);
     }
-    updateSplitLines(list);
+    return list;
   }
 
   @override
-  void onLayoutSplitArea(AngleAxisAttrs attrs, BaseScale scale) {
+  List<ElementRender>? onLayoutSplitArea(AngleAxisAttrs attrs, BaseScale scale) {
     var splitArea = axis.splitArea;
     if (!splitArea.show) {
-      updateSplitAreas([]);
-      return;
+      return null;
     }
 
     int count = scale.tickCount - 1;
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / count;
-    List<SplitAreaNode> list = [];
+    List<SplitAreaRender> list = [];
     double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
     double or = attrs.radius.last;
 
@@ -131,18 +102,17 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
         innerRadius: ir,
         center: attrs.center,
       );
-      list.add(SplitAreaNode([], arc.toPath(), splitArea.getStyle(i, count, getAxisTheme())));
+      list.add(SplitAreaRender([], arc.toPath(), splitArea.getStyle(i, count, axisTheme)));
     }
-    updateSplitAreas(list);
+    return list;
   }
 
   @override
-  void onLayoutAxisTick(AngleAxisAttrs attrs, BaseScale scale) {
+  List<ElementRender>? onLayoutAxisTick(AngleAxisAttrs attrs, BaseScale scale) {
     var axisTick = axis.axisTick;
     var tick = axisTick.tick;
     if (!axis.show || !axisTick.show || tick == null || !tick.show) {
-      updateTicks([]);
-      return;
+      return null;
     }
     var minorTick = axisTick.minorTick;
 
@@ -153,7 +123,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
 
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / tickCount;
-    List<TickNode> tickList = [];
+    List<TickRender> tickList = [];
 
     final int minorCount = minorTick?.splitNumber ?? 0;
     final minorInterval = angleInterval / minorCount;
@@ -173,9 +143,9 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
       num angle = attrs.angleOffset + angleInterval * i;
       Offset so = circlePoint(attrs.radius.last, angle, attrs.center);
       Offset eo = circlePoint(r, angle, attrs.center);
-      List<TickNode> minorList = [];
+      List<TickRender> minorList = [];
 
-      tickList.add(TickNode(scale.toData(angle), i, tickCount, so, eo, tickStyle, minorList));
+      tickList.add(TickRender(scale.toData(angle), i, tickCount, so, eo, tickStyle, minorList));
       if (axis.isCategoryAxis || axis.isTimeAxis || i >= tickCount - 1) {
         continue;
       }
@@ -187,25 +157,23 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
         var minorAngle = angle + minorInterval * j;
         Offset minorSo = circlePoint(attrs.radius.last, angle + minorInterval * j, attrs.center);
         Offset minorEo = circlePoint(minorR, angle + minorInterval * j, attrs.center);
-        minorList.add(TickNode(scale.toData(minorAngle), i, tickCount, minorSo, minorEo, minorTick.lineStyle));
+        minorList.add(TickRender(scale.toData(minorAngle), i, tickCount, minorSo, minorEo, minorTick.lineStyle));
       }
     }
 
-    updateTicks(tickList);
+    return tickList;
   }
 
   @override
-  void onLayoutAxisLabel(AngleAxisAttrs attrs, BaseScale scale) {
+  List<ElementRender>? onLayoutAxisLabel(AngleAxisAttrs attrs, BaseScale scale) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
-      updateLabels([]);
-      return;
+      return null;
     }
     final labels = obtainLabel();
     final int labelCount = labels.length;
     if (labelCount <= 1) {
-      updateLabels([]);
-      return;
+      return null;
     }
     var axisTick = axis.axisTick;
 
@@ -226,7 +194,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
         r += axisLabel.margin + axisLabel.padding;
       }
     }
-    List<AxisLabelNode> resultList = [];
+    List<AxisLabelRender> resultList = [];
 
     for (int i = 0; i < labels.length; i++) {
       DynamicText text = labels[i];
@@ -236,7 +204,7 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
       }
       num angle = attrs.angleOffset + angleInterval * d;
       Offset offset = circlePoint(r, angle, attrs.center);
-      var labelStyle = axisLabel.getStyle(i, labels.length, getAxisTheme());
+      var labelStyle = axisLabel.getStyle(i, labels.length, axisTheme);
       var config = TextDraw(
         text,
         labelStyle,
@@ -244,14 +212,14 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
         align: toAlignment(angle, axisLabel.inside),
         rotate: axisLabel.rotate,
       );
-      var result = AxisLabelNode(i, labels.length, config, []);
+      var result = AxisLabelRender(i, labels.length, config, []);
       resultList.add(result);
     }
-    updateLabels(resultList);
+    return resultList;
   }
 
   @override
-  TextDraw onLayoutAxisName() {
+  List<ElementRender>? onLayoutAxisTitle(AngleAxisAttrs attrs, BaseScale scale) {
     var label = titleNode.name?.name ?? DynamicText.empty;
     Offset start = attrs.center;
     Offset end = circlePoint(attrs.radius.last, attrs.angleOffset, attrs.center);
@@ -259,73 +227,23 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
     var align = axisName?.align ?? Align2.end;
     var style = axisName?.labelStyle ?? const LabelStyle();
     if (align == Align2.center || label.isEmpty) {
-      return TextDraw(label, style, Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2),
-          align: Alignment.center, rotate: axisName?.rotate ?? 0);
+      return [
+        TextDraw(label, style, Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2),
+            align: Alignment.center, rotate: axisName?.rotate ?? 0)
+      ];
     }
     if (align == Align2.start) {
-      return TextDraw(label, style, start, align: Alignment.centerLeft, rotate: axisName?.rotate ?? 0);
+      return [TextDraw(label, style, start, align: Alignment.centerLeft, rotate: axisName?.rotate ?? 0)];
     }
-    return TextDraw(
-      label,
-      style,
-      end,
-      align: toAlignment(end.angle(start)),
-      rotate: axisName?.rotate ?? 0,
-    );
-  }
-
-  @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
-    var splitArea = axis.splitArea;
-    if (!splitArea.show) {
-      return;
-    }
-    each(splitAreaList, (split, i) {
-      split.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {
-    var splitLine = axis.splitLine;
-    if (!splitLine.show) {
-      return;
-    }
-    each(splitLineList, (sp, i) {
-      sp.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisLine(CCanvas canvas, Paint paint) {
-    var axisLine = axis.axisLine;
-    if (!axisLine.show) {
-      return;
-    }
-    each(lineList, (line, index) {
-      line.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisTick(CCanvas canvas, Paint paint) {
-    var axisTick = axis.axisTick;
-    if (!axisTick.show) {
-      return;
-    }
-    each(tickList, (p0, p1) {
-      p0.draw(canvas, paint);
-    });
-  }
-
-  @override
-  void onDrawAxisLabel(CCanvas canvas, Paint paint) {
-    var axisLabel = axis.axisLabel;
-    if (axisLabel.show) {
-      each(labelList, (p0, p1) {
-        p0.draw(canvas, paint);
-      });
-    }
+    return [
+      TextDraw(
+        label,
+        style,
+        end,
+        align: toAlignment(end.angle(start)),
+        rotate: axisName?.rotate ?? 0,
+      )
+    ];
   }
 
   final TextDraw _axisPointerTD = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero);
@@ -401,7 +319,10 @@ class AngleAxisImpl extends BaseAxisImpl<AngleAxis, AngleAxisAttrs> {
 
   @override
   void dispose() {
-    _axisPointerTD.dispose();
     super.dispose();
+    _axisPointerTD.dispose();
   }
+
+  @override
+  AngleAxisAttrs onBuildDefaultAttrs() => AngleAxisAttrs(Offset.zero, 0, [0]);
 }

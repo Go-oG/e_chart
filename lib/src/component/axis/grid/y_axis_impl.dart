@@ -1,15 +1,13 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/axis/grid/grid_attrs.dart';
-
 import 'package:flutter/material.dart';
 
 class YAxisImpl extends XAxisImpl {
-  YAxisImpl(super.direction, super.coord, super.context, super.axis, super.attrs);
+  YAxisImpl(super.direction, super.coord, super.context, super.axis, {super.axisIndex});
 
   @override
   void onMeasure(double parentWidth, double parentHeight) {
     if (!axis.show) {
-      axisSize=0;
+      axisSize = 0;
       return;
     }
 
@@ -21,7 +19,7 @@ class YAxisImpl extends XAxisImpl {
     if (axisLabel.show) {
       var labelWidth = axisLabel.margin + axisLabel.padding;
       var maxStr = attrs.maxStr;
-      labelWidth += axisLabel.getStyle(0, 1, getAxisTheme()).measure(maxStr).width;
+      labelWidth += axisLabel.getStyle(0, 1, axisTheme).measure(maxStr).width;
       if (axisLabel.inside == axis.axisTick.inside) {
         width += labelWidth;
       } else {
@@ -70,6 +68,4 @@ class YAxisImpl extends XAxisImpl {
   dynamic pxToData(num position) {
     return scale.toData(position);
   }
-
-
 }
