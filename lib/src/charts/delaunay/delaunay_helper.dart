@@ -8,7 +8,7 @@ class DelaunayHelper extends LayoutHelper2<DelaunayData, DelaunaySeries> {
 
   DelaunayHelper(super.context, super.view, super.series);
 
-  RBush<DelaunayData> bush = RBush.from((p0) => p0.attr.getBound());
+  RBush<DelaunayData> bush = RBush.from((p0) => p0.shape.getBound());
   List<ChartOffset> hull = [];
   List<DelaunayData> showNodeList = [];
 

@@ -16,10 +16,10 @@ class PieView extends SeriesView<PieSeries, PieHelper> {
 
   @override
   PieHelper buildLayoutHelper(var oldHelper) {
-    if(oldHelper!=null){
-      oldHelper.context=context;
-      oldHelper.view=this;
-      oldHelper.series=series;
+    if (oldHelper != null) {
+      oldHelper.context = context;
+      oldHelper.view = this;
+      oldHelper.series = series;
       return oldHelper;
     }
     return PieHelper(context, this, series);

@@ -1,5 +1,4 @@
-
-abstract class PolarChild  {
+abstract mixin class PolarChild {
   int get polarIndex {
     return 0;
   }

@@ -79,7 +79,7 @@ class ChordHelper extends LayoutHelper3<ChordData, ChordLink, ChordSeries> {
 
     ///构建linkPath
     each(links, (p0, p1) {
-      p0.attr = _buildLinkPath(p0);
+      (p0).attr = _buildLinkPath(p0);
     });
 
     dataSet = dataList;
@@ -116,8 +116,6 @@ class ChordHelper extends LayoutHelper3<ChordData, ChordLink, ChordSeries> {
     return Offset(x, y);
   }
 
-
-
   @override
   List<ChordLink> getDataInLink(ChordData data) {
     return series.dataHelper().innerMap[data] ?? [];
@@ -133,5 +131,4 @@ class ChordHelper extends LayoutHelper3<ChordData, ChordLink, ChordSeries> {
 
   @override
   ChordData getLinkTarget(ChordLink link) => link.target;
-
 }

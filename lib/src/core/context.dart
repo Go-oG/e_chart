@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/title/title_view.dart';
 import 'package:flutter/widgets.dart';
 import 'package:e_chart/src/event/chart_action_dispatcher.dart' as ac;
 
@@ -55,16 +54,6 @@ class Context extends Disposable {
   ///存放普通的渲染组件
   Map<ChartSeries, ChartView> _seriesViewMap = {};
 
-  ///Title(全局只会存在一个)
-  TitleView? _title;
-
-  TitleView? get title => _title;
-
-  ///图例(全局一个实例)
-  LegendComponent? _legend;
-
-  LegendComponent get legend => _legend!;
-
   ///分配索引
   void allocateIndex() {
     //给Series 分配索引
@@ -76,20 +65,8 @@ class Context extends Disposable {
     });
   }
 
-  /// 创建Chart组件
-  /// 组件是除了渲染视图之外的全部控件
-  void _createComponent() {
-    ///图例
-    _legend = LegendComponent(option.legend);
-    _legend!.create(this, root);
-
-    ///title
-    if (option.title != null) {
-      // _title = TitleView(option.title!);
-      // _title?.create(this, root);
-      //TODO 这里不知道是否需要回调[bindSeriesCommand]
-    }
-
+  /// 创建Chart 坐标系组件
+  void _createCoordComponent() {
     ///Coord
     ///转换CoordConfig 到Coord
     List<Coord> coordConfigList = [
@@ -106,7 +83,6 @@ class Context extends Disposable {
       if (c == null) {
         throw ChartError('无法转换对应的坐标系:$ele');
       }
-      c.create(this, root);
       _coordMap[ele] = c;
       _coordList.add(c);
     }
@@ -130,16 +106,15 @@ class Context extends Disposable {
       CoordLayout? layout = _findCoord(view, key);
       if (layout == null) {
         layout = SingleCoordImpl();
-        layout.create(this, root);
         var config = SingleCoordConfig();
         _coordMap[config] = layout;
         _coordList.add(layout);
       }
-      view.create(this, layout);
       layout.addView(view);
     });
 
     each(_coordList, (coord, p1) {
+      coord.attach(this, root);
       int index = 0;
       for (var ele in coord.children) {
         if (ele.ignoreAllocateDataIndex()) {
@@ -152,14 +127,14 @@ class Context extends Disposable {
   }
 
   ///====生命周期函数=====
-  void onCreate() {
+  void attach() {
     _seriesViewMap.clear();
     _coordMap.clear();
     _coordList.clear();
     allocateIndex();
 
-    ///创建组件
-    _createComponent();
+    ///创建坐标系组件
+    _createCoordComponent();
 
     ///创建渲染视图
     _createRenderView();
@@ -173,8 +148,6 @@ class Context extends Disposable {
   }
 
   void onStart() {
-    _legend?.onStart();
-    _title?.onStart();
     for (var coord in coordList) {
       try {
         coord.onStart();
@@ -186,8 +159,6 @@ class Context extends Disposable {
 
   void onStop() {
     _animationManager.cancelAllAnimator();
-    _legend?.onStop();
-    _title?.onStop();
     for (var coord in coordList) {
       coord.onStop();
     }
@@ -213,11 +184,7 @@ class Context extends Disposable {
     for (var coord in _coordList) {
       coord.dispose();
     }
-    _coordList=[];
-    _legend?.dispose();
-    _legend = null;
-    _title?.dispose();
-    _title = null;
+    _coordList = [];
   }
 
   CoordLayout? _findCoord(ChartView view, ChartSeries series) {

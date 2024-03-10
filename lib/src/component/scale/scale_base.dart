@@ -18,9 +18,9 @@ abstract class BaseScale<D, R extends num> extends Disposable {
 
   @override
   void dispose() {
+    super.dispose();
     domain.clear();
     range.clear();
-    super.dispose();
   }
 
   BaseScale<D, R> copyWithRange(List<R> range);
@@ -62,6 +62,8 @@ abstract class BaseScale<D, R extends num> extends Disposable {
   bool get isNum {
     return !isCategory && !isTime;
   }
+
+  bool get hasZero;
 
   @override
   String toString() {

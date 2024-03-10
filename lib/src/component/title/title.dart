@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 
 class ChartTitle extends ChartNotifier2 {
   bool show = false;
+  Align2 mainAlign = Align2.start;
+  Align2 crossAlign = Align2.start;
 
-  Align2 position = Align2.start;
-  Align2 align = Align2.start;
   Offset offset = const Offset(8, 8);
 
   String text = '';
+
   String subText = '';
 
   num gap = 10;
@@ -18,13 +19,9 @@ class ChartTitle extends ChartNotifier2 {
   Align2 textVerticalAlign = Align2.center;
 
   EdgeInsets padding = const EdgeInsets.all(5);
-
   LabelStyle textStyle = const LabelStyle();
   LabelStyle subTextStyle = const LabelStyle();
-
   Decoration decoration = const BoxDecoration();
-  VoidCallback? textClick;
-  VoidCallback? subTextClick;
 
   ChartTitle();
 
@@ -33,8 +30,7 @@ class ChartTitle extends ChartNotifier2 {
     textStyle = LabelStyle.empty;
     subTextStyle = LabelStyle.empty;
     decoration = const BoxDecoration();
-    textClick = null;
-    subTextClick = null;
     super.dispose();
   }
+
 }

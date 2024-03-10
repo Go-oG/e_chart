@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
-  AngleAxisImpl<PolarCoord>? _angleAxis;
+  AngleAxisImpl? _angleAxis;
 
-  AngleAxisImpl<PolarCoord> get angleAxis => _angleAxis!;
+  AngleAxisImpl get angleAxis => _angleAxis!;
 
-  RadiusAxisImpl<PolarCoord>? _radiusAxis;
+  RadiusAxisRender? _radiusAxis;
 
-  RadiusAxisImpl<PolarCoord> get radiusAxis => _radiusAxis!;
+  RadiusAxisRender get radiusAxis => _radiusAxis!;
+
   Offset center = Offset.zero;
 
   PolarCoordImpl(super.props);
@@ -19,8 +20,8 @@ class PolarCoordImpl extends PolarCoord {
   @override
   void onCreate() {
     super.onCreate();
-    _angleAxis = AngleAxisImpl(context, this, props.angleAxis);
-    _radiusAxis = RadiusAxisImpl(context, this, props.radiusAxis);
+    _angleAxis = AngleAxisImpl(context, props.angleAxis, axisIndex: 0);
+    _radiusAxis = RadiusAxisRender(context, props.radiusAxis, axisIndex: 0);
   }
 
   @override
@@ -45,8 +46,8 @@ class PolarCoordImpl extends PolarCoord {
     double size = m.min(parentWidth, parentHeight);
     measureSize = Size(parentWidth, parentHeight);
     size = props.radius.last.convert(size) * 2;
-    angleAxis.doMeasure(size, size);
-    radiusAxis.doMeasure(size, size);
+    angleAxis.onMeasure(size, size);
+    radiusAxis.onMeasure(size, size);
     return Size.square(size);
   }
 
@@ -62,8 +63,8 @@ class PolarCoordImpl extends PolarCoord {
       center,
       props.angleAxis.offsetAngle.toDouble(),
       [ir, or],
-      scaleY,
-      translationY,
+      scaleRatio: scaleY,
+      scrollY: translationY,
       clockwise: props.angleAxis.clockwise,
     );
 
@@ -73,7 +74,7 @@ class PolarCoordImpl extends PolarCoord {
     Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
     Offset eo = circlePoint(or, angle, center);
 
-    var radiusAttrs = RadiusAxisAttrs(center, angle, 1, 1, contentBox, so, eo);
+    var radiusAttrs = RadiusAxisAttrs(center, angle, contentBox, so, eo);
     radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
 
     for (var c in children) {
@@ -107,8 +108,8 @@ class PolarCoordImpl extends PolarCoord {
 
   @override
   void onDraw(CCanvas canvas) {
-    angleAxis.draw(canvas, mPaint, selfBoxBound);
-    radiusAxis.draw(canvas, mPaint, selfBoxBound);
+    angleAxis.draw(canvas, mPaint);
+    radiusAxis.draw(canvas, mPaint);
   }
 
   @override

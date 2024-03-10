@@ -65,9 +65,9 @@ class LinePolarHelper extends PolarHelper<StackItemData, LineGroupData, LineSeri
       }
       PolarPosition p;
       if (vertical) {
-        p = coord.dataToPosition(data.domain, node.up);
+        p = coord.dataToPosition(data.x, node.up);
       } else {
-        p = coord.dataToPosition(node.up, data.domain);
+        p = coord.dataToPosition(node.up, data.x);
       }
       if (vertical) {
         num r = (p.radius.first + p.radius.last) / 2;

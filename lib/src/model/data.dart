@@ -1,15 +1,8 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-
-class GroupData extends BaseGroupData<ItemData> {
-  GroupData(
-    super.data, {
-    super.id,
-    super.name,
-  });
-}
 
 class BaseGroupData<T> {
   late final String id;
@@ -38,17 +31,6 @@ class BaseGroupData<T> {
   @override
   bool operator ==(Object other) {
     return other is BaseGroupData && other.id == id;
-  }
-}
-
-class ItemData extends BaseItemData {
-  num value;
-
-  ItemData(this.value, {super.name, super.id});
-
-  @override
-  String toString() {
-    return "$runtimeType value:${value.toStringAsFixed(2)}";
   }
 }
 
@@ -140,7 +122,7 @@ class DynamicText {
     return p.width.toInt();
   }
 
-  final TextStyle _textStyle = const TextStyle(fontSize: 15);
+  static const TextStyle _textStyle = TextStyle(fontSize: 15);
 
   Size getTextSize([TextStyle? style]) {
     var ts = style ?? _textStyle;
@@ -167,20 +149,6 @@ class DynamicText {
   @override
   String toString() {
     return '$text';
-  }
-
-  TextSpan? _cacheSpan;
-
-  dynamic getDrawText(TextStyle? style) {
-    if (text is String) {
-      var cs = _cacheSpan;
-      if (cs == null || cs.style != style) {
-        cs = TextSpan(text: text, style: style);
-      }
-      _cacheSpan = cs;
-      return cs;
-    }
-    return text;
   }
 }
 

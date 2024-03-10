@@ -3,49 +3,32 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///半径轴
-class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, RadiusAxisAttrs, C> {
-  RadiusAxisImpl(super.context, super.coord, super.axis);
+class RadiusAxisRender extends LineAxisRender<RadiusAxis, RadiusAxisAttrs> {
+  RadiusAxisRender(super.context, super.axis,{super.axisIndex});
 
   @override
-  void onDrawAxisSplitLine(CCanvas canvas, Paint paint, Offset scroll) {
-    var theme = getAxisTheme();
-    each(layoutResult.split, (split, i) {
-      LineStyle? style = axis.getSplitLineStyle(split.index, split.maxIndex, theme);
-      if (style == null) {
-        return;
-      }
-      style.drawArc(canvas, paint, split.start.distance2(attrs.center), attrs.offsetAngle, 360, attrs.center);
-    });
+  List<ElementRender>? onLayoutSplitArea(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    var splitArea = axis.splitArea;
+    if (!splitArea.show) {
+      return null;
+    }
+    return null;
   }
 
   @override
-  void onDrawAxisSplitArea(CCanvas canvas, Paint paint, Offset scroll) {
-    var theme = getAxisTheme();
-    each(layoutResult.split, (split, i) {
-      AreaStyle? style = axis.getSplitAreaStyle(split.index, split.maxIndex, theme);
-      if (style == null) {
-        return;
-      }
-      Arc arc = Arc(
-        innerRadius: split.start.distance2(split.center),
-        outRadius: split.end.distance2(split.center),
-        startAngle: attrs.offsetAngle,
-        sweepAngle: 360,
-        center: attrs.center,
-      );
-      style.drawArc(canvas, paint, arc);
-    });
+  List<ElementRender>? onLayoutSplitLine(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+    return null;
   }
 
   @override
-  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset offset) {
+  void onDrawAxisPointer(CCanvas canvas, Paint paint, Offset touchOffset) {
     var axisPointer = axis.axisPointer;
     if (axisPointer == null || !axisPointer.show) {
       return;
     }
     var ir = attrs.start.distance2(attrs.center);
     var or = attrs.end.distance2(attrs.center);
-    var dis = offset.distance2(attrs.center);
+    var dis = touchOffset.distance2(attrs.center);
     if (dis <= ir || dis >= or) {
       return;
     }
@@ -83,7 +66,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
     } else {
       arc = Arc(
         innerRadius: 0,
-        outRadius: offset.distance2(attrs.center),
+        outRadius: touchOffset.distance2(attrs.center),
         startAngle: attrs.offsetAngle,
         sweepAngle: 360,
         center: attrs.center,
@@ -96,4 +79,7 @@ class RadiusAxisImpl<C extends CoordLayout> extends LineAxisImpl<RadiusAxis, Rad
     checkDataType(data);
     return scale.toRange(data);
   }
+
+  @override
+  RadiusAxisAttrs onBuildDefaultAttrs() => RadiusAxisAttrs(Offset.zero, 0, Rect.zero, Offset.zero, Offset.zero);
 }

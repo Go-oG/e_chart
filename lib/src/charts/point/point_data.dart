@@ -48,4 +48,7 @@ class PointData extends RenderData2<Offset, ChartSymbol> {
   double get right => attr.dx + symbol.size.width / 2;
 
   double get bottom => attr.dy + symbol.size.height / 2;
+
+  @override
+  Offset initAttr() => Offset.zero;
 }

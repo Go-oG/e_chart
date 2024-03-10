@@ -4,8 +4,7 @@ version: 0.0.1
 homepage: https://github.com/Go-oG/xchart
 
 environment:
-  sdk: '>=2.19.4 <3.0.0'
-  flutter: ">=1.17.0"
+  sdk: '>=3.2.0 <4.0.0'
 
 dependencies:
   flutter:

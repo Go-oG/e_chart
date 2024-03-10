@@ -4,7 +4,7 @@ class ChartEdgeInset {
   double right = 0;
   double bottom = 0;
 
-  void clear() {
+  void reset() {
     left = top = right = bottom = 0;
   }
 

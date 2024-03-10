@@ -6,31 +6,35 @@ import 'package:e_chart/src/ext/offset_ext.dart';
 ///用于直线轴绘制
 class LineAxisAttrs extends AxisAttrs {
   ///表示该直线轴在坐标系中的位置区域
-  final Rect rect;
+  Rect rect;
   ///表示轴线的起始和结束位置(其距离一定==rect.width或者rect.height)
-  final Offset start;
-  final Offset end;
+  Offset start;
+  Offset end;
 
-  LineAxisAttrs(super.scaleRatio, super.scroll, this.rect, this.start, this.end,{super.splitCount});
-
-  LineAxisAttrs copyWith({
-    double? scaleRatio,
-    double? scroll,
-    Rect? rect,
-    Offset? start,
-    Offset? end,
-    int? splitCount,
-  }) {
-    return LineAxisAttrs(
-      scaleRatio ?? this.scaleRatio,
-      scroll ?? this.scroll,
-      rect ?? this.rect,
-      start ?? this.start,
-      end ?? this.end,
-      splitCount: splitCount
-    );
-  }
+  LineAxisAttrs(
+    this.rect,
+    this.start,
+    this.end, {
+    super.scaleRatio,
+    super.scrollX,
+    super.scrollY,
+    super.splitCount,
+  });
 
   double get distance => start.distance2(end) * scaleRatio;
+
   double get distanceOrigin => start.distance2(end);
+
+  @override
+  AxisAttrs copy() {
+    return LineAxisAttrs(
+      rect,
+      start,
+      end,
+      scaleRatio: scaleRatio,
+      scrollX: scrollX,
+      scrollY: scrollY,
+      splitCount: splitCount,
+    );
+  }
 }

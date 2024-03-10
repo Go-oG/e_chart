@@ -9,7 +9,7 @@ class ThemeRiverData extends RenderData<ThemeRiverAttr> {
     this.value, {
     super.id,
     super.name,
-  }) : super.attr(ThemeRiverAttr([], Area.empty));
+  });
 
   void update(List<Offset> pList, List<Offset> pList2, num smooth, Direction direction) {
     Area area;
@@ -57,6 +57,9 @@ class ThemeRiverData extends RenderData<ThemeRiverAttr> {
     var s = series.getLabelStyle(context, this);
     label.updatePainter(style: s);
   }
+
+  @override
+  ThemeRiverAttr initAttr()=>ThemeRiverAttr([], Area.empty);
 }
 
 class ThemeRiverAttr {

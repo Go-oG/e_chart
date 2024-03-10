@@ -17,7 +17,7 @@ class SankeyData extends RenderData<SankeyAttr> {
     super.id,
     super.name,
     num? fixedValue,
-  }) : super.attr(SankeyAttr()) {
+  }) {
     if (fixedValue != null) {
       if (fixedValue <= 0) {
         throw ChartError("fixValue 必须大于0");
@@ -49,6 +49,9 @@ class SankeyData extends RenderData<SankeyAttr> {
   String toString() {
     return "$runtimeType(${fixedValue?.toStringAsFixed(2)}) ";
   }
+
+  @override
+  SankeyAttr initAttr()=> SankeyAttr();
 }
 
 class SankeyAttr {
@@ -120,11 +123,10 @@ class SankeyLink extends RenderData<SankeyLinkAttr> {
   SankeyData target;
   num value;
 
-  SankeyLink(
-    this.source,
-    this.target,
-    this.value,
-  ) : super.attr(SankeyLinkAttr());
+
+  SankeyLink(this.source,
+      this.target,
+      this.value,);
 
   void computeAreaPath(num smooth) {
     Offset sourceTop = Offset(source.attr.right, attr.sourceY);
@@ -133,7 +135,8 @@ class SankeyLink extends RenderData<SankeyLinkAttr> {
     Offset targetTop = Offset(target.attr.left, attr.targetY);
     Offset targetBottom = targetTop.translate(0, attr.width);
 
-    attr.area = Area([sourceTop, targetTop], [sourceBottom, targetBottom], upSmooth: smooth, downSmooth: smooth);
+    attr.area =
+        Area([sourceTop, targetTop], [sourceBottom, targetBottom], upSmooth: smooth, downSmooth: smooth);
   }
 
   @override
@@ -158,6 +161,9 @@ class SankeyLink extends RenderData<SankeyLinkAttr> {
 
   @override
   DataType get dataType => DataType.edgeData;
+
+  @override
+  SankeyLinkAttr initAttr()=>SankeyLinkAttr();
 }
 
 class SankeyLinkAttr {

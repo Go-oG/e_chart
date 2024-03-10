@@ -1,11 +1,15 @@
 import 'dart:ui';
 
+import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/layout/layout_result.dart';
+
 import '../../model/chart_edgeinset.dart';
-import 'layout_params.dart';
+import '../layout/layout_params.dart';
 
 mixin ViewAttr {
   ///存储当前节点的布局属性
   late LayoutParams layoutParams = const LayoutParams.matchAll();
+  LayoutResult layoutResult = LayoutResult();
 
   ///存储当前视图在父视图中的位置属性
   Rect boxBound = Rect.zero;
@@ -59,4 +63,11 @@ mixin ViewAttr {
   double scaleY = 1;
 
   Offset get scale => Offset(scaleX, scaleY);
+
+  void checkLayoutResultType(LayoutResult result, Type type) {
+    if (result is Type) {
+      return;
+    }
+    throw ChartError("输入${result.runtimeType} 接受:$type");
+  }
 }

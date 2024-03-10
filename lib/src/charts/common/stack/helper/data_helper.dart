@@ -268,7 +268,7 @@ class DataHelper<T extends StackItemData, P extends StackGroupData<T, P>> extend
               dl.add(node.attr.up);
               dl.add(node.attr.down);
             } else {
-              dl.add(x ? node.dataNull?.domain : node.dataNull?.value);
+              dl.add(x ? node.dataNull?.x : node.dataNull?.y);
             }
 
             for (var data in dl) {

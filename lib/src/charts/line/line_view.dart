@@ -73,7 +73,6 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     lineNode.data.borderStyle.drawPath(canvas, mPaint, path, drawDash: false);
   }
 
-
   void drawArea(CCanvas canvas, LineNode lineNode, Rect clipRect, Offset scroll) {
     var path = lineNode.areaPath;
     if (path == null) {
@@ -165,4 +164,5 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     });
     return series.data.length;
   }
+
 }

@@ -5,7 +5,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
 ///用于优化文字绘制避免每次都需要测量
-class TextDraw {
+class TextDraw extends ElementRender {
   static final empty = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero, emptyFlag: true);
   late final bool _emptyFlag;
   late LabelStyle _style;
@@ -44,6 +44,7 @@ class TextDraw {
   }
 
   DynamicText get text => _text;
+
   set text(DynamicText d) {
     if (_emptyFlag) {
       return;
@@ -52,6 +53,7 @@ class TextDraw {
   }
 
   LabelStyle get style => _style;
+
   set style(LabelStyle s) {
     if (_emptyFlag) {
       return;
@@ -81,7 +83,8 @@ class TextDraw {
     }
 
     TextSpan ts = text.isString ? TextSpan(text: text.text, style: style.textStyle) : text.text;
-    p = TextPainter(text: ts, textAlign: textAlign, textDirection: textDirection, textScaleFactor: 1, maxLines: maxLines);
+    p = TextPainter(
+        text: ts, textAlign: textAlign, textDirection: textDirection, textScaleFactor: 1, maxLines: maxLines);
     var textOverflow = style.overFlow == OverFlow.clip ? TextOverflow.clip : null;
     var ellipsis = textOverflow == TextOverflow.ellipsis ? '\u2026' : null;
     if (ellipsis != null) {
@@ -225,6 +228,7 @@ class TextDraw {
     _cross = false;
   }
 
+  @override
   Size draw(CCanvas canvas, Paint paint) {
     if (_emptyFlag) {
       return Size.zero;
@@ -295,6 +299,7 @@ class TextDraw {
     return text.isEmpty || !style.show || _emptyFlag;
   }
 
+  @override
   void dispose() {
     if (_emptyFlag) {
       return;

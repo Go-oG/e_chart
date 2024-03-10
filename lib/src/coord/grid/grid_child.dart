@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-abstract class GridChild {
+abstract mixin class GridChild {
   ///返回指定坐标轴的列数
   int getAxisDataCount(int axisIndex, bool isXAxis);
 
@@ -12,7 +12,7 @@ abstract class GridChild {
     }
     String text = getText(dl.first);
     for (var data in dl) {
-      String str =getText(data);
+      String str = getText(data);
       if (str.length > text.length) {
         text = str;
       }
@@ -23,6 +23,5 @@ abstract class GridChild {
   ///返回指定坐标轴上的极值
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis);
 
-  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis,BaseScale scale);
-
+  List<dynamic> getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale);
 }

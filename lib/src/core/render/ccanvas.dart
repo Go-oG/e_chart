@@ -4,10 +4,12 @@ import 'dart:ui';
 import 'package:flutter/rendering.dart';
 
 class CCanvas {
-  final PaintingContext paintContext;
+  late final PaintingContext paintContext;
   Canvas? _canvas;
 
-  CCanvas(this.paintContext, [Canvas? canvas]) {
+  CCanvas.fromPaintingContext(this.paintContext);
+
+  CCanvas.fromCanvas(Canvas? canvas) {
     _canvas = canvas;
   }
 

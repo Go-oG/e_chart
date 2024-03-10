@@ -3,6 +3,9 @@ import 'package:flutter/painting.dart';
 
 class ChartAlign {
   static const center = ChartAlign();
+  static const centerLeft = ChartAlign(align: Alignment.centerLeft, inside: false);
+  static const centerRight = ChartAlign(align: Alignment.centerRight, inside: false);
+
   final Alignment align;
   final bool inside;
 
@@ -36,5 +39,4 @@ class ChartAlign {
     var radius = (arc.innerRadius + diff / 2) + align.y * diff;
     draw.updatePainter(offset: circlePoint(radius, angle, arc.center), align: Alignment.center);
   }
-
 }

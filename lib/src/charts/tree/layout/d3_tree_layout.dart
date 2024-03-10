@@ -192,7 +192,7 @@ class D3TreeLayout extends TreeLayout {
   }
 }
 
-class InnerNode extends BaseTreeData<Offset, InnerNode> {
+class InnerNode extends ChartTree<Offset, InnerNode> {
   TreeData? node;
   int i;
   InnerNode? A; // default ancestor
@@ -207,7 +207,7 @@ class InnerNode extends BaseTreeData<Offset, InnerNode> {
     InnerNode? parent,
     this.node,
     this.i,
-  ) : super.attr(parent, [], Offset.zero) {
+  ) : super(parent, []) {
     a = this;
   }
 
@@ -219,4 +219,7 @@ class InnerNode extends BaseTreeData<Offset, InnerNode> {
 
   @override
   void updateStyle(Context context, covariant ChartSeries series) {}
+
+  @override
+  Offset initAttr() =>Offset.zero;
 }

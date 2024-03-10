@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/layout/layout_result.dart';
 import 'package:flutter/material.dart';
 
 ///饼图布局
@@ -55,11 +56,11 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
       onStart: () => inAnimation = true,
       onEnd: () => inAnimation = false,
     );
-    context.addAnimationToQueue(an);
+    addAnimationToQueue(an);
   }
 
   @override
-  void initDataIndexAndStyle(List<PieData> dataList,[bool updateStyle=true]) {
+  void initDataIndexAndStyle(List<PieData> dataList, [bool updateStyle = true]) {
     num maxSize = min([width, height]);
     minRadius = series.innerRadius.convert(maxSize);
     maxRadius = series.outerRadius.convert(maxSize);
@@ -78,7 +79,7 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
 
       data.dataIndex = i;
       data.styleIndex = i;
-      if(updateStyle){
+      if (updateStyle) {
         data.updateStyle(context, series);
       }
     });
@@ -228,7 +229,7 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
       }
     }
     const double rDiff = 8;
-    DiffUtil.diffUpdate<Arc, PieData>(
+    DiffUtil.diffUpdate<PieData>(
       animation,
       oldList,
       newList,
@@ -239,11 +240,11 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
           node.extSet("originR", originR);
         }
         if (isOld) {
-          return node.attr.copy(outRadius: originR);
+          return ArcLayoutResult(node.attr.copy(outRadius: originR));
         }
-        return node.attr.copy(outRadius: originR + rDiff);
+        return ArcLayoutResult(node.attr.copy(outRadius: originR + rDiff));
       },
-      (s, e, t) => Arc.lerp(s, e, t),
+      (s, e, t) => ArcLayoutResult(Arc.lerp((s as ArcLayoutResult).arc, (e as ArcLayoutResult).arc, t)),
       notifyLayoutUpdate,
     ).first.start(context);
   }

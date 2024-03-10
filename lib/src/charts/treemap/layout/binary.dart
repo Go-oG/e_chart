@@ -113,7 +113,7 @@ class BinaryLayout extends HierarchyLayout<TreeMapData,TreeMapSeries> {
   }
 }
 
-class BinaryNode extends BaseTreeData<Rect, BinaryNode> {
+class BinaryNode extends ChartTree<Rect, BinaryNode> {
   final TreeMapData layoutNode;
 
   BinaryNode(
@@ -135,4 +135,7 @@ class BinaryNode extends BaseTreeData<Rect, BinaryNode> {
 
   @override
   void updateStyle(Context context, covariant ChartSeries series) {}
+
+  @override
+  Rect initAttr()=>Rect.zero;
 }

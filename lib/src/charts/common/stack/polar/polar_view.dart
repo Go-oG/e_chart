@@ -42,7 +42,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
       if (node.data == null) {
         return;
       }
-      if (node.attr.arc.isEmpty) {
+      if (node.arc.isEmpty) {
         return;
       }
       node.onDraw(canvas, mPaint);
@@ -57,7 +57,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
     each(layoutHelper.dataSet, (node, p1) {
-      if (node.attr.arc.isEmpty) {
+      if (node.arc.isEmpty) {
         return;
       }
       node.onDrawText(canvas, mPaint);

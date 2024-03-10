@@ -14,15 +14,12 @@ class Radar extends CircleCoord {
   AxisName? axisName;
   AxisLine axisLine = AxisLine();
   SplitLine splitLine = SplitLine();
-  MinorSplitLine? minorSplitLine;
-  SplitArea? splitArea;
+  SplitArea splitArea = SplitArea();
 
   ///坐标轴指示器
   AxisPointer? axisPointer;
 
   Fun2<RadarIndicator, LabelStyle>? labelStyleFun;
-  Fun3<int, int, AreaStyle?>? splitAreaStyleFun;
-  Fun3<int, int, LineStyle?>? splitLineStyleFun;
 
   Radar({
     required this.indicator,
@@ -31,8 +28,6 @@ class Radar extends CircleCoord {
     this.shape = RadarShape.polygon,
     this.silent = false,
     this.clockwise = true,
-    this.splitAreaStyleFun,
-    this.splitLineStyleFun,
     this.labelStyleFun,
     super.center,
     super.radius,
@@ -44,8 +39,7 @@ class Radar extends CircleCoord {
     this.axisName,
     AxisLine? axisLine,
     SplitLine? splitLine,
-    this.minorSplitLine,
-    this.splitArea,
+    SplitArea? splitArea,
     this.axisPointer,
   }) {
     if (axisLine != null) {
@@ -53,6 +47,9 @@ class Radar extends CircleCoord {
     }
     if (splitLine != null) {
       this.splitLine = splitLine;
+    }
+    if (splitArea != null) {
+      this.splitArea = splitArea;
     }
   }
 

@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-extension TreeNodeExt<D,  A, T extends BaseTreeData<A, T>> on BaseTreeData<A, T> {
+extension TreeNodeExt<T, N extends ChartTree<T, N>> on N {
   void updateSelectStatus(bool status, {SelectedMode mode = SelectedMode.single}) {
     if (status) {
       addState(ViewState.selected);
@@ -10,7 +10,7 @@ extension TreeNodeExt<D,  A, T extends BaseTreeData<A, T>> on BaseTreeData<A, T>
     if (mode == SelectedMode.single) {
       return;
     }
-    T? node = parent;
+    N? node = parent;
     while (node != null) {
       if (status) {
         node.addState(ViewState.selected);
@@ -19,9 +19,9 @@ extension TreeNodeExt<D,  A, T extends BaseTreeData<A, T>> on BaseTreeData<A, T>
       }
       node = node.parent;
     }
-    List<T> cl = List.from(children);
+    List<N> cl = List.from(children);
     while (cl.isNotEmpty) {
-      T node = cl.removeAt(0);
+      N node = cl.removeAt(0);
       if (status) {
         node.addState(ViewState.selected);
       } else {

@@ -1,9 +1,9 @@
-import 'package:e_chart/src/component/axis/radius/radius_axis.dart';
+
 import 'package:e_chart/src/coord/index.dart';
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
-import '../circle_coord.dart';
-import '../../component/axis/angle/angle_axis.dart';
+import '../../component/index.dart';
+
 
 ///极坐标系
 ///一个极坐标系只能包含一个径向轴和一个角度轴

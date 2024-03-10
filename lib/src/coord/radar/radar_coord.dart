@@ -17,13 +17,9 @@ class RadarCoordImpl extends RadarCoord {
     axisMap.clear();
     for (int i = 0; i < props.indicator.length; i++) {
       var indicator = props.indicator[i];
-      AxisName axisName = AxisName(
-        indicator.name,
-        nameGap: indicator.nameGap,
-        labelStyle: indicator.nameStyle,
-      );
-      RadarAxis axis = RadarAxis(axisName: axisName, min: indicator.min, max: indicator.max, splitNumber: 5);
-      axisMap[indicator] = RadarAxisImpl(context, this, axis, axisIndex: i);
+      var axisName = AxisName(indicator.name, nameGap: indicator.nameGap, labelStyle: indicator.nameStyle);
+      var axis = RadarAxis(axisName: axisName, min: indicator.min, max: indicator.max, splitNumber: 5);
+      axisMap[indicator] = RadarAxisImpl(context, axis,axisIndex: i);
     }
   }
 
@@ -64,7 +60,11 @@ class RadarCoordImpl extends RadarCoord {
       var axis = axisMap[p0]!;
       double angle = oa + i * itemAngle;
       Offset o = circlePoint(radius, angle, center);
-      var attrs = LineAxisAttrs(scaleX, translationX, Rect.zero, center, o);
+      var attrs = axis.attrs.copy() as LineAxisAttrs;
+      attrs.scaleRatio = scaleX;
+      attrs.scrollX = translationX;
+      attrs.start = center;
+      attrs.end = o;
       axis.doLayout(attrs, collectChildData(i));
     });
 
@@ -84,10 +84,10 @@ class RadarCoordImpl extends RadarCoord {
       }
       if (lastPath == null) {
         lastPath = path;
-        splitList.add(RadarSplit(i, path));
+        splitList.add(RadarSplit([],i, path));
       } else {
         Path p2 = Path.combine(PathOperation.difference, path, lastPath);
-        splitList.add(RadarSplit(i, p2));
+        splitList.add(RadarSplit([],i, p2));
         lastPath = path;
       }
     }
@@ -118,30 +118,20 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   void _drawShape(CCanvas canvas) {
-    var theme = context.option.theme.radarTheme;
+    var axisTheme = context.option.theme.valueAxisTheme;
     each(splitList, (sp, i) {
-      AreaStyle? style;
-      if (props.splitAreaStyleFun != null) {
-        style = props.splitAreaStyleFun?.call(i, i - 1);
-      } else {
-        style = theme.getSplitAreaStyle(i);
-      }
-      style?.drawPath(canvas, mPaint, sp.splitPath);
+      var style = props.splitArea.getStyle(i, splitList.length, axisTheme);
+      style.drawPath(canvas, mPaint, sp.splitPath);
 
-      LineStyle? lineStyle;
-      if (props.splitAreaStyleFun != null) {
-        lineStyle = props.splitLineStyleFun?.call(i, i - 1);
-      } else {
-        lineStyle = theme.getSplitLineStyle(i);
-      }
-      lineStyle?.drawPath(canvas, mPaint, sp.splitPath);
+      var lineStyle = props.splitLine.getStyle(sp.data, i, splitList.length, axisTheme);
+      lineStyle.drawPath(canvas, mPaint, sp.splitPath);
     });
   }
 
   void _drawAxis(CCanvas canvas) {
     ///绘制主轴
     axisMap.forEach((key, value) {
-      value.draw(canvas, mPaint, boxBound);
+      value.draw(canvas, mPaint);
     });
   }
 
@@ -205,8 +195,9 @@ class RadarPosition {
 }
 
 class RadarSplit {
+  final List<dynamic> data;
   final int index;
   final Path splitPath;
 
-  RadarSplit(this.index, this.splitPath);
+  RadarSplit(this.data,this.index, this.splitPath);
 }

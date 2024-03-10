@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class PackData extends BaseTreeData<Rect, PackData> {
+class PackData extends ChartTree<Rect, PackData> {
   PackData(
     super.parent,
     super.children, {
@@ -11,9 +11,7 @@ class PackData extends BaseTreeData<Rect, PackData> {
     super.value,
     super.id,
     super.name,
-  }) {
-    attr = Rect.zero;
-  }
+  });
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
@@ -58,4 +56,7 @@ class PackData extends BaseTreeData<Rect, PackData> {
   String toString() {
     return "$runtimeType [${x.toStringAsFixed(2)},${y.toStringAsFixed(2)}] R:${r.toStringAsFixed(2)}";
   }
+
+  @override
+  Rect initAttr() => Rect.zero;
 }

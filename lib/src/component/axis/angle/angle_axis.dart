@@ -1,5 +1,5 @@
-import '../base_axis.dart';
-import '../model/axis_type.dart';
+
+import 'package:e_chart/e_chart.dart';
 
 ///极坐标-角度轴
 class AngleAxis extends BaseAxis {
@@ -17,7 +17,6 @@ class AngleAxis extends BaseAxis {
     super.min,
     super.max,
     super.splitNumber,
-    super.start0,
     super.logBase,
     super.interval,
     super.maxInterval,
@@ -25,17 +24,15 @@ class AngleAxis extends BaseAxis {
     super.categoryList,
     super.timeRange,
     super.timeType,
-    super.timeFormatFun,
     super.axisName,
     super.axisLine,
     super.axisLabel,
     super.splitLine,
-    super.minorSplitLine,
     super.splitArea,
     super.axisTick,
-    super.minorTick,
     super.axisPointer,
     super.alignTicks,
     super.categoryCenter = false,
+    super.id,
   }) : super(inverse: false);
 }

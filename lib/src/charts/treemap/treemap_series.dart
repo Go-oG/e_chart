@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/treemap/treemap_view.dart';
 import 'package:flutter/material.dart';
 
 ///树图
-class TreeMapSeries extends HierarchySeries<TreeMapData> {
+class TreeMapSeries extends HierarchySeries<Rect, TreeMapData> {
   static final Command commandBack = Command(11);
   HierarchyLayout<TreeMapData, TreeMapSeries> layout = SquareLayout();
   bool round;

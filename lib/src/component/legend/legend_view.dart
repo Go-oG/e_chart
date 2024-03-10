@@ -1,358 +1,146 @@
-import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class LegendComponent extends FlexLayout {
-  late Legend? _legend;
+import '../../core/index.dart';
+import '../../model/index.dart';
+import 'legend.dart';
+import 'legend_item.dart';
 
-  Legend get legend => _legend!;
+class LegendView extends StatefulWidget {
+  final Legend legend;
 
-  LegendComponent(Legend? legend) : super(align: Align2.center, direction: legend?.direction ?? Direction.horizontal) {
-    _legend = legend ?? Legend(show: false);
-  }
-
-  late Align2 hAlign;
-  late Align2 vAlign;
-  late Offset offset;
+  const LegendView({super.key, required this.legend});
 
   @override
-  void onCreate() {
-    super.onCreate();
-    hAlign = legend.hAlign;
-    vAlign = legend.vAlign;
-    offset = legend.offset;
-    legend.addListener(handleCommand);
-    loadData();
-  }
-
-  void handleCommand() {
-    var c = legend.value;
-    if (c == Command.inverseSelectLegend) {
-      final List<LegendItem> selectedList = [];
-      final List<LegendItem> unselectedList = [];
-      for (var child in children) {
-        if (child is! LegendItemView) {
-          continue;
-        }
-        child.item.selected = !child.item.selected;
-        child.updateStyle();
-        if (child.item.selected) {
-          selectedList.add(child.item);
-        } else {
-          unselectedList.add(child.item);
-        }
-      }
-      requestDraw();
-      context.dispatchEvent(LegendInverseSelectEvent(selectedList, unselectedList));
-      return;
-    }
-    if (c == Command.selectAllLegend) {
-      final List<LegendItem> selectedList = [];
-      int count = 0;
-      for (var child in children) {
-        if (child is! LegendItemView) {
-          continue;
-        }
-        if (!child.item.selected) {
-          child.item.selected = !child.item.selected;
-          child.updateStyle();
-          count += 1;
-        }
-        selectedList.add(child.item);
-      }
-      if (count > 0) {
-        requestDraw();
-        context.dispatchEvent(LegendSelectAllEvent(selectedList));
-      }
-      return;
-    }
-    if (c == Command.unselectLegend) {
-      final List<LegendItem> unselectedList = [];
-      int count = 0;
-      for (var child in children) {
-        if (child is! LegendItemView) {
-          continue;
-        }
-        if (child.item.selected) {
-          child.item.selected = false;
-          child.updateStyle();
-          count += 1;
-        }
-        unselectedList.add(child.item);
-      }
-      if (count > 0) {
-        requestDraw();
-        context.dispatchEvent(LegendUnSelectedEvent(unselectedList));
-      }
-      return;
-    }
-    if (c == Command.configChange) {
-      if (legend.hAlign != hAlign || legend.vAlign != vAlign || legend.offset != offset) {
-        requestLayout();
-      } else {
-        requestLayoutSelf();
-      }
-      return;
-    }
-  }
-
-  @override
-  void onDispose() {
-    _legend?.removeListener(handleCommand);
-    _legend = null;
-    super.onDispose();
-  }
-
-  void loadData() {
-    if (_legend == null || !_legend!.show) {
-      return;
-    }
-    List<LegendItem> dataList = [];
-    if (legend.data != null && legend.data!.isNotEmpty) {
-      dataList.addAll(legend.data!);
-    } else {
-      for (var item in context.option.series) {
-        dataList.addAll(item.getLegendItem(context));
-      }
-    }
-    for (var item in dataList) {
-      var style = item.textStyle;
-      if (style == null || !style.show) {
-        item.textStyle = context.option.theme.subTitle.getStyle();
-      }
-      addView(LegendItemView(legend, item));
-    }
-  }
-
-  @override
-  Size onMeasure(double parentWidth, double parentHeight) {
-    if (_legend == null || !legend.show || childCount <= 0) {
-      return Size.zero;
-    }
-    return super.onMeasure(parentWidth, parentHeight);
-  }
-
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    if (_legend == null || !legend.show || childCount <= 0) {
-      return;
-    }
-    super.onLayout(left, top, right, bottom);
-  }
-
-  void onChildClick(LegendItemView child) {
-    if (_legend == null || !legend.show) {
-      return;
-    }
-
-    child.item.selected = !child.item.selected;
-    context.dispatchEvent(LegendSelectChangeEvent(child.item));
-    if (!legend.allowSelectMulti) {
-      for (var c in children) {
-        c.markDirtyWithChild();
-        var lc = c as LegendItemView;
-        if (lc == child || !lc.isSelected) {
-          continue;
-        }
-        c.item.selected = false;
-        context.dispatchEvent(LegendSelectChangeEvent(c.item));
-      }
-    }
-    requestDraw();
-  }
-
-  void onChildHover(LegendItemView child, bool select) {
-    if (_legend == null || !legend.show) {
-      return;
-    }
-    if (child.isSelected && select) {
-      return;
-    }
-    if (!child.isSelected && !select) {
-      return;
-    }
-    child.item.selected = select;
-    context.dispatchEvent(LegendSelectChangeEvent(child.item));
-    if (!legend.allowSelectMulti) {
-      for (var c in children) {
-        c.markDirtyWithChild();
-        var lc = c as LegendItemView;
-        if (lc == child) {
-          continue;
-        }
-        if (select) {
-          lc.item.selected = false;
-          lc.removeState(ViewState.selected);
-          context.dispatchEvent(LegendSelectChangeEvent(lc.item));
-        }
-      }
-    }
-    requestDraw();
-  }
+  State<StatefulWidget> createState() => LegendViewState();
 }
 
-class LegendItemView extends GestureView with StateProvider {
-  Legend legend;
-  LegendItem item;
-  LabelStyle labelStyle = LabelStyle.empty;
-
-  LegendItemView(this.legend, this.item) {
-    labelStyle = item.textStyle ?? LabelStyle.empty;
-  }
-
-  Offset symbolOffset = Offset.zero;
-  TextDraw? label;
+class LegendViewState extends State<LegendView> {
+  Legend? legend;
 
   @override
-  void onDispose() {
-    legend = Legend.empty();
-    item.dispose();
-    item = LegendItem.empty();
-    labelStyle = LabelStyle.empty;
-    symbolOffset = Offset.zero;
-    label?.dispose();
-    label = null;
-    super.onDispose();
+  void initState() {
+    super.initState();
+    initLegend(widget.legend);
   }
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
-    num w = item.symbol.size.width;
-    num h = item.symbol.size.height;
-    Size textSize = labelStyle.measure(item.name);
-    var p = legend.labelPosition;
-    if (p == Position.left || p == Position.right) {
-      w += textSize.width + item.gap;
-      h = max([h, textSize.height]);
-    } else if (p == Position.top || p == Position.bottom) {
-      h += textSize.height + item.gap;
-      w = max([w, textSize.width]);
+  void didUpdateWidget(covariant LegendView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    initLegend(widget.legend);
+  }
+
+  void initLegend(Legend legend) {
+    this.legend?.clearListener();
+    this.legend = legend;
+    legend.addListener(() {
+      var v = legend.value;
+      var data = legend.data;
+      if (data == null || data.isEmpty) {
+        return;
+      }
+      if (v == Command.inverseSelectLegend) {
+        setState(() {
+          for (var legend in data) {
+            legend.selected = !legend.selected;
+          }
+        });
+      } else if (v == Command.selectAllLegend || v == Command.unselectLegend) {
+        int c = 0;
+        bool se = v == Command.selectAllLegend;
+        for (var item in data) {
+          if (!item.selected && se) {
+            item.selected = true;
+            c++;
+          } else if (item.selected && !se) {
+            item.selected = false;
+            c++;
+          }
+        }
+        if (c > 0) {
+          setState(() {});
+        }
+      } else if (v.code == Command.legendItemChangeCode) {
+        LegendItem? legendItem = v.data['legendItem'];
+        handleLegendItemChange(legendItem);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var legend = this.legend;
+    var data = legend?.data;
+    if (legend == null || data == null || data.isEmpty) {
+      return const SizedBox(width: 0, height: 0);
+    }
+    List<Widget> itemList = [];
+    var dir = legend.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
+    for (var s in data) {
+      Widget w = s.toWidget(dir, legend, (item) {
+        handleLegendItemChange(item);
+        return false;
+      });
+      itemList.add(w);
+    }
+    Widget rw;
+    if (legend.direction == Direction.vertical) {
+      if (legend.scroll) {
+        rw = SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: itemList,
+          ),
+        );
+      } else {
+        rw = Wrap(
+          direction: Axis.vertical,
+          spacing: legend.hGap,
+          runSpacing: legend.vGap,
+          alignment: legend.hAlign,
+          runAlignment: legend.vAlign,
+          children: itemList,
+        );
+      }
     } else {
-      w = max([w, textSize.width]);
-      h = max([h, textSize.height]);
+      if (legend.scroll) {
+        rw = SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: itemList,
+          ),
+        );
+      } else {
+        rw = Wrap(
+          direction: Axis.horizontal,
+          spacing: legend.vGap,
+          runSpacing: legend.hGap,
+          alignment: legend.vAlign,
+          runAlignment: legend.hAlign,
+          children: itemList,
+        );
+      }
     }
-    return Size(w.toDouble(), h.toDouble());
+    return Container(
+      padding: legend.padding,
+      decoration: legend.decoration,
+      child: rw,
+    );
   }
 
-  @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
-    label = null;
-    var p = legend.labelPosition;
-    var symbolSize = item.symbol.size;
-    if (p == Position.left) {
-      Offset o = Offset(0, height / 2);
-      label = TextDraw(item.name, labelStyle, o, align: Alignment.centerLeft);
-      var s = label!.getSize();
-      symbolOffset = Offset(s.width + item.gap + symbolSize.width / 2, height / 2);
+  void handleLegendItemChange(LegendItem? legendItem) {
+    var legend = this.legend;
+    var data = legend?.data;
+    if (legend == null || data == null) {
       return;
     }
-    if (p == Position.right) {
-      symbolOffset = Offset(symbolSize.width / 2, height / 2);
-      Offset o = Offset(symbolSize.width + item.gap, height / 2);
-      label = TextDraw(item.name, labelStyle, o, align: Alignment.centerLeft);
-      return;
-    }
-    if (p == Position.top) {
-      Offset o = Offset(width / 2, 0);
-      label = TextDraw(item.name, labelStyle, o, align: Alignment.topCenter);
-      Size s = label!.getSize();
-      symbolOffset = Offset(width / 2, s.height + item.gap + symbolSize.height / 2);
-      return;
-    }
-
-    if (p == Position.bottom) {
-      symbolOffset = Offset(width / 2, height - symbolSize.height / 2);
-      Offset o = Offset(width / 2, height - symbolSize.height);
-      label = TextDraw(item.name, labelStyle, o, align: Alignment.bottomCenter);
-      return;
-    }
-    symbolOffset = Offset(width / 2, height / 2);
-    label = TextDraw(item.name, labelStyle, symbolOffset, align: Alignment.center);
-  }
-
-  @override
-  void onDraw(CCanvas canvas) {
-    canvas.save();
-    canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
-    item.symbol.draw(canvas, mPaint, symbolOffset);
-    label?.draw(canvas, mPaint);
-    canvas.restore();
-  }
-
-  @override
-  void onClick(Offset offset) {
-    var to = legend.triggerOn;
-    if (to == TriggerOn.none) {
-      to = TriggerOn.click;
-    }
-    if (to == TriggerOn.mouseMove) {
-      return;
-    }
-    var parent = this.parent;
-    if (parent is LegendComponent) {
-      parent.onChildClick(this);
+    if (!legend.allowSelectMulti && legendItem != null && legendItem.selected) {
+      for (var item in data) {
+        if (item != legendItem) {
+          item.selected = false;
+        }
+      }
+      setState(() {});
     }
   }
-
-  @override
-  void onHoverStart(Offset offset) {
-    var to = legend.triggerOn;
-    if (to == TriggerOn.none) {
-      to = TriggerOn.click;
-    }
-    if (to == TriggerOn.click) {
-      return;
-    }
-    var parent = this.parent;
-    if (parent is LegendComponent) {
-      parent.onChildHover(this, true);
-    }
-  }
-
-  @override
-  void onHoverMove(Offset offset, Offset last) {
-    var to = legend.triggerOn;
-    if (to == TriggerOn.none) {
-      to = TriggerOn.click;
-    }
-    if (to == TriggerOn.click) {
-      return;
-    }
-    var parent = this.parent;
-    if (parent is LegendComponent) {
-      parent.onChildHover(this, true);
-    }
-  }
-
-  @override
-  void onHoverEnd() {
-    var to = legend.triggerOn;
-    if (to == TriggerOn.none) {
-      to = TriggerOn.click;
-    }
-    if (to == TriggerOn.click) {
-      return;
-    }
-    var parent = this.parent;
-    if (parent is LegendComponent) {
-      parent.onChildHover(this, false);
-    }
-  }
-
-  @override
-  bool get enableClick => true;
-
-  @override
-  bool get enableDoubleClick => false;
-
-  @override
-  bool get enableDrag => false;
-
-  @override
-  bool get enableLongPress => false;
-
-  @override
-  bool get enableScale => false;
-
-  void updateStyle() {}
 }

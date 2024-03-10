@@ -7,18 +7,17 @@ import '../../model/delaunay/d_shape.dart';
 import 'delaunay_series.dart';
 
 class DelaunayData extends RenderData<DShape> {
-  DelaunayData(DShape shape) {
-    attr = shape;
-  }
+  late DShape shape;
+  DelaunayData(this.shape);
 
   @override
   bool contains(Offset offset) {
-    return attr.contains(offset);
+    return shape.contains(offset);
   }
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    var p = attr.path ?? attr.toPath();
+    var p = shape.path ?? shape.toPath();
     itemStyle.drawPath(canvas, paint, p);
     borderStyle.drawPath(canvas, paint, p);
   }
@@ -28,4 +27,7 @@ class DelaunayData extends RenderData<DShape> {
     itemStyle = series.getAreaStyle(context, this);
     borderStyle = series.getBorderStyle(context, this);
   }
+
+  @override
+  DShape initAttr()=>shape;
 }

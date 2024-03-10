@@ -11,13 +11,11 @@ class CircleData extends RenderData<Arc> {
   AreaStyle backgroundStyle = AreaStyle.empty;
   Arc backgroundArc = Arc.zero;
 
-  CircleData(
-    this.value,
-    this.max, {
-    this.offsetAngle = 0,
-  }) {
-    attr = Arc.zero;
-  }
+
+  CircleData(this.value,
+      this.max, {
+        this.offsetAngle = 0,
+      });
 
   @override
   bool contains(Offset offset) {
@@ -32,10 +30,10 @@ class CircleData extends RenderData<Arc> {
   }
 
   @override
-  set attr(Arc a) {
-    super.attr = a;
-    int dir = a.sweepAngle < 0 ? -1 : 1;
-    backgroundArc = a.copy(sweepAngle: 360 * dir);
+  set attr(Arc a){
+    super.attr=a;
+    int dir = attr.sweepAngle < 0 ? -1 : 1;
+    backgroundArc = attr.copy(sweepAngle: 360 * dir);
   }
 
   @override
@@ -44,4 +42,7 @@ class CircleData extends RenderData<Arc> {
     borderStyle = series.getBorderStyle(context, this);
     label.style = series.getLabelStyle(context, this);
   }
+
+  @override
+  Arc initAttr() =>Arc.zero;
 }

@@ -12,10 +12,10 @@ abstract class ChartViewGroup extends GestureView {
   ChartViewGroup() : super();
 
   @override
-  void create(Context context, RenderNode parent) {
-    super.create(context, parent);
+  void attach(Context context, RenderNode parent) {
+    super.attach(context, parent);
     for (var c in _children) {
-      c.create(context, this);
+      c.attach(context, this);
     }
   }
 
@@ -45,8 +45,8 @@ abstract class ChartViewGroup extends GestureView {
 
   @override
   void onDispose() {
-    var cl=_children;
-    _children=[];
+    var cl = _children;
+    _children = [];
     for (var c in cl) {
       c.dispose();
     }
@@ -180,9 +180,6 @@ abstract class ChartViewGroup extends GestureView {
   ///========================管理子View相关方法=======================
   void addView(ChartView view) {
     addViewInner(view);
-    if (!inLayout) {
-      requestLayout();
-    }
   }
 
   void addViews(Iterable<ChartView> views) {
@@ -191,9 +188,6 @@ abstract class ChartViewGroup extends GestureView {
       children.add(c);
     }
     sortChildView();
-    if (!inLayout) {
-      requestLayout();
-    }
   }
 
   void addViewInner(ChartView child) {
@@ -213,12 +207,12 @@ abstract class ChartViewGroup extends GestureView {
 
   void removeView(ChartView view) {
     children.remove(view);
-    if (!inLayout) {
+    if (!nodeStatus.inLayout) {
       requestLayout();
     }
   }
 
-  ChartView getChildAt(int index) {
+  ChartView childAt(int index) {
     return children[index];
   }
 
@@ -228,13 +222,13 @@ abstract class ChartViewGroup extends GestureView {
 
   int get childCount => _children.length;
 
-  bool get hasChild => childCount > 0;
+  bool get hasChild => _children.isNotEmpty;
 
   ChartView get firstChild => _children.first;
 
   ChartView get lastChild => _children.last;
 
-  bool hasChildView(ChartView view) {
+  bool containsChild(ChartView view) {
     for (var element in _children) {
       if (element == view) {
         return true;
@@ -244,7 +238,7 @@ abstract class ChartViewGroup extends GestureView {
   }
 
   void clearChildren() {
-    children.clear();
+    _children = [];
   }
 
   @override
@@ -269,5 +263,13 @@ abstract class ChartViewGroup extends GestureView {
       u += c.allocateDataIndex(index + u);
     }
     return u;
+  }
+
+  @override
+  void resetLayoutInfo() {
+    super.resetLayoutInfo();
+    for (var c in children) {
+      c.resetLayoutInfo();
+    }
   }
 }

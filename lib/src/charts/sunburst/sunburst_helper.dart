@@ -27,7 +27,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
     initData2(newRoot);
     int maxDeep = newRoot.height;
     radiusDiff = radiusRange / (maxDeep <= 0 ? 1 : maxDeep);
-    newRoot.attr = SunburstAttr(buildRootArc(center, maxDeep));
+    newRoot.attr = buildRootArc(center, maxDeep);
     newRoot.updateLabelPosition(context, series);
     newRoot.eachBefore((tmp, index, startNode) {
       tmp.updateStyle(context, series);
@@ -52,8 +52,8 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
     Map<SunburstData, Arc> arcMap = {};
     Map<SunburstData, Arc> arcStartMap = {};
     newRoot.each((node, index, startNode) {
-      arcMap[node] = node.attr.arc;
-      arcStartMap[node] = node.attr.arc.copy(outRadius: node.attr.arc.innerRadius);
+      arcMap[node] = node.attr;
+      arcStartMap[node] = node.attr.copy(outRadius: node.attr.innerRadius);
       return false;
     });
     var tween = ChartDoubleTween(option: animation);
@@ -67,7 +67,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
       newRoot.each((node, index, startNode) {
         var s = arcStartMap[node]!;
         var e = arcMap[node]!;
-        node.attr.arc = Arc.lerp(s, e, t);
+        node.attr = Arc.lerp(s, e, t);
         node.updateLabelPosition(context, series);
         return false;
       });
@@ -129,10 +129,10 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
     final corner = series.corner.abs();
     final angleGap = series.angleGap.abs();
     final radiusGap = series.radiusGap.abs();
-    final Arc parentArc = parent.attr.arc;
+    final Arc parentArc = parent.attr;
     if (parent.childCount == 1) {
       var ir = parentArc.outRadius + radiusGap;
-      parent.firstChild.attr.arc = parentArc.copy(
+      parent.firstChild.attr = parentArc.copy(
         innerRadius: ir,
         outRadius: ir + radiusDiff,
         maxRadius: maxRadius,
@@ -174,7 +174,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
         throw ChartError("内部异常");
       }
       double swa = remainAngle * percent;
-      ele.attr.arc = Arc(
+      ele.attr = Arc(
           innerRadius: ir,
           outRadius: or,
           startAngle: childStartAngle,
@@ -276,8 +276,8 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
       oldBackNode.add(clickNode);
       oldBackNode.value = clickNode.value;
 
-      var oldE = oldBackNode.attr.arc;
-      var s = clickNode.attr.arc;
+      var oldE = oldBackNode.attr;
+      var s = clickNode.attr;
       var ir = oldE.outRadius + series.radiusGap;
       var e = Arc(
         innerRadius: ir,
@@ -288,7 +288,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
         maxRadius: maxRadius,
       );
       if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-        clickNode.attr.arc = e;
+        clickNode.attr = e;
         clickNode.updateLabelPosition(context, series);
         _layoutNodeIterator(clickNode, clickNode.height + 1, false);
         notifyLayoutUpdate();
@@ -298,7 +298,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
       var tween = ChartDoubleTween(option: animation);
       tween.addListener(() {
         var t = tween.value;
-        clickNode.attr.arc = Arc.lerp(s, e, t);
+        clickNode.attr = Arc.lerp(s, e, t);
         clickNode.updateLabelPosition(context, series);
         _layoutNodeIterator(clickNode, clickNode.height + 1, false);
         notifyLayoutUpdate();
@@ -311,9 +311,9 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
     ///返回节点
     var be = buildBackArc(center, clickNode.height + 1);
     var bs = be.copy(outRadius: be.innerRadius);
-    var bn = SunburstVirtualNode(clickNode, SunburstAttr(bs));
+    var bn = SunburstVirtualNode(clickNode, bs);
 
-    var cs = clickNode.attr.arc;
+    var cs = clickNode.attr;
     var ir = be.outRadius + series.radiusGap;
     var ce = Arc(
       startAngle: series.startAngle,
@@ -324,9 +324,9 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
       maxRadius: maxRadius,
     );
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      bn.attr.arc = be;
+      bn.attr = be;
       bn.updateLabelPosition(context, series);
-      clickNode.attr.arc = ce;
+      clickNode.attr = ce;
       clickNode.updateLabelPosition(context, series);
       _layoutNodeIterator(clickNode, clickNode.height + 1, false);
       showRootNode = bn;
@@ -337,10 +337,10 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
     var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
       var t = tween.value;
-      bn.attr.arc = Arc.lerp(bs, be, t);
+      bn.attr = Arc.lerp(bs, be, t);
       bn.updateLabelPosition(context, series);
 
-      clickNode.attr.arc = Arc.lerp(cs, ce, t);
+      clickNode.attr = Arc.lerp(cs, ce, t);
       clickNode.updateLabelPosition(context, series);
       _layoutNodeIterator(clickNode, clickNode.height + 1, false);
       notifyLayoutUpdate();
@@ -360,7 +360,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
 
     Map<SunburstData, Arc> oldArcMap = {};
     first.each((node, index, startNode) {
-      oldArcMap[node] = node.attr.arc;
+      oldArcMap[node] = node.attr;
       return false;
     });
 
@@ -374,7 +374,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
       parentData = first.parent!;
       parentNode = parentData.parent!;
       parentNode.parent = null;
-      bn = SunburstVirtualNode(parentNode, SunburstAttr(buildBackArc(center, parentNode.height + 1)));
+      bn = SunburstVirtualNode(parentNode, buildBackArc(center, parentNode.height + 1));
     }
     bn.updateLabelPosition(context, series);
     _layoutNodeIterator(bn, parentNode.height + 1, false);
@@ -388,7 +388,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
 
     Map<SunburstData, Arc> arcMap = {};
     parentNode.each((node, index, startNode) {
-      var arc = node.attr.arc;
+      var arc = node.attr;
       arcMap[node] = arc;
       if (!oldArcMap.containsKey(node)) {
         oldArcMap[node] = arc.copy(outRadius: arc.innerRadius, maxRadius: maxRadius);
@@ -401,7 +401,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
       parentNode.each((node, index, startNode) {
         var e = arcMap[node]!;
         var s = oldArcMap[node]!;
-        node.attr.arc = Arc.lerp(s, e, t);
+        node.attr = Arc.lerp(s, e, t);
         node.updateLabelPosition(context, series);
         return false;
       });
@@ -464,7 +464,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   @override
   SunburstData? findData(Offset offset, [bool overlap = false]) {
     return showRootNode?.find((node, index, startNode) {
-      Arc arc = node.attr.arc;
+      Arc arc = node.attr;
       return arc.contains(offset);
     });
   }

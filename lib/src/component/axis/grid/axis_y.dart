@@ -10,7 +10,6 @@ class YAxis extends GridAxis {
     super.inverse,
     super.min,
     super.max,
-    super.start0,
     super.splitNumber,
     super.minInterval,
     super.maxInterval,
@@ -19,17 +18,15 @@ class YAxis extends GridAxis {
     super.categoryCenter,
     super.timeRange,
     super.timeType,
-    super.timeFormatFun,
     super.interval,
     super.axisName,
     super.axisLine,
     AxisLabel? axisLabel,
     super.splitLine,
-    super.minorSplitLine,
     super.splitArea,
     AxisTick? axisTick,
-    super.minorTick,
     super.axisPointer,
+    super.id,
   }) {
     if (axisLabel == null) {
       this.axisLabel.inside = true;
@@ -39,7 +36,7 @@ class YAxis extends GridAxis {
     if (axisTick != null) {
       this.axisTick = axisTick;
     } else {
-      this.axisTick.tick?.inside = true;
+      this.axisTick.inside = true;
     }
   }
 }

@@ -4,20 +4,18 @@ import 'package:e_chart/e_chart.dart';
 
 /// 不可再分的最小绘制单元
 /// 其用于极坐标系和二维坐标系下的节点位置表示
-class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends RenderData<StackAttr<T, P>> {
+class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends RenderData<StackAttr<T,P>> {
   T? value;
 
-  StackData(this.value, {super.id, super.name}) : super.attr(StackAttr(CoordType.grid)) {
+  StackData(this.value, {super.id, super.name}) {
     if (value != null) {
       label.text = value!.name ?? DynamicText.empty;
     }
   }
 
+
   @override
   bool contains(Offset offset) {
-    if (attrNull == null) {
-      return false;
-    }
     if (attr.coord == CoordType.polar) {
       return attr.arc.contains(offset);
     }
@@ -26,9 +24,6 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    if (attrNull == null) {
-      return;
-    }
     if (attr.coord == CoordType.grid) {
       itemStyle.drawRect(canvas, paint, rect, attr.corner);
       borderStyle.drawRect(canvas, paint, rect, attr.corner);
@@ -126,8 +121,11 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   String toString() {
-    return 'value:X:${value?.domain} y:${value?.value}';
+    return 'value:X:${value?.x} y:${value?.y}';
   }
+
+  @override
+  StackAttr<T, P> initAttr()=>StackAttr(CoordType.grid);
 }
 
 class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> extends Disposable {
@@ -243,48 +241,57 @@ class StackGroupData<T extends StackItemData, P extends StackGroupData<T, P>> ex
 }
 
 class StackItemData extends BaseItemData {
-  dynamic domain;
-  dynamic value;
+  dynamic x;
+  dynamic y;
 
-  StackItemData(this.domain, this.value, {super.id, super.name}) {
-    checkDataType(domain);
-    checkDataType(value);
-    if (domain is! num && value is! num) {
+  StackItemData(this.x, this.y, {super.id, super.name}) {
+    checkDataType(x);
+    checkDataType(y);
+    if (x is! num && y is! num) {
       throw ChartError('x 和 y 必须有一个是num类型的数据');
     }
-    if (domain == null || value == null) {
+    if (x == null || y == null) {
       throw ChartError("NullPointException");
+    }
+
+    if (minValue > maxValue) {
+      throw ChartError("minValue must <= maxValue");
     }
   }
 
   ///返回应该要测量的值
-  num get measureValue {
-    if (value is num && domain is num) {
-      return value;
-      // ChartError(" x 和 y都是num 请重写该方法并返回正确的值");
+  num get value {
+    if (y is num && x is num) {
+      return y;
     }
-    if (value is num) {
-      return value;
+    if (y is num) {
+      return y;
     }
-    return domain;
+    return x;
   }
 
   num get minValue {
-    return 0;
+    if (value >= 0) {
+      return 0;
+    }
+    return value;
   }
 
   num get maxValue {
-    return measureValue;
+    if (value >= 0) {
+      return value;
+    }
+    return 0;
   }
 
-  num get subValue=>maxValue-minValue;
+  num get subValue => maxValue - minValue;
 
   num get aveValue {
-    return measureValue / 2;
+    return value / 2;
   }
 
   @override
   String toString() {
-    return '$runtimeType x:$domain y:$value';
+    return '$runtimeType x:$x y:$y';
   }
 }
