@@ -19,29 +19,29 @@ abstract class ChartViewGroup extends GestureView {
     }
   }
 
-  @override
-  void onStart() {
-    super.onStart();
-    for (var c in _children) {
-      try {
-        c.onStart();
-      } catch (e) {
-        Logger.e(e);
-      }
-    }
-  }
-
-  @override
-  void onStop() {
-    for (var c in _children) {
-      try {
-        c.onStop();
-      } catch (e) {
-        Logger.e(e);
-      }
-    }
-    super.onStop();
-  }
+  // @override
+  // void onStart() {
+  //   super.onStart();
+  //   for (var c in _children) {
+  //     try {
+  //       c.onStart();
+  //     } catch (e) {
+  //       Logger.e(e);
+  //     }
+  //   }
+  // }
+  //
+  // @override
+  // void onStop() {
+  //   for (var c in _children) {
+  //     try {
+  //       c.onStop();
+  //     } catch (e) {
+  //       Logger.e(e);
+  //     }
+  //   }
+  //   super.onStop();
+  // }
 
   @override
   void onDispose() {

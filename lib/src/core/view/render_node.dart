@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/layout/layout_result.dart';
 import 'package:e_chart/src/core/model/cache_layer.dart';
 import 'package:e_chart/src/model/chart_edgeinset.dart';
 import 'package:flutter/foundation.dart';
@@ -124,48 +123,64 @@ abstract class RenderNode extends Disposable with ViewAttr {
   }
 
   bool drawSelf(CCanvas canvas, ChartViewGroup parent) {
-    final bool dirty = isDirty;
     clearDirty();
     if (notShow) {
       return false;
     }
 
-    var layer = cacheLayer.layer;
-    final notChange = cacheLayer.notChange(width, height, translationX, translationY, scaleX, scaleY);
-    if (useSingleLayer && layer != null && !dirty && notChange) {
-      canvas.paintContext.addLayer(layer);
-      return true;
-    }
+    _drawSelf(canvas);
+    return true;
 
-    if (!useSingleLayer) {
-      _drawInner(canvas, Offset(left, top), true);
-      return false;
-    }
-
-    var oldLayer = layer;
-
-    var newLayer = canvas.paintContext.pushClipRect(
-      true,
-      globalBound.topLeft,
-      Rect.fromLTWH(0, 0, width, height),
-      (context, offset) {
-        _drawInner(CCanvas.fromPaintingContext(context), offset, true);
-      },
-      oldLayer: oldLayer as ClipRectLayer?,
-    );
-    cacheLayer.saveByView(newLayer, this);
-
-    return false;
+    // var layer = cacheLayer.layer;
+    // final notChange = cacheLayer.notChange(width, height, translationX, translationY, scaleX, scaleY);
+    // if (useSingleLayer && layer != null && !dirty && notChange) {
+    //   canvas.paintContext.addLayer(layer);
+    //   return true;
+    // }
+    //
+    // if (!useSingleLayer) {
+    //   _drawSelf(canvas, Offset(left, top), true);
+    //   return false;
+    // }
+    //
+    // var oldLayer = layer;
+    //
+    // var newLayer = canvas.paintContext.pushClipRect(
+    //   true,
+    //   globalBound.topLeft,
+    //   Rect.fromLTWH(0, 0, width, height),
+    //   (context, offset) {
+    //     _drawSelf(CCanvas.fromPaintingContext(context), offset, true);
+    //   },
+    //   oldLayer: oldLayer as ClipRectLayer?,
+    // );
+    // cacheLayer.saveByView(newLayer, this);
+    //
+    // return false;
   }
 
-  void _drawInner(CCanvas canvas, Offset offset, bool clip) {
+  void _drawSelf(CCanvas canvas) {
     canvas.save();
-    canvas.translate(offset.dx, offset.dy);
-    if (clip) {
+    bool hasSave = false;
+    if (translationX != 0 || translationY != 0 || scrollX != 0 || scrollY != 0 || scaleX != 1 || scaleY != 1) {
+      hasSave = true;
+      var offsetX = left + translationX + scrollX;
+      var offsetY = top + translationY + scrollY;
+      canvas.save();
+      canvas.translate(offsetX, offsetY);
+    }
+    if (clipSelf) {
+      if (!hasSave) {
+        hasSave = true;
+        canvas.save();
+      }
       canvas.clipRect(Rect.fromLTRB(0, 0, width, height));
     }
+
     draw(canvas);
-    canvas.restore();
+    if (hasSave) {
+      canvas.restore();
+    }
   }
 
   void onDrawBackground(CCanvas canvas) {}
@@ -214,7 +229,7 @@ abstract class RenderNode extends Disposable with ViewAttr {
 
   bool get useSingleLayer => false;
 
-  bool? get clipSelf => null;
+  bool get clipSelf => false;
 
   void requestLayoutSelf() {
     if (nodeStatus.inLayout) {
@@ -347,9 +362,6 @@ mixin ViewAttr {
   ///存储当前节点的布局属性
   LayoutParams layoutParams = const LayoutParams.wrapAll();
 
-  ///存储布局后的结果
-  LayoutResult layoutResult = LayoutResult();
-
   ///存储当前视图在父视图中的位置属性
   Rect boxBound = Rect.zero;
 
@@ -403,6 +415,14 @@ mixin ViewAttr {
 
   Offset get scale => Offset(scaleX, scaleY);
 
+  double scrollX = 0;
+
+  double scrollY = 0;
+
+  Offset get scroll => Offset(scrollX, scrollY);
+
+  bool visibility=true;
+
   void resetTranslation() {
     translationX = translationY = 0;
   }
@@ -416,7 +436,5 @@ mixin ViewAttr {
     margin.reset();
   }
 
-  void updateLayoutResult(LayoutResult result) {
-    layoutResult = result;
-  }
+
 }

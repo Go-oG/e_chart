@@ -31,6 +31,24 @@ abstract class GestureView extends ChartView {
     onInitGesture(_gesture);
   }
 
+  @override
+  set translationX(double tx) {
+    super.translationX = tx;
+    var gesture = _gesture;
+    if (gesture is RectGesture) {
+      gesture.rect = globalBound.translate(translationX, translationY);
+    }
+  }
+
+  @override
+  set translationY(double ty) {
+    super.translationY = ty;
+    var gesture = _gesture;
+    if (gesture is RectGesture) {
+      gesture.rect = globalBound.translate(translationX, translationY);
+    }
+  }
+
   ChartGesture get buildGesture {
     return RectGesture();
   }

@@ -7,8 +7,8 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreeMapHelper> {
   TreeMapView(super.series);
 
   @override
-  void onStart() {
-    super.onStart();
+  void onCreate() {
+    super.onCreate();
     series.addListener(handleSeriesCommand);
   }
 
@@ -18,12 +18,6 @@ class TreeMapView extends SeriesView<TreeMapSeries, TreeMapHelper> {
       layoutHelper.back();
       return;
     }
-  }
-
-  @override
-  void onStop() {
-    series.removeListener(handleSeriesCommand);
-    super.onStop();
   }
 
   @override

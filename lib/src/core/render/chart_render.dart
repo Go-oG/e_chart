@@ -65,20 +65,13 @@ abstract class ChartRender extends RenderNode {
   void onStart() {
     _lifecycle = Lifecycle.starting;
     context.gestureDispatcher.enable();
-    context.onStart();
-  }
-
-  void onStop() {
-    _lifecycle = Lifecycle.stop;
-    context.gestureDispatcher.disable();
-    clearListener();
-    context.onStop();
   }
 
   @override
   void dispose() {
     _lifecycle = Lifecycle.dispose;
     _context?.dispatchEvent(ChartDisposeEvent.single);
+    clearListener();
     _context?.dispose();
     _context = null;
     _notifier.clearListener();

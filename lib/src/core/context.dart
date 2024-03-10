@@ -147,23 +147,6 @@ class Context extends Disposable {
     });
   }
 
-  void onStart() {
-    for (var coord in coordList) {
-      try {
-        coord.onStart();
-      } catch (e) {
-        Logger.e(e);
-      }
-    }
-  }
-
-  void onStop() {
-    _animationManager.cancelAllAnimator();
-    for (var coord in coordList) {
-      coord.onStop();
-    }
-  }
-
   @override
   void dispose() {
     _eventDispatcher.dispose();

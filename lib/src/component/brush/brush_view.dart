@@ -36,6 +36,7 @@ class BrushView extends GestureView {
   void onCreate() {
     super.onCreate();
     brush.addListener(handleBrushCommand);
+    context.addActionCall(_handleAction);
   }
 
   void handleBrushCommand() {
@@ -124,19 +125,8 @@ class BrushView extends GestureView {
   }
 
   @override
-  void onStart() {
-    super.onStart();
-    context.addActionCall(_handleAction);
-  }
-
-  @override
-  void onStop() {
-    context.removeActionCall(_handleAction);
-    super.onStop();
-  }
-
-  @override
   void onDispose() {
+    context.removeActionCall(_handleAction);
     brush.removeListener(handleBrushCommand);
     _coord = null;
     _brush = null;

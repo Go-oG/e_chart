@@ -22,11 +22,11 @@ abstract class ChartView extends RenderNode {
   ///创建后的回调，在该方法后可以安全的使用Context
   void onCreate() {}
 
-  ///视图进入已开始状态
-  void onStart() {}
-
-  ///视图进入停止状态
-  void onStop() {}
+  // ///视图进入已开始状态
+  // void onStart() {}
+  //
+  // ///视图进入停止状态
+  // void onStop() {}
 
   ///由Context负责回调
   ///当该方法被调用时标志着当前View即将被销毁
@@ -127,8 +127,8 @@ abstract class ChartView extends RenderNode {
 
   void onSeriesConfigChangeCommand(covariant Command c) {
     ///自身配置改变我们只更新当前的配置和节点布局
-    onStop();
-    onStart();
+    // onStop();
+    // onStart();
     requestLayoutSelf();
   }
 

@@ -12,7 +12,7 @@ class RenderAdapter extends RenderBox {
   Size? configSize;
   BoxConstraints? oldConstraints;
   Size oldSize = Size.zero;
-  bool oldHasSize =false;
+  bool oldHasSize = false;
   ChartRender? _render;
   TickerProvider? _provider;
 
@@ -59,12 +59,7 @@ class RenderAdapter extends RenderBox {
       return;
     }
     render.clearListener();
-    render.onStop();
-    try {
-      render.dispose();
-    } catch (e) {
-      Logger.e(e);
-    }
+    render.dispose();
   }
 
   void _initRender(ChartOption option, TickerProvider provider, Size? size) {
@@ -107,8 +102,8 @@ class RenderAdapter extends RenderBox {
 
   @override
   void detach() {
-    _render?.onStop();
     super.detach();
+
   }
 
   @override
@@ -121,7 +116,7 @@ class RenderAdapter extends RenderBox {
 
   @override
   void performResize() {
-    if (hasSize&&oldConstraints != null && constraints == oldConstraints && oldSize ==size) {
+    if (hasSize && oldConstraints != null && constraints == oldConstraints && oldSize == size) {
       Logger.i('performResize() 前后约束不变 不进行测量');
       return;
     }
@@ -132,7 +127,7 @@ class RenderAdapter extends RenderBox {
     double maxH = constraints.maxHeight;
     double w = adjustSize(maxW, minW, configSize?.width);
     double h = adjustSize(maxH, minH, configSize?.height);
-    oldHasSize=hasSize;
+    oldHasSize = hasSize;
     oldSize = hasSize ? size : Size.zero;
     size = Size(w, h);
   }

@@ -34,10 +34,17 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
       _tipView = ToolTipView(toolTip);
       addView(_tipView!);
     }
+    context.addActionCall(dispatchAction);
+    registerCommandHandler();
+    props.addListener(_handleCommand);
   }
 
   @override
   void onDispose() {
+    context.removeActionCall(dispatchAction);
+    props.removeListener(_handleCommand);
+    unregisterCommandHandler();
+
     _props=null;
     _brushView = null;
     _tipView = null;
@@ -51,24 +58,8 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     return context.option.toolTip;
   }
 
-  @override
-  void onStart() {
-    super.onStart();
-    context.addActionCall(dispatchAction);
-    registerCommandHandler();
-    props.addListener(_handleCommand);
-  }
-
   void _handleCommand() {
     onReceiveCommand(props.value);
-  }
-
-  @override
-  void onStop() {
-    context.removeActionCall(dispatchAction);
-    props.removeListener(_handleCommand);
-    unregisterCommandHandler();
-    super.onStop();
   }
 
   @override

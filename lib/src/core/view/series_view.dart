@@ -20,7 +20,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     zLevel = series.seriesType.priority;
     if (series is RectSeries) {
       layoutParams = series.toLayoutParams();
-    }else if(series is RectSeries2){
+    } else if (series is RectSeries2) {
       layoutParams = series.toLayoutParams();
     }
   }
@@ -29,14 +29,19 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   void onCreate() {
     super.onCreate();
     _layoutHelper = buildLayoutHelper(_layoutHelper);
+    bindSeries(series);
+    layoutHelper.addListener(requestDraw);
   }
 
   @override
   void onDispose() {
+    unBindSeries();
+    layoutHelper.removeListener(requestDraw);
     _translationEvent = null;
     _scaleEvent = null;
     _layoutHelper?.dispose();
     _layoutHelper = null;
+    _series?.clearListener();
     _series = null;
     super.onDispose();
   }
@@ -124,22 +129,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
       return;
     }
     layoutHelper.onDragEnd();
-  }
-
-  @mustCallSuper
-  @override
-  void onStart() {
-    super.onStart();
-    bindSeries(series);
-    layoutHelper.addListener(requestDraw);
-  }
-
-  @mustCallSuper
-  @override
-  void onStop() {
-    unBindSeries();
-    layoutHelper.removeListener(requestDraw);
-    super.onStop();
   }
 
   @override

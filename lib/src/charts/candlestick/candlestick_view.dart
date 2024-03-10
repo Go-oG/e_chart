@@ -44,7 +44,4 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
     oldHelper?.dispose();
     return CandlestickHelper(context, this, series);
   }
-
-  @override
-  bool? get clipSelf => false;
 }
