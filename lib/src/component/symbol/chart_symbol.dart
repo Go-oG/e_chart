@@ -70,6 +70,8 @@ abstract class ChartSymbol extends Disposable {
   String toString() {
     return '$runtimeType size:$size scale:$scale';
   }
+
+
 }
 
 class SymbolAttr {

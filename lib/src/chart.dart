@@ -36,6 +36,4 @@ class ChartOption extends ChartNotifier<Command> {
     }
   }
 
-
-
 }

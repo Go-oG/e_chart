@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/layout/layout_result.dart';
 
 ///Diff 比较工具类
 ///用于在布局中实现动画
@@ -137,7 +138,7 @@ class DiffUtil {
       }
       updateCall.call(updateCallList, t);
     });
-    tweenList.add(TweenWrap(addTween,forceUseUpdate?DiffType.update: DiffType.add));
+    tweenList.add(TweenWrap(addTween, forceUseUpdate ? DiffType.update : DiffType.add));
     var removeTween = ChartDoubleTween(option: option);
     removeTween.addListener(() {
       double t = removeTween.value;
@@ -151,7 +152,7 @@ class DiffUtil {
     removeTween.addEndListener(() {
       updateCallList = newList2;
     });
-    tweenList.add(TweenWrap(removeTween,forceUseUpdate?DiffType.update: DiffType.remove));
+    tweenList.add(TweenWrap(removeTween, forceUseUpdate ? DiffType.update : DiffType.remove));
     var updateTween = ChartDoubleTween(option: option);
     updateTween.addListener(() {
       double t = updateTween.value;
@@ -191,19 +192,19 @@ class DiffUtil {
   }
 
   ///用于在点击或者hover触发时执行diff动画
-  static List<AnimationNode> diffUpdate<P, N extends RenderData<P>>(
+  static List<AnimationNode> diffUpdate<N extends RenderData>(
     AnimatorOption? attrs,
     Iterable<N> oldList,
     Iterable<N> newList,
-    P Function(N data, bool isOld) builder,
-    P Function(P s, P e, double t) lerpFun,
+    LayoutResult Function(N data, bool isOld) builder,
+    LayoutResult Function(LayoutResult s, LayoutResult e, double t) lerpFun,
     VoidCallback callback,
   ) {
     if (identical(oldList, newList)) {
       throw ChartError("传入的前后引用不能相等");
     }
-    Map<N, P> startMap = {};
-    Map<N, P> endMap = {};
+    Map<N, LayoutResult> startMap = {};
+    Map<N, LayoutResult> endMap = {};
 
     each(oldList, (p0, p1) {
       startMap[p0] = p0.attr;
@@ -217,8 +218,8 @@ class DiffUtil {
 
     if (attrs == null || !attrs.check(LayoutType.update, oldList.length + newList.length)) {
       for (var n in nodeList) {
-        P s = startMap[n] as P;
-        P e = endMap[n] as P;
+        LayoutResult s = startMap[n] as LayoutResult;
+        LayoutResult e = endMap[n] as LayoutResult;
         n.attr = lerpFun.call(s, e, 1);
       }
       callback.call();
@@ -232,8 +233,8 @@ class DiffUtil {
     updateTween.addListener(() {
       double t = updateTween.value;
       for (var n in nodeList) {
-        P s = startMap[n] as P;
-        P e = endMap[n] as P;
+        LayoutResult s = startMap[n] as LayoutResult;
+        LayoutResult e = endMap[n] as LayoutResult;
         n.attr = lerpFun.call(s, e, t);
       }
       callback.call();

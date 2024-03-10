@@ -39,7 +39,7 @@ class RenderAdapter extends RenderBox {
 
     ///直接重建
     _provider = provider;
-    _disPoseRender(_render);
+    _disposeRender(_render);
     _render = null;
 
     _initRender(option, provider, size);
@@ -51,10 +51,10 @@ class RenderAdapter extends RenderBox {
   }
 
   void onUnmountRender() {
-    _disPoseRender(_render);
+    _disposeRender(_render);
   }
 
-  void _disPoseRender(ChartRender? render) {
+  void _disposeRender(ChartRender? render) {
     if (render == null) {
       return;
     }
@@ -90,7 +90,7 @@ class RenderAdapter extends RenderBox {
         onUpdateRender(option, configSize, provider);
       }
     });
-    render.onCreate();
+    render.attach();
     _render = render;
   }
 
@@ -171,7 +171,7 @@ class RenderAdapter extends RenderBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    _render?.draw(CCanvas(context));
+    _render?.draw(CCanvas.fromPaintingContext(context));
   }
 
   @override

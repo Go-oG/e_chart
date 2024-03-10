@@ -1,9 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class TreeMapData extends BaseTreeData<Rect, TreeMapData> {
+class TreeMapData extends ChartTree<Rect, TreeMapData> {
   TreeMapData(super.parent, super.children, num value, {super.id, super.name}) : super(value: value) {
-    attr = Rect.zero;
     setExpand(false, false);
   }
 
@@ -78,4 +77,7 @@ class TreeMapData extends BaseTreeData<Rect, TreeMapData> {
     }
     label.updatePainter(offset: Offset(x, y), align: toInnerAlign(align), maxWidth: w, maxHeight: h);
   }
+
+  @override
+  Rect initAttr()=>Rect.zero;
 }

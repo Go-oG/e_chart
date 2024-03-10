@@ -2,7 +2,7 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
+class SunburstData extends ChartTree<Arc, SunburstData> {
   SunburstData(
     super.parent,
     super.children,
@@ -11,8 +11,9 @@ class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
     super.name,
   }) {
     this.value = value;
-    attr = SunburstAttr.zero();
   }
+
+  double alpha = 1;
 
   @override
   void updateLabelPosition(Context context, SunburstSeries series) {
@@ -20,7 +21,7 @@ class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
     if (label.notDraw) {
       return;
     }
-    var arc = attr.arc;
+    var arc = attr;
     label.updatePainter();
     Size size = label.getSize();
     double labelMargin = series.labelMarginFun?.call(this) ?? 0;
@@ -40,7 +41,7 @@ class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
       dx = m.cos(originAngle * StaticConfig.angleUnit) * (arc.outRadius - size.width / 2);
       dy = m.sin(originAngle * StaticConfig.angleUnit) * (arc.outRadius - size.width / 2);
     }
-    var textPosition = Offset(dx, dy).translate2(attr.arc.center);
+    var textPosition = Offset(dx, dy).translate2(attr.center);
     double rotateMode = series.rotateFun?.call(this) ?? -1;
     double rotateAngle = 0;
 
@@ -79,13 +80,13 @@ class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
 
   @override
   bool contains(Offset offset) {
-    return attr.arc.contains(offset);
+    return attr.contains(offset);
   }
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    itemStyle.drawArc(canvas, paint, attr.arc);
-    borderStyle.drawPath(canvas, paint, attr.arc.toPath());
+    itemStyle.drawArc(canvas, paint, attr);
+    borderStyle.drawPath(canvas, paint, attr.toPath());
     label.draw(canvas, paint);
   }
 
@@ -99,12 +100,15 @@ class SunburstData extends BaseTreeData<SunburstAttr, SunburstData> {
   @override
   String toString() {
     var s = super.toString();
-    return "$s\nAttr:\n$attr";
+    return "$s\nAttr:\n${attr}";
   }
+
+  @override
+  Arc initAttr() => Arc.zero;
 }
 
 class SunburstVirtualNode extends SunburstData {
-  SunburstVirtualNode(SunburstData child, SunburstAttr attr) : super(null, [child], 0) {
+  SunburstVirtualNode(SunburstData child, Arc attr) : super(null, [child], 0) {
     child.parent = null;
     add(child);
     value = child.value;
@@ -115,23 +119,6 @@ class SunburstVirtualNode extends SunburstData {
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    bs.drawArc(canvas, paint, attr.arc);
-  }
-}
-
-/// 存放位置数据
-class SunburstAttr {
-  static final SunburstAttr empty = SunburstAttr(Arc());
-  Arc arc;
-
-  SunburstAttr(this.arc, {this.alpha = 1});
-
-  SunburstAttr.zero() : arc = Arc();
-
-  double alpha = 1;
-
-  @override
-  String toString() {
-    return "Arc:$arc";
+    bs.drawArc(canvas, paint, attr);
   }
 }

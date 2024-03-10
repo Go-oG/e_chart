@@ -6,13 +6,14 @@ class HeatMapData extends RenderData<Rect> {
   dynamic y;
   num value = 0;
 
+
   HeatMapData(
     this.x,
     this.y,
     this.value, {
     super.id,
     DynamicText? name,
-  }) : super.attr(Rect.zero, name: name);
+  });
 
   Alignment labelAlign = Alignment.center;
   ChartSymbol symbol = EmptySymbol.empty;
@@ -52,4 +53,7 @@ class HeatMapData extends RenderData<Rect> {
   String toString() {
     return '${super.toString()} $symbol';
   }
+
+  @override
+  Rect initAttr() =>Rect.zero;
 }

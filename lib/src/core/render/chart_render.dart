@@ -57,9 +57,9 @@ abstract class ChartRender extends RenderNode {
     // _context?.animationManager.cancelAllAnimator();
   }
 
-  void onCreate() {
+  void attach() {
     _lifecycle = Lifecycle.created;
-    context.onCreate();
+    context.attach();
   }
 
   void onStart() {

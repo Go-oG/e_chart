@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/layout/layout_result.dart';
 import 'package:e_chart/src/core/model/cache_layer.dart';
+import 'package:e_chart/src/model/chart_edgeinset.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
@@ -34,10 +36,8 @@ abstract class RenderNode extends Disposable with ViewAttr {
   ///绘图缓存(可以优化绘制效率)
   late final CacheLayer cacheLayer = CacheLayer();
 
+  ///测量视图 当测量完成后应该知道视图的宽度 高度 间距等信息
   void measure(double parentWidth, double parentHeight) {
-    if (nodeStatus.inMeasure || nodeStatus.inLayout) {
-      return;
-    }
     nodeStatus = RenderNodeStatus.measureStart;
     const accurate = StaticConfig.accuracy;
     bool minDiff = (width - parentWidth).abs() <= accurate && (height - parentHeight).abs() <= accurate;
@@ -60,16 +60,23 @@ abstract class RenderNode extends Disposable with ViewAttr {
     if (lp.width.isWrap) {
       padding.left = lp.getLeftPadding(parentWidth);
       padding.right = lp.getRightPadding(parentWidth);
-      w += padding.horizontal;
+      w = padding.horizontal;
+    } else {
+      padding.left = lp.getLeftPadding(w);
+      padding.right = lp.getRightPadding(w);
     }
     if (lp.height.isWrap) {
       padding.top = lp.getTopPadding(parentHeight);
       padding.bottom = lp.getBottomPadding(parentHeight);
-      h += padding.vertical;
+      h = padding.vertical;
+    } else {
+      padding.top = lp.getTopPadding(h);
+      padding.bottom = lp.getBottomPadding(h);
     }
-    w = min<double>([w, parentWidth]);
-    h = min<double>([h, parentHeight]);
-
+    margin.top = lp.getTopMargin(parentHeight);
+    margin.left = lp.getLeftMargin(parentWidth);
+    margin.right = lp.getRightMargin(parentWidth);
+    margin.bottom = lp.getBottomMargin(parentHeight);
     return Size(w, h);
   }
 
@@ -77,35 +84,27 @@ abstract class RenderNode extends Disposable with ViewAttr {
   int _layoutCount = 0;
 
   void layout(double left, double top, double right, double bottom) {
-    if (nodeStatus.inLayout || nodeStatus.inMeasure) {
-      Logger.i("$runtimeType layout inLayout:${nodeStatus.inLayout}  inMeasure:${nodeStatus.inMeasure}");
+    if (nodeStatus.inLayout) {
+      Logger.i("$runtimeType 当前正在布局中 放弃布局");
       return;
     }
     nodeStatus = RenderNodeStatus.layoutStart;
-    const accurate = StaticConfig.accuracy;
-    bool b1 = (left - boxBound.left).abs() < accurate;
-    bool b2 = (top - boxBound.top).abs() < accurate;
-    bool b3 = (right - boxBound.right).abs() < accurate;
-    bool b4 = (bottom - boxBound.bottom).abs() < accurate;
-    if ((b1 && b2 && b3 && b4) && !forceLayout) {
-      nodeStatus = RenderNodeStatus.layoutEnd;
-      return;
-    }
     forceLayout = false;
     _layoutCount++;
     oldBound = boxBound;
     boxBound = Rect.fromLTRB(left, top, right, bottom);
     globalBound = getGlobalBounds();
+
     onLayout(left, top, right, bottom);
-    onLayoutEnd();
     nodeStatus = RenderNodeStatus.layoutEnd;
+    onLayoutComplete();
   }
 
   bool get isFirstLayout => _layoutCount == 1;
 
   void onLayout(double left, double top, double right, double bottom) {}
 
-  void onLayoutEnd() {}
+  void onLayoutComplete() {}
 
   void clearCacheLayer() {
     cacheLayer.clear();
@@ -113,7 +112,7 @@ abstract class RenderNode extends Disposable with ViewAttr {
 
   void draw(CCanvas canvas) {
     clearDirty();
-    if (notShow || nodeStatus.inDrawing || nodeStatus != RenderNodeStatus.layoutEnd) {
+    if (notShow) {
       return;
     }
     nodeStatus = RenderNodeStatus.drawing;
@@ -150,7 +149,7 @@ abstract class RenderNode extends Disposable with ViewAttr {
       globalBound.topLeft,
       Rect.fromLTWH(0, 0, width, height),
       (context, offset) {
-        _drawInner(CCanvas(context), offset, true);
+        _drawInner(CCanvas.fromPaintingContext(context), offset, true);
       },
       oldLayer: oldLayer as ClipRectLayer?,
     );
@@ -263,8 +262,17 @@ abstract class RenderNode extends Disposable with ViewAttr {
   void dispose() {
     super.dispose();
     _parent = null;
-    layoutParams = const LayoutParams.matchAll();
     cacheLayer.clear();
+  }
+
+  void resetLayoutInfo() {
+    boxBound = Rect.zero;
+    globalBound = Rect.zero;
+    oldBound = Rect.zero;
+    margin.reset();
+    padding.reset();
+    translationX = translationY = 0;
+    scaleX = scaleY = 1;
   }
 
   ///=========Debug 绘制相关方法===============
@@ -331,5 +339,84 @@ enum RenderNodeStatus {
 
   bool get inDrawing {
     return this == RenderNodeStatus.drawing;
+  }
+}
+
+///存储View的基本信息
+mixin ViewAttr {
+  ///存储当前节点的布局属性
+  LayoutParams layoutParams = const LayoutParams.wrapAll();
+
+  ///存储布局后的结果
+  LayoutResult layoutResult = LayoutResult();
+
+  ///存储当前视图在父视图中的位置属性
+  Rect boxBound = Rect.zero;
+
+  ///记录其全局位置
+  Rect globalBound = Rect.zero;
+
+  ///记录旧的边界位置，可用于动画相关的计算
+  Rect oldBound = Rect.zero;
+
+  final ChartEdgeInset margin = ChartEdgeInset();
+
+  final ChartEdgeInset padding = ChartEdgeInset();
+
+  Offset toLocal(Offset global) {
+    return Offset(global.dx - globalBound.left, global.dy - globalBound.top);
+  }
+
+  Offset toGlobal(Offset local) {
+    return Offset(local.dx + globalBound.left, local.dy + globalBound.top);
+  }
+
+  double get width => right - left;
+
+  double get height => bottom - top;
+
+  double get left => boxBound.left;
+
+  double get top => boxBound.top;
+
+  double get right => boxBound.right;
+
+  double get bottom => boxBound.bottom;
+
+  double get centerX => width / 2.0;
+
+  double get centerY => height / 2.0;
+
+  Rect get selfBoxBound => Rect.fromLTWH(0, 0, width, height);
+
+  Size get size => Size(width, height);
+
+  double translationX = 0;
+
+  double translationY = 0;
+
+  Offset get translation => Offset(translationX, translationY);
+
+  double scaleX = 1;
+
+  double scaleY = 1;
+
+  Offset get scale => Offset(scaleX, scaleY);
+
+  void resetTranslation() {
+    translationX = translationY = 0;
+  }
+
+  void resetScale() {
+    scaleX = scaleY = 1;
+  }
+
+  void resetMarginAndPadding() {
+    padding.reset();
+    margin.reset();
+  }
+
+  void updateLayoutResult(LayoutResult result) {
+    layoutResult = result;
   }
 }

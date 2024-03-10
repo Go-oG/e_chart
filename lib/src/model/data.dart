@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 
 class BaseGroupData<T> {

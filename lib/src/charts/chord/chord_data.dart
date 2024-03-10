@@ -1,11 +1,10 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/layout/layout_result.dart';
 
 class ChordData extends RenderData<Arc> {
-  ChordData({super.id, super.name}) {
-    attr = Arc.zero;
-  }
+  ChordData({super.id, super.name});
 
   num value = 0;
 
@@ -19,9 +18,6 @@ class ChordData extends RenderData<Arc> {
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    if (attr.isEmpty) {
-      return;
-    }
     itemStyle.drawArc(canvas, paint, attr);
     borderStyle.drawPath(canvas, paint, attr.toPath(),
         drawDash: true,
@@ -38,10 +34,13 @@ class ChordData extends RenderData<Arc> {
     borderStyle = series.getBorderStyle(context, this);
     label.updatePainter(style: series.getLabelStyle(context, this));
   }
+
+  @override
+  Arc initAttr()=>Arc.zero;
 }
 
+//PathLayoutResult
 class ChordLink extends RenderData<Path> {
-  static final _emptyPath = Path();
   ChordData source;
   ChordData target;
   num value;
@@ -53,8 +52,8 @@ class ChordLink extends RenderData<Path> {
   num targetStartAngle = 0;
   num targetEndAngle = 0;
 
+
   ChordLink(this.source, this.target, this.value, {super.id, super.name}) {
-    attr = _emptyPath;
     if (value < 0) {
       throw ChartError("value must >0");
     }
@@ -76,4 +75,7 @@ class ChordLink extends RenderData<Path> {
     itemStyle = series.getLinkItemStyle(context, this);
     borderStyle = series.getLinkBorderStyle(context, this);
   }
+
+  @override
+  Path initAttr() =>Path();
 }

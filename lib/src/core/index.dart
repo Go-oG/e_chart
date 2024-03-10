@@ -11,7 +11,7 @@ export 'layout/layout_helper3.dart';
 export 'layout/layout_type.dart';
 export 'layout/node_diff.dart';
 
-export 'model/layout_params.dart';
+export 'layout/layout_params.dart';
 export 'model/series_type.dart';
 export 'model/size_params.dart';
 export 'model/view_port.dart';

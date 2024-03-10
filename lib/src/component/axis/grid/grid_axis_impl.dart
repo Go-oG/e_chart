@@ -257,6 +257,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
     canvas.translate(attrs.scrollX, attrs.scrollY);
     canvas.clipRect(getSplitClipRect());
     each(splitLineList, (render, p1) {
+      Logger.i(render.runtimeType);
       var split = render as AxisLineRender;
       int interval = splitLine.interval;
       if (interval > 0) {

@@ -2,12 +2,10 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class TreeData extends BaseTreeData<TreeAttr, TreeData> {
+class TreeData extends ChartTree<TreeAttr, TreeData> {
   static final TreeData empty = TreeData(null, []);
 
-  TreeData(super.parent, super.children, {super.id, super.value}) {
-    attr = TreeAttr(EmptySymbol.empty);
-  }
+  TreeData(super.parent, super.children, {super.id, super.value});
 
   @override
   String toString() {
@@ -34,6 +32,9 @@ class TreeData extends BaseTreeData<TreeAttr, TreeData> {
     attr.symbol = series.getSymbol(context, this);
     label.updatePainter(style: series.getLabelStyle(context, this));
   }
+
+  @override
+  TreeAttr initAttr()=>TreeAttr(EmptySymbol.empty);
 }
 
 class TreeAttr {

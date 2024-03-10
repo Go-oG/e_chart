@@ -37,7 +37,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     _scaleEvent = null;
     _layoutHelper?.dispose();
     _layoutHelper = null;
-    layoutParams = LayoutParams.none;
     _series = null;
     super.onDispose();
   }

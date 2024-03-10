@@ -5,7 +5,7 @@ import 'package:e_chart/src/core/render/element_render.dart';
 
 class TickRender extends ElementRender {
   ///数据可能为空
-  List<dynamic> data;
+  late List<dynamic> data;
   int index;
   int maxIndex;
   Offset start;
@@ -14,14 +14,20 @@ class TickRender extends ElementRender {
   List<TickRender> minorList;
 
   TickRender(
-    this.data,
+    dynamic data,
     this.index,
     this.maxIndex,
     this.start,
     this.end,
     this.style, [
     this.minorList = const [],
-  ]);
+  ]) {
+    if (data is List<dynamic>) {
+      this.data = data;
+    } else {
+      this.data = [data];
+    }
+  }
 
   @override
   void draw(CCanvas canvas, Paint paint) {

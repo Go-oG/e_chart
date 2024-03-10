@@ -13,7 +13,7 @@ class RadarData extends RenderData<Path> {
     this.data, {
     super.id,
     super.name,
-  }) : super.attr(emptyPath);
+  });
 
   Path? get pathOrNull {
     if (attr == emptyPath) {
@@ -81,6 +81,9 @@ class RadarData extends RenderData<Path> {
     label.style = LabelStyle.empty;
     label.updatePainter();
   }
+
+  @override
+  Path initAttr() => emptyPath;
 }
 
 class RadarChildData extends RenderData<Offset> {
@@ -92,7 +95,7 @@ class RadarChildData extends RenderData<Offset> {
     this.value, {
     super.id,
     super.name,
-  }) : super.attr(Offset.zero);
+  });
 
   @override
   bool contains(Offset offset) {
@@ -116,4 +119,7 @@ class RadarChildData extends RenderData<Offset> {
   void updateStyle(Context context, covariant RadarSeries series) {
     symbol = series.getSymbol(context, this);
   }
+
+  @override
+  Offset initAttr() => Offset.zero;
 }

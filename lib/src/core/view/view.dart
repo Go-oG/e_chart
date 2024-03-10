@@ -1,8 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
-import '../../model/chart_edgeinset.dart';
-
 abstract class ChartView extends RenderNode {
   Context? _context;
 
@@ -14,6 +12,8 @@ abstract class ChartView extends RenderNode {
   ///该回调只会发生在视图创建后，且只会回调一次
   ///绝大部分子类都不应该覆写该方法
   void attach(Context context, RenderNode parent) {
+    resetLayoutInfo();
+    forceLayout = true;
     _context = context;
     this.parent = parent;
     onCreate();
@@ -146,76 +146,11 @@ abstract class ChartView extends RenderNode {
   bool ignoreAllocateDataIndex() {
     return false;
   }
-}
 
-///存储View的基本信息
-mixin ViewAttr {
-  ///存储当前节点的布局属性
-  late LayoutParams layoutParams = const LayoutParams.matchAll();
-
-  ///存储当前视图在父视图中的位置属性
-  Rect boxBound = Rect.zero;
-
-  ///记录其全局位置
-  Rect globalBound = Rect.zero;
-
-  ///记录旧的边界位置，可用于动画相关的计算
-  Rect oldBound = Rect.zero;
-
-  final ChartEdgeInset margin = ChartEdgeInset();
-
-  final ChartEdgeInset padding = ChartEdgeInset();
-
-  Offset toLocal(Offset global) {
-    return Offset(global.dx - globalBound.left, global.dy - globalBound.top);
+  @override
+  void resetLayoutInfo() {
+    super.resetLayoutInfo();
+    forceLayout = true;
   }
 
-  Offset toGlobal(Offset local) {
-    return Offset(local.dx + globalBound.left, local.dy + globalBound.top);
-  }
-
-  double get width => right - left;
-
-  double get height => bottom - top;
-
-  double get left => boxBound.left;
-
-  double get top => boxBound.top;
-
-  double get right => boxBound.right;
-
-  double get bottom => boxBound.bottom;
-
-  double get centerX => width / 2.0;
-
-  double get centerY => height / 2.0;
-
-  Rect get selfBoxBound => Rect.fromLTWH(0, 0, width, height);
-
-  Size get size => Size(width, height);
-
-  double translationX = 0;
-
-  double translationY = 0;
-
-  Offset get translation => Offset(translationX, translationY);
-
-  double scaleX = 1;
-
-  double scaleY = 1;
-
-  Offset get scale => Offset(scaleX, scaleY);
-
-  void resetTranslation() {
-    translationX = translationY = 0;
-  }
-
-  void resetScale() {
-    scaleX = scaleY = 1;
-  }
-
-  void resetMarginAndPadding() {
-    padding.reset();
-    margin.reset();
-  }
 }

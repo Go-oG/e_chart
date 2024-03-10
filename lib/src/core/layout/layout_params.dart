@@ -1,5 +1,5 @@
 import '../../model/string_number.dart';
-import 'size_params.dart';
+import '../model/size_params.dart';
 
 class LayoutParams {
   static const LayoutParams none=LayoutParams.matchAll();

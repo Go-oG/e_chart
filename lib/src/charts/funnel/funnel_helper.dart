@@ -13,7 +13,7 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
     oldHoverData = null;
     var oldList = dataSet;
     var newList = [...series.data];
-    initDataIndexAndStyle(newList,true);
+    initDataIndexAndStyle(newList, true);
     var an = DiffUtil.diff<FunnelData>(
       getAnimation(type),
       oldList,
@@ -39,7 +39,7 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
   }
 
   @override
-  void initDataIndexAndStyle(List<FunnelData> dataList,[bool updateStyle=true]) {
+  void initDataIndexAndStyle(List<FunnelData> dataList, [bool updateStyle = true]) {
     for (int i = 0; i < dataList.length; i++) {
       var data = dataList[i];
       var preData = i == 0 ? null : dataList[i - 1];
@@ -47,10 +47,11 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
       data.groupIndex = 0;
       data.preData = preData;
       data.groupIndex = 0;
-      if(updateStyle){
+      if (updateStyle) {
         data.updateStyle(context, series);
       }
     }
+
     ///直接降序处理
     dataList.sort((a, b) {
       return a.value.compareTo(b.value);
@@ -130,12 +131,12 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
     }
     for (var node in nodeList) {
       var props = propsMap[node]!;
-      node.attr = Polygon([
+      node.attr = [
         props.p1,
         props.p1.translate(props.len1, 0),
         props.p2.translate(props.len2, 0),
         props.p2,
-      ]);
+      ];
     }
   }
 
@@ -185,12 +186,12 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
     }
     for (var node in nodeList) {
       FunnelProps props = propsMap[node]!;
-      node.attr = Polygon([
+      node.attr = [
         props.p1,
         props.p2,
         props.p2.translate(0, props.len2),
         props.p1.translate(0, props.len1),
-      ]);
+      ];
     }
   }
 

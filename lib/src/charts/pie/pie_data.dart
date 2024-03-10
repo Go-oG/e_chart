@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/layout/layout_result.dart';
 import 'package:flutter/material.dart';
 
 class PieData extends RenderData<Arc> {
@@ -8,7 +9,7 @@ class PieData extends RenderData<Arc> {
     this.value, {
     super.id,
     super.name,
-  }) : super.attr(Arc.zero) ;
+  });
 
   ///计算文字的位置
   Path? guidLinePath;
@@ -77,4 +78,7 @@ class PieData extends RenderData<Arc> {
     borderStyle = series.getBorderStyle(context, this);
     label.updatePainter(style: series.getLabelStyle(context, this));
   }
+
+  @override
+  Arc initAttr() => Arc.zero;
 }

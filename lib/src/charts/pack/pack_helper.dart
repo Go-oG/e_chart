@@ -196,7 +196,7 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
       }
       return true;
     }, false);
-    this.dataSet = nodeList;
+    dataSet = nodeList;
   }
 
   @override

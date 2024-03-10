@@ -42,7 +42,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     this.backgroundColor,
     this.name = '',
     String? id,
-    this.useSingleLayer = true,
+    this.useSingleLayer = false,
   }) : super(Command.none) {
     if (id == null || id.isEmpty) {
       this.id = randomId();

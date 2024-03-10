@@ -26,7 +26,7 @@ class AxisLineRender extends ElementRender {
 }
 
 class AxisCurveRender extends ElementRender {
-  List<dynamic> data;
+  late List<dynamic> data;
   int index;
   int maxIndex;
   Offset center;
@@ -36,7 +36,7 @@ class AxisCurveRender extends ElementRender {
   LineStyle style;
 
   AxisCurveRender(
-    this.data,
+    dynamic data,
     this.index,
     this.maxIndex,
     this.center,
@@ -44,7 +44,13 @@ class AxisCurveRender extends ElementRender {
     this.startAngle,
     this.sweepAngle,
     this.style,
-  );
+  ){
+    if (data is List<dynamic>) {
+      this.data = data;
+    } else {
+      this.data = [data];
+    }
+  }
 
   @override
   void draw(CCanvas canvas, Paint paint) {

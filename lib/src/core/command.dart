@@ -26,22 +26,29 @@ class Command {
   static const inverseSelectLegend = Command._(-10009);
   static const selectAllLegend = Command._(-10010);
   static const unselectLegend = Command._(-10011);
+  static const legendItemChangeCode = -10012;
 
   final int code;
 
   ///是否需要运行动画
   final bool runAnimation;
+  final Map<String, dynamic> data;
 
   Command(
     this.code, {
     this.runAnimation = false,
+    this.data = const {},
   }) {
     if (code <= 0) {
       throw ChartError("code must >0");
     }
   }
 
-  const Command._(this.code, {this.runAnimation = true});
+  static Command buildLegendChange(LegendItem item) {
+    return Command._(legendItemChangeCode, data: {"legendItem": item});
+  }
+
+  const Command._(this.code, {this.runAnimation = true, this.data = const {}});
 
   Command copy({bool? runAnimation}) {
     return Command(code, runAnimation: runAnimation ?? this.runAnimation);

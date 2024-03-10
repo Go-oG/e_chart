@@ -1,6 +1,10 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/material.dart';
+
+import 'legend_item_view.dart';
 
 class LegendItem extends Disposable {
+  final String id = randomId();
   late final String seriesId;
   late DynamicText name;
   late ChartSymbol symbol;
@@ -36,6 +40,14 @@ class LegendItem extends Disposable {
     }
   }
 
+  Widget toWidget(Direction direction, Legend legend, Fun2<LegendItem, bool>? call) {
+    return LegendItemView(
+      item: this,
+      legend: legend,
+      call: call,
+    );
+  }
+
   @override
   void dispose() {
     name = DynamicText.empty;
@@ -44,3 +56,4 @@ class LegendItem extends Disposable {
     super.dispose();
   }
 }
+

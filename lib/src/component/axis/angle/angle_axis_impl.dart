@@ -145,7 +145,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
       Offset eo = circlePoint(r, angle, attrs.center);
       List<TickRender> minorList = [];
 
-      tickList.add(TickRender(scale.toData(angle), i, tickCount, so, eo, tickStyle, minorList));
+      tickList.add(TickRender([scale.toData(angle)], i, tickCount, so, eo, tickStyle, minorList));
       if (axis.isCategoryAxis || axis.isTimeAxis || i >= tickCount - 1) {
         continue;
       }

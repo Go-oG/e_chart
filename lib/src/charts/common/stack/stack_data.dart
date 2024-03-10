@@ -4,20 +4,18 @@ import 'package:e_chart/e_chart.dart';
 
 /// 不可再分的最小绘制单元
 /// 其用于极坐标系和二维坐标系下的节点位置表示
-class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends RenderData<StackAttr<T, P>> {
+class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends RenderData<StackAttr<T,P>> {
   T? value;
 
-  StackData(this.value, {super.id, super.name}) : super.attr(StackAttr(CoordType.grid)) {
+  StackData(this.value, {super.id, super.name}) {
     if (value != null) {
       label.text = value!.name ?? DynamicText.empty;
     }
   }
 
+
   @override
   bool contains(Offset offset) {
-    if (attrNull == null) {
-      return false;
-    }
     if (attr.coord == CoordType.polar) {
       return attr.arc.contains(offset);
     }
@@ -26,9 +24,6 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
 
   @override
   void onDraw(CCanvas canvas, Paint paint) {
-    if (attrNull == null) {
-      return;
-    }
     if (attr.coord == CoordType.grid) {
       itemStyle.drawRect(canvas, paint, rect, attr.corner);
       borderStyle.drawRect(canvas, paint, rect, attr.corner);
@@ -128,6 +123,9 @@ class StackData<T extends StackItemData, P extends StackGroupData<T, P>> extends
   String toString() {
     return 'value:X:${value?.x} y:${value?.y}';
   }
+
+  @override
+  StackAttr<T, P> initAttr()=>StackAttr(CoordType.grid);
 }
 
 class StackAttr<T extends StackItemData, P extends StackGroupData<T, P>> extends Disposable {

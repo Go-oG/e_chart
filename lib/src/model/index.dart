@@ -25,6 +25,7 @@ export 'quadtree/quadtree.dart' hide InnerQuad;
 
 export 'quickselect/quick_select.dart';
 export 'rbush/rbush.dart' hide RNode;
+export 'tree/chart_tree.dart';
 
 export 'array.dart';
 export 'chart_align.dart';
@@ -38,7 +39,6 @@ export 'mixin_props.dart';
 export 'pair.dart';
 export 'range_info.dart';
 export 'string_number.dart';
-export 'tree/base_tree_data.dart';
 export 'axis_index.dart';
 export 'extreme.dart';
 export 'extreme_info.dart';

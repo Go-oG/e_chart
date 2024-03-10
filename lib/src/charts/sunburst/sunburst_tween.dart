@@ -1,8 +1,6 @@
-
 import 'package:e_chart/e_chart.dart';
-import 'sunburst_data.dart';
 
-class SunburstTween extends ChartTween<SunburstAttr> {
+class SunburstTween extends ChartTween<Arc> {
   SunburstTween(
     super.begin,
     super.end, {
@@ -11,13 +9,13 @@ class SunburstTween extends ChartTween<SunburstAttr> {
   });
 
   @override
-  SunburstAttr convert(double animatorPercent) {
-    double innerRadius = begin.arc.innerRadius + (end.arc.innerRadius - begin.arc.innerRadius) * animatorPercent;
-    double outerRadius = begin.arc.outRadius + (end.arc.outRadius - begin.arc.outRadius) * animatorPercent;
-    double startAngle = begin.arc.startAngle + (end.arc.startAngle - begin.arc.startAngle) * animatorPercent;
-    double sweepAngle = begin.arc.sweepAngle + (end.arc.sweepAngle - begin.arc.sweepAngle) * animatorPercent;
-    double alpha = begin.alpha + (end.alpha - begin.alpha) * animatorPercent;
-    Arc arc = Arc(innerRadius: innerRadius, outRadius: outerRadius, sweepAngle: sweepAngle, startAngle: startAngle);
-    return SunburstAttr(arc, alpha: alpha);
+  Arc convert(double animatorPercent) {
+    double innerRadius = begin.innerRadius + (end.innerRadius - begin.innerRadius) * animatorPercent;
+    double outerRadius = begin.outRadius + (end.outRadius - begin.outRadius) * animatorPercent;
+    double startAngle = begin.startAngle + (end.startAngle - begin.startAngle) * animatorPercent;
+    double sweepAngle = begin.sweepAngle + (end.sweepAngle - begin.sweepAngle) * animatorPercent;
+ //   double alpha = begin.alpha + (end.alpha - begin.alpha) * animatorPercent;
+    return Arc(innerRadius: innerRadius, outRadius: outerRadius, sweepAngle: sweepAngle, startAngle: startAngle);
+    //  return Arc(arc, alpha: alpha);
   }
 }

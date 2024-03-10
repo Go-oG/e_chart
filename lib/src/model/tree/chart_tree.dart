@@ -3,13 +3,13 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-typedef TreeFun<A, T extends BaseTreeData<A, T>> = bool Function(T node, int index, T startNode);
+typedef TreeFun<T, N extends ChartTree<T, N>> = bool Function(N node, int index, N startNode);
 
 ///通用的树节点抽象表示
-abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<A> {
-  T? parent;
+abstract class ChartTree<T, N extends ChartTree<T, N>> extends RenderData<T> {
+  N? parent;
 
-  List<T> _childrenList = [];
+  List<N> _childrenList = [];
 
   ///后代节点数
   int _count = 0;
@@ -32,12 +32,11 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   ///缩放
   double scale = 1;
-
   bool _expand = true; //是否展开
 
-  BaseTreeData(
+  ChartTree(
     this.parent,
-    List<T> children, {
+    List<N> children, {
     this.value = 0,
     this.maxDeep = -1,
     int deep = 0,
@@ -45,58 +44,44 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
     super.name,
   }) {
     this._deep = deep;
-    this._childrenList = children;
+    this._childrenList.addAll(children);
   }
 
-  BaseTreeData.attr(
-    this.parent,
-    List<T> children,
-    A attr, {
-    this.value = 0,
-    this.maxDeep = -1,
-    int deep = 0,
-    super.id,
-    super.name,
-  }) : super.attr(attr) {
-    this._deep = deep;
-    this._childrenList = children;
-  }
-
-  void removeChild(bool Function(T) filter) {
+  void removeChild(bool Function(ChartTree) filter) {
     _childrenList.removeWhere(filter);
   }
 
-  T removeAt(int i) {
+  ChartTree removeAt(int i) {
     return _childrenList.removeAt(i);
   }
 
-  T removeFirst() {
+  ChartTree removeFirst() {
     return removeAt(0);
   }
 
-  T removeLast() {
+  ChartTree removeLast() {
     return removeAt(_childrenList.length - 1);
   }
 
-  void removeWhere(bool Function(T) where, [bool iterator = false]) {
+  void removeWhere(bool Function(N) where, [bool iterator = false]) {
     if (!iterator) {
       _childrenList.removeWhere(where);
       return;
     }
 
-    List<T> nodeList = [this as T];
+    List<N> nodeList = [this as N];
     while (nodeList.isNotEmpty) {
-      T first = nodeList.removeAt(0);
+      N first = nodeList.removeAt(0);
       first._childrenList.removeWhere(where);
       nodeList.addAll(first._childrenList);
     }
   }
 
-  List<T> get children {
+  List<N> get children {
     return _childrenList;
   }
 
-  List<T> get childrenReverse => List.from(_childrenList.reversed);
+  List<N> get childrenReverse => List.from(_childrenList.reversed);
 
   bool get hasChild {
     return _childrenList.isNotEmpty;
@@ -113,7 +98,7 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
     if (parent == null) {
       return -1;
     }
-    return parent!._childrenList.indexOf(this as T);
+    return parent!._childrenList.indexOf(this as N);
   }
 
   ///返回后代节点数
@@ -124,33 +109,33 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   int get deep => _deep;
 
-  T childAt(int index) {
+  N childAt(int index) {
     return _childrenList[index];
   }
 
-  T get firstChild {
+  N get firstChild {
     return childAt(0);
   }
 
-  T get lastChild {
+  N get lastChild {
     return childAt(_childrenList.length - 1);
   }
 
-  void add(T node) {
+  void add(N node) {
     if (node.parent != null && node.parent != this) {
       throw FlutterError('当前要添加的节点其父节点不为空');
     }
-    node.parent = this as T;
+    node.parent = this as N;
     _childrenList.add(node);
   }
 
-  void addAll(Iterable<T> nodes) {
+  void addAll(Iterable<N> nodes) {
     for (var node in nodes) {
       add(node);
     }
   }
 
-  void remove(T node) {
+  void remove(N node) {
     _childrenList.remove(node);
   }
 
@@ -163,9 +148,9 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   /// 返回其所有的叶子结点
-  List<T> leaves() {
-    List<T> resultList = [];
-    eachBefore((T a, int b, T c) {
+  List<N> leaves() {
+    List<N> resultList = [];
+    eachBefore((N a, int b, N c) {
       if (a.notChild) {
         resultList.add(a);
       }
@@ -175,17 +160,17 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   /// 返回其所有后代节点
-  List<T> descendants() {
+  List<N> descendants() {
     return iterator();
   }
 
   ///返回其后代所有节点(按照拓扑结构)
-  List<T> iterator() {
-    List<T> resultList = [];
-    T? node = this as T;
-    List<T> current = [];
-    List<T> next = [node];
-    List<T> children = [];
+  List<N> iterator() {
+    List<N> resultList = [];
+    N? node = this as N;
+    List<N> current = [];
+    List<N> next = [node];
+    List<N> children = [];
     do {
       current = List.from(next.reversed);
       next = [];
@@ -205,9 +190,9 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   /// 返回从当前节点开始的祖先节点
-  List<T> ancestors() {
-    List<T> resultList = [this as T];
-    T? node = this as T;
+  List<N> ancestors() {
+    List<N> resultList = [this as N];
+    N? node = this as N;
     while ((node = node?.parent) != null) {
       resultList.add(node!);
     }
@@ -215,10 +200,10 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   ///层序遍历
-  List<List<T>> levelEach([int level = -1]) {
-    List<List<T>> resultList = [];
-    List<T> list = [this as T];
-    List<T> next = [];
+  List<List<N>> levelEach([int level = -1]) {
+    List<List<N>> resultList = [];
+    List<N> list = [this as N];
+    List<N> next = [];
     if (level <= 0) {
       level = 2 ^ 16;
     }
@@ -234,24 +219,24 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
     return resultList;
   }
 
-  T each(TreeFun<A, T> callback, [bool exitUseBreak = true]) {
+  N each(TreeFun<T, N> callback, [bool exitUseBreak = true]) {
     int index = -1;
     for (var node in iterator()) {
-      if (callback.call(node, ++index, this as T)) {
+      if (callback.call(node, ++index, this as N)) {
         break;
       }
     }
-    return this as T;
+    return this as N;
   }
 
   ///先序遍历
-  T eachBefore(TreeFun<A, T> callback, [bool exitUseBreak = true]) {
-    List<T> nodes = [this as T];
-    List<T> children;
+  N eachBefore(TreeFun<T, N> callback, [bool exitUseBreak = true]) {
+    List<N> nodes = [this as N];
+    List<N> children;
     int index = -1;
     while (nodes.isNotEmpty) {
-      T node = nodes.removeLast();
-      if (callback.call(node, ++index, this as T)) {
+      N node = nodes.removeLast();
+      if (callback.call(node, ++index, this as N)) {
         if (exitUseBreak) {
           break;
         }
@@ -260,45 +245,45 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
       children = node._childrenList;
       nodes.addAll(children.reversed);
     }
-    return this as T;
+    return this as N;
   }
 
   ///后序遍历
-  T eachAfter(TreeFun<A, T> callback, [bool exitUseBreak = true]) {
-    List<T> nodes = [this as T];
-    List<T> next = [];
-    List<T> children;
+  N eachAfter(TreeFun<T, N> callback, [bool exitUseBreak = true]) {
+    List<N> nodes = [this as N];
+    List<N> next = [];
+    List<N> children;
     int index = -1;
     while (nodes.isNotEmpty) {
-      T node = nodes.removeAt(nodes.length - 1);
+      N node = nodes.removeAt(nodes.length - 1);
       next.add(node);
       children = node._childrenList;
       nodes.addAll(children);
     }
     while (next.isNotEmpty) {
-      BaseTreeData node = next.removeAt(next.length - 1);
-      if (callback.call(node as T, ++index, this as T)) {
+      N node = next.removeAt(next.length - 1);
+      if (callback.call(node, ++index, this as N)) {
         break;
       }
     }
-    return this as T;
+    return this as N;
   }
 
   ///在子节点中查找对应节点
-  T? findInChildren(TreeFun<A, T> callback) {
+  N? findInChildren(TreeFun<T, N> callback) {
     int index = -1;
-    for (T node in _childrenList) {
-      if (callback.call(node, ++index, this as T)) {
+    for (N node in _childrenList) {
+      if (callback.call(node, ++index, this as N)) {
         return node;
       }
     }
     return null;
   }
 
-  T? find(TreeFun<A, T> callback) {
-    T? result;
+  N? find(TreeFun<T, N> callback) {
+    N? result;
     each((node, index, startNode) {
-      if (callback.call(node, index, this as T)) {
+      if (callback.call(node, index, this as N)) {
         result = node;
         return true;
       }
@@ -309,13 +294,13 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   /// 从当前节点开始查找深度等于给定深度的节点
   /// 广度优先遍历 [only]==true 只返回对应层次的,否则返回<=
-  List<T> depthNode(int depth, [bool only = true]) {
+  List<N> depthNode(int depth, [bool only = true]) {
     if (deep > depth) {
       return [];
     }
-    List<T> resultList = [];
-    List<T> tmp = [this as T];
-    List<T> next = [];
+    List<N> resultList = [];
+    List<N> tmp = [this as N];
+    List<N> next = [];
     while (tmp.isNotEmpty) {
       for (var node in tmp) {
         if (only) {
@@ -336,8 +321,8 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   ///返回当前节点的后续的所有Link
-  List<Link<T>> links() {
-    List<Link<T>> links = [];
+  List<Link<N>> links() {
+    List<Link<N>> links = [];
     each((node, index, startNode) {
       if (node != this && node.parent != null) {
         links.add(Link(node.parent!, node));
@@ -348,11 +333,11 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   ///返回从当前节点到指定节点的最短路径
-  List<T> path(T target) {
-    T? start = this as T;
-    T? end = target;
-    T? ancestor = minCommonAncestor(start, end);
-    List<T> nodes = [start];
+  List<N> path(N target) {
+    N? start = this as N;
+    N? end = target;
+    N? ancestor = minCommonAncestor(start, end);
+    List<N> nodes = [start];
     while (ancestor != start) {
       start = start?.parent;
       if (start != null) {
@@ -367,9 +352,9 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
     return nodes;
   }
 
-  T sort(int Function(T, T) compare, [bool iterator = true]) {
+  N sort(int Function(N, N) compare, [bool iterator = true]) {
     if (iterator) {
-      return eachBefore((T node, b, c) {
+      return eachBefore((N node, b, c) {
         if (node.childCount > 1) {
           node._childrenList.sort(compare);
         }
@@ -377,16 +362,16 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
       });
     }
     _childrenList.sort(compare);
-    return this as T;
+    return this as N;
   }
 
   ///计算当前节点值
   ///如果给定了回调,那么将使用给定的回调进行值统计
   ///否则直接使用 _value 统计
-  T sum([num Function(T)? valueCallback]) {
-    return eachAfter((T node, b, c) {
+  N sum([num Function(N)? valueCallback]) {
+    return eachAfter((N node, b, c) {
       num sum = valueCallback == null ? node.value : valueCallback(node);
-      List<BaseTreeData> children = node._childrenList;
+      List<N> children = node._childrenList;
       int i = children.length;
       while (--i >= 0) {
         sum += children[i].value;
@@ -397,18 +382,18 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   ///返回当前节点下最左边的叶子节点
-  T leafLeft() {
-    List<T> children = [];
-    T node = this as T;
+  N leafLeft() {
+    List<N> children = [];
+    N node = this as N;
     while ((children = node.children).isNotEmpty) {
       node = children[0];
     }
     return node;
   }
 
-  T leafRight() {
-    List<T> children = [];
-    T node = this as T;
+  N leafRight() {
+    List<N> children = [];
+    N node = this as N;
     while ((children = node.children).isNotEmpty) {
       node = children[children.length - 1];
     }
@@ -417,9 +402,9 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   /// 计算当前节点的后代节点数
   int computeCount() {
-    eachAfter((T node, b, c) {
+    eachAfter((N node, b, c) {
       int sum = 0;
-      List<T> children = node._childrenList;
+      List<N> children = node._childrenList;
       int i = children.length;
       if (i == 0) {
         sum = 1;
@@ -436,9 +421,9 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   /// 计算树的高度
   void computeHeight([int initHeight = 0]) {
-    List<List<T>> levelList = [];
-    List<T> tmp = [this as T];
-    List<T> next = [];
+    List<List<N>> levelList = [];
+    List<N> tmp = [this as N];
+    List<N> next = [];
     while (tmp.isNotEmpty) {
       levelList.add(tmp);
       next = [];
@@ -495,7 +480,7 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   //=======坐标相关的操作========
 
   ///找到一个节点是否在[offset]范围内
-  T? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {
+  N? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {
     double r = (shordSide ? size.shortestSide : size.longestSide) / 2;
     r *= r;
     return find((node, index, startNode) {
@@ -577,12 +562,12 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
 
   ///从复制当前节点及其后代
   ///复制后的节点没有parent
-  T copy(T Function(T?, T) build, [int deep = 0]) {
+  ChartTree copy(ChartTree Function(ChartTree?, ChartTree) build, [int deep = 0]) {
     return _innerCopy(build, null, deep);
   }
 
-  T _innerCopy(T Function(T?, T) build, T? parent, int deep) {
-    T node = build.call(parent, this as T);
+  ChartTree _innerCopy(ChartTree Function(ChartTree?, ChartTree) build, ChartTree? parent, int deep) {
+    ChartTree node = build.call(parent, this);
     node.parent = parent;
     node._deep = deep;
     node.value = value;
@@ -621,11 +606,11 @@ abstract class BaseTreeData<A, T extends BaseTreeData<A, T>> extends RenderData<
   }
 
   ///返回 节点 a,b的最小公共祖先
-  static T? minCommonAncestor<T extends BaseTreeData<dynamic, T>>(T a, T b) {
+  static N? minCommonAncestor<T, N extends ChartTree<T, N>>(N a, N b) {
     if (a == b) return a;
     var aNodes = a.ancestors();
     var bNodes = b.ancestors();
-    T? c;
+    N? c;
     a = aNodes.removeLast();
     b = bNodes.removeLast();
     while (a == b) {

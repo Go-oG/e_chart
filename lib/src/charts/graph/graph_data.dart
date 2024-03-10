@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/layout/layout_result.dart';
 
 class GraphData extends RenderData2<GraphAttr, ChartSymbol> {
   GraphItemData data;
@@ -12,7 +13,6 @@ class GraphData extends RenderData2<GraphAttr, ChartSymbol> {
     super.name,
   }) {
     symbol = EmptySymbol.empty;
-    attr = GraphAttr();
   }
 
   @override
@@ -86,9 +86,12 @@ class GraphData extends RenderData2<GraphAttr, ChartSymbol> {
   int get index => attr.index;
 
   set index(int v) => attr.index = v;
+
+  @override
+  GraphAttr initAttr() => GraphAttr();
 }
 
-class GraphAttr {
+class GraphAttr extends LayoutResult {
   int index = 0;
 
   ///当前X位置(中心位置)
@@ -100,10 +103,6 @@ class GraphAttr {
   ///给定的固定位置
   double? fx;
   double? fy;
-
-  ///宽高
-  double width = 0;
-  double height = 0;
 
   /// 当前X方向速度分量
   double vx = 0;
@@ -120,7 +119,8 @@ class GraphAttr {
 class EdgeData extends RenderData<EdgeAttr> {
   final EdgeItemData data;
 
-  EdgeData(this.data, int dataIndex, {super.id}) : super.attr(EdgeAttr());
+
+  EdgeData(this.data, int dataIndex, {super.id});
 
   GraphData get source => data.source;
 
@@ -172,14 +172,15 @@ class EdgeData extends RenderData<EdgeAttr> {
   int get index => attr.index;
 
   set index(int i) => attr.index = i;
+
+  @override
+  EdgeAttr initAttr() =>EdgeAttr();
 }
 
-class EdgeAttr {
+class EdgeAttr extends LayoutResult {
   int index = 0;
   double x = 0;
   double y = 0;
-  double width = 0;
-  double height = 0;
   List<Offset> points = [];
 }
 

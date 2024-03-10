@@ -180,9 +180,6 @@ abstract class ChartViewGroup extends GestureView {
   ///========================管理子View相关方法=======================
   void addView(ChartView view) {
     addViewInner(view);
-    if (!nodeStatus.inLayout) {
-      requestLayout();
-    }
   }
 
   void addViews(Iterable<ChartView> views) {
@@ -191,9 +188,6 @@ abstract class ChartViewGroup extends GestureView {
       children.add(c);
     }
     sortChildView();
-    if (!nodeStatus.inLayout) {
-      requestLayout();
-    }
   }
 
   void addViewInner(ChartView child) {
@@ -269,5 +263,13 @@ abstract class ChartViewGroup extends GestureView {
       u += c.allocateDataIndex(index + u);
     }
     return u;
+  }
+
+  @override
+  void resetLayoutInfo() {
+    super.resetLayoutInfo();
+    for (var c in children) {
+      c.resetLayoutInfo();
+    }
   }
 }
