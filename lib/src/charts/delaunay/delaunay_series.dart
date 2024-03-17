@@ -26,8 +26,8 @@ class DelaunaySeries extends RectSeries {
   }
 
   @override
-  ChartView? toView() {
-    return DelaunayView(this);
+  ChartView? toView(Context context) {
+    return DelaunayView(context,this);
   }
 
   @override

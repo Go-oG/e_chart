@@ -38,8 +38,8 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
             selectedMode: SelectedMode.single);
 
   @override
-  ChartView? toView() {
-    return CandleStickView(this);
+  ChartView? toView(Context context) {
+    return CandleStickView(context,this);
   }
 
   @override

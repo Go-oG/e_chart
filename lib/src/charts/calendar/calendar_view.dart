@@ -18,7 +18,7 @@ class CalendarView extends ChartView {
 
   late Paint _mPaint;
 
-  CalendarView(CalenderSeries props) {
+  CalendarView(super.context, CalenderSeries props) {
     _props = props;
     _mPaint = Paint();
     _selectSet.addAll(_parsePropsDefaultDate(_props.defaultDate));

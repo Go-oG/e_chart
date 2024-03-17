@@ -8,34 +8,31 @@ class CacheLayer {
   double _height = 0;
   double _translationX = 0;
   double _translationY = 0;
-  double _scaleX = 1;
-  double _scaleY = 1;
+  double _scale = 1;
 
   CacheLayer();
 
   Layer? get layer => _layer.layer;
 
-  void save(Layer? layer, double w, double h, double tx, double ty, double sx, double sy) {
+  void save(Layer? layer, double w, double h, double tx, double ty, double scale) {
     _layer.layer = layer;
     _width = w;
     _height = h;
     _translationX = tx;
     _translationY = ty;
-    _scaleX = sx;
-    _scaleY = sy;
+    _scale = scale;
   }
 
-  void saveByView(Layer? layer, ViewAttr attr) {
+  void saveByView(Layer? layer, ChartView view) {
     _layer.layer = layer;
-    _width = attr.width;
-    _height = attr.height;
-    _translationX = attr.translationX;
-    _translationY = attr.translationY;
-    _scaleX = attr.scaleX;
-    _scaleY = attr.scaleY;
+    _width = view.width;
+    _height = view.height;
+    _translationX = view.translationX;
+    _translationY = view.translationY;
+    _scale = view.scale;
   }
 
-  bool hasChange(double w, double h, double tx, double ty, double sx, double sy) {
+  bool hasChange(double w, double h, double tx, double ty, double scale) {
     var epsilon = StaticConfig.epsilon;
     if ((w - _width).abs() > epsilon) {
       return true;
@@ -49,17 +46,15 @@ class CacheLayer {
     if ((ty - _translationY).abs() > epsilon) {
       return true;
     }
-    if ((sx - _scaleX).abs() > epsilon) {
+    if ((scale - _scale).abs() > epsilon) {
       return true;
     }
-    if ((sy - _scaleY).abs() > epsilon) {
-      return true;
-    }
+
     return false;
   }
 
-  bool notChange(double w, double h, double tx, double ty, double sx, double sy) {
-    return !hasChange(w, h, tx, ty, sx, sy);
+  bool notChange(double w, double h, double tx, double ty, double scale) {
+    return !hasChange(w, h, tx, ty, scale);
   }
 
   void clear() {
@@ -67,6 +62,6 @@ class CacheLayer {
     _width = -1;
     _height = -1;
     _translationY = _translationX = 0;
-    _scaleX = _scaleY = 1;
+    _scale = 1;
   }
 }

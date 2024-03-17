@@ -51,7 +51,7 @@ abstract class Coord extends ChartNotifier<Command> {
     value = Command.configChange;
   }
 
-  CoordLayout? toCoord() {
+  CoordLayout? toCoord(Context context) {
     return null;
   }
 }

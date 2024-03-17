@@ -6,7 +6,7 @@ import '../stack_view.dart';
 
 abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>, S extends StackSeries<T, G>,
     L extends PolarHelper<T, G, S>> extends StackView<T, G, S, L> with PolarChild {
-  PolarView(super.series);
+  PolarView(super.context,super.series);
 
   @override
   void onDrawGroupBk(CCanvas canvas) {

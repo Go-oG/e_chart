@@ -4,7 +4,7 @@ import 'package:e_chart/src/charts/bar/helper/polar_helper.dart';
 import '../common/stack/polar/polar_view.dart';
 
 class BarPolarView extends PolarView<StackItemData, BarGroupData, BarSeries, BarPolarHelper> {
-  BarPolarView(super.series);
+  BarPolarView(super.context,super.series);
 
   @override
   BarPolarHelper buildLayoutHelper(BarPolarHelper? oldHelper) {

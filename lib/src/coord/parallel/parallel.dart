@@ -1,10 +1,8 @@
 import 'package:e_chart/src/coord/index.dart';
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
+import '../../core/context.dart';
 import '../../model/enums/direction.dart';
-import '../../model/string_number.dart';
-import '../coord.dart';
-import 'parallel_axis.dart';
 
 class Parallel extends Coord {
   Direction direction;
@@ -14,7 +12,6 @@ class Parallel extends Coord {
   num expandWidth;
 
   List<ParallelAxis> axisList;
-
 
   Parallel({
     this.direction = Direction.horizontal,
@@ -34,7 +31,7 @@ class Parallel extends Coord {
   CoordType get coordSystem => CoordType.parallel;
 
   @override
-  CoordLayout<Coord>? toCoord() {
-    return ParallelCoordImpl(this);
+  CoordLayout<Coord>? toCoord(Context context) {
+    return ParallelCoordImpl(context, this);
   }
 }

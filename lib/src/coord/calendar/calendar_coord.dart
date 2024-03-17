@@ -9,10 +9,10 @@ class CalendarCoordImpl extends CalendarCoord {
   int rowCount = 0;
   int columnCount = 0;
 
-  CalendarCoordImpl(super.props);
+  CalendarCoordImpl(super.context, super.props);
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
     Pair<DateTime> pair = _adjustTime(props.range.start, props.range.end);
     int count = computeDayDiff(pair.start, pair.end);
     int tmpCount = count ~/ 7;
@@ -88,7 +88,7 @@ class CalendarCoordImpl extends CalendarCoord {
     viewPort.height = height;
     viewPort.contentWidth = cellWidth * columnCount;
     viewPort.contentHeight = cellHeight * rowCount;
-    super.onLayout(left, top, right, bottom);
+    super.onLayout(changed, left, top, right, bottom);
   }
 
   @override
@@ -323,7 +323,7 @@ class CalendarCoordImpl extends CalendarCoord {
 }
 
 abstract class CalendarCoord extends CoordLayout<Calendar> {
-  CalendarCoord(super.props);
+  CalendarCoord(super.context, super.props);
 
   Rect dataToPosition(DateTime date);
 

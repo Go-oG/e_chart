@@ -5,7 +5,7 @@ import 'package:e_chart/src/charts/boxplot/boxplot_helper.dart';
 
 /// 单个盒须图
 class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, BoxplotHelper> {
-  BoxPlotView(super.series);
+  BoxPlotView(super.context, super.series);
 
   @override
   void onDrawBar(CCanvas canvas) {

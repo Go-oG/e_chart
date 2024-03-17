@@ -31,8 +31,8 @@ class BoxplotSeries extends GridSeries<BoxplotData, BoxplotGroup> {
   });
 
   @override
-  ChartView? toView() {
-    return BoxPlotView(this);
+  ChartView? toView(Context context) {
+    return BoxPlotView(context, this);
   }
 
   @override

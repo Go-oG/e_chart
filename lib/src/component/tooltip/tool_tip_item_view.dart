@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/view/models.dart';
 import 'package:flutter/material.dart';
 
 class ToolTipItemView extends GestureView {
@@ -8,7 +9,7 @@ class ToolTipItemView extends GestureView {
   late TextDraw _label;
   TextDraw? _subLabel;
 
-  ToolTipItemView(this.item) {
+  ToolTipItemView(super.context, this.item) {
     _label = TextDraw(item.title, item.titleStyle, Offset.zero, align: Alignment.centerLeft);
     if (item.desc != null) {
       _subLabel = TextDraw(item.desc!, item.descStyle ?? _defaultSubStyle, Offset.zero, align: Alignment.centerRight);
@@ -16,7 +17,9 @@ class ToolTipItemView extends GestureView {
   }
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    double parentWidth = widthSpec.size;
+    double parentHeight = heightSpec.size;
     padding.left = layoutParams.leftPadding.convert(parentWidth);
     padding.top = layoutParams.topPadding.convert(parentHeight);
     padding.right = layoutParams.rightPadding.convert(parentWidth);
@@ -50,8 +53,8 @@ class ToolTipItemView extends GestureView {
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
-    super.onLayout(left, top, right, bottom);
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
+    super.onLayout(changed, left, top, right, bottom);
     double c = padding.top + height / 2;
     double lf = padding.left;
     if (item.symbol != null) {

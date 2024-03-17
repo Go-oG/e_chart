@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 ///平行坐标系
 class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
-  ParallelCoordImpl(super.props);
+  ParallelCoordImpl(super.context,super.props);
 
   void initAxis() {
     axisMap.clear();
@@ -87,7 +87,7 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed,double left, double top, double right, double bottom) {
     final double leftOffset = padding.left;
     final double topOffset = padding.top;
     final double rightOffset = padding.right;
@@ -220,7 +220,7 @@ class ParallelCoordImpl extends ParallelCoord {
 }
 
 abstract class ParallelCoord extends CoordLayout<Parallel> {
-  ParallelCoord(super.props);
+  ParallelCoord(super.context,super.props);
 
   ParallelPosition dataToPosition(int dimIndex, dynamic data);
 

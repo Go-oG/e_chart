@@ -4,10 +4,10 @@ import 'dart:ui';
 import 'package:flutter/rendering.dart';
 
 class CCanvas {
-  late final PaintingContext paintContext;
-  Canvas? _canvas;
+  late final PaintingContext context;
+  late final Canvas? _canvas;
 
-  CCanvas.fromPaintingContext(this.paintContext);
+  CCanvas.fromContext(this.context);
 
   CCanvas.fromCanvas(Canvas? canvas) {
     _canvas = canvas;
@@ -15,9 +15,9 @@ class CCanvas {
 
   Canvas get canvas {
     if (_canvas != null) {
-      return _canvas!;
+      return _canvas;
     }
-    return paintContext.canvas;
+    return context.canvas;
   }
 
   void clearCanvas() {
@@ -26,12 +26,12 @@ class CCanvas {
 
   void addLayer(Layer layer) {
     clearCanvas();
-    paintContext.addLayer(layer);
+    context.addLayer(layer);
   }
 
   void pushLayer(ContainerLayer childLayer, PaintingContextCallback painter, Offset offset, {Rect? childPaintBounds}) {
     clearCanvas();
-    paintContext.pushLayer(childLayer, painter, offset, childPaintBounds: childPaintBounds);
+    context.pushLayer(childLayer, painter, offset, childPaintBounds: childPaintBounds);
   }
 
   void save() => canvas.save();

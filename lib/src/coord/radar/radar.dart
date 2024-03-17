@@ -57,8 +57,8 @@ class Radar extends CircleCoord {
   CoordType get coordSystem => CoordType.radar;
 
   @override
-  CoordLayout<Coord>? toCoord() {
-    return RadarCoordImpl(this);
+  CoordLayout<Coord>? toCoord(Context context) {
+    return RadarCoordImpl(context,this);
   }
 }
 

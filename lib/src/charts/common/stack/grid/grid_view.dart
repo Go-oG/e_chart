@@ -4,7 +4,7 @@ import '../stack_view.dart';
 
 abstract class GridView<T extends StackItemData, G extends StackGroupData<T,G>, S extends StackSeries<T, G>,
     L extends GridHelper<T, G, S>> extends StackView<T, G, S, L> with GridChild {
-  GridView(super.series);
+  GridView(super.context,super.series);
 
   @override
   void onDrawGroupBk(CCanvas canvas) {

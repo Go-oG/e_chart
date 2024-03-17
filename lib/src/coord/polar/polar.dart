@@ -1,9 +1,8 @@
-
 import 'package:e_chart/src/coord/index.dart';
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
 import '../../component/index.dart';
-
+import '../../core/context.dart';
 
 ///极坐标系
 ///一个极坐标系只能包含一个径向轴和一个角度轴
@@ -36,7 +35,7 @@ class Polar extends CircleCoord {
   CoordType get coordSystem => CoordType.polar;
 
   @override
-  CoordLayout<Coord>? toCoord() {
-    return PolarCoordImpl(this);
+  CoordLayout<Coord>? toCoord(Context context) {
+    return PolarCoordImpl(context, this);
   }
 }

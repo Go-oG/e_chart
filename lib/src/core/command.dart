@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/render/chart_render.dart';
 
 ///对图表命令的封装
 class Command {

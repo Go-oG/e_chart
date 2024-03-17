@@ -66,7 +66,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
   ///返回承载该Series的渲染视图
   ///如果返回null,那么将会调用[SeriesFactory]的相关方法
   ///来创建视图，如果无法创建视图则会抛错
-  ChartView? toView() {
+  ChartView? toView(Context context) {
     return null;
   }
 

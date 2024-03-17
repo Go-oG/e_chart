@@ -2,6 +2,7 @@ import 'dart:math' as m;
 
 import 'package:flutter/material.dart';
 
+import '../../core/view/models.dart';
 import '../../core/view/view.dart';
 import '../../core/view/view_group.dart';
 import '../../model/enums/align2.dart';
@@ -13,18 +14,19 @@ class FlexLayout extends ChartViewGroup {
   VerticalDirection crossDirection;
   Align2 align;
 
-  FlexLayout({
+  FlexLayout(
+    super.context, {
     this.direction = Direction.horizontal,
     this.crossDirection = VerticalDirection.down,
     this.align = Align2.start,
   });
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     for (var c in children) {
-      c.measure(parentWidth, parentHeight);
+      c.measure(widthSpec, heightSpec);
     }
-    List<List<ChartView>> vl = splitView(parentWidth, parentHeight);
+    List<List<ChartView>> vl = splitView(widthSpec.size, heightSpec.size);
     num w = 0;
     num h = 0;
     for (var list in vl) {
@@ -53,7 +55,7 @@ class FlexLayout extends ChartViewGroup {
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
     List<List<ChartView>> vl = splitView(width, height);
     double l = 0;
     double y = direction == Direction.vertical ? height : 0;

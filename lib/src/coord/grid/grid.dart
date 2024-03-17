@@ -42,7 +42,7 @@ class Grid extends Coord {
   CoordType get coordSystem => CoordType.grid;
 
   @override
-  CoordLayout<Coord>? toCoord() {
-    return GridCoordImpl(this);
+  CoordLayout<Coord>? toCoord(Context context) {
+    return GridCoordImpl(context, this);
   }
 }

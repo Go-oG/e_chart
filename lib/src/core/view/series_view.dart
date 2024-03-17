@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
 ///强制要求提供一个Series和Layout;并简单包装了部分手势操作
@@ -15,9 +14,8 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   L get layoutHelper => _layoutHelper!;
 
-  SeriesView(T series) {
+  SeriesView(super.context, T series) {
     _series = series;
-    zLevel = series.seriesType.priority;
     if (series is RectSeries) {
       layoutParams = series.toLayoutParams();
     } else if (series is RectSeries2) {
@@ -60,8 +58,8 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
-    layoutHelper.doLayout(selfBoxBound, globalBound, LayoutType.layout);
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
+    layoutHelper.doLayout(boxBound, globalBound, LayoutType.layout);
   }
 
   @override
@@ -71,7 +69,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
       mPaint.reset();
       mPaint.color = color;
       mPaint.style = PaintingStyle.fill;
-      canvas.drawRect(selfBoxBound, mPaint);
+      canvas.drawRect(boxBound.translate(-left, -top), mPaint);
     }
   }
 
@@ -130,9 +128,6 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     }
     layoutHelper.onDragEnd();
   }
-
-  @override
-  bool get useSingleLayer => series.useSingleLayer;
 
   SeriesViewTranslationEvent? _translationEvent;
 

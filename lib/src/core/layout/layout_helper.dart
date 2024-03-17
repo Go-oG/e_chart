@@ -186,11 +186,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   ///========查找坐标系函数=======================
 
   GridCoord findGridCoord() {
-    return context.findGridCoord(series.gridIndex);
+    return view.attachInfo.root.findGridCoord(series.gridIndex);
   }
 
   GridCoord? findGridCoordNull() {
-    return context.findGridCoordNull(series.gridIndex);
+    return view.attachInfo.root.findGridCoordNull(series.gridIndex);
   }
 
   GridAxis findGridAxis(int index, bool isXAxis) {
@@ -198,36 +198,37 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   PolarCoord findPolarCoord() {
-    return context.findPolarCoord(series.polarIndex);
+    return view.attachInfo.root.findPolarCoord(series.polarIndex);
   }
 
   PolarCoord? findPolarCoordNull() {
-    return context.findPolarCoordNull(series.polarIndex);
+    return view.attachInfo.root.findPolarCoordNull(series.polarIndex);
   }
 
   CalendarCoord findCalendarCoord() {
-    return context.findCalendarCoord(series.calendarIndex);
+    return view.attachInfo.root.findCalendarCoord(series.calendarIndex);
   }
 
   CalendarCoord? findCalendarCoordNull() {
-    return context.findCalendarCoordNull(series.calendarIndex);
+    return view.attachInfo.root.findCalendarCoordNull(series.calendarIndex);
   }
 
   ParallelCoord findParallelCoord() {
-    return context.findParallelCoord(series.parallelIndex);
+    return view.attachInfo.root.findParallelCoord(series.parallelIndex);
   }
 
   ParallelCoord? findParallelCoordNull() {
-    return context.findParallelCoordNull(series.parallelIndex);
+    return view.attachInfo.root.findParallelCoordNull(series.parallelIndex);
   }
 
   RadarCoord findRadarCoord() {
-    return context.findRadarCoord(series.radarIndex);
+    return view.attachInfo.root.findRadarCoord(series.radarIndex);
   }
 
   RadarCoord? findRadarCoordNull() {
-    return context.findRadarCoordNull(series.radarIndex);
+    return view.attachInfo.root.findRadarCoordNull(series.radarIndex);
   }
+
 
   ///========通知布局节点刷新=======
   void notifyLayoutUpdate() {
@@ -252,25 +253,25 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   ///获取平移偏移量
-  Offset getTranslation() {
-    var type = series.coordType;
-    if (type == CoordType.polar) {
-      return findPolarCoord().translation;
-    }
-    if (type == CoordType.calendar) {
-      return findCalendarCoord().translation;
-    }
-    if (type == CoordType.radar) {
-      return findRadarCoord().translation;
-    }
-    if (type == CoordType.parallel) {
-      return findParallelCoord().translation;
-    }
-    if (type == CoordType.grid) {
-      return findGridCoord().translation;
-    }
-    return view.translation;
-  }
+  // Offset getTranslation() {
+  //   var type = series.coordType;
+  //   if (type == CoordType.polar) {
+  //     return findPolarCoord().translation;
+  //   }
+  //   if (type == CoordType.calendar) {
+  //     return findCalendarCoord().translation;
+  //   }
+  //   if (type == CoordType.radar) {
+  //     return findRadarCoord().translation;
+  //   }
+  //   if (type == CoordType.parallel) {
+  //     return findParallelCoord().translation;
+  //   }
+  //   if (type == CoordType.grid) {
+  //     return findGridCoord().translation;
+  //   }
+  //   return view.translation;
+  // }
 
   double get translationX => view.translationX;
 

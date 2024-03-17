@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/view/models.dart';
 import 'package:flutter/material.dart';
 
 ///雷达图坐标系
@@ -9,7 +10,7 @@ class RadarCoordImpl extends RadarCoord {
   Offset center = Offset.zero;
   double radius = 0;
 
-  RadarCoordImpl(super.props);
+  RadarCoordImpl(super.context, super.props);
 
   @override
   void onCreate() {
@@ -19,7 +20,7 @@ class RadarCoordImpl extends RadarCoord {
       var indicator = props.indicator[i];
       var axisName = AxisName(indicator.name, nameGap: indicator.nameGap, labelStyle: indicator.nameStyle);
       var axis = RadarAxis(axisName: axisName, min: indicator.min, max: indicator.max, splitNumber: 5);
-      axisMap[indicator] = RadarAxisImpl(context, axis,axisIndex: i);
+      axisMap[indicator] = RadarAxisImpl(context, axis, axisIndex: i);
     }
   }
 
@@ -36,16 +37,16 @@ class RadarCoordImpl extends RadarCoord {
   Size measureSize = Size.zero;
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
-    measureSize = Size(parentWidth, parentHeight);
-    num minValue = min([parentWidth, parentHeight]);
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    measureSize = Size(widthSpec.size, heightSpec.size);
+    num minValue = min([widthSpec.size, heightSpec.size]);
     double cv = props.radius.last.convert(minValue);
     cv = min([cv, minValue]) * 2;
     return Size(cv, cv);
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
     center = Offset(props.center[0].convert(width), props.center[1].convert(height));
     double itemAngle = 360 / props.indicator.length;
     if (!props.clockwise) {
@@ -61,7 +62,7 @@ class RadarCoordImpl extends RadarCoord {
       double angle = oa + i * itemAngle;
       Offset o = circlePoint(radius, angle, center);
       var attrs = axis.attrs.copy() as LineAxisAttrs;
-      attrs.scaleRatio = scaleX;
+      attrs.scaleRatio = scale;
       attrs.scrollX = translationX;
       attrs.start = center;
       attrs.end = o;
@@ -84,10 +85,10 @@ class RadarCoordImpl extends RadarCoord {
       }
       if (lastPath == null) {
         lastPath = path;
-        splitList.add(RadarSplit([],i, path));
+        splitList.add(RadarSplit([], i, path));
       } else {
         Path p2 = Path.combine(PathOperation.difference, path, lastPath);
-        splitList.add(RadarSplit([],i, p2));
+        splitList.add(RadarSplit([], i, p2));
         lastPath = path;
       }
     }
@@ -171,7 +172,7 @@ class RadarCoordImpl extends RadarCoord {
 }
 
 abstract class RadarCoord extends CircleCoordLayout<Radar> {
-  RadarCoord(super.props);
+  RadarCoord(super.context, super.props);
 
   RadarPosition dataToPoint(int axisIndex, num data);
 
@@ -199,5 +200,5 @@ class RadarSplit {
   final int index;
   final Path splitPath;
 
-  RadarSplit(this.data,this.index, this.splitPath);
+  RadarSplit(this.data, this.index, this.splitPath);
 }

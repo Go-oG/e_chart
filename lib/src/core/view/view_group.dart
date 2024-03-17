@@ -1,56 +1,57 @@
 import 'dart:math' as m;
+import 'package:e_chart/src/core/view/AttachInfo.dart';
+import 'package:e_chart/src/core/view/models.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../event/index.dart';
 import '../../utils/log_util.dart';
 import '../index.dart';
+import 'view_parent.dart';
 
 /// ViewGroup
-abstract class ChartViewGroup extends GestureView {
-  late List<ChartView> _children = [];
+abstract class ChartViewGroup extends GestureView implements ViewParent {
+  ChartViewGroup(super.context);
 
-  ChartViewGroup() : super();
+  List<ChartView> _children = [];
+
+  ///存放当前ViewGroup中 需要布局的孩子
+  ///可能会存在不需要布局的孩子
+  List<ChartView> getChildren() => children;
+
+  ChartView? _mFocusedView;
 
   @override
-  void attach(Context context, RenderNode parent) {
-    super.attach(context, parent);
-    for (var c in _children) {
-      c.attach(context, this);
+  void dispatchAttachInfo(AttachInfo attachInfo) {
+    super.dispatchAttachInfo(attachInfo);
+    for (var item in _children) {
+      item.dispatchAttachInfo(attachInfo);
     }
   }
 
-  // @override
-  // void onStart() {
-  //   super.onStart();
-  //   for (var c in _children) {
-  //     try {
-  //       c.onStart();
-  //     } catch (e) {
-  //       Logger.e(e);
-  //     }
-  //   }
-  // }
-  //
-  // @override
-  // void onStop() {
-  //   for (var c in _children) {
-  //     try {
-  //       c.onStop();
-  //     } catch (e) {
-  //       Logger.e(e);
-  //     }
-  //   }
-  //   super.onStop();
-  // }
+  @override
+  void attachToWindow() {
+    super.attachToWindow();
+    for (var c in _children) {
+      c.attachToWindow();
+    }
+  }
+
+  @override
+  void detachFromWindow() {
+    super.detachFromWindow();
+    for (var c in _children) {
+      c.detachFromWindow();
+    }
+  }
 
   @override
   void onDispose() {
+    super.onDispose();
     var cl = _children;
     _children = [];
     for (var c in cl) {
       c.dispose();
     }
-    super.onDispose();
   }
 
   @override
@@ -61,14 +62,6 @@ abstract class ChartViewGroup extends GestureView {
     }
   }
 
-  @override
-  void markDirtyWithChild() {
-    super.markDirtyWithChild();
-    for (var c in children) {
-      c.markDirtyWithChild();
-    }
-  }
-
   ///=========Event和Action分发处理==================
   bool dispatchAction(ChartAction action) {
     return false;
@@ -76,9 +69,12 @@ abstract class ChartViewGroup extends GestureView {
 
   ///=========布局测量相关============
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    var parentWidth = widthSpec.size;
+    var parentHeight = heightSpec.size;
     var oldW = parentWidth;
     var oldH = parentHeight;
+
     if (layoutParams.width.isNormal) {
       parentWidth = layoutParams.width.convert(parentWidth);
     }
@@ -96,8 +92,10 @@ abstract class ChartViewGroup extends GestureView {
     var ph = parentHeight - padding.vertical;
 
     ///第一次测量
+    var ws = MeasureSpec(layoutParams.width.toSpecMode(), pw);
+    var hs = MeasureSpec(layoutParams.height.toSpecMode(), pw);
     for (var child in children) {
-      child.measure(pw, ph);
+      child.measure(ws, hs);
       var childLP = child.layoutParams;
       child.margin.left = childLP.getLeftMargin(pw);
       child.margin.right = childLP.getRightMargin(pw);
@@ -146,13 +144,15 @@ abstract class ChartViewGroup extends GestureView {
       if (childLP.height.isMatch) {
         childHeight = m.max(0, ph - child.margin.vertical);
       }
-      child.measure(childWidth, childHeight);
+      var wcs = MeasureSpec(layoutParams.width.toSpecMode(), childWidth);
+      var hcs = MeasureSpec(layoutParams.height.toSpecMode(), childHeight);
+      child.measure(wcs, hcs);
     }
     return Size(maxWidth, maxHeight);
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
     var parentLeft = padding.left;
     var parentTop = padding.top;
     for (var child in children) {
@@ -165,16 +165,41 @@ abstract class ChartViewGroup extends GestureView {
 
   @override
   void dispatchDraw(CCanvas canvas) {
+    var count = canvas.getSaveCount();
     for (var child in children) {
-      drawChild(child, canvas);
+      if (child.needNewLayer || child.alpha != 1) {
+        var c = canvas.getSaveCount() - count;
+        canvas.restoreToCount(c);
+        if (child.alpha != 1) {
+          canvas.context.pushOpacity(Offset.zero, (child.alpha * 255).toInt(), (ctx, offset) {
+            drawChild(child, CCanvas.fromContext(ctx));
+          });
+        } else {
+          canvas.context.pushLayer(OffsetLayer(), (ctx, offset) {
+            count = ctx.canvas.getSaveCount();
+            drawChild(child, CCanvas.fromContext(ctx));
+          }, Offset.zero);
+        }
+      } else {
+        drawChild(child, canvas);
+      }
     }
   }
 
-  /// 负责绘制单独的一个ChildView，同时负责Canvas的坐标的正确转换
-  /// 如果在方法中调用了[requestDraw]则返回true
-  bool drawChild(ChartView child, CCanvas canvas) {
-    child.drawSelf(canvas, this);
-    return false;
+  void drawChild(ChartView child, CCanvas canvas) {
+    int saveCount = 0;
+    canvas.save();
+    saveCount += 1;
+    var tx = child.left + child.translationX - child.scrollX;
+    var ty = child.top + child.translationY - child.scrollY;
+    canvas.translate(tx, ty);
+    if (child.scale != 1) {
+      canvas.scale(child.scale);
+    }
+    canvas.clipRect(Rect.fromLTWH(
+        child.translationX + child.scrollX, child.translationY + child.scrollY, child.width, child.height));
+    child.draw(canvas);
+    canvas.restoreToCount(saveCount);
   }
 
   ///========================管理子View相关方法=======================
@@ -187,7 +212,6 @@ abstract class ChartViewGroup extends GestureView {
       c.parent = this;
       children.add(c);
     }
-    sortChildView();
   }
 
   void addViewInner(ChartView child) {
@@ -196,18 +220,11 @@ abstract class ChartViewGroup extends GestureView {
     }
     child.parent = this;
     children.add(child);
-    sortChildView();
-  }
-
-  void sortChildView() {
-    children.sort((a, b) {
-      return a.zLevel.compareTo(b.zLevel);
-    });
   }
 
   void removeView(ChartView view) {
-    children.remove(view);
-    if (!nodeStatus.inLayout) {
+    if (children.remove(view)) {
+      view.parent = null;
       requestLayout();
     }
   }
@@ -266,10 +283,92 @@ abstract class ChartViewGroup extends GestureView {
   }
 
   @override
-  void resetLayoutInfo() {
-    super.resetLayoutInfo();
-    for (var c in children) {
-      c.resetLayoutInfo();
+  void changeChildToFront(ChartView child) {
+    if (children.last == child) {
+      return;
     }
+    children.remove(child);
+    children.add(child);
+    if (child.visibility.needSize) {
+      requestLayout();
+      return;
+    }
+  }
+
+  @override
+  void childVisibilityChange(ChartView child, Visibility old) {
+    if (old.needSize != child.visibility.needSize) {
+      requestLayout();
+    }
+  }
+
+  @override
+  void childHasTransientStateChanged(ChartView child, bool hasTransientState) {}
+
+  @override
+  void clearChildFocus(ChartView child) {
+    _mFocusedView = null;
+    parent?.clearChildFocus(this);
+  }
+
+  @override
+  void clearFocus() {
+    if (_mFocusedView == null) {
+      super.clearFocus();
+    } else {
+      var focused = _mFocusedView;
+      _mFocusedView = null;
+      focused?.clearFocus();
+    }
+  }
+
+  @override
+  void unFocus(ChartView focused) {
+    if (_mFocusedView == null) {
+      super.unFocus(focused);
+    } else {
+      _mFocusedView?.unFocus(focused);
+      _mFocusedView = null;
+    }
+  }
+
+  ChartView? getFocusedChild() {
+    return _mFocusedView;
+  }
+
+  @override
+  bool hasFocus() {
+    return _mFocusedView != null;
+  }
+
+  @override
+  bool getChildVisibleRect(ChartView child, Rect r, Offset offset) {
+    return false;
+  }
+
+  @override
+  bool isLayoutRequested() => true;
+
+  @override
+  void onDescendantInvalidated(ChartView child, ChartView target) {
+    parent?.onDescendantInvalidated(this, target);
+  }
+
+  @override
+  void recomputeViewAttributes(ChartView child) {
+    parent?.recomputeViewAttributes(this);
+  }
+
+  @override
+  void redrawParentCaches() {}
+
+  @override
+  void requestChildFocus(ChartView child, ChartView focused) {
+    super.unFocus(focused);
+    if (_mFocusedView != child) {
+      _mFocusedView?.unFocus(focused);
+      _mFocusedView = child;
+    }
+    parent?.requestChildFocus(this, focused);
   }
 }

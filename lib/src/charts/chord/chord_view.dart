@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/chord/chord_helper.dart';
 
 class ChordView extends SeriesView<ChordSeries, ChordHelper> {
-  ChordView(super.series);
+  ChordView(super.context,super.series);
 
   @override
   ChordHelper buildLayoutHelper(ChordHelper? oldHelper) {

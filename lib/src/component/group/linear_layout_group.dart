@@ -1,13 +1,18 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
+import '../../core/view/models.dart';
+
 class LinearLayout extends ChartViewGroup {
   Direction direction;
 
-  LinearLayout({this.direction = Direction.vertical});
+  LinearLayout(super.context, {this.direction = Direction.vertical});
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    var parentWidth = widthSpec.size;
+    var parentHeight = heightSpec.size;
+
     if (layoutParams.width.isNormal) {
       parentWidth = layoutParams.width.convert(parentWidth);
     }
@@ -63,7 +68,7 @@ class LinearLayout extends ChartViewGroup {
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
     double offset = direction == Direction.vertical ? padding.top : padding.left;
     for (var c in children) {
       var cm = c.margin;

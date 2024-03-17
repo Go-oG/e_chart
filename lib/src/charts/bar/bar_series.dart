@@ -43,11 +43,11 @@ class BarSeries extends GridSeries<StackItemData, BarGroupData> {
   });
 
   @override
-  ChartView? toView() {
+  ChartView? toView(Context context) {
     if (coordType == CoordType.polar) {
-      return BarPolarView(this);
+      return BarPolarView(context,this);
     }
-    return BarGridView(this);
+    return BarGridView(context,this);
   }
 
   @override

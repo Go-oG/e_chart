@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 /// 单个K线图
 class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, CandleStickSeries, CandlestickHelper> {
-  CandleStickView(super.series);
+  CandleStickView(super.context, super.series);
 
   @override
   void onDrawBar(CCanvas canvas) {
@@ -21,8 +21,8 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
       if (data == null) {
         return;
       }
-      var as = series.getAreaStyle(context, node,node.parent);
-      var ls = series.getLineStyle(context, node,node.parent);
+      var as = series.getAreaStyle(context, node, node.parent);
+      var ls = series.getLineStyle(context, node, node.parent);
       if (ls.notDraw) {
         Logger.w("Candlestick LineStyle must not null");
         return;

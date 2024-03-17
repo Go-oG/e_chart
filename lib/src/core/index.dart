@@ -29,7 +29,6 @@ export 'series/series.dart';
 
 export 'view/coord_child_view.dart';
 export 'view/gesture_view.dart';
-export 'view/render_node.dart';
 export 'view/series_view.dart';
 export 'view/view.dart';
 export 'view/view_group.dart';

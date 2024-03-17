@@ -10,6 +10,8 @@ import '../../utils/platform_util.dart';
 abstract class GestureView extends ChartView {
   late ChartGesture _gesture;
 
+  GestureView(super.context);
+
   @mustCallSuper
   @override
   void onCreate() {
@@ -24,10 +26,8 @@ abstract class GestureView extends ChartView {
     super.onDispose();
   }
 
-  @mustCallSuper
-  @override
+
   void onLayoutComplete() {
-    super.onLayoutComplete();
     onInitGesture(_gesture);
   }
 

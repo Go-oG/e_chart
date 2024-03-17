@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'delaunay_helper.dart';
 
 class DelaunayView extends SeriesView<DelaunaySeries, DelaunayHelper> {
-  DelaunayView(super.series);
+  DelaunayView(super.context,super.series);
 
   @override
   DelaunayHelper buildLayoutHelper(DelaunayHelper? oldHelper) {

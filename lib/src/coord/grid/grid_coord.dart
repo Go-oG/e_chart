@@ -3,12 +3,14 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/view/models.dart';
+
 ///实现二维坐标系
 class GridCoordImpl extends GridCoord {
   final Map<XAxis, XAxisImpl> xMap = {};
   final Map<YAxis, YAxisImpl> yMap = {};
 
-  GridCoordImpl(super.props);
+  GridCoordImpl(super.context, super.props);
 
   @override
   void onCreate() {
@@ -37,7 +39,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     ///赋值MaxStr
     xMap.forEach((key, value) {
       value.attrs.maxStr = getMaxStr(value.direction, value.axisIndex);
@@ -85,7 +87,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
     double topOffset = padding.top;
     double bottomOffset = padding.bottom;
     double leftOffset = padding.left;
@@ -327,7 +329,7 @@ class GridCoordImpl extends GridCoord {
     for (var view in children) {
       view.forceLayout = true;
     }
-    onLayout(left, top, right, bottom);
+    onLayout(mLeft, top, mRight, bottom);
   }
 
   @override
@@ -356,7 +358,6 @@ class GridCoordImpl extends GridCoord {
     });
   }
 
-  @override
   void onDrawEnd(CCanvas canvas) {
     super.onDrawEnd(canvas);
     var offset = _axisPointerOffset;
@@ -804,7 +805,7 @@ class GridCoordImpl extends GridCoord {
 }
 
 abstract class GridCoord extends CoordLayout<Grid> {
-  GridCoord(super.props);
+  GridCoord(super.context, super.props);
 
   ///获取指定坐标轴在当前窗口显示的数据范围
   RangeInfo getAxisViewportDataRange(int axisIndex, bool isXAxis);

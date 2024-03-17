@@ -1,6 +1,8 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/view/models.dart';
+
 class ChildTitleView extends StatelessWidget {
   final ChartTitle title;
 
@@ -40,12 +42,12 @@ class TitleView extends ChartView {
 
   late TextDraw label;
 
-  TitleView(this.title, this.style) {
+  TitleView(super.context,this.title, this.style) {
     label = TextDraw(title, style, Offset.zero, align: Alignment.topLeft);
   }
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     if (title.isEmpty) {
       return Size.zero;
     }

@@ -10,9 +10,9 @@ class ToolTipView extends LinearLayout {
   ToolTip toolTip;
   ToolTipMenu? menu;
 
-  ToolTipView(this.toolTip) : super(direction: Direction.vertical) {
+  ToolTipView(Context context, this.toolTip) : super(context, direction: Direction.vertical) {
     layoutParams = const LayoutParams.wrapAll();
-    zLevel = 10000;
+    // zLevel = 10000;
   }
 
   TitleView? titleView;
@@ -33,18 +33,18 @@ class ToolTipView extends LinearLayout {
       return;
     }
     if (menu.title != null) {
-      titleView = TitleView(menu.title!, menu.titleStyle ?? const LabelStyle());
+      titleView = TitleView(context, menu.title!, menu.titleStyle ?? const LabelStyle());
       addView(titleView!);
     }
 
-    var sv = ScrollLayout();
+    var sv = ScrollLayout(context);
     sv.layoutParams = const LayoutParams.matchAll();
 
-    var ll = LinearLayout();
+    var ll = LinearLayout(context);
     ll.layoutParams = const LayoutParams.wrapAll();
 
     for (var item in menu.itemList) {
-      var itemView = ToolTipItemView(item);
+      var itemView = ToolTipItemView(context, item);
       itemView.layoutParams = const LayoutParams.wrapAll(
         leftPadding: SNumber.number(8),
         topPadding: SNumber.number(8),
@@ -62,14 +62,11 @@ class ToolTipView extends LinearLayout {
   }
 
   @override
-  bool get clipSelf => true;
-
-  @override
   void onDrawBackground(CCanvas canvas) {
     if (!toolTip.show) {
       return;
     }
-    var tr = selfBoxBound;
+    var tr = boxBound.translate(-left, -top);
     Rect rect = Rect.fromLTRB(tr.left + 4, tr.top + 4, tr.right - 4, tr.bottom - 4);
     toolTip.backgroundStyle.drawRect(canvas, mPaint, rect, toolTip.corner);
     toolTip.borderStyle?.drawRect(canvas, mPaint, rect, toolTip.corner);

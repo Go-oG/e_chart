@@ -1,3 +1,5 @@
+import 'package:e_chart/src/core/view/models.dart';
+
 import '../../model/string_number.dart';
 
 class SizeParams {
@@ -47,5 +49,12 @@ class SizeParams {
       return 0;
     }
     return n.toDouble();
+  }
+
+  MeasureSpecMode toSpecMode() {
+    if (_type == wrapType) {
+      return MeasureSpecMode.atMost;
+    }
+    return MeasureSpecMode.exactly;
   }
 }

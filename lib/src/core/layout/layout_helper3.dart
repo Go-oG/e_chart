@@ -179,10 +179,10 @@ abstract class LayoutHelper3<D extends RenderData, L extends RenderData, S exten
     }
   }
 
-  @override
-  Offset getTranslation() {
-    return view.translation;
-  }
+  // @override
+  // Offset getTranslation() {
+  //   return view.translation;
+  // }
 
   D getLinkSource(L link);
 

@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 abstract class StackView<T extends StackItemData, G extends StackGroupData<T,G>, S extends StackSeries<T, G>,
     L extends StackHelper<T, G, S>> extends CoordChildView<S, L> {
-  StackView(super.series);
+  StackView(super.context,super.series);
 
   @override
   bool get useSingleLayer {

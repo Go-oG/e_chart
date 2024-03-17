@@ -2,16 +2,23 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
+import '../../core/view/models.dart';
+
 class ScrollLayout extends ChartViewGroup {
   double _dy = 0;
 
+  ScrollLayout(super.context);
+
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     if (children.length > 1) {
       throw ChartError("只能有一个View");
     }
+    var parentWidth = widthSpec.size;
+    var parentHeight = heightSpec.size;
+
     var child = children.first;
-    child.measure(parentWidth, parentHeight);
+    child.measure(widthSpec, heightSpec);
     final double cw = child.width;
     final double ch = child.height;
     Size size;
@@ -25,7 +32,6 @@ class ScrollLayout extends ChartViewGroup {
     return size;
   }
 
-  @override
   bool drawSelf(CCanvas canvas, ChartViewGroup parent) {
     canvas.save();
     canvas.translate(left, top + _dy);
@@ -38,8 +44,6 @@ class ScrollLayout extends ChartViewGroup {
   @override
   bool get enableDrag => true;
 
-  @override
-  DragType get dragType => DragType.drag;
 
   @override
   void onDragMove(Offset offset, Offset diff) {

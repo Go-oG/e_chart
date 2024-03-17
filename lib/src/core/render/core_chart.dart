@@ -6,7 +6,7 @@ import 'render_adapter.dart';
 class Chart extends StatefulWidget {
   final ChartOption option;
 
-  const Chart(this.option,{super.key});
+  const Chart(this.option, {super.key});
 
   @override
   State<StatefulWidget> createState() => ChartState();
@@ -117,7 +117,7 @@ class _InnerWidget extends LeafRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderAdapter(option,size,tickerProvider);
+    return RenderAdapter(option, tickerProvider, size);
   }
 
   @override
@@ -127,6 +127,7 @@ class _InnerWidget extends LeafRenderObjectWidget {
 
   @override
   void didUnmountRenderObject(RenderAdapter renderObject) {
-    renderObject.onUnmountRender();
+   // renderObject.onUnmountRender();
   }
+
 }

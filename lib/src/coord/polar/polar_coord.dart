@@ -1,5 +1,6 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/view/models.dart';
 import 'package:flutter/material.dart';
 
 ///用于实现极坐标系
@@ -15,7 +16,7 @@ class PolarCoordImpl extends PolarCoord {
 
   Offset center = Offset.zero;
 
-  PolarCoordImpl(super.props);
+  PolarCoordImpl(super.context, super.props);
 
   @override
   void onCreate() {
@@ -42,9 +43,9 @@ class PolarCoordImpl extends PolarCoord {
   Size measureSize = Size.zero;
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
-    double size = m.min(parentWidth, parentHeight);
-    measureSize = Size(parentWidth, parentHeight);
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    double size = m.min(widthSpec.size, heightSpec.size);
+    measureSize = Size(widthSpec.size, heightSpec.size);
     size = props.radius.last.convert(size) * 2;
     angleAxis.onMeasure(size, size);
     radiusAxis.onMeasure(size, size);
@@ -52,7 +53,7 @@ class PolarCoordImpl extends PolarCoord {
   }
 
   @override
-  void onLayout(double left, double top, double right, double bottom) {
+  void onLayout(bool changed,double left, double top, double right, double bottom) {
     center = Offset(props.center[0].convert(width), props.center[1].convert(height));
     contentBox = Rect.fromCircle(center: center, radius: width / 2);
     double size = m.min(measureSize.width, measureSize.height);
@@ -63,7 +64,7 @@ class PolarCoordImpl extends PolarCoord {
       center,
       props.angleAxis.offsetAngle.toDouble(),
       [ir, or],
-      scaleRatio: scaleY,
+      scaleRatio: scale,
       scrollY: translationY,
       clockwise: props.angleAxis.clockwise,
     );
@@ -191,7 +192,7 @@ class PolarCoordImpl extends PolarCoord {
 }
 
 abstract class PolarCoord extends CircleCoordLayout<Polar> {
-  PolarCoord(super.props);
+  PolarCoord(super.context, super.props);
 
   PolarPosition dataToPosition(dynamic radiusData, dynamic angleData);
 

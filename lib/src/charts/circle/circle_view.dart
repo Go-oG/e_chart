@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/circle/circle_helper.dart';
 
 class CircleView extends SeriesView<CircleSeries, CircleHelper> {
-  CircleView(super.series);
+  CircleView(super.context,super.series);
 
   @override
   CircleHelper buildLayoutHelper(var oldHelper) {

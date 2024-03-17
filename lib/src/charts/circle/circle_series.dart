@@ -52,10 +52,9 @@ class CircleSeries extends ChartListSeries<CircleData> {
   }
 
   @override
-  ChartView? toView() {
-    return CircleView(this);
+  ChartView? toView(Context context) {
+    return CircleView(context, this);
   }
-
 
   @override
   int onAllocateStyleIndex(int start) {

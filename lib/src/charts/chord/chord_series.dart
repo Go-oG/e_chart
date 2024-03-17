@@ -161,5 +161,5 @@ class ChordSeries extends RectSeries {
   SeriesType get seriesType => SeriesType.chord;
 
   @override
-  ChartView? toView() => ChordView(this);
+  ChartView? toView(Context context) => ChordView(context,this);
 }

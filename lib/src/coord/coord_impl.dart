@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 ///包括了Brush、ToolTip相关组件
 abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   T? _props;
+
   T get props => _props!;
   final ViewPort viewPort = ViewPort.zero();
 
@@ -14,7 +15,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   BrushView? _brushView;
   ToolTipView? _tipView;
 
-  CoordLayout(T props) : super() {
+  CoordLayout(super.context, T props) {
     _props = props;
     layoutParams = props.layoutParams;
   }
@@ -25,13 +26,13 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   void onCreate() {
     super.onCreate();
     if (props.brush != null) {
-      _brushView = BrushView(this, props.brush!);
+      _brushView = BrushView(context, this, props.brush!);
       addView(_brushView!);
     }
     var tooltip = findToolTip();
     if (tooltip != null) {
       ToolTip toolTip = ToolTip(show: false);
-      _tipView = ToolTipView(toolTip);
+      _tipView = ToolTipView(context, toolTip);
       addView(_tipView!);
     }
     context.addActionCall(dispatchAction);
@@ -45,7 +46,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     props.removeListener(_handleCommand);
     unregisterCommandHandler();
 
-    _props=null;
+    _props = null;
     _brushView = null;
     _tipView = null;
     super.onDispose();
@@ -64,7 +65,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
 
   @override
   void onUpdateDataCommand(covariant Command c) {
-    requestLayoutSelf();
+    requestLayout();
   }
 
   @override
@@ -91,7 +92,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
     mPaint.reset();
     mPaint.color = color;
     mPaint.style = PaintingStyle.fill;
-    canvas.drawRect(selfBoxBound, mPaint);
+    canvas.drawRect(boxBound.translate(-left, -top), mPaint);
   }
 
   @override

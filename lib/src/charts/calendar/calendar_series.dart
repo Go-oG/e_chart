@@ -133,8 +133,8 @@ class CalenderSeries extends ChartSeries {
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return CalendarView(this);
+  ChartView? toView(Context context) {
+    return CalendarView(context,this);
   }
   @override
   SeriesType get seriesType =>SeriesType.calendar;
