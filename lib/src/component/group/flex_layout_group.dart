@@ -2,7 +2,7 @@ import 'dart:math' as m;
 
 import 'package:flutter/material.dart';
 
-import '../../core/view/models.dart';
+import '../../core/model/models.dart';
 import '../../core/view/view.dart';
 import '../../core/view/view_group.dart';
 import '../../model/enums/align2.dart';

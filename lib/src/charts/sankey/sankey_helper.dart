@@ -10,7 +10,8 @@ class SankeyHelper extends LayoutHelper3<SankeyData, SankeyLink, SankeySeries> {
   double animationProcess = 1;
   num _nodeGap = 0;
 
-  final RBush<SankeyData> _nodeBush = RBush((p0) => p0.attr.left, (p0) => p0.attr.top, (p0) => p0.attr.right, (p0) => p0.attr.bottom);
+  final RBush<SankeyData> _nodeBush =
+      RBush((p0) => p0.attr.left, (p0) => p0.attr.top, (p0) => p0.attr.right, (p0) => p0.attr.bottom);
 
   final RBush<SankeyLink> _linkBush = RBush(
     (p0) => m.min(p0.source.attr.left, p0.target.attr.left),
@@ -455,7 +456,6 @@ class SankeyHelper extends LayoutHelper3<SankeyData, SankeyLink, SankeySeries> {
     return List.from(dataMap.values);
   }
 
-  @override
   Offset getTranslation() {
     return view.translation;
   }

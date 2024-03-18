@@ -1,4 +1,4 @@
-import 'package:e_chart/src/core/view/models.dart';
+import 'package:e_chart/src/core/model/models.dart';
 
 import '../../model/string_number.dart';
 

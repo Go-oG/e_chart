@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import '../../core/view/models.dart';
+import '../../core/model/models.dart';
 
 class ScrollLayout extends ChartViewGroup {
   double _dy = 0;

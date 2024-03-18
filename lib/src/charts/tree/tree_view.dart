@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'tree_helper.dart';
 
 class TreeView extends SeriesView<TreeSeries, TreeHelper> {
-  TreeView(super.series);
+  TreeView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {

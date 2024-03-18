@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
-
 import 'package:flutter/rendering.dart';
 
 import '../../model/chart_error.dart';
@@ -173,12 +171,10 @@ class Zoom {
     matrix4.translate(center.dx, center.dy);
     matrix4.scale(scaleValue);
     matrix4.translate(-center.dx, -center.dy);
-    var tr=matrix4.getTranslation();
-    translationX=tr.x;
-    translationY=tr.y;
-    scaleValue=matrix4.getMaxScaleOnAxis();
-
-
+    var tr = matrix4.getTranslation();
+    translationX = tr.x;
+    translationY = tr.y;
+    scaleValue = matrix4.getMaxScaleOnAxis();
   }
 
   void mapCanvas(CCanvas canvas, VoidCallback drawCall) {

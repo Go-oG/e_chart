@@ -3,7 +3,7 @@ import 'sunburst_helper.dart';
 
 /// 旭日图
 class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
-  SunburstView(super.series);
+  SunburstView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {
@@ -17,6 +17,6 @@ class SunburstView extends SeriesView<SunburstSeries, SunburstHelper> {
   @override
   SunburstHelper buildLayoutHelper(var oldHelper) {
     oldHelper?.clearRef();
-    return SunburstHelper(context,this, series);
+    return SunburstHelper(context, this, series);
   }
 }

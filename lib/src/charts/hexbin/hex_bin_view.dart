@@ -3,7 +3,7 @@ import 'package:e_chart/e_chart.dart';
 import 'hex_bin_helper.dart';
 
 class HexbinView extends SeriesView<HexbinSeries, HexBinHelper> {
-  HexbinView(super.series);
+  HexbinView(super.context, super.series);
 
   @override
   bool get enableDrag => true;
@@ -29,5 +29,4 @@ class HexbinView extends SeriesView<HexbinSeries, HexBinHelper> {
     }
     return HexBinHelper(context, this, series);
   }
-
 }

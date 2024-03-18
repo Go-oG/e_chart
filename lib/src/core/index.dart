@@ -33,10 +33,6 @@ export 'view/series_view.dart';
 export 'view/view.dart';
 export 'view/view_group.dart';
 
-export 'viewstate/color_resolver.dart';
-export 'viewstate/mix_state_provider.dart';
-export 'viewstate/state_resolver.dart';
-
 export 'chart_notifier.dart';
 export 'command.dart';
 export 'context.dart';

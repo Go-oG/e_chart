@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../core/view/state_resolver.dart';
 import '../shader/shader.dart' as sd;
 
 /// 线段样式
@@ -367,7 +368,7 @@ class LineStyle {
 
     final Color color = ColorResolver(c).resolve(states)!;
 
-    final sd.ChartShader? shader = this.shader == null ? null : this.shader!.convert(states);
+    final sd.ChartShader? shader = this.shader?.convert(states);
 
     final List<BoxShadow> shadow = [];
     for (var bs in this.shadow) {

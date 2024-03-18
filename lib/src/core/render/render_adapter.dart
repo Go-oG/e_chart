@@ -1,11 +1,11 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/group/frame_layout.dart';
-import 'package:e_chart/src/core/view/models.dart' as m;
+import 'package:e_chart/src/core/model/models.dart' as m;
 import 'package:flutter/rendering.dart';
 
 import 'package:flutter/widgets.dart';
 
-import '../view/AttachInfo.dart';
+import '../view/attach_info.dart';
 import '../view/view_parent.dart';
 
 ///该类负责将Flutter原生的布局、渲染流程映射到我们的ChartRender中

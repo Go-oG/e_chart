@@ -1,6 +1,6 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/view/models.dart';
+import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/material.dart';
 
 ///用于实现极坐标系
@@ -53,7 +53,7 @@ class PolarCoordImpl extends PolarCoord {
   }
 
   @override
-  void onLayout(bool changed,double left, double top, double right, double bottom) {
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
     center = Offset(props.center[0].convert(width), props.center[1].convert(height));
     contentBox = Rect.fromCircle(center: center, radius: width / 2);
     double size = m.min(measureSize.width, measureSize.height);
@@ -64,7 +64,7 @@ class PolarCoordImpl extends PolarCoord {
       center,
       props.angleAxis.offsetAngle.toDouble(),
       [ir, or],
-      scaleRatio: scale,
+      scaleRatio: scaleX,
       scrollY: translationY,
       clockwise: props.angleAxis.clockwise,
     );

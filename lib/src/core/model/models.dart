@@ -9,10 +9,7 @@ enum MeasureSpecMode {
   unLimit,
   exactly;
 }
-enum LayoutDirection {
-  ltr,
-  rtl;
-}
+
 enum Visibility {
   visible,
   invisible,

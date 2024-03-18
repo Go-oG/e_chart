@@ -48,8 +48,8 @@ class SankeySeries extends RectSeries {
   }) : super(gridIndex: -1, polarIndex: -1, radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
 
   @override
-  ChartView? toView() {
-    return SankeyView(this);
+  ChartView? toView(Context context) {
+    return SankeyView(context, this);
   }
 
   AreaStyle? getItemStyle(Context context, SankeyData data) {

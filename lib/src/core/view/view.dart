@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../model/chart_edgeinset.dart';
-import 'AttachInfo.dart';
-import 'models.dart';
+import 'attach_info.dart';
+import '../model/models.dart';
 
 abstract class ChartView {
   final String id = randomId();
@@ -58,7 +58,13 @@ abstract class ChartView {
 
   double translationY = 0;
 
-  double scale = 1;
+  double scaleX = 1;
+
+  double scaleY = 1;
+
+  set scale(double scale) {
+    scaleX = scaleY = scale;
+  }
 
   double alpha = 1;
 

@@ -6,7 +6,6 @@ import 'package:e_chart/e_chart.dart';
 ///覆盖在单个坐标系的最顶层(比TooltipView 低)
 class BrushView extends GestureView {
   CoordLayout? _coord;
-
   CoordLayout get coord => _coord!;
   Brush? _brush;
 
@@ -18,7 +17,6 @@ class BrushView extends GestureView {
 
   BrushView(super.context, this._coord, this._brush) {
     layoutParams = const LayoutParams.matchAll();
-    zLevel = 10000;
     _endEvent = BrushEndEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
     _startEvent = BrushStartEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
     _updateEvent = BrushUpdateEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);

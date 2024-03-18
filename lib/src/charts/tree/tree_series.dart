@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/tree/tree_view.dart';
 
-class TreeSeries extends HierarchySeries<TreeAttr,TreeData> {
+class TreeSeries extends HierarchySeries<TreeAttr, TreeData> {
   TreeLayout layout;
 
   ///描述根节点的位置
@@ -72,8 +72,7 @@ class TreeSeries extends HierarchySeries<TreeAttr,TreeData> {
   SeriesType get seriesType => SeriesType.tree;
 
   @override
-  ChartView? toView() {
-    return TreeView(this);
+  ChartView? toView(Context context) {
+    return TreeView(context, this);
   }
-
 }

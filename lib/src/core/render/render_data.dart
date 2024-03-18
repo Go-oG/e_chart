@@ -2,6 +2,8 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/core/layout/layout_result.dart';
 import 'package:flutter/material.dart';
 
+import '../view/state_resolver.dart';
+
 ///基础渲染数据
 abstract class RenderData<T> extends Disposable with StateProvider, ExtProps {
   late final String id;

@@ -292,7 +292,7 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
     return null;
   }
 
-  @override
+
   Offset getTranslation() {
     return view.translation;
   }

@@ -29,7 +29,7 @@ class CacheLayer {
     _height = view.height;
     _translationX = view.translationX;
     _translationY = view.translationY;
-    _scale = view.scale;
+    _scale = view.scaleX;
   }
 
   bool hasChange(double w, double h, double tx, double ty, double scale) {

@@ -3,7 +3,7 @@ import 'radar_helper.dart';
 
 /// 雷达图
 class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChild {
-  RadarView(super.series);
+  RadarView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {
@@ -29,10 +29,10 @@ class RadarView extends SeriesView<RadarSeries, RadarHelper> implements RadarChi
 
   @override
   RadarHelper buildLayoutHelper(var oldHelper) {
-    if(oldHelper!=null){
-      oldHelper.context=context;
-      oldHelper.view=this;
-      oldHelper.series=series;
+    if (oldHelper != null) {
+      oldHelper.context = context;
+      oldHelper.view = this;
+      oldHelper.series = series;
       return oldHelper;
     }
     return RadarHelper(context, this, series);

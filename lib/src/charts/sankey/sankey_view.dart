@@ -5,7 +5,7 @@ import 'sankey_helper.dart';
 
 /// 桑基图
 class SankeyView extends SeriesView<SankeySeries, SankeyHelper> {
-  SankeyView(super.series);
+  SankeyView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {

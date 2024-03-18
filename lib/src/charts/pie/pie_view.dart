@@ -1,10 +1,9 @@
 import 'package:e_chart/e_chart.dart';
 import 'pie_helper.dart';
-import 'pie_data.dart';
 
 /// 饼图
 class PieView extends SeriesView<PieSeries, PieHelper> {
-  PieView(super.series);
+  PieView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {

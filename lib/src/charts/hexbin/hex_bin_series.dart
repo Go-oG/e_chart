@@ -48,8 +48,8 @@ class HexbinSeries extends RectSeries2<HexBinData> {
   }
 
   @override
-  ChartView? toView() {
-    return HexbinView(this);
+  ChartView? toView(Context context) {
+    return HexbinView(context, this);
   }
 
   @override
@@ -68,7 +68,7 @@ class HexbinSeries extends RectSeries2<HexBinData> {
       return super.getLabelStyle(context, data);
     }
     var theme = context.option.theme;
-    return theme.hexbinTheme.labelStyle??LabelStyle.empty;
+    return theme.hexbinTheme.labelStyle ?? LabelStyle.empty;
   }
 
   @override

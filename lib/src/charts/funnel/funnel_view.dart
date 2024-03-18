@@ -4,7 +4,7 @@ import 'funnel_helper.dart';
 
 /// 漏斗图
 class FunnelView extends SeriesView<FunnelSeries, FunnelHelper> {
-  FunnelView(super.series);
+  FunnelView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {

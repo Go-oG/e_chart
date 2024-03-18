@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'point_helper.dart';
 
 class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild, CalendarChild, GridChild {
-  PointView(super.series);
+  PointView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {

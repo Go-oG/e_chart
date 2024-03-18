@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/pack/pack_view.dart';
 import 'package:flutter/painting.dart';
 
-class PackSeries extends HierarchySeries<Rect,PackData> {
+class PackSeries extends HierarchySeries<Rect, PackData> {
   static const _defaultAnimation = AnimatorOption(
     duration: Duration(seconds: 1),
     updateDuration: Duration(milliseconds: 1000),
@@ -65,7 +65,7 @@ class PackSeries extends HierarchySeries<Rect,PackData> {
   SeriesType get seriesType => SeriesType.pack;
 
   @override
-  ChartView? toView() {
-    return PackView(this);
+  ChartView? toView(Context context) {
+    return PackView(context, this);
   }
 }

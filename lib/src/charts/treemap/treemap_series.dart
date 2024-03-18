@@ -71,8 +71,8 @@ class TreeMapSeries extends HierarchySeries<Rect, TreeMapData> {
   SeriesType get seriesType => SeriesType.treemap;
 
   @override
-  ChartView? toView() {
-    return TreeMapView(this);
+  ChartView? toView(Context context) {
+    return TreeMapView(context, this);
   }
 
   @override

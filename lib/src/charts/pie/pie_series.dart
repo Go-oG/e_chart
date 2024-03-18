@@ -73,8 +73,8 @@ class PieSeries extends RectSeries2<PieData> {
   }) : super(gridIndex: -1, parallelIndex: -1, radarIndex: -1, polarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return PieView(this);
+  ChartView? toView(Context context) {
+    return PieView(context, this);
   }
 
   double getOffset(Context context, PieData data) {

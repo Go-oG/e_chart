@@ -160,7 +160,7 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
 
     var animation = getAnimation(LayoutType.update, -1);
     if (animation == null || animation.updateDuration.inMilliseconds <= 0) {
-      view.scaleX = view.scaleY = newScale;
+      view.scale = newScale;
       view.translationX = ntx;
       view.translationY = nty;
       updateDrawNodeList();
@@ -170,7 +170,7 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
     var tween = ChartDoubleTween(option: animation);
     tween.addListener(() {
       var t = tween.value;
-      view.scaleX = view.scaleY = lerpDouble(oldScale, newScale, t)!;
+      view.scale = lerpDouble(oldScale, newScale, t)!;
       view.translationX = lerpDouble(oldTx, ntx, t)!;
       view.translationY = lerpDouble(oldTy, nty, t)!;
       updateDrawNodeList();

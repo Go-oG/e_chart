@@ -46,8 +46,8 @@ class FunnelSeries extends RectSeries2<FunnelData> {
         );
 
   @override
-  ChartView? toView() {
-    return FunnelView(this);
+  ChartView? toView(Context context) {
+    return FunnelView(context, this);
   }
 
   @override

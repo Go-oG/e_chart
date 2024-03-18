@@ -5,7 +5,7 @@ import 'parallel_helper.dart';
 
 ///平行坐标系
 class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implements ParallelChild {
-  ParallelView(super.series);
+  ParallelView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {
@@ -50,6 +50,4 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     }
     return ParallelHelper(context, this, series);
   }
-
-
 }

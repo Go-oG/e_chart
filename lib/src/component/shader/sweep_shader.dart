@@ -5,6 +5,8 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/view/state_resolver.dart';
+
 class SweepShader extends ChartShader {
   final Alignment center;
   final double startAngle;

@@ -43,8 +43,8 @@ class GraphSeries extends RectSeries {
   });
 
   @override
-  ChartView? toView() {
-    return GraphView(this);
+  ChartView? toView(Context context) {
+    return GraphView(context, this);
   }
 
   ///给定一个节点返回节点的大小

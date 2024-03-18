@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'theme_river_helper.dart';
 
 class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
-  ThemeRiverView(super.series);
+  ThemeRiverView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {

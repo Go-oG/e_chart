@@ -48,8 +48,8 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
   }) : super(groupGap: SNumber.zero, columnGap: SNumber.zero);
 
   @override
-  ChartView? toView() {
-    return LineView(this);
+  ChartView? toView(Context context) {
+    return LineView(context, this);
   }
 
   @override
@@ -65,5 +65,5 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
     return null;
   }
 
-  LineType? getLineType(Context context,LineGroupData group)=>stepLineFun?.call(group);
+  LineType? getLineType(Context context, LineGroupData group) => stepLineFun?.call(group);
 }

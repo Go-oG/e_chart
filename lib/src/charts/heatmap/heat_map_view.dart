@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// 热力图
 class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChild, CalendarChild {
-  HeatMapView(super.series);
+  HeatMapView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {
@@ -65,6 +65,4 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
   LineStyle? getBorderStyle(HeatMapData data) {
     return series.getBorderStyle(context, data);
   }
-
-
 }

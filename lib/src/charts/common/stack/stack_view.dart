@@ -1,12 +1,12 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/model/models.dart';
 
-abstract class StackView<T extends StackItemData, G extends StackGroupData<T,G>, S extends StackSeries<T, G>,
+abstract class StackView<T extends StackItemData, G extends StackGroupData<T, G>, S extends StackSeries<T, G>,
     L extends StackHelper<T, G, S>> extends CoordChildView<S, L> {
-  StackView(super.context,super.series);
+  StackView(super.context, super.series);
 
-  @override
   bool get useSingleLayer {
     if (series.realtimeSort || series.dynamicRange || series.dynamicLabel) {
       return false;
@@ -15,9 +15,9 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T,G>,
   }
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     layoutHelper.doMeasure(parentWidth, parentHeight);
-    return super.onMeasure(parentWidth, parentHeight);
+    return super.onMeasure(widthSpec, heightSpec);
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:vector_math/vector_math_64.dart';
 import 'pack_helper.dart';
 
 class PackView extends SeriesView<PackSeries, PackHelper> {
-  PackView(super.series);
+  PackView(super.context, super.series);
 
   @override
   bool get enableDrag => true;

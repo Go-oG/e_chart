@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// 矩形树图
 class TreeMapView extends SeriesView<TreeMapSeries, TreeMapHelper> {
-  TreeMapView(super.series);
+  TreeMapView(super.context, super.series);
 
   @override
   void onCreate() {

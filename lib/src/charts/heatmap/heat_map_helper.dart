@@ -11,7 +11,7 @@ class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
   void onLayout(LayoutType type) {
     var oldList = dataSet;
     var newList = [...series.data];
-    initDataIndexAndStyle(newList,false);
+    initDataIndexAndStyle(newList, false);
     var an = DiffUtil.diff<HeatMapData>(
       getAnimation(type, oldList.length + newList.length),
       oldList,
@@ -74,7 +74,6 @@ class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
     _rBush.addAll(dataList);
   }
 
-  @override
   Offset getTranslation() {
     var type = series.coordType;
     if (type == CoordType.calendar) {

@@ -41,8 +41,8 @@ class HeatMapSeries extends RectSeries2<HeatMapData> {
   }) : super(polarIndex: -1, parallelIndex: -1, radarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return HeatMapView(this);
+  ChartView? toView(Context context) {
+    return HeatMapView(context,this);
   }
 
   ChartSymbol? getSymbol(Context context, HeatMapData data) {

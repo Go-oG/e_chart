@@ -30,8 +30,8 @@ class RadarSeries extends ChartListSeries<RadarData> {
   }) : super(coordType: CoordType.radar, parallelIndex: -1, gridIndex: -1, calendarIndex: -1, polarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return RadarView(this);
+  ChartView? toView(Context context) {
+    return RadarView(context, this);
   }
 
   @override

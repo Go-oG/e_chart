@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import '../../core/view/models.dart';
+import '../../core/model/models.dart';
 
 class LinearLayout extends ChartViewGroup {
   Direction direction;

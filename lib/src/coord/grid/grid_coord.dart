@@ -3,7 +3,7 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/view/models.dart';
+import '../../core/model/models.dart';
 
 ///实现二维坐标系
 class GridCoordImpl extends GridCoord {
@@ -329,7 +329,7 @@ class GridCoordImpl extends GridCoord {
     for (var view in children) {
       view.forceLayout = true;
     }
-    onLayout(mLeft, top, mRight, bottom);
+    onLayout(false, left, top, right, bottom);
   }
 
   @override
@@ -359,7 +359,6 @@ class GridCoordImpl extends GridCoord {
   }
 
   void onDrawEnd(CCanvas canvas) {
-    super.onDrawEnd(canvas);
     var offset = _axisPointerOffset;
     if (offset == null) {
       return;

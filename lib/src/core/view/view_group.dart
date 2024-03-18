@@ -1,6 +1,6 @@
 import 'dart:math' as m;
-import 'package:e_chart/src/core/view/AttachInfo.dart';
-import 'package:e_chart/src/core/view/models.dart';
+import 'package:e_chart/src/core/view/attach_info.dart';
+import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../event/index.dart';
@@ -193,8 +193,8 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
     var tx = child.left + child.translationX - child.scrollX;
     var ty = child.top + child.translationY - child.scrollY;
     canvas.translate(tx, ty);
-    if (child.scale != 1) {
-      canvas.scale(child.scale);
+    if (child.scaleX != 1 || child.scaleY != 1) {
+      canvas.scale(child.scaleX, child.scaleY);
     }
     canvas.clipRect(Rect.fromLTWH(
         child.translationX + child.scrollX, child.translationY + child.scrollY, child.width, child.height));

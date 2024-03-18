@@ -1,5 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/view/models.dart';
+import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/material.dart';
 
 ///雷达图坐标系
@@ -62,7 +62,7 @@ class RadarCoordImpl extends RadarCoord {
       double angle = oa + i * itemAngle;
       Offset o = circlePoint(radius, angle, center);
       var attrs = axis.attrs.copy() as LineAxisAttrs;
-      attrs.scaleRatio = scale;
+      attrs.scaleRatio = scaleX;
       attrs.scrollX = translationX;
       attrs.start = center;
       attrs.end = o;

@@ -4,11 +4,13 @@ import 'package:e_chart/src/charts/sunburst/sunburst_view.dart';
 typedef RadiusDiffFun = num Function(int deep, int maxDeep, num radius);
 
 /// 旭日图
-class SunburstSeries extends HierarchySeries<Arc,SunburstData> {
+class SunburstSeries extends HierarchySeries<Arc, SunburstData> {
   List<SNumber> center;
   List<SNumber> radius;
+
   ///起始角度
   num startAngle;
+
   ///扫过的角度 负数为逆时针
   num sweepAngle;
 
@@ -107,7 +109,7 @@ class SunburstSeries extends HierarchySeries<Arc,SunburstData> {
   SeriesType get seriesType => SeriesType.sunburst;
 
   @override
-  ChartView? toView() {
-    return SunburstView(this);
+  ChartView? toView(Context context) {
+    return SunburstView(context, this);
   }
 }

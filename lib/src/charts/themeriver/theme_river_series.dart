@@ -34,12 +34,10 @@ class ThemeRiverSeries extends RectSeries2<ThemeRiverData> {
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1, radarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return ThemeRiverView(this);
+  ChartView? toView(Context context) {
+    return ThemeRiverView(context, this);
   }
 
   @override
   SeriesType get seriesType => SeriesType.themeRiver;
-
-
 }

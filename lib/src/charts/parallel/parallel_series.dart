@@ -27,8 +27,8 @@ class ParallelSeries extends ChartGroupSeries<ParallelChildData, ParallelData> {
   }) : super(coordType: CoordType.parallel, gridIndex: -1, calendarIndex: -1, polarIndex: -1, radarIndex: -1);
 
   @override
-  ChartView? toView() {
-    return ParallelView(this);
+  ChartView? toView(Context context) {
+    return ParallelView(context, this);
   }
 
   ChartSymbol getSymbol(ParallelChildData data, ParallelData group) {
@@ -49,7 +49,7 @@ class ParallelSeries extends ChartGroupSeries<ParallelChildData, ParallelData> {
   }
 
   @override
-  AreaStyle getItemStyle(Context context, ParallelChildData data,ParallelData parent) {
+  AreaStyle getItemStyle(Context context, ParallelChildData data, ParallelData parent) {
     return AreaStyle.empty;
   }
 
@@ -107,10 +107,11 @@ class ParallelSeries extends ChartGroupSeries<ParallelChildData, ParallelData> {
       if (name.isEmpty) {
         return;
       }
-      if(item.data.isEmpty){
-        list.add(LegendItem(name, CircleSymbol()..itemStyle = const AreaStyle(color:Colors.blue), seriesId: id));
-      }else{
-        list.add(LegendItem(name, CircleSymbol()..itemStyle = AreaStyle(color:item.data.first.borderStyle.pickColor()), seriesId: id));
+      if (item.data.isEmpty) {
+        list.add(LegendItem(name, CircleSymbol()..itemStyle = const AreaStyle(color: Colors.blue), seriesId: id));
+      } else {
+        list.add(LegendItem(name, CircleSymbol()..itemStyle = AreaStyle(color: item.data.first.borderStyle.pickColor()),
+            seriesId: id));
       }
     });
     return list;

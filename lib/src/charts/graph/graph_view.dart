@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class GraphView extends SeriesView<GraphSeries, GraphHelper> {
-  GraphView(super.series);
+  GraphView(super.context, super.series);
 
   @override
   void onDraw(CCanvas canvas) {

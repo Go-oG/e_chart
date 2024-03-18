@@ -2,14 +2,15 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/utils/lerp.dart';
 
 ///正六边形布局
 /// https://www.redblobgames.com/grids/hexagons/implementation.html#rounding
 class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
   static const double _sqrt3 = 1.7320508; //sqrt(3)
-  static const _Orientation _pointy = _Orientation(_sqrt3, _sqrt3 / 2.0, 0.0, 3.0 / 2.0, _sqrt3 / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0, 90);
-  static const _Orientation _flat = _Orientation(3.0 / 2.0, 0.0, _sqrt3 / 2.0, _sqrt3, 2.0 / 3.0, 0.0, -1.0 / 3.0, _sqrt3 / 3.0, 0);
+  static const _Orientation _pointy =
+      _Orientation(_sqrt3, _sqrt3 / 2.0, 0.0, 3.0 / 2.0, _sqrt3 / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0, 90);
+  static const _Orientation _flat =
+      _Orientation(3.0 / 2.0, 0.0, _sqrt3 / 2.0, _sqrt3, 2.0 / 3.0, 0.0, -1.0 / 3.0, _sqrt3 / 3.0, 0);
 
   ///Hex(0,0,0)的位置
   Offset _zeroCenter = Offset.zero;
@@ -173,7 +174,6 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
     return showNodeList.length;
   }
 
-  @override
   Offset getTranslation() {
     return view.translation;
   }

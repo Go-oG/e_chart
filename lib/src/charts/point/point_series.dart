@@ -28,8 +28,8 @@ class PointSeries extends ChartListSeries<PointData> {
   }) : super(radarIndex: -1, parallelIndex: -1);
 
   @override
-  ChartView? toView() {
-    return PointView(this);
+  ChartView? toView(Context context) {
+    return PointView(context, this);
   }
 
   ChartSymbol getSymbol(Context context, PointData data) {
@@ -46,7 +46,6 @@ class PointSeries extends ChartListSeries<PointData> {
 
   @override
   List<LegendItem> getLegendItem(Context context) => [];
-
 
   @override
   SeriesType get seriesType => SeriesType.point;

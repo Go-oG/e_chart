@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:e_chart/src/core/view/models.dart';
+import 'package:e_chart/src/core/model/models.dart';
 
 import 'view.dart';
 
@@ -29,6 +29,5 @@ abstract class ViewParent {
 
   void childHasTransientStateChanged(ChartView child, bool hasTransientState);
 
-  void childVisibilityChange(ChartView child,Visibility old);
-
+  void childVisibilityChange(ChartView child, Visibility old);
 }

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/line/helper/grid_helper.dart';
 import 'package:e_chart/src/charts/line/helper/polar_helper.dart';
+import 'package:e_chart/src/core/model/models.dart';
 
 import 'helper/line_helper.dart';
 import 'line_node.dart';
@@ -11,12 +12,12 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     with GridChild, PolarChild {
   late LineHelper helper;
 
-  LineView(super.series);
+  LineView(super.context, super.series);
 
   @override
-  Size onMeasure(double parentWidth, double parentHeight) {
-    layoutHelper.doMeasure(parentWidth, parentHeight);
-    return super.onMeasure(parentWidth, parentHeight);
+  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    layoutHelper.doMeasure(widthSpec.size, heightSpec.size);
+    return super.onMeasure(widthSpec, heightSpec);
   }
 
   @override
@@ -164,5 +165,4 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     });
     return series.data.length;
   }
-
 }
