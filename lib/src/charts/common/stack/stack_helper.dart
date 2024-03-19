@@ -20,10 +20,10 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
   }
 
   @override
-  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
+  void doLayout(bool changed, LayoutType type) {
     subscribeBrushEvent();
     subscribeLegendEvent();
-    super.doLayout(boxBound, globalBoxBound, type);
+    super.doLayout(changed, type);
   }
 
   @override

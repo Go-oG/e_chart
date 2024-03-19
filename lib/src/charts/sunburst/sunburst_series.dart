@@ -69,17 +69,14 @@ class SunburstSeries extends HierarchySeries<Arc, SunburstData> {
     this.labelMarginFun,
     super.labelStyleFun,
     super.itemStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.tooltip,
     super.animation,
     super.backgroundColor,
     super.id,
     super.clip,
+    super.name,
+    super.useSingleLayer,
   }) : super(gridIndex: -1, polarIndex: -1, parallelIndex: -1, calendarIndex: -1, radarIndex: -1);
 
   @override

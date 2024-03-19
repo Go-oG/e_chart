@@ -1,3 +1,5 @@
+import 'package:e_chart/e_chart.dart';
+
 import '../../coord/index.dart';
 
 class CoordFactory {
@@ -23,9 +25,9 @@ class CoordFactory {
     _convertList.clear();
   }
 
-  CoordLayout? convert(Coord c) {
+  CoordLayout? convert(Context context, Coord c) {
     for (var sc in _convertList) {
-      CoordLayout? v = sc.convert(c);
+      CoordLayout? v = sc.convert(context, c);
       if (v != null) {
         return v;
       }
@@ -35,5 +37,5 @@ class CoordFactory {
 }
 
 abstract class CoordConvert {
-  CoordLayout? convert(Coord config);
+  CoordLayout? convert(Context context, Coord config);
 }

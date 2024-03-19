@@ -24,6 +24,7 @@ abstract class ChartListSeries<T extends RenderData> extends ChartSeries {
     this.labelStyleFun,
     this.labelFormatFun,
     this.labelLineStyleFun,
+    super.layoutParams,
     super.coordType,
     super.gridIndex,
     super.calendarIndex,
@@ -60,7 +61,7 @@ abstract class ChartListSeries<T extends RenderData> extends ChartSeries {
     if (fun != null) {
       return fun.call(data);
     }
-    var ls=labelStyle;
+    var ls = labelStyle;
     if (ls != null) {
       return ls;
     }

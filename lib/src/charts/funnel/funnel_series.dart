@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/funnel/funnel_view.dart';
 import 'package:flutter/material.dart';
 
-class FunnelSeries extends RectSeries2<FunnelData> {
+class FunnelSeries extends ChartListSeries<FunnelData> {
   double? maxValue;
   SNumber? itemHeight;
   Direction direction;
@@ -25,12 +25,6 @@ class FunnelSeries extends RectSeries2<FunnelData> {
     super.labelLineStyleFun,
     super.itemStyleFun,
     super.borderStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
     super.animation,
     super.backgroundColor,
     super.id,

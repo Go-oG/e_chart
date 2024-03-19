@@ -1,6 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/cupertino.dart';
-
 import 'point_helper.dart';
 
 class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild, CalendarChild, GridChild {
@@ -9,13 +7,9 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
   @override
   void onDraw(CCanvas canvas) {
     var list = layoutHelper.showNodeList;
-    Offset tr = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(tr.dx, tr.dy);
     each(list, (p0, p1) {
       p0.onDraw(canvas, mPaint);
     });
-    canvas.restore();
   }
 
   @override
@@ -69,7 +63,4 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
     }
     return PointHelper(context, this, series);
   }
-
-  @override
-  bool get useSingleLayer => false;
 }

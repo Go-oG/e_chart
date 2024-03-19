@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 ///平行坐标系
 class ParallelCoordImpl extends ParallelCoord {
   final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
-  ParallelCoordImpl(super.context,super.props);
+
+  ParallelCoordImpl(super.context, super.props);
 
   void initAxis() {
     axisMap.clear();
@@ -13,7 +14,7 @@ class ParallelCoordImpl extends ParallelCoord {
     var direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
-      axisMap[ele] = ParallelAxisImpl(context, ele, direction,axisIndex: i);
+      axisMap[ele] = ParallelAxisImpl(context, ele, direction, axisIndex: i);
     }
   }
 
@@ -87,11 +88,11 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   @override
-  void onLayout(bool changed,double left, double top, double right, double bottom) {
-    final double leftOffset = padding.left;
-    final double topOffset = padding.top;
-    final double rightOffset = padding.right;
-    final double bottomOffset = padding.bottom;
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
+    final double leftOffset = layoutParams.leftPadding;
+    final double topOffset = layoutParams.topPadding;
+    final double rightOffset = layoutParams.rightPadding;
+    final double bottomOffset = layoutParams.bottomPadding;
 
     double w = width - leftOffset - rightOffset;
     double h = height - topOffset - bottomOffset;
@@ -220,7 +221,7 @@ class ParallelCoordImpl extends ParallelCoord {
 }
 
 abstract class ParallelCoord extends CoordLayout<Parallel> {
-  ParallelCoord(super.context,super.props);
+  ParallelCoord(super.context, super.props);
 
   ParallelPosition dataToPosition(int dimIndex, dynamic data);
 

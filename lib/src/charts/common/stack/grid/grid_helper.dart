@@ -5,7 +5,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 
 ///适用于GridCoord坐标系的布局帮助者
-class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S extends StackSeries<T, P>>
+class GridHelper<T extends StackItemData, P extends StackGroupData<T, P>, S extends StackSeries<T, P>>
     extends StackHelper<T, P, S> {
   ///根据给定的页码编号，返回对应的数据
   GridHelper(super.context, super.view, super.series);
@@ -17,10 +17,10 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S exten
   }
 
   @override
-  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
+  void doLayout(bool changed, LayoutType type) {
     subscribeAxisScrollEvent();
     subscribeAxisChangeEvent();
-    super.doLayout(boxBound, globalBoxBound, type);
+    super.doLayout(changed, type);
   }
 
   @override
@@ -36,7 +36,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S exten
     double l, r, t, b;
     if (vertical) {
       t = 0;
-      b = height;
+      b = view.height;
       l = xList.first.dx;
       r = xList.last.dx;
       if (xList.length == 1) {
@@ -51,7 +51,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S exten
       groupNode.rect = Rect.fromLTRB(l, t, r, b);
     } else {
       l = 0;
-      r = width;
+      r = view.width;
       t = yList.first.dy;
       b = yList.last.dy;
       if (b < t) {
@@ -171,6 +171,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S exten
     if (event.coordViewId != findGridCoord().id) {
       return;
     }
+
     ///坐标轴发生更新 只需要更新当前显示数据的坐标
     ///TODO 坐标轴发生更新 只需要更新当前显示数据的坐标 待完成
   }
@@ -213,7 +214,7 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T,P>, S exten
       Rect rr;
       if (series.animatorStyle == GridAnimatorStyle.expand) {
         rr = series.isVertical
-            ? Rect.fromLTWH(rect.left, height, rect.width, 0)
+            ? Rect.fromLTWH(rect.left, view.height, rect.width, 0)
             : Rect.fromLTWH(0, rect.top, 0, rect.height);
       } else {
         rr = series.isVertical

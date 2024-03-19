@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/layout/layout_result.dart';
+import 'package:e_chart/src/core/model/layout_result.dart';
 
 class GraphData extends RenderData2<GraphAttr, ChartSymbol> {
   GraphItemData data;
@@ -119,7 +119,6 @@ class GraphAttr extends LayoutResult {
 class EdgeData extends RenderData<EdgeAttr> {
   final EdgeItemData data;
 
-
   EdgeData(this.data, int dataIndex, {super.id});
 
   GraphData get source => data.source;
@@ -174,7 +173,7 @@ class EdgeData extends RenderData<EdgeAttr> {
   set index(int i) => attr.index = i;
 
   @override
-  EdgeAttr initAttr() =>EdgeAttr();
+  EdgeAttr initAttr() => EdgeAttr();
 }
 
 class EdgeAttr extends LayoutResult {

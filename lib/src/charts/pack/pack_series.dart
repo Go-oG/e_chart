@@ -24,17 +24,14 @@ class PackSeries extends HierarchySeries<Rect, PackData> {
     super.borderStyleFun,
     super.itemStyleFun,
     super.labelStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.animation = _defaultAnimation,
     super.backgroundColor,
     super.id,
     super.tooltip,
     super.clip,
+    super.name,
+    super.useSingleLayer,
   }) : super(parallelIndex: -1, polarIndex: -1, calendarIndex: -1, gridIndex: -1, radarIndex: -1);
 
   @override

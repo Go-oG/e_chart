@@ -1,5 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/layout/layout_result.dart';
+import 'package:e_chart/src/core/model/layout_result.dart';
 import 'package:flutter/material.dart';
 
 class ParallelData extends RenderGroupData<ParallelChildData> {
@@ -12,7 +12,7 @@ class ParallelData extends RenderGroupData<ParallelChildData> {
   });
 }
 
-class ParallelChildData extends RenderChildData<dynamic,ParallelData,Offset> {
+class ParallelChildData extends RenderChildData<dynamic, ParallelData, Offset> {
   ParallelChildData(super.data, {super.id, super.name});
 
   @override
@@ -70,6 +70,5 @@ class ParallelChildData extends RenderChildData<dynamic,ParallelData,Offset> {
   set path(Path? p) => extSet("path", p);
 
   @override
-  Offset initAttr()=>Offset.zero;
-
+  Offset initAttr() => Offset.zero;
 }

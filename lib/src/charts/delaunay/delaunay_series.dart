@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 import 'delaunay_view.dart';
 
-class DelaunaySeries extends RectSeries {
+class DelaunaySeries extends ChartSeries {
   List<ChartOffset> data;
   bool triangle;
   Fun2<DelaunayData, AreaStyle?>? areaStyleFun;
@@ -13,6 +13,14 @@ class DelaunaySeries extends RectSeries {
     this.triangle = true,
     this.areaStyleFun,
     this.borderFun,
+    super.animation,
+    super.backgroundColor,
+    super.clip,
+    super.layoutParams,
+    super.id,
+    super.name,
+    super.useSingleLayer,
+    super.tooltip,
   });
 
   @override
@@ -27,7 +35,7 @@ class DelaunaySeries extends RectSeries {
 
   @override
   ChartView? toView(Context context) {
-    return DelaunayView(context,this);
+    return DelaunayView(context, this);
   }
 
   @override

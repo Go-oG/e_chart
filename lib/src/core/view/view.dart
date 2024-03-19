@@ -1,214 +1,151 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/view/overlay.dart';
+import 'package:e_chart/src/core/view/view_frame.dart';
 import 'package:e_chart/src/core/view/view_parent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-
-import '../../model/chart_edgeinset.dart';
 import 'attach_info.dart';
-import '../model/models.dart';
 
-abstract class ChartView {
+abstract class ChartView with ViewFrame {
   final String id = randomId();
+  Context context;
 
   late AttachInfo attachInfo;
-
-  late Context context;
 
   ChartView(this.context);
 
   @protected
   ViewParent? mParent;
-
   ViewParent? get parent => mParent;
 
   @protected
   set parent(ViewParent? p) => mParent = p;
 
   @protected
+  ViewOverLay? mOverlay;
+
+  @protected
   late Paint mPaint = Paint();
 
   ///存储当前节点的布局属性
-  LayoutParams layoutParams = const LayoutParams.wrapAll();
-
-  final ChartEdgeInset margin = ChartEdgeInset();
-
-  final ChartEdgeInset padding = ChartEdgeInset();
-
-  Offset toLocal(Offset global) {
-    return Offset(global.dx - globalBound.left, global.dy - globalBound.top);
-  }
-
-  Offset toGlobal(Offset local) {
-    return Offset(local.dx + globalBound.left, local.dy + globalBound.top);
-  }
-
-  double get left => boxBound.left;
-
-  double get top => boxBound.top;
-
-  double get right => boxBound.right;
-
-  double get bottom => boxBound.bottom;
-
-  double scrollX = 0;
-
-  double scrollY = 0;
-
-  double translationX = 0;
-
-  double translationY = 0;
-
-  double scaleX = 1;
-
-  double scaleY = 1;
-
-  set scale(double scale) {
-    scaleX = scaleY = scale;
-  }
+  LayoutParams layoutParams = LayoutParams.wrapAll();
 
   double alpha = 1;
 
-  double get centerX => width / 2.0;
-
-  double get centerY => height / 2.0;
-
-  ///存储当前视图在父视图中的位置属性
-  Rect boxBound = Rect.zero;
-
-  ///记录其全局位置
-  Rect globalBound = Rect.zero;
-
-  double get width {
-    return boxBound.width;
-  }
-
-  double get height {
-    return boxBound.height;
-  }
-
-  double measureWidth = 0;
-
-  double measureHeight = 0;
-
   bool get needNewLayer => false;
-
-  Visibility _visibility = Visibility.visible;
-
-  set visibility(Visibility vb) {
-    if (_visibility == vb) {
-      return;
-    }
-    var old = _visibility;
-    _visibility = vb;
-    parent?.childVisibilityChange(this, old);
-  }
-
-  Visibility get visibility {
-    return _visibility;
-  }
-
-  bool get isVisibility {
-    return _visibility == Visibility.visible;
-  }
 
   bool _dirty = true;
 
   bool _forceLayout = true;
 
-  bool get forceLayout => _forceLayout;
+  bool get isForceLayout => _forceLayout;
 
-  @protected
-  set forceLayout(bool f) => _forceLayout = f;
+  void forceLayout() {
+    _forceLayout = true;
+  }
 
-  Rect getGlobalBounds() {
-    var par = parent;
-    if (par is! ChartViewGroup) {
-      return boxBound;
+  @override
+  bool setVisibility(Visibility vb) {
+    var old = visibility;
+    bool res = super.setVisibility(vb);
+    if (res) {
+      parent?.childVisibilityChange(this, old);
     }
-    var boundRect = boxBound;
-    Rect parentRect = par.globalBound;
-    double l = parentRect.left + boundRect.left;
-    double t = parentRect.top + boundRect.top;
-    return Rect.fromLTWH(l, t, boundRect.width, boundRect.height);
+    return res;
   }
 
   @nonVirtual
   void measure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
-    margin.reset();
-    padding.reset();
-    var size = onMeasure(widthSpec, heightSpec);
-
-    measureWidth = size.width;
-    measureHeight = size.height;
+    onMeasure(widthSpec, heightSpec);
   }
 
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     LayoutParams lp = layoutParams;
-    double w = lp.width.convert(widthSpec.size);
-    double h = lp.height.convert(heightSpec.size);
-    if (lp.width.isWrap) {
-      padding.left = lp.getLeftPadding(widthSpec.size);
-      padding.right = lp.getRightPadding(widthSpec.size);
-      w = padding.horizontal;
-    } else {
-      padding.left = lp.getLeftPadding(w);
-      padding.right = lp.getRightPadding(w);
+    double w = _measureSelfWithParent(widthSpec, lp.hPadding, lp.width);
+    double h = _measureSelfWithParent(heightSpec, lp.vPadding, lp.height);
+    setMeasuredDimension(w, h);
+  }
+
+  double _measureSelfWithParent(MeasureSpec parentSpec, double padding, SizeParams selfParams) {
+    if (selfParams.isExactly) {
+      return selfParams.size.number.toDouble();
     }
-    if (lp.height.isWrap) {
-      padding.top = lp.getTopPadding(heightSpec.size);
-      padding.bottom = lp.getBottomPadding(heightSpec.size);
-      h = padding.vertical;
-    } else {
-      padding.top = lp.getTopPadding(h);
-      padding.bottom = lp.getBottomPadding(h);
+    if (selfParams.isWrap) {
+      return padding;
     }
-    margin.top = lp.getTopMargin(heightSpec.size);
-    margin.left = lp.getLeftMargin(widthSpec.size);
-    margin.right = lp.getRightMargin(widthSpec.size);
-    margin.bottom = lp.getBottomMargin(heightSpec.size);
-    return Size(w, h);
+    //match parent
+    var mode = parentSpec.mode;
+    if (mode == SpecMode.exactly) {
+      return parentSpec.size;
+    }
+    return padding;
+  }
+
+  double measureSelfSize(MeasureSpec parentSpec, SizeParams selfParams, double pendingSize) {
+    if (selfParams.isExactly) {
+      return selfParams.size.number.toDouble();
+    }
+    if (selfParams.isWrap) {
+      return pendingSize;
+    }
+
+    //match parent
+    var mode = parentSpec.mode;
+    if (mode == SpecMode.atMost) {
+      return pendingSize;
+    }
+    if (mode == SpecMode.exactly) {
+      return parentSpec.size;
+    }
+
+    return pendingSize;
   }
 
   void layout(double l, double t, double r, double b) {
-    var oldR = boxBound;
-
+    var oldL = left;
+    var oldT = top;
+    var oldR = right;
+    var oldB = bottom;
     bool changed = setFrame(l, t, r, b);
     if (changed) {
       onLayout(changed, l, t, r, b);
-      onLayoutChange(l, t, r, b, oldR.left, oldR.top, oldR.right, oldR.bottom);
+      onLayoutChange(l, t, r, b, oldL, oldT, oldR, oldB);
     }
   }
 
   @protected
   bool setFrame(double left, double top, double right, double bottom) {
     bool changed = false;
-
-    if (boxBound.left != left || boxBound.right != right || boxBound.top != top || boxBound.bottom != bottom) {
+    if (diff(left, top, right, bottom)) {
       changed = true;
       double oldWidth = width;
       double oldHeight = height;
       double newWidth = right - left;
       double newHeight = bottom - top;
-      bool sizeChanged = (newWidth != oldWidth) || (newHeight != oldHeight);
-
+      bool sizeChanged = diffSize(left, top, right, bottom);
       requestDrawInner(sizeChanged);
-      boxBound = Rect.fromLTRB(left, top, right, bottom);
+
+      this.left = left;
+      this.top = top;
+      this.right = right;
+      this.bottom = bottom;
+
       var parent = this.parent;
       if (parent is ChartViewGroup) {
-        globalBound = boxBound.translate(parent.globalBound.left, parent.globalBound.top);
+        globalTop = parent.globalTop + top;
+        globalLeft = parent.globalLeft + left;
       } else {
-        globalBound = boxBound;
+        globalTop = top;
+        globalLeft = left;
       }
       if (sizeChanged) {
         _sizeChange(newWidth, newHeight, oldWidth, oldHeight);
       }
-
-      if (_visibility.isShow) {
+      if (visibility.isShow) {
         requestDrawInner(sizeChanged);
         parent?.redrawParentCaches();
       }
     }
-
     return changed;
   }
 
@@ -224,7 +161,7 @@ abstract class ChartView {
   void onSizeChange(double newWidth, double newHeight, double oldWidth, double oldHeight) {}
 
   void draw(CCanvas canvas) {
-    if (_visibility != Visibility.visible) {
+    if (visibility.isHide) {
       return;
     }
     _drawBackground(canvas);
@@ -257,7 +194,9 @@ abstract class ChartView {
   void dispatchDraw(CCanvas canvas) {}
 
   @protected
-  void drawOverlay(CCanvas canvas) {}
+  void drawOverlay(CCanvas canvas) {
+    mOverlay?.getOverlayView().dispatchDraw(canvas);
+  }
 
   @protected
   void onDrawForeground(CCanvas canvas) {}
@@ -447,6 +386,8 @@ abstract class ChartView {
   bool operator ==(Object other) {
     return other is ChartView && other.id == id;
   }
+
+  bool get useZeroWhenMeasureSpecModeIsUnLimit => false;
 
   ///=========Debug 绘制相关方法===============
   void debugDraw(CCanvas canvas, Offset offset, {Color color = const Color(0xFF673AB7), bool fill = true, num r = 6}) {

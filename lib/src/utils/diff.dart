@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/layout/layout_result.dart';
+import 'package:e_chart/src/core/model/layout_result.dart';
 
 ///Diff 比较工具类
 ///用于在布局中实现动画

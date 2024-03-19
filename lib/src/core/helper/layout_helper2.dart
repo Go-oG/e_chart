@@ -14,11 +14,11 @@ abstract class LayoutHelper2<D extends RenderData, S extends ChartSeries> extend
 
   ///初始化数据索引和样式
   ///包含样式索引和数据索引
-  void initDataIndexAndStyle(List<D> dataList,[bool updateStyle=true]) {
+  void initDataIndexAndStyle(List<D> dataList, [bool updateStyle = true]) {
     each(dataList, (data, p1) {
       data.dataIndex = p1;
       data.styleIndex = p1;
-      if(updateStyle){
+      if (updateStyle) {
         data.updateStyle(context, series);
       }
     });
@@ -63,7 +63,7 @@ abstract class LayoutHelper2<D extends RenderData, S extends ChartSeries> extend
 
   void onHandleHoverAndClick(Offset offset, bool click) {
     var oldOffset = offset;
-    offset = offset.translate(-translationX, -translationY);
+    offset = offset.translate(view.scrollX, view.scrollY);
     var clickData = findData(offset);
     if (oldHoverData == clickData) {
       if (clickData != null && !clickData.isDispose) {

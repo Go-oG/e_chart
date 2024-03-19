@@ -51,8 +51,9 @@ class CircleHelper extends LayoutHelper2<CircleData, CircleSeries> {
   }
 
   void layoutData(List<CircleData> dataList, LayoutType type) {
-    center = Offset(series.center.first.convert(width), series.center.last.convert(height));
-    num size = min([width, height]);
+    center = viewOffset(series.center.first, series.center.last);
+    num size = view.shortSide;
+
     ir = series.innerRadius.convert(size);
     maxRadius = size * 0.5;
     if (dataList.isEmpty) {

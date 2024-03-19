@@ -1,7 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-
 class ThemeRiverHelper extends LayoutHelper2<ThemeRiverData, ThemeRiverSeries> {
   num maxTransX = 0, maxTransY = 0;
   double animatorPercent = 1;
@@ -55,12 +54,12 @@ class ThemeRiverHelper extends LayoutHelper2<ThemeRiverData, ThemeRiverSeries> {
     List<double> baseLine = base['y0'];
     Direction direction = series.direction;
 
-    double tw = (direction == Direction.horizontal ? height : width) * 0.95;
+    double tw = (direction == Direction.horizontal ? view.height : view.width) * 0.95;
     double ky = tw / base['max'];
 
     int n = innerNodeList.length;
     int m = innerNodeList[0].length;
-    tw = direction == Direction.horizontal ? width : height;
+    tw = direction == Direction.horizontal ? view.width : view.height;
     double iw = m <= 1 ? 0 : tw / (m - 1);
     if (m > 1 && series.minInterval != null) {
       double minw = series.minInterval!.convert(tw);

@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///具有层次结构的图表(比如树图、旭日图)
-abstract class HierarchySeries<T,N extends ChartTree<T,N>> extends RectSeries {
+abstract class HierarchySeries<T, N extends ChartTree<T, N>> extends ChartSeries {
   N data;
 
   ///填充区域的样式
@@ -16,12 +16,7 @@ abstract class HierarchySeries<T,N extends ChartTree<T,N>> extends RectSeries {
     this.labelStyleFun,
     this.itemStyleFun,
     this.borderStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.tooltip,
     super.animation,
     super.backgroundColor,
@@ -33,6 +28,8 @@ abstract class HierarchySeries<T,N extends ChartTree<T,N>> extends RectSeries {
     super.parallelIndex,
     super.polarIndex,
     super.radarIndex,
+    super.name,
+    super.useSingleLayer,
   });
 
   AreaStyle getAreaStyle(Context context, N data) {
@@ -43,7 +40,7 @@ abstract class HierarchySeries<T,N extends ChartTree<T,N>> extends RectSeries {
     return context.option.theme.getAreaStyle(data.styleIndex).convert(data.status);
   }
 
-  LineStyle getBorderStyle(Context context,N data) {
+  LineStyle getBorderStyle(Context context, N data) {
     var fun = borderStyleFun;
     if (fun != null) {
       return fun.call(data);
@@ -51,7 +48,7 @@ abstract class HierarchySeries<T,N extends ChartTree<T,N>> extends RectSeries {
     return LineStyle.empty;
   }
 
-  LabelStyle getLabelStyle(Context context,N data) {
+  LabelStyle getLabelStyle(Context context, N data) {
     var fun = labelStyleFun;
     if (fun != null) {
       return fun.call(data);

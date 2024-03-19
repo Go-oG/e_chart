@@ -8,11 +8,7 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
 
   @override
   void onDraw(CCanvas canvas) {
-    var tx = layoutHelper.translationX;
-    var ty = layoutHelper.translationY;
-    var sRect = Rect.fromLTWH(tx.abs(), ty.abs(), width, height);
-    canvas.save();
-    canvas.translate(tx, ty);
+    var sRect = selfViewPort;
     each(layoutHelper.dataSet, (node, index) {
       Rect rect = node.attr;
       if (!rect.overlaps(sRect)) {
@@ -20,7 +16,6 @@ class HeatMapView extends SeriesView<HeatMapSeries, HeatMapHelper> with GridChil
       }
       node.onDraw(canvas, mPaint);
     });
-    canvas.restore();
   }
 
   @override

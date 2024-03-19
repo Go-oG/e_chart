@@ -3,7 +3,8 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 /// 适用于 节点-边的布局帮助者
-abstract class LayoutHelper3<D extends RenderData, L extends RenderData, S extends ChartSeries> extends LayoutHelper<S> {
+abstract class LayoutHelper3<D extends RenderData, L extends RenderData, S extends ChartSeries>
+    extends LayoutHelper<S> {
   List<D> dataSet = [];
   List<L> linkSet = [];
 
@@ -41,7 +42,7 @@ abstract class LayoutHelper3<D extends RenderData, L extends RenderData, S exten
   L? oldHoverLink;
 
   void handleHoverAndClick(Offset local, bool click) {
-    var offset = local.translate(-translationX, -translationY);
+    var offset = local.translate(view.scrollX, view.scrollY);
     dynamic clickData = findDataOrLink(offset);
     if (clickData == null) {
       handleCancel();

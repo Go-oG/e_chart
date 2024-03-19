@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/material.dart';
 
 class ToolTipItemView extends GestureView {
@@ -20,10 +19,6 @@ class ToolTipItemView extends GestureView {
   Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     double parentWidth = widthSpec.size;
     double parentHeight = heightSpec.size;
-    padding.left = layoutParams.leftPadding.convert(parentWidth);
-    padding.top = layoutParams.topPadding.convert(parentHeight);
-    padding.right = layoutParams.rightPadding.convert(parentWidth);
-    padding.bottom = layoutParams.bottomPadding.convert(parentHeight);
 
     Size symbolSize = item.symbol?.size ?? Size.zero;
     num w = symbolSize.width;
@@ -47,16 +42,16 @@ class ToolTipItemView extends GestureView {
       w += 16;
     }
 
-    w += padding.horizontal;
-    h += padding.vertical;
+    w += layoutParams.hPadding;
+    h += layoutParams.vPadding;
     return Size(w.toDouble(), h.toDouble());
   }
 
   @override
   void onLayout(bool changed, double left, double top, double right, double bottom) {
     super.onLayout(changed, left, top, right, bottom);
-    double c = padding.top + height / 2;
-    double lf = padding.left;
+    double c = layoutParams.topPadding + height / 2;
+    double lf = layoutParams.leftPadding;
     if (item.symbol != null) {
       Size s = item.symbol!.size;
       lf += s.width + 8;
@@ -67,10 +62,10 @@ class ToolTipItemView extends GestureView {
 
   @override
   void onDraw(CCanvas canvas) {
-    double c = padding.top + height / 2;
+    double c = layoutParams.topPadding + height / 2;
     if (item.symbol != null) {
       Size s = item.symbol!.size;
-      item.symbol?.draw(canvas, mPaint, Offset(padding.left + s.width / 2, c));
+      item.symbol?.draw(canvas, mPaint, Offset(layoutParams.leftPadding + s.width / 2, c));
     }
     _label.draw(canvas, mPaint);
     _subLabel?.draw(canvas, mPaint);

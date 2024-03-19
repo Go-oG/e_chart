@@ -36,7 +36,7 @@ class ChordHelper extends LayoutHelper3<ChordData, ChordLink, ChordSeries> {
     }
     num remainAngle = allAngle - allPadAngle;
     num k = remainAngle / sumBy<ChordData>(dataList, (p0) => p0.value);
-    num minRadius = min([width, height]) / 2;
+    num minRadius = view.shortSide / 2;
     radius = series.radius.convert(minRadius);
     radiusWidth = series.chordWidth.convert(minRadius);
     chordGap = series.chordGap.convert(minRadius);
@@ -111,8 +111,8 @@ class ChordHelper extends LayoutHelper3<ChordData, ChordLink, ChordSeries> {
   }
 
   Offset computeCenter() {
-    var x = series.center.first.convert(width);
-    var y = series.center.last.convert(height);
+    var x = series.center.first.convert(view.width);
+    var y = series.center.last.convert(view.height);
     return Offset(x, y);
   }
 

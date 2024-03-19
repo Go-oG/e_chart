@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/graph/graph_view.dart';
 
-class GraphSeries extends RectSeries {
+class GraphSeries extends ChartSeries {
   List<GraphData> nodes;
   List<EdgeData> edges;
   GraphLayout layout;
@@ -24,22 +24,15 @@ class GraphSeries extends RectSeries {
     this.sizeFun,
     this.symbolFun,
     this.lineFun,
+    super.layoutParams,
     super.animation,
     super.backgroundColor,
-    super.bottomMargin,
     super.calendarIndex,
     super.clip,
-    super.height,
     super.id,
-    super.leftMargin,
-    super.gridIndex,
-    super.parallelIndex,
-    super.polarIndex,
-    super.radarIndex,
-    super.rightMargin,
     super.tooltip,
-    super.topMargin,
-    super.width,
+    super.name,
+    super.useSingleLayer,
   });
 
   @override

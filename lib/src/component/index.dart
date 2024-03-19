@@ -42,8 +42,9 @@ export 'brush/brush.dart';
 export 'brush/brush_area.dart';
 export 'brush/brush_view.dart';
 
-export 'group/flex_layout_group.dart';
-export 'group/linear_layout_group.dart';
+export 'group/flex_layout.dart';
+export 'group/frame_layout.dart';
+export 'group/linear_layout.dart';
 
 export 'guideline/guide_line.dart';
 

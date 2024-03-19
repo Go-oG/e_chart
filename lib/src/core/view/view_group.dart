@@ -1,11 +1,6 @@
-import 'dart:math' as m;
+import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/core/view/attach_info.dart';
-import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/rendering.dart';
-
-import '../../event/index.dart';
-import '../../utils/log_util.dart';
-import '../index.dart';
 import 'view_parent.dart';
 
 /// ViewGroup
@@ -55,10 +50,10 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   }
 
   @override
-  set forceLayout(bool f) {
-    super.forceLayout = f;
+  void forceLayout() {
+    super.forceLayout();
     for (var c in children) {
-      c.forceLayout = f;
+      c.forceLayout();
     }
   }
 
@@ -68,98 +63,152 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   }
 
   ///=========布局测量相关============
+  ///(模拟FrameLayout)
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
-    var parentWidth = widthSpec.size;
-    var parentHeight = heightSpec.size;
-    var oldW = parentWidth;
-    var oldH = parentHeight;
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    final bool measureMatchParentChildren = widthSpec.mode != SpecMode.exactly || heightSpec.mode != SpecMode.exactly;
 
-    if (layoutParams.width.isNormal) {
-      parentWidth = layoutParams.width.convert(parentWidth);
-    }
-    if (layoutParams.height.isNormal) {
-      parentHeight = layoutParams.height.convert(parentHeight);
-    }
+    List<ChartView> matchParentChildren = [];
 
     double maxHeight = 0;
+
     double maxWidth = 0;
-    padding.left = layoutParams.getLeftPadding(parentWidth);
-    padding.right = layoutParams.getRightPadding(parentWidth);
-    padding.top = layoutParams.getTopPadding(parentHeight);
-    padding.bottom = layoutParams.getBottomPadding(parentHeight);
-    var pw = parentWidth - padding.horizontal;
-    var ph = parentHeight - padding.vertical;
 
-    ///第一次测量
-    var ws = MeasureSpec(layoutParams.width.toSpecMode(), pw);
-    var hs = MeasureSpec(layoutParams.height.toSpecMode(), pw);
-    for (var child in children) {
-      child.measure(ws, hs);
-      var childLP = child.layoutParams;
-      child.margin.left = childLP.getLeftMargin(pw);
-      child.margin.right = childLP.getRightMargin(pw);
-      child.margin.top = childLP.getTopMargin(ph);
-      child.margin.bottom = childLP.getBottomMargin(ph);
-      maxWidth = m.max(maxWidth, child.width + child.margin.horizontal);
-      maxHeight = m.max(maxHeight, child.height + child.margin.vertical);
-    }
-    maxWidth += padding.horizontal;
-    maxHeight += padding.vertical;
-
-    var oldMaxWidth = maxWidth;
-    var oldMaxHeight = maxHeight;
-
-    if (layoutParams.width.isNormal) {
-      maxWidth = layoutParams.width.convert(oldW);
-    } else if (layoutParams.width.isMatch) {
-      maxWidth = oldW;
-    }
-    if (layoutParams.height.isNormal) {
-      maxHeight = layoutParams.height.convert(oldH);
-    } else if (layoutParams.height.isMatch) {
-      maxHeight = oldH;
-    }
-    if (oldMaxHeight == maxHeight && oldMaxWidth == maxWidth) {
-      return Size(maxWidth, maxHeight);
-    }
-
-    padding.left = layoutParams.getLeftPadding(maxWidth);
-    padding.right = layoutParams.getRightPadding(maxWidth);
-    padding.top = layoutParams.getTopPadding(maxHeight);
-    padding.bottom = layoutParams.getBottomPadding(maxHeight);
-    pw = maxWidth - padding.horizontal;
-    ph = maxHeight - padding.vertical;
-    for (var child in children) {
-      var childLP = child.layoutParams;
-      child.margin.left = childLP.getLeftMargin(pw);
-      child.margin.right = childLP.getRightMargin(pw);
-      child.margin.top = childLP.getTopMargin(ph);
-      child.margin.bottom = childLP.getBottomMargin(ph);
-      double childWidth = pw;
-      if (childLP.width.isMatch) {
-        childWidth = m.max(0, pw - child.margin.horizontal);
+    for (var child in _children) {
+      if (child.visibility == Visibility.gone) {
+        continue;
       }
-      double childHeight = ph;
-      if (childLP.height.isMatch) {
-        childHeight = m.max(0, ph - child.margin.vertical);
+      measureChildWithMargins(child, widthSpec, 0, heightSpec, 0);
+      final lp = child.layoutParams;
+      maxWidth = max([maxWidth, child.width + lp.hMargin]);
+      maxHeight = max([maxHeight, child.height + lp.vMargin]);
+      if (measureMatchParentChildren) {
+        if (lp.width.isMatch || lp.height.isMatch) {
+          matchParentChildren.add(child);
+        }
       }
-      var wcs = MeasureSpec(layoutParams.width.toSpecMode(), childWidth);
-      var hcs = MeasureSpec(layoutParams.height.toSpecMode(), childHeight);
-      child.measure(wcs, hcs);
     }
-    return Size(maxWidth, maxHeight);
+
+    maxWidth += layoutParams.hPadding;
+    maxHeight += layoutParams.vPadding;
+
+    for (var child in matchParentChildren) {
+      final lp = child.layoutParams;
+      final MeasureSpec childWidthMeasureSpec;
+      if (lp.width.isMatch) {
+        final ww = max([0, width - lp.hPadding - lp.hMargin]);
+        childWidthMeasureSpec = MeasureSpec.exactly(ww.toDouble());
+      } else {
+        childWidthMeasureSpec = getChildMeasureSpec(widthSpec, lp.hPadding + lp.hMargin, lp.width);
+      }
+
+      final MeasureSpec childHeightMeasureSpec;
+      if (lp.height.isMatch) {
+        final hh = max([0, height - lp.vPadding - lp.vMargin]);
+        childHeightMeasureSpec = MeasureSpec.exactly(hh.toDouble());
+      } else {
+        childHeightMeasureSpec = getChildMeasureSpec(heightSpec, lp.vPadding + lp.vMargin, lp.height);
+      }
+      child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+    }
+
+    setMeasuredDimension(maxWidth, maxHeight);
+  }
+
+  void measureChildWithMargins(ChartView child, MeasureSpec parentWidthMeasureSpec, double widthUsed,
+      MeasureSpec parentHeightMeasureSpec, double heightUsed) {
+    final LayoutParams lp = child.layoutParams;
+    final childWidthMeasureSpec =
+        getChildMeasureSpec(parentWidthMeasureSpec, lp.hPadding + lp.hMargin + widthUsed, lp.width);
+    final childHeightMeasureSpec =
+        getChildMeasureSpec(parentHeightMeasureSpec, lp.vPadding + lp.vMargin + heightUsed, lp.height);
+    child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+  }
+
+  void measureChildNotMargins(ChartView child, MeasureSpec parentWidthMeasureSpec, double widthUsed,
+      MeasureSpec parentHeightMeasureSpec, double heightUsed) {
+    final LayoutParams lp = child.layoutParams;
+    final childWidthMeasureSpec = getChildMeasureSpec(parentWidthMeasureSpec, lp.hPadding + widthUsed, lp.width);
+    final childHeightMeasureSpec = getChildMeasureSpec(parentHeightMeasureSpec, lp.vPadding + heightUsed, lp.height);
+    child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+  }
+
+  ///依据父类的spec 和子类的测量模式以及padding生成 孩子的测量规则
+  MeasureSpec getChildMeasureSpec(MeasureSpec spec, double padding, SizeParams childDimension) {
+    final specMode = spec.mode;
+    double specSize = spec.size;
+    double canUseSize = max([0, specSize - padding]);
+
+    final childSize = childDimension.convert(canUseSize);
+    if (specMode == SpecMode.exactly) {
+      if (childDimension.isExactly) {
+        return MeasureSpec.exactly(childSize);
+      } else if (childDimension.isMatch) {
+        return MeasureSpec.exactly(canUseSize);
+      }
+      return MeasureSpec.atMost(canUseSize);
+    }
+    if (specMode == SpecMode.atMost) {
+      if (childDimension.isExactly) {
+        return MeasureSpec.exactly(childSize);
+      }
+      if (childDimension.isMatch) {
+        return MeasureSpec.atMost(canUseSize);
+      }
+      return MeasureSpec.atMost(canUseSize);
+    }
+    if (specMode == SpecMode.unLimit) {
+      if (childDimension.isExactly) {
+        return MeasureSpec.exactly(childSize);
+      }
+      if (childDimension.isMatch) {
+        return MeasureSpec.unLimit(useZeroWhenMeasureSpecModeIsUnLimit ? 0 : canUseSize);
+      }
+      if (childDimension.isWrap) {
+        return MeasureSpec.unLimit(useZeroWhenMeasureSpecModeIsUnLimit ? 0 : canUseSize);
+      }
+    }
+    throw ChartError("unknown status error");
   }
 
   @override
   void onLayout(bool changed, double left, double top, double right, double bottom) {
-    var parentLeft = padding.left;
-    var parentTop = padding.top;
-    for (var child in children) {
-      var margin = child.margin;
-      double childLeft = parentLeft + margin.left;
-      double childTop = parentTop + margin.top;
-      child.layout(childLeft, childTop, childLeft + child.width, childTop + child.height);
+    final parentLeft = layoutParams.leftPadding;
+    final parentRight = right - left - layoutParams.rightPadding;
+    final parentTop = layoutParams.topPadding;
+    final parentBottom = bottom - top - layoutParams.bottomPadding;
+
+    for (var child in _children) {
+      if (child.visibility == Visibility.gone) {
+        continue;
+      }
+      final lp = child.layoutParams;
+
+      final width = child.width;
+      final height = child.height;
+      double childLeft = 0;
+      double childTop = 0;
+
+      var gravity = lp.gravity;
+      if (gravity == Gravity.center) {
+        childLeft = parentLeft + (parentRight - parentLeft - width) / 2 + lp.leftMargin - lp.rightMargin;
+      } else if (gravity.x == 1) {
+        childLeft = parentRight - width - lp.rightMargin;
+      } else {
+        childLeft = parentLeft + lp.leftMargin;
+      }
+
+      if (gravity.y == -1) {
+        childTop = parentTop + lp.topMargin;
+      } else if (gravity.y == 0) {
+        childTop = parentTop + (parentBottom - parentTop - height) / 2 + lp.topMargin - lp.bottomMargin;
+      } else if (gravity.y == 1) {
+        childTop = parentBottom - height - lp.bottomMargin;
+      } else {
+        childTop = parentTop + lp.topMargin;
+      }
+
+      child.layout(childLeft, childTop, childLeft + width, childTop + height);
     }
   }
 
@@ -227,6 +276,18 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
       view.parent = null;
       requestLayout();
     }
+  }
+
+  void removeAllViews() {
+    if (children.isEmpty) {
+      return;
+    }
+    var old = _children;
+    _children = [];
+    for (var item in old) {
+      item.parent = null;
+    }
+    requestLayout();
   }
 
   ChartView childAt(int index) {

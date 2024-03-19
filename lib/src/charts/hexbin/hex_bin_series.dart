@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/hexbin/hex_bin_view.dart';
 
-class HexbinSeries extends RectSeries2<HexBinData> {
+class HexbinSeries extends ChartListSeries<HexBinData> {
   HexbinLayout layout = HexagonsLayout();
   List<SNumber> center;
 
@@ -28,12 +28,7 @@ class HexbinSeries extends RectSeries2<HexBinData> {
     super.labelStyle,
     super.itemStyleFun,
     super.labelStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.animation,
     super.clip,
     super.tooltip,

@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import '../../core/index.dart';
-import '../../core/view/state_resolver.dart';
+import '../../core/helper/state_resolver.dart';
 import 'shader.dart';
 
 class LineShader extends ChartShader {

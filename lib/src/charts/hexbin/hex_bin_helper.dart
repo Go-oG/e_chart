@@ -32,7 +32,6 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
 
   @override
   void onLayout(LayoutType type) {
-    translationX = translationY = 0;
     var oldNodeList = dataSet;
     var newList = [...series.data];
     initDataIndexAndStyle(newList);
@@ -89,7 +88,7 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
   void layoutData(List<HexBinData> dataList, LayoutType type) {
     flat = series.flat;
     radius = series.radius.toDouble();
-    var params = HexbinLayoutParams(series, width, height, radius.toDouble(), series.flat);
+    var params = HexbinLayoutParams(series, view.width, view.height, radius.toDouble(), series.flat);
     var hexLayout = series.layout;
     hexLayout.onLayout(dataList, type, params);
     flat = params.flat;
@@ -172,10 +171,6 @@ class HexBinHelper extends LayoutHelper2<HexBinData, HexbinSeries> {
   @override
   int getAnimatorCountLimit() {
     return showNodeList.length;
-  }
-
-  Offset getTranslation() {
-    return view.translation;
   }
 
   @override

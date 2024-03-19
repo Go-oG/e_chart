@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/pie/pie_view.dart';
 
 /// 饼图系列
-class PieSeries extends RectSeries2<PieData> {
+class PieSeries extends ChartListSeries<PieData> {
   List<SNumber> center;
 
   //内圆半径(<=0时为圆)
@@ -52,12 +52,7 @@ class PieSeries extends RectSeries2<PieData> {
     super.itemStyleFun,
     super.borderStyleFun,
     this.offsetFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.coordType,
     super.calendarIndex,
     super.tooltip,

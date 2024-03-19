@@ -73,7 +73,8 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       List<Offset> ol = [data.position];
       List<Offset> upList = [Offset(data.position.dx.floorToDouble(), data.position.dy)];
       List<Offset> downList = [
-        Offset(data.position.dx.floorToDouble(), index <= 0 ? height : data.parentNode.getAt(index - 1).position.dy)
+        Offset(
+            data.position.dx.floorToDouble(), index <= 0 ? view.height : data.parentNode.getAt(index - 1).position.dy)
       ];
 
       StackData<StackItemData, LineGroupData>? nextData;
@@ -92,7 +93,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         index = nextData.parentNode.indexOf(nextData);
 
         if (index <= 0) {
-          downList.add(Offset(nextData.position.dx.roundToDouble(), height));
+          downList.add(Offset(nextData.position.dx.roundToDouble(), view.height));
         } else {
           downList.add(Offset(nextData.position.dx.roundToDouble(), nextData.parentNode.getAt(index - 1).position.dy));
         }
@@ -101,8 +102,8 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
       Path? path;
       Path? areaPath;
       if (upList.length >= 2) {
-        var step=series.getLineType(context, data.parent);
-        path = data.borderStyle.buildPath(upList,lineType: step);
+        var step = series.getLineType(context, data.parent);
+        path = data.borderStyle.buildPath(upList, lineType: step);
       }
 
       if (downList.length >= 2 && upList.length >= 2) {
@@ -121,7 +122,7 @@ class LineGridHelper extends GridHelper<StackItemData, LineGroupData, LineSeries
         (!isStart && diffType == DiffType.add)) {
       return StackAnimatorNode(offset: node.position);
     }
-    return StackAnimatorNode(offset: Offset(node.position.dx, height));
+    return StackAnimatorNode(offset: Offset(node.position.dx, view.height));
   }
 
   @override

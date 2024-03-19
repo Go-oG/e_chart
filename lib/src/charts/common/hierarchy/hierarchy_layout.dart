@@ -11,17 +11,20 @@ abstract class HierarchyLayout<T, S extends ChartSeries> extends Disposable {
 
 class HierarchyOption<S extends ChartSeries> {
   final S series;
-  final double width;
-  final double height;
-
   final Rect boxBound;
   final Rect globalBoxBound;
 
   HierarchyOption(
     this.series,
-    this.width,
-    this.height,
     this.boxBound,
     this.globalBoxBound,
   );
+
+  double get width {
+    return boxBound.width;
+  }
+
+  double get height {
+    return boxBound.height;
+  }
 }

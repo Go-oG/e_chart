@@ -16,7 +16,7 @@ class BrushView extends GestureView {
   late final BrushUpdateEvent _updateEvent;
 
   BrushView(super.context, this._coord, this._brush) {
-    layoutParams = const LayoutParams.matchAll();
+    layoutParams = LayoutParams.matchAll();
     _endEvent = BrushEndEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
     _startEvent = BrushStartEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);
     _updateEvent = BrushUpdateEvent(coord.props.id, coord.id, coord.props.coordSystem, brush.id, []);

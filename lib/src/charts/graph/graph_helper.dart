@@ -15,7 +15,7 @@ class GraphHelper extends LayoutHelper3<GraphData, EdgeData, GraphSeries> {
     view.translationX = 0;
     view.translationY = 0;
     var newGraph = initData(series.nodes, series.edges);
-    var params = GraphLayoutParams(context, series, boxBound, globalBoxBound, width, height);
+    var params = GraphLayoutParams(context, series, view.boxBound, view.globalBound);
     _oldLayout?.clearListener();
     _oldLayout = series.layout;
     _oldLayout?.addListener(() {
@@ -29,17 +29,10 @@ class GraphHelper extends LayoutHelper3<GraphData, EdgeData, GraphSeries> {
     dataSet = graph.nodes;
   }
 
-  @override
-  Offset getTranslation() {
-    Offset c = _oldLayout?.getTranslation() ?? Offset.zero;
-    return c.translate(view.translationX, view.translationY);
-  }
-
   GraphData? _dragNode;
 
   @override
   void onDragStart(Offset offset) {
-    var old = offset;
     var center = _oldLayout?.getTranslation() ?? Offset.zero;
     offset = offset.translate(-center.dx, -center.dy).translate(view.translationX.abs(), view.translationY.abs());
     var node = findData(offset);

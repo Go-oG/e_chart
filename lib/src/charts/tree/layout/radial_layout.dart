@@ -83,7 +83,8 @@ class RadialTreeLayout extends TreeLayout {
     if (splitFun != null) {
       layout.splitFun = splitFun!;
     }
-    var lp = HierarchyOption<TreeSeries>(series, sweepAngle.toDouble(), radius.toDouble(),Rect.zero,Rect.zero);
+    var rect = Rect.fromLTWH(0, 0, sweepAngle.toDouble(), radius.toDouble());
+    var lp = HierarchyOption<TreeSeries>(series, rect, rect);
     layout.onLayout(root, lp);
   }
 
@@ -92,7 +93,8 @@ class RadialTreeLayout extends TreeLayout {
     if (splitFun != null) {
       layout.splitFun = splitFun!;
     }
-    var lp = HierarchyOption<TreeSeries>(series, sweepAngle.toDouble(), radius.toDouble(),Rect.zero,Rect.zero);
+    var rect = Rect.fromLTWH(0, 0, sweepAngle.toDouble(), radius.toDouble());
+    var lp = HierarchyOption<TreeSeries>(series, rect, rect);
     layout.onLayout(root, lp);
   }
 }

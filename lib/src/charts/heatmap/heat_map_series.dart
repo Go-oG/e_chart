@@ -4,7 +4,7 @@ import 'package:flutter/painting.dart';
 
 ///热力图
 ///可以在日历坐标系和笛卡尔坐标系中使用
-class HeatMapSeries extends RectSeries2<HeatMapData> {
+class HeatMapSeries extends ChartListSeries<HeatMapData> {
   Alignment? labelAlign;
   Fun2<HeatMapData, Alignment>? labelAlignFun;
   Fun2<HeatMapData, AreaStyle?>? areaStyleFun;
@@ -19,12 +19,7 @@ class HeatMapSeries extends RectSeries2<HeatMapData> {
     this.areaStyleFun,
     super.borderStyleFun,
     this.symbolFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.animation,
     super.coordType = CoordType.calendar,
     super.gridIndex,
@@ -42,7 +37,7 @@ class HeatMapSeries extends RectSeries2<HeatMapData> {
 
   @override
   ChartView? toView(Context context) {
-    return HeatMapView(context,this);
+    return HeatMapView(context, this);
   }
 
   ChartSymbol? getSymbol(Context context, HeatMapData data) {

@@ -84,8 +84,8 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
   void layoutData(PackData rootData) {
     var root = series.data;
     LCG random = DefaultLCG();
-    root.x = width / 2;
-    root.y = height / 2;
+    root.x = view.width / 2;
+    root.y = view.height / 2;
     if (_radiusFun != null) {
       root
           .eachBefore(_radiusLeaf(_radiusFun!))
@@ -97,8 +97,8 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
           .eachAfter(_packChildrenRandom((e) {
             return 0;
           }, 1, random))
-          .eachAfter(_packChildrenRandom(_paddingFun, root.r / m.min(width, height), random))
-          .eachBefore(_translateChild(m.min(width, height) / (2 * root.r)));
+          .eachAfter(_packChildrenRandom(_paddingFun, root.r / view.shortSide, random))
+          .eachBefore(_translateChild(view.shortSide / (2 * root.r)));
     }
 
     ///计算文字位置
@@ -146,13 +146,13 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
 
     ///计算新的缩放系数
     double oldScale = view.scaleX;
-    double newScale = m.min(width, height) * 0.5 / pn.r;
+    double newScale = view.shortSide * 0.5 / pn.r;
 
     ///计算偏移变化值
     double oldTx = view.translationX;
     double oldTy = view.translationY;
-    double ntx = width / 2 - newScale * pn.x;
-    double nty = height / 2 - newScale * pn.y;
+    double ntx = view.width / 2 - newScale * pn.x;
+    double nty = view.height / 2 - newScale * pn.y;
 
     if (newScale == oldScale && ntx == oldTx && nty == oldTy) {
       return;
@@ -238,7 +238,7 @@ class PackHelper extends LayoutHelper2<PackData, PackSeries> {
   }
 
   bool needDraw(PackData node) {
-    Rect rect = boxBound;
+    Rect rect = view.boxBound;
     var scale = view.scaleX;
     var cx = node.x * scale;
     cx += view.translationX;

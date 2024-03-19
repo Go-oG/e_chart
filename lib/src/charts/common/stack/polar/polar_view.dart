@@ -6,15 +6,12 @@ import '../stack_view.dart';
 
 abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>, S extends StackSeries<T, G>,
     L extends PolarHelper<T, G, S>> extends StackView<T, G, S, L> with PolarChild {
-  PolarView(super.context,super.series);
+  PolarView(super.context, super.series);
 
   @override
   void onDrawGroupBk(CCanvas canvas) {
     Set<GroupNode> rectSet = {};
     AreaStyle s2 = AreaStyle(color: series.groupHoverColor);
-    Offset offset = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(offset.dx, 0);
     each(layoutHelper.dataSet, (node, p1) {
       var group = node.parentNode.parentNode;
       if (rectSet.contains(group)) {
@@ -29,15 +26,11 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
       style?.drawPath(canvas, mPaint, group.arc.toPath());
       rectSet.add(group);
     });
-    canvas.restore();
     return;
   }
 
   @override
   void onDrawBar(CCanvas canvas) {
-    Offset offset = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
     each(layoutHelper.dataSet, (node, p1) {
       if (node.data == null) {
         return;
@@ -47,22 +40,16 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
       }
       node.onDraw(canvas, mPaint);
     });
-
-    canvas.restore();
   }
 
   @override
   void onDrawBarLabel(CCanvas canvas) {
-    Offset offset = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
     each(layoutHelper.dataSet, (node, p1) {
       if (node.arc.isEmpty) {
         return;
       }
       node.onDrawText(canvas, mPaint);
     });
-    canvas.restore();
   }
 
   @override

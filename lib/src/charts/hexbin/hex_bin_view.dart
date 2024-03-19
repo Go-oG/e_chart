@@ -10,13 +10,9 @@ class HexbinView extends SeriesView<HexbinSeries, HexBinHelper> {
 
   @override
   void onDraw(CCanvas canvas) {
-    var tr = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(tr.dx, tr.dy);
     each(layoutHelper.showNodeList, (node, p1) {
       node.onDraw(canvas, mPaint);
     });
-    canvas.restore();
   }
 
   @override

@@ -4,7 +4,6 @@ import 'package:e_chart/e_chart.dart';
 
 class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
   HeatMapHelper(super.context, super.view, super.series);
-
   final RBush<HeatMapData> _rBush = RBush.from((p0) => p0.attr);
 
   @override
@@ -72,19 +71,5 @@ class HeatMapHelper extends LayoutHelper2<HeatMapData, HeatMapSeries> {
 
     _rBush.clear();
     _rBush.addAll(dataList);
-  }
-
-  Offset getTranslation() {
-    var type = series.coordType;
-    if (type == CoordType.calendar) {
-      return findCalendarCoord().translation;
-    }
-    return findGridCoord().translation;
-  }
-
-  @override
-  HeatMapData? findData(Offset offset, [bool overlap = false]) {
-    // TODO: implement findNode
-    return super.findData(offset, overlap);
   }
 }

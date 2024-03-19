@@ -35,7 +35,7 @@ abstract class GraphLayout extends ChartNotifier<Command> {
 
   void stopLayout() {}
 
-  Offset getTranslation()=>Offset.zero;
+  Offset getTranslation() => Offset.zero;
 
   ///获取节点间距
   num getNodeSpace(GraphData node) {
@@ -72,8 +72,14 @@ class GraphLayoutParams {
   final GraphSeries series;
   final Rect boxBound;
   final Rect globalBoxBound;
-  final double width;
-  final double height;
 
-  GraphLayoutParams(this.context, this.series, this.boxBound, this.globalBoxBound, this.width, this.height);
+  GraphLayoutParams(this.context, this.series, this.boxBound, this.globalBoxBound);
+
+  double get width {
+    return boxBound.width;
+  }
+
+  double get height {
+    return boxBound.height;
+  }
 }

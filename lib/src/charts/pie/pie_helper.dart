@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/layout/layout_result.dart';
 import 'package:flutter/material.dart';
 
 ///饼图布局
@@ -61,7 +60,7 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
 
   @override
   void initDataIndexAndStyle(List<PieData> dataList, [bool updateStyle = true]) {
-    num maxSize = min([width, height]);
+    num maxSize = view.shortSide;
     minRadius = series.innerRadius.convert(maxSize);
     maxRadius = series.outerRadius.convert(maxSize);
     if (maxRadius < minRadius) {
@@ -205,9 +204,7 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
   }
 
   Offset computeCenterPoint(List<SNumber> center) {
-    double x = center[0].convert(width);
-    double y = center[1].convert(height);
-    return Offset(x, y);
+    return viewOffset(center[0], center[1]);
   }
 
   num adjustPieAngle(num angle) {

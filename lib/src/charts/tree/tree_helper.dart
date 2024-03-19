@@ -82,19 +82,17 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
         root,
         HierarchyOption<TreeSeries>(
           series,
-          width,
-          height,
-          boxBound,
-          globalBoxBound,
+          view.boxBound,
+          view.globalBound,
         ));
 
     ///布局完成计算偏移量并更新节点
-    double x = series.center[0].convert(width);
-    double y = series.center[1].convert(height);
+    double x = series.center[0].convert(view.width);
+    double y = series.center[1].convert(view.height);
 
     ///布局完成后，需要再次更新节点位置和大小
     if (clearTranslation) {
-      translationX = translationY = 0;
+      // translationX = translationY = 0;
     }
 
     ///root中心点坐标
@@ -115,9 +113,8 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
 
   @override
   void onClick(Offset localOffset) {
-    var offset = localOffset.translate(-translationX, -translationY);
+    var offset = view.toGlobal(localOffset);
     var node = findData(offset);
-
     if (node == null) {
       var oh = oldHoverData;
       oldHoverData = null;
@@ -130,7 +127,6 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
       notifyLayoutUpdate();
       return;
     }
-
     if (node != oldHoverData) {
       var oh = oldHoverData;
       if (oh != null) {
@@ -144,7 +140,6 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
       sendClickEvent(offset, node);
       oldHoverData = node;
     }
-
     if (node.notChild) {
       expandNode(node);
       return;
@@ -290,11 +285,6 @@ class TreeHelper extends LayoutHelper2<TreeData, TreeSeries> {
       }
     }
     return null;
-  }
-
-
-  Offset getTranslation() {
-    return view.translation;
   }
 
   @override

@@ -22,17 +22,16 @@ class TreeSeries extends HierarchySeries<TreeAttr, TreeData> {
     this.symbolFun,
     this.linkStyleFun,
     super.labelStyleFun,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.tooltip,
     super.animation,
     super.backgroundColor,
     super.id,
     super.clip,
+    super.name,
+    super.useSingleLayer,
+    super.borderStyleFun,
+    super.itemStyleFun,
   }) : super(gridIndex: -1, calendarIndex: -1, parallelIndex: -1, polarIndex: -1, radarIndex: -1);
 
   ChartSymbol getSymbol(Context context, TreeData node) {

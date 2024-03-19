@@ -1,3 +1,4 @@
+import '../context.dart';
 import '../series/series.dart';
 import '../view/view.dart';
 
@@ -23,9 +24,9 @@ class SeriesFactory {
     _convertList.clear();
   }
 
-  ChartView? convert(ChartSeries series) {
+  ChartView? convert(Context context, ChartSeries series) {
     for (var sc in _convertList) {
-      ChartView? v = sc.convert(series);
+      ChartView? v = sc.convert(context, series);
       if (v != null) {
         return v;
       }
@@ -35,5 +36,5 @@ class SeriesFactory {
 }
 
 abstract class SeriesConvert {
-  ChartView? convert(ChartSeries series);
+  ChartView? convert(Context context, ChartSeries series);
 }

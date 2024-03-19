@@ -27,8 +27,8 @@ class SankeyHelper extends LayoutHelper3<SankeyData, SankeyLink, SankeySeries> {
   @override
   void onLayout(LayoutType type) {
     left = top = 0;
-    right = width;
-    bottom = height;
+    right = view.width;
+    bottom = view.height;
     oldHoverData = null;
     oldHoverLink = null;
     var dataList = [...series.data];
@@ -454,10 +454,6 @@ class SankeyHelper extends LayoutHelper3<SankeyData, SankeyLink, SankeySeries> {
       link.updateStyle(context, series);
     });
     return List.from(dataMap.values);
-  }
-
-  Offset getTranslation() {
-    return view.translation;
   }
 
   @override

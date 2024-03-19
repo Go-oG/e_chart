@@ -12,7 +12,8 @@ abstract class Coord extends ChartNotifier<Command> {
 
   ///ToolTip
   ToolTip? toolTip;
-  LayoutParams layoutParams;
+
+  LayoutParams layoutParams = LayoutParams.matchAll();
 
   bool freeDrag;
   bool freeLongPress;
@@ -20,18 +21,16 @@ abstract class Coord extends ChartNotifier<Command> {
   Coord({
     this.show = true,
     String? id,
-    this.layoutParams = const LayoutParams.matchAll(
-      leftPadding: SNumber.number(32),
-      topPadding: SNumber.number(32),
-      rightPadding: SNumber.number(32),
-      bottomPadding: SNumber.number(32),
-    ),
     this.brush,
     this.toolTip,
     this.backgroundColor,
     this.freeDrag = false,
     this.freeLongPress = false,
+    LayoutParams? layoutParams,
   }) : super(Command.none) {
+    if (layoutParams != null) {
+      this.layoutParams = layoutParams;
+    }
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {

@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
-import '../../../../core/view/state_resolver.dart';
+import '../../../../core/helper/state_resolver.dart';
 
 ///表示为系列数据
 class GroupNode<T extends StackItemData, P extends StackGroupData<T, P>> with StateProvider {

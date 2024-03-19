@@ -10,12 +10,11 @@ class CandleStickView extends ec.GridView<CandleStickData, CandleStickGroup, Can
   @override
   void onDrawBar(CCanvas canvas) {
     GridCoord layout = layoutHelper.findGridCoord();
-    Offset of = layout.translation;
+    Offset of = Offset(scrollX, scrollY);
     var maxDx = layout.getMaxScroll().dx.abs();
     canvas.save();
     double w = of.dx.abs() > 0 ? (maxDx.abs() > 0 ? width + 10 : width) : width;
     canvas.clipRect(Rect.fromLTWH(of.dx.abs() == 0 ? -10 : 0, 0, w, height));
-    canvas.translate(of.dx, of.dy);
     each(layoutHelper.dataSet, (node, index) {
       var data = node.dataNull;
       if (data == null) {

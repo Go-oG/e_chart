@@ -3,8 +3,6 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 class HexBinData extends RenderData<Offset> {
-
-
   HexBinData({super.id, super.name}) {
     hex = Hex.zero;
   }
@@ -74,5 +72,5 @@ class HexBinData extends RenderData<Offset> {
   set shapePath(Path? v) => extSet("path", v);
 
   @override
-  Offset initAttr()=>Offset.zero;
+  Offset initAttr() => Offset.zero;
 }

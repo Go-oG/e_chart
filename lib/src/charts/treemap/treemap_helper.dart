@@ -26,7 +26,7 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
       return false;
     });
 
-    root.attr = boxBound;
+    root.attr = Rect.fromLTWH(0, 0, view.width, view.height);
     int c = series.initShowDepth;
     if (c <= 0) {
       c = root.maxDeep;
@@ -67,7 +67,7 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
     if (x1 < x0) x0 = x1 = (x0 + x1) / 2;
     if (y1 < y0) y0 = y1 = (y0 + y1) / 2;
     var cRect = Rect.fromLTRB(x0, y0, x1, y1);
-    series.layout.onLayout(parent, HierarchyOption(series, cRect.width, cRect.height, cRect, cRect));
+    series.layout.onLayout(parent, HierarchyOption(series, cRect, cRect));
     var paddingInner = getPaddingInner(parent);
     if (paddingInner > 0) {
       double v = paddingInner / 2;
@@ -131,7 +131,7 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
 
   @override
   void onClick(Offset localOffset) {
-    handleClick(localOffset.translate(-translationX, -translationY));
+    handleClick(localOffset.translate(view.scrollX, view.scrollY));
   }
 
   ///处理点击事件
@@ -207,7 +207,7 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
     //
     // ///重新测量位置
     // rootNode.setPosition(Rect.fromLTWH(0, 0, cw, ch));
-    // helper.layout(rootNode, rootNode.getPosition());
+    // helper.helper(rootNode, rootNode.getPosition());
     // rootNode.each((node, index, startNode) {
     //   node.end = node.cur.copy();
     //   return false;

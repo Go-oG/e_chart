@@ -93,9 +93,6 @@ class CalendarCoordImpl extends CalendarCoord {
 
   @override
   void onDraw(CCanvas canvas) {
-    canvas.save();
-    canvas.translate(viewPort.scrollX, viewPort.scrollY);
-    canvas.clipRect(boxBound);
     if (props.gridLineStyle != null) {
       var style = props.gridLineStyle!;
       for (int i = 0; i < columnCount; i++) {
@@ -124,7 +121,6 @@ class CalendarCoordImpl extends CalendarCoord {
         style.drawPolygon(canvas, mPaint, getDateRangePolygon(t1, t2));
       }
     }
-    canvas.restore();
   }
 
   @override

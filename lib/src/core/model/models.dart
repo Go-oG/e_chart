@@ -1,29 +1,30 @@
 class MeasureSpec {
-  final MeasureSpecMode mode;
+  final SpecMode mode;
   final double size;
-  MeasureSpec(this.mode, this.size);
+
+  const MeasureSpec._(this.mode, this.size);
+
+  const MeasureSpec.atMost(double size) : this._(SpecMode.atMost, size);
+
+  const MeasureSpec.unLimit(double size) : this._(SpecMode.unLimit, size);
+
+  const MeasureSpec.exactly(double size) : this._(SpecMode.exactly, size);
 }
 
-enum MeasureSpecMode {
+enum SpecMode {
   atMost,
   unLimit,
   exactly;
-}
 
-enum Visibility {
-  visible,
-  invisible,
-  gone;
-
-  bool get isShow {
-    return this == Visibility.visible;
+  bool get isExactly {
+    return this == SpecMode.exactly;
   }
 
-  bool get isHide {
-    return !isShow;
+  bool get isAtMost {
+    return this == SpecMode.atMost;
   }
 
-  bool get needSize {
-    return this == Visibility.invisible;
+  bool get isUnLimit {
+    return this == SpecMode.unLimit;
   }
 }

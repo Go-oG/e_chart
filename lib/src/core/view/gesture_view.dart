@@ -16,7 +16,15 @@ abstract class GestureView extends ChartView {
   @override
   void onCreate() {
     super.onCreate();
-    _gesture = buildGesture;
+    _gesture = CallGesture(hintTouch);
+    onInitGesture(_gesture);
+  }
+
+  bool hintTouch(Offset globalOffset) {
+    return globalOffset.dx >= globalLeft &&
+        globalOffset.dx <= globalLeft + width &&
+        globalOffset.dy >= globalTop &&
+        globalOffset.dy <= globalTop + height;
   }
 
   @override
@@ -24,33 +32,6 @@ abstract class GestureView extends ChartView {
     _gesture.clear();
     context.removeGesture(_gesture);
     super.onDispose();
-  }
-
-
-  void onLayoutComplete() {
-    onInitGesture(_gesture);
-  }
-
-  @override
-  set translationX(double tx) {
-    super.translationX = tx;
-    var gesture = _gesture;
-    if (gesture is RectGesture) {
-      gesture.rect = globalBound.translate(translationX, translationY);
-    }
-  }
-
-  @override
-  set translationY(double ty) {
-    super.translationY = ty;
-    var gesture = _gesture;
-    if (gesture is RectGesture) {
-      gesture.rect = globalBound.translate(translationX, translationY);
-    }
-  }
-
-  ChartGesture get buildGesture {
-    return RectGesture();
   }
 
   Offset _lastHover = Offset.zero;
@@ -182,10 +163,6 @@ abstract class GestureView extends ChartView {
       gesture.scaleEnd = () {
         onScaleEnd();
       };
-    }
-
-    if (gesture is RectGesture) {
-      (gesture).rect = globalBound;
     }
   }
 

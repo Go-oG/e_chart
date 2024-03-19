@@ -2,16 +2,13 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import '../stack_view.dart';
 
-abstract class GridView<T extends StackItemData, G extends StackGroupData<T,G>, S extends StackSeries<T, G>,
+abstract class GridView<T extends StackItemData, G extends StackGroupData<T, G>, S extends StackSeries<T, G>,
     L extends GridHelper<T, G, S>> extends StackView<T, G, S, L> with GridChild {
-  GridView(super.context,super.series);
+  GridView(super.context, super.series);
 
   @override
   void onDrawGroupBk(CCanvas canvas) {
     Set<ColumnNode> rectSet = {};
-    Offset offset = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
     each(layoutHelper.dataSet, (node, p1) {
       var column = node.parentNode;
       if (rectSet.contains(column)) {
@@ -27,15 +24,11 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T,G>, 
       }
       rectSet.add(column);
     });
-    canvas.restore();
     return;
   }
 
   @override
   void onDrawBar(CCanvas canvas) {
-    Offset offset = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
     each(layoutHelper.dataSet, (node, p1) {
       if (node.dataIsNull) {
         return;
@@ -45,21 +38,16 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T,G>, 
       }
       node.onDraw(canvas, mPaint);
     });
-    canvas.restore();
   }
 
   @override
   void onDrawBarLabel(CCanvas canvas) {
-    canvas.save();
-    Offset offset = layoutHelper.getTranslation();
-    canvas.translate(offset.dx, offset.dy);
     each(layoutHelper.dataSet, (node, p1) {
       if (node.rect.isEmpty) {
         return;
       }
       node.onDrawText(canvas, mPaint);
     });
-    canvas.restore();
   }
 
   @override

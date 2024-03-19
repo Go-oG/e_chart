@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/sankey/sankey_view.dart';
 import 'package:flutter/material.dart';
 
-class SankeySeries extends RectSeries {
+class SankeySeries extends ChartSeries {
   List<SankeyData> data;
   List<SankeyLink> links;
   double nodeWidth;
@@ -34,17 +34,14 @@ class SankeySeries extends RectSeries {
     this.areaStyleFun,
     this.linkStyleFun,
     this.smooth = 0.5,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.tooltip,
     super.backgroundColor,
     super.id,
     super.animation = const AnimatorOption(duration: Duration(seconds: 2), curve: Curves.ease),
     super.clip,
+    super.name,
+    super.useSingleLayer,
   }) : super(gridIndex: -1, polarIndex: -1, radarIndex: -1, calendarIndex: -1, parallelIndex: -1);
 
   @override

@@ -101,17 +101,17 @@
 //       }
 //     }
 //
-//     combo.layout.addListener(() {
+//     combo.helper.addListener(() {
 //       checkInterrupt();
 //       innerLayout();
-//       var c = combo.layout.value;
+//       var c = combo.helper.value;
 //       if (c == Command.layoutEnd) {
 //         notifyLayoutEnd();
 //       } else if (c == Command.layoutUpdate) {
 //         notifyLayoutUpdate();
 //       }
 //     });
-//     combo.layout.doLayout(
+//     combo.helper.doLayout(
 //       combo.graph,
 //       Rect.fromLTWH(0, 0, size.width, size.height),
 //       LayoutType.none,
@@ -122,7 +122,7 @@
 //   void stopLayout() {
 //     interrupt();
 //     for (var combo in _comboList) {
-//       combo.layout.stopLayout();
+//       combo.helper.stopLayout();
 //     }
 //     super.stopLayout();
 //   }
@@ -130,7 +130,7 @@
 //   @override
 //   void dispose() {
 //     for (var combo in _comboList) {
-//       combo.layout.dispose();
+//       combo.helper.dispose();
 //     }
 //     _comboList = [];
 //     super.dispose();
@@ -144,8 +144,8 @@
 //
 // class Combo extends GraphNode {
 //   final Graph graph;
-//   final GraphLayout layout;
+//   final GraphLayout helper;
 //   Offset? _lastOffset;
 //
-//   Combo(this.layout, this.graph, {super.id, super.label, super.data});
+//   Combo(this.helper, this.graph, {super.id, super.label, super.data});
 // }

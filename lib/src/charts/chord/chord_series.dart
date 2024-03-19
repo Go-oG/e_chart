@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/chord/chord_data_helper.dart';
 import 'package:e_chart/src/charts/chord/chord_view.dart';
 
-class ChordSeries extends RectSeries {
+class ChordSeries extends ChartSeries {
   List<ChordLink> data;
   List<SNumber> center;
   num startAngle;
@@ -45,14 +45,9 @@ class ChordSeries extends RectSeries {
     this.labelStyleFun,
     this.linkBorderStyleFun,
     this.linkItemStyleFun,
+    super.layoutParams,
     super.id,
     super.name,
-    super.width,
-    super.height,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
     super.backgroundColor,
     super.animation,
     super.coordType,
@@ -161,5 +156,5 @@ class ChordSeries extends RectSeries {
   SeriesType get seriesType => SeriesType.chord;
 
   @override
-  ChartView? toView(Context context) => ChordView(context,this);
+  ChartView? toView(Context context) => ChordView(context, this);
 }

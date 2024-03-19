@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/charts/line/helper/grid_helper.dart';
 import 'package:e_chart/src/charts/line/helper/polar_helper.dart';
-import 'package:e_chart/src/core/model/models.dart';
 
 import 'helper/line_helper.dart';
 import 'line_node.dart';
@@ -15,9 +14,9 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   LineView(super.context, super.series);
 
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
-    layoutHelper.doMeasure(widthSpec.size, heightSpec.size);
-    return super.onMeasure(widthSpec, heightSpec);
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    layoutHelper.doMeasure(widthSpec, heightSpec);
+    super.onMeasure(widthSpec, heightSpec);
   }
 
   @override
@@ -38,7 +37,6 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     }
     var lineList = helper.getLineNodeList();
     canvas.save();
-    canvas.translate(offset.dx, 0);
     canvas.clipRect(clipRect);
     each(lineList, (lineNode, p1) {
       drawArea(canvas, lineNode, clipRect, offset);
@@ -54,15 +52,11 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (t == 0) {
       return;
     }
-    Offset offset = layoutHelper.getTranslation();
-    var lineList = helper.getLineNodeList();
 
-    canvas.save();
-    canvas.translate(offset.dx, 0);
+    var lineList = helper.getLineNodeList();
     each(lineList, (lineNode, p1) {
       drawSymbol(canvas, lineNode);
     });
-    canvas.restore();
     drawMakeLineAndMarkPoint(canvas, null);
   }
 
@@ -99,9 +93,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     if (markLineFun == null && markPointFun == null && markPoint == null && markLine == null) {
       return;
     }
-    var offset = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
+
     if (markLineFun != null || markLine != null) {
       each(layoutHelper.markLineList, (ml, i) {
         ml.line.draw(canvas, mPaint, ml.start.offset, ml.end.offset);
@@ -112,7 +104,6 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
         mp.markPoint.draw(canvas, mPaint, mp.offset);
       }
     });
-    canvas.restore();
   }
 
   @override

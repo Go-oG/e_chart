@@ -10,12 +10,12 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
   List<PointData> showNodeList = [];
 
   @override
-  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
+  void doLayout(bool changed, LayoutType type) {
     if (series.coordType == CoordType.grid) {
       subscribeAxisScrollEvent();
     }
     subscribeAxisChangeEvent();
-    super.doLayout(boxBound, globalBoxBound, type);
+    super.doLayout(changed, type);
   }
 
   @override
@@ -133,8 +133,7 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
   }
 
   void updateShowNodeList() async {
-    Offset translation = getTranslation();
-    var rect = boxBound.translate(-translation.dx, -translation.dy);
+    var rect = view.selfViewPort;
     var list = rBush.search2(rect);
     sortList(list);
     showNodeList = list;
@@ -148,7 +147,9 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
 
   @override
   void onDragMove(Offset offset, Offset diff) {
-    if (series.coordType == CoordType.grid || series.coordType == CoordType.polar || series.coordType == CoordType.calendar) {
+    if (series.coordType == CoordType.grid ||
+        series.coordType == CoordType.polar ||
+        series.coordType == CoordType.calendar) {
       return;
     }
 
@@ -216,7 +217,7 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
       return;
     }
     updateShowNodeList();
-    view.markDirty();
+    //  view.markDirty();
   }
 
   @override

@@ -17,8 +17,8 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   ///给定根节点和待布局的节点进行数据的布局
   @override
   void onLayout(LayoutType type) {
-    center = Offset(series.center[0].convert(width), series.center[1].convert(height));
-    List<num> radiusList = computeRadius(width, height);
+    center = viewOffset(series.center[0], series.center[1]);
+    List<num> radiusList = computeRadius(view.width, view.height);
     minRadius = radiusList[0];
     maxRadius = radiusList[1];
     num radiusRange = radiusList[2];
@@ -81,7 +81,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
 
   void initData2(SunburstData rootData) {
     if (series.sort != Sort.none) {
-      rootData.sort((a, b){
+      rootData.sort((a, b) {
         if (series.sort == Sort.asc) {
           return a.value.compareTo(b.value);
         } else {
@@ -104,10 +104,9 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
     int maxDeep = rootData.height;
     rootData.each((node, index, startNode) {
       node.maxDeep = maxDeep;
-      node.dataIndex=index;
+      node.dataIndex = index;
       return false;
     });
-
   }
 
   void _layoutNodeIterator(SunburstData parent, int maxDeep, bool updateStyle) {

@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/layout/layout_result.dart';
 
 class ChordData extends RenderData<Arc> {
   ChordData({super.id, super.name});
@@ -36,7 +35,7 @@ class ChordData extends RenderData<Arc> {
   }
 
   @override
-  Arc initAttr()=>Arc.zero;
+  Arc initAttr() => Arc.zero;
 }
 
 //PathLayoutResult
@@ -51,7 +50,6 @@ class ChordLink extends RenderData<Path> {
 
   num targetStartAngle = 0;
   num targetEndAngle = 0;
-
 
   ChordLink(this.source, this.target, this.value, {super.id, super.name}) {
     if (value < 0) {
@@ -77,5 +75,5 @@ class ChordLink extends RenderData<Path> {
   }
 
   @override
-  Path initAttr() =>Path();
+  Path initAttr() => Path();
 }

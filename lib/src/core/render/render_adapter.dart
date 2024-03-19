@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/component/group/frame_layout.dart';
-import 'package:e_chart/src/core/model/models.dart' as m;
+import 'package:e_chart/src/core/model/visibility.dart' as m;
 import 'package:flutter/rendering.dart';
 
 import 'package:flutter/widgets.dart';
@@ -66,7 +65,7 @@ final class RenderAdapter extends RenderBox implements ViewParent {
       ...option.parallelList,
     ];
     for (var ele in coordConfigList) {
-      CoordLayout<Coord>? c = CoordFactory.instance.convert(ele);
+      CoordLayout<Coord>? c = CoordFactory.instance.convert(_context!, ele);
       c ??= ele.toCoord(_context!);
       if (c == null) {
         throw ChartError('无法转换对应的坐标系:$ele');
@@ -94,7 +93,7 @@ final class RenderAdapter extends RenderBox implements ViewParent {
     ///转换Series到View
     each(option.series, (series, i) {
       series.seriesIndex = i;
-      ChartView? view = SeriesFactory.instance.convert(series);
+      ChartView? view = SeriesFactory.instance.convert(context, series);
       view ??= series.toView(context);
       if (view == null) {
         throw FlutterError('${series.runtimeType} init fail,you must provide series convert');
@@ -374,8 +373,8 @@ final class RenderAdapter extends RenderBox implements ViewParent {
 
   void measure(double parentWidth, double parentHeight) {
     _context?.animationManager.cancelAllAnimator();
-    var widthSpec = m.MeasureSpec(m.MeasureSpecMode.exactly, parentWidth);
-    var heightSpec = m.MeasureSpec(m.MeasureSpecMode.exactly, parentHeight);
+    var widthSpec = MeasureSpec.exactly(parentWidth);
+    var heightSpec = MeasureSpec.exactly(parentHeight);
     _rootView?.measure(widthSpec, heightSpec);
 
     mWidth = parentWidth;

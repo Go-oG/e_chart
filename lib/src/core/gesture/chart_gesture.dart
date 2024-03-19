@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:e_chart/src/ext/offset_ext.dart';
-
 import '../../functions.dart';
 import 'gesture_event.dart';
 
@@ -59,18 +57,19 @@ class RectGesture extends ChartGesture {
   }
 }
 
-class ArcGesture extends ChartGesture {
-  num innerRadius = 0;
-  num outerRadius = 0;
-  num startAngle = 0;
-  num sweepAngle = 0;
-  Offset center = Offset.zero;
+class CallGesture extends ChartGesture {
+  Fun2<Offset, bool>? hintCall;
+
+  CallGesture(this.hintCall);
 
   @override
   bool contains(Offset globalOffset) {
-    if (edgeFun != null) {
-      return edgeFun!.call(globalOffset);
-    }
-    return globalOffset.inSector(innerRadius, outerRadius, startAngle, sweepAngle,center: center);
+    return hintCall?.call(globalOffset) ?? false;
+  }
+
+  @override
+  void clear() {
+    hintCall = null;
+    super.clear();
   }
 }

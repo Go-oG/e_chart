@@ -11,8 +11,7 @@ class ToolTipView extends LinearLayout {
   ToolTipMenu? menu;
 
   ToolTipView(Context context, this.toolTip) : super(context, direction: Direction.vertical) {
-    layoutParams = const LayoutParams.wrapAll();
-    // zLevel = 10000;
+    layoutParams = LayoutParams.wrapAll();
   }
 
   TitleView? titleView;
@@ -38,18 +37,18 @@ class ToolTipView extends LinearLayout {
     }
 
     var sv = ScrollLayout(context);
-    sv.layoutParams = const LayoutParams.matchAll();
+    sv.layoutParams = LayoutParams.matchAll();
 
     var ll = LinearLayout(context);
-    ll.layoutParams = const LayoutParams.wrapAll();
+    ll.layoutParams = LayoutParams.wrapAll();
 
     for (var item in menu.itemList) {
       var itemView = ToolTipItemView(context, item);
-      itemView.layoutParams = const LayoutParams.wrapAll(
-        leftPadding: SNumber.number(8),
-        topPadding: SNumber.number(8),
-        rightPadding: SNumber.number(8),
-        bottomPadding: SNumber.number(8),
+      itemView.layoutParams = LayoutParams.wrapAll(
+        leftPadding: 8,
+        topPadding: 8,
+        rightPadding: 8,
+        bottomPadding: 8,
       );
       ll.addView(itemView);
     }

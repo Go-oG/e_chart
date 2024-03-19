@@ -5,7 +5,9 @@ import 'package:e_chart/src/core/model/models.dart';
 
 abstract class StackView<T extends StackItemData, G extends StackGroupData<T, G>, S extends StackSeries<T, G>,
     L extends StackHelper<T, G, S>> extends CoordChildView<S, L> {
-  StackView(super.context, super.series);
+  StackView(super.context, super.series) {
+    layoutParams = LayoutParams.matchAll();
+  }
 
   bool get useSingleLayer {
     if (series.realtimeSort || series.dynamicRange || series.dynamicLabel) {
@@ -15,8 +17,8 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T, G>
   }
 
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
-    layoutHelper.doMeasure(parentWidth, parentHeight);
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    layoutHelper.doMeasure(widthSpec, heightSpec);
     return super.onMeasure(widthSpec, heightSpec);
   }
 
@@ -43,9 +45,7 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T, G>
     if (markLineFun == null && markPointFun == null && markPoint == null && markLine == null) {
       return;
     }
-    Offset offset = layoutHelper.getTranslation();
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
+
     if (markLineFun != null || markLine != null) {
       each(layoutHelper.markLineList, (ml, i) {
         ml.line.draw(canvas, mPaint, ml.start.offset, ml.end.offset);
@@ -54,7 +54,6 @@ abstract class StackView<T extends StackItemData, G extends StackGroupData<T, G>
     each(layoutHelper.markPointList, (mp, i) {
       mp.markPoint.draw(canvas, mPaint, mp.offset);
     });
-    canvas.restore();
   }
 
   @override

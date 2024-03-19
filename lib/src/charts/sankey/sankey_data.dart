@@ -51,7 +51,7 @@ class SankeyData extends RenderData<SankeyAttr> {
   }
 
   @override
-  SankeyAttr initAttr()=> SankeyAttr();
+  SankeyAttr initAttr() => SankeyAttr();
 }
 
 class SankeyAttr {
@@ -123,10 +123,11 @@ class SankeyLink extends RenderData<SankeyLinkAttr> {
   SankeyData target;
   num value;
 
-
-  SankeyLink(this.source,
-      this.target,
-      this.value,);
+  SankeyLink(
+    this.source,
+    this.target,
+    this.value,
+  );
 
   void computeAreaPath(num smooth) {
     Offset sourceTop = Offset(source.attr.right, attr.sourceY);
@@ -135,8 +136,7 @@ class SankeyLink extends RenderData<SankeyLinkAttr> {
     Offset targetTop = Offset(target.attr.left, attr.targetY);
     Offset targetBottom = targetTop.translate(0, attr.width);
 
-    attr.area =
-        Area([sourceTop, targetTop], [sourceBottom, targetBottom], upSmooth: smooth, downSmooth: smooth);
+    attr.area = Area([sourceTop, targetTop], [sourceBottom, targetBottom], upSmooth: smooth, downSmooth: smooth);
   }
 
   @override
@@ -163,7 +163,7 @@ class SankeyLink extends RenderData<SankeyLinkAttr> {
   DataType get dataType => DataType.edgeData;
 
   @override
-  SankeyLinkAttr initAttr()=>SankeyLinkAttr();
+  SankeyLinkAttr initAttr() => SankeyLinkAttr();
 }
 
 class SankeyLinkAttr {

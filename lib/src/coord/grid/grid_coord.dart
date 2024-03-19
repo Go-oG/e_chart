@@ -3,14 +3,14 @@ import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/model/models.dart';
-
 ///实现二维坐标系
 class GridCoordImpl extends GridCoord {
   final Map<XAxis, XAxisImpl> xMap = {};
   final Map<YAxis, YAxisImpl> yMap = {};
 
-  GridCoordImpl(super.context, super.props);
+  GridCoordImpl(super.context, super.props) {
+    layoutParams = LayoutParams.matchAll();
+  }
 
   @override
   void onCreate() {
@@ -40,6 +40,9 @@ class GridCoordImpl extends GridCoord {
 
   @override
   Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    var parentWidth = widthSpec.size;
+    var parentHeight = heightSpec.size;
+
     ///赋值MaxStr
     xMap.forEach((key, value) {
       value.attrs.maxStr = getMaxStr(value.direction, value.axisIndex);
@@ -49,8 +52,8 @@ class GridCoordImpl extends GridCoord {
     });
 
     var lp = layoutParams;
-    double pw = lp.width.convert(parentWidth - padding.horizontal);
-    double ph = lp.height.convert(parentHeight - padding.vertical);
+    double pw = lp.width.convert(parentWidth - layoutParams.hPadding);
+    double ph = lp.height.convert(parentHeight - layoutParams.vPadding);
     double maxW = 0;
     double maxH = 0;
     for (var child in children) {
@@ -88,10 +91,10 @@ class GridCoordImpl extends GridCoord {
 
   @override
   void onLayout(bool changed, double left, double top, double right, double bottom) {
-    double topOffset = padding.top;
-    double bottomOffset = padding.bottom;
-    double leftOffset = padding.left;
-    double rightOffset = padding.right;
+    double topOffset = layoutParams.topPadding;
+    double bottomOffset = layoutParams.bottomPadding;
+    double leftOffset = layoutParams.leftPadding;
+    double rightOffset = layoutParams.rightPadding;
 
     ///计算所有X轴在竖直方向上的占用的高度
     List<XAxisImpl> topList = [];
@@ -845,9 +848,6 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   ///当子视图需要实现动态坐标轴时回调该方法
   void onRelayoutAxisByChild(bool xAxis, bool notifyInvalidate);
-
-  @override
-  Offset get translation => viewPort.translation;
 
   @override
   set translationX(double tx) => viewPort.scrollX = tx;

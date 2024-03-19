@@ -13,7 +13,7 @@ class DelaunayHelper extends LayoutHelper2<DelaunayData, DelaunaySeries> {
   List<DelaunayData> showNodeList = [];
 
   void updateShowNodeList() {
-    Rect rect = Rect.fromLTWH(-translationX, -translationY, width, height);
+    Rect rect = Rect.fromLTWH(view.scrollX, view.scrollY, view.width, view.height);
     showNodeList = bush.search(rect);
   }
 
@@ -83,8 +83,8 @@ class DelaunayHelper extends LayoutHelper2<DelaunayData, DelaunaySeries> {
         }
         shape = sd;
       }
-      var node=DelaunayData(shape);
-      node.dataIndex=index;
+      var node = DelaunayData(shape);
+      node.dataIndex = index;
       node.updateStyle(context, series);
       node.updateLabelPosition(context, series);
       resultList.add(node);

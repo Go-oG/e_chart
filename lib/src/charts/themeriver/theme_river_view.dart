@@ -7,16 +7,11 @@ class ThemeRiverView extends SeriesView<ThemeRiverSeries, ThemeRiverHelper> {
   @override
   void onDraw(CCanvas canvas) {
     var nodeList = layoutHelper.dataSet;
-    var tx = layoutHelper.translationX;
-    var ty = layoutHelper.translationY;
     var ap = layoutHelper.animatorPercent;
-    canvas.save();
-    canvas.translate(tx, ty);
     canvas.clipRect(layoutHelper.getClipRect(series.direction, ap));
     for (var ele in nodeList) {
       ele.onDraw(canvas, mPaint);
     }
-    canvas.restore();
   }
 
   @override

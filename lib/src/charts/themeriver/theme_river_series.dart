@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 import 'package:e_chart/src/charts/themeriver/theme_river_view.dart';
 
-class ThemeRiverSeries extends RectSeries2<ThemeRiverData> {
+class ThemeRiverSeries extends ChartListSeries<ThemeRiverData> {
   Direction direction;
   SNumber? minInterval;
   num smooth;
@@ -12,12 +12,7 @@ class ThemeRiverSeries extends RectSeries2<ThemeRiverData> {
     this.direction = Direction.horizontal,
     this.minInterval,
     this.smooth = 0.5,
-    super.leftMargin,
-    super.topMargin,
-    super.rightMargin,
-    super.bottomMargin,
-    super.width,
-    super.height,
+    super.layoutParams,
     super.tooltip,
     super.backgroundColor,
     super.id,

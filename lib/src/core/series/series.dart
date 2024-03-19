@@ -1,4 +1,6 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/index.dart';
+import 'package:e_chart/src/core/model/layout_params.dart';
 import 'package:flutter/material.dart';
 
 /// 图表的抽象表示
@@ -6,6 +8,7 @@ import 'package:flutter/material.dart';
 ///每个图表必须要有一个Series
 abstract class ChartSeries extends ChartNotifier<Command> {
   late final String id;
+  LayoutParams layoutParams = LayoutParams.matchAll();
 
   ///Series的索引 在Context中进行分配
   int seriesIndex = -1;
@@ -35,6 +38,7 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     this.calendarIndex = 0,
     this.radarIndex = 0,
     this.parallelIndex = 0,
+    LayoutParams? layoutParams,
     this.animation,
     this.coordType,
     this.tooltip,
@@ -44,6 +48,9 @@ abstract class ChartSeries extends ChartNotifier<Command> {
     String? id,
     this.useSingleLayer = false,
   }) : super(Command.none) {
+    if (layoutParams != null) {
+      this.layoutParams = layoutParams;
+    }
     if (id == null || id.isEmpty) {
       this.id = randomId();
     } else {

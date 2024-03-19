@@ -69,10 +69,10 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
     }
     int count = nodeList.length;
     double gapAllHeight = (count - 1) * series.gap;
-    num size = series.direction == Direction.vertical ? height : width;
+    num size = series.direction == Direction.vertical ? view.height : view.width;
     double itemSize = (size - gapAllHeight) / count;
     if (series.itemHeight != null) {
-      itemSize = series.itemHeight!.convert(height);
+      itemSize = series.itemHeight!.convert(view.height);
     }
     if (series.direction == Direction.vertical) {
       _layoutVertical(nodeList, itemSize);
@@ -87,7 +87,7 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
   void _layoutVertical(List<FunnelData> nodeList, double itemHeight) {
     double offsetY = 0;
     Map<FunnelData, FunnelProps> propsMap = {};
-    double kw = width / maxValue;
+    double kw = view.width / maxValue;
     for (var node in nodeList) {
       FunnelProps props = FunnelProps();
       propsMap[node] = props;
@@ -103,8 +103,8 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
       if (series.align == Align2.start) {
         continue;
       }
-      double topOffset = width - props.len1;
-      double bottomOffset = width - props.len2;
+      double topOffset = view.width - props.len1;
+      double bottomOffset = view.width - props.len2;
       if (series.align == Align2.center) {
         topOffset *= 0.5;
         bottomOffset *= 0.5;
@@ -143,7 +143,7 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
   void _layoutHorizontal(List<FunnelData> nodeList, double itemWidth) {
     double offsetX = 0;
     Map<FunnelData, FunnelProps> propsMap = {};
-    double kw = height / maxValue;
+    double kw = view.height / maxValue;
     for (var node in nodeList) {
       FunnelProps props = FunnelProps();
       propsMap[node] = props;
@@ -159,8 +159,8 @@ class FunnelHelper extends LayoutHelper2<FunnelData, FunnelSeries> {
       if (series.align == Align2.start) {
         continue;
       }
-      double leftOffset = height - props.len1;
-      double rightOffset = height - props.len2;
+      double leftOffset = view.height - props.len1;
+      double rightOffset = view.height - props.len2;
       if (series.align == Align2.center) {
         leftOffset *= 0.5;
         rightOffset *= 0.5;

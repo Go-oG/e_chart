@@ -5,21 +5,9 @@ import '../../model/string_number.dart';
 class SizeParams {
   static const wrapType = -2;
   static const matchType = -1;
-  static const _normal = 0;
+  static const _exactly = 0;
   final SNumber size;
   final int _type;
-
-  static SizeParams from(SNumber sn) {
-    if (sn.number == wrapType) {
-      return const SizeParams.wrap();
-    }
-    if (sn.number == SizeParams.matchType || sn.number <= 0) {
-      return const SizeParams.match();
-    }
-    return SizeParams(sn);
-  }
-
-  const SizeParams(this.size) : _type = _normal;
 
   const SizeParams.wrap()
       : _type = wrapType,
@@ -29,6 +17,10 @@ class SizeParams {
       : _type = matchType,
         size = SNumber.zero;
 
+  SizeParams.exactly(double size)
+      : _type = _exactly,
+        size = SNumber.number(size);
+
   bool get isWrap {
     return _type == wrapType;
   }
@@ -37,12 +29,12 @@ class SizeParams {
     return _type == matchType;
   }
 
-  bool get isNormal {
-    return _type == _normal;
+  bool get isExactly {
+    return _type == _exactly;
   }
 
   double convert(num n) {
-    if (isNormal) {
+    if (isExactly) {
       return size.convert(n);
     }
     if (isWrap) {
@@ -51,10 +43,10 @@ class SizeParams {
     return n.toDouble();
   }
 
-  MeasureSpecMode toSpecMode() {
+  SpecMode toSpecMode() {
     if (_type == wrapType) {
-      return MeasureSpecMode.atMost;
+      return SpecMode.atMost;
     }
-    return MeasureSpecMode.exactly;
+    return SpecMode.exactly;
   }
 }

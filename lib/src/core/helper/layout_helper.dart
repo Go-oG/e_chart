@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/cupertino.dart';
 
 ///用于辅助布局相关的抽象类，通常和SeriesView 配合使用
@@ -43,10 +44,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     _view = null;
   }
 
-  ///布局边界
-  Rect boxBound = Rect.zero;
-  Rect globalBoxBound = Rect.zero;
-
   ///标识是否在运行动画
   bool inAnimation = false;
 
@@ -68,14 +65,11 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   LayoutHelper.lazy({bool equalsObject = false}) : super(Command.none, equalsObject);
 
   ///==========布局测量相关===========
-  void doMeasure(double parentWidth, double parentHeight) {
-    this.boxBound = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
+  void doMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     onMeasure();
   }
 
-  void doLayout(Rect boxBound, Rect globalBoxBound, LayoutType type) {
-    this.boxBound = boxBound;
-    this.globalBoxBound = globalBoxBound;
+  void doLayout(bool changed, LayoutType type) {
     onLayout(type);
   }
 
@@ -95,6 +89,10 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     _series = null;
     _context = null;
     super.dispose();
+  }
+
+  Offset viewOffset(SNumber x, SNumber y) {
+    return Offset(x.convert(view.width), y.convert(view.height));
   }
 
   ///=========手势处理================
@@ -229,7 +227,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return view.attachInfo.root.findRadarCoordNull(series.radarIndex);
   }
 
-
   ///========通知布局节点刷新=======
   void notifyLayoutUpdate() {
     value = Command.layoutUpdate;
@@ -241,15 +238,15 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
 
   ///========坐标转换=======
   Offset toLocal(Offset global) {
-    return Offset(global.dx - globalBoxBound.left, global.dy - globalBoxBound.top);
+    return view.toLocal(global);
   }
 
   Offset toGlobal(Offset local) {
-    return Offset(local.dx + globalBoxBound.left, local.dy + globalBoxBound.top);
+    return view.toGlobal(local);
   }
 
   Rect getViewPortRect() {
-    return Rect.fromLTWH(-translationX, -translationY, width, height);
+    return Rect.fromLTWH(-view.scrollX, -view.scrollY, view.width, view.height);
   }
 
   ///获取平移偏移量
@@ -273,19 +270,7 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   //   return view.translation;
   // }
 
-  double get translationX => view.translationX;
-
-  set translationX(num x) => view.translationX = x.toDouble();
-
-  double get translationY => view.translationY;
-
-  set translationY(num y) => view.translationY = y.toDouble();
-
   void resetTranslation() => view.translationX = view.translationY = 0;
-
-  double get width => boxBound.width;
-
-  double get height => boxBound.height;
 
   void addAnimationToQueue(List<AnimationNode> nodes) {
     if (_context == null) {
@@ -303,9 +288,9 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
       animationPercent = 0;
     }
     if (direction == Direction.horizontal) {
-      return Rect.fromLTWH(translationX.abs(), translationY.abs(), width * animationPercent, height);
+      return Rect.fromLTWH(view.scrollX, view.scrollY, view.width * animationPercent, view.height);
     } else {
-      return Rect.fromLTWH(translationX.abs(), translationY.abs(), width, height * animationPercent);
+      return Rect.fromLTWH(view.scrollX, view.scrollY, view.width, view.height * animationPercent);
     }
   }
 

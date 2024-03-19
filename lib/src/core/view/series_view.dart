@@ -16,11 +16,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   SeriesView(super.context, T series) {
     _series = series;
-    if (series is RectSeries) {
-      layoutParams = series.toLayoutParams();
-    } else if (series is RectSeries2) {
-      layoutParams = series.toLayoutParams();
-    }
+    layoutParams = series.layoutParams;
   }
 
   @override
@@ -59,7 +55,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
 
   @override
   void onLayout(bool changed, double left, double top, double right, double bottom) {
-    layoutHelper.doLayout(boxBound, globalBound, LayoutType.layout);
+    layoutHelper.doLayout(changed, LayoutType.layout);
   }
 
   @override
@@ -69,7 +65,7 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
       mPaint.reset();
       mPaint.color = color;
       mPaint.style = PaintingStyle.fill;
-      canvas.drawRect(boxBound.translate(-left, -top), mPaint);
+      canvas.drawRect(Rect.fromLTWH(-left, -top, width, height), mPaint);
     }
   }
 

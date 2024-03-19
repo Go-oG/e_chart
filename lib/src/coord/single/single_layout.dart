@@ -21,7 +21,7 @@ class SingleConfig extends Coord {
     super.backgroundColor,
     super.id,
     super.show,
-  }) : super(layoutParams: const LayoutParams.wrapAll());
+  }) : super(layoutParams: LayoutParams.wrapAll());
 
   @override
   CoordType get coordSystem => CoordType.single;

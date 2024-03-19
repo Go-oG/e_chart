@@ -9,15 +9,11 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
 
   @override
   void onDrawBar(CCanvas canvas) {
-    var of = context.findGridCoord().translation;
-    canvas.save();
-    canvas.translate(of.dx, of.dy);
     each(layoutHelper.dataSet, (node, p1) {
       var data = node.data;
       if (data == null) {
         return;
       }
-
       if (node.itemStyle.notDraw && node.borderStyle.notDraw) {
         return;
       }
@@ -30,8 +26,6 @@ class BoxPlotView extends GridView<BoxplotData, BoxplotGroup, BoxplotSeries, Box
         }
       }
     });
-
-    canvas.restore();
   }
 
   @override

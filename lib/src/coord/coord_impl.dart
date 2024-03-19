@@ -13,6 +13,7 @@ abstract class CoordLayout<T extends Coord> extends ChartViewGroup {
   Rect contentBox = Rect.zero;
 
   BrushView? _brushView;
+
   ToolTipView? _tipView;
 
   CoordLayout(super.context, T props) {
