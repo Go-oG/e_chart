@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/gestures.dart';
-import '../../utils/platform_util.dart';
 import 'package:vector_math/vector_math.dart' as vector;
 
 ///手势分发器

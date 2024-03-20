@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:e_chart/src/ext/offset_ext.dart';
 
-import '../../utils/log_util.dart';
+import '../../utils/debug.dart';
 
 ///线段
 class Segment {

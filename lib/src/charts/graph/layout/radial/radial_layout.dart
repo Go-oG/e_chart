@@ -105,8 +105,8 @@ class RadialLayout extends GraphLayout {
     if (semiHeight == 0) {
       semiHeight = height / 2;
     }
-    num maxRadius = min([semiWidth, semiHeight]);
-    num maxD = max(focusNodeD);
+    num maxRadius = min(semiWidth, semiHeight);
+    num maxD = max2(focusNodeD);
     if (radiusGap == null || radiusGap! < 0) {
       props.radiusGap = maxRadius / maxD;
     } else {

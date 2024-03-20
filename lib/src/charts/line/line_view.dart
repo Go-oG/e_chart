@@ -29,8 +29,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
   }
 
   void drawForGrid(CCanvas canvas) {
-    Offset offset = layoutHelper.getTranslation();
-    Rect clipRect = Rect.fromLTWH(offset.dx.abs(), 0, width, height);
+    Rect clipRect = selfViewPort;
     double t = helper.getAnimatorPercent();
     if (t != 1) {
       clipRect = Rect.fromLTWH(clipRect.left, clipRect.top, clipRect.width * t, clipRect.height);
@@ -39,7 +38,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     canvas.save();
     canvas.clipRect(clipRect);
     each(lineList, (lineNode, p1) {
-      drawArea(canvas, lineNode, clipRect, offset);
+      drawArea(canvas, lineNode, clipRect);
       drawLine(canvas, lineNode, clipRect);
       drawSymbol(canvas, lineNode);
     });
@@ -68,7 +67,7 @@ class LineView extends CoordChildView<LineSeries, StackHelper<StackItemData, Lin
     lineNode.data.borderStyle.drawPath(canvas, mPaint, path, drawDash: false);
   }
 
-  void drawArea(CCanvas canvas, LineNode lineNode, Rect clipRect, Offset scroll) {
+  void drawArea(CCanvas canvas, LineNode lineNode, Rect clipRect) {
     var path = lineNode.areaPath;
     if (path == null) {
       return;

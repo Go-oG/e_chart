@@ -4,13 +4,22 @@ import 'package:e_chart/src/core/view/view_frame.dart';
 import 'package:e_chart/src/core/view/view_parent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import '../render/render_adapter.dart';
 import 'attach_info.dart';
 
 abstract class ChartView with ViewFrame {
   final String id = randomId();
   Context context;
 
-  late AttachInfo attachInfo;
+  AttachInfo? _attachInfo;
+
+  AttachInfo get attachInfo {
+    return _attachInfo!;
+  }
+
+  set attachInfo(AttachInfo info) {
+    _attachInfo = info;
+  }
 
   ChartView(this.context);
 
@@ -43,6 +52,10 @@ abstract class ChartView with ViewFrame {
   void forceLayout() {
     _forceLayout = true;
   }
+
+  bool _needDraw = true;
+
+  bool get isNeedDraw => _needDraw;
 
   @override
   bool setVisibility(Visibility vb) {
@@ -206,7 +219,30 @@ abstract class ChartView with ViewFrame {
 
   void computeScroll() {}
 
-  void requestLayout() {}
+  void requestLayout() {
+    //ClearCache
+    // if (mMeasureCache != null) mMeasureCache.clear();
+    var attachInfo = _attachInfo;
+    if (attachInfo != null && attachInfo.viewRequestingLayout == null) {
+      var viewRoot = getViewRootImpl();
+
+      if (viewRoot != null && viewRoot.isInLayout()) {
+        ///TODO 后续完成
+      }
+      attachInfo.viewRequestingLayout = this;
+    }
+    _forceLayout = true;
+    _needDraw = true;
+    mParent?.requestLayout();
+
+    if (attachInfo != null && attachInfo.viewRequestingLayout == this) {
+      attachInfo.viewRequestingLayout = null;
+    }
+  }
+
+  RenderAdapter? getViewRootImpl() {
+    return _attachInfo?.root;
+  }
 
   void requestDraw() {
     requestDrawInner(true);
@@ -247,7 +283,7 @@ abstract class ChartView with ViewFrame {
 
   ///该回调只会发生在视图创建后，且只会回调一次
   void dispatchAttachInfo(AttachInfo attachInfo) {
-    this.attachInfo = attachInfo;
+    _attachInfo = attachInfo;
   }
 
   void created() {
@@ -389,48 +425,4 @@ abstract class ChartView with ViewFrame {
 
   bool get useZeroWhenMeasureSpecModeIsUnLimit => false;
 
-  ///=========Debug 绘制相关方法===============
-  void debugDraw(CCanvas canvas, Offset offset, {Color color = const Color(0xFF673AB7), bool fill = true, num r = 6}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    canvas.drawCircle(offset, r.toDouble(), mPaint);
-  }
-
-  void debugDrawRect(CCanvas canvas, Rect rect, {Color color = const Color(0xFF673AB7), bool fill = false}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawRect(rect, mPaint);
-  }
-
-  void debugDrawRulerLine(CCanvas canvas, {Color color = const Color(0xFF000000)}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawLine(Offset(width / 2, 0), Offset(width / 2, height), mPaint);
-    canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
-  }
-
-  void debugDrawPath(CCanvas canvas, Path path, {Color color = const Color(0xFF673AB7), bool fill = false}) {
-    if (!kDebugMode) {
-      return;
-    }
-    Paint mPaint = Paint();
-    mPaint.color = color;
-    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
-    mPaint.strokeWidth = 1;
-    canvas.drawPath(path, mPaint);
-  }
 }

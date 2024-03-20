@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 import 'parallel_view.dart';
@@ -65,7 +67,7 @@ class ParallelSeries extends ChartGroupSeries<ParallelChildData, ParallelData> {
 
     int maxDim = 0;
     each(data, (group, p0) {
-      maxDim = max([maxDim, group.data.length]).toInt();
+      maxDim = max(maxDim, group.data.length);
     });
 
     ExtremeHelper<ParallelData> helper = ExtremeHelper(

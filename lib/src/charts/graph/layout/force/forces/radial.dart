@@ -17,7 +17,7 @@ class RadialForce extends Force {
   ///返回节点位于的圆圈半径大小
   ///相同的半径大小将处于同一个圆
   ForceFun _radiusLevelFun = (node, i, list, w, h) {
-    return min([w, h]) * 0.5;
+    return min(w, h) * 0.5;
   };
 
   ///存储节点强度

@@ -12,9 +12,10 @@ final class RenderAdapter extends RenderBox implements ViewParent {
   ChartOption option;
   TickerProvider provider;
   final Paint _paint = Paint();
-  final AttachInfo attachInfo = AttachInfo();
+  late final AttachInfo attachInfo;
 
   RenderAdapter(this.option, this.provider, Size? size) {
+    attachInfo = AttachInfo(this);
     var dp = WidgetsBinding.instance.platformDispatcher.displays.first.devicePixelRatio;
     _context = Context(option, provider, dp);
 
@@ -407,6 +408,11 @@ final class RenderAdapter extends RenderBox implements ViewParent {
   @override
   void handleEvent(PointerEvent event, covariant BoxHitTestEntry entry) {
     _context?.gestureDispatcher.handleEvent(event, entry);
+  }
+
+  bool isInLayout() {
+    ///TODO 待实现
+    return false;
   }
 
   ///================自定义接口方法开始=============

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
@@ -94,27 +95,27 @@ class TreeMapHelper extends LayoutHelper2<TreeMapData, TreeMapSeries> {
 
   num getPaddingInner(TreeMapData data) {
     num v = series.paddingInner?.call(data) ?? 0;
-    return max([v, 0]);
+    return max(v, 0);
   }
 
   num getPaddingTop(TreeMapData data) {
     num v = series.paddingTop?.call(data) ?? 0;
-    return max([v, 0]);
+    return max(v, 0);
   }
 
   num getPaddingLeft(TreeMapData data) {
     num v = series.paddingLeft?.call(data) ?? 0;
-    return max([v, 0]);
+    return max(v, 0);
   }
 
   num getPaddingRight(TreeMapData data) {
     num v = series.paddingRight?.call(data) ?? 0;
-    return max([v, 0]);
+    return max(v, 0);
   }
 
   num getPaddingBottom(TreeMapData data) {
     num v = series.paddingBottom?.call(data) ?? 0;
-    return max([v, 0]);
+    return max(v, 0);
   }
 
   bool roundNode(TreeMapData node, int index, TreeMapData other) {

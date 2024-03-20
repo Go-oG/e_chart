@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -78,9 +80,10 @@ class DendrogramLayout extends TreeLayout {
       node.parent = null;
       data.add(node);
     }
+
     ///还原树的高度和深度
     data.setDeep(0, false);
-    data.setHeight(max<int>([leftNode.height, rightNode.height]), false);
+    data.setHeight(max(leftNode.height, rightNode.height), false);
   }
 
   void _layoutNode(TreeData root, Direction2 direction, List<num> yList) {

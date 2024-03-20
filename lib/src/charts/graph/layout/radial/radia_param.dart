@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:e_chart/e_chart.dart';
 
-
 class RadialParam {
   List<GraphData> nodes = [];
   List<ChartOffset> positions = [];
@@ -159,7 +158,7 @@ class RadialForce {
       }
       var distLength = sqrt(disp[i].x * disp[i].x + disp[i].y * disp[i].y);
       if (distLength > 0 && i != f) {
-        var limitedDist = min([maxDisplace * (speed / SPEED_DIVISOR), distLength]);
+        var limitedDist = min(maxDisplace * (speed / SPEED_DIVISOR), distLength);
         n.x += (disp[i].x / distLength) * limitedDist;
         n.y += (disp[i].y / distLength) * limitedDist;
         if (strictRadial) {

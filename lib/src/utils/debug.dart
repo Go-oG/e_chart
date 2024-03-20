@@ -1,9 +1,56 @@
 import 'dart:convert';
-import 'dart:developer';
 
+import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:stack_trace/stack_trace.dart';
+
+extension ViewDebug on ChartView {
+  ///=========Debug 绘制相关方法===============
+  void debugDraw(CCanvas canvas, Offset offset, {Color color = const Color(0xFF673AB7), bool fill = true, num r = 6}) {
+    if (!kDebugMode) {
+      return;
+    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    canvas.drawCircle(offset, r.toDouble(), mPaint);
+  }
+
+  void debugDrawRect(CCanvas canvas, Rect rect, {Color color = const Color(0xFF673AB7), bool fill = false}) {
+    if (!kDebugMode) {
+      return;
+    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawRect(rect, mPaint);
+  }
+
+  void debugDrawRulerLine(CCanvas canvas, {Color color = const Color(0xFF000000)}) {
+    if (!kDebugMode) {
+      return;
+    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawLine(Offset(width / 2, 0), Offset(width / 2, height), mPaint);
+    canvas.drawLine(Offset(0, height / 2), Offset(width, height / 2), mPaint);
+  }
+
+  void debugDrawPath(CCanvas canvas, Path path, {Color color = const Color(0xFF673AB7), bool fill = false}) {
+    if (!kDebugMode) {
+      return;
+    }
+    Paint mPaint = Paint();
+    mPaint.color = color;
+    mPaint.style = fill ? PaintingStyle.fill : PaintingStyle.stroke;
+    mPaint.strokeWidth = 1;
+    canvas.drawPath(path, mPaint);
+  }
+}
 
 class Logger {
   static const _topLeftCorner = '┌';

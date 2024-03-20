@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -27,13 +29,13 @@ class ToolTipItemView extends GestureView {
     final maxWidth = (parentWidth.isFinite || parentWidth.isNaN) ? double.infinity : parentWidth;
     Size s = item.titleStyle.measure(item.title, maxWidth: maxWidth);
     w += s.width;
-    h = max([h, s.height]);
+    h = max(h, s.height);
     if (item.desc != null) {
       final maxWidth = (parentWidth.isFinite || parentWidth.isNaN) ? double.infinity : parentWidth;
       var style = item.descStyle ?? const LabelStyle();
       s = style.measure(item.desc!, maxWidth: maxWidth);
       w += s.width;
-      h = max([h, s.height]);
+      h = max(h, s.height);
     }
     if (item.symbol != null) {
       w += 8;

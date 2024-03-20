@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
@@ -39,7 +40,7 @@ class CandleStickSeries extends GridSeries<CandleStickData, CandleStickGroup> {
 
   @override
   ChartView? toView(Context context) {
-    return CandleStickView(context,this);
+    return CandleStickView(context, this);
   }
 
   @override
@@ -105,19 +106,17 @@ class CandleStickData extends StackItemData {
     num? lastClose,
     super.name,
     super.id,
-  }) : super(time, max([highest, close])) {
+  }) : super(time, max(highest, close)) {
     if (lastClose == null) {
       this.lastClose = open;
     } else {
       this.lastClose = lastClose;
     }
-    var maxV = max([open, close, lowest, highest]);
+    var maxV = max2([open, close, lowest, highest]);
     checkArguments(highest == maxV, "highest 必须是最大的");
 
-    var minV = min([open, close, lowest, highest]);
+    var minV = min2([open, close, lowest, highest]);
     checkArguments(lowest == minV, "lowest 必须是最小的");
-
-
   }
 
   bool get isUp => close >= lastClose;

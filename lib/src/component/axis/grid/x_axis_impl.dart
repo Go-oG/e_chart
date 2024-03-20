@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class XAxisImpl extends BaseGridAxisImpl {
       if (axisLabel.inside == axis.axisTick.inside) {
         height += labelHeight;
       } else {
-        height = max<double>([height, labelHeight + lineHeight]).toDouble();
+        height = max(height, labelHeight + lineHeight);
       }
     }
     axisSize = height;

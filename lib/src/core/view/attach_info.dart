@@ -1,9 +1,10 @@
+import '../index.dart';
 import '../render/render_adapter.dart';
 
-final class AttachInfo{
+final class AttachInfo {
+  RenderAdapter root;
 
-  late RenderAdapter root;
+  AttachInfo(this.root);
 
-
-
+  ChartView? viewRequestingLayout;
 }

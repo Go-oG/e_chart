@@ -1,5 +1,6 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/material.dart';
 
 ///雷达图坐标系
@@ -39,9 +40,9 @@ class RadarCoordImpl extends RadarCoord {
   @override
   Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     measureSize = Size(widthSpec.size, heightSpec.size);
-    num minValue = min([widthSpec.size, heightSpec.size]);
+    num minValue = min(widthSpec.size, heightSpec.size);
     double cv = props.radius.last.convert(minValue);
-    cv = min([cv, minValue]) * 2;
+    cv = min(cv, minValue) * 2;
     return Size(cv, cv);
   }
 

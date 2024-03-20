@@ -4,13 +4,21 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../utils/platform_util.dart';
-
 ///实现了一个简易的手势识别器
 abstract class GestureView extends ChartView {
   late ChartGesture _gesture;
 
+  bool _enableGesture = true;
+
   GestureView(super.context);
+
+  void disableGesture() {
+    _enableGesture = false;
+  }
+
+  void enableGesture() {
+    _enableGesture = true;
+  }
 
   @mustCallSuper
   @override
@@ -37,7 +45,6 @@ abstract class GestureView extends ChartView {
   Offset _lastHover = Offset.zero;
   Offset _lastDrag = Offset.zero;
   Direction? _dragDirection;
-
   Offset _lastLongPress = Offset.zero;
   Direction? _lpDirection;
 
@@ -47,35 +54,47 @@ abstract class GestureView extends ChartView {
     context.addGesture(gesture);
     if (enableClick) {
       gesture.click = (e) {
-        onClick(toLocal(e.globalPosition));
+        if (_enableGesture) {
+          onClick(toLocal(e.globalPosition));
+        }
       };
     }
     if (enableDoubleClick) {
       gesture.doubleClick = (e) {
-        onDoubleClick(toLocal(e.globalPosition));
+        if (_enableGesture) {
+          onDoubleClick(toLocal(e.globalPosition));
+        }
       };
     }
 
     if (enableHover) {
       gesture.hoverStart = (e) {
         _lastHover = toLocal(e.globalPosition);
-        onHoverStart(_lastHover);
+        if (_enableGesture) {
+          onHoverStart(_lastHover);
+        }
       };
       gesture.hoverMove = (e) {
         Offset of = toLocal(e.globalPosition);
-        onHoverMove(of, _lastHover);
+        if (_enableGesture) {
+          onHoverMove(of, _lastHover);
+        }
         _lastHover = of;
       };
       gesture.hoverEnd = (e) {
         _lastHover = Offset.zero;
-        onHoverEnd();
+        if (_enableGesture) {
+          onHoverEnd();
+        }
       };
     }
 
     if (enableLongPress) {
       gesture.longPressStart = (e) {
         _lastLongPress = toLocal(e.globalPosition);
-        onLongPressStart(_lastLongPress);
+        if (_enableGesture) {
+          onLongPressStart(_lastLongPress);
+        }
       };
       gesture.longPressMove = (e) {
         var offset = toLocal(e.globalPosition);
@@ -103,12 +122,16 @@ abstract class GestureView extends ChartView {
             dx = 0;
           }
         }
-        onLongPressMove(offset, Offset(dx, dy));
+        if (_enableGesture) {
+          onLongPressMove(offset, Offset(dx, dy));
+        }
       };
       gesture.longPressEnd = () {
         _lpDirection = null;
         _lastLongPress = Offset.zero;
-        onLongPressEnd();
+        if (_enableGesture) {
+          onLongPressEnd();
+        }
       };
     }
 
@@ -116,7 +139,9 @@ abstract class GestureView extends ChartView {
       gesture.dragStart = (e) {
         var offset = toLocal(e.globalPosition);
         _lastDrag = offset;
-        onDragStart(offset);
+        if (_enableGesture) {
+          onDragStart(offset);
+        }
       };
       gesture.dragMove = (e) {
         var offset = toLocal(e.globalPosition);
@@ -144,24 +169,35 @@ abstract class GestureView extends ChartView {
             dx = 0;
           }
         }
-        onDragMove(offset, Offset(dx, dy));
+        if (_enableGesture) {
+          onDragMove(offset, Offset(dx, dy));
+        }
       };
+
       gesture.dragEnd = () {
         _dragDirection = null;
         _lastDrag = Offset.zero;
-        onDragEnd();
+        if (_enableGesture) {
+          onDragEnd();
+        }
       };
     }
 
     if (enableScale) {
       gesture.scaleStart = (e) {
-        onScaleStart(toLocal(e.globalPosition));
+        if (_enableGesture) {
+          onScaleStart(toLocal(e.globalPosition));
+        }
       };
       gesture.scaleUpdate = (e) {
-        onScaleUpdate(toLocal(e.focalPoint), e.rotation, e.scale, false);
+        if (_enableGesture) {
+          onScaleUpdate(toLocal(e.focalPoint), e.rotation, e.scale, false);
+        }
       };
       gesture.scaleEnd = () {
-        onScaleEnd();
+        if (_enableGesture) {
+          onScaleEnd();
+        }
       };
     }
   }
@@ -204,7 +240,9 @@ abstract class GestureView extends ChartView {
 
   void onDragStart(Offset offset) {}
 
-  void onDragMove(Offset offset, Offset diff) {}
+  void onDragMove(Offset offset, Offset diff) {
+    scrollOff(diff.dx, diff.dy);
+  }
 
   void onDragEnd() {}
 

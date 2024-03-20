@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'point_helper.dart';
 
@@ -28,7 +30,7 @@ class PointView extends CoordChildView<PointSeries, PointHelper> with PolarChild
 
   @override
   List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
-    axisIndex = max([axisIndex, 0]).toInt();
+    axisIndex = max(axisIndex, 0);
     return series.getExtremeHelper().getExtreme(isXAxis ? 'x:$axisIndex' : 'y$axisIndex').getAllExtreme();
   }
 

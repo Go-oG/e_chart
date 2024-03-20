@@ -482,14 +482,6 @@ abstract class StackHelper<T extends StackItemData, P extends StackGroupData<T, 
     return null;
   }
 
-  Offset getTranslation() {
-    var type = coordSystem;
-    if (type == CoordType.polar) {
-      return findPolarCoord().translation;
-    }
-    return findGridCoord().translation;
-  }
-
   Offset getMaxTranslation() {
     var type = coordSystem;
     if (type == CoordType.polar) {

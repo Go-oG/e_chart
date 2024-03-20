@@ -3,7 +3,6 @@ import 'dart:math' as m;
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/utils/platform_util.dart';
 
 class Arc extends Shape {
   static final zero = Arc();
@@ -127,12 +126,12 @@ class Arc extends Shape {
     if (sweepAngle.abs() >= circleMinAngle) {
       return _buildCircle(center, startAngle, ir, or, direction);
     }
-    var corner = min([cornerRadius, (or - ir) / 2]).toDouble();
-    corner = max([corner, 0]).toDouble();
+    var corner = min(cornerRadius, (or - ir) / 2);
+    corner = max(corner, 0);
 
     ///普通扇形
     if (ir <= innerMin) {
-      return _buildNormalArc(center, startAngle.toDouble(), sweepAngle.toDouble(), or, corner);
+      return _buildNormalArc(center, startAngle.toDouble(), sweepAngle.toDouble(), or, corner.toDouble());
     }
 
     /// 空心扇形
@@ -142,7 +141,7 @@ class Arc extends Shape {
       sweepAngle.toDouble(),
       ir,
       or,
-      corner,
+      corner.toDouble(),
       padAngle.toDouble(),
       maxRadius.toDouble(),
     );
@@ -431,7 +430,7 @@ class Arc extends Shape {
   }
 
   Path arcOpen() {
-    double r = max([innerRadius, outRadius]).toDouble();
+    double r = max(innerRadius, outRadius).toDouble();
     if (sweepAngle.abs() >= circleMinAngle) {
       return _buildCircle(center, startAngle, 0, r, sweepAngle > 0 ? 1 : -1);
     }
@@ -439,7 +438,8 @@ class Arc extends Shape {
     Path path = Path();
     Offset op = circlePoint(r, startAngle, center);
     path.moveTo(op.dx, op.dy);
-    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * StaticConfig.angleUnit, sweepAngle * StaticConfig.angleUnit, false);
+    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * StaticConfig.angleUnit,
+        sweepAngle * StaticConfig.angleUnit, false);
     return path;
   }
 

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +25,7 @@ class YAxisImpl extends XAxisImpl {
       if (axisLabel.inside == axis.axisTick.inside) {
         width += labelWidth;
       } else {
-        width = max<double>([width, labelWidth + lineWidth]).toDouble();
+        width = max(width, labelWidth + lineWidth);
       }
     }
     axisSize = width;

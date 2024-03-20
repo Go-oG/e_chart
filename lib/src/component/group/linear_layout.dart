@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 
 class LinearLayout extends ChartViewGroup {
@@ -53,7 +55,7 @@ class LinearLayout extends ChartViewGroup {
 
       if (lp.height.isExactly) {
         measureChildNotMargins(child, widthSpec, 0, heightSpec, 0);
-        maxWidth = max([maxWidth, child.measureWidth]);
+        maxWidth = max(maxWidth, child.measureWidth);
         totalHeight += child.height;
         exactlyList.add(child);
         continue;
@@ -62,7 +64,7 @@ class LinearLayout extends ChartViewGroup {
       if (lp.height.isMatch) {
         if (specMode == SpecMode.exactly) {
           measureChildNotMargins(child, widthSpec, 0, heightSpec, 0);
-          maxWidth = max([maxWidth, child.measureWidth]);
+          maxWidth = max(maxWidth, child.measureWidth);
 
           totalHeight += child.height;
           exactlyList.add(child);
@@ -73,7 +75,7 @@ class LinearLayout extends ChartViewGroup {
       }
       //Wrap
       measureChildNotMargins(child, widthSpec, 0, heightSpec, 0);
-      maxWidth = max([maxWidth, child.measureWidth]);
+      maxWidth = max(maxWidth, child.measureWidth);
 
       totalHeight += child.height;
       exactlyList.add(child);
@@ -91,7 +93,7 @@ class LinearLayout extends ChartViewGroup {
           var old = child.layoutParams.height;
           child.layoutParams.height = SizeParams.exactly(hh);
           measureChildNotMargins(child, widthSpec, 0, hSpec, 0);
-          maxWidth = max([maxWidth, child.measureWidth]);
+          maxWidth = max(maxWidth, child.measureWidth);
           totalHeight += child.height;
           child.layoutParams.height = old;
         }
@@ -99,7 +101,7 @@ class LinearLayout extends ChartViewGroup {
         var cHSpec = const MeasureSpec.exactly(0);
         for (var child in weightList) {
           measureChildNotMargins(child, widthSpec, 0, cHSpec, 0);
-          maxWidth = max([maxWidth, child.measureWidth]);
+          maxWidth = max(maxWidth, child.measureWidth);
         }
       }
     } else {
@@ -152,7 +154,7 @@ class LinearLayout extends ChartViewGroup {
 
       if (lp.width.isExactly) {
         measureChildNotMargins(child, widthSpec, 0, heightSpec, 0);
-        maxHeight = max([maxHeight, child.measureHeight]);
+        maxHeight = max(maxHeight, child.measureHeight);
         totalWidth += child.width;
         exactlyList.add(child);
         continue;
@@ -161,7 +163,7 @@ class LinearLayout extends ChartViewGroup {
       if (lp.width.isMatch) {
         if (specMode == SpecMode.exactly) {
           measureChildNotMargins(child, widthSpec, 0, heightSpec, 0);
-          maxHeight = max([maxHeight, child.measureHeight]);
+          maxHeight = max(maxHeight, child.measureHeight);
           totalWidth += child.width;
           exactlyList.add(child);
         } else {
@@ -171,7 +173,7 @@ class LinearLayout extends ChartViewGroup {
       }
       //Wrap
       measureChildNotMargins(child, widthSpec, 0, heightSpec, 0);
-      maxHeight = max([maxHeight, child.measureHeight]);
+      maxHeight = max(maxHeight, child.measureHeight);
 
       totalWidth += child.width;
       exactlyList.add(child);
@@ -191,14 +193,14 @@ class LinearLayout extends ChartViewGroup {
           measureChildNotMargins(child, widthSpec, 0, hSpec, 0);
           child.layoutParams.width = old;
 
-          maxHeight = max([maxHeight, child.measureHeight]);
+          maxHeight = max(maxHeight, child.measureHeight);
           totalWidth += child.width;
         }
       } else {
         var cHSpec = const MeasureSpec.exactly(0);
         for (var child in weightList) {
           measureChildNotMargins(child, widthSpec, 0, cHSpec, 0);
-          maxHeight = max([maxHeight, child.measureHeight]);
+          maxHeight = max(maxHeight, child.measureHeight);
         }
       }
     } else {

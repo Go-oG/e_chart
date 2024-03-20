@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -122,7 +124,7 @@ class ParallelCoordImpl extends ParallelCoord {
     double offsetP = horizontal ? leftOffset : topOffset;
 
     ///计算在不同布局方向上前后占用的最大高度或者宽度
-    List<Size> textSize = measureAxisNameTextMaxSize(axisMap.keys, props.direction, max([interval, props.expandWidth]));
+    List<Size> textSize = measureAxisNameTextMaxSize(axisMap.keys, props.direction, max(interval, props.expandWidth));
 
     for (var axis in props.axisList) {
       var axisImpl = axisMap[axis]!;

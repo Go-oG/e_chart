@@ -330,7 +330,7 @@ class GridCoordImpl extends GridCoord {
   @override
   void onChildDataSetChange(bool layoutChild) {
     for (var view in children) {
-      view.forceLayout = true;
+      view.forceLayout();
     }
     onLayout(false, left, top, right, bottom);
   }

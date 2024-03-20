@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/foundation.dart';
@@ -84,8 +85,8 @@ class LineStyle {
     if (cap != style.cap || join != style.join) {
       return true;
     }
-    var s = max([0, smooth]);
-    var e = max([0, style.smooth]);
+    var s = max(0, smooth);
+    var e = max(0, style.smooth);
     if (s != e) {
       return true;
     }

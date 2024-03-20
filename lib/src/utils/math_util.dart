@@ -1,8 +1,11 @@
 import 'dart:math' as math;
+import 'dart:math';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/widgets.dart';
 
-T max<T extends num>(Iterable<T> list) {
+Random _random = Random();
+
+T max2<T extends num>(Iterable<T> list) {
   return maxBy<T>(list, (p0) => p0);
 }
 
@@ -36,7 +39,7 @@ num maxBy2<T>(Iterable<T> list, num Function(T) convert) {
   return v;
 }
 
-T min<T extends num>(Iterable<T> list) {
+T min2<T extends num>(Iterable<T> list) {
   return minBy<T>(list, (p0) => p0);
 }
 
@@ -145,3 +148,19 @@ num triangleArea(Offset p1, Offset p2, Offset p3) {
   return 0.5 * ((p1.dx * p2.dy - p2.dx * p1.dy) + (p2.dx * p3.dy - p3.dx * p2.dy) + (p3.dx * p1.dy - p1.dx * p3.dy));
 }
 
+num clamp(num lower, num upper) {
+  var p = _random.nextDouble();
+  var diff = (upper - lower);
+  return lower + diff * p;
+}
+
+List<int> range(int start, int end, [int step = 1]) {
+  int index = -1;
+  int length = max(((end - start) / step).ceil(), 0);
+  List<int> rl = List.filled(length, 0);
+  while ((length--) != 0) {
+    rl[++index] = start;
+    start += step;
+  }
+  return rl;
+}

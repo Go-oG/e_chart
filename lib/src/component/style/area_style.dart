@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/helper/state_resolver.dart';
-import '../../utils/platform_util.dart';
 
 /// 区域样式(所有的绘制都是填充)
 class AreaStyle {

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/core/view/attach_info.dart';
 import 'package:flutter/rendering.dart';
@@ -80,8 +82,8 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
       }
       measureChildWithMargins(child, widthSpec, 0, heightSpec, 0);
       final lp = child.layoutParams;
-      maxWidth = max([maxWidth, child.width + lp.hMargin]);
-      maxHeight = max([maxHeight, child.height + lp.vMargin]);
+      maxWidth = max(maxWidth, child.width + lp.hMargin);
+      maxHeight = max(maxHeight, child.height + lp.vMargin);
       if (measureMatchParentChildren) {
         if (lp.width.isMatch || lp.height.isMatch) {
           matchParentChildren.add(child);
@@ -96,7 +98,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
       final lp = child.layoutParams;
       final MeasureSpec childWidthMeasureSpec;
       if (lp.width.isMatch) {
-        final ww = max([0, width - lp.hPadding - lp.hMargin]);
+        final ww = max(0, width - lp.hPadding - lp.hMargin);
         childWidthMeasureSpec = MeasureSpec.exactly(ww.toDouble());
       } else {
         childWidthMeasureSpec = getChildMeasureSpec(widthSpec, lp.hPadding + lp.hMargin, lp.width);
@@ -104,7 +106,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
 
       final MeasureSpec childHeightMeasureSpec;
       if (lp.height.isMatch) {
-        final hh = max([0, height - lp.vPadding - lp.vMargin]);
+        final hh = max(0, height - lp.vPadding - lp.vMargin);
         childHeightMeasureSpec = MeasureSpec.exactly(hh.toDouble());
       } else {
         childHeightMeasureSpec = getChildMeasureSpec(heightSpec, lp.vPadding + lp.vMargin, lp.height);
@@ -137,7 +139,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   MeasureSpec getChildMeasureSpec(MeasureSpec spec, double padding, SizeParams childDimension) {
     final specMode = spec.mode;
     double specSize = spec.size;
-    double canUseSize = max([0, specSize - padding]);
+    double canUseSize = max(0, specSize - padding);
 
     final childSize = childDimension.convert(canUseSize);
     if (specMode == SpecMode.exactly) {

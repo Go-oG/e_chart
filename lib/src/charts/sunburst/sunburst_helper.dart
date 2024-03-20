@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
@@ -222,7 +223,7 @@ class SunburstHelper extends LayoutHelper2<SunburstData, SunburstSeries> {
   }
 
   List<num> computeRadius(num width, num height) {
-    num size = min([width, height]);
+    num size = min(width, height);
     num minRadius = 0;
     num maxRadius = 0;
     List<SNumber> radius = series.radius;

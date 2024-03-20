@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -72,8 +74,8 @@ class PieHelper extends LayoutHelper2<PieData, PieSeries> {
     minData = double.maxFinite;
     allData = 0;
     each(dataList, (data, i) {
-      maxData = max([data.value, maxData]);
-      minData = min([data.value, minData]);
+      maxData = max(data.value, maxData);
+      minData = min(data.value, minData);
       allData += data.value;
 
       data.dataIndex = i;

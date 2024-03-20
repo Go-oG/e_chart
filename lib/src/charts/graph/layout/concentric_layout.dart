@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -125,7 +127,7 @@ class ConcentricLayout extends GraphLayout {
         if (preventOverlap && j != 0) {
           Offset pre = Offset(level[j - 1].x, level[j - 1].y);
           num sumRadius = node.r + level[j - 1].r + minNodeSpacing;
-          int c = max([maxIterations, 1]).toInt();
+          int c = max(maxIterations, 1);
           while (nc.distance2(pre) < sumRadius && c > 0) {
             angleOffset += (sweepAngle < 0) ? -1 : 1;
             nc = circlePoint(rr, angleOffset, _center);

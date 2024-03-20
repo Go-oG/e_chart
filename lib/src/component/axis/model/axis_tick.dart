@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 
 class AxisTick extends ChartNotifier2 {
@@ -27,7 +29,7 @@ class AxisTick extends ChartNotifier2 {
   });
 
   double getMaxTickSize() {
-    return max<double>([getTickSize(), getMinorSize()]);
+    return max(getTickSize(), getMinorSize());
   }
 
   double getTickSize() {
