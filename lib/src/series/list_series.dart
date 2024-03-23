@@ -1,8 +1,10 @@
-import '../../component/index.dart';
-import '../../functions.dart';
-import '../../model/index.dart';
-import '../../utils/index.dart';
-import '../index.dart';
+
+import '../component/index.dart';
+import '../core/index.dart';
+import '../functions.dart';
+import '../model/data.dart';
+import '../utils/list_util.dart';
+import 'index.dart';
 
 ///该 Series数据是只有一种类型
 abstract class ChartListSeries<T extends RenderData> extends ChartSeries {

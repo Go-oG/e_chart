@@ -1,7 +1,10 @@
-import '../../component/index.dart';
-import '../../functions.dart';
-import '../../model/index.dart';
-import '../index.dart';
+
+import '../component/style/index.dart';
+import '../core/context.dart';
+import '../core/render/render_data.dart';
+import '../functions.dart';
+import '../model/data.dart';
+import 'index.dart';
 
 ///表述为数据类型为 Group-children 图表
 abstract class ChartGroupSeries<T extends RenderData, G> extends ChartSeries {

@@ -75,7 +75,7 @@ class BaseItemData {
 ///动态文本
 ///只接受String、TextSpan、
 class DynamicText {
-  static DynamicText empty = DynamicText('');
+  static final DynamicText empty = DynamicText('');
   final dynamic text;
 
   DynamicText(this.text) {

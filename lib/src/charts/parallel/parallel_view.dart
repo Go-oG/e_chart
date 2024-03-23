@@ -1,10 +1,12 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 import 'parallel_helper.dart';
 
 ///平行坐标系
-class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implements ParallelChild {
+class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implements CoordChild {
   ParallelView(super.context, super.series);
 
   @override
@@ -30,17 +32,6 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
   }
 
   @override
-  List<dynamic> getDimExtreme(int dim) {
-    if (dim < 0) {
-      dim = 0;
-    }
-    return series.getExtremeHelper().getExtreme('$dim').getAllExtreme();
-  }
-
-  @override
-  int get parallelIndex => series.parallelIndex;
-
-  @override
   ParallelHelper buildLayoutHelper(var oldHelper) {
     if (oldHelper != null) {
       oldHelper.context = context;
@@ -49,5 +40,46 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
       return oldHelper;
     }
     return ParallelHelper(context, this, series);
+  }
+
+  @override
+  int embedCoordIndex(CoordType type) {
+    if (type != CoordType.parallel) {
+      return -1;
+    }
+    return max(series.parallelIndex, 0);
+  }
+
+  @override
+  AxisDim dataDimToAxisDimIndex(int dataDim) => AxisDim.fromIndex(dataDim);
+
+  @override
+  int getAxisDataCount(CoordType type, AxisDim dim) => 0;
+
+  @override
+  Iterable getAxisExtreme(CoordType type, AxisDim axisDim) {
+    if (type != CoordType.parallel) {
+      return [];
+    }
+
+    return series.getExtremeHelper().getExtreme("${axisDim.index}").getAllExtreme();
+  }
+
+  @override
+  DynamicText getAxisMaxText(CoordType type, AxisDim axisDim) => DynamicText.empty;
+
+  @override
+  CoordType getCoordType() => CoordType.parallel;
+
+  @override
+  Iterable getViewPortAxisExtreme(CoordType type, AxisDim axisDim, BaseScale<dynamic, num> scale) =>
+      getAxisExtreme(type, axisDim);
+
+  @override
+  dynamic getDimData(CoordType type, AxisDim dim, data) {
+    if (type != CoordType.parallel) {
+      return null;
+    }
+    return (data as ParallelData).data[dim.index].data;
   }
 }

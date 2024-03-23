@@ -1,5 +1,5 @@
+import '../../series/series.dart';
 import '../context.dart';
-import '../series/series.dart';
 import '../view/view.dart';
 
 class SeriesFactory {

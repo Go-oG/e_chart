@@ -1,5 +1,7 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/charts/line/line_view.dart';
+
+import 'line_grid_view.dart';
+import 'line_polar_view.dart';
 
 class LineSeries extends GridSeries<StackItemData, LineGroupData> {
   bool connectNulls; // 是否连接空数据
@@ -49,7 +51,12 @@ class LineSeries extends GridSeries<StackItemData, LineGroupData> {
 
   @override
   ChartView? toView(Context context) {
-    return LineView(context, this);
+    var type = coordType;
+    if (type != null && type.isPolar()) {
+      return LinePolarView(context, this);
+    } else {
+      return LineGridView(context, this);
+    }
   }
 
   @override

@@ -1,10 +1,16 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 import '../stack_view.dart';
 
 abstract class GridView<T extends StackItemData, G extends StackGroupData<T, G>, S extends StackSeries<T, G>,
-    L extends GridHelper<T, G, S>> extends StackView<T, G, S, L> with GridChild {
+    L extends GridHelper<T, G, S>> extends StackView<T, G, S, L> {
   GridView(super.context, super.series);
+
+  @override
+  CoordInfo getEmbedCoord() {
+    return CoordInfo(CoordType.grid, max(0, series.gridIndex));
+  }
 
   @override
   void onDrawGroupBk(CCanvas canvas) {
@@ -50,24 +56,4 @@ abstract class GridView<T extends StackItemData, G extends StackGroupData<T, G>,
     });
   }
 
-  @override
-  int getAxisDataCount(int axisIndex, bool isXAxis) {
-    int count = 0;
-    for (var data in series.data) {
-      if (data.data.length > count) {
-        count = data.data.length;
-      }
-    }
-    return count;
-  }
-
-  @override
-  List<dynamic> getAxisExtreme(int axisIndex, bool isXAxis) {
-    return layoutHelper.getAxisExtreme(axisIndex, isXAxis);
-  }
-
-  @override
-  List getViewPortAxisExtreme(int axisIndex, bool isXAxis, BaseScale scale) {
-    return layoutHelper.getViewPortAxisExtreme(axisIndex, isXAxis, scale);
-  }
 }

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 /// 雷达图布局
@@ -9,14 +8,9 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
 
   List<RadarData> get dataList => _dataList;
 
-  Offset center = Offset.zero;
-  double radius = 0;
-
   @override
   void onLayout(LayoutType type) {
-    var coord = context.findRadarCoord(series.radarIndex);
-    center = coord.getCenter();
-    radius = coord.getRadius();
+    var coord = view.parent as RadarCoord;
 
     var oldList = _dataList;
     var newList = [...series.data];
@@ -59,6 +53,7 @@ class RadarHelper extends LayoutHelper<RadarSeries> {
   }
 
   void initData(List<RadarData> dataList) {
+    var center = (view.parent as RadarCoord).getCenter();
     each(dataList, (group, gi) {
       group.groupIndex = gi;
       group.dataIndex = gi;

@@ -25,6 +25,7 @@ abstract class ChartView with ViewFrame {
 
   @protected
   ViewParent? mParent;
+
   ViewParent? get parent => mParent;
 
   @protected
@@ -258,8 +259,11 @@ abstract class ChartView with ViewFrame {
     if (skipRedraw()) {
       return;
     }
-
-    ///TODO
+    _needDraw = true;
+    var parent = this.parent;
+    if (parent is ChartViewGroup) {
+      parent.requestDraw();
+    }
   }
 
   bool skipRedraw() {
@@ -383,11 +387,7 @@ abstract class ChartView with ViewFrame {
       Logger.w('$c 无法找到能出来该命令相关的回调');
       return;
     }
-    // try {
     op.call(c);
-    // } catch (e) {
-    //   Logger.e(e);
-    // }
   }
 
   void onInvalidateCommand(covariant Command c) {
@@ -424,5 +424,4 @@ abstract class ChartView with ViewFrame {
   }
 
   bool get useZeroWhenMeasureSpecModeIsUnLimit => false;
-
 }

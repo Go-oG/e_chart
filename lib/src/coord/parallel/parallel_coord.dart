@@ -148,13 +148,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
       ///处理轴内部
       Rect rect = Rect.fromLTRB(tmpLeft, tmpTop, tmpRight, tmpBottom);
-      List<dynamic> dataSet = [];
-      for (var ele in children) {
-        if (ele is ParallelChild) {
-          var child = ele as ParallelChild;
-          dataSet.addAll(child.getDimExtreme(axisImpl.axisIndex));
-        }
-      }
+      var dataSet = collectChildDimData(AxisDim(axisImpl.axisIndex));
 
       Offset start, end;
       if (props.direction == Direction.horizontal) {

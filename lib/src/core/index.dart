@@ -27,16 +27,14 @@ export 'render/ccanvas.dart';
 export 'render/core_chart.dart';
 export 'render/element_render.dart';
 
-export 'series/group_series.dart';
-export 'series/hierarchy_series.dart';
-export 'series/list_series.dart';
-export 'series/series.dart';
-
-export 'view/coord_child_view.dart';
+export 'view/attach_info.dart';
+export 'view/drawable.dart';
 export 'view/gesture_view.dart';
-export 'view/series_view.dart';
+export 'view/overlay.dart';
 export 'view/view.dart';
+export 'view/view_frame.dart';
 export 'view/view_group.dart';
+export 'view/view_parent.dart';
 
 export 'chart_notifier.dart';
 export 'command.dart';

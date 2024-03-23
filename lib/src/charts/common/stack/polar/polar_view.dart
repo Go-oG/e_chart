@@ -1,11 +1,10 @@
-import 'dart:ui';
+import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 import '../stack_view.dart';
 
 abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>, S extends StackSeries<T, G>,
-    L extends PolarHelper<T, G, S>> extends StackView<T, G, S, L> with PolarChild {
+    L extends PolarHelper<T, G, S>> extends StackView<T, G, S, L> {
   PolarView(super.context, super.series);
 
   @override
@@ -53,10 +52,7 @@ abstract class PolarView<T extends StackItemData, G extends StackGroupData<T, G>
   }
 
   @override
-  List getPolarExtreme(bool radius) {
-    if (radius) {
-      return layoutHelper.getAxisExtreme(0, true);
-    }
-    return layoutHelper.getAxisExtreme(0, false);
+  CoordInfo getEmbedCoord() {
+    return CoordInfo(CoordType.polar, max(0, series.polarIndex));
   }
 }

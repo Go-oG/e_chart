@@ -61,6 +61,7 @@ class GridCoordImpl extends GridCoord {
       maxW = m.max(maxW, child.width);
       maxH = m.max(maxH, child.height);
     }
+
     var opw = pw;
     var oph = ph;
     if (lp.width.isWrap) {
@@ -126,7 +127,7 @@ class GridCoordImpl extends GridCoord {
     double axisWith = width - (rightOffset + leftOffset);
     double axisHeight = height - (topOffset + bottomOffset);
     contentBox = Rect.fromLTWH(leftOffset, topOffset, axisWith, axisHeight);
-    List<GridChild> childList = getGridChildList();
+    List<CoordChild> childList = getCoordChildList();
 
     ///布局X轴
     layoutXAxis(childList, contentBox, false, true);
@@ -174,7 +175,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   ///布局X轴
-  void layoutXAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme, bool force) {
+  void layoutXAxis(List<CoordChild> childList, Rect contentBox, bool useViewPortExtreme, bool force) {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
     bool needAlignTick = false;
@@ -193,9 +194,10 @@ class GridCoordImpl extends GridCoord {
       }
       List<dynamic> dl = [];
       for (var child in childList) {
+        var dim = GridAxisDim(true, axis.axisIndex);
         var rl = useViewPortExtreme
-            ? child.getViewPortAxisExtreme(axis.axisIndex, true, axis.scale)
-            : child.getAxisExtreme(axis.axisIndex, true);
+            ? child.getViewPortAxisExtreme(coordType, dim, axis.scale)
+            : child.getAxisExtreme(coordType, dim);
         dl.addAll(rl);
       }
       extremeMap[axis] = dl;
@@ -241,7 +243,7 @@ class GridCoordImpl extends GridCoord {
     });
   }
 
-  void layoutYAxis(List<GridChild> childList, Rect contentBox, bool useViewPortExtreme, bool force) {
+  void layoutYAxis(List<CoordChild> childList, Rect contentBox, bool useViewPortExtreme, bool force) {
     List<YAxisImpl> leftList = [];
     List<YAxisImpl> rightList = [];
     Map<YAxisImpl, List<dynamic>> extremeMap = {};
@@ -259,9 +261,10 @@ class GridCoordImpl extends GridCoord {
       }
       List<dynamic> dl = [];
       for (var child in childList) {
+        var dim = GridAxisDim(false, axis.axisIndex);
         var rl = useViewPortExtreme
-            ? child.getViewPortAxisExtreme(axis.axisIndex, false, axis.scale)
-            : child.getAxisExtreme(axis.axisIndex, false);
+            ? child.getViewPortAxisExtreme(coordType, dim, axis.scale)
+            : child.getAxisExtreme(coordType, dim);
         dl.addAll(rl);
       }
       extremeMap[axis] = dl;
@@ -338,9 +341,9 @@ class GridCoordImpl extends GridCoord {
   @override
   void onRelayoutAxisByChild(bool xAxis, bool notifyInvalidate) {
     if (xAxis) {
-      layoutXAxis(getGridChildList(), contentBox, true, false);
+      layoutXAxis(getCoordChildList(), contentBox, true, false);
     } else {
-      layoutYAxis(getGridChildList(), contentBox, true, false);
+      layoutYAxis(getCoordChildList(), contentBox, true, false);
     }
     context.dispatchEvent(AxisChangeEvent(
         this,
@@ -534,17 +537,6 @@ class GridCoordImpl extends GridCoord {
       }
     }
     return false;
-  }
-
-  @override
-  List<GridChild> getGridChildList() {
-    List<GridChild> list = [];
-    for (var child in children) {
-      if (child is GridChild) {
-        list.add(child as GridChild);
-      }
-    }
-    return list;
   }
 
   @override
@@ -840,8 +832,6 @@ abstract class GridCoord extends CoordLayout<Grid> {
 
   double getAxisLength(int axisIndex, bool isXAxis);
 
-  List<GridChild> getGridChildList();
-
   ///=====下面的方法由子视图回调
   ///当子视图的数据集发生改变时需要重新布局确定坐标系
   void onChildDataSetChange(bool layoutChild);
@@ -865,8 +855,9 @@ abstract class GridCoord extends CoordLayout<Grid> {
     DynamicText maxStr = DynamicText.empty;
     Size size = Size.zero;
     bool isXAxis = direction == Direction.horizontal;
-    for (var ele in getGridChildList()) {
-      DynamicText text = ele.getAxisMaxText(axisIndex, isXAxis);
+    var dim = GridAxisDim(isXAxis, axisIndex);
+    for (var ele in getCoordChildList()) {
+      var text = ele.getAxisMaxText(coordType, dim);
       if ((maxStr.isString || maxStr.isTextSpan) && (text.isString || text.isTextSpan)) {
         if (text.length > maxStr.length) {
           maxStr = text;
@@ -884,4 +875,5 @@ abstract class GridCoord extends CoordLayout<Grid> {
     }
     return maxStr;
   }
+
 }

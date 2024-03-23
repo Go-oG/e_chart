@@ -232,11 +232,6 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T, P>, S exte
   }
 
   @override
-  Offset getTranslation() {
-    return findGridCoord().translation;
-  }
-
-  @override
   Offset getMaxTranslation() {
     return findGridCoord().getMaxScroll();
   }

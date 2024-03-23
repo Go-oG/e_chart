@@ -68,43 +68,20 @@ class PolarCoordImpl extends PolarCoord {
       scrollY: translationY,
       clockwise: props.angleAxis.clockwise,
     );
-
-    angleAxis.doLayout(angleAttrs, _getAngleDataSet());
+    var angleDim = const PolarAxisDim(false, 0);
+    angleAxis.doLayout(angleAttrs,collectChildDimData(angleDim));
 
     num angle = props.radiusAxis.offsetAngle;
     Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
     Offset eo = circlePoint(or, angle, center);
 
     var radiusAttrs = RadiusAxisAttrs(center, angle, contentBox, so, eo);
-    radiusAxis.doLayout(radiusAttrs, _getRadiusDataSet());
+    var radiusDim = const PolarAxisDim(true, 0);
+    radiusAxis.doLayout(radiusAttrs,collectChildDimData(radiusDim));
 
     for (var c in children) {
       c.layout(0, 0, width, height);
     }
-  }
-
-  List<dynamic> _getAngleDataSet() {
-    List<dynamic> list = [];
-    for (var child in children) {
-      if (child is! PolarChild) {
-        continue;
-      }
-      PolarChild c = child as PolarChild;
-      list.addAll(c.getPolarExtreme(false));
-    }
-    return list;
-  }
-
-  List<dynamic> _getRadiusDataSet() {
-    List<dynamic> list = [];
-    for (var child in children) {
-      if (child is! PolarChild) {
-        continue;
-      }
-      PolarChild c = child as PolarChild;
-      list.addAll(c.getPolarExtreme(true));
-    }
-    return list;
   }
 
   @override

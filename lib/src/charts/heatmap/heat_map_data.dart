@@ -6,7 +6,6 @@ class HeatMapData extends RenderData<Rect> {
   dynamic y;
   num value = 0;
 
-
   HeatMapData(
     this.x,
     this.y,

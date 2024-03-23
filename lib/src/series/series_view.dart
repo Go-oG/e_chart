@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
@@ -148,5 +149,51 @@ abstract class SeriesView<T extends ChartSeries, L extends LayoutHelper> extends
     _scaleEvent!.originY = originY;
     _scaleEvent!.originX = originX;
     context.dispatchEvent(_scaleEvent!);
+  }
+}
+
+abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> extends SeriesView<T, L>
+    implements CoordChild {
+  CoordChildView(super.context, super.series);
+
+  @override
+  bool get enableDrag => false;
+
+  @override
+  bool get enableScale => false;
+
+  @override
+  CoordInfo getEmbedCoord() {
+    var type = series.coordType;
+    if (type == null) {
+      throw ChartError("You should override this method");
+    }
+    if (type.isGrid()) {
+      return CoordInfo(type, max(0, series.gridIndex));
+    }
+    if (type.isPolar()) {
+      return CoordInfo(type, max(0, series.polarIndex));
+    }
+    if (type.isCalendar()) {
+      return CoordInfo(type, max(0, series.calendarIndex));
+    }
+    if (type.isRadar()) {
+      return CoordInfo(type, max(0, series.radarIndex));
+    }
+    if (type.isParallel()) {
+      return CoordInfo(type, max(0, series.polarIndex));
+    }
+
+    return CoordInfo(type, 0);
+  }
+
+  @override
+  Iterable<dynamic> getViewPortAxisExtreme(CoordType type, AxisDim axisDim, BaseScale<dynamic, num> scale) {
+    return getAxisExtreme(type, axisDim);
+  }
+
+  @override
+  void syncScroll(double scrollX, double scrollY) {
+    scrollTo(scrollX, scrollY);
   }
 }

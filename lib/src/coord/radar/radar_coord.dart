@@ -67,7 +67,8 @@ class RadarCoordImpl extends RadarCoord {
       attrs.scrollX = translationX;
       attrs.start = center;
       attrs.end = o;
-      axis.doLayout(attrs, collectChildData(i));
+      var dim = AxisDim(i);
+      axis.doLayout(attrs, collectChildDimData(dim));
     });
 
     double rInterval = radius / props.splitNumber;
@@ -98,19 +99,6 @@ class RadarCoordImpl extends RadarCoord {
     for (var child in children) {
       child.layout(0, 0, width, height);
     }
-  }
-
-  List<dynamic> collectChildData(int dim) {
-    List<dynamic> list = [];
-    for (var child in children) {
-      if (child is! RadarChild) {
-        continue;
-      }
-      (child as RadarChild).getRadarExtreme(dim).forEach((element) {
-        list.add(element);
-      });
-    }
-    return list;
   }
 
   @override

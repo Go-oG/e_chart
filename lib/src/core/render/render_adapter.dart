@@ -18,7 +18,6 @@ final class RenderAdapter extends RenderBox implements ViewParent {
     attachInfo = AttachInfo(this);
     var dp = WidgetsBinding.instance.platformDispatcher.displays.first.devicePixelRatio;
     _context = Context(option, provider, dp);
-
     _initRender(option, provider, size);
   }
 
@@ -127,39 +126,26 @@ final class RenderAdapter extends RenderBox implements ViewParent {
   }
 
   CoordLayout? _findCoord(ChartView view, ChartSeries series) {
-    var coord = series.coordType;
-    if (coord != null) {
-      if (coord == CoordType.grid) {
-        return findGridCoord();
-      }
-      if (coord == CoordType.polar) {
-        return findPolarCoord(series.polarIndex);
-      }
-      if (coord == CoordType.radar) {
-        return findRadarCoord(series.radarIndex);
-      }
-      if (coord == CoordType.parallel) {
-        return findParallelCoord(series.parallelIndex);
-      }
-      if (coord == CoordType.calendar) {
-        return findCalendarCoord(series.calendarIndex);
-      }
+    if (view is! CoordChild) {
+      return null;
     }
-    if (view is GridChild) {
+    var coordInfo = (view as CoordChild).getEmbedCoord();
+    var coord = coordInfo.type;
+    var index = coordInfo.index;
+    if (coord == CoordType.grid) {
       return findGridCoord();
     }
-    if (view is PolarChild) {
-      return findPolarCoord((view as PolarChild).polarIndex);
+    if (coord == CoordType.polar) {
+      return findPolarCoord(index);
     }
-    if (view is RadarChild) {
-      return findRadarCoord((view as RadarChild).radarIndex);
+    if (coord == CoordType.radar) {
+      return findRadarCoord(index);
     }
-    if (view is ParallelChild) {
-      return findParallelCoord((view as ParallelChild).parallelIndex);
+    if (coord == CoordType.parallel) {
+      return findParallelCoord(index);
     }
-
-    if (view is CalendarChild) {
-      return findCalendarCoord((view as CalendarChild).calendarIndex);
+    if (coord == CoordType.calendar) {
+      return findCalendarCoord(index);
     }
     return null;
   }
