@@ -56,38 +56,21 @@ class GridCoordImpl extends GridCoord {
     double ph = lp.height.convert(parentHeight - layoutParams.vPadding);
     double maxW = 0;
     double maxH = 0;
+    var ws=MeasureSpec.exactly(pw);
+    var hs=MeasureSpec.exactly(ph);
     for (var child in children) {
-      child.measure(pw, ph);
+      child.measure(ws, hs);
       maxW = m.max(maxW, child.width);
       maxH = m.max(maxH, child.height);
     }
 
-    var opw = pw;
-    var oph = ph;
-    if (lp.width.isWrap) {
-      pw = maxW;
-      pw = m.min(pw, opw);
-    }
-    if (lp.height.isWrap) {
-      ph = maxH;
-      pw = m.min(pw, oph);
-    }
-
-    if (pw != opw || ph != oph) {
-      for (var child in children) {
-        child.measure(pw, ph);
-        maxW = m.max(maxW, child.width);
-        maxH = m.max(maxH, child.height);
-      }
-    }
-
-    xMap.forEach((key, value) {
-      value.onMeasure(pw, ph);
-    });
-    yMap.forEach((key, value) {
-      value.onMeasure(pw, ph);
-    });
-    return Size(pw, ph);
+    // xMap.forEach((key, value) {
+    //   value.onMeasure(pw, ph);
+    // });
+    // yMap.forEach((key, value) {
+    //   value.onMeasure(pw, ph);
+    // });
+    return Size(parentWidth, parentHeight);
   }
 
   @override
