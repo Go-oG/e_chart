@@ -1,4 +1,4 @@
-import '../../option/axis/base_axis.dart';
+import 'base_axis.dart';
 
 ///平行坐标系坐标轴
 

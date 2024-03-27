@@ -10,18 +10,15 @@ class GridCoordImpl extends GridCoord {
 
   GridCoordImpl(super.context, super.props) {
     layoutParams = LayoutParams.matchAll();
-  }
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    xMap.clear();
-    yMap.clear();
     each(props.xAxisList, (ele, p1) {
-      xMap[ele] = XAxisImpl(Direction.horizontal, this, context, ele, axisIndex: p1);
+      var view = XAxisImpl(Direction.horizontal, this, context, ele, axisIndex: p1);
+      addView(view);
+      xMap[ele] = view;
     });
     each(props.yAxisList, (axis, p1) {
-      yMap[axis] = YAxisImpl(Direction.vertical, this, context, axis, axisIndex: p1);
+      var view = YAxisImpl(Direction.vertical, this, context, axis, axisIndex: p1);
+      yMap[axis] = view;
+      addView(view);
     });
   }
 
@@ -56,20 +53,13 @@ class GridCoordImpl extends GridCoord {
     double ph = lp.height.convert(parentHeight - layoutParams.vPadding);
     double maxW = 0;
     double maxH = 0;
-    var ws=MeasureSpec.exactly(pw);
-    var hs=MeasureSpec.exactly(ph);
+    var ws = MeasureSpec.exactly(pw);
+    var hs = MeasureSpec.exactly(ph);
     for (var child in children) {
       child.measure(ws, hs);
       maxW = m.max(maxW, child.width);
       maxH = m.max(maxH, child.height);
     }
-
-    // xMap.forEach((key, value) {
-    //   value.onMeasure(pw, ph);
-    // });
-    // yMap.forEach((key, value) {
-    //   value.onMeasure(pw, ph);
-    // });
     return Size(parentWidth, parentHeight);
   }
 
@@ -179,7 +169,7 @@ class GridCoordImpl extends GridCoord {
       for (var child in childList) {
         var dim = GridAxisDim(true, axis.axisIndex);
         var rl = useViewPortExtreme
-            ? child.getViewPortAxisExtreme(coordType, dim, axis.scale)
+            ? child.getViewPortAxisExtreme(coordType, dim, axis.axisScale)
             : child.getAxisExtreme(coordType, dim);
         dl.addAll(rl);
       }
@@ -198,10 +188,12 @@ class GridCoordImpl extends GridCoord {
       attrs.end = rect.bottomRight;
       attrs.rect = rect;
       topOffset -= (h + value.axis.offset);
-      value.doLayout(attrs, extremeMap[value] ?? []);
+
+      value.updateAttr(attrs, extremeMap[value] ?? []);
+      value.layout(rect.left, rect.top, rect.right, rect.bottom);
 
       if (needAlignTick && i == 0) {
-        splitCount = value.scale.tickCount - 1;
+        splitCount = value.axisScale.tickCount - 1;
       }
     });
 
@@ -219,9 +211,11 @@ class GridCoordImpl extends GridCoord {
       attrs.rect = rect;
 
       bottomOffset += (h + value.axis.offset);
-      value.doLayout(attrs, extremeMap[value] ?? []);
+      value.updateAttr(attrs, extremeMap[value] ?? []);
+      value.layout(rect.left, rect.top, rect.right, rect.bottom);
+
       if (needAlignTick && splitCount == null && i == 0) {
-        splitCount = value.scale.tickCount - 1;
+        splitCount = value.axisScale.tickCount - 1;
       }
     });
   }
@@ -246,7 +240,7 @@ class GridCoordImpl extends GridCoord {
       for (var child in childList) {
         var dim = GridAxisDim(false, axis.axisIndex);
         var rl = useViewPortExtreme
-            ? child.getViewPortAxisExtreme(coordType, dim, axis.scale)
+            ? child.getViewPortAxisExtreme(coordType, dim, axis.axisScale)
             : child.getAxisExtreme(coordType, dim);
         dl.addAll(rl);
       }
@@ -273,18 +267,20 @@ class GridCoordImpl extends GridCoord {
       attrs.rect = rect;
 
       rightOffset -= w;
-      if (!force && useViewPortExtreme && dl.length >= 2 && value.scale.isNum) {
+      if (!force && useViewPortExtreme && dl.length >= 2 && value.axisScale.isNum) {
         dl.sort();
-        if (value.scale.domain.first == dl.first && value.scale.domain.last == dl.last) {
+        if (value.axisScale.domain.first == dl.first && value.axisScale.domain.last == dl.last) {
         } else {
-          value.doLayout(attrs, dl);
+          value.updateAttr(attrs, dl);
+          value.layout(rect.left, rect.top, rect.right, rect.bottom);
         }
       } else {
-        value.doLayout(attrs, dl);
+        value.updateAttr(attrs, dl);
+        value.layout(rect.left, rect.top, rect.right, rect.bottom);
       }
 
       if (needAlignTick && i == 0) {
-        splitCount = value.scale.tickCount - 1;
+        splitCount = value.axisScale.tickCount - 1;
       }
     });
 
@@ -306,9 +302,11 @@ class GridCoordImpl extends GridCoord {
       attrs.rect = rect;
 
       leftOffset += w;
-      value.doLayout(attrs, dl);
+
+      value.updateAttr(attrs, dl);
+      value.layout(rect.left, rect.top, rect.right, rect.bottom);
       if (needAlignTick && splitCount == null && i == 0) {
-        splitCount = value.scale.tickCount - 1;
+        splitCount = value.axisScale.tickCount - 1;
       }
     });
   }
@@ -340,10 +338,10 @@ class GridCoordImpl extends GridCoord {
   @override
   void onDraw(CCanvas canvas) {
     xMap.forEach((key, value) {
-      value.draw(canvas, mPaint);
+      value.draw(canvas);
     });
     yMap.forEach((key, value) {
-      value.draw(canvas, mPaint);
+      value.draw(canvas);
     });
   }
 
@@ -365,28 +363,24 @@ class GridCoordImpl extends GridCoord {
     if (!contentBox.contains(offset)) {
       return;
     }
+
     if (diff.dx != 0 && diff.dy != 0) {
       throw ChartError("只支持在一个方向滚动");
     }
 
     Offset old = viewPort.translation;
     Offset sc = viewPort.scroll(diff);
-    bool hasChange = false;
-    if ((sc.dx - old.dx).abs() > 1e-6) {
-      hasChange = true;
+
+    if (sc.dx != old.dx || sc.dy != old.dy) {
       xMap.forEach((key, value) {
         value.attrs.scrollX = sc.dx;
-        value.onScrollChange(sc.dx);
+        value.syncScroll(CoordType.grid, sc.dx, sc.dy);
       });
-    }
-    if ((sc.dy - old.dy).abs() > 1e-6) {
-      hasChange = true;
       yMap.forEach((key, value) {
         value.attrs.scrollY = sc.dy;
-        value.onScrollChange(sc.dy);
+        value.syncScroll(CoordType.grid, sc.dx, sc.dy);
       });
-    }
-    if (hasChange) {
+
       if (diff.dx != 0) {
         context
             .dispatchEvent(AxisScrollEvent(this, xMap.values.toList(growable: false), diff.dx, Direction.horizontal));
@@ -578,9 +572,9 @@ class GridCoordImpl extends GridCoord {
   @override
   BaseScale<dynamic, num> getScale(int axisIndex, bool isXAxis) {
     if (isXAxis) {
-      return getXAxis(axisIndex).scale;
+      return getXAxis(axisIndex).axisScale;
     }
-    return getYAxis(axisIndex).scale;
+    return getYAxis(axisIndex).axisScale;
   }
 
   @override
@@ -628,7 +622,7 @@ class GridCoordImpl extends GridCoord {
   double getMaxXScroll() {
     double dx = 0;
     xMap.forEach((key, value) {
-      List<num> rv = value.scale.range;
+      List<num> rv = value.axisScale.range;
       double diff = (rv[0] - rv[1]).abs().toDouble();
       if (diff > contentBox.width) {
         diff = diff - contentBox.width;
@@ -644,7 +638,7 @@ class GridCoordImpl extends GridCoord {
   double getMaxYScroll() {
     double dy = 0;
     yMap.forEach((key, value) {
-      List<num> rv = value.scale.range;
+      List<num> rv = value.axisScale.range;
       double diff = (rv[0] - rv[1]).abs().toDouble();
       if (diff > contentBox.height) {
         diff = diff - contentBox.height;
@@ -858,5 +852,4 @@ abstract class GridCoord extends CoordLayout<Grid> {
     }
     return maxStr;
   }
-
 }

@@ -1,5 +1,5 @@
-import '../../option/axis/base_axis.dart';
-import '../../option/axis/axis_type.dart';
+import 'base_axis.dart';
+import 'axis_type.dart';
 
 ///雷达图坐标轴
 class RadarAxis extends BaseAxis {

@@ -2,15 +2,11 @@ import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/component/axis/axis_drawable_type.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends ChartNotifier2 {
+abstract class AxisView<T extends BaseAxis, L extends AxisAttrs> extends GestureView {
   static final List<Drawable> _emptyDrawableList = List.empty(growable: false);
 
   T get axis => _axis!;
   T? _axis;
-
-  Context? _context;
-
-  Context get context => _context!;
 
   L? _attrs;
 
@@ -26,24 +22,26 @@ abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends Cha
 
   int axisIndex;
 
-  BaseAxisView(
-    this._context,
+  AxisView(
+    super.context,
     this._axis, {
     this.axisIndex = 0,
   }) {
+    layoutParams = LayoutParams.matchAll();
     titleNode = AxisTitleRender(axis.axisName);
   }
 
   ///存储坐标轴相关的节点
   final Map<AxisDrawableType, List<Drawable>> _elementMap = {};
 
-  set scale(BaseScale bs) {
-    _scale?.dispose();
-    _scale = bs;
+  set axisScale(BaseScale bs) {
+    _axisScale?.dispose();
+    _axisScale = bs;
   }
 
-  BaseScale get scale => _scale!;
-  BaseScale? _scale;
+  BaseScale get axisScale => _axisScale!;
+
+  BaseScale? _axisScale;
 
   AxisTitleRender get titleNode => _titleNode!;
   AxisTitleRender? _titleNode;
@@ -55,38 +53,33 @@ abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends Cha
 
   @override
   void dispose() {
-    _context = null;
+    _axisScale?.dispose();
     _axis = null;
     attrs.dispose();
     titleNode.dispose();
-    scale.dispose();
     titleNode = AxisTitleRender(null);
     super.dispose();
   }
 
   void onAttrsChange(L oldAttrs) {
-    List<dynamic> dl = scale.domain;
-    scale = onBuildScale(attrs, dl);
-    onLayout(attrs, scale);
+    List<dynamic> dl = axisScale.domain;
+    axisScale = onBuildScale(attrs, dl);
+    onLayout(false, left, top, right, bottom);
   }
 
-  ///================测量===================
-  void onMeasure(double parentWidth, double parentHeight) {}
-
-  ///==================布局===========
-  void doLayout(L attrs, List<dynamic> dataSet) {
+  void updateAttr(L attrs, List<dynamic> dataSet) {
     _attrs = attrs;
-    scale = onBuildScale(attrs, dataSet);
-    onLayout(attrs, scale);
+    axisScale = onBuildScale(attrs, dataSet);
   }
 
-  void onLayout(L attrs, BaseScale scale) {
-    updateRenders(AxisDrawableType.line, onLayoutAxisLine(attrs, scale));
-    updateRenders(AxisDrawableType.tick, onLayoutAxisTick(attrs, scale));
-    updateRenders(AxisDrawableType.label, onLayoutAxisLabel(attrs, scale));
-    updateRenders(AxisDrawableType.splitLine, onLayoutSplitLine(attrs, scale));
-    updateRenders(AxisDrawableType.splitArea, onLayoutSplitArea(attrs, scale));
-    updateRenders(AxisDrawableType.title, onLayoutAxisTitle(attrs, scale));
+  @override
+  void onLayout(bool changed, double left, double top, double right, double bottom) {
+    updateRenders(AxisDrawableType.line, onLayoutAxisLine(attrs, axisScale));
+    updateRenders(AxisDrawableType.tick, onLayoutAxisTick(attrs, axisScale));
+    updateRenders(AxisDrawableType.label, onLayoutAxisLabel(attrs, axisScale));
+    updateRenders(AxisDrawableType.splitLine, onLayoutSplitLine(attrs, axisScale));
+    updateRenders(AxisDrawableType.splitArea, onLayoutSplitArea(attrs, axisScale));
+    updateRenders(AxisDrawableType.title, onLayoutAxisTitle(attrs, axisScale));
   }
 
   L onBuildDefaultAttrs();
@@ -107,13 +100,14 @@ abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends Cha
 
   ///==========绘制=============
 
-  void draw(CCanvas canvas, Paint paint) {
-    onDrawAxisSplitArea(canvas, paint);
-    onDrawAxisSplitLine(canvas, paint);
-    onDrawAxisLine(canvas, paint);
-    onDrawAxisTick(canvas, paint);
-    onDrawAxisLabel(canvas, paint);
-    onDrawAxisTitle(canvas, paint);
+  @override
+  void onDraw(CCanvas canvas) {
+    onDrawAxisSplitArea(canvas, mPaint);
+    onDrawAxisSplitLine(canvas, mPaint);
+    onDrawAxisLine(canvas, mPaint);
+    onDrawAxisTick(canvas, mPaint);
+    onDrawAxisLabel(canvas, mPaint);
+    onDrawAxisTitle(canvas, mPaint);
   }
 
   void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {
@@ -178,19 +172,19 @@ abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends Cha
 
   ///返回全部的的Label
   List<DynamicText> obtainLabel() {
-    if (scale is CategoryScale) {
-      return List.from(scale.labels.map((e) => DynamicText(e)));
+    if (axisScale is CategoryScale) {
+      return List.from(axisScale.labels.map((e) => DynamicText(e)));
     }
     var formatter = axis.axisLabel.formatter;
     List<DynamicText> labels = [];
-    if (scale is TimeScale) {
-      for (var ele in scale.labels) {
+    if (axisScale is TimeScale) {
+      for (var ele in axisScale.labels) {
         labels.add(axis.formatData(ele));
       }
       return labels;
     }
-    if (scale is LinearScale || scale is LogScale) {
-      labels = List.from(scale.labels.map((e) {
+    if (axisScale is LinearScale || axisScale is LogScale) {
+      labels = List.from(axisScale.labels.map((e) {
         if (formatter != null) {
           return formatter.call(e);
         } else {
@@ -204,7 +198,7 @@ abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends Cha
   ///获取Label 通过给定的Tick索引范围
   List<DynamicText> obtainLabel2(int startIndex, int endIndex) {
     List<DynamicText> rl = [];
-    List<dynamic> dl = scale.getRangeLabel(startIndex, endIndex);
+    List<dynamic> dl = axisScale.getRangeLabel(startIndex, endIndex);
     for (var data in dl) {
       rl.add(axis.formatData(data));
     }
@@ -213,14 +207,16 @@ abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends Cha
 
   ///判断当前坐标轴是否和数据相匹配
   bool matchType(dynamic data) {
-    if (data is String && scale.isCategory) {
+    if (data is String && axisScale.isCategory) {
       return true;
     }
-    if (data is DateTime && scale.isTime) {
+    if (data is DateTime && axisScale.isTime) {
       return true;
     }
     return data is num;
   }
+
+  void syncScroll(CoordType type, double scrollX, double scrollY) {}
 
   AxisType get axisType {
     if (axis.categoryList.isNotEmpty || axis.type == AxisType.category) {
@@ -253,14 +249,6 @@ abstract class BaseAxisView<T extends BaseAxis, L extends AxisAttrs> extends Cha
       });
     }
     _elementMap[type] = list ?? _emptyDrawableList;
-  }
-
-  void notifyLayoutUpdate() {
-    value = Command.layoutUpdate;
-  }
-
-  void notifyLayoutEnd() {
-    value = Command.layoutEnd;
   }
 
   List<Drawable> get lineList => getAxisElementRender(AxisDrawableType.line);

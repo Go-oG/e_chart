@@ -6,7 +6,7 @@ import 'package:e_chart/e_chart.dart';
 ///一般是由于用户滚动操作触发
 class AxisScrollEvent extends ChartEvent {
   final CoordLayout coord;
-  final List<BaseAxisView> axis;
+  final List<AxisView> axis;
   Direction? direction;
   double scrollOffset;
 
@@ -29,7 +29,7 @@ class AxisScrollEvent extends ChartEvent {
 
 class AxisChangeEvent extends ChartEvent {
   final CoordLayout coord;
-  final List<BaseAxisView> axis;
+  final List<AxisView> axis;
   final Direction direction;
 
   CoordType get coordType => coord.coordType;

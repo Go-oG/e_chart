@@ -7,9 +7,10 @@ class YAxisImpl extends XAxisImpl {
   YAxisImpl(super.direction, super.coord, super.context, super.axis, {super.axisIndex});
 
   @override
-  void onMeasure(double parentWidth, double parentHeight) {
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     if (!axis.show) {
       axisSize = 0;
+      setMeasuredDimension(0, heightSpec.size);
       return;
     }
 
@@ -29,12 +30,14 @@ class YAxisImpl extends XAxisImpl {
       }
     }
     axisSize = width;
+
+    setMeasuredDimension(width, heightSpec.size);
   }
 
   @override
   List<Offset> dataToPoint(dynamic data) {
     checkDataType(data);
-    List<num> nl = scale.toRange(data);
+    List<num> nl = axisScale.toRange(data);
     List<Offset> ol = [];
     final double h = coord.contentBox.height;
     for (var d in nl) {
@@ -68,6 +71,6 @@ class YAxisImpl extends XAxisImpl {
 
   @override
   dynamic pxToData(num position) {
-    return scale.toData(position);
+    return axisScale.toData(position);
   }
 }

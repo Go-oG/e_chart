@@ -7,8 +7,8 @@ export 'grid/grid_axis_dim.dart';
 export 'grid/grid_coord.dart';
 
 export 'parallel/parallel.dart';
-export 'parallel/parallel_axis.dart';
-export 'parallel/parallel_axis_impl.dart';
+export '../option/axis/axis_parallel.dart';
+export 'parallel/parallel_axis_view.dart';
 export 'parallel/parallel_coord.dart';
 
 export 'polar/polar.dart';
@@ -16,8 +16,8 @@ export 'polar/polar_axis_dim.dart';
 export 'polar/polar_coord.dart';
 
 export 'radar/radar.dart';
-export 'radar/radar_axis.dart';
-export 'radar/radar_axis_impl.dart';
+export '../option/axis/axis_radar.dart';
+export 'radar/radar_axis_view.dart';
 export 'radar/radar_coord.dart';
 
 export 'single/single_layout.dart';

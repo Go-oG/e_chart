@@ -5,25 +5,16 @@ import 'package:flutter/material.dart';
 
 ///平行坐标系
 class ParallelCoordImpl extends ParallelCoord {
-  final Map<ParallelAxis, ParallelAxisImpl> axisMap = {};
+  final Map<ParallelAxis, ParallelAxisView> axisMap = {};
 
-  ParallelCoordImpl(super.context, super.props);
-
-  void initAxis() {
-    axisMap.clear();
-
-    ///翻转方向
+  ParallelCoordImpl(super.context, super.props) {
     var direction = props.direction == Direction.vertical ? Direction.horizontal : Direction.vertical;
     for (int i = 0; i < props.axisList.length; i++) {
       var ele = props.axisList[i];
-      axisMap[ele] = ParallelAxisImpl(context, ele, direction, axisIndex: i);
+      var view = ParallelAxisView(context, ele, direction, axisIndex: i);
+      axisMap[ele] = view;
+      addView(view);
     }
-  }
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    initAxis();
   }
 
   @override
@@ -39,8 +30,8 @@ class ParallelCoordImpl extends ParallelCoord {
   bool get enableScale => false;
 
   ///找到离点击点最近的轴
-  ParallelAxisImpl? findMinDistanceAxis(Offset offset) {
-    ParallelAxisImpl? node;
+  ParallelAxisView? findMinDistanceAxis(Offset offset) {
+    ParallelAxisView? node;
     num distance = 0;
     for (var ele in axisMap.values) {
       if (node == null) {
@@ -66,7 +57,7 @@ class ParallelCoordImpl extends ParallelCoord {
     return node;
   }
 
-  bool isFirstAxis(BaseAxisView node) {
+  bool isFirstAxis(AxisView node) {
     bool hasCheck = false;
     for (var axis in props.axisList) {
       var node2 = axisMap[axis]!;
@@ -77,7 +68,7 @@ class ParallelCoordImpl extends ParallelCoord {
     return false;
   }
 
-  bool isLastAxis(BaseAxisView node) {
+  bool isLastAxis(AxisView node) {
     bool hasCheck = false;
     for (int i = props.axisList.length - 1; i >= 0; i--) {
       var node2 = axisMap[props.axisList[i]]!;
@@ -165,24 +156,27 @@ class ParallelCoordImpl extends ParallelCoord {
       attrs.textStartSize = textSize[0];
       attrs.textEndSize = textSize[1];
       attrs.rect = rect;
-      axisImpl.doLayout(attrs, dataSet);
+      axisImpl.updateAttr(attrs, dataSet);
+      axisImpl.layout(rect.left, 0, rect.right, height);
     }
 
     for (var ele in children) {
-      ele.layout(0, 0, width, height);
+      if (ele is! AxisView) {
+        ele.layout(0, 0, width, height);
+      }
     }
   }
 
   @override
   void onDraw(CCanvas canvas) {
     for (var ele in axisMap.entries) {
-      ele.value.draw(canvas, mPaint);
+      ele.value.draw(canvas);
     }
   }
 
   ///找到当前点击的
-  BaseAxisView? findClickAxis(Offset offset) {
-    BaseAxisView? node;
+  AxisView? findClickAxis(Offset offset) {
+    AxisView? node;
     for (var ele in axisMap.entries) {
       List<Offset> ol;
       if (props.direction == Direction.horizontal) {
@@ -201,7 +195,7 @@ class ParallelCoordImpl extends ParallelCoord {
   @override
   ParallelPosition dataToPosition(int dimIndex, dynamic data) {
     checkDataType(data);
-    ParallelAxisImpl node = axisMap[props.axisList[dimIndex]]!;
+    ParallelAxisView node = axisMap[props.axisList[dimIndex]]!;
     return ParallelPosition(node.dataToPoint(data));
   }
 

@@ -229,11 +229,11 @@ abstract class CircleCoordLayout<T extends CircleCoord> extends CoordLayout<T> {
   CircleCoordLayout(super.context, super.props);
 
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     double w = widthSpec.size;
     double h = heightSpec.size;
     double d = props.radius.last.convert(min(w, h));
-    return Size(d, d);
+    setMeasuredDimension(d, d);
   }
 
   @override

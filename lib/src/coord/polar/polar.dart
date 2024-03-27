@@ -1,8 +1,8 @@
 import 'package:e_chart/src/coord/index.dart';
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
-import '../../component/index.dart';
 import '../../core/context.dart';
+import '../../option/index.dart';
 
 ///极坐标系
 ///一个极坐标系只能包含一个径向轴和一个角度轴

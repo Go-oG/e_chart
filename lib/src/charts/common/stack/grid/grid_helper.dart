@@ -18,7 +18,6 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T, P>, S exte
 
   @override
   void doLayout(bool changed, LayoutType type) {
-    subscribeAxisScrollEvent();
     subscribeAxisChangeEvent();
     super.doLayout(changed, type);
   }
@@ -177,26 +176,23 @@ class GridHelper<T extends StackItemData, P extends StackGroupData<T, P>, S exte
   }
 
   @override
-  void onAxisScroll(AxisScrollEvent event) {
-    if (event.coordType != CoordType.grid) {
+  void onSyncScroll(CoordType type, double scrollX, double scrollY) {
+    if (type != CoordType.grid) {
       return;
     }
-    if (event.coordViewId != findGridCoord().id) {
-      return;
+    if (scrollX != 0) {
+      view.scrollX = scrollX;
     }
-    if (event.direction == null) {
-      throw ChartError('缺失滚动方向');
+    if (scrollY != 0) {
+      view.scrollY = scrollY;
     }
-    bool xAxis = event.direction == Direction.vertical;
-    if (event.direction == Direction.horizontal) {
-      translationX = event.scrollOffset;
-    } else {
-      translationY = event.scrollOffset;
-    }
+
     onLayout(LayoutType.none);
+
     if (series.dynamicRange) {
-      findGridCoord().onRelayoutAxisByChild(xAxis, false);
+      findGridCoord().onRelayoutAxisByChild(scrollY == 0, false);
     }
+
     notifyLayoutUpdate();
   }
 

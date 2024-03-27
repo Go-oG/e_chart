@@ -181,7 +181,7 @@ abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> ext
       return CoordInfo(type, max(0, series.radarIndex));
     }
     if (type.isParallel()) {
-      return CoordInfo(type, max(0, series.polarIndex));
+      return CoordInfo(type, max(0, series.parallelIndex));
     }
 
     return CoordInfo(type, 0);
@@ -193,7 +193,7 @@ abstract class CoordChildView<T extends ChartSeries, L extends LayoutHelper> ext
   }
 
   @override
-  void syncScroll(double scrollX, double scrollY) {
+  void syncScroll(CoordType type, double scrollX, double scrollY) {
     scrollTo(scrollX, scrollY);
   }
 }

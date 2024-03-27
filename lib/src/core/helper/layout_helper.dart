@@ -84,7 +84,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     unsubscribeLegendEvent();
     unsubscribeBrushEvent();
     unsubscribeAxisChangeEvent();
-    unsubscribeAxisScrollEvent();
     _view = null;
     _series = null;
     _context = null;
@@ -318,6 +317,8 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
     return null;
   }
 
+  void onSyncScroll(CoordType type, double scrollX, double scrollY) {}
+
   ///注册Brush组件 Event监听器
 
   void subscribeBrushEvent() {
@@ -367,25 +368,6 @@ abstract class LayoutHelper<S extends ChartSeries> extends ChartNotifier<Command
   }
 
   //========Legend 结束================
-
-  ///注册坐标系滚动事件
-  VoidFun1<ChartEvent>? _axisScrollListener;
-
-  void subscribeAxisScrollEvent() {
-    _context?.removeEventCall2(EventType.axisScroll, _axisScrollListener);
-    _axisScrollListener = (event) {
-      if (event is AxisScrollEvent) {
-        onAxisScroll(event);
-        return;
-      }
-    };
-    _context?.addEventCall(EventType.axisScroll, _axisScrollListener);
-  }
-
-  void unsubscribeAxisScrollEvent() {
-    _context?.removeEventCall2(EventType.axisScroll, _axisScrollListener);
-    _axisScrollListener = null;
-  }
 
   void onAxisScroll(AxisScrollEvent event) {}
 

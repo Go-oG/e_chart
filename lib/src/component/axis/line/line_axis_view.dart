@@ -2,8 +2,8 @@ import 'dart:math';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxisView<T, P> {
-  LineAxisRender(super.context, super.axis, {super.axisIndex});
+abstract class LineAxisView<T extends BaseAxis, P extends LineAxisAttrs> extends AxisView<T, P> {
+  LineAxisView(super.context, super.axis, {super.axisIndex});
 
   @override
   void onAttrsChange(P oldAttrs) {
@@ -12,8 +12,8 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
       return;
     }
     if (oldAttrs.scaleRatio != attrs.scaleRatio) {
-      scale = onBuildScale(attrs, scale.domain);
-      onLayout(attrs, scale);
+      axisScale = onBuildScale(attrs, axisScale.domain);
+      onLayout(false, left, top, right, bottom);
     }
   }
 
@@ -194,7 +194,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
     double diffY = attrs.end.dy - attrs.start.dy;
     double diffX = attrs.end.dx - attrs.start.dx;
     double at = atan2(diffY, diffX);
-    List<num> nl = scale.toRange(data);
+    List<num> nl = axisScale.toRange(data);
     List<Offset> ol = [];
     for (var d in nl) {
       double x = attrs.start.dx + d * cos(at);

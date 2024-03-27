@@ -2,11 +2,11 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class RadarAxisImpl extends LineAxisRender<RadarAxis, LineAxisAttrs> {
-  RadarAxisImpl(super.context, super.axis, {super.axisIndex});
+class RadarAxisView extends LineAxisView<RadarAxis, LineAxisAttrs> {
+  RadarAxisView(super.context, super.axis, {super.axisIndex});
 
   double dataToRadius(num data) {
-    return scale.toRange(data)[0].toDouble();
+    return axisScale.toRange(data)[0].toDouble();
   }
 
   @override

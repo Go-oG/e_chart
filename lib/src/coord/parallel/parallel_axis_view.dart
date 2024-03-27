@@ -2,11 +2,11 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class ParallelAxisImpl extends LineAxisRender<ParallelAxis, ParallelAxisAttrs> {
+class ParallelAxisView extends LineAxisView<ParallelAxis, ParallelAxisAttrs> {
   final Direction direction;
   bool expand = true;
 
-  ParallelAxisImpl(super.context, super.axis, this.direction, {super.axisIndex});
+  ParallelAxisView(super.context, super.axis, this.direction, {super.axisIndex});
 
   @override
   void onDrawAxisSplitLine(CCanvas canvas, Paint paint) {}

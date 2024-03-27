@@ -158,8 +158,7 @@ class BrushView extends GestureView {
     if (!brush.enable) {
       return;
     }
-    var scroll = coord.translation;
-    offset = offset.translate(scroll.dx.abs(), scroll.dy);
+    offset = offset.translate(scrollX, scrollY);
     if (brush.removeOnClick && !brush.supportMulti && _brushList.isNotEmpty) {
       var first = _brushList.first;
       if (!first.path.contains(offset)) {
@@ -172,8 +171,7 @@ class BrushView extends GestureView {
 
   @override
   void onDragStart(Offset offset) {
-    var scroll = coord.translation;
-    offset = offset.translate(scroll.dx.abs(), scroll.dy);
+    offset = offset.translate(scrollX, scrollY);
     _ol.clear();
     _first = null;
     if (!brush.enable) {
@@ -190,8 +188,7 @@ class BrushView extends GestureView {
       _first = null;
       return;
     }
-    var scroll = coord.translation;
-    offset = offset.translate(scroll.dx.abs(), scroll.dy);
+    offset = offset.translate(scrollX, scrollY);
 
     var first = _first;
     if (first == null) {
@@ -239,7 +236,6 @@ class BrushView extends GestureView {
   }
 
   List<Offset> buildArea(Offset first, Offset offset) {
-    var scroll = coord.translation;
     if (brush.type == BrushType.rect) {
       return [
         first,
@@ -251,17 +247,17 @@ class BrushView extends GestureView {
 
     if (brush.type == BrushType.vertical) {
       return [
-        Offset(scroll.dx.abs(), first.dy),
-        Offset(scroll.dx.abs() + width, first.dy),
-        Offset(scroll.dx.abs() + width, offset.dy),
-        Offset(scroll.dx.abs(), offset.dy),
+        Offset(scrollX, first.dy),
+        Offset(scrollX + width, first.dy),
+        Offset(scrollX + width, offset.dy),
+        Offset(scrollX, offset.dy),
       ];
     }
     if (brush.type == BrushType.horizontal) {
       return [
         Offset(first.dx, height),
-        Offset(first.dx, scroll.dy),
-        Offset(offset.dx, scroll.dy),
+        Offset(first.dx, scrollY),
+        Offset(offset.dx, scrollY),
         Offset(offset.dx, height),
       ];
     }

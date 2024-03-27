@@ -11,9 +11,6 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
 
   @override
   void doLayout(bool changed, LayoutType type) {
-    if (series.coordType == CoordType.grid) {
-      subscribeAxisScrollEvent();
-    }
     subscribeAxisChangeEvent();
     super.doLayout(changed, type);
   }
@@ -130,6 +127,15 @@ class PointHelper extends LayoutHelper2<PointData, PointSeries> {
       }
       data.attr = Offset(ox, oy);
     }
+  }
+
+  @override
+  void onSyncScroll(CoordType type, double scrollX, double scrollY) {
+    if (type != CoordType.grid) {
+      return;
+    }
+    view.scrollTo(scrollX, scrollY);
+    updateShowNodeList();
   }
 
   void updateShowNodeList() async {

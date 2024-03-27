@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
+abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr> {
   final Direction direction;
   GridCoord coord;
 
@@ -9,10 +9,6 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
 
   ///表示轴的大小
   double axisSize = 0;
-
-  void onScrollChange(double scroll) {
-    onLayout(attrs, scale);
-  }
 
   @override
   List<Drawable>? onLayoutAxisLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
@@ -377,7 +373,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
     } else {
       tmp = Offset(attrs.start.dx, tmp.dy);
     }
-    var dt = axis.formatData(scale.toData(pointerDis));
+    var dt = axis.formatData(axisScale.toData(pointerDis));
     Alignment alignment;
     if (vertical) {
       alignment = axis.position == Align2.start ? Alignment.bottomCenter : Alignment.topCenter;
@@ -405,7 +401,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
     if (!snap) {
       return dis;
     }
-    final interval = scale.tickInterval.toDouble();
+    final interval = axisScale.tickInterval.toDouble();
     int c = dis ~/ interval;
     if (!axis.isCategoryAxis) {
       int next = c + 1;
@@ -492,16 +488,16 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
 
   ///获取坐标轴当前显示范围的数据值
   RangeInfo getViewportDataRange() {
-    int tickCount = scale.tickCount;
+    int tickCount = axisScale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
     }
     final distance = attrs.distance;
     final double interval = distance / (tickCount - 1);
-    if (scale.isCategory || scale.isTime) {
+    if (axisScale.isCategory || axisScale.isTime) {
       List<int> indexList = computeRangeIndex(distance, tickCount, interval);
-      List<dynamic> dl = scale.getRangeLabel(indexList[0], indexList[1]);
-      if (scale.isCategory) {
+      List<dynamic> dl = axisScale.getRangeLabel(indexList[0], indexList[1]);
+      if (axisScale.isCategory) {
         return RangeInfo.category(dl as List<String>);
       }
       return RangeInfo.time(dl as List<DateTime>);
@@ -510,10 +506,10 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
     Rect rect = coord.contentBox;
     num viewSize = direction == Direction.horizontal ? rect.width : rect.height;
     if (distance <= viewSize) {
-      RangeInfo.range(Pair<num>(scale.domain.first, scale.domain.last));
+      RangeInfo.range(Pair<num>(axisScale.domain.first, axisScale.domain.last));
     }
     num scroll = direction == Direction.horizontal ? attrs.scrollX.abs() : attrs.scrollY.abs();
-    return RangeInfo.range(Pair<num>(scale.toData(scroll), scale.toData(scroll + viewSize)));
+    return RangeInfo.range(Pair<num>(axisScale.toData(scroll), axisScale.toData(scroll + viewSize)));
   }
 
   dynamic pxToData(num position);

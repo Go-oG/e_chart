@@ -1,28 +1,25 @@
 import 'dart:math' as m;
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/model/models.dart';
 import 'package:flutter/material.dart';
 
 ///用于实现极坐标系
 ///支持 柱状图 折线图 散点图
 class PolarCoordImpl extends PolarCoord {
-  AngleAxisImpl? _angleAxis;
+  AngleAxisView? _angleAxis;
 
-  AngleAxisImpl get angleAxis => _angleAxis!;
+  AngleAxisView get angleAxis => _angleAxis!;
 
-  RadiusAxisRender? _radiusAxis;
+  RadiusAxisView? _radiusAxis;
 
-  RadiusAxisRender get radiusAxis => _radiusAxis!;
+  RadiusAxisView get radiusAxis => _radiusAxis!;
 
   Offset center = Offset.zero;
 
-  PolarCoordImpl(super.context, super.props);
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    _angleAxis = AngleAxisImpl(context, props.angleAxis, axisIndex: 0);
-    _radiusAxis = RadiusAxisRender(context, props.radiusAxis, axisIndex: 0);
+  PolarCoordImpl(super.context, super.props) {
+    _angleAxis = AngleAxisView(context, props.angleAxis, axisIndex: 0);
+    _radiusAxis = RadiusAxisView(context, props.radiusAxis, axisIndex: 0);
+    addView(_angleAxis!);
+    addView(_radiusAxis!);
   }
 
   @override
@@ -40,23 +37,23 @@ class PolarCoordImpl extends PolarCoord {
   @override
   void onHoverMove(Offset offset, Offset last) {}
 
-  Size measureSize = Size.zero;
-
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     double size = m.min(widthSpec.size, heightSpec.size);
-    measureSize = Size(widthSpec.size, heightSpec.size);
     size = props.radius.last.convert(size) * 2;
-    angleAxis.onMeasure(size, size);
-    radiusAxis.onMeasure(size, size);
-    return Size.square(size);
+    var spec = MeasureSpec.exactly(size);
+    for (var child in children) {
+      child.measure(spec, spec);
+    }
+
+    setMeasuredDimension(size, size);
   }
 
   @override
   void onLayout(bool changed, double left, double top, double right, double bottom) {
     center = Offset(props.center[0].convert(width), props.center[1].convert(height));
     contentBox = Rect.fromCircle(center: center, radius: width / 2);
-    double size = m.min(measureSize.width, measureSize.height);
+    double size = measureWidth;
     double ir = props.radius.length > 1 ? props.radius.first.convert(size) : 0;
     double or = width / 2;
 
@@ -69,7 +66,7 @@ class PolarCoordImpl extends PolarCoord {
       clockwise: props.angleAxis.clockwise,
     );
     var angleDim = const PolarAxisDim(false, 0);
-    angleAxis.doLayout(angleAttrs,collectChildDimData(angleDim));
+    angleAxis.updateAttr(angleAttrs, collectChildDimData(angleDim));
 
     num angle = props.radiusAxis.offsetAngle;
     Offset so = ir <= 0 ? center : circlePoint(ir, angle, center);
@@ -77,17 +74,16 @@ class PolarCoordImpl extends PolarCoord {
 
     var radiusAttrs = RadiusAxisAttrs(center, angle, contentBox, so, eo);
     var radiusDim = const PolarAxisDim(true, 0);
-    radiusAxis.doLayout(radiusAttrs,collectChildDimData(radiusDim));
-
+    radiusAxis.updateAttr(radiusAttrs, collectChildDimData(radiusDim));
     for (var c in children) {
-      c.layout(0, 0, width, height);
+      c.layout(0, 0, c.measureWidth, c.measureHeight);
     }
   }
 
   @override
   void onDraw(CCanvas canvas) {
-    angleAxis.draw(canvas, mPaint);
-    radiusAxis.draw(canvas, mPaint);
+    angleAxis.draw(canvas);
+    radiusAxis.draw(canvas);
   }
 
   @override
@@ -111,9 +107,9 @@ class PolarCoordImpl extends PolarCoord {
   @override
   BaseScale<dynamic, num> getScale(bool angleAxis) {
     if (angleAxis) {
-      return this.angleAxis.scale;
+      return this.angleAxis.axisScale;
     }
-    return radiusAxis.scale;
+    return radiusAxis.axisScale;
   }
 
   @override

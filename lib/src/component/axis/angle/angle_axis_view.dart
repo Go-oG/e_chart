@@ -1,11 +1,19 @@
+import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
-class AngleAxisImpl extends BaseAxisView<AngleAxis, AngleAxisAttrs> {
+class AngleAxisView extends AxisView<AngleAxis, AngleAxisAttrs> {
   static const int maxAngle = 360;
 
-  AngleAxisImpl(super.context, super.axis, {super.axisIndex});
+  AngleAxisView(super.context, super.axis, {super.axisIndex});
+
+  @override
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    var size = min(widthSpec.size, heightSpec.size);
+    setMeasuredDimension(size, size);
+  }
 
   @override
   BaseScale onBuildScale(AngleAxisAttrs attrs, List<dynamic> dataSet) {
@@ -266,7 +274,7 @@ class AngleAxisImpl extends BaseAxisView<AngleAxis, AngleAxisAttrs> {
     bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
     List<Offset> ol;
     if (snap) {
-      double interval = scale.tickInterval.toDouble();
+      double interval = axisScale.tickInterval.toDouble();
       int c = dis ~/ interval;
       if (axis.isCategoryAxis) {
         c -= 1;
@@ -293,7 +301,7 @@ class AngleAxisImpl extends BaseAxisView<AngleAxis, AngleAxisAttrs> {
 
     ///绘制 数据
     dis = ol.last.distance2(ol.first);
-    var dt = axis.formatData(scale.toData(dis));
+    var dt = axis.formatData(axisScale.toData(dis));
     num angle = touchOffset.angle(attrs.center);
     var o = circlePoint(attrs.radius.last, angle, attrs.center);
 
@@ -314,7 +322,7 @@ class AngleAxisImpl extends BaseAxisView<AngleAxis, AngleAxisAttrs> {
   ///如果轴类型为category 则返回角度的范围，否则返回单一角度
   List<num> dataToAngle(dynamic data) {
     checkDataType(data);
-    return scale.toRange(data);
+    return axisScale.toRange(data);
   }
 
   @override

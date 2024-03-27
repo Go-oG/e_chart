@@ -32,6 +32,9 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
   }
 
   @override
+  CoordInfo getEmbedCoord() => CoordInfo(CoordType.parallel, max(0, series.parallelIndex));
+
+  @override
   ParallelHelper buildLayoutHelper(var oldHelper) {
     if (oldHelper != null) {
       oldHelper.context = context;
@@ -41,17 +44,6 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
     }
     return ParallelHelper(context, this, series);
   }
-
-  @override
-  int embedCoordIndex(CoordType type) {
-    if (type != CoordType.parallel) {
-      return -1;
-    }
-    return max(series.parallelIndex, 0);
-  }
-
-  @override
-  AxisDim dataDimToAxisDimIndex(int dataDim) => AxisDim.fromIndex(dataDim);
 
   @override
   int getAxisDataCount(CoordType type, AxisDim dim) => 0;
@@ -67,9 +59,6 @@ class ParallelView extends CoordChildView<ParallelSeries, ParallelHelper> implem
 
   @override
   DynamicText getAxisMaxText(CoordType type, AxisDim axisDim) => DynamicText.empty;
-
-  @override
-  CoordType getCoordType() => CoordType.parallel;
 
   @override
   Iterable getViewPortAxisExtreme(CoordType type, AxisDim axisDim, BaseScale<dynamic, num> scale) =>

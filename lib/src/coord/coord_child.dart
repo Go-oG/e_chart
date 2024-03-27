@@ -19,5 +19,5 @@ abstract class CoordChild {
   Iterable<dynamic> getViewPortAxisExtreme(CoordType type, AxisDim axisDim, BaseScale scale);
 
   ///同步滚动偏移量 一般用在笛卡尔坐标系里面实现手势滚动
-  void syncScroll(double scrollX, double scrollY);
+  void syncScroll(CoordType type, double scrollX, double scrollY);
 }

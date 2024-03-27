@@ -5,23 +5,20 @@ import 'package:flutter/material.dart';
 
 ///雷达图坐标系
 class RadarCoordImpl extends RadarCoord {
-  final Map<RadarIndicator, RadarAxisImpl> axisMap = {};
+  final Map<RadarIndicator, RadarAxisView> axisMap = {};
   final List<RadarSplit> splitList = [];
 
   Offset center = Offset.zero;
   double radius = 0;
 
-  RadarCoordImpl(super.context, super.props);
-
-  @override
-  void onCreate() {
-    super.onCreate();
-    axisMap.clear();
+  RadarCoordImpl(super.context, super.props) {
     for (int i = 0; i < props.indicator.length; i++) {
       var indicator = props.indicator[i];
       var axisName = AxisName(indicator.name, nameGap: indicator.nameGap, labelStyle: indicator.nameStyle);
       var axis = RadarAxis(axisName: axisName, min: indicator.min, max: indicator.max, splitNumber: 5);
-      axisMap[indicator] = RadarAxisImpl(context, axis, axisIndex: i);
+      var view = RadarAxisView(context, axis, axisIndex: i);
+      addView(view);
+      axisMap[indicator] = view;
     }
   }
 
@@ -35,20 +32,21 @@ class RadarCoordImpl extends RadarCoord {
     super.onDispose();
   }
 
-  Size measureSize = Size.zero;
-
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
-    measureSize = Size(widthSpec.size, heightSpec.size);
-    num minValue = min(widthSpec.size, heightSpec.size);
-    double cv = props.radius.last.convert(minValue);
-    cv = min(cv, minValue) * 2;
-    return Size(cv, cv);
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    var size = min(widthSpec.size, heightSpec.size);
+    double cv = props.radius.last.convert(size);
+    cv = min(cv, size) * 2;
+    var spec = MeasureSpec.exactly(cv);
+    for (var child in children) {
+      child.measure(spec, spec);
+    }
   }
 
   @override
   void onLayout(bool changed, double left, double top, double right, double bottom) {
     center = Offset(props.center[0].convert(width), props.center[1].convert(height));
+
     double itemAngle = 360 / props.indicator.length;
     if (!props.clockwise) {
       itemAngle *= -1;
@@ -68,7 +66,10 @@ class RadarCoordImpl extends RadarCoord {
       attrs.start = center;
       attrs.end = o;
       var dim = AxisDim(i);
-      axis.doLayout(attrs, collectChildDimData(dim));
+
+      axis.updateAttr(attrs, collectChildDimData(dim));
+      axis.layout(center.dx - axis.width / 2, center.dy - axis.height / 2, center.dx + axis.width / 2,
+          center.dy + axis.height / 2);
     });
 
     double rInterval = radius / props.splitNumber;
@@ -121,7 +122,7 @@ class RadarCoordImpl extends RadarCoord {
   void _drawAxis(CCanvas canvas) {
     ///绘制主轴
     axisMap.forEach((key, value) {
-      value.draw(canvas, mPaint);
+      value.draw(canvas);
     });
   }
 
@@ -131,7 +132,7 @@ class RadarCoordImpl extends RadarCoord {
     if (axisIndex < 0) {
       axisIndex = 0;
     }
-    RadarAxisImpl? node = axisMap[props.indicator[axisIndex]];
+    RadarAxisView? node = axisMap[props.indicator[axisIndex]];
     if (node == null) {
       throw ChartError("无法找到节点");
     }

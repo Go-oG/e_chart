@@ -8,9 +8,10 @@ class XAxisImpl extends BaseGridAxisImpl {
   XAxisImpl(super.direction, super.coord, super.context, super.axis, {super.axisIndex});
 
   @override
-  void onMeasure(double parentWidth, double parentHeight) {
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
     if (!axis.show) {
       axisSize = 0;
+      setMeasuredDimension(widthSpec.size, 0);
       return;
     }
     var lineHeight = axis.axisLine.getLength();
@@ -28,12 +29,13 @@ class XAxisImpl extends BaseGridAxisImpl {
       }
     }
     axisSize = height;
+    setMeasuredDimension(widthSpec.size, height);
   }
 
   @override
   List<Offset> dataToPoint(dynamic data) {
     checkDataType(data);
-    List<num> nl = scale.toRange(data);
+    List<num> nl = axisScale.toRange(data);
     List<Offset> ol = [];
     for (var d in nl) {
       ol.add(Offset(d.toDouble(), attrs.start.dy));
@@ -43,6 +45,6 @@ class XAxisImpl extends BaseGridAxisImpl {
 
   @override
   dynamic pxToData(num position) {
-    return scale.toData(position);
+    return axisScale.toData(position);
   }
 }

@@ -1,10 +1,17 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
 ///半径轴
-class RadiusAxisRender extends LineAxisRender<RadiusAxis, RadiusAxisAttrs> {
-  RadiusAxisRender(super.context, super.axis, {super.axisIndex});
+class RadiusAxisView extends LineAxisView<RadiusAxis, RadiusAxisAttrs> {
+  RadiusAxisView(super.context, super.axis, {super.axisIndex});
+
+  @override
+  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+    var size = min(widthSpec.size, heightSpec.size);
+    setMeasuredDimension(size, size);
+  }
 
   @override
   List<Drawable>? onLayoutSplitArea(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
@@ -36,7 +43,7 @@ class RadiusAxisRender extends LineAxisRender<RadiusAxis, RadiusAxisAttrs> {
     bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
     Arc arc;
     if (snap) {
-      var interval = scale.tickInterval;
+      var interval = axisScale.tickInterval;
       var diff = dis - ir;
       int c = diff ~/ interval;
       if (axis.isCategoryAxis) {
@@ -77,7 +84,7 @@ class RadiusAxisRender extends LineAxisRender<RadiusAxis, RadiusAxisAttrs> {
 
   List<num> dataToRadius(dynamic data) {
     checkDataType(data);
-    return scale.toRange(data);
+    return axisScale.toRange(data);
   }
 
   @override

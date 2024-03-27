@@ -1,14 +1,14 @@
 export 'axis/angle/angle_attrs.dart';
-export 'axis/angle/angle_axis_impl.dart';
+export 'axis/angle/angle_axis_view.dart';
 
 export 'axis/grid/axis_grid.dart';
 export 'axis/grid/grid_attrs.dart';
-export 'axis/grid/grid_axis_impl.dart';
-export 'axis/grid/x_axis_impl.dart';
-export 'axis/grid/y_axis_impl.dart';
+export 'axis/grid/grid_axis_view.dart';
+export 'axis/grid/x_axis_view.dart';
+export 'axis/grid/y_axis_view.dart';
 
 export 'axis/line/line_attrs.dart';
-export 'axis/line/line_axis_render.dart';
+export 'axis/line/line_axis_view.dart';
 
 export 'axis/drawable/tile_drawable.dart';
 export 'axis/drawable/label_drawable.dart';
@@ -17,7 +17,7 @@ export 'axis/drawable/tick_drawable.dart';
 export 'axis/drawable/split_drawable.dart';
 
 export 'axis/radius/radius_attrs.dart';
-export 'axis/radius/radius_axis_render.dart';
+export 'axis/radius/radius_axis_view.dart';
 
 export 'axis/axis_attrs.dart';
 export 'axis/axis_view.dart';
