@@ -1,5 +1,7 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 
-class Drawable {
-  void draw(CCanvas canvas) {}
+class Drawable extends Disposable {
+  void draw(CCanvas canvas, Paint paint) {}
 }

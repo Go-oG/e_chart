@@ -3,7 +3,7 @@ import 'package:e_chart/src/component/axis/axis_element_type.dart';
 import 'package:flutter/material.dart';
 
 abstract class BaseAxisRender<T extends BaseAxis, L extends AxisAttrs> extends ChartNotifier2 {
-  static final List<ElementRender> _emptyRenderList = List.empty(growable: false);
+  static final List<Drawable> _emptyRenderList = List.empty(growable: false);
 
   T get axis => _axis!;
   T? _axis;
@@ -35,7 +35,7 @@ abstract class BaseAxisRender<T extends BaseAxis, L extends AxisAttrs> extends C
   }
 
   ///存储坐标轴相关的节点
-  final Map<AxisElementType, List<ElementRender>> _elementMap = {};
+  final Map<AxisElementType, List<Drawable>> _elementMap = {};
 
   set scale(BaseScale bs) {
     _scale?.dispose();
@@ -91,17 +91,17 @@ abstract class BaseAxisRender<T extends BaseAxis, L extends AxisAttrs> extends C
 
   L onBuildDefaultAttrs();
 
-  List<ElementRender>? onLayoutAxisTitle(L attrs, BaseScale scale);
+  List<Drawable>? onLayoutAxisTitle(L attrs, BaseScale scale);
 
-  List<ElementRender>? onLayoutAxisLine(L attrs, BaseScale scale);
+  List<Drawable>? onLayoutAxisLine(L attrs, BaseScale scale);
 
-  List<ElementRender>? onLayoutSplitLine(L attrs, BaseScale scale);
+  List<Drawable>? onLayoutSplitLine(L attrs, BaseScale scale);
 
-  List<ElementRender>? onLayoutSplitArea(L attrs, BaseScale scale);
+  List<Drawable>? onLayoutSplitArea(L attrs, BaseScale scale);
 
-  List<ElementRender>? onLayoutAxisTick(L attrs, BaseScale scale);
+  List<Drawable>? onLayoutAxisTick(L attrs, BaseScale scale);
 
-  List<ElementRender>? onLayoutAxisLabel(L attrs, BaseScale scale);
+  List<Drawable>? onLayoutAxisLabel(L attrs, BaseScale scale);
 
   BaseScale onBuildScale(L attrs, List<dynamic> dataSet);
 
@@ -245,7 +245,7 @@ abstract class BaseAxisRender<T extends BaseAxis, L extends AxisAttrs> extends C
     return context.option.theme.valueAxisTheme;
   }
 
-  void updateRenders(AxisElementType type, [List<ElementRender>? list]) {
+  void updateRenders(AxisElementType type, [List<Drawable>? list]) {
     var old = _elementMap[type];
     if (old != null) {
       each(old, (p0, p1) {
@@ -263,19 +263,19 @@ abstract class BaseAxisRender<T extends BaseAxis, L extends AxisAttrs> extends C
     value = Command.layoutEnd;
   }
 
-  List<ElementRender> get lineList => getAxisElementRender(AxisElementType.line);
+  List<Drawable> get lineList => getAxisElementRender(AxisElementType.line);
 
-  List<ElementRender> get splitLineList => getAxisElementRender(AxisElementType.splitLine);
+  List<Drawable> get splitLineList => getAxisElementRender(AxisElementType.splitLine);
 
-  List<ElementRender> get splitAreaList => getAxisElementRender(AxisElementType.splitArea);
+  List<Drawable> get splitAreaList => getAxisElementRender(AxisElementType.splitArea);
 
-  List<ElementRender> get tickList => getAxisElementRender(AxisElementType.tick);
+  List<Drawable> get tickList => getAxisElementRender(AxisElementType.tick);
 
-  List<ElementRender> get labelList => getAxisElementRender(AxisElementType.label);
+  List<Drawable> get labelList => getAxisElementRender(AxisElementType.label);
 
-  List<ElementRender> get titleList => getAxisElementRender(AxisElementType.title);
+  List<Drawable> get titleList => getAxisElementRender(AxisElementType.title);
 
-  List<ElementRender> getAxisElementRender(AxisElementType type) {
+  List<Drawable> getAxisElementRender(AxisElementType type) {
     return _elementMap[AxisElementType.title] ?? _emptyRenderList;
   }
 }

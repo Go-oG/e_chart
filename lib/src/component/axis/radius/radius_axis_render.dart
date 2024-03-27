@@ -4,10 +4,10 @@ import 'package:e_chart/e_chart.dart';
 
 ///半径轴
 class RadiusAxisRender extends LineAxisRender<RadiusAxis, RadiusAxisAttrs> {
-  RadiusAxisRender(super.context, super.axis,{super.axisIndex});
+  RadiusAxisRender(super.context, super.axis, {super.axisIndex});
 
   @override
-  List<ElementRender>? onLayoutSplitArea(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutSplitArea(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     var splitArea = axis.splitArea;
     if (!splitArea.show) {
       return null;
@@ -16,7 +16,7 @@ class RadiusAxisRender extends LineAxisRender<RadiusAxis, RadiusAxisAttrs> {
   }
 
   @override
-  List<ElementRender>? onLayoutSplitLine(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutSplitLine(RadiusAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     return null;
   }
 

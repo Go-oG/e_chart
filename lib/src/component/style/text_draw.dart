@@ -5,7 +5,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
 ///用于优化文字绘制避免每次都需要测量
-class TextDraw extends ElementRender {
+class TextDraw extends Drawable {
   static final empty = TextDraw(DynamicText.empty, LabelStyle.empty, Offset.zero, emptyFlag: true);
   late final bool _emptyFlag;
   late LabelStyle _style;
@@ -229,16 +229,12 @@ class TextDraw extends ElementRender {
   }
 
   @override
-  Size draw(CCanvas canvas, Paint paint) {
+  void draw(CCanvas canvas, Paint paint) {
     if (_emptyFlag) {
-      return Size.zero;
+      return;
     }
-    Size s1 = _drawTextSpan(canvas, paint);
-    Size s2 = _drawParagraph(canvas, paint);
-    if (s2.isEmpty) {
-      return s1;
-    }
-    return s2;
+    _drawTextSpan(canvas, paint);
+    _drawParagraph(canvas, paint);
   }
 
   Size _drawTextSpan(CCanvas canvas, Paint paint) {

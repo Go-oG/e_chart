@@ -25,7 +25,6 @@ export 'model/visibility.dart';
 
 export 'render/ccanvas.dart';
 export 'render/core_chart.dart';
-export 'render/element_render.dart';
 
 export 'view/attach_info.dart';
 export 'view/drawable.dart';

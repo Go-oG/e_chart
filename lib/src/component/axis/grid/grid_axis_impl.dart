@@ -15,7 +15,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
   }
 
   @override
-  List<ElementRender>? onLayoutAxisLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutAxisLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return null;
@@ -26,7 +26,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
 
     final double interval = scale.tickInterval.toDouble();
     List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
-    List<AxisLineRender> resultList = [];
+    List<AxisLineDrawable> resultList = [];
 
     for (int i = indexList[0]; i < indexList[1] - 1; i++) {
       var dis = interval * i;
@@ -37,14 +37,14 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
       var end = e.rotate(angle, center: center);
 
       resultList
-          .add(AxisLineRender([scale.toData(dis), scale.toData(nextDis)], i, scale.tickCount - 1, start, end, style));
+          .add(AxisLineDrawable([scale.toData(dis), scale.toData(nextDis)], i, scale.tickCount - 1, start, end, style));
     }
 
     return resultList;
   }
 
   @override
-  List<ElementRender>? onLayoutAxisTick(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutAxisTick(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var axisTick = axis.axisTick;
     var tick = axisTick.tick;
     if (!axisTick.show || (tick == null || !tick.show)) {
@@ -68,14 +68,14 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
 
     final center = attrs.start;
     final angle = axisAngle;
-    List<TickRender> resultList = [];
+    List<TickDrawable> resultList = [];
     var tickStyle = tick.lineStyle;
     for (int i = indexList[0]; i < indexList[1]; i++) {
       double dis = i * interval;
       final Offset offset = center.translate(dis, 0);
       Offset start = offset.rotate(angle, center: center);
       Offset end = offset.translate(0, tickOffset).rotate(angle, center: center);
-      var tickNode = TickRender([scale.toData(dis)], i, tickCount, start, end, tickStyle, []);
+      var tickNode = TickDrawable([scale.toData(dis)], i, tickCount, start, end, tickStyle, []);
       resultList.add(tickNode);
       if (minorCount <= 0 || minorTick == null || !minorTick.show) {
         continue;
@@ -87,14 +87,14 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
         Offset me = ms.translate(0, minorOffset);
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        tickNode.minorList.add(TickRender(scale.toData(dis2), i, tickCount, ms, me, minorTick.lineStyle));
+        tickNode.minorList.add(TickDrawable(scale.toData(dis2), i, tickCount, ms, me, minorTick.lineStyle));
       }
     }
     return resultList;
   }
 
   @override
-  List<ElementRender>? onLayoutAxisLabel(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutAxisLabel(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
       return null;
@@ -112,7 +112,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
     }
     labelOffset *= axisLabel.inside ? -1 : 1;
 
-    List<AxisLabelRender> resultList = [];
+    List<AxisLabelDrawable> resultList = [];
     final Alignment align;
     if (direction == Direction.horizontal) {
       if (axisLabel.inside) {
@@ -147,19 +147,19 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
       }
       var style = axisLabel.getStyle(i, scale.tickCount, axisTheme);
       var config = TextDraw(text ?? DynamicText.empty, style, textOffset, align: align, rotate: axisLabel.rotate);
-      var result = AxisLabelRender(i, scale.tickCount, config, []);
+      var result = AxisLabelDrawable(i, scale.tickCount, config, []);
       resultList.add(result);
     }
     return resultList;
   }
 
   @override
-  List<ElementRender>? onLayoutSplitArea(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutSplitArea(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var splitArea = axis.splitArea;
     if (!splitArea.show) {
       return null;
     }
-    List<SplitAreaRender> list = [];
+    List<SplitAreaDrawable> list = [];
     final double interval = scale.tickInterval;
     List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
 
@@ -185,7 +185,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
         path.lineTo2(ol.last);
         path.lineTo2(ol.first);
         path.close();
-        list.add(SplitAreaRender([], path, style));
+        list.add(SplitAreaDrawable([], path, style));
       }
       pl.add(ol);
     }
@@ -193,12 +193,12 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
   }
 
   @override
-  List<ElementRender>? onLayoutSplitLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutSplitLine(GridAxisAttr attrs, BaseScale<dynamic, num> scale) {
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
       return null;
     }
-    List<AxisLineRender> list = [];
+    List<AxisLineDrawable> list = [];
     int tickCount = scale.tickCount;
     if (tickCount <= 0) {
       tickCount = 1;
@@ -218,7 +218,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
       }
       final data = scale.toData(dis);
       var style = splitLine.getStyle(data, i, tickCount, axisTheme);
-      list.add(AxisLineRender([scale.toData(dis)], i, tickCount, start, end, style));
+      list.add(AxisLineDrawable([scale.toData(dis)], i, tickCount, start, end, style));
     }
     return list;
   }
@@ -258,7 +258,7 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
     canvas.clipRect(getSplitClipRect());
     each(splitLineList, (render, p1) {
       Logger.i(render.runtimeType);
-      var split = render as AxisLineRender;
+      var split = render as AxisLineDrawable;
       int interval = splitLine.interval;
       if (interval > 0) {
         interval += 1;
@@ -521,5 +521,5 @@ abstract class BaseGridAxisImpl extends LineAxisRender<GridAxis, GridAxisAttr> {
   bool get isXAxis => direction == Direction.horizontal;
 
   @override
-  GridAxisAttr onBuildDefaultAttrs() =>GridAxisAttr(Rect.zero, Offset.zero, Offset.zero, DynamicText.empty);
+  GridAxisAttr onBuildDefaultAttrs() => GridAxisAttr(Rect.zero, Offset.zero, Offset.zero, DynamicText.empty);
 }

@@ -39,16 +39,16 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
   }
 
   @override
-  List<ElementRender>? onLayoutAxisLine(AngleAxisAttrs attrs, BaseScale scale) {
+  List<Drawable>? onLayoutAxisLine(AngleAxisAttrs attrs, BaseScale scale) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return null;
     }
-    List<ElementRender> list = [];
+    List<Drawable> list = [];
     int tickCount = scale.tickCount - 1;
     var s = axisLine.getStyle(axisTheme);
     for (int i = 0; i < tickCount; i++) {
-      var render = AxisCurveRender([], i, tickCount, attrs.center, attrs.radius.last, attrs.angleOffset, 360, s);
+      var render = AxisCurveDrawable([], i, tickCount, attrs.center, attrs.radius.last, attrs.angleOffset, 360, s);
       list.add(render);
     }
 
@@ -56,7 +56,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
   }
 
   @override
-  List<ElementRender>? onLayoutSplitLine(AngleAxisAttrs attrs, BaseScale scale) {
+  List<Drawable>? onLayoutSplitLine(AngleAxisAttrs attrs, BaseScale scale) {
     var splitLine = axis.splitLine;
     if (!splitLine.show) {
       return null;
@@ -65,7 +65,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
     int count = scale.tickCount - 1;
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / count;
-    List<AxisCurveRender> list = [];
+    List<AxisCurveDrawable> list = [];
     double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
     double or = attrs.radius.last;
 
@@ -73,14 +73,14 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
       num sa = attrs.angleOffset + angleInterval * i;
       var data = [];
       var style = splitLine.getStyle(data, i, count, axisTheme);
-      var segment = AxisCurveRender(data, i, count, attrs.center, ir, or, sa, style);
+      var segment = AxisCurveDrawable(data, i, count, attrs.center, ir, or, sa, style);
       list.add(segment);
     }
     return list;
   }
 
   @override
-  List<ElementRender>? onLayoutSplitArea(AngleAxisAttrs attrs, BaseScale scale) {
+  List<Drawable>? onLayoutSplitArea(AngleAxisAttrs attrs, BaseScale scale) {
     var splitArea = axis.splitArea;
     if (!splitArea.show) {
       return null;
@@ -89,7 +89,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
     int count = scale.tickCount - 1;
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / count;
-    List<SplitAreaRender> list = [];
+    List<SplitAreaDrawable> list = [];
     double ir = attrs.radius.length > 1 ? attrs.radius.first : 0;
     double or = attrs.radius.last;
 
@@ -102,13 +102,13 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
         innerRadius: ir,
         center: attrs.center,
       );
-      list.add(SplitAreaRender([], arc.toPath(), splitArea.getStyle(i, count, axisTheme)));
+      list.add(SplitAreaDrawable([], arc.toPath(), splitArea.getStyle(i, count, axisTheme)));
     }
     return list;
   }
 
   @override
-  List<ElementRender>? onLayoutAxisTick(AngleAxisAttrs attrs, BaseScale scale) {
+  List<Drawable>? onLayoutAxisTick(AngleAxisAttrs attrs, BaseScale scale) {
     var axisTick = axis.axisTick;
     var tick = axisTick.tick;
     if (!axis.show || !axisTick.show || tick == null || !tick.show) {
@@ -123,7 +123,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
 
     final int dir = attrs.clockwise ? 1 : -1;
     final num angleInterval = dir * maxAngle / tickCount;
-    List<TickRender> tickList = [];
+    List<TickDrawable> tickList = [];
 
     final int minorCount = minorTick?.splitNumber ?? 0;
     final minorInterval = angleInterval / minorCount;
@@ -143,9 +143,9 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
       num angle = attrs.angleOffset + angleInterval * i;
       Offset so = circlePoint(attrs.radius.last, angle, attrs.center);
       Offset eo = circlePoint(r, angle, attrs.center);
-      List<TickRender> minorList = [];
+      List<TickDrawable> minorList = [];
 
-      tickList.add(TickRender([scale.toData(angle)], i, tickCount, so, eo, tickStyle, minorList));
+      tickList.add(TickDrawable([scale.toData(angle)], i, tickCount, so, eo, tickStyle, minorList));
       if (axis.isCategoryAxis || axis.isTimeAxis || i >= tickCount - 1) {
         continue;
       }
@@ -157,7 +157,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
         var minorAngle = angle + minorInterval * j;
         Offset minorSo = circlePoint(attrs.radius.last, angle + minorInterval * j, attrs.center);
         Offset minorEo = circlePoint(minorR, angle + minorInterval * j, attrs.center);
-        minorList.add(TickRender(scale.toData(minorAngle), i, tickCount, minorSo, minorEo, minorTick.lineStyle));
+        minorList.add(TickDrawable(scale.toData(minorAngle), i, tickCount, minorSo, minorEo, minorTick.lineStyle));
       }
     }
 
@@ -165,7 +165,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
   }
 
   @override
-  List<ElementRender>? onLayoutAxisLabel(AngleAxisAttrs attrs, BaseScale scale) {
+  List<Drawable>? onLayoutAxisLabel(AngleAxisAttrs attrs, BaseScale scale) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
       return null;
@@ -194,7 +194,7 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
         r += axisLabel.margin + axisLabel.padding;
       }
     }
-    List<AxisLabelRender> resultList = [];
+    List<AxisLabelDrawable> resultList = [];
 
     for (int i = 0; i < labels.length; i++) {
       DynamicText text = labels[i];
@@ -212,14 +212,14 @@ class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
         align: toAlignment(angle, axisLabel.inside),
         rotate: axisLabel.rotate,
       );
-      var result = AxisLabelRender(i, labels.length, config, []);
+      var result = AxisLabelDrawable(i, labels.length, config, []);
       resultList.add(result);
     }
     return resultList;
   }
 
   @override
-  List<ElementRender>? onLayoutAxisTitle(AngleAxisAttrs attrs, BaseScale scale) {
+  List<Drawable>? onLayoutAxisTitle(AngleAxisAttrs attrs, BaseScale scale) {
     var label = titleNode.name?.name ?? DynamicText.empty;
     Offset start = attrs.center;
     Offset end = circlePoint(attrs.radius.last, attrs.angleOffset, attrs.center);

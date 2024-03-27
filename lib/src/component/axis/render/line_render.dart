@@ -1,9 +1,8 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/render/element_render.dart';
 
-class AxisLineRender extends ElementRender {
+class AxisLineDrawable extends Drawable {
   List<dynamic> data;
   int index;
   int maxIndex;
@@ -12,7 +11,7 @@ class AxisLineRender extends ElementRender {
   Path? path;
   LineStyle style;
 
-  AxisLineRender(this.data, this.index, this.maxIndex, this.start, this.end, this.style);
+  AxisLineDrawable(this.data, this.index, this.maxIndex, this.start, this.end, this.style);
 
   @override
   void draw(CCanvas canvas, Paint paint) {
@@ -25,7 +24,7 @@ class AxisLineRender extends ElementRender {
   }
 }
 
-class AxisCurveRender extends ElementRender {
+class AxisCurveDrawable extends Drawable {
   late List<dynamic> data;
   int index;
   int maxIndex;
@@ -35,7 +34,7 @@ class AxisCurveRender extends ElementRender {
   num sweepAngle;
   LineStyle style;
 
-  AxisCurveRender(
+  AxisCurveDrawable(
     dynamic data,
     this.index,
     this.maxIndex,
@@ -44,7 +43,7 @@ class AxisCurveRender extends ElementRender {
     this.startAngle,
     this.sweepAngle,
     this.style,
-  ){
+  ) {
     if (data is List<dynamic>) {
       this.data = data;
     } else {

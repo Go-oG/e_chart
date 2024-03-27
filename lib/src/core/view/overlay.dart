@@ -2,9 +2,6 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-import 'drawable.dart';
-import 'view_parent.dart';
-
 class ViewOverLay {
   late OverlayViewGroup mOverlayViewGroup;
 
@@ -104,8 +101,9 @@ class OverlayViewGroup extends ChartViewGroup {
   void dispatchDraw(CCanvas canvas) {
     super.dispatchDraw(canvas);
     final int numDrawables = mDrawables.length;
+    var paint = Paint();
     for (int i = 0; i < numDrawables; ++i) {
-      mDrawables[i].draw(canvas);
+      mDrawables[i].draw(canvas, paint);
     }
   }
 

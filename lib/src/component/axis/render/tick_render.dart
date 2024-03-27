@@ -1,9 +1,8 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/render/element_render.dart';
 
-class TickRender extends ElementRender {
+class TickDrawable extends Drawable {
   ///数据可能为空
   late List<dynamic> data;
   int index;
@@ -11,9 +10,9 @@ class TickRender extends ElementRender {
   Offset start;
   Offset end;
   LineStyle style;
-  List<TickRender> minorList;
+  List<TickDrawable> minorList;
 
-  TickRender(
+  TickDrawable(
     dynamic data,
     this.index,
     this.maxIndex,

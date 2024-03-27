@@ -34,7 +34,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
   double get axisAngle => attrs.end.angle(attrs.start);
 
   @override
-  List<ElementRender>? onLayoutAxisLine(P attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutAxisLine(P attrs, BaseScale<dynamic, num> scale) {
     var axisLine = axis.axisLine;
     if (!axisLine.show) {
       return null;
@@ -47,7 +47,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
       tickCount = 1;
     }
     final double interval = scale.tickInterval.toDouble();
-    List<AxisLineRender> resultList = [];
+    List<AxisLineDrawable> resultList = [];
     var angle = axisAngle;
     final int maxCount = tickCount - 1;
     for (int i = 0; i < maxCount; i++) {
@@ -58,13 +58,13 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
       var startData = scale.toData(dis);
       var end = attrs.start.translate(nextDis, 0).rotate(angle, center: attrs.start);
       var endData = scale.toData(nextDis);
-      resultList.add(AxisLineRender([startData, endData], i, maxCount, start, end, lineStyle));
+      resultList.add(AxisLineDrawable([startData, endData], i, maxCount, start, end, lineStyle));
     }
     return resultList;
   }
 
   @override
-  List<ElementRender>? onLayoutAxisTick(P attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutAxisTick(P attrs, BaseScale<dynamic, num> scale) {
     var axisTick = axis.axisTick;
     var tick = axisTick.tick;
     if (!axisTick.show || (tick == null || !tick.show)) {
@@ -85,7 +85,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
     final minorCount = minorTick?.splitNumber ?? 0;
     final double minorInterval = minorCount <= 0 ? 0 : (interval / (minorCount + 1));
 
-    List<TickRender> resultList = [];
+    List<TickDrawable> resultList = [];
     final center = attrs.start;
     final angle = axisAngle;
 
@@ -95,7 +95,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
       var start = offset.rotate(angle, center: center);
       var end = offset.translate(0, tickOffset).rotate(angle, center: center);
       var data = scale.toData(dis);
-      var tickNode = TickRender(data, i, tickCount, start, end, tick.lineStyle, []);
+      var tickNode = TickDrawable(data, i, tickCount, start, end, tick.lineStyle, []);
       resultList.add(tickNode);
       if (minorCount <= 0 || minorTick == null || !minorTick.show) {
         continue;
@@ -107,14 +107,14 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
         var data = scale.toData(dis2 + dis);
         ms = ms.rotate(angle, center: center);
         me = me.rotate(angle, center: center);
-        tickNode.minorList.add(TickRender(data, i, tickCount, ms, me, minorTick.lineStyle));
+        tickNode.minorList.add(TickDrawable(data, i, tickCount, ms, me, minorTick.lineStyle));
       }
     }
     return resultList;
   }
 
   @override
-  List<ElementRender>? onLayoutAxisLabel(P attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutAxisLabel(P attrs, BaseScale<dynamic, num> scale) {
     var axisLabel = axis.axisLabel;
     if (!axisLabel.show) {
       return null;
@@ -135,7 +135,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
     }
     labelOffset *= axisLabel.inside ? -1 : 1;
 
-    List<AxisLabelRender> resultList = [];
+    List<AxisLabelDrawable> resultList = [];
     final center = attrs.start;
     final angle = axisAngle;
 
@@ -159,7 +159,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
         align: toAlignment(angle + 90, axisLabel.inside),
         rotate: axisLabel.rotate,
       );
-      var result = AxisLabelRender(i, labelCount, config, []);
+      var result = AxisLabelDrawable(i, labelCount, config, []);
       resultList.add(result);
     });
 
@@ -167,7 +167,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
   }
 
   @override
-  List<ElementRender>? onLayoutAxisTitle(P attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutAxisTitle(P attrs, BaseScale<dynamic, num> scale) {
     Offset center;
     Offset p;
     var align = axis.axisName?.align ?? Align2.end;
@@ -186,7 +186,7 @@ abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> exten
     r += axis.axisName?.nameGap ?? 0;
     var label = axis.axisName?.name ?? DynamicText.empty;
     var s = axis.axisName?.labelStyle ?? const LabelStyle();
-    return [TextDraw(label, s, circlePoint(r, a,center),align: toAlignment(a))];
+    return [TextDraw(label, s, circlePoint(r, a, center), align: toAlignment(a))];
   }
 
   List<Offset> dataToPoint(dynamic data) {

@@ -1,7 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/model/layout_result.dart';
 import 'package:flutter/material.dart';
-
 import '../helper/state_resolver.dart';
 
 ///基础渲染数据

@@ -2,13 +2,13 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-class AxisLabelRender extends ElementRender {
+class AxisLabelDrawable extends Drawable {
   final int index;
   final int maxIndex;
   final TextDraw label;
-  List<AxisLabelRender> minorLabel;
+  List<AxisLabelDrawable> minorLabel;
 
-  AxisLabelRender(
+  AxisLabelDrawable(
     this.index,
     this.maxIndex,
     this.label, [

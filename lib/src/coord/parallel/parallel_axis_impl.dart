@@ -15,12 +15,12 @@ class ParallelAxisImpl extends LineAxisRender<ParallelAxis, ParallelAxisAttrs> {
   void onDrawAxisSplitArea(CCanvas canvas, Paint paint) {}
 
   @override
-  List<ElementRender>? onLayoutSplitArea(ParallelAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutSplitArea(ParallelAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     return null;
   }
 
   @override
-  List<ElementRender>? onLayoutSplitLine(ParallelAxisAttrs attrs, BaseScale<dynamic, num> scale) {
+  List<Drawable>? onLayoutSplitLine(ParallelAxisAttrs attrs, BaseScale<dynamic, num> scale) {
     return null;
   }
 
