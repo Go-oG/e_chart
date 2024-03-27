@@ -1,6 +1,5 @@
-import '../../style/index.dart';
-import '../../symbol/index.dart';
-import '../theme.dart';
+import 'package:e_chart/e_chart.dart';
+
 ///折线图主题
 class LineTheme {
   num lineWidth = 2;

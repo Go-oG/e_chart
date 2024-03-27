@@ -1,8 +1,8 @@
 // import 'package:e_chart/e_chart.dart';
-// import 'package:e_chart_ext/src/model/graph/graph.dart';
+// import 'package:e_chart_ext/src/option/graph/graph.dart';
 // import 'package:flutter/cupertino.dart';
 //
-// import '../../model/graph/graph_data.dart';
+// import '../../option/graph/graph_data.dart';
 // import '../graph_helper.dart';
 //
 // ///组合布局

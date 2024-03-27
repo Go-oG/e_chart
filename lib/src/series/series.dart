@@ -1,6 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/index.dart';
-import 'package:e_chart/src/core/model/layout_params.dart';
 import 'package:flutter/material.dart';
 
 /// 图表的抽象表示

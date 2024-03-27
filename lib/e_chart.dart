@@ -6,12 +6,12 @@ export 'src/core/index.dart';
 export 'src/event/index.dart';
 export 'src/ext/index.dart';
 export 'src/model/index.dart';
+export 'src/option/index.dart';
 export 'src/series/index.dart';
 export 'src/utils/index.dart';
 
 export 'src/chart.dart';
 export 'src/functions.dart';
 export 'src/static_config.dart';
-
 
 export 'package:dart_dagre/dart_dagre.dart';

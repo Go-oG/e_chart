@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../component/symbol/index.dart';
 import '../../../model/chart_error.dart';
 import '../../style/index.dart';
-import '../../symbol/index.dart';
 
 ///Radar主题
 class RadarTheme {

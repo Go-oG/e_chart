@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import '../../animation/index.dart';
-import '../../component/style/index.dart';
+import '../../option/style/index.dart';
 import '../../series/series.dart';
 import '../../utils/list_util.dart';
 import '../index.dart';

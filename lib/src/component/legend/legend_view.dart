@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/index.dart';
 import '../../model/index.dart';
-import 'legend.dart';
-import 'legend_item.dart';
+import '../../option/legend.dart';
+import '../../option/legend_item.dart';
 
 class LegendView extends StatefulWidget {
   final Legend legend;

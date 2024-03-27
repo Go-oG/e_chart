@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'legend_item_view.dart';
+import '../component/legend/legend_item_view.dart';
 
 class LegendItem extends Disposable {
   final String id = randomId();
@@ -56,4 +56,3 @@ class LegendItem extends Disposable {
     super.dispose();
   }
 }
-

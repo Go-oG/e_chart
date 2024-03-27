@@ -66,7 +66,7 @@ class ParallelCoordImpl extends ParallelCoord {
     return node;
   }
 
-  bool isFirstAxis(BaseAxisRender node) {
+  bool isFirstAxis(BaseAxisView node) {
     bool hasCheck = false;
     for (var axis in props.axisList) {
       var node2 = axisMap[axis]!;
@@ -77,7 +77,7 @@ class ParallelCoordImpl extends ParallelCoord {
     return false;
   }
 
-  bool isLastAxis(BaseAxisRender node) {
+  bool isLastAxis(BaseAxisView node) {
     bool hasCheck = false;
     for (int i = props.axisList.length - 1; i >= 0; i--) {
       var node2 = axisMap[props.axisList[i]]!;
@@ -181,8 +181,8 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   ///找到当前点击的
-  BaseAxisRender? findClickAxis(Offset offset) {
-    BaseAxisRender? node;
+  BaseAxisView? findClickAxis(Offset offset) {
+    BaseAxisView? node;
     for (var ele in axisMap.entries) {
       List<Offset> ol;
       if (props.direction == Direction.horizontal) {

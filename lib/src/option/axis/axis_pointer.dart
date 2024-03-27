@@ -1,5 +1,5 @@
-import '../../../model/index.dart';
-import '../../style/index.dart';
+import '../../model/index.dart';
+import '../style/index.dart';
 
 /// 坐标轴指示器
 class AxisPointer {
@@ -20,5 +20,4 @@ class AxisPointer {
     this.lineStyle = const LineStyle(),
     this.labelStyle = const LabelStyle(),
   });
-
 }

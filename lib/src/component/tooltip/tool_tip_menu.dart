@@ -1,5 +1,5 @@
 import '../../model/data.dart';
-import '../style/index.dart';
+import '../../option/index.dart';
 import '../symbol/chart_symbol.dart';
 
 class ToolTipMenu {
@@ -15,8 +15,7 @@ class ToolTipMenu {
 }
 
 class MenuItem {
-  static final MenuItem empty=MenuItem(DynamicText.empty, LabelStyle.empty);
-
+  static final MenuItem empty = MenuItem(DynamicText.empty, LabelStyle.empty);
 
   final DynamicText title;
   final LabelStyle titleStyle;

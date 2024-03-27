@@ -29,12 +29,12 @@ class EventDispatcher extends Disposable {
       Logger.i('$runtimeType dispatch($event)');
     }
     var set = _callMap[event.eventType];
-    if (set == null||set.isEmpty) {
+    if (set == null || set.isEmpty) {
       return;
     }
     each(set, (call, p1) {
-     // try {
-        call.call(event);
+      // try {
+      call.call(event);
       // } catch (e) {
       //   Logger.e(e);
       // }
@@ -66,7 +66,7 @@ class EventType {
   static const chartDispose = EventType("destroy");
 
   ///单帧渲染结束事件
-  static const rendered = EventType("render");
+  static const rendered = EventType("drawable");
 
   //======组件相关事件==========
   ///框选组件相关事件

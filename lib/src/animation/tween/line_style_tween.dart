@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui show lerpDouble;
 import '../../../src/component/shader/shader.dart' as sd;
-import '../../component/style/line_style.dart';
+import '../../option/style/line_style.dart';
 import '../chart_tween.dart';
 import 'shader_tween.dart';
 

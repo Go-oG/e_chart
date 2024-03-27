@@ -1,4 +1,4 @@
-enum AxisElementType {
+enum AxisDrawableType {
   splitArea(1),
   splitLine(2),
   line(3),
@@ -8,5 +8,5 @@ enum AxisElementType {
 
   final int priority;
 
-  const AxisElementType(this.priority);
+  const AxisDrawableType(this.priority);
 }

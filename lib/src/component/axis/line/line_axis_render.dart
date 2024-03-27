@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
-abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxisRender<T, P> {
+abstract class LineAxisRender<T extends BaseAxis, P extends LineAxisAttrs> extends BaseAxisView<T, P> {
   LineAxisRender(super.context, super.axis, {super.axisIndex});
 
   @override

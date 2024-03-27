@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 ///角度轴(是一个完整的环,类似于Y轴)
-class AngleAxisImpl extends BaseAxisRender<AngleAxis, AngleAxisAttrs> {
+class AngleAxisImpl extends BaseAxisView<AngleAxis, AngleAxisAttrs> {
   static const int maxAngle = 360;
 
   AngleAxisImpl(super.context, super.axis, {super.axisIndex});

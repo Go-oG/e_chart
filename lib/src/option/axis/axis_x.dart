@@ -1,5 +1,5 @@
-import '../../../model/enums/align2.dart';
-import 'axis_grid.dart';
+import '../../model/enums/align2.dart';
+import '../../component/axis/grid/axis_grid.dart';
 
 class XAxis extends GridAxis {
   XAxis({

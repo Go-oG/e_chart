@@ -1,6 +1,5 @@
-import '../../component/style/area_style.dart';
+import '../../option/style/area_style.dart';
 import '../chart_tween.dart';
-
 
 class AreaStyleTween extends ChartTween<AreaStyle> {
   AreaStyleTween(

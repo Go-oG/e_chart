@@ -1,10 +1,10 @@
 import 'package:e_chart/src/model/enums/coordinate.dart';
 
-import '../../component/index.dart';
 import '../../core/context.dart';
 import '../../functions.dart';
 import '../../model/enums/direction.dart';
 import '../../model/pair.dart';
+import '../../option/index.dart';
 import '../index.dart';
 
 ///日历坐标系
@@ -46,6 +46,6 @@ class Calendar extends Coord {
 
   @override
   CoordLayout<Coord>? toCoord(Context context) {
-    return CalendarCoordImpl(context,this);
+    return CalendarCoordImpl(context, this);
   }
 }

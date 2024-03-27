@@ -1,9 +1,8 @@
-
-import '../component/style/index.dart';
 import '../core/context.dart';
 import '../core/render/render_data.dart';
 import '../functions.dart';
 import '../model/data.dart';
+import '../option/style/index.dart';
 import 'index.dart';
 
 ///表述为数据类型为 Group-children 图表

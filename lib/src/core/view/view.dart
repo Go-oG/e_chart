@@ -121,10 +121,11 @@ abstract class ChartView with ViewFrame {
     var oldR = right;
     var oldB = bottom;
     bool changed = setFrame(l, t, r, b);
-    if (changed) {
+    if (changed || _forceLayout) {
       onLayout(changed, l, t, r, b);
       onLayoutChange(l, t, r, b, oldL, oldT, oldR, oldB);
     }
+    _forceLayout = false;
   }
 
   @protected
@@ -178,6 +179,8 @@ abstract class ChartView with ViewFrame {
     if (visibility.isHide) {
       return;
     }
+    //TODO 检查缓存和是否需要二次绘制
+
     _drawBackground(canvas);
     onDraw(canvas);
     dispatchDraw(canvas);

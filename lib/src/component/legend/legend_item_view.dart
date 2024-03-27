@@ -4,8 +4,8 @@ import '../../core/render/ccanvas.dart';
 import '../../functions.dart';
 import '../../model/index.dart';
 import '../symbol/chart_symbol.dart';
-import 'legend.dart';
-import 'legend_item.dart';
+import '../../option/legend.dart';
+import '../../option/legend_item.dart';
 
 class LegendItemView extends StatefulWidget {
   final LegendItem item;
